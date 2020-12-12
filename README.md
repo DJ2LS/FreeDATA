@@ -30,7 +30,7 @@ BC:<DATA>    Send a simple broadcast
 
 
 
-##Credits
+## Credits
 
 David Rowe and the FreeDV team for developing the modem and libraries
 FreeDV Codec 2 : https://github.com/drowe67/codec2
