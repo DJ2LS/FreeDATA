@@ -39,8 +39,10 @@ To list all audio devices run
 
 ## Socket Commands
 
-BC:<DATA>    Send a simple broadcast
-
+Send a simple broadcast
+```
+BC:<DATA>    
+```
 
 
 ## Other stuff
