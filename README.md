@@ -4,6 +4,7 @@ My first attempt to learn more about FreeDV and how to create a TNC which gets d
 ## Setup
 ```
 sudo apt install portaudio19-dev
+pip3 install crcengine
 ```
 
 
