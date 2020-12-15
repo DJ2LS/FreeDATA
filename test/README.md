@@ -1,4 +1,11 @@
-        ###################### CHECKSUM COMPARISON FREEDV VS CRCENGINE ########
+       
+       ./TEST_TX.py | ./freedv_data_raw_rx DATAC3 - -
+       
+       
+       
+       
+       
+       ###################### CHECKSUM COMPARISON FREEDV VS CRCENGINE ########
         #https://crccalc.com
         
         teststring = b'TEST'
