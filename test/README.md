@@ -1,7 +1,9 @@
 # TESTS
 
 
-## TEST_TX.py --> Send string "TEST"
+### TEST_TX.py 
+
+Send string "TEST"
 ```
 ./TEST_TX.py | ./freedv_data_raw_rx DATAC3 - - | hexdump -C
 ```
@@ -15,14 +17,8 @@ modem bufs processed: 22  output bytes: 30 output_frames: 1
 ```
        
        
-       
-       
-       
-       ./TEST_TX.py | ./freedv_data_raw_rx DATAC3 - -
-       
-       
-       
-       
+### Checksum comparison FREEDV vs CRCENGINE       
+```
        
        ###################### CHECKSUM COMPARISON FREEDV VS CRCENGINE ########
         #https://crccalc.com
@@ -43,3 +39,4 @@ modem bufs processed: 22  output bytes: 30 output_frames: 1
         
         
         #######################################################################
+```
