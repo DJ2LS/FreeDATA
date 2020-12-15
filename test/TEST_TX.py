@@ -26,8 +26,8 @@ def main():
     data = b'TEST' #byte string which will be send
     #data = bytes(62) #byte string with XX of zeros 
     
-    modulated_data = modem.Modulate(data) #Call Modulate function, which returns modulated data
-    #print(modulated_data)
+    modulated_data = modem.Modulate(data) #Call Modulate function, which  modulates data and prints it to the terminal
+
 
 
 ###################### try: / except necessary beacuse of error 32 - BrokenPipeError while piping data
