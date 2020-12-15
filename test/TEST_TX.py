@@ -33,7 +33,7 @@ class FreeDV():
         
         self.bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(self.freedv)/8)  #get bytes per frame from selected waveform
         self.payload_per_frame = self.bytes_per_frame -2 #get frame payload because of 2byte CRC16 checksum
-        self.n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(self.freedv)*2
+        self.n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(self.freedv)*2 #get n_tx_modem_samples which defines the size of the modulation object
 
     # MODULATION-OUT OBJECT   
     def ModulationOut(self):
@@ -41,7 +41,7 @@ class FreeDV():
 
     # Pointer for changing buffer data type 
     def FrameBytes(self):
-        return (ctypes.c_ubyte * self.bytes_per_frame)   
+        return (c_ubyte * self.bytes_per_frame)   
 
     # Modulate function which returns modulated data
     def Modulate(self,data_out):
@@ -60,7 +60,7 @@ class FreeDV():
             buffer += crc        # append crc16 to buffer
                 
             data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte
-    
+     
             self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
 
             sys.stdout.buffer.write(mod_out)    # print data to terminal for piping the output to other programs
