@@ -2,17 +2,17 @@
 
 
 ## TEST_TX.py --> Send string "TEST"
-'''
+```
 ./TEST_TX.py | ./freedv_data_raw_rx DATAC3 - - | hexdump -C
-'''
+```
 Output should be:
-'''
+```
 payload bytes_per_modem_frame: 30
 00000000  54 45 53 54 00 00 00 00  00 00 00 00 00 00 00 00  |TEST............|
 modem bufs processed: 22  output bytes: 30 output_frames: 1 
 00000010  00 00 00 00 00 00 00 00  00 00 00 00 00 00        |..............|
 0000001e
-'''
+```
        
        
        
