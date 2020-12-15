@@ -11,7 +11,7 @@ from ctypes import *
 import pathlib
 
 import binascii #required for string.to_bytes() function
-import crcengine # required for CRC checksum
+#import crcengine # required for CRC checksum
 import sys
 
 #sys.stdout.reconfigure(encoding='utf-8')
