@@ -79,35 +79,30 @@ class FreeDV():
     
         mod_out = self.ModulationOut()() # new modulation object and get pointer to it
     
-        #buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
-        buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
-        buffer[:len(data_out)] = data_out # set buffersize to length of data which will be send
+        data_list = [data_out[i:i+self.payload_per_frame] for i in range(0, len(data_out), self.payload_per_frame)] # split incomming bytes to size of 30bytes, create a list and loop through it  
+        data_list_length = len(data_list)
+        for i in range(data_list_length): # LOOP THROUGH DATA LIST
+            #buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
+            buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+            buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
 
-        #buffer = self.scramble(buffer, packet_num)
+            crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
+            crc = crc.value.to_bytes(2, byteorder='big') # convert buffer to 2 byte hex string
+            buffer += crc        # append crc16 to buffer
+        
+            #print(buffer)
+        
+            data = self.FrameBytes().from_buffer_copy(buffer) #change data format form bytearray to ctypes.u_byte
+        
+            #print(len(data))
+            ##return bytes(mod_out) #return modulated data as byte string
 
-        
-        ##crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
-        ##crc = crc_algorithm(buffer) # get new crc16 from buffer
-        #print(hex(crc))
-        
-        crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
-        crc = crc.value.to_bytes(2, byteorder='big') # convert buffer to 2 byte hex string
-        buffer += crc        # append crc16 to buffer
-        
-        #print(buffer)
-        
-        data = self.FrameBytes().from_buffer_copy(buffer) #change data format form bytearray to ctypes.u_byte
-        
-        #print(len(data))
-    
-    ##return bytes(mod_out) #return modulated data as byte string
-
-        #self.c_lib.freedv_rawdatapreambletx(self.freedv, mod_out) # SEND PREAMBLE
-        #print(bytes(mod_out), flush=True)
+            #self.c_lib.freedv_rawdatapreambletx(self.freedv, mod_out) # SEND PREAMBLE
+            #print(bytes(mod_out), flush=True)
         
           
-        self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA
-        print(bytes(mod_out), flush=True)
+            self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA      
+            print(bytes(mod_out), flush=True)
 
 
 
