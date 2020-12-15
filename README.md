@@ -18,6 +18,7 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 ## Setup
 ```
 sudo apt install portaudio19-dev
+pip3 install crcengine
 ```
 
 
