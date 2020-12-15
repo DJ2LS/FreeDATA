@@ -69,16 +69,21 @@ class FreeDV():
         ###################### CHECKSUM COMPARISON FREEDV VS CRCENGINE ########
         #https://crccalc.com
         
-        teststring = b'test'
+        teststring = b'123456789'
         
-        #FreeDV crc16 checksum    -> c_int16 == c_short
-        crctest = c_ushort(self.c_lib.freedv_gen_crc16(teststring, 30))      
-        print(crctest.value) #7450
 
+     
+        # freedv crc16 checksum
+        crctest2 = c_ushort(self.c_lib.freedv_gen_crc16(teststring, len(teststring)))
+        print("FREEDV2: " + str(crctest2.value) + " = " + hex(crctest2.value)) #7450      
+        
+        
         #Python crc16 checksum
         crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
-        crctest2 = crc_algorithm(teststring)
-        print(crctest2) #8134
+        crctest3 = crc_algorithm(teststring)
+        print("CRCENGINE: " + str(crctest3) + " = " + hex(crctest3)) #8134
+        
+        
         #######################################################################
 
 
