@@ -18,7 +18,9 @@ def main():
     
     modem = FreeDV() #Load FreeDV Class as "modem"
       
-    data = b'TEST' #byte string which will be send    
+    data = b'TEST TEST TEST TEST TEST' #byte string which will be send    
+    
+   
     modulated_data = modem.Modulate(data) #Call Modulate function, which  modulates data and prints it to the terminal
 
 
