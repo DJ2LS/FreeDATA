@@ -1,8 +1,7 @@
 # TESTS
 
 ### TEST_RX.py
---> RX NOT WORKING RIGHT NOW! 
-mh... :-/ 
+--> RX still not working! mh... :-/ 
 
 
 
