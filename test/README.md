@@ -1,5 +1,10 @@
 # TESTS
 
+### TEST_RX.py
+--> RX NOT WORKING RIGHT NOW! 
+mh... :-/ 
+
+
 
 ### TEST_TX.py 
 
