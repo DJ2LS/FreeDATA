@@ -13,25 +13,20 @@ import pathlib
 
 import binascii #required for string.to_bytes() function
 import sys
-import audioop
+
+
+
+import base64
 
 def main():
     
     modem = FreeDV() #Load FreeDV Class as "modem"
       
-    #data = b'TEST' #byte string which will be send    
-    
-    #data = sys.stdin.read()
+    modem.Demodulate()
     #for line in sys.stdin.buffer:
-    #    print(line)
-    #    data = sys.stdin.buffer.read()
-    #data = sys.stdin.flush()
-    #data = audioop.ratecv(data,2,1,48000, 8000, None)
-        #print(data)
-    #    demodulated_data = modem.Demodulate(data) #Call Modulate function, which  modulates data and prints it to the terminal
+    #    #print(line)
+    #    modem.Demodulate(line)
 
-    data = sys.stdin.buffer.read()
-    demodulated_data = modem.Demodulate(data)
 
 
 class FreeDV():
@@ -45,11 +40,13 @@ class FreeDV():
         
         self.bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(self.freedv)/8)  #get bytes per frame from selected waveform
         self.payload_per_frame = self.bytes_per_frame -2 #get frame payload because of 2byte CRC16 checksum
-        self.n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(self.freedv) 
-   
+        self.n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(self.freedv)
+        self.nin = self.c_lib.freedv_nin(self.freedv)
     
-   
-    
+        print("N MAX MODEM SAMPLES: " + str(self.n_max_modem_samples))
+        print("NIN: " + str(self.nin))
+        print("BYTES PER FRAME: " + str(self.bytes_per_frame))
+        
     # MODULATION-IN OBJECT   
     def ModulationIn(self):
         return (c_short * self.n_max_modem_samples)  ##
@@ -58,36 +55,55 @@ class FreeDV():
     # Pointer for changing buffer data type 
     def FrameBytes(self):
         return (c_ubyte * self.bytes_per_frame)
-    # Modulate function which returns modulated data
-    def Demodulate(self,data_in):
-         
-         buffer = bytearray(len(self.ModulationIn()())*sizeof(c_short)) # create empty byte array  
-         #buffer = bytearray(40000)
-         buffer[:len(data_in)] = data_in # copy across what we have
-         
-         modulation = self.ModulationIn() # get an empty modulation array
-         modulation = modulation.from_buffer_copy(buffer) # copy buffer across and get a pointer to it.
-
-         #print(bytes(modulation))
-         bytes_out = self.FrameBytes()() # initilize a pointer to where bytes will be outputed
-         #print(data_in)
-         nbytes = self.c_lib.freedv_rawdatarx(self.freedv, bytes_out, data_in)
-      
-         nin = self.c_lib.freedv_nin(self.freedv)
-         
-         #print(len(modulation))
-         #print(len(data_in))
-         #print(len(buffer))        
-         #print(self.n_max_modem_samples)
-
-         #print(nin)
-
-         print(self.c_lib.freedv_get_sync(self.freedv))
-         if nbytes != 0:
-             print(bytes(bytes_out))
+        #return (c_ubyte * 2)
         
-         print(bytes(bytes_out))   
-        #print(nbytes)
-         #print(self.c_lib.freedv_get_total_bits_coded(self.freedv))
-         #print(self.c_lib.freedv_get_total_bit_errors_coded(self.freedv))
+    # Modulate function which returns modulated data   
+    def Demodulate(self):
+        
+        
+        nin = self.c_lib.freedv_nin(self.freedv)
+        
+        while self.c_lib.freedv_nin(self.freedv) == nin:
+            #nin = self.c_lib.freedv_nin(self.freedv)
+            #print(nin)
+            samples = self.c_lib.freedv_nin(self.freedv) ### MIT DER *2 funktioniert das irgendwie recht zuverlässig bei mode 5!
+            print(samples)
+            data_in = sys.stdin.buffer.read(samples)
+            
+            
+         
+            #buffer = bytearray(len(self.ModulationIn()())*sizeof(c_short)) # create empty byte array  
+            #buffer = bytearray(len(self.ModulationIn()())*self.n_max_modem_samples) # create empty byte array 
+            buffer = bytearray(1848)   # N MAX SAMPLES * 2
+            print("BUFFER LENGTH: " + str(len(buffer)))
+            buffer[:len(data_in)] = data_in # copy across what we have
+         
+            modulation = self.ModulationIn() # get an empty modulation array
+            modulation = modulation.from_buffer_copy(buffer) # copy buffer across and get a pointer to it.
+ 
+            print("MODULATION LENGTH: " + str(len(modulation)))
+            bytes_out = self.FrameBytes()() # initilize a pointer to where bytes will be outputed
+
+            nbytes = self.c_lib.freedv_rawdatarx(self.freedv, bytes_out, data_in)
+      
+        
+
+
+            
+
+            if nbytes > 0:
+                print(bytes(bytes_out))                      
+                #print(nbytes)
+ 
+
+
+
+
+
+
+
+
+
+
+
 main()         
