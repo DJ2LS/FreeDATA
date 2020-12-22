@@ -1,13 +1,31 @@
 # TESTS
 
 ### TEST_RX.py
---> RX still not working! mh... :-/ 
 
-
+Receive string "HALLO" with a lot of debugging output
+```
+./TEST_TX.py | ./TEST_RX.py
+```
+Output should be:
+```
+SYNC
+INPUT PARSER:      1760
+INPUT LENGTH:      1760
+BUFFER LENGTH:     1848
+MODULATION LENGTH: 924
+SYNC
+b'HALLO\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x15S'
+INPUT PARSER:      1760
+INPUT LENGTH:      1760
+BUFFER LENGTH:     1848
+MODULATION LENGTH: 924
+SYNC
+INPUT PARSER:      1760
+```
 
 ### TEST_TX.py 
 
-Send string "TEST"
+Send string "HALLO"
 ```
 ./TEST_TX.py | ./freedv_data_raw_rx DATAC3 - - | hexdump -C
 ```
