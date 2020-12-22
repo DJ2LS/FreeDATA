@@ -1,36 +1,5 @@
 # FreeDV-Socket-TNC
-My first attempt to learn more about FreeDV and how to create a TNC which gets data from a TCP/IP Socket.
-
-## Setup
-```
-sudo apt install portaudio19-dev
-pip3 install crcengine
-```
-
-
-## Run
-```
-./__main__.py --rx-sound-device 2 --tx-sound-device 2 --port 3000
-```
-
-## Parameters
---rx-sound-device <1>
---tx-sound-device <1>
---port <3000>
-
-To list all audio devices run 
-```
-./__main__.py --list-audio-devices
-```
-
-
-## Socket Commands
-
-BC:<DATA>    Send a simple broadcast
-
-
-
-
+My first attempt to learn more about FreeDV and how to create a TNC which gets data from a TCP/IP 
 ## Credits
 
 David Rowe and the FreeDV team for developing the modem and libraries
