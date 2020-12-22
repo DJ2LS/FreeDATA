@@ -19,9 +19,8 @@ def main():
     modem = FreeDV() #Load FreeDV Class as "modem"
       
     data = b'HALLO' #byte string which will be send    
-    
-   
-    modulated_data = modem.Modulate(data) #Call Modulate function, which  modulates data and prints it to the terminal
+       
+    modem.Modulate(data) #Call Modulate function, which  modulates data and prints it to the terminal
 
 
 class FreeDV():
@@ -70,9 +69,8 @@ class FreeDV():
                 crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
                 buffer += crc        # append crc16 to buffer
             
-            #print(self.bytes_per_frame)
-            #print(buffer)
-            data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte
+            
+            data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
      
             self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
 
