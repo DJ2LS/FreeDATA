@@ -20,6 +20,16 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 sudo apt install portaudio19-dev
 ```
 
+## Usage main program
+```
+./main.py --port 3000 --tx 1 --rx 1
+```
+
+## Usage testclient
+```
+./socketclient.py --port 3000 --data "BC: hello"
+```
+
 
 ## Socket Commands
 
