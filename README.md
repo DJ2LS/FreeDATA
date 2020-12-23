@@ -21,22 +21,6 @@ sudo apt install portaudio19-dev
 ```
 
 
-## Run
-```
-./__main__.py --rx-sound-device 2 --tx-sound-device 2 --port 3000
-```
-
-## Parameters
---rx-sound-device <1>
---tx-sound-device <1>
---port <3000>
-
-To list all audio devices run 
-```
-./__main__.py --list-audio-devices
-```
-
-
 ## Socket Commands
 
 Send a simple broadcast
