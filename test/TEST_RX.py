@@ -80,27 +80,30 @@ class FreeDV():
 
 
             # ------------- SOME DEBUGGING OUTPUT
-            print("INPUT PARSER:      " + str(samples))            
-            print("INPUT LENGTH:      " + str(len(data_in)))
-            print("BUFFER LENGTH:     " + str(len(buffer)))
-            print("MODULATION LENGTH: " + str(len(modulation)))
+            #print("INPUT PARSER:      " + str(samples))            
+            #print("INPUT LENGTH:      " + str(len(data_in)))
+            #print("BUFFER LENGTH:     " + str(len(buffer)))
+            #print("MODULATION LENGTH: " + str(len(modulation)))
             
-            sync_state = self.c_lib.freedv_get_sync(self.freedv)
-            if sync_state > 0:
-                print("SYNC")
+            #sync_state = self.c_lib.freedv_get_sync(self.freedv)
+            #if sync_state > 0:
+            #    print("SYNC")
+            #else:
+            #    print("NO SYNC")
             # -------------
             
             
             
-            # print data to terminal if nbytes > 0
-            if nbytes > 0:
-                print(bytes(bytes_out))                      
+            # print data to terminal if nbytes == bytes_per_frame for selected mode
+            if nbytes == self.bytes_per_frame:
+                print(bytes(bytes_out))
+                self.c_lib.freedv_set_sync(self.freedv, 0)                      
                 
             
             #Stop loop until data input is empty
-            if len(data_in) == 0:
-                False
-                break
+            #if len(data_in) == 0:
+            #    False
+
 
 
 
