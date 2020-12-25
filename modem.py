@@ -116,7 +116,7 @@ class RF():
             sys.stdout.flush() # flushing stdout
                      
         if self.data_output == "audio":
-                       
+            print(self.audio_channels)
             stream_tx = self.p.open(format=self.format, 
                             channels=self.audio_channels,
                             rate=self.audio_sample_rate,
@@ -146,25 +146,52 @@ class RF():
         
         
         while static.MODEM_RECEIVE == True: # Listne to audio until data arrives
-        #while True: # Listne to audio until data arrives
         
         
-            if self.data_input == "stdin":
-                samples = self.c_lib.freedv_nin(self.freedv)*2 ### MIT DER *2 funktioniert das irgendwie recht zuverlässig bei mode 5! Bei Mode 12 auch
-                data_in = sys.stdin.buffer.read(samples)
+            #if self.data_input == "stdin":
+            #    samples = self.c_lib.freedv_nin(self.freedv)*2 ### MIT DER *2 funktioniert das irgendwie recht zuverlässig bei mode 5! Bei Mode 12 auch
+            #    data_in = sys.stdin.buffer.read(samples)
             if self.data_input == "audio":
                 
                 data_in = stream_rx.read(self.c_lib.freedv_nin(self.freedv),  exception_on_overflow = False)
                 #print(bytes(data_in))
-                
+            buffer = bytearray(self.n_max_modem_samples*2) # N MAX SAMPLES * 2
+            buffer[:len(data_in)] = data_in # copy across what we have
+            
+            
+            self.ModulationIn()() #Create new ModulationIn Object
+            modulation = self.ModulationIn()# get an empty modulation array
+            modulation = modulation.from_buffer_copy(buffer) # copy buffer across and get a pointer to it.
+            
             bytes_out = self.FrameBytes()() # initilize a pointer to where bytes will be outputed
             
             nbytes = self.c_lib.freedv_rawdatarx(self.freedv, bytes_out, data_in) # Demodulated data and get number of demodulated bytes
 
-            #if nbytes > 0:
             if nbytes == self.bytes_per_frame: # make sure, we receive a full frame
+            
+            
                 print(bytes(bytes_out[:-2]))
-                #stream_rx.close()                      
+                self.c_lib.freedv_set_sync(self.freedv, 0)
+                
+                #print(bytes(bytes_out))
+                
+                # CHECK IF FRAME CONTAINS ACK------------------------
+                if bytes(bytes_out[:6]) == b'REQACK':
+                    print("REQACK FRAME ERKANNT!!!!")
+                    print("ADD TO SEND BUFFER")
+                    time.sleep(5)
+                    print("SEND ACK FRAME")
+                    self.Transmit(b'ACK')
+                #----------------------------------------------------
+
+                # CHECK IF FRAME CONTAINS ACK------------------------
+                if bytes(bytes_out[:3]) == b'ACK':
+                    print("ACK FRAME ERKANNT!!!!")
+                    static.ACK_TIMEOUT = 1
+                    static.ACK_RECEIVED = 1
+                    static.ACK_RETRY = 3
+                #----------------------------------------------------
+                           
                 #return bytes(bytes_out[:-2])
                 
 
