@@ -12,6 +12,7 @@ import pathlib
 import pyaudio
 import audioop
 import sys
+import logging
 
 import static
 
@@ -21,8 +22,7 @@ class RF():
     
     def __init__(self):
         
-        
-        
+    
         self.p = pyaudio.PyAudio()
         self.defaultFrames = static.DEFAULT_FRAMES
         self.audio_input_device = static.AUDIO_INPUT_DEVICE
@@ -37,15 +37,10 @@ class RF():
         self.stream = None
         
         
-        
-        
-
-        
-        self.data_input = "stdin"
+        #self.data_input = "stdin"
         self.data_input = "audio"
-        self.data_output = "stdout"
+        #self.data_output = "stdout"
         self.data_output = "audio"
-        
         
         
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
@@ -62,11 +57,6 @@ class RF():
         self.n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(self.freedv)
         self.n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(self.freedv)
         self.nin = self.c_lib.freedv_nin(self.freedv)
-
-
-
-
-
 
 
 
@@ -116,7 +106,7 @@ class RF():
             sys.stdout.flush() # flushing stdout
                      
         if self.data_output == "audio":
-            print(self.audio_channels)
+            #print(self.audio_channels)
             stream_tx = self.p.open(format=self.format, 
                             channels=self.audio_channels,
                             rate=self.audio_sample_rate,
@@ -177,19 +167,20 @@ class RF():
                 
                 # CHECK IF FRAME CONTAINS ACK------------------------
                 if bytes(bytes_out[:6]) == b'REQACK':
-                    print("REQACK FRAME ERKANNT!!!!")
-                    print("ADD TO SEND BUFFER")
+           
+                    logging.info("RX | ACK REQUESTED!")         
                     time.sleep(5)
-                    print("SEND ACK FRAME")
+                    logging.info("TX | SENDING ACK FRAME")
                     self.Transmit(b'ACK')
                 #----------------------------------------------------
 
                 # CHECK IF FRAME CONTAINS ACK------------------------
                 if bytes(bytes_out[:3]) == b'ACK':
-                    print("ACK FRAME ERKANNT!!!!")
-                    static.ACK_TIMEOUT = 1
-                    static.ACK_RECEIVED = 1
-                    static.TX_RETRIES = 3
+               
+                    logging.info("TX | ACK RCVD!")
+                    static.ACK_TIMEOUT = 1 #Force timer to stop waiting
+                    static.ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
+                    
                 #----------------------------------------------------
                            
                 #return bytes(bytes_out[:-2])
