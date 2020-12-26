@@ -16,8 +16,12 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 
 
 ## Setup
+Install FreeDV-Socket-TNC directly to home folder and compile codec2 automatically
 ```
-sudo apt install portaudio19-dev
+sudo apt install portaudio19-dev build-essential cmake
+wget https://raw.githubusercontent.com/DJ2LS/FreeDV-Socket-TNC/dev/install_socket_tnc.sh -O ~/install_socket_tnc.sh
+chmod +x ~/install_socket_tnc.sh
+./install_socket_tnc.sh
 ```
 
 ## Usage main program
@@ -36,6 +40,10 @@ sudo apt install portaudio19-dev
 Send a simple broadcast
 ```
 BC:<DATA>    
+```
+Send an ARQ like frame which will ack the receiver for acknowledgement
+```
+ACK:<DATA>    
 ```
 
 
