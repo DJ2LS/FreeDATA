@@ -49,15 +49,15 @@ ACK:<DATA>
 
 ## Other stuff
 
-Create audio sinkhole
+### Create audio sinkhole
 ```
 sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2 
 ```
-## TNC 1
+### TNC 1
 ```
 ./main.py --port 3000 --tx 1 --rx 1
 ```
-## TNC 2
+### TNC 2
 ```
 ./main.py --port 3001 --tx 2 --rx 2
 ```
