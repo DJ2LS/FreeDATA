@@ -10,6 +10,7 @@ Created on Tue Dec 22 16:58:45 2020
 import socketserver
 import threading
 import argparse
+import logging
 
 import tnc
 import static
@@ -32,14 +33,21 @@ static.AUDIO_OUTPUT_DEVICE = args.audio_output_device
 static.PORT = args.socket_port
 
 
+#-------------------------------------------- DEFINE LOGGER    
+logger = logging.getLogger()
+logger.setLevel("INFO") #DEBUG>INFO>WARNING>ERROR>CRITICAL
+
+
+
 #--------------------------------------------START AUDIO THREAD  
+logging.info("STARTING AUDIO THREAD")
 static.MODEM_RECEIVE = True    
 audio_receiver_thread = threading.Thread(target=modem.Receive, name="Audio Listener")
 audio_receiver_thread.start()
 
 
 #--------------------------------------------START SERVER  
-print(static.PORT)
+logging.info("STARTING TCP/IP SOCKET ON PORT " + str(static.PORT))
 try:
     server = socketserver.TCPServer((static.HOST, static.PORT), tnc.TCPRequestHandler)
     server.serve_forever()

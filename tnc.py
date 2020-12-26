@@ -4,12 +4,16 @@
 
 import socketserver
 import threading
+import logging
+
 
 import modem
 import static
 #from other import *
 import other
+
 modem = modem.RF()
+
 
 
 class TCPRequestHandler(socketserver.BaseRequestHandler):
@@ -25,11 +29,11 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
        #     static.MODEM_RECEIVE = False
         
         
-        print("{} wrote:".format(self.client_address[0]))
-        print(self.data)
+        ####print("{} wrote:".format(self.client_address[0]))
+        ####print(self.data)
         
         # just send back the same data, but upper-cased
-        self.request.sendall(self.data.upper())
+        #####self.request.sendall(self.data.upper())
         
         #if self.data == b'TEST':
             #logging.info("DER TEST KLAPPT! HIER KOMMT DER COMMAND PARSER HIN!")
@@ -38,13 +42,13 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
 
         if self.data.startswith(b'BC:'):
             static.MODEM_RECEIVE = True ####### FALSE....
-            print(static.MODEM_RECEIVE)
+            #print(static.MODEM_RECEIVE)
             
             data = self.data.split(b'BC:')
             daten = modem.Transmit(data[1])
             
             static.MODEM_RECEIVE = True
-            print(static.MODEM_RECEIVE)
+            #print(static.MODEM_RECEIVE)
             
             
             
@@ -52,7 +56,7 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
 
         if self.data.startswith(b'ACK:'):
             static.MODEM_RECEIVE = True ############## FALSE
-            print(static.MODEM_RECEIVE)
+            #print(static.MODEM_RECEIVE)
             
             data = self.data.split(b'ACK:')
             data_out = data[1]
@@ -60,22 +64,21 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
             
             static.TX_BUFFER = [data_out[i:i+24] for i in range(0, len(data_out), 24)] # split incomming bytes to size of 30bytes, create a list and loop through it  
             static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
+            logging.info("TX | TOTAL PAYLOAD BYTES/FRAMES TO SEND: " + str(len(data_out)) + " / " + str(static.TX_BUFFER_SIZE))
             for frame in range(static.TX_BUFFER_SIZE): # LOOP THROUGH DATA LIST
                 
                 #--------------------------------------------- BUILD DATA PACKET
                 ack = b'REQACK'
                 data_to_transmit = ack + static.TX_BUFFER[frame]
-                
-                
-                print(len(data_to_transmit))
-                print(data_to_transmit)
+               
+                logging.info("TX | SENDING FRAME " + str(frame+1) + " / " + str(static.TX_BUFFER_SIZE))
                 #---------------------------------------------------------------    
         
             
-                #static.TX_N_RETRIES = 1
+                #--------------------------------------------- ATTEMPTS TO SEND A MESSAGE IF ACK FAILS
                 for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
-                    #print("RETRY: " + str(static.TX_N_RETRIES))
-                    #print("SENDING")
+                    
+                    # --------------------------- SEND FRAME
                     static.ACK_RECEIVED = 0
                     daten = modem.Transmit(data_to_transmit)
                     
@@ -85,7 +88,8 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
                     timer.start() 
 
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-                    print("WAITING FOR ACK")
+                    logging.info("TX | WAITING FOR ACK")
+
                     while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
                         static.MODEM_RECEIVE = True   
                     
@@ -99,6 +103,7 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
                 if frame == static.TX_BUFFER_SIZE:
                     break
                         
-            print("NO MORE FRAMES IN TX QUEUE!")    
+            logging.info("TX | BUFFER EMPTY")
+    
                            
       
