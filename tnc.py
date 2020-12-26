@@ -58,13 +58,13 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
             data_out = data[1]
             
             
-            TXbuffer = [data_out[i:i+24] for i in range(0, len(data_out), 24)] # split incomming bytes to size of 30bytes, create a list and loop through it  
-            TXbuffer_length = len(TXbuffer)
-            for i in range(TXbuffer_length): # LOOP THROUGH DATA LIST
+            static.TX_BUFFER = [data_out[i:i+24] for i in range(0, len(data_out), 24)] # split incomming bytes to size of 30bytes, create a list and loop through it  
+            static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
+            for frame in range(static.TX_BUFFER_SIZE): # LOOP THROUGH DATA LIST
                 
                 #--------------------------------------------- BUILD DATA PACKET
                 ack = b'REQACK'
-                data_to_transmit = ack + TXbuffer[i]
+                data_to_transmit = ack + static.TX_BUFFER[frame]
                 
                 
                 print(len(data_to_transmit))
@@ -72,31 +72,33 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
                 #---------------------------------------------------------------    
         
             
-                static.ACK_RETRY = 1
-                for static.ACK_RETRY in range(static.TX_RETRIES):
-                    print("RETRY: " + str(static.ACK_RETRY))
-                    print("SENDING")
+                #static.TX_N_RETRIES = 1
+                for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
+                    #print("RETRY: " + str(static.TX_N_RETRIES))
+                    #print("SENDING")
                     static.ACK_RECEIVED = 0
                     daten = modem.Transmit(data_to_transmit)
                     
-                    # --------------------------- START TIMER
+                    # --------------------------- START TIMER ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
                     static.ACK_TIMEOUT = 0
-                    timer = threading.Timer(10.0, other.timeout)
+                    timer = threading.Timer(static.ACK_TIMEOUT_SECONDS, other.timeout)
                     timer.start() 
 
-                    # --------------------------- WHILE TIMEOUT NOT REACHED LISTEN
+                    # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
                     print("WAITING FOR ACK")
                     while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
                         static.MODEM_RECEIVE = True   
                     
+                    #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
                     if static.ACK_RECEIVED == 1:
-                        static.ACK_RETRY = 3
+                        static.TX_N_RETRIES = 3
                         break
                     
-                if static.ACK_RECEIVED ==1:
+
+                #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT
+                if frame == static.TX_BUFFER_SIZE:
                     break
-                    
                         
-            print("GESCHAFFT!")    
+            print("NO MORE FRAMES IN TX QUEUE!")    
                            
       

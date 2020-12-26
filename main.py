@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Dec 22 16:58:45 2020
@@ -20,9 +20,9 @@ modem = modem.RF()
 
 #--------------------------------------------GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
-parser.add_argument('--rx', dest="audio_input_device", default=False, help="sound card for listening.", type=int)
-parser.add_argument('--tx', dest="audio_output_device", default=False, help="sound card for transmitting.", type=int)
-parser.add_argument('--port', dest="socket_port", default=9000, help="Set the port, the socket is listening on.", type=int)  
+parser.add_argument('--rx', dest="audio_input_device", default=0, help="sound card for listening.", type=int)
+parser.add_argument('--tx', dest="audio_output_device", default=0, help="sound card for transmitting.", type=int)
+parser.add_argument('--port', dest="socket_port", default=3000, help="Set the port, the socket is listening on.", type=int)  
 
 args = parser.parse_args()
 
@@ -39,6 +39,7 @@ audio_receiver_thread.start()
 
 
 #--------------------------------------------START SERVER  
+print(static.PORT)
 try:
     server = socketserver.TCPServer((static.HOST, static.PORT), tnc.TCPRequestHandler)
     server.serve_forever()

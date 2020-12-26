@@ -48,7 +48,7 @@ class RF():
         
         
         
-        libname = pathlib.Path().absolute() / "libcodec2.so"
+        libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
         
         
@@ -189,7 +189,7 @@ class RF():
                     print("ACK FRAME ERKANNT!!!!")
                     static.ACK_TIMEOUT = 1
                     static.ACK_RECEIVED = 1
-                    static.ACK_RETRY = 3
+                    static.TX_RETRIES = 3
                 #----------------------------------------------------
                            
                 #return bytes(bytes_out[:-2])
