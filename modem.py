@@ -15,6 +15,9 @@ import sys
 import logging
 
 import static
+import arq
+
+#arq = arq.ARQ()
 
 
 
@@ -58,7 +61,8 @@ class RF():
         self.n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(self.freedv)
         self.nin = self.c_lib.freedv_nin(self.freedv)
 
-
+        static.FREEDV_BYTES_PER_FRAME = self.bytes_per_frame
+        static.FREEDV_PAYLOAD_PER_FRAME = self.payload_per_frame
 
         
     # MODULATION-OUT OBJECT   
@@ -75,9 +79,11 @@ class RF():
         return (c_ubyte * self.bytes_per_frame)
  
     # GET DATA AND MODULATE IT
+    
     def Transmit(self,data_out):
                   
         mod_out = self.ModulationOut()() # new modulation object and get pointer to it
+        
     
         data_list = [data_out[i:i+self.payload_per_frame] for i in range(0, len(data_out), self.payload_per_frame)] # split incomming bytes to size of 30bytes, create a list and loop through it  
         data_list_length = len(data_list)
@@ -96,7 +102,8 @@ class RF():
                 crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
                 crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
                 buffer += crc        # append crc16 to buffer
-                       
+                
+                
             data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
      
             self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
@@ -162,16 +169,21 @@ class RF():
             
                 print(bytes(bytes_out[:-2]))
                 self.c_lib.freedv_set_sync(self.freedv, 0)
-                
-                #print(bytes(bytes_out))
+
+
+
+                # CHECK IF FRAMETYPE CONTAINS ACK------------------------
+                frametype = int.from_bytes(bytes(bytes_out[:1]), "big")      
+                if 20 >= frametype >= 10 :
+                    arq.receive(bytes(bytes_out))
                 
                 # CHECK IF FRAME CONTAINS ACK------------------------
-                if bytes(bytes_out[:6]) == b'REQACK':
+                #if bytes(bytes_out[:6]) == b'REQACK':
            
-                    logging.info("RX | ACK REQUESTED!")         
-                    time.sleep(5)
-                    logging.info("TX | SENDING ACK FRAME")
-                    self.Transmit(b'ACK')
+                    #logging.info("RX | ACK REQUESTED!")         
+                    #time.sleep(5)
+                    #logging.info("TX | SENDING ACK FRAME")
+                    #self.Transmit(b'ACK')
                 #----------------------------------------------------
 
                 # CHECK IF FRAME CONTAINS ACK------------------------

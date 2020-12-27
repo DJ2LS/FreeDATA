@@ -8,13 +8,11 @@ Created on Fri Dec 25 21:25:14 2020
 
 import time
 import threading
+import logging
 
 import static
 
 
 
 def timeout():
-    print("TIMEOUT REACHED!")
-    #static.ACK_TIMEOUT = seconds
-    #time.sleep(seconds)    
     static.ACK_TIMEOUT = 1

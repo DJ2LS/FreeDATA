@@ -5,15 +5,24 @@
 import socketserver
 import threading
 import logging
+import crcengine
+import ctypes
+from ctypes import *
 
 
-import modem
+
+
+
+
 import static
 #from other import *
 import other
+import arq
 
-modem = modem.RF()
+#arq = arq.ARQ()
 
+
+crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
 
 
 class TCPRequestHandler(socketserver.BaseRequestHandler):
@@ -41,69 +50,25 @@ class TCPRequestHandler(socketserver.BaseRequestHandler):
 # BROADCAST PARSER  -----------------------------------------------------------
 
         if self.data.startswith(b'BC:'):
+            #import modem
+            #modem = modem.RF()
+            
             static.MODEM_RECEIVE = True ####### FALSE....
-            #print(static.MODEM_RECEIVE)
             
             data = self.data.split(b'BC:')
-            daten = modem.Transmit(data[1])
+            #modem.Transmit(data[1])
             
             static.MODEM_RECEIVE = True
-            #print(static.MODEM_RECEIVE)
+           
             
-            
-            
-# ACKNOWLEDGE PARSER  -----------------------------------------------------------
+# SEND AN ARQ FRAME  -----------------------------------------------------------
 
         if self.data.startswith(b'ACK:'):
             static.MODEM_RECEIVE = True ############## FALSE
-            #print(static.MODEM_RECEIVE)
-            
+
             data = self.data.split(b'ACK:')
             data_out = data[1]
-            
-            
-            static.TX_BUFFER = [data_out[i:i+24] for i in range(0, len(data_out), 24)] # split incomming bytes to size of 30bytes, create a list and loop through it  
-            static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
-            logging.info("TX | TOTAL PAYLOAD BYTES/FRAMES TO SEND: " + str(len(data_out)) + " / " + str(static.TX_BUFFER_SIZE))
-            for frame in range(static.TX_BUFFER_SIZE): # LOOP THROUGH DATA LIST
-                
-                #--------------------------------------------- BUILD DATA PACKET
-                ack = b'REQACK'
-                data_to_transmit = ack + static.TX_BUFFER[frame]
-               
-                logging.info("TX | SENDING FRAME " + str(frame+1) + " / " + str(static.TX_BUFFER_SIZE))
-                #---------------------------------------------------------------    
-        
-            
-                #--------------------------------------------- ATTEMPTS TO SEND A MESSAGE IF ACK FAILS
-                for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
                     
-                    # --------------------------- SEND FRAME
-                    static.ACK_RECEIVED = 0
-                    daten = modem.Transmit(data_to_transmit)
-                    
-                    # --------------------------- START TIMER ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
-                    static.ACK_TIMEOUT = 0
-                    timer = threading.Timer(static.ACK_TIMEOUT_SECONDS, other.timeout)
-                    timer.start() 
-
-                    # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-                    logging.info("TX | WAITING FOR ACK")
-
-                    while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
-                        static.MODEM_RECEIVE = True   
-                    
-                    #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
-                    if static.ACK_RECEIVED == 1:
-                        static.TX_N_RETRIES = 3
-                        break
-                    
-
-                #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT
-                if frame == static.TX_BUFFER_SIZE:
-                    break
-                        
-            logging.info("TX | BUFFER EMPTY")
-    
+            arq.transmit(data_out)
                            
       
