@@ -83,37 +83,32 @@ class RF():
     def Transmit(self,data_out):
                   
         mod_out = self.ModulationOut()() # new modulation object and get pointer to it
+            
+        if self.mode < 10: # don't generate CRC16 for modes 0 - 9
+            
+            buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
+            buffer[:len(data_out)] = data_out
         
-    
-        data_list = [data_out[i:i+self.payload_per_frame] for i in range(0, len(data_out), self.payload_per_frame)] # split incomming bytes to size of 30bytes, create a list and loop through it  
-        data_list_length = len(data_list)
-        for i in range(data_list_length): # LOOP THROUGH DATA LIST
-            
-            if self.mode < 10: # don't generate CRC16 for modes 0 - 9
-            
-                buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
-                buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
+        if self.mode >= 10: #generate CRC16 for modes 10-12..
                 
-            if self.mode >= 10: #generate CRC16 for modes 10-12..
+            buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+            buffer[:len(data_out)] = data_out
                 
-                buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
-                buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
-
-                crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
-                crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
-                buffer += crc        # append crc16 to buffer
-                
-                
-            data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
+            crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
+            crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
+            buffer += crc        # append crc16 to buffer
+                          
+        data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
      
-            self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
+        self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
             
         if self.data_output == "stdout":
+            
             sys.stdout.buffer.write(mod_out)    # print data to terminal for piping the output to other programs
             sys.stdout.flush() # flushing stdout
                      
         if self.data_output == "audio":
-            #print(self.audio_channels)
+
             stream_tx = self.p.open(format=self.format, 
                             channels=self.audio_channels,
                             rate=self.audio_sample_rate,
