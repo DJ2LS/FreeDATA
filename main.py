@@ -49,6 +49,7 @@ audio_receiver_thread.start()
 #--------------------------------------------START SERVER  
 logging.info("STARTING TCP/IP SOCKET ON PORT " + str(static.PORT))
 try:
+    socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
     server = socketserver.TCPServer((static.HOST, static.PORT), tnc.TCPRequestHandler)
     server.serve_forever()
 finally:
