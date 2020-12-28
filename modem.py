@@ -14,6 +14,7 @@ import audioop
 import sys
 import logging
 
+
 import static
 import arq
 
@@ -25,7 +26,6 @@ class RF():
     
     def __init__(self):
         
-    
         self.p = pyaudio.PyAudio()
         self.defaultFrames = static.DEFAULT_FRAMES
         self.audio_input_device = static.AUDIO_INPUT_DEVICE
@@ -38,21 +38,17 @@ class RF():
         self.audio_channels = static.AUDIO_CHANNELS
         self.format = pyaudio.paInt16
         self.stream = None
-        
-        
+              
         #self.data_input = "stdin"
         self.data_input = "audio"
         #self.data_output = "stdout"
         self.data_output = "audio"
-        
-        
+             
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
         
-        
         self.mode = static.FREEDV_MODE # define mode
-        
-        
+          
         self.freedv = self.c_lib.freedv_open(self.mode)
         self.bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(self.freedv)/8)
         self.payload_per_frame = self.bytes_per_frame -2        
@@ -83,32 +79,37 @@ class RF():
     def Transmit(self,data_out):
                   
         mod_out = self.ModulationOut()() # new modulation object and get pointer to it
-            
-        if self.mode < 10: # don't generate CRC16 for modes 0 - 9
-            
-            buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
-            buffer[:len(data_out)] = data_out
         
-        if self.mode >= 10: #generate CRC16 for modes 10-12..
+    
+        data_list = [data_out[i:i+self.payload_per_frame] for i in range(0, len(data_out), self.payload_per_frame)] # split incomming bytes to size of 30bytes, create a list and loop through it  
+        data_list_length = len(data_list)
+        for i in range(data_list_length): # LOOP THROUGH DATA LIST
+            
+            if self.mode < 10: # don't generate CRC16 for modes 0 - 9
+            
+                buffer = bytearray(self.bytes_per_frame) # use this if no CRC16 checksum is required
+                buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
                 
-            buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
-            buffer[:len(data_out)] = data_out
+            if self.mode >= 10: #generate CRC16 for modes 10-12..
                 
-            crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
-            crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
-            buffer += crc        # append crc16 to buffer
-                          
-        data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
+                buffer = bytearray(self.payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+                buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
+
+                crc = c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.payload_per_frame))     # generate CRC16
+                crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
+                buffer += crc        # append crc16 to buffer
+                
+                
+            data = self.FrameBytes().from_buffer_copy(buffer) #change data format from bytearray to ctypes.u_byte and copy from buffer to data
      
-        self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
+            self.c_lib.freedv_rawdatatx(self.freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
             
         if self.data_output == "stdout":
-            
             sys.stdout.buffer.write(mod_out)    # print data to terminal for piping the output to other programs
             sys.stdout.flush() # flushing stdout
                      
         if self.data_output == "audio":
-
+            #print(self.audio_channels)
             stream_tx = self.p.open(format=self.format, 
                             channels=self.audio_channels,
                             rate=self.audio_sample_rate,
@@ -161,37 +162,22 @@ class RF():
 
             if nbytes == self.bytes_per_frame: # make sure, we receive a full frame
             
-            
                 print(bytes(bytes_out[:-2]))
-                self.c_lib.freedv_set_sync(self.freedv, 0)
-
-
+                self.c_lib.freedv_set_sync(self.freedv, 0) #FORCE UNSYNC
+                
 
                 # CHECK IF FRAMETYPE CONTAINS ACK------------------------
                 frametype = int.from_bytes(bytes(bytes_out[:1]), "big")      
-                if 20 >= frametype >= 10 :
-                    arq.receive(bytes(bytes_out))
+                if 50 >= frametype >= 10 :
+                    arq.data_received(bytes(bytes_out[:-2])) #send payload data to arq checker without CRC16
+                
                 
                 # CHECK IF FRAME CONTAINS ACK------------------------
-                #if bytes(bytes_out[:6]) == b'REQACK':
-           
-                    #logging.info("RX | ACK REQUESTED!")         
-                    #time.sleep(5)
-                    #logging.info("TX | SENDING ACK FRAME")
-                    #self.Transmit(b'ACK')
-                #----------------------------------------------------
-
-                # CHECK IF FRAME CONTAINS ACK------------------------
-                if bytes(bytes_out[:3]) == b'ACK':
-               
-                    logging.info("TX | ACK RCVD!")
-                    static.ACK_TIMEOUT = 1 #Force timer to stop waiting
-                    static.ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
-                    
-                #----------------------------------------------------
+                if bytes(bytes_out[:1]) == b'\7':
+                    arq.ack_received()
+       
                            
                 #return bytes(bytes_out[:-2])
                 
 
          
-
