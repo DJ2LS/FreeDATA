@@ -26,24 +26,24 @@ static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 6
 
 
 
+
 def data_received(data_in):
     
         ARQ_N_RX_BURSTS = int.from_bytes(bytes(data_in[:1]), "big")  - 10
-        static.ARQ_RX_BUFFER.append(data_in) #append data to RX BUFFER 
+        static.ARQ_RX_BURST_BUFFER.append(data_in) #append data to RX BUFFER 
     
         print(ARQ_N_RX_BURSTS)
     
     
-    
-    
+
     #while static.ACK_RX_TIMEOUT == 0: #define timeout where data has to be received untl error occurs
     
-        if len(static.ARQ_RX_BUFFER) == ARQ_N_RX_BURSTS: #if received bursts are equal to burst number in frame
+        if len(static.ARQ_RX_BURST_BUFFER) == ARQ_N_RX_BURSTS: #if received bursts are equal to burst number in frame
         
             burst_total_payload = bytearray()
-            for n_raw_frame in range(0,len(static.ARQ_RX_BUFFER)):
+            for n_raw_frame in range(0,len(static.ARQ_RX_BURST_BUFFER)):
             
-                burst_frame = static.ARQ_RX_BUFFER[n_raw_frame] #get burst frame
+                burst_frame = static.ARQ_RX_BURST_BUFFER[n_raw_frame] #get burst frame
                 burst_payload = burst_frame[3:] #remove frame type and burst CRC        
                 burst_total_payload = burst_total_payload + burst_payload #stick bursts together
             
@@ -58,7 +58,60 @@ def data_received(data_in):
                 print(data_in[1:3])
                 print("CRC EQUAL")
                 logging.info("TX | SENDING ACK [" + str(data_in[1:3]) +"]")
-            
+                static.ARQ_RX_FRAME_BUFFER.append(burst_total_payload) # IF CRC TRUE APPEND burst_total_payload TO ARQ_RX_FRAME_BUFFER
+                print(data_in[7:9])
+                
+                
+                # -------- DETECT IF WE HAVE A FRAME HEADER
+                
+                if data_in[7:9].startswith(b'\xAA\xAA'):
+                    print("DAS IST DER ERSTE BURST MIT BOF!!!")
+                    print("FRAME CRC = " + str(data_in[5:7]))
+                    print("FRAME BURSTS = " + str(data_in[3:5]))
+                    static.FRAME_CRC = data_in[5:7]
+                 
+                
+                if data_in.rstrip(b'\x00').endswith(b'\xFF\xFF'):
+                    print("DAS IST DER LETZTE BURST MIT EOF!!!")
+                    
+                    # WENN DAS HIER ERFÜLLT IST, DANN KÖNNEN WIR MAL SCHAUEN WAS WIR AUSGEBEN KÖNNEN
+                    print(len(static.ARQ_RX_FRAME_BUFFER))
+                    
+                    total_frame = bytearray()
+                    for b in range(len(static.ARQ_RX_FRAME_BUFFER)):
+                        
+                        total_frame = total_frame + static.ARQ_RX_FRAME_BUFFER[b]
+                        #print(total_frame)
+                    
+                    payload = total_frame.split(b'\xAA\xAA')
+                    payload = payload[1]
+                    payload = payload.split(b'\xFF\xFF') 
+                    payload = payload[0]
+                    
+                    frame_payload_crc = crc_algorithm(payload)
+                    frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big') 
+                    
+                    
+                    if static.FRAME_CRC == frame_payload_crc:
+                        print("FRAME CRC PASST")
+                        print(payload)
+                    else:
+                        print("FRAME CRC PASST NICHT")
+                        print(static.FRAME_CRC)
+                        print(frame_payload_crc)
+                        print(payload)
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
             #BUILDING ACK FRAME -----------------------------------------------
             
                 ack_frame = b'\7' + bytes(burst_payload_crc)
@@ -68,28 +121,61 @@ def data_received(data_in):
             #TRANSMIT ACK FRAME -----------------------------------------------
                 time.sleep(2)
                 modem.Transmit(ack_buffer)
-                static.ARQ_RX_BUFFER = []
+                static.ARQ_RX_BURST_BUFFER = []
+
             
             else: #IF burst payload crc and input crc are NOT equal
                 print("CRC NOT EQUAL!!!!!")
                 print(data_in[1:3])
-                static.ARQ_RX_BUFFER = [] 
+                static.ARQ_RX_BURST_BUFFER = [] 
+
+
+
+
+
+
 
 
 def ack_received():
     
-    logging.info("TX | ACK RCVD!")
+    logging.info("RX | ACK RCVD!")
     static.ACK_TIMEOUT = 1 #Force timer to stop waiting
     static.ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
     # static.ARQ_ACK_WAITING_FOR_ID
+
+
+
+
+
+
+
+
     
-  
-
-
 
 def transmit(data_out):
-        
+    
             static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 3
+    
+
+            
+            #----------------------- BUILD A FRAME WITH CRC AND N BURSTS
+            
+            frame_BOF = b'\xAA\xAA'
+            frame_EOF = b'\xFF\xFF'
+
+        
+            frame_header_length = 8
+            
+            n_bursts_prediction = (len(data_out)+frame_header_length) // static.ARQ_PAYLOAD_PER_FRAME + ((len(data_out)+frame_header_length) % static.ARQ_PAYLOAD_PER_FRAME > 0) # aufrunden 3.2 = 4
+            n_bursts_prediction = n_bursts_prediction.to_bytes(2, byteorder='big') #65535
+
+            frame_payload_crc = crc_algorithm(data_out)
+            frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big')
+            
+            data_out = n_bursts_prediction + frame_payload_crc + frame_BOF + data_out + frame_EOF
+            #                  2                   2                 2         N           2
+            print(data_out)
+            # --------------------------------------------- START OF MAIN DATA LOOP
         
             static.TX_BUFFER = [data_out[i:i+static.ARQ_PAYLOAD_PER_FRAME] for i in range(0, len(data_out), static.ARQ_PAYLOAD_PER_FRAME)] # split incomming bytes to size of 30bytes - arq payload
             static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
@@ -101,19 +187,10 @@ def transmit(data_out):
             #print(static.TX_BUFFER[2])
             
             for n_raw_frame in range(0, static.TX_BUFFER_SIZE, static.ARQ_TX_N_FRAMES): # LOOP THROUGH DATA LIST with steps = ARQ_TX_N_FRAMES
-                print("N_RAW_FRAME: " + str(n_raw_frame))           
-                
-                ## check, if we have to adjust burst frames
-                #if (n_raw_frame % static.TX_BUFFER_SIZE) != 0:
-                #    static.ARQ_TX_N_FRAMES = (n_raw_frame % static.TX_BUFFER_SIZE)
-                #    print(static.ARQ_TX_N_FRAMES)
-      
-        
       
                 # ----------- GENERATE PAYLOAD CRC FOR ARQ_TX_N_FRAMES
                 burst_total_payload = bytearray()
                 
-
                 #----------------------------------------------------------------------------------------------------------
                 try: # DETECT IF LAST BURST
                     for i in range(static.ARQ_TX_N_FRAMES): #bytearray(b'111111111111111111111111222222222222222222222222')
@@ -230,7 +307,7 @@ def n_frames_per_burst(len_data):
     if len_data <= static.ARQ_PAYLOAD_PER_FRAME:
         n_frames_per_burst = 1
     else:
-        n_frames_per_burst = 3
+        n_frames_per_burst = 1
     
     
     return n_frames_per_burst 
