@@ -89,12 +89,14 @@ def data_received(data_in):
                     complete_frame = complete_frame + static.ARQ_RX_FRAME_BUFFER[frame]
                          
                     # -------- DETECT IF WE ALREADY RECEIVED A FRAME HEADER THEN SAVE DATA TO GLOBALS
-                    if burst_total_payload[4:6].startswith(b'\xAA\xAA'):
+                    #if burst_total_payload[4:6].startswith(b'\xAA\xAA'):
+                    
+                    if complete_frame[4:6].startswith(b'\xAA\xAA') or burst_total_payload[4:6].startswith(b'\xAA\xAA'):    
                         #print("DAS IST DER ERSTE BURST MIT BOF!!!")
-                        #print("FRAME BURSTS = " + str(burst_total_payload[:2]))
-                        #print("FRAME CRC = " + str(burst_total_payload[2:4]))
-                        static.FRAME_CRC = burst_total_payload[2:4]
-                        static.ARQ_RX_FRAME_N_BURSTS = int.from_bytes(bytes(burst_total_payload[:2]), "big")  
+                        #print("FRAME BURSTS = " + str(complete_frame[:2]))
+                        #print("FRAME CRC = " + str(complete_frame[2:4]))
+                        static.FRAME_CRC = complete_frame[2:4]
+                        static.ARQ_RX_FRAME_N_BURSTS = int.from_bytes(bytes(complete_frame[:2]), "big")  
                  
                     # -------- DETECT IF WE HAVE ALREADY RECEIVED THE LAST FRAME
                     #if burst_total_payload.rstrip(b'\x00').endswith(b'\xFF\xFF'):
