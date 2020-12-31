@@ -216,6 +216,11 @@ def transmit(data_out):
 
                 # we need to make sure, payload data is always as long as static.ARQ_PAYLOAD_PER_FRAME beacuse of CRC!                      
 
+
+                        # maybe we need to change n_raw_frame to static.ARQ_TX_N_FRAMES + i + TOTAL SEND FRAMES
+                        # n_raw_frame is tooo static and we can't change the bursts number afterwards.
+                        # maybe we need to change the main loop from FOR to WHILE to be more flexible
+                        # we need then a iterator variable inside the loop
                         burst_raw_payload = static.TX_BUFFER[n_raw_frame + i]                   
                         burst_payload = bytearray(static.ARQ_PAYLOAD_PER_FRAME) 
                         burst_payload[:len(burst_raw_payload)] = burst_raw_payload # set buffersize to length of data which will be send        
