@@ -51,6 +51,9 @@ ARQ_RX_FRAME_N_BURSTS = 0
 FRAME_CRC = b''
 
 
+ARQ_N_SENT_FRAMES = 0
+
+
 
 
 # ------- TX BUFFER
