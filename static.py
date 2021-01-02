@@ -61,6 +61,5 @@ TX_BUFFER_SIZE = 0
 
 # ------- RX BUFFER
 RX_BUFFER = []
-# ------- RX BUFFER
-RX_BUFFER = []
+
 
