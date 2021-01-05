@@ -20,7 +20,7 @@ import other
 from random import randrange
 
 
-modem = modem.RF()
+#modem = modem.RF()
 
 crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
 
@@ -28,6 +28,9 @@ static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 3 #6?!
 
 
 
+
+#DATA_RX_AUDIO_THREAD = threading.Thread(target=modem.Receive, args=[12], name="DATAC3 Listener")
+#ACK_RX_AUDIO_THREAD = threading.Thread(target=modem.Receive, args=[7], name="700D Listener")
 
 def data_received(data_in):
     
@@ -73,7 +76,7 @@ def data_received(data_in):
                 ack_buffer[:len(ack_frame)] = ack_frame # set buffersize to length of data which will be send                 
             
                 #TRANSMIT ACK FRAME -----------------------------------------------
-                modem.Transmit(ack_buffer)
+                modem.Transmit(7,ack_buffer)
                 
                 static.ARQ_RX_BURST_BUFFER = [] # CLEAR RX BURST BUFFER
          
@@ -96,7 +99,7 @@ def data_received(data_in):
                     #if burst_total_payload[4:6].startswith(b'\xAA\xAA'):
                     
                     if complete_frame[4:6].startswith(b'\xAA\xAA') or burst_total_payload[4:6].startswith(b'\xAA\xAA'):    
-                        print("DAS IST DER ERSTE BURST MIT BOF!!!")
+                        print("FRAME HEADER RECEIVED!")
                         #print("FRAME BURSTS = " + str(complete_frame[:2]))
                         #print("FRAME CRC = " + str(complete_frame[2:4]))
                         static.FRAME_CRC = complete_frame[2:4]
@@ -106,7 +109,7 @@ def data_received(data_in):
                     if burst_total_payload.rstrip(b'\x00').endswith(b'\xFF\xFF'):
                         print("DAS IST DER LETZTE BURST MIT EOF!!!")
 
-
+        print("WEITER GEHTS")
         # NOW WE TRY TO SEPARATE THE FRAME CRC FOR A CRC CALCULATION
         frame_payload = complete_frame.rstrip(b'\x00') #REMOVE x00
         frame_payload = frame_payload[6:-2] #THIS IS THE FRAME PAYLOAD
@@ -264,7 +267,7 @@ def transmit(data_out):
                     # ----------------------- Loop through ARQ FRAMES BUFFER with N = Numbers of frames which will be send at once
                     for n in range(static.ARQ_TX_N_FRAMES):
                         logging.info("TX | SENDING BURST [" + str(n+1) + " / " + str(static.ARQ_TX_N_FRAMES) + "] [" + str(static.ARQ_N_SENT_FRAMES +  n+1) + " / " + str(static.TX_BUFFER_SIZE) + "] [" + str(burst_payload_crc) + "]")
-                        modem.Transmit(arqburst[n])
+                        modem.Transmit(12, arqburst[n])
                         #LETS SLEEP SOME TIME FOR TX COOLDOWN --> CAN BE REMOVED LATER IF SYNC/UNSYNC OF FREEDV IS WORKING BETTER
                         time.sleep(4)
 
@@ -273,6 +276,11 @@ def transmit(data_out):
                     timer = threading.Timer(static.ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES, other.timeout)
                     timer.start() 
                     logging.info("TX | WAITING FOR ACK")
+                    
+                    #DATA_RX_AUDIO_THREAD.stop()
+                    static.MODEM_RECEIVE = False
+                    #time.sleep(1)
+                    #ACK_RX_AUDIO_THREAD.start()
 
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
                     while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
@@ -280,10 +288,21 @@ def transmit(data_out):
                     #else:
                         #logging.info("TX | ACK TIMEOUT - SENDING AGAIN")
                         #pass
+                        #static.MODEM_RECEIVE = False
+                        #time.sleep(1)
+                        #ACK_RX_AUDIO_THREAD.start()
                     
                     #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
                     ######if static.ACK_RECEIVED == 1:
                     if static.ACK_RECEIVED == 1:
+                        
+                        #ACK_RX_AUDIO_THREAD.stop()
+                        static.MODEM_RECEIVE = False
+                        #time.sleep(1)
+                        #DATA_RX_AUDIO_THREAD.start()
+                        
+                        
+                        
                         #-----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                         static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES
                         break

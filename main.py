@@ -16,6 +16,10 @@ import tnc
 import static
 import modem
 
+
+import audio 
+
+
 modem = modem.RF()
 
 
@@ -38,12 +42,39 @@ logger = logging.getLogger()
 logger.setLevel("INFO") #DEBUG>INFO>WARNING>ERROR>CRITICAL
 
 
+#test_thread = threading.Thread(target=audio.read_audio, name="Audio Listener")
+#test_thread.start()
+#test_thread2 = threading.Thread(target=modem.play_audio, name="Audio Listener2")
+#test_thread2.start()
+
 
 #--------------------------------------------START AUDIO THREAD  
-logging.info("STARTING AUDIO THREAD")
-static.MODEM_RECEIVE = True    
-audio_receiver_thread = threading.Thread(target=modem.Receive, name="Audio Listener")
-audio_receiver_thread.start()
+#logging.info("STARTING AUDIO THREAD")
+#static.MODEM_RECEIVE = True    
+#audio_receiver_thread = threading.Thread(target=modem.Receive, name="Audio Listener")
+#audio_receiver_thread.start()
+
+#--------------------------------------------START AUDIO THREAD  
+
+#static.MODEM_RECEIVE = True   
+
+logging.info("STARTING 700D RX THREAD")
+FREEDV_700D_THREAD = threading.Thread(target=modem.Receive, args=[7], name="700D Listener")
+FREEDV_700D_THREAD.start()
+
+#logging.info("STARTING DATAC1 RX THREAD") 
+#FREEDV_DATAC1_THREAD = threading.Thread(target=modem.Receive, args=[10], name="DATAC1 Listener")
+#FREEDV_DATAC1_THREAD.start()
+
+#logging.info("STARTING DATAC2 RX THREAD") 
+#FREEDV_DATAC2_THREAD = threading.Thread(target=modem.Receive, args=[11], name="DATAC2 Listener")
+#FREEDV_DATAC2_THREAD.start()
+
+logging.info("STARTING DATAC3 RX THREAD") 
+FREEDV_DATAC3_THREAD = threading.Thread(target=modem.Receive, args=[12], name="DATAC3 Listener")
+FREEDV_DATAC3_THREAD.start()
+
+
 
 
 #--------------------------------------------START SERVER  

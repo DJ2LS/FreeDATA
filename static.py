@@ -6,14 +6,23 @@ Created on Wed Dec 23 11:13:57 2020
 @author: parallels
 """
 
+
+#AUDIO_BUFFER = []
+#AUDIO_BUFFER = bytearray()
+AUDIO_BUFFER = bytes()
 # Modem States
 MODEM_RECEIVE = True
 
 
 # FreeDV Defaults
+TX_MODE = 12
 FREEDV_MODE = 12
-FREEDV_BYTES_PER_FRAME = 0
-FREEDV_PAYLOAD_PER_FRAME = 0
+
+
+
+
+FREEDV_BYTES_PER_FRAME = 32
+FREEDV_PAYLOAD_PER_FRAME = 30
 
 # Server Defaults
 HOST = "localhost"
@@ -53,6 +62,8 @@ FRAME_CRC = b''
 
 ARQ_N_SENT_FRAMES = 0
 
+
+ARQ_TX_ACK_MODE = 7
 
 
 
