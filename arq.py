@@ -5,32 +5,34 @@ Created on Sun Dec 27 20:43:40 2020
 
 @author: DJ2LS
 """
-# CRC aller payloads via XOR scrambeln und dann eine CRC8 mitsenden
-
 
 import logging
-import crcengine
 import threading
 import time
 
 import static
 import modem
-import other
+import helpers
 
 from random import randrange
 
 
-#modem = modem.RF()
+modem = modem.RF()
 
-crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
+#crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
 
 static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 3 #6?!
+static.ARQ_ACK_PAYLOAD_PER_FRAME = 14 - 2# --> 700D
 
 
 
 
-#DATA_RX_AUDIO_THREAD = threading.Thread(target=modem.Receive, args=[12], name="DATAC3 Listener")
-#ACK_RX_AUDIO_THREAD = threading.Thread(target=modem.Receive, args=[7], name="700D Listener")
+def arq_ack_timeout():
+    static.ACK_TIMEOUT = 1
+
+
+
+
 
 def data_received(data_in):
     
@@ -53,30 +55,57 @@ def data_received(data_in):
                 burst_total_payload = burst_total_payload + burst_payload #stick bursts together
             
             # ------------------ caculate CRC of BURST 
-            #print(burst_total_payload)    
-            burst_payload_crc = crc_algorithm(burst_total_payload)
-            burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')    
+            #print(burst_total_payload)  
+            # helpers.get_crc_16(data)
+            
+            burst_payload_crc = helpers.get_crc_16(burst_total_payload)
+            #burst_payload_crc = crc_algorithm(burst_total_payload)
+            #burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')    
             #print(burst_payload_crc)     
         
             # IF BURST CRC IS CORRECT, APPEND BURST TO BUFFER AND SEND ACK FRAME
             if burst_payload_crc == data_in[1:3]:
-                # WAIT SOME TIME TO PREVENT TIMING ISSUES --> NEEDS TO BE OPTIMIZED LATER
-                time.sleep(2)
+                ##### WAIT SOME TIME TO PREVENT TIMING ISSUES --> NEEDS TO BE OPTIMIZED LATER
+                #####time.sleep(2)
                 
                 
                 logging.info("BURST CRC ARE EQUAL!")
-                logging.info("TX | SENDING ARQ BURST ACK [" + str(data_in[1:3]) +"]")
+                
                 #print(burst_total_payload)
                 static.ARQ_RX_FRAME_BUFFER.append(burst_total_payload) # IF CRC TRUE APPEND burst_total_payload TO ARQ_RX_FRAME_BUFFER
                 #print(data_in[7:9])
                              
                 #BUILDING ACK FRAME -----------------------------------------------
-                ack_frame = b'\7' + bytes(burst_payload_crc)
-                ack_buffer = bytearray(static.ARQ_PAYLOAD_PER_FRAME) 
+                
+                ack_payload = bytes(burst_payload_crc)
+                
+                #ack_frame = b'\7'+ bytes(burst_payload_crc)
+        
+                #ack_preamble = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+                ack_frame = b'<'+ bytes(burst_payload_crc) # < = 60
+                #ack_frame[1] = b'\7'
+                #ack_frame[2] = helpers.get_crc8(data)
+                #ack_frame[3:4] = bytes(burst_payload_crc)
+                
+                
+                frametype = int.from_bytes(bytes(ack_frame[:1]), "big")  
+                print("ACK TYPE: " + str(frametype))
+                
+                
+                
+                ack_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME) 
                 ack_buffer[:len(ack_frame)] = ack_frame # set buffersize to length of data which will be send                 
             
                 #TRANSMIT ACK FRAME -----------------------------------------------
-                modem.Transmit(7,ack_buffer)
+                logging.info("TX | SENDING ARQ BURST ACK [" + str(data_in[1:3]) +"]")
+                modem.transmit(7,ack_buffer)
+                print(ack_buffer)
+                
+                # ------------------------------------------------------------
+                frametype = int.from_bytes(bytes(ack_buffer[:1]), "big")  
+                print("ACK TYPE: " + str(frametype))
+                
+                # ----------------------------------------------------------------
                 
                 static.ARQ_RX_BURST_BUFFER = [] # CLEAR RX BURST BUFFER
          
@@ -113,9 +142,10 @@ def data_received(data_in):
         # NOW WE TRY TO SEPARATE THE FRAME CRC FOR A CRC CALCULATION
         frame_payload = complete_frame.rstrip(b'\x00') #REMOVE x00
         frame_payload = frame_payload[6:-2] #THIS IS THE FRAME PAYLOAD
-                
-        frame_payload_crc = crc_algorithm(frame_payload)
-        frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big') 
+        
+        frame_payload_crc = helpers.get_crc_16(frame_payload)        
+        #frame_payload_crc = crc_algorithm(frame_payload)
+        #frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big') 
                     
         #IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS      
         if frame_payload_crc == static.FRAME_CRC:
@@ -162,8 +192,10 @@ def transmit(data_out):
             n_bursts_prediction = (len(data_out)+frame_header_length) // static.ARQ_PAYLOAD_PER_FRAME + ((len(data_out)+frame_header_length) % static.ARQ_PAYLOAD_PER_FRAME > 0) # aufrunden 3.2 = 4
             n_bursts_prediction = n_bursts_prediction.to_bytes(2, byteorder='big') #65535
 
-            frame_payload_crc = crc_algorithm(data_out)
-            frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big')
+
+            frame_payload_crc = helpers.get_crc_16(data_out)
+            #frame_payload_crc = crc_algorithm(data_out)
+            #frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big')
             
             # This is the total frame with frame header, which will be send
             data_out = n_bursts_prediction + frame_payload_crc + frame_BOF + data_out + frame_EOF
@@ -233,8 +265,10 @@ def transmit(data_out):
                 
                      
                 # ----------- GENERATE PAYLOAD CRC FOR ARQ_TX_N_FRAMES
-                burst_payload_crc = crc_algorithm(burst_total_payload)
-                burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')
+                
+                burst_payload_crc = helpers.get_crc_16(burst_total_payload)
+                #burst_payload_crc = crc_algorithm(burst_total_payload)
+                #burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')
                 static.ARQ_ACK_WAITING_FOR_ID = burst_payload_crc #set the global variable so we know for which ACK we are waiting for
                 
                 
@@ -267,39 +301,37 @@ def transmit(data_out):
                     # ----------------------- Loop through ARQ FRAMES BUFFER with N = Numbers of frames which will be send at once
                     for n in range(static.ARQ_TX_N_FRAMES):
                         logging.info("TX | SENDING BURST [" + str(n+1) + " / " + str(static.ARQ_TX_N_FRAMES) + "] [" + str(static.ARQ_N_SENT_FRAMES +  n+1) + " / " + str(static.TX_BUFFER_SIZE) + "] [" + str(burst_payload_crc) + "]")
-                        modem.Transmit(12, arqburst[n])
+                        modem.transmit(12, arqburst[n])
                         #LETS SLEEP SOME TIME FOR TX COOLDOWN --> CAN BE REMOVED LATER IF SYNC/UNSYNC OF FREEDV IS WORKING BETTER
-                        time.sleep(4)
+                        #########################time.sleep(4)
 
                     # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
                     static.ACK_TIMEOUT = 0
-                    timer = threading.Timer(static.ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES, other.timeout)
+                    timer = threading.Timer(static.ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES, arq_ack_timeout)
                     timer.start() 
                     logging.info("TX | WAITING FOR ACK")
-                    
-                    #DATA_RX_AUDIO_THREAD.stop()
-                    static.MODEM_RECEIVE = False
-                    #time.sleep(1)
-                    #ACK_RX_AUDIO_THREAD.start()
+
+                    #static.MODEM_RECEIVE = False
+
 
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
                     while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
-                        static.MODEM_RECEIVE = True
+                        time.sleep(0.05) # here we reduce CPU load
+                        #static.MODEM_RECEIVE = True
                     #else:
                         #logging.info("TX | ACK TIMEOUT - SENDING AGAIN")
                         #pass
                         #static.MODEM_RECEIVE = False
                         #time.sleep(1)
-                        #ACK_RX_AUDIO_THREAD.start()
+
                     
                     #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
                     ######if static.ACK_RECEIVED == 1:
                     if static.ACK_RECEIVED == 1:
-                        
-                        #ACK_RX_AUDIO_THREAD.stop()
-                        static.MODEM_RECEIVE = False
+
+                        #static.MODEM_RECEIVE = False
                         #time.sleep(1)
-                        #DATA_RX_AUDIO_THREAD.start()
+
                         
                         
                         
@@ -317,10 +349,7 @@ def transmit(data_out):
                 if static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE:    
                     break
                 
-                
-                
-                
-                
+      
                 
                 
                 # ------------ TIMER TO WAIT UNTIL NEXT PACKAGE WILL BE SEND TO PREVENT TIME ISSEUS --> NEEDS TO BE IMPROVED LATER

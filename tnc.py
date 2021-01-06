@@ -1,28 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 25 21:25:14 2020
 
+@author: DJ2LS
+"""
 
 import socketserver
 import threading
 import logging
-import crcengine
-import ctypes
-from ctypes import *
-
-
-
-
 
 
 import static
-#from other import *
-import other
 import arq
 
-#arq = arq.ARQ()
-
-
-crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
 
 
 class TCPRequestHandler(socketserver.BaseRequestHandler):
