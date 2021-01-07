@@ -28,17 +28,25 @@ class RF():
     
     def __init__(self):
               
-        #-------------------------------------------- LOAD FREEDV     
+        #-------------------------------------------- LOAD FREEDV
+             
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
 
-
-        #--------------------------------------------OPEN AUDIO CHANNEL RX
+        #--------------------------------------------CREATE PYAUDIO  INSTANCE
         
         self.p = pyaudio.PyAudio()
+        
+        #--------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
+        
+        static.AUDIO_SAMPLE_RATE_RX = int(self.p.get_device_info_by_index(static.AUDIO_INPUT_DEVICE)['defaultSampleRate'])
+        static.AUDIO_SAMPLE_RATE_TX = int(self.p.get_device_info_by_index(static.AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
+        
+        #--------------------------------------------OPEN AUDIO CHANNEL RX
+        
         self.stream_rx = self.p.open(format=pyaudio.paInt16, 
                             channels=static.AUDIO_CHANNELS,
-                            rate=static.AUDIO_SAMPLE_RATE,
+                            rate=static.AUDIO_SAMPLE_RATE_RX,
                             frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER,
                             input=True,
                             input_device_index=static.AUDIO_INPUT_DEVICE,
@@ -46,16 +54,14 @@ class RF():
 
         #--------------------------------------------OPEN AUDIO CHANNEL TX
 
-        #self.p = pyaudio.PyAudio()
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
                             channels=1,
-                            rate=static.AUDIO_SAMPLE_RATE,
+                            rate=static.AUDIO_SAMPLE_RATE_TX,
                             frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER, #n_nom_modem_samples
                             output=True,
                             output_device_index=static.AUDIO_OUTPUT_DEVICE,  #static.AUDIO_OUTPUT_DEVICE
                             )  
-        
-        
+             
         #--------------------------------------------START AUDIO THREAD        
         
         AUDIO_LISTEN_THREAD = threading.Thread(target=self.audio_listen, name="Audio Listener")
@@ -150,7 +156,7 @@ class RF():
         #                    output_device_index=1,  #static.AUDIO_OUTPUT_DEVICE
         #                    )     
         
-            audio = audioop.ratecv(mod_out,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE, static.TX_SAMPLE_STATE)                                                   
+            audio = audioop.ratecv(mod_out,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
             self.stream_tx.write(audio[0]) 
         
               
