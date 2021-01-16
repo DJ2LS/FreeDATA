@@ -22,7 +22,6 @@ import helpers
 WAITING_FOR_SIGNALLING = False
 
 AUDIO_INPUT_DEVICE = 1
-AUDIO_BUFFER_SIZE = 512
 AUDIO_SAMPLE_RATE_RX = 44100
 
 # 1024 good for mode 6
@@ -85,7 +84,7 @@ def receive():
         bytes_out = bytes_out() #get pointer from bytes_out
         
         while 1:
-            time.sleep(0.05)
+            time.sleep(0.01)
             
             # -------------------------------------------------------------------------- DECODING SIGNALLING FRAMES
             cycles = 0
@@ -156,7 +155,9 @@ def receive():
                 if rx_status >= 3:
                     print("SYNC STATE:    >= OTHER - " + str(rx_status))                
                 
-                
+                if rx_status == 10:
+                    c_lib.freedv_set_sync(freedv, 0)
+                    print("--------------------------------setting UNSYNC")
                 
                 
                 if nbytes == bytes_per_frame:# and c_lib.freedv_get_rx_status(freedv_signalling) == 6: # make sure, we receive a full frame

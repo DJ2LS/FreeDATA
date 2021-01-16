@@ -85,8 +85,8 @@ for i in range(data_list_length): # LOOP THROUGH DATA LIST
             if mode == 7:
                 mod_with_preamble = modulation[:len(modulation)] + modulation # double transmission in one audio burst
 
-            if mode == 12:
-                mod_with_preamble = modulation[:0] + modulation # no preamble
+            if mode >= 10:
+                mod_with_preamble = modulation[:100] + modulation # no preamble
 
 
             audio = audioop.ratecv(mod_with_preamble,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
