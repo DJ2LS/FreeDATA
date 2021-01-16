@@ -12,14 +12,16 @@ import audioop
 import io
 
 
+
 AUDIO_OUTPUT_DEVICE = 2
-AUDIO_BUFFER_SIZE = 512
 AUDIO_SAMPLE_RATE_TX = 44100
-AUDIO_FRAMES_PER_BUFFER = 2048
+
+# 1024 good for mode 6
+AUDIO_FRAMES_PER_BUFFER = 2048 
 MODEM_SAMPLE_RATE = 8000
 
 mode = 12
-data_out = b'HALLO WELT!'
+data_out = b'HELLO WORLD!'
         #-------------------------------------------- LOAD FREEDV
              
 libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
@@ -64,8 +66,7 @@ for i in range(data_list_length): # LOOP THROUGH DATA LIST
                 
                 buffer = bytearray(bytes_per_frame) # use this if no CRC16 checksum is required
                 buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
-                print("buffer for ACK: " + str(buffer))
-                
+                              
             if mode >= 10: #generate CRC16 for modes 10-12..
                 
                 buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
@@ -80,11 +81,14 @@ for i in range(data_list_length): # LOOP THROUGH DATA LIST
             c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
             #print(bytes(mod_out).strip(b'\x00'))
             
-            #print(bytes(mod_out))
             modulation = bytes(mod_out)
-            mod_with_preamble = modulation[:1000] + modulation
+            if mode == 7:
+                mod_with_preamble = modulation[:len(modulation)] + modulation # double transmission in one audio burst
 
-            
+            if mode == 12:
+                mod_with_preamble = modulation[:0] + modulation # no preamble
+
+
             audio = audioop.ratecv(mod_with_preamble,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
             stream_tx.write(audio[0]) 
 

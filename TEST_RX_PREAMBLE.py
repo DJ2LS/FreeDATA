@@ -24,7 +24,9 @@ WAITING_FOR_SIGNALLING = False
 AUDIO_INPUT_DEVICE = 1
 AUDIO_BUFFER_SIZE = 512
 AUDIO_SAMPLE_RATE_RX = 44100
-AUDIO_FRAMES_PER_BUFFER = 2048
+
+# 1024 good for mode 6
+AUDIO_FRAMES_PER_BUFFER = 2048 
 MODEM_SAMPLE_RATE = 8000
 
 FREEDV_SIGNALLING_MODE = 7
@@ -86,15 +88,17 @@ def receive():
             time.sleep(0.05)
             
             # -------------------------------------------------------------------------- DECODING SIGNALLING FRAMES
+            cycles = 0
             while WAITING_FOR_SIGNALLING == True:
                 time.sleep(0.01)
                 
                 #print("WAITING FOR SIGNALLING")
-                
+                print("-----------------------------")
                 nin_signalling = c_lib.freedv_nin(freedv_signalling)
-                #print(nin_signalling)
+                print("NIN:           " + str(nin_signalling))
                 nin_signalling = int(nin_signalling*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
-                #print(nin_signalling)
+                print("NIN CONVERTED: " + str(nin_signalling))
+                
                 data_in_signalling = stream_rx.read(nin_signalling,  exception_on_overflow = False)  
                 data_in_signalling = audioop.ratecv(data_in_signalling,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
                 #data_in_signalling = data_in_signalling[0]
@@ -104,7 +108,19 @@ def receive():
                 if len(data_in_signalling) != b'':
                     c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out_signalling, data_in_signalling] # check if really neccessary 
                     nbytes_signalling = c_lib.freedv_rawdatarx(freedv_signalling, bytes_out_signalling, data_in_signalling) # demodulate audio
-                    if nbytes_signalling == bytes_per_frame_signalling: # make sure, we receive a full frame
+                    
+                    rx_status = c_lib.freedv_get_rx_status(freedv_signalling)
+                    if rx_status == 0:
+                        print("SYNC STATE:    0 - NO SYNC")
+                    if rx_status == 1:
+                        print("SYNC STATE:    1 - TRIAL SYNC")                
+                    if rx_status == 2:
+                        print("SYNC STATE:    2 - SYNC")                
+                    if rx_status >= 3:
+                        print("SYNC STATE:    >= OTHER - " + str(rx_status))    
+                    
+
+                    if nbytes_signalling == bytes_per_frame_signalling and c_lib.freedv_get_rx_status(freedv_signalling) == 7: # make sure, we receive a full frame
                         print("MODE: " + str(FREEDV_SIGNALLING_MODE) + " DATA: " + str(bytes(bytes_out_signalling)))
 
               
@@ -143,7 +159,7 @@ def receive():
                 
                 
                 
-                if nbytes == bytes_per_frame: # make sure, we receive a full frame
+                if nbytes == bytes_per_frame:# and c_lib.freedv_get_rx_status(freedv_signalling) == 6: # make sure, we receive a full frame
                     print("MODE: " + str(FREEDV_MODE) + " CYCLES: " + str(cycles) + " DATA: " + str(bytes(bytes_out)))            
                 else:
                     cycles = cycles + 1
