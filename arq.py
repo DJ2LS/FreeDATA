@@ -9,45 +9,36 @@ Created on Sun Dec 27 20:43:40 2020
 import logging
 import threading
 import time
+from random import randrange
 
 import static
 import modem
 import helpers
 
-from random import randrange
-
-
 modem = modem.RF()
-
-#crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library 
 
 static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 3 #6?!
 static.ARQ_ACK_PAYLOAD_PER_FRAME = 14 - 2# --> 700D
 
 
-
-
 def arq_ack_timeout():
     static.ACK_TIMEOUT = 1
 
-
-
-
-
+    
 def data_received(data_in):
     
-        ARQ_N_RX_BURSTS = int.from_bytes(bytes(data_in[:1]), "big")  - 10
+        ARQ_N_RX_BURSTS = int.from_bytes(bytes(data_in[:1]), "big")  - 10 #get number of bursts from received frame
         static.ARQ_RX_BURST_BUFFER.append(data_in) #append data to RX BUFFER 
     
         print("WAITING FOR BURSTS: " + str(ARQ_N_RX_BURSTS))
         print("ARQ_RX_BURST_BUFFER: " + str(len(static.ARQ_RX_BURST_BUFFER)))
+        
         burst_total_payload = bytearray()
 
     #while static.ACK_RX_TIMEOUT == 0: #define timeout where data has to be received untl error occurs
     
         if len(static.ARQ_RX_BURST_BUFFER) == ARQ_N_RX_BURSTS: #if received bursts are equal to burst number in frame
-        
-            #burst_total_payload = bytearray()
+            
             for n_raw_frame in range(0,len(static.ARQ_RX_BURST_BUFFER)):
             
                 burst_frame = static.ARQ_RX_BURST_BUFFER[n_raw_frame] #get burst frame
@@ -55,44 +46,26 @@ def data_received(data_in):
                 burst_total_payload = burst_total_payload + burst_payload #stick bursts together
             
             # ------------------ caculate CRC of BURST 
-            #print(burst_total_payload)  
-            # helpers.get_crc_16(data)
-            
             burst_payload_crc = helpers.get_crc_16(burst_total_payload)
-            #burst_payload_crc = crc_algorithm(burst_total_payload)
-            #burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')    
-            #print(burst_payload_crc)     
-        
+
             # IF BURST CRC IS CORRECT, APPEND BURST TO BUFFER AND SEND ACK FRAME
             if burst_payload_crc == data_in[1:3]:
-                ##### WAIT SOME TIME TO PREVENT TIMING ISSUES --> NEEDS TO BE OPTIMIZED LATER
-                #####time.sleep(2)
-                
-                
+
                 logging.info("BURST CRC ARE EQUAL!")
-                
-                #print(burst_total_payload)
                 static.ARQ_RX_FRAME_BUFFER.append(burst_total_payload) # IF CRC TRUE APPEND burst_total_payload TO ARQ_RX_FRAME_BUFFER
-                #print(data_in[7:9])
                              
                 #BUILDING ACK FRAME -----------------------------------------------
                 
                 ack_payload = bytes(burst_payload_crc)
-                
                 #ack_frame = b'\7'+ bytes(burst_payload_crc)
-        
-                #ack_preamble = b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
                 ack_frame = b'<'+ bytes(burst_payload_crc) # < = 60
                 #ack_frame[1] = b'\7'
                 #ack_frame[2] = helpers.get_crc8(data)
                 #ack_frame[3:4] = bytes(burst_payload_crc)
                 
-                
                 frametype = int.from_bytes(bytes(ack_frame[:1]), "big")  
                 print("ACK TYPE: " + str(frametype))
-                
-                
-                
+                      
                 ack_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME) 
                 ack_buffer[:len(ack_frame)] = ack_frame # set buffersize to length of data which will be send                 
             
@@ -113,7 +86,6 @@ def data_received(data_in):
                 print("CRC NOT EQUAL!!!!!")
                 print(data_in[1:3])
                 static.ARQ_RX_BURST_BUFFER = [] 
-                
 
         
         # LOOP THOUGH FRAME BUFFER AND STICK EVERYTHING TOGETHER 
@@ -138,14 +110,11 @@ def data_received(data_in):
                     if burst_total_payload.rstrip(b'\x00').endswith(b'\xFF\xFF'):
                         print("DAS IST DER LETZTE BURST MIT EOF!!!")
 
-        print("WEITER GEHTS")
+        print("WEITER GEHTS...")
         # NOW WE TRY TO SEPARATE THE FRAME CRC FOR A CRC CALCULATION
         frame_payload = complete_frame.rstrip(b'\x00') #REMOVE x00
-        frame_payload = frame_payload[6:-2] #THIS IS THE FRAME PAYLOAD
-        
+        frame_payload = frame_payload[6:-2] #THIS IS THE FRAME PAYLOAD      
         frame_payload_crc = helpers.get_crc_16(frame_payload)        
-        #frame_payload_crc = crc_algorithm(frame_payload)
-        #frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big') 
                     
         #IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS      
         if frame_payload_crc == static.FRAME_CRC:
@@ -161,10 +130,6 @@ def data_received(data_in):
            # print("FRAME PAYLOAD: " + str(frame_payload))
             #print("COMPLETE FRAME: " + str(complete_frame))
             #static.ARQ_RX_FRAME_BUFFER = []   # ---> BUFFER ERST LÖSCHEN WENN MINDESTANZAHL AN BURSTS ERHALTEN WORDEN SIND
-                    
-                
-               
-
 
 def ack_received():
     
@@ -173,29 +138,20 @@ def ack_received():
     static.ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
     # static.ARQ_ACK_WAITING_FOR_ID
 
-  
-
 def transmit(data_out):
     
             #static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_PAYLOAD_PER_FRAME - 3
-    
-
-            
             #----------------------- BUILD A FRAME WITH CRC AND N BURSTS SO THE RECEIVER GETS THIS INFORMATION
             
             frame_BOF = b'\xAA\xAA'
             frame_EOF = b'\xFF\xFF'
 
-        
             frame_header_length = 8
             
             n_bursts_prediction = (len(data_out)+frame_header_length) // static.ARQ_PAYLOAD_PER_FRAME + ((len(data_out)+frame_header_length) % static.ARQ_PAYLOAD_PER_FRAME > 0) # aufrunden 3.2 = 4
             n_bursts_prediction = n_bursts_prediction.to_bytes(2, byteorder='big') #65535
 
-
             frame_payload_crc = helpers.get_crc_16(data_out)
-            #frame_payload_crc = crc_algorithm(data_out)
-            #frame_payload_crc = frame_payload_crc.to_bytes(2, byteorder='big')
             
             # This is the total frame with frame header, which will be send
             data_out = n_bursts_prediction + frame_payload_crc + frame_BOF + data_out + frame_EOF
@@ -208,11 +164,9 @@ def transmit(data_out):
             
             logging.info("TX | TOTAL PAYLOAD BYTES/FRAMES TO SEND: " + str(len(data_out)) + " / " + str(static.TX_BUFFER_SIZE))
             
-           
-            
+
             ###static.ACK_RECEIVED = 0 # SET ACK RECEIVED TO 0 IF NOT ALREADY DONE TO BE SURE WE HAVE A NEW CYCLE
-            
-            
+                      
             # --------------------------------------------- THIS IS THE MAIN LOOP
             static.ARQ_N_SENT_FRAMES = 0 # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
             while static.ARQ_N_SENT_FRAMES <= static.TX_BUFFER_SIZE:
@@ -223,9 +177,7 @@ def transmit(data_out):
                 static.ARQ_TX_N_FRAMES = get_n_frames_per_burst()
                 static.ACK_RECEIVED = 0 # SET ACK RECEIVED TO 0 IF NOT ALREADY DONE TO BE SURE WE HAVE A NEW CYCLE
                 #################################################################
-            
                 
-               
                 
                 # ----------- SET FRAME PAYLOAD TO BE ABLE TO CREATE CRC
                 burst_total_payload = bytearray()
@@ -261,21 +213,13 @@ def transmit(data_out):
                         burst_payload = bytearray(static.ARQ_PAYLOAD_PER_FRAME) 
                         burst_payload[:len(burst_raw_payload)] = burst_raw_payload # set buffersize to length of data which will be send        
                         burst_total_payload = burst_total_payload + burst_payload
-                     
-                
-                     
+                                       
                 # ----------- GENERATE PAYLOAD CRC FOR ARQ_TX_N_FRAMES
                 
                 burst_payload_crc = helpers.get_crc_16(burst_total_payload)
-                #burst_payload_crc = crc_algorithm(burst_total_payload)
-                #burst_payload_crc = burst_payload_crc.to_bytes(2, byteorder='big')
                 static.ARQ_ACK_WAITING_FOR_ID = burst_payload_crc #set the global variable so we know for which ACK we are waiting for
-                
-                
-                
-                
+              
                 #------------------ BUILD ARQBURSTS---------------------------------------------
-
                 arqburst = []
                 for i in range(static.ARQ_TX_N_FRAMES):
                     
@@ -290,8 +234,6 @@ def transmit(data_out):
                         buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
                           
                         arqburst.append(buffer) #append data to a buffer array, so we can loop through it
-
-
 
                 #--------------------------------------------- N ATTEMPTS TO SEND BURSTS IF ACK RECEPTION FAILS
                 for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
@@ -313,7 +255,6 @@ def transmit(data_out):
 
                     #static.MODEM_RECEIVE = False
 
-
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
                     while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
                         time.sleep(0.05) # here we reduce CPU load
@@ -330,10 +271,7 @@ def transmit(data_out):
                     if static.ACK_RECEIVED == 1:
 
                         #static.MODEM_RECEIVE = False
-                        #time.sleep(1)
-
-                        
-                        
+                        #time.sleep(1)               
                         
                         #-----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                         static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES
@@ -347,10 +285,7 @@ def transmit(data_out):
 
                 #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT
                 if static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE:    
-                    break
-                
-      
-                
+                    break                
                 
                 # ------------ TIMER TO WAIT UNTIL NEXT PACKAGE WILL BE SEND TO PREVENT TIME ISSEUS --> NEEDS TO BE IMPROVED LATER
                 time.sleep(5)
@@ -358,13 +293,9 @@ def transmit(data_out):
             # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE    
             logging.info("TX | BUFFER EMPTY")
             
-            
-            
-            
+           
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST         
 def get_n_frames_per_burst():
-
-        
-    n_frames_per_burst = randrange(1,5)   
-        
+ 
+    n_frames_per_burst = randrange(1,5)           
     return n_frames_per_burst
