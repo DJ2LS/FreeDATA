@@ -80,10 +80,6 @@ class RF():
         
         FREEDV_DATAC3_THREAD = threading.Thread(target=self.receive, args=[12], name="DATAC3 Decoder")
         FREEDV_DATAC3_THREAD.start()
-        
-        #time.sleep(2)
-        #self.transmit(7,b'000000000000')
-        #self.transmit(7,b'ABCDEFGHIJKL')
   
 #--------------------------------------------------------------------------------------------------------
 
@@ -112,16 +108,9 @@ class RF():
         payload_per_frame = bytes_per_frame -2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)*2 #get n_tx_modem_samples which defines the size of the modulation object
-
           
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        
-        if mode < 10:
-            ##preamble = bytes(payload_per_frame)
-            preamble = b'111111111111'
-            data_out = preamble + data_out
-            #data_out += data_out
         
         data_list = [data_out[i:i+payload_per_frame] for i in range(0, len(data_out), payload_per_frame)] # split incomming bytes to size of 30bytes, create a list and loop through it  
         data_list_length = len(data_list)
