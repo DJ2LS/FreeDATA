@@ -145,26 +145,21 @@ class RF():
             data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
             
             self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
-            #print(bytes(mod_out).strip(b'\x00'))
-            
-        #p = pyaudio.PyAudio()
-        #stream_tx = p.open(format=pyaudio.paInt16,
-        #                    channels=static.AUDIO_CHANNELS,
-        #                    rate=static.AUDIO_SAMPLE_RATE,
-        #                    frames_per_buffer=n_nom_modem_samples,
-        #                    output=True,
-        #                    output_device_index=1,  #static.AUDIO_OUTPUT_DEVICE
-        #                    )     
+
+            # -------------- preamble area
+            modulation = bytes(mod_out)
+            if mode == 7:
+                mod_with_preamble = modulation[:len(modulation)] + modulation # double transmission in one audio burst
+
+            if mode >= 10:
+                mod_with_preamble = modulation[:0] + modulation # no preamble
         
-            audio = audioop.ratecv(mod_out,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
+            # -------------- audio sample rate conversion
+            audio = audioop.ratecv(mod_with_preamble,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
+            
+            # -------------- transmit audio
             self.stream_tx.write(audio[0]) 
         
-              
-        #print("KILL")
-        #stream_tx.stop_stream()
-        #stream_tx.close()
-        #p.terminate()
-                        
         return mod_out
 
 #--------------------------------------------------------------------------------------------------------    
