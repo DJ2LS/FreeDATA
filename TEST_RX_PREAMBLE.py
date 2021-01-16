@@ -111,7 +111,7 @@ def receive():
             # -------------------------------------------------------------------------- DECODING DATA FRAMES
             cycles = 0
             while WAITING_FOR_SIGNALLING == False:
-                time.sleep(0.01)
+                #time.sleep(0.01)
                 
                 #print("WAITING FOR DATA")
                 
@@ -130,14 +130,15 @@ def receive():
                 c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in] # check if really neccessary 
                 nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
                 
-                if c_lib.freedv_get_rx_status(freedv) == 0:
+                rx_status = c_lib.freedv_get_rx_status(freedv)
+                if rx_status == 0:
                     print("SYNC STATE:    0 - NO SYNC")
-                if c_lib.freedv_get_rx_status(freedv) == 1:
+                if rx_status == 1:
                     print("SYNC STATE:    1 - TRIAL SYNC")                
-                if c_lib.freedv_get_rx_status(freedv) == 2:
+                if rx_status == 2:
                     print("SYNC STATE:    2 - SYNC")                
-                if c_lib.freedv_get_rx_status(freedv) >= 3:
-                    print("SYNC STATE:    >= 3 BIT ERRORS")                
+                if rx_status >= 3:
+                    print("SYNC STATE:    >= OTHER - " + str(rx_status))                
                 
                 
                 
