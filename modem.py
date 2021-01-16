@@ -151,6 +151,62 @@ class RF():
         
         return mod_out
 
+#--------------------------------------------------------------------------------------------------------     
+   # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
+    def transmit_arq_burst(self,mode):
+        
+        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
+        freedv = self.c_lib.freedv_open(mode)
+        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+        payload_per_frame = bytes_per_frame -2
+        n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
+        n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)*2 #get n_tx_modem_samples which defines the size of the modulation object
+          
+        mod_out = ctypes.c_short * n_tx_modem_samples
+        mod_out = mod_out()
+        
+        arqburst = []
+        for i in range(static.ARQ_TX_N_FRAMES):
+                    
+            frame_type = 10 + static.ARQ_TX_N_FRAMES
+            frame_type = bytes([frame_type])
+                    
+            payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + i])
+                    
+            arqframe = frame_type + burst_payload_crc + payload_data
+                    
+            buffer = bytearray(static.FREEDV_PAYLOAD_PER_FRAME) # create TX buffer 
+            buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
+                          
+            #arqburst.append(buffer) #append data to a buffer array, so we can loop through it
+       
+            crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), arqburst))     # generate CRC16
+            crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
+            buffer += crc        # append crc16 to buffer
+            
+            arqburst.append(buffer)
+          
+         arqburstmodulation = []
+         for i in range(static.ARQ_TX_N_FRAMES):
+            
+            data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(arqburst[i])
+            self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer
+            arqburstmodulation.append(mod_out)
+
+            # -------------- preamble area
+         if mode >= 10:
+                mod_with_preamble = modulation[:0] + modulation # no preamble
+        
+            # -------------- audio sample rate conversion
+         audio = audioop.ratecv(mod_with_preamble,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
+            
+            # -------------- transmit audio
+         self.stream_tx.write(audio[0]) 
+        
+        return mod_out    
+    
+    
+    
 #--------------------------------------------------------------------------------------------------------    
     # DEMODULATE DATA AND RETURN IT
     def receive(self, mode):
