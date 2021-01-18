@@ -92,23 +92,20 @@ crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
 buffer += crc        # append crc16 to buffer    
 
 
-
-
-
 print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST) )
 
 for i in range(0,N_BURSTS):
 
     n_preamble = c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
 
-    print("N_PREAMBLE: " + str(n_preamble))
-    txbuffer = bytearray() 
+    txbuffer = bytearray()
+    txbuffer += bytes(mod_out_preamble)
+     
     for n in range(0,N_FRAMES_PER_BURST):
 
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer 
-        
-        txbuffer += bytes(mod_out_preamble)
+
         txbuffer += bytes(mod_out)
     
     if DATA_OUTPUT == "audio":          
