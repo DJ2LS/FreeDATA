@@ -96,11 +96,11 @@ print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST) )
 
 for i in range(0,N_BURSTS):
 
-    n_preamble = c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
+    c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
 
     txbuffer = bytearray()
     txbuffer += bytes(mod_out_preamble)
-     
+
     for n in range(0,N_FRAMES_PER_BURST):
 
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
@@ -111,9 +111,11 @@ for i in range(0,N_BURSTS):
     if DATA_OUTPUT == "audio":          
         audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
         stream_tx.write(audio[0])
+        txbuffer = bytearray()
     else:
         sys.stdout.buffer.write(txbuffer)    # print data to terminal for piping the output to other programs
         sys.stdout.flush()
+        txbuffer = bytearray()
 
     time.sleep(DELAY_BETWEEN_BURSTS)
 

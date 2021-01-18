@@ -79,14 +79,18 @@ c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
      # DATA CHANNEL INITIALISATION
 
 freedv = c_lib.freedv_open(FREEDV_MODE)
-bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)        
-bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+n_max_modem_samples = c_lib.freedv_get_n_max_modem_samples(freedv)     
+bytes_out = (ctypes.c_ubyte * bytes_per_frame) #bytes_per_frame
 bytes_out = bytes_out() #get pointer from bytes_out
         
 total_n_bytes = 0
+rx_total_frames = 0
+rx_frames = 0
+rx_bursts = 0
 receive = True
 while receive == True:
-    time.sleep(0.01)
+    #time.sleep(0.01)
 
     data_in = b''
     if DATA_INPUT == "audio":
@@ -106,14 +110,21 @@ while receive == True:
     c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in] # check if really neccessary 
     nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
     total_n_bytes = total_n_bytes + nbytes
+    
+    if nbytes == bytes_per_frame:
+        rx_total_frames = rx_total_frames + 1
+        rx_frames = rx_frames + 1
 
-    if len(data_in) == 0:
-        print("end of data")
-        receive = False                          
-print("------------------------------")             
+        if rx_frames == N_FRAMES_PER_BURST:
+            rx_frames = 0
+            rx_bursts = rx_bursts + 1
+            c_lib.freedv_set_sync(freedv,0)
+        
+    if rx_bursts == N_BURSTS:
+        receive = False   
+                   
+print("------------------------------")
+print("BURSTS: " + str(rx_bursts))
 print("TOTAL RECEIVED BYTES: " + str(total_n_bytes)) 
-print("RECEIVED FRAMES: " + str(total_n_bytes//bytes_per_frame)) 
+print("RECEIVED FRAMES: " + str(rx_total_frames)) 
 
-            
-        #--------------------------------------------START RECEIVE THREAD        
- 
