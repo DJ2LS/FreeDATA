@@ -242,6 +242,7 @@ def transmit(data_out):
                     
                     # ----------------------- Loop through ARQ FRAMES BUFFER with N = Numbers of frames which will be send at once
                     for n in range(static.ARQ_TX_N_FRAMES):
+                        static.ARQ_STATE = 'SENDING_DATA'
                         logging.info("TX | SENDING BURST [" + str(n+1) + " / " + str(static.ARQ_TX_N_FRAMES) + "] [" + str(static.ARQ_N_SENT_FRAMES +  n+1) + " / " + str(static.TX_BUFFER_SIZE) + "] [" + str(burst_payload_crc) + "]")
                         modem.transmit(12, arqburst[n])
                         #LETS SLEEP SOME TIME FOR TX COOLDOWN --> CAN BE REMOVED LATER IF SYNC/UNSYNC OF FREEDV IS WORKING BETTER
@@ -249,6 +250,7 @@ def transmit(data_out):
 
                     # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
                     static.ACK_TIMEOUT = 0
+                    static.ARQ_STATE = 'RECEIVING_ACK'
                     timer = threading.Timer(static.ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES, arq_ack_timeout)
                     timer.start() 
                     logging.info("TX | WAITING FOR ACK")
