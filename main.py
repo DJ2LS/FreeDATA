@@ -11,7 +11,7 @@ import socketserver
 import argparse
 import logging
 
-import tnc
+#import tnc
 import static
 
 
@@ -29,11 +29,11 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-
     static.AUDIO_INPUT_DEVICE = args.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = args.audio_output_device
     static.PORT = args.socket_port
-
+    
+    import tnc # we need to wait until we got all parameters from argparse
 
     #-------------------------------------------- DEFINE LOGGER    
     logger = logging.getLogger()
