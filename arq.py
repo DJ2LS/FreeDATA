@@ -143,7 +143,6 @@ def transmit(data_out):
             static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_DATA_PAYLOAD_PER_FRAME - 3   
             frame_header_length = 8  
             
-                
             n_bursts_prediction = (len(data_out)+frame_header_length) // static.ARQ_PAYLOAD_PER_FRAME + ((len(data_out)+frame_header_length) % static.ARQ_PAYLOAD_PER_FRAME > 0) # aufrunden 3.2 = 4
             print(static.FREEDV_DATA_PAYLOAD_PER_FRAME)
             print(static.ARQ_PAYLOAD_PER_FRAME)
@@ -166,16 +165,13 @@ def transmit(data_out):
             logging.info("TX | TOTAL PAYLOAD BYTES/FRAMES TO SEND: " + str(len(data_out)) + " / " + str(static.TX_BUFFER_SIZE))
                       
             # --------------------------------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
-            
-            
+   
             static.ARQ_N_SENT_FRAMES = 0 # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
             while static.ARQ_N_SENT_FRAMES <= static.TX_BUFFER_SIZE:
 
                 print("static.ARQ_N_SENT_FRAMES: " + str(static.ARQ_N_SENT_FRAMES))
-                
                 static.ARQ_TX_N_FRAMES_PER_BURST = get_n_frames_per_burst()
-                
-                
+                           
                 # ----------- CREATE FRAME TOTAL PAYLOAD TO BE ABLE TO CREATE CRC FOR IT
                 burst_total_payload = bytearray()
                 try: # DETECT IF LAST BURST TO PREVENT INDEX ERROR OF BUFFER
@@ -211,48 +207,42 @@ def transmit(data_out):
                                        
                 # ----------- GENERATE PAYLOAD CRC FOR ARQ_TX_N_FRAMES_PER_BURST
                 
-                #burst_payload_crc = helpers.get_crc_16(burst_total_payload)
                 static.ARQ_BURST_PAYLOAD_CRC = helpers.get_crc_16(burst_total_payload)
               
                 #--------------------------------------------- N ATTEMPTS TO SEND BURSTS IF ACK RECEPTION FAILS
                 for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
                     print("SENDING")
-                    modem.transmit_arq_burst()
-    
-    
+                    
+                    # lets start a thread to transmit nonblocking
+                    TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
+                    TRANSMIT_ARQ_BURST_THREAD.start()
+                    
+                    # lets sleep a while during sending. After this we will continue
+                    while static.ARQ_STATE == 'SENDING_DATA':
+                        time.sleep(0.05)
+                        
                     # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
-                    static.ACK_TIMEOUT = 0
-                    static.ARQ_STATE = 'RECEIVING_ACK'
-                    timer = threading.Timer(static.ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES_PER_BURST, arq_ack_timeout)
-                    timer.start() 
                     logging.info("TX | WAITING FOR ACK")
+                    static.ARQ_ACK_TIMEOUT = 0
+                    static.ARQ_STATE = 'RECEIVING_ACK'
+                    timer = threading.Timer(static.ARQ_ACK_TIMEOUT_SECONDS * static.ARQ_TX_N_FRAMES_PER_BURST, arq_ack_timeout)
+                    timer.start() 
+                    
 
                     #static.MODEM_RECEIVE = False
 
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-                    while static.ACK_TIMEOUT == 0 and static.ACK_RECEIVED == 0:
-                        time.sleep(0.05) # here we reduce CPU load
-                        #static.MODEM_RECEIVE = True
-                    #else:
-                        #logging.info("TX | ACK TIMEOUT - SENDING AGAIN")
-                        #pass
-                        #static.MODEM_RECEIVE = False
-                        #time.sleep(1)
-
-                    
-                    #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
-                    ######if static.ACK_RECEIVED == 1:
-                    if static.ACK_RECEIVED == 1:
-
-                        #static.MODEM_RECEIVE = False
-                        #time.sleep(1)               
-                        
+                    while static.ARQ_ACK_TIMEOUT == 0 and static.ARQ_ACK_RECEIVED == 0:                 
+                        time.sleep(0.01) # lets reduce CPU load a little bit
+                         
+                        #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
+                    if static.ARQ_ACK_RECEIVED == 1:                        
                         #-----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                         static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
                         break
                  
                 # ----------- if no ACK received and out of retries.....stop frame sending
-                if static.ACK_RECEIVED == 0:
+                if static.ARQ_ACK_RECEIVED == 0:
                     logging.info("TX | NO ACK RECEIVED | FRAME NEEDS TO BE RESEND!")
                     break
 
@@ -262,7 +252,7 @@ def transmit(data_out):
                     break                
                 
                 # ------------ TIMER TO WAIT UNTIL NEXT PACKAGE WILL BE SEND TO PREVENT TIME ISSEUS --> NEEDS TO BE IMPROVED LATER
-                time.sleep(5)
+                time.sleep(3)
                         
             # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE    
             logging.info("TX | BUFFER EMPTY")

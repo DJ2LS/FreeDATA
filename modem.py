@@ -120,6 +120,9 @@ class RF():
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
+        static.ARQ_STATE = 'SENDING_DATA'
+        
+        
         
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
@@ -171,7 +174,7 @@ class RF():
             # -------------- transmit audio
         
         self.stream_tx.write(audio[0]) 
-          
+        static.ARQ_STATE = 'IDLE'  
     
     def receive(self,data_mode,signalling_mode):
     
