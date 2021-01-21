@@ -71,7 +71,7 @@ def data_received(data_in):
             
                 #TRANSMIT ACK FRAME -----------------------------------------------
                 logging.info("TX | SENDING ARQ BURST ACK [" + str(data_in[1:3]) +"]")
-                modem.transmit(7,ack_buffer)
+                modem.transmit_arq_ack(ack_buffer)
                 print(ack_buffer)
                 
                 # ------------------------------------------------------------

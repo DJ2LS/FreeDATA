@@ -94,12 +94,7 @@ class RF():
             crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
             crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
             buffer += crc        # append crc16 to buffer
-
-    
-
-
-                
-                
+     
             data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
             self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
             self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
@@ -118,11 +113,51 @@ class RF():
 
 
 #--------------------------------------------------------------------------------------------------------     
+    def transmit_arq_ack(self,ack_buffer):
+        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
+        freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
+        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+        payload_per_frame = bytes_per_frame -2
+        n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
+        n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)*2 #get n_tx_modem_samples which defines the size of the modulation object
+          
+        mod_out = ctypes.c_short * n_tx_modem_samples
+        mod_out = mod_out()
+        #mod_out_preamble = ctypes.c_short * n_tx_modem_samples #1760 for mode 10,11,12 #4000 for mode 9
+        #mod_out_preamble = mod_out_preamble()
+
+        buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+        buffer[:len(ack_buffer)] = ack_buffer # set buffersize to length of data which will be send
+
+        crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
+        crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
+        buffer += crc        # append crc16 to buffer
+        print(bytes(buffer))
+        data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
+        #self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+        self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
+
+            # -------------- preamble area
+            # WE NEED TO ADJUST IT FOR SINGLE TRANSMISSION
+        if static.FREEDV_SIGNALLING_MODE == 7:
+            modulation = bytes(mod_out)
+            txbuffer = modulation[:len(modulation)] + modulation # double transmission in one audio burst
+        else:        
+            txbuffer = bytearray()    
+            #txbuffer += bytes(mod_out_preamble)
+            txbuffer += bytes(mod_out)
+        
+        
+            # -------------- audio sample rate conversion
+        audio = audioop.ratecv(txbuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
+            
+            # -------------- transmit audio
+        self.stream_tx.write(audio[0]) 
+
+#--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
-        static.ARQ_STATE = 'SENDING_DATA'
-        
-        
+        static.ARQ_STATE = 'SENDING_ACK'
         
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
@@ -175,7 +210,7 @@ class RF():
         
         self.stream_tx.write(audio[0]) 
         static.ARQ_STATE = 'IDLE'  
-    
+#--------------------------------------------------------------------------------------------------------         
     def receive(self,data_mode,signalling_mode):
     
         print("RECEIVING FOR DATA MODE: " + str(data_mode))
@@ -226,7 +261,6 @@ class RF():
                     else:
                         print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))
                 
-
 
             while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_ACK':
                 time.sleep(0.01)
