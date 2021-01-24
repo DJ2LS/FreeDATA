@@ -3,6 +3,17 @@
 
 ## 001_HIGHSNR_STDIO_AUDIO TEST SUITE
 
+### INSTALL TEST SUITE
+Change into a directory of your choice
+Run the following commands --> They will download and compile the latest codec2 ( dr-packet ) files and LPCNet as well into the directory of your choice
+```
+wget https://raw.githubusercontent.com/DJ2LS/FreeDV-JATE/001_HIGHSNR_STDIO_AUDIO/install_test_suite.sh
+chmod +x install_test_suite.sh
+./install_test_suite.sh
+```
+
+
+
 ### PARAMETERS
 | parameter | description | side
 |--|--|--|
