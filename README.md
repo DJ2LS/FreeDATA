@@ -4,6 +4,15 @@
 ## 001_HIGHSNR_STDIO_AUDIO TEST SUITE
 
 ### INSTALL TEST SUITE
+#### Install prerequierements
+```
+sudo apt update
+sudo apt upgrade
+sudo apt install git cmake build-essential python3-pip portaudio19-dev python3-pyaudio
+pip3 install crcengine
+pip3 install threading
+```
+
 Change into a directory of your choice
 Run the following commands --> They will download and compile the latest codec2 ( dr-packet ) files and LPCNet as well into the directory of your choice
 ```
