@@ -19,8 +19,12 @@ parser.add_argument('--frames', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", default=0, type=int)
 parser.add_argument('--output', dest="DATA_OUTPUT", type=str)  
+parser.add_argument('--audiooutput', dest="AUDIO_OUTPUT", default=0, type=int) 
 
 args = parser.parse_args()
+
+
+
 
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
@@ -28,8 +32,8 @@ DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
 DATA_OUTPUT = args.DATA_OUTPUT
 
 
-AUDIO_OUTPUT_DEVICE = 0
-AUDIO_SAMPLE_RATE_TX = 44100
+AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT
+
 
 # 1024 good for mode 6
 AUDIO_FRAMES_PER_BUFFER = 2048 

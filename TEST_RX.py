@@ -22,26 +22,26 @@ import argparse
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--frames', dest="N_FRAMES_PER_BURST", default=0, type=int)
-parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", default=0, type=int)
 parser.add_argument('--input', dest="DATA_INPUT", type=str)  
+parser.add_argument('--audioinput', dest="AUDIO_INPUT", default=0, type=int)  
+parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
 
 args = parser.parse_args()
 
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
-DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
 DATA_INPUT = args.DATA_INPUT
-
-AUDIO_INPUT_DEVICE = 0
-AUDIO_SAMPLE_RATE_RX = 44100
+AUDIO_INPUT_DEVICE = args.AUDIO_INPUT
+FREEDV_MODE = args.FREEDV_MODE
+DEBUGGING_MODE = args.DEBUGGING_MODE
 
 # 1024 good for mode 6
 AUDIO_FRAMES_PER_BUFFER = 2048 
 MODEM_SAMPLE_RATE = 8000
 
-FREEDV_MODE = args.FREEDV_MODE
-data_out = b'HELLO WORLD!'
+
+
 
 
 
@@ -90,16 +90,18 @@ rx_frames = 0
 rx_bursts = 0
 receive = True
 while receive == True:
-    #time.sleep(0.01)
+    time.sleep(0.01)
 
     data_in = b''
     if DATA_INPUT == "audio":
-        print("-----------------------------")
+        
         nin = c_lib.freedv_nin(freedv)
-        print("NIN:           " + str(nin))
-        nin = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
-        print("NIN CONVERTED: " + str(nin))
-        data_in = stream_rx.read(nin,  exception_on_overflow = False)  
+        nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
+        if DEBUGGING_MODE == True:
+            print("-----------------------------")
+            print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
+        
+        data_in = stream_rx.read(nin_converted,  exception_on_overflow = False)  
         data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
         data_in = data_in[0].rstrip(b'\x00') 
 
@@ -110,7 +112,9 @@ while receive == True:
     c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in] # check if really neccessary 
     nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
     total_n_bytes = total_n_bytes + nbytes
-    
+    if DEBUGGING_MODE == True:
+        print("SYNC: " + str(c_lib.freedv_get_rx_status(freedv)))
+        
     if nbytes == bytes_per_frame:
         rx_total_frames = rx_total_frames + 1
         rx_frames = rx_frames + 1
