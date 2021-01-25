@@ -85,7 +85,7 @@ n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(freedv) #get n_tx_modem
     
 mod_out = ctypes.c_short * n_tx_modem_samples
 mod_out = mod_out()
-mod_out_preamble = ctypes.c_short * 1760 #1760 for mode 10,11,12 #4000 for mode 9
+mod_out_preamble = ctypes.c_short * (1760*2) #1760 for mode 10,11,12 #4000 for mode 9
 mod_out_preamble = mod_out_preamble()
         
 buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
