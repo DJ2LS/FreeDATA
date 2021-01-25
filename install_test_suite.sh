@@ -1,9 +1,9 @@
 #/bin/bash
 
 
-git clone --branch 001_HIGHSNR_STDIO_AUDIO https://github.com/DJ2LS/FreeDV-JATE.git 001_HIGHSNR_STDIO_AUDIO
+git clone --branch 002_HIGHSNR_PING_PONG https://github.com/DJ2LS/FreeDV-JATE.git 002_HIGHSNR_PING_PONG
 
-cd 001_HIGHSNR_STDIO_AUDIO
+cd 002_HIGHSNR_PING_PONG
 
 rm -rf codec2
 git clone --branch dr-packet https://github.com/drowe67/codec2.git
