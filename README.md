@@ -1,7 +1,7 @@
 
 # FreeDV-JATE [Just Another TNC Experiment]
 
-## 001_HIGHSNR_STDIO_AUDIO TEST SUITE
+## 002_HIGHSNR_PING_PONG
 
 ### INSTALL TEST SUITE
 #### Install prerequierements
@@ -13,10 +13,10 @@ pip3 install crcengine
 pip3 install threading
 ```
 
-Change into a directory of your choice
+Go into a directory of your choice
 Run the following commands --> They will download and compile the latest codec2 ( dr-packet ) files and LPCNet as well into the directory of your choice
 ```
-wget https://raw.githubusercontent.com/DJ2LS/FreeDV-JATE/001_HIGHSNR_STDIO_AUDIO/install_test_suite.sh
+wget https://raw.githubusercontent.com/DJ2LS/FreeDV-JATE/002_HIGHSNR_PING_PONG/install_test_suite.sh
 chmod +x install_test_suite.sh
 ./install_test_suite.sh
 ```
@@ -36,11 +36,6 @@ chmod +x install_test_suite.sh
 | - -audiooutput 1 | set the audio device | TX
 | - -debug | if used, print additional debugging output | RX
   	
-
-
-### STDIO TESTS FOR TERMINAL USAGE ONLY
-
-    python3 TEST_TX.py --mode 12 --delay 500 --frames 2 --bursts 1 | python3 TEST_RX.py --mode 12 --frames 2 --bursts 1
 
 
 
@@ -76,15 +71,14 @@ Output should be like this:
       Sub-Gerät #0: subdevice #0
 
 #### Run tests:
-Its important, to run TEST_RX at first to reduce the chance that we get some system side audio errors. Tests are showing, that its important to start with audio device "2" at first and then go to the lower virtual devices "1". 
-Audio device "0" is the default sound card. 
+tbc
 
-##### RX side
+##### PING side
 
-    python3 TEST_RX.py --mode 12 --frames 2 --bursts 1 --input "audio" --audioinput 2 --debug
+    python3 PING.py --mode 12 --audioinput 1 --audiooutput 1 --frames 10 --bursts 1
     
 ##### TX side
 
-    python3 TEST_TX.py --mode 12 --delay 500 --frames 2 --bursts 1 --output "audio" --audiooutput 1
+    python3 PONG.py --mode 12 --audioinput 2 --audiooutput 2
 
 
