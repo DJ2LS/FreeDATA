@@ -10,7 +10,6 @@ import ctypes
 from ctypes import *
 import pathlib
 import pyaudio
-import audioop
 import sys
 import logging
 import time
@@ -22,24 +21,18 @@ import arq
 
 class RF():
     
-    def __init__(self):
-              
+    def __init__(self):  
         #-------------------------------------------- LOAD FREEDV
-             
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
-
         #--------------------------------------------CREATE PYAUDIO  INSTANCE
-        
         self.p = pyaudio.PyAudio()
-        
         #--------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
-      
-        static.AUDIO_SAMPLE_RATE_RX = int(self.p.get_device_info_by_index(static.AUDIO_INPUT_DEVICE)['defaultSampleRate'])
-        static.AUDIO_SAMPLE_RATE_TX = int(self.p.get_device_info_by_index(static.AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
-        
+        #static.AUDIO_SAMPLE_RATE_RX = int(self.p.get_device_info_by_index(static.AUDIO_INPUT_DEVICE)['defaultSampleRate'])
+        #static.AUDIO_SAMPLE_RATE_TX = int(self.p.get_device_info_by_index(static.AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
+        static.AUDIO_SAMPLE_RATE_TX = 8000
+        static.AUDIO_SAMPLE_RATE_TX = 8000
         #--------------------------------------------OPEN AUDIO CHANNEL RX
-        
         self.stream_rx = self.p.open(format=pyaudio.paInt16, 
                             channels=static.AUDIO_CHANNELS,
                             rate=static.AUDIO_SAMPLE_RATE_RX,
@@ -47,9 +40,7 @@ class RF():
                             input=True,
                             input_device_index=static.AUDIO_INPUT_DEVICE,
                             ) 
-
         #--------------------------------------------OPEN AUDIO CHANNEL TX
-
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
                             channels=1,
                             rate=static.AUDIO_SAMPLE_RATE_TX,
@@ -57,15 +48,9 @@ class RF():
                             output=True,
                             output_device_index=static.AUDIO_OUTPUT_DEVICE,  #static.AUDIO_OUTPUT_DEVICE
                             )  
-             
-
-        #--------------------------------------------START DECODER THREAD           
-        
-        FREEDV_DECODER_THREAD = threading.Thread(target=self.receive, args=[12,7], name="FREEDV_DECODER_THREAD")
-        FREEDV_DECODER_THREAD.start()
-
-
-         
+        #--------------------------------------------START DECODER THREAD                
+        FREEDV_DECODER_THREAD = threading.Thread(target=self.receive, args=[static.FREEDV_DATA_MODE,static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD.start()  
 #--------------------------------------------------------------------------------------------------------
     # GET DATA AND MODULATE IT
     
@@ -87,7 +72,6 @@ class RF():
         data_list_length = len(data_list)
         for i in range(data_list_length): # LOOP THROUGH DATA LIST
 
-
             buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
             buffer[:len(data_list[i])] = data_list[i] # set buffersize to length of data which will be send
 
@@ -107,11 +91,9 @@ class RF():
             txbuffer += bytes(mod_out)
             #txbuffer = txbuffer.rstrip(b'\x00')
             # -------------- audio sample rate conversion
-            audio = audioop.ratecv(txbuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
             
             # -------------- transmit audio
-            self.stream_tx.write(audio[0]) 
-
+            self.stream_tx.write(bytes(txbuffer)) 
 
 #--------------------------------------------------------------------------------------------------------     
     def transmit_arq_ack(self,ack_buffer):
@@ -127,8 +109,8 @@ class RF():
           
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        #mod_out_preamble = ctypes.c_short * n_tx_modem_samples #1760 for mode 10,11,12 #4000 for mode 9
-        #mod_out_preamble = mod_out_preamble()
+        mod_out_preamble = ctypes.c_short * (n_tx_modem_samples*2) #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = mod_out_preamble()
 
         buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
         buffer[:len(ack_buffer)] = ack_buffer # set buffersize to length of data which will be send
@@ -138,27 +120,18 @@ class RF():
         buffer += crc        # append crc16 to buffer
         print(bytes(buffer))
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-        #self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+        
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
         self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
 
-            # -------------- preamble area
-            # WE NEED TO ADJUST IT FOR SINGLE TRANSMISSION
-        if static.FREEDV_SIGNALLING_MODE == 7:
-            modulation = bytes(mod_out)
-            txbuffer = modulation[:len(modulation)] + modulation # pseudo preamble and double transmission in one audio burst
-        else:        
-            txbuffer = bytearray()    
-            #txbuffer += bytes(mod_out_preamble)
-            txbuffer += bytes(mod_out)
-            #txbuffer = txbuffer.rstrip(b'\x00')
+        txbuffer = bytearray()    
+        txbuffer += bytes(mod_out_preamble)
+        txbuffer += bytes(mod_out)
+        txbuffer = txbuffer.rstrip(b'\x00')
         
-            # -------------- audio sample rate conversion
-        audio = audioop.ratecv(txbuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
-            
             # -------------- transmit audio twice
-        self.stream_tx.write(audio[0])
-        self.stream_tx.write(audio[0]) 
-        
+        self.stream_tx.write(bytes(txbuffer))
+       
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
@@ -178,7 +151,7 @@ class RF():
           
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * 1760 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = ctypes.c_short * (1760*2) #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
@@ -201,34 +174,18 @@ class RF():
                     
             buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME) # create TX buffer 
             buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
-                          
-       
+                                
             crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), static.FREEDV_DATA_PAYLOAD_PER_FRAME))     # generate CRC16
             crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
             buffer += crc        # append crc16 to buffer
-            
-            #arqburst.append(buffer)
-            #txbuffer += buffer
 
             data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
             self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer 
             txbuffer += bytes(mod_out)
-            
-            #print(len(txbuffer))
-            #txbuffer = txbuffer.strip(b'\x00\x00')
-            #print(len(txbuffer))
-            # -------------- audio sample rate conversion
-        print("MODULATION TIME: " + str(time.time() - time_start))
-        time_start = time.time()
-        audio = audioop.ratecv(txbuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, static.TX_SAMPLE_STATE)                                                   
-        
+
             # -------------- transmit audio
-        time_start = time.time()
-        self.stream_tx.write(audio[0]) 
-        print("AUDIO TIME: " + str(time.time() - time_start))
-        
-        
-        
+        self.stream_tx.write(bytes(txbuffer)) 
+
         static.ARQ_STATE = 'RECEIVING_ACK'
         
 #--------------------------------------------------------------------------------------------------------         
@@ -273,8 +230,8 @@ class RF():
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
                 print(self.c_lib.freedv_get_rx_status(freedv_data))
                 
-                modem_stats_snr = c_float()
-                modem_stats_sync = c_int()
+                #modem_stats_snr = c_float()
+                #modem_stats_sync = c_int()
                 
                 #self.c_lib.freedv_get_modem_stats(freedv_data,byref(modem_stats_sync), byref(modem_stats_snr))
                 #modem_stats_snr = modem_stats_snr.value
