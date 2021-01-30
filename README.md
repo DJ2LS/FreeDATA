@@ -74,7 +74,7 @@ Output should be like this:
 
 #### Terminal 1: Ping
 ```
-python3 PING.py --txmode 12 --rxmode 14 --audioinput 2 --audiooutput 2 --frames 10 --bursts 1
+python3 PING.py --txmode 12 --rxmode 14 --audioinput 2 --audiooutput 2 --frames 1 --bursts 2
 ```
 Output
 ```
