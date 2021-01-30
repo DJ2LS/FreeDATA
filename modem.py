@@ -268,8 +268,7 @@ class RF():
                 nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
 
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
-                data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
-                data_in = data_in[0].rstrip(b'\x00')
+                data_in = data_in.rstrip(b'\x00')
                 
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), signalling_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_signalling, signalling_bytes_out, data_in) # demodulate audio
