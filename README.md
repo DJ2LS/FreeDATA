@@ -52,8 +52,7 @@ check if devices have been created
 
     aplay -l
 Output should be like this:
-
-
+```
     Karte 0: Intel [HDA Intel], Gerät 0: Generic Analog [Generic Analog]
       Sub-Geräte: 1/1
       Sub-Gerät #0: subdevice #0
@@ -69,16 +68,31 @@ Output should be like this:
     Karte 2: CHAT2 [Loopback], Gerät 1: Loopback PCM [Loopback PCM]
       Sub-Geräte: 1/1
       Sub-Gerät #0: subdevice #0
+```
 
-#### Run tests:
-tbc
+### Run tests:
 
-##### PING side
+#### Terminal 1: Ping
+```
+python3 PING.py --txmode 12 --rxmode 14 --audioinput 2 --audiooutput 2 --frames 10 --bursts 1
+```
+Output
+```
+BURSTS: 2 FRAMES: 1
+-----------------------------------------------------------------
+TX | PING | BURST [1/2] FRAME [1/1]
+RX | PONG | BURST [1/2] FRAME [1/1]
+-----------------------------------------------------------------
+TX | PING | BURST [2/2] FRAME [1/1]
+RX | PONG | BURST [2/2] FRAME [1/1]
+```
 
-    python3 PING.py --mode 12 --audioinput 1 --audiooutput 1 --frames 10 --bursts 1
-    
-##### TX side
-
-    python3 PONG.py --mode 12 --audioinput 2 --audiooutput 2
-
-
+#### Terminal 2: Pong
+```
+python3 PONG.py --txmode 14 --rxmode 12 --audioinput 2 --audiooutput 2
+```
+Output
+```
+RX | BURST [1/2] FRAME [1/1] >>> SENDING PONG
+RX | BURST [2/2] FRAME [1/1] >>> SENDING PONG
+```
