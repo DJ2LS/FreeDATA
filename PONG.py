@@ -10,7 +10,7 @@ import ctypes
 from ctypes import *
 import pathlib
 import pyaudio
-import audioop
+#import audioop
 import sys
 import logging
 import time
@@ -22,7 +22,8 @@ import argparse
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--frames', dest="N_FRAMES_PER_BURST", default=0, type=int)
-parser.add_argument('--mode', dest="FREEDV_MODE", default=0, type=int)
+parser.add_argument('--txmode', dest="FREEDV_TX_MODE", default=0, type=int)
+parser.add_argument('--rxmode', dest="FREEDV_RX_MODE", default=0, type=int) 
 parser.add_argument('--audioinput', dest="AUDIO_INPUT", default=0, type=int) 
 parser.add_argument('--audiooutput', dest="AUDIO_OUTPUT", default=0, type=int)  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
@@ -35,7 +36,9 @@ N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT
 AUDIO_INPUT_DEVICE = args.AUDIO_INPUT
 
-FREEDV_MODE = args.FREEDV_MODE
+FREEDV_TX_MODE = args.FREEDV_TX_MODE
+FREEDV_RX_MODE = args.FREEDV_RX_MODE
+
 DEBUGGING_MODE = args.DEBUGGING_MODE
 
 # 1024 good for mode 6
@@ -92,7 +95,7 @@ def send_pong(burst,frame):
     data_out[1:2] = bytes([frame])
 
     c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-    freedv = c_lib.freedv_open(FREEDV_MODE)
+    freedv = c_lib.freedv_open(FREEDV_TX_MODE)
     bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
     payload_per_frame = bytes_per_frame -2
     n_nom_modem_samples = c_lib.freedv_get_n_nom_modem_samples(freedv)
@@ -100,7 +103,7 @@ def send_pong(burst,frame):
     
     mod_out = ctypes.c_short * n_tx_modem_samples
     mod_out = mod_out()
-    mod_out_preamble = ctypes.c_short * 1760 #1760 for mode 10,11,12 #4000 for mode 9
+    mod_out_preamble = ctypes.c_short * (1760*2) #1760 for mode 10,11,12 #4000 for mode 9
     mod_out_preamble = mod_out_preamble()
         
     buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
@@ -119,15 +122,18 @@ def send_pong(burst,frame):
 
     txbuffer += bytes(mod_out)
     
-    audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
-    stream_tx.write(audio[0])
+    #audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
+    #stream_tx.write(audio[0])
+    stream_tx.write(bytes(txbuffer))
+    
+    
     txbuffer = bytearray()    
         
 
 
      # DATA CHANNEL INITIALISATION
 
-freedv = c_lib.freedv_open(FREEDV_MODE)
+freedv = c_lib.freedv_open(FREEDV_RX_MODE)
 bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
 n_max_modem_samples = c_lib.freedv_get_n_max_modem_samples(freedv)     
 bytes_out = (ctypes.c_ubyte * bytes_per_frame) #bytes_per_frame
@@ -148,9 +154,9 @@ while receive == True:
         print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
         
     data_in = stream_rx.read(nin_converted,  exception_on_overflow = False)  
-    data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
-    data_in = data_in[0].rstrip(b'\x00') 
-
+    #data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
+    #data_in = data_in[0].rstrip(b'\x00') 
+    data_in = data_in.rstrip(b'\x00')
     
     c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in] # check if really neccessary 
     nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
