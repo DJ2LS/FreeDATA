@@ -26,15 +26,13 @@ chmod +x install_test_suite.sh
 ### PARAMETERS
 | parameter | description | side
 |--|--|--|
-| - -mode 12 | set the mode for FreeDV ( 10,11,12 ) | TX & RX
-| - -delay 1 | set the delay between burst | TX
-| - -frames 1 | set the number of frames per burst | TX & RX
-| - -bursts 1 | set the number of bursts | TX & RX
-| - -input "audio" | if set, program switches to audio instead of stdin | RX
-| - -audioinput 2 | set the audio device | RX
-| - -output "audio" | if set, program switches to audio instead of stdout | TX
-| - -audiooutput 1 | set the audio device | TX
-| - -debug | if used, print additional debugging output | RX
+| - -txmode 12 | set the mode for FreeDV ( 10,11,12,14 ) | Terminal 1 & Terminal 2
+| - -rxmode 14 | set the mode for FreeDV ( 10,11,12,14 ) | Terminal 1 & Terminal 2
+| - -frames 1 | set the number of frames per burst | Terminal 1
+| - -bursts 1 | set the number of bursts | Terminal 1
+| - -audioinput 2 | set the audio device | Terminal 1 & Terminal 2
+| - -audiooutput 1 | set the audio device | Terminal 1 & Terminal 2
+| - -debug | if used, print additional debugging output | Terminal 1 & Terminal 2
   	
 
 
