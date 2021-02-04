@@ -15,7 +15,7 @@ Created on Wed Dec 23 11:13:57 2020
 # FreeDV Defaults
 
 FREEDV_DATA_MODE = 12
-FREEDV_SIGNALLING_MODE = 7
+FREEDV_SIGNALLING_MODE = 14
 
 FREEDV_DATA_BYTES_PER_FRAME = 0
 FREEDV_DATA_PAYLOAD_PER_FRAME = 0
@@ -56,16 +56,18 @@ ARQ_RX_BURST_BUFFER = []
 ARQ_RX_FRAME_BUFFER = []
 ARQ_RX_FRAME_N_BURSTS = 0
 ARQ_N_RX_FRAMES_PER_BURSTS = 0 # NUMBER OF FRAMES WE ARE WAITING FOR --> GOT DATA FROM RECEIVED FRAME
-ARQ_ACK_PAYLOAD_PER_FRAME = 0
-ARQ_ACK_RECEIVED = 0
-ARQ_ACK_TIMEOUT = 0
-ARQ_ACK_TIMEOUT_SECONDS = 10.0
+ARQ_ACK_PAYLOAD_PER_FRAME = 0 # PAYLOAD per ACK frame
+ARQ_ACK_RECEIVED = 0 # set to 1 if ACK received
+ARQ_ACK_TIMEOUT = 0 # set to 1 if timeut reached
+ARQ_ACK_TIMEOUT_SECONDS = 3.0 #timeout for waiting for ACK frames
 
 FRAME_CRC = b''
-FRAME_BOF = b'\xAA\xAA'
-FRAME_EOF = b'\xFF\xFF'
+FRAME_BOF = b'\xAA\xAA' #here we define 2 bytes for the BOF
+FRAME_EOF = b'\xFF\xFF' #here we define 2 bytes for the EOF
+ARQ_FRAME_BOF_RECEIVED = False # status, if we received a BOF of a data frame
+ARQ_FRAME_EOF_RECEIVED = False # status, if we received a EOF of a data frame
 
-ARQ_N_SENT_FRAMES = 0
+ARQ_N_SENT_FRAMES = 0 #counter for already sent frames
 
 
 # ARQ STATES:

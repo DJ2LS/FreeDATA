@@ -154,6 +154,7 @@ class RF():
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
         txbuffer = bytearray()
         txbuffer += bytes(mod_out_preamble)
+        txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
         
         for n in range(0,static.ARQ_TX_N_FRAMES_PER_BURST):
 
@@ -175,6 +176,7 @@ class RF():
             data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
             self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer 
             txbuffer += bytes(mod_out)
+            txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
 
             # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
@@ -217,7 +219,7 @@ class RF():
                 
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
-                #print(self.c_lib.freedv_get_rx_status(freedv_data))
+                print(self.c_lib.freedv_get_rx_status(freedv_data))
                 
                 #modem_stats_snr = c_float()
                 #modem_stats_sync = c_int()
@@ -233,18 +235,21 @@ class RF():
                     frame = frametype - 10
                     n_frames_per_burst = int.from_bytes(bytes(data_bytes_out[1:2]), "big")    
                     if 50 >= frametype >= 10 and len(data_bytes_out) > 30: # --> The length check filters out random strings without CRC
-                        #print("ARQ | RX | FRAME [" + str(frame) + "/" + str(n_frames_per_burst) + "]")
+   
                         arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16
                        
                     else:
                         print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
                 
                 # NEEDS TO BE OPTIMIZED
-                # DO UNSYNC AFTER LAST BURST
+                # DO UNSYNC AFTER LAST BURST by checking the frame numbers agains the total frames per burst
                     if frame == n_frames_per_burst:
                         self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
 
-
+                # DETECT STUCK IN SYNC
+                # count rx status 10
+                # if 10 greater 2 after 6 then unsync
+               
             while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_ACK':
                 time.sleep(0.01)
 
