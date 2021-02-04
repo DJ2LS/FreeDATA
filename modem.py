@@ -136,8 +136,7 @@ class RF():
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
         static.ARQ_STATE = 'SENDING_DATA'
-       
-        
+           
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
         static.FREEDV_DATA_BYTES_PER_FRAME = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
@@ -219,7 +218,7 @@ class RF():
                 
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
-                print(self.c_lib.freedv_get_rx_status(freedv_data))
+                #print(self.c_lib.freedv_get_rx_status(freedv_data))
                 
                 #modem_stats_snr = c_float()
                 #modem_stats_sync = c_int()
@@ -235,9 +234,7 @@ class RF():
                     frame = frametype - 10
                     n_frames_per_burst = int.from_bytes(bytes(data_bytes_out[1:2]), "big")    
                     if 50 >= frametype >= 10 and len(data_bytes_out) > 30: # --> The length check filters out random strings without CRC
-   
-                        arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16
-                       
+                        arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16                    
                     else:
                         print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
                 
@@ -266,8 +263,8 @@ class RF():
                 frametype = int.from_bytes(bytes(signalling_bytes_out[:1]), "big")
                 if frametype == 60 and nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:
                        arq.ack_received()
-                       
-                rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)
+                        
+                rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
                 #print(rxstatus)
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
