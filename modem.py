@@ -90,10 +90,11 @@ class RF():
             txbuffer += bytes(mod_out_preamble)
             txbuffer += bytes(mod_out)
             txbuffer = txbuffer.rstrip(b'\x00')
- 
+
+            
             # -------------- transmit audio
             self.stream_tx.write(bytes(txbuffer)) 
-
+            
 #--------------------------------------------------------------------------------------------------------     
     def transmit_arq_ack(self,ack_buffer):
     
@@ -127,10 +128,10 @@ class RF():
         txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
         txbuffer += bytes(mod_out)
         txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
-        
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer))
-       
+        self.stream_tx.write(bytes(txbuffer))
+        
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
@@ -162,8 +163,30 @@ class RF():
             frame_type = bytes([frame_type])
             
             payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + n])
+            
+            n_current_arq_frame = static.ARQ_N_SENT_FRAMES + n + 1
+            static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
+            
+            n_total_arq_frame = len(static.TX_BUFFER)
+            static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame.to_bytes(2, byteorder='big')
+            
+            
+            
+             # 1 # frame type and current number of arq frame of burst
+             # 1 # total number of arq frames per (current) burst
+             # 2 # current arq frame number
+             # 2 # total number arq frames
+             # 2 # arq crc
+             # N # payload data
+             
+            arqframe = frame_type + \
+                       bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
+                       static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
+                       static.ARQ_TX_N_TOTAL_ARQ_FRAMES + \
+                       static.ARQ_BURST_PAYLOAD_CRC + \
+                       payload_data                                      
                     
-            arqframe = frame_type + bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + static.ARQ_BURST_PAYLOAD_CRC + payload_data
+            print(arqframe)
                     
             buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME) # create TX buffer 
             buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
@@ -201,8 +224,8 @@ class RF():
         signalling_bytes_out = (ctypes.c_ubyte * static.FREEDV_SIGNALLING_BYTES_PER_FRAME)
         signalling_bytes_out = signalling_bytes_out() #get pointer from bytes_out 
 
-                
-        while 1:
+        # with this we can interrupt receiving        
+        while static.FREEDV_RECEIVE == True:
             time.sleep(0.01)
             
             while static.ARQ_STATE == 'RECEIVING_DATA':
@@ -228,7 +251,7 @@ class RF():
                 #print(modem_stats_snr)               
  
                 if nbytes == static.FREEDV_DATA_BYTES_PER_FRAME:
-                                              
+                                          
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(data_bytes_out[:1]), "big")
                     frame = frametype - 10
@@ -265,7 +288,7 @@ class RF():
                        arq.ack_received()
                         
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                #print(rxstatus)
+                print(rxstatus)
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
 
