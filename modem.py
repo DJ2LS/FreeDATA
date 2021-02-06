@@ -186,7 +186,7 @@ class RF():
                        static.ARQ_BURST_PAYLOAD_CRC + \
                        payload_data                                      
                     
-            print(arqframe)
+            #print(arqframe)
                     
             buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME) # create TX buffer 
             buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
@@ -228,6 +228,13 @@ class RF():
         while static.FREEDV_RECEIVE == True:
             time.sleep(0.01)
             
+            # stuck in sync counter
+            stuck_in_sync_counter = 0
+            stuck_in_sync_10_counter = 0
+            #
+            
+            
+            
             while static.ARQ_STATE == 'RECEIVING_DATA':
                 time.sleep(0.01)
                 
@@ -243,6 +250,31 @@ class RF():
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
                 #print(self.c_lib.freedv_get_rx_status(freedv_data))
                 
+                
+                #-------------STUCK IN SYNC DETECTOR            
+                stuck_in_sync_counter += 1
+                if self.c_lib.freedv_get_rx_status(freedv_data) == 10:
+                    stuck_in_sync_10_counter += 1
+                    
+                    
+                #print(stuck_in_sync_counter)
+                if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv_data) == 10:
+                    print("stuck in sync #1 --> DOING UNSYNC")
+                    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
+                    stuck_in_sync_counter = 0
+                    stuck_in_sync_10_counter = 0
+                    data_in = None
+  
+                    
+                if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
+                    print("stuck in sync #2 --> DOING UNSYNC")
+                    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
+                    stuck_in_sync_counter = 0    
+                    stuck_in_sync_10_counter = 0
+                    data_in = None
+                #-----------------------------------
+                
+                
                 #modem_stats_snr = c_float()
                 #modem_stats_sync = c_int()
                 
@@ -251,6 +283,10 @@ class RF():
                 #print(modem_stats_snr)               
  
                 if nbytes == static.FREEDV_DATA_BYTES_PER_FRAME:
+                    # counter reset for stuck in sync counter
+                    stuck_in_sync_counter = 0
+                    stuck_in_sync_10_counter = 0
+                    #
                                           
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(data_bytes_out[:1]), "big")
@@ -284,11 +320,17 @@ class RF():
                              
                 # CHECK IF FRAME CONTAINS ACK------------------------         
                 frametype = int.from_bytes(bytes(signalling_bytes_out[:1]), "big")
+                
+                # BURST ACK
                 if frametype == 60 and nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:
-                       arq.ack_received()
-                        
+                       arq.burst_ack_received()
+                # FRAME ACK
+                if frametype == 61 and nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:
+                       arq.frame_ack_received()
+                
+                
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                print(rxstatus)
+                #print(rxstatus)
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
 
