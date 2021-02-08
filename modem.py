@@ -19,6 +19,11 @@ import helpers
 import static
 import arq
 
+
+
+
+
+
 class RF():
     
     def __init__(self):  
@@ -179,11 +184,13 @@ class RF():
              # 2 # arq crc
              # N # payload data
              
+             
             arqframe = frame_type + \
                        bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
                        static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
                        static.ARQ_TX_N_TOTAL_ARQ_FRAMES + \
-                       static.ARQ_BURST_PAYLOAD_CRC + \
+                       static.MYCALLSIGN_CRC8 + \
+                       static.DXCALLSIGN_CRC8 + \
                        payload_data                                      
                     
             #print(arqframe)
@@ -292,8 +299,9 @@ class RF():
                     frametype = int.from_bytes(bytes(data_bytes_out[:1]), "big")
                     frame = frametype - 10
                     n_frames_per_burst = int.from_bytes(bytes(data_bytes_out[1:2]), "big")    
-                    if 50 >= frametype >= 10 and len(data_bytes_out) > 30: # --> The length check filters out random strings without CRC
+                    if 50 >= frametype >= 10 and len(data_bytes_out) > 30: # --> The length check filters out random strings without CRC                            
                         arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16                    
+    
                     else:
                         print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
                 
