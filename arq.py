@@ -27,6 +27,13 @@ def arq_ack_timeout():
 
     
 def data_received(data_in):
+                    
+    static.ARQ_RX_TIMEOUT = time.time() + static.ARQ_RX_TIMEOUT_SECONDS
+    while time.time() < static.ARQ_RX_TIMEOUT:
+    
+    
+    
+    
 #            arqframe = frame_type + \                                    # 1 [:1]  # frame type and current number of arq frame of (current) burst 
 #                       bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \     # 1 [1:2] # total number of arq frames per (current) burst 
 #                       static.ARQ_N_CURRENT_ARQ_FRAME + \                # 2 [2:4] # current arq frame number 
@@ -34,8 +41,14 @@ def data_received(data_in):
 #                       static.ARQ_BURST_PAYLOAD_CRC + \                  # 2 [6:8] # arq crc 
 #                       payload_data                                      # N [8:N] # payload data 
 
-   
-        static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big")  - 10 #get number of burst frame
+
+        # detect if we got a RPT frame
+        if int.from_bytes(bytes(data_in[:1]), "big") == 51:
+            frame_type = int.from_bytes(bytes(data_in[:1]), "big")
+        else:
+            frame_type = 10
+            static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big")  - 10 #get number of burst frame
+         
         static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big") #get number of bursts from received frame
         static.ARQ_RX_N_CURRENT_ARQ_FRAME = int.from_bytes(bytes(data_in[2:4]), "big") #get current number of total frames
         static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = int.from_bytes(bytes(data_in[4:6]), "big") # get get total number of frames
@@ -61,12 +74,14 @@ def data_received(data_in):
         #allocate ARQ_RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
         # here we will save the N frame of a data frame to N list position so we can explicit search for it
         if static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME != len(static.ARQ_RX_FRAME_BUFFER) and static.ARQ_RX_N_CURRENT_ARQ_FRAME == 1:
+            static.ARQ_RX_FRAME_BUFFER = []
             for i in range(0,static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME+1):
                 static.ARQ_RX_FRAME_BUFFER.insert(i,None)
                 
         #allocate ARQ_RX_BURST_BUFFER as a list with "None" if not already done. This should be done only once per burst!
         # here we will save the N frame of a burst to N list position so we can explicit search for it
-        if static.ARQ_N_RX_FRAMES_PER_BURSTS != len(static.ARQ_RX_BURST_BUFFER) and static.ARQ_N_FRAME == 1:
+        if static.ARQ_N_RX_FRAMES_PER_BURSTS != len(static.ARQ_RX_BURST_BUFFER) and static.ARQ_N_FRAME == 1 and frame_type != 51:
+            static.ARQ_RX_BURST_BUFFER = []
             for i in range(0,static.ARQ_N_RX_FRAMES_PER_BURSTS+1):
                 static.ARQ_RX_BURST_BUFFER.insert(i,None)
             
@@ -74,62 +89,60 @@ def data_received(data_in):
         # now we add the incoming data to the specified position in our lists
         static.ARQ_RX_BURST_BUFFER[static.ARQ_N_FRAME] = bytes(data_in) 
         static.ARQ_RX_FRAME_BUFFER[static.ARQ_RX_N_CURRENT_ARQ_FRAME] = bytes(data_in)  
-                    
+    
 
 # -------------------------- ARQ BURST CHECKER
                
         # run only if we recieved all ARQ FRAMES per ARQ BURST
-        burst_total_payload = bytearray()
         if static.ARQ_N_FRAME == static.ARQ_N_RX_FRAMES_PER_BURSTS and static.ARQ_RX_BURST_BUFFER.count(None) == 1: #if received bursts are equal to burst number in frame
+        
+            logging.info("ARQ | TX | BURST ACK")
             
-#            #here we get the total payload for the frame to calculate the crc        
-#            for n_raw_frame in range(1,len(static.ARQ_RX_BURST_BUFFER)):
-#                # we need to check if we have a None or received data in list
-#                if static.ARQ_RX_BURST_BUFFER[n_raw_frame] != None:
-#                    burst_frame = static.ARQ_RX_BURST_BUFFER[n_raw_frame] #get burst frame
-#                    burst_payload = burst_frame[8:] #remove frame type and burst CRC     #4
-#                    burst_total_payload = burst_total_payload + burst_payload #stick bursts together
-
-            # ------------------ calculate CRC of BURST          
-#            burst_payload_crc = helpers.get_crc_16(burst_total_payload)
-            # IF BURST CRC IS CORRECT, APPEND BURST TO BUFFER AND SEND ACK FRAME
-#            if burst_payload_crc == data_in[6:8]:
-                          
-                #BUILDING ACK FRAME FOR BURST -----------------------------------------------              
-#                #ack_payload = bytes(burst_payload_crc)
-#                ack_frame = b'<'+ bytes(burst_payload_crc) # < = 60   
-#                ack_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME) 
-#                ack_buffer[:len(ack_frame)] = ack_frame # set buffersize to length of data which will be send                 
+            #BUILDING ACK FRAME FOR BURST ----------------------------------------------- 
+            ack_payload = b'ACK FRAME'
+            ack_frame = b'<' + ack_payload # < = 60   
+            ack_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME) 
+            ack_buffer[:len(ack_frame)] = ack_frame # set buffersize to length of data which will be send        
             
-                #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
-#                logging.info("ARQ | TX | ARQ BURST ACK [" + str(data_in[6:8].hex()) +"]")
-#                modem.transmit_arq_ack(ack_buffer)
-
-                # ----------------------------------------------------------------   
-#                static.ARQ_RX_BURST_BUFFER = [] # CLEAR RX BURST BUFFER AFTER SENDING DATA
-                
-#            else: #IF burst payload crc and input crc are NOT equal
-#                logging.info("ARQ BURST CRC NOT EQUAL! [" + str(data_in[6:8]) + "]")
-#                static.ARQ_RX_BURST_BUFFER = []  #erase ARQ RX Burst buffer
-        
-        
-         # --------------- CHECK IF WE ARE MISSING FRAMES -------------------------------------------
-            for burst in range(1,len(static.ARQ_RX_BURST_BUFFER)):
-                if static.ARQ_RX_BURST_BUFFER[burst] == None:
-                    print("Missing frames:" + str(burst))       
-        
-        
-        
-        
-            logging.info("ARQ | TX | ARQ BURST ACK")
-            ack_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME)
+            #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             modem.transmit_arq_ack(ack_buffer)
+            
+            #clear burst buffer
             static.ARQ_RX_BURST_BUFFER = []
         
-        #if nframes are unequal to expected frames per burst #just a placeholder at this time
-        else:
-            pass
+        #if decoded N frames are unequal to expected frames per burst
+        elif static.ARQ_N_FRAME == static.ARQ_N_RX_FRAMES_PER_BURSTS and static.ARQ_RX_BURST_BUFFER.count(None) != 1:
+            print("RPT FRAME NEEDS TO BE SEND!!!!")
+            # --------------- CHECK WHICH BURST FRAMES WE ARE MISSING -------------------------------------------
+            
+            missing_frames = b''
+            for burst in range(1,len(static.ARQ_RX_BURST_BUFFER)):
+                
+                if static.ARQ_RX_BURST_BUFFER[burst] == None:
+                    print(burst)
+                    burst = burst.to_bytes(2, byteorder='big')      
+                    missing_frames += burst
+                    
+            
+            print("MISSING FRAMES: " + str(missing_frames)) 
+            
+            rpt_payload = missing_frames       
+            rpt_frame = b'>' + rpt_payload #> = 63
+            rpt_buffer = bytearray(static.ARQ_ACK_PAYLOAD_PER_FRAME) 
+            rpt_buffer[:len(rpt_frame)] = rpt_frame # set buffersize to length of data which will be send      
         
+            modem.transmit_arq_ack(rpt_buffer)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
 # ---------------------------- FRAME MACHINE
         
         # --------------- CHECK IF WE ARE MISSING FRAMES -------------------------------------------
@@ -163,7 +176,7 @@ def data_received(data_in):
 
                 # --------- AFTER WE SEPARATED BOF AND EOF, STICK EVERYTHING TOGETHER  
                 complete_data_frame = complete_data_frame + arq_frame_payload
-                
+
             
         #check if Begin of Frame BOF and End of Frame EOF are received, then start calculating CRC and sticking everything together
         if static.ARQ_FRAME_BOF_RECEIVED == True and static.ARQ_FRAME_EOF_RECEIVED == True:
@@ -199,17 +212,32 @@ def data_received(data_in):
                  
             else:
                 logging.info("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
-
+    
+        break
 
 def burst_ack_received():
     
-    logging.debug("ARQ | RX | BURST ACK RCVD!")
+    logging.info("ARQ | RX | BURST ACK RCVD!")
     static.ARQ_ACK_TIMEOUT = 1 #Force timer to stop waiting
     static.ARQ_ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
 
+def burst_rpt_received(data_in):
+    
+    logging.info("ARQ | RX | BURST RPT RCVD!")
+    static.ARQ_ACK_TIMEOUT = 0 #Force timer to stop waiting
+    static.ARQ_ACK_RECEIVED = 0 #Force data loops of TNC to stop and continue with next frame
+    static.ARQ_RPT_RECEIVED = True
+    #static.ARQ_RPT_FRAMES = b'123'
+    missing = 3
+    missing = missing.to_bytes(2, byteorder='big')
+    static.ARQ_RPT_FRAMES.insert(0,missing)
+    
+    print(bytes(data_in))
+
+
 def frame_ack_received():
     
-    logging.debug("ARQ | RX | FRAME ACK RCVD!")
+    logging.info("ARQ | RX | FRAME ACK RCVD!")
     static.ARQ_ACK_TIMEOUT = 1 #Force timer to stop waiting
     static.ARQ_FRAME_ACK_RECEIVED = 1 #Force data loops of TNC to stop and continue with next frame
 
@@ -258,18 +286,6 @@ def transmit(data_out):
                      else:
                          static.ARQ_TX_N_FRAMES_PER_BURST = (static.TX_BUFFER_SIZE % static.ARQ_N_SENT_FRAMES)
                 
-               
-#                burst_total_payload = bytearray() # reset burst_total_payload because of possible input remaining of detecting loop one step above
-#                for i in range(static.ARQ_TX_N_FRAMES_PER_BURST): #bytearray(b'111111111111111111111111222222222222222222222222')
-#                        
-#                    # make sure we have always a filled buffer with the length of payload per frame
-#                    burst_raw_payload = static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + i] 
-#                    burst_payload = bytearray(static.ARQ_PAYLOAD_PER_FRAME) 
-#                    burst_payload[:len(burst_raw_payload)] = burst_raw_payload # get frame from TX_BUFFER     
-#                    burst_total_payload = burst_total_payload + burst_payload # append single frame to total payload buffer
-#                                       
-#                # ----------- GENERATE PAYLOAD CRC FOR ARQ_TX_N_FRAMES_PER_BURST               
-#                static.ARQ_BURST_PAYLOAD_CRC = helpers.get_crc_16(burst_total_payload)
                 
                 #--------------------------------------------- N ATTEMPTS TO SEND BURSTS IF ACK RECEPTION FAILS
                 for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
@@ -295,16 +311,55 @@ def transmit(data_out):
                     
                     logging.debug("ARQ | RX | WAITING FOR BURST ACK")
                     static.ARQ_STATE = 'RECEIVING_ACK'
+                    
                                         
                     timer = threading.Timer(static.ARQ_ACK_TIMEOUT_SECONDS, arq_ack_timeout)
                     timer.start() 
 
 
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-                    while static.ARQ_ACK_TIMEOUT == 0 and static.ARQ_ACK_RECEIVED == 0:                 
+                    while static.ARQ_ACK_TIMEOUT == 0 and static.ARQ_RPT_RECEIVED == False and static.ARQ_ACK_RECEIVED == 0:                 
                         time.sleep(0.01) # lets reduce CPU load a little bit
                         #print(static.ARQ_STATE)
+                    
+                    
                                            
+                    #--------------------------------------------------------------------------------------------------------------
+                                           
+                    if static.ARQ_RPT_RECEIVED == True:
+                        print("lets send a rpt packet")                       
+                        TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
+                        TRANSMIT_ARQ_BURST_THREAD.start()
+                        # lets wait during sending. After sending is finished we will continue
+                        while static.ARQ_STATE == 'SENDING_DATA':
+                            time.sleep(0.05)                   
+                                           
+                                            # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
+                                        #reset timer and ack state
+                        static.ARQ_FRAME_ACK_RECEIVED = 0
+                        static.ARQ_ACK_RECEIVED = 0
+                        static.ARQ_ACK_TIMEOUT = 0
+                    
+                        logging.debug("ARQ | RX | WAITING FOR BURST ACK")
+                        static.ARQ_STATE = 'RECEIVING_ACK'
+                  
+                        timer = threading.Timer(static.ARQ_ACK_TIMEOUT_SECONDS, arq_ack_timeout)
+                        timer.start() 
+                    
+                        while static.ARQ_ACK_TIMEOUT == 0 and static.ARQ_RPT_RECEIVED == False and static.ARQ_ACK_RECEIVED == 0:                 
+                            time.sleep(0.01) # lets reduce CPU load a little bit
+                            #print(static.ARQ_STATE)                   
+                   
+                   #--------------------------------------------------------------------------------------------------------------
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                                       
 
                     if static.ARQ_ACK_RECEIVED == 0 and static.ARQ_ACK_TIMEOUT == 1:
                         #logging.info("ARQ | RX | ACK TIMEOUT | SENDING ARQ BURST AGAIN")

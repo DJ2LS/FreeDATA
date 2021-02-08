@@ -87,6 +87,12 @@ ARQ_FRAME_ACK_RECEIVED = 0 # set to 1 if FRAME ACK received
 ARQ_ACK_TIMEOUT = 0 # set to 1 if timeut reached
 ARQ_ACK_TIMEOUT_SECONDS = 4.0 #timeout for waiting for ACK frames
 
+ARQ_RX_TIMEOUT = 0
+ARQ_RX_TIMEOUT_SECONDS = 10.0 #timeout for waiting for a frame before resetting RX machine
+
+ARQ_RPT_RECEIVED = False #indicate if RPT frame has been received
+ARQ_RPT_FRAMES = []
+
 FRAME_CRC = b''
 FRAME_BOF = b'\xAA\xAA' #here we define 2 bytes for the BOF
 FRAME_EOF = b'\xFF\xFF' #here we define 2 bytes for the EOF
