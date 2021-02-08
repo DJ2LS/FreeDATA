@@ -143,6 +143,7 @@ class RF():
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
         static.ARQ_STATE = 'SENDING_DATA'
+        time.sleep(3)
            
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
@@ -209,9 +210,9 @@ class RF():
                 frame_type = 10 + missing_frame #static.ARQ_TX_N_FRAMES_PER_BURST
                 frame_type = bytes([frame_type])
 
-                payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + missing_frame])
+                payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + missing_frame - 1])
             
-                n_current_arq_frame = static.ARQ_N_SENT_FRAMES + missing_frame + 1
+                n_current_arq_frame = static.ARQ_N_SENT_FRAMES + missing_frame
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
             
                 n_total_arq_frame = len(static.TX_BUFFER)
@@ -253,7 +254,8 @@ class RF():
         
 #--------------------------------------------------------------------------------------------------------         
     def receive(self,data_mode,signalling_mode):
-    
+        force = False
+        
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         
         freedv_data = self.c_lib.freedv_open(data_mode)
@@ -294,7 +296,7 @@ class RF():
                 
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
-                #print(self.c_lib.freedv_get_rx_status(freedv_data))
+                print(self.c_lib.freedv_get_rx_status(freedv_data))
                 
                 
                 #-------------STUCK IN SYNC DETECTOR            
@@ -340,10 +342,11 @@ class RF():
                     n_frames_per_burst = int.from_bytes(bytes(data_bytes_out[1:2]), "big")    
                     
                     if 50 >= frametype >= 10:                     
-                        if frame != 3:
+                        if frame != 3 or force == True:
                             arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16                    
                         else:
                             print("---------------------------3er FRAME")
+                            force = True
                     else:
                         print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
                 
@@ -352,7 +355,10 @@ class RF():
                     if frame == n_frames_per_burst:
                         self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
 
-               
+                if static.ARQ_RX_BURST_BUFFER.count(None) == 1:
+                        self.c_lib.freedv_set_sync(freedv_data, 0)
+                        
+                        
             while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_ACK':
                 time.sleep(0.01)
 
@@ -387,7 +393,7 @@ class RF():
                        
                 
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                #print(rxstatus)
+                print(rxstatus)
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
 
