@@ -82,15 +82,16 @@ ARQ_N_RX_ARQ_FRAMES = 0 # total number of received frames
 
 ARQ_N_RX_FRAMES_PER_BURSTS = 0 # NUMBER OF FRAMES WE ARE WAITING FOR --> GOT DATA FROM RECEIVED FRAME
 ARQ_ACK_PAYLOAD_PER_FRAME = 0 # PAYLOAD per ACK frame
-ARQ_ACK_RECEIVED = 0 # set to 1 if ACK received
-ARQ_FRAME_ACK_RECEIVED = 0 # set to 1 if FRAME ACK received
-ARQ_ACK_TIMEOUT = 0 # set to 1 if timeut reached
-ARQ_ACK_TIMEOUT_SECONDS = 6.0 #timeout for waiting for ACK frames
 
-ARQ_RPT_TIMEOUT = False
-ARQ_RPT_TIMEOUT_SECONDS = 6.0
+ARQ_ACK_RECEIVED = False # set to 1 if ACK received
+ARQ_FRAME_ACK_RECEIVED = False # set to 1 if FRAME ACK received
+ARQ_RX_ACK_TIMEOUT = False # set to 1 if timeut reached
+ARQ_RX_ACK_TIMEOUT_SECONDS = 6.0 #timeout for waiting for ACK frames
+
+ARQ_RX_RPT_TIMEOUT = False
+ARQ_RX_RPT_TIMEOUT_SECONDS = 6.0
 ARQ_RPT_RECEIVED = False #indicate if RPT frame has been received
-ARQ_RPT_FRAMES = []
+ARQ_RPT_FRAMES = [] #buffer for frames which are requested to repeat
 
 FRAME_CRC = b''
 FRAME_BOF = b'\xAA\xAA' #here we define 2 bytes for the BOF
@@ -105,7 +106,7 @@ ARQ_N_SENT_FRAMES = 0 #counter for already sent frames
 # IDLE
 # RECEIVING_DATA
 # SENDING_DATA
-# RECEIVING_ACK
+# RECEIVING_SIGNALLING
 # SENDING_ACK
 # ACK_RECEIVED
 #

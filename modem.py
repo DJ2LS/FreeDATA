@@ -156,10 +156,11 @@ class RF():
                 txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
 
         elif static.ARQ_RPT_RECEIVED == True:
+            
             for n in range(0,len(static.ARQ_RPT_FRAMES)):
 
                 missing_frame = int.from_bytes(static.ARQ_RPT_FRAMES[n], "big")
-                print("MISSING ARQ FRAME: " + str(missing_frame))
+                               
             #---------------------------BUILD ARQ BURST ---------------------------------------------------------------------
                 frame_type = 10 + missing_frame #static.ARQ_TX_N_FRAMES_PER_BURST
                 frame_type = bytes([frame_type])
@@ -196,7 +197,8 @@ class RF():
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
 
-        static.ARQ_STATE = 'RECEIVING_ACK'
+        static.ARQ_STATE = 'IDLE'
+        #static.ARQ_STATE = 'RECEIVING_SIGNALLING'
         
 #--------------------------------------------------------------------------------------------------------         
     def receive(self,data_mode,signalling_mode):
@@ -281,7 +283,8 @@ class RF():
                     
                     if 50 >= frametype >= 10:                     
                         if frame != 3 or force == True:
-                            arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16                    
+                            arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16 
+                                               
                             #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
                             if static.ARQ_RX_BURST_BUFFER.count(None) <= 1:
                                 print("FULL BURST BUFFER ---> UNSYNC")
@@ -301,7 +304,7 @@ class RF():
                         
                
                         
-            while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_ACK':
+            while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_SIGNALLING':
                 time.sleep(0.01)
 
                 nin = self.c_lib.freedv_nin(freedv_signalling)
@@ -318,7 +321,6 @@ class RF():
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0)
                     frametype = int.from_bytes(bytes(signalling_bytes_out[:1]), "big")
-                    print("SIGNALLING RECEIVED")
                     
                     # BURST ACK
                     if frametype == 60:
@@ -334,8 +336,8 @@ class RF():
 
                 
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                print("ACK")
-                print(rxstatus)
+                #print("ACK")
+                #print(rxstatus)
                 #if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:# or rxstatus == 10:
                 #    self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
 

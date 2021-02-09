@@ -27,3 +27,13 @@ def get_crc_16(data):
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big') 
     return crc_data
+    
+       
+def arq_ack_timeout():
+    static.ARQ_RX_ACK_TIMEOUT = True
+    #print("ARQ_RX_ACK_TIMEOUT")
+    
+def arq_rpt_timeout():
+    static.ARQ_RX_RPT_TIMEOUT = True    
+    #print("ARQ_RX_RPT_TIMEOUT")    
+    
