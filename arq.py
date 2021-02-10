@@ -64,6 +64,10 @@ def data_received(data_in):
         #allocate ARQ_RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
         # here we will save the N frame of a data frame to N list position so we can explicit search for it
 
+        # delete frame buffer if first frame to make sure the buffer is cleared and no junks of a old frame is remaining
+        if static.ARQ_RX_N_CURRENT_ARQ_FRAME == 1:
+            static.ARQ_RX_FRAME_BUFFER = []
+
         try:       
             static.ARQ_RX_FRAME_BUFFER[static.ARQ_RX_N_CURRENT_ARQ_FRAME] = bytes(data_in)                                       
 
@@ -295,7 +299,7 @@ def transmit(data_out):
                                             
                     if static.ARQ_RPT_RECEIVED == True:
                     
-                        logging.warning("ARQ | RX | REQUEST  FOR REPEATING FRAMES: " + str(static.ARQ_RPT_FRAMES))
+                        logging.warning("ARQ | RX | REQUEST FOR REPEATING FRAMES: " + str(static.ARQ_RPT_FRAMES))
                         logging.info("ARQ | TX | SENDING REQUESTED FRAMES: " + str(static.ARQ_RPT_FRAMES))                  
                         
                         TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
@@ -320,7 +324,7 @@ def transmit(data_out):
                             
                             if static.ARQ_ACK_RECEIVED == True:
                             
-                                logging.info("ARQ | RX | ACK RECEIVED AFTER FRAME REPEAT")
+                                logging.info("ARQ | RX | ACK AFTER RPT")
                                 
                                 helpers.arq_reset_ack(True)
                                 static.ARQ_RPT_FRAMES = []
@@ -340,7 +344,7 @@ def transmit(data_out):
                  
                     #--------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
                     elif static.ARQ_ACK_RECEIVED == True:
-                        logging.info("ARQ | RX | ACK RECEIVED")      
+                        logging.info("ARQ | RX | ACK")      
                         #-----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                         static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
                         break
@@ -392,7 +396,7 @@ def transmit(data_out):
 
                 #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
                 elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED == True:
-                    logging.info("ARQ | RX | REGULAR FRAME ACK RECEIVED - DATA TRANSMITTED!")
+                    logging.info("ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
                     break 
  
                 else:
@@ -412,8 +416,8 @@ def transmit(data_out):
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST         
 def get_n_frames_per_burst():
  
-    #n_frames_per_burst = randrange(1,10)
-    n_frames_per_burst = 4          
+    n_frames_per_burst = randrange(1,10)
+    #n_frames_per_burst = 4          
     return n_frames_per_burst
     
     
