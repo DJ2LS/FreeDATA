@@ -92,13 +92,12 @@ class RF():
         
         # -------------- transmit audio twice
         
-        print("SEND SIGNALLING FRAME...................................")
-        print(ack_buffer)        
-        self.stream_tx.write(bytes(txbuffer))
-        print("........................................................")
+        logging.debug("SEND SIGNALLING FRAME " + str(ack_buffer))
         self.stream_tx.write(bytes(txbuffer))
         
-        print("...................................DONE!")
+        self.stream_tx.write(bytes(txbuffer))
+        
+        
 
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
@@ -248,7 +247,7 @@ class RF():
                 
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
-                print(self.c_lib.freedv_get_rx_status(freedv_data))
+                logging.debug(self.c_lib.freedv_get_rx_status(freedv_data))
                 
                 
                 #-------------STUCK IN SYNC DETECTOR            
@@ -267,7 +266,7 @@ class RF():
   
                     
                 if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
-                    logging.warning("modem stuck in sync")
+                    logging.critical("modem stuck in sync")
                     self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0    
                     stuck_in_sync_10_counter = 0
@@ -293,19 +292,19 @@ class RF():
                                                
                             #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
                             if static.ARQ_RX_BURST_BUFFER.count(None) <= 1:
-                                print("FULL BURST BUFFER ---> UNSYNC")
+                                logging.debug("FULL BURST BUFFER ---> UNSYNC")
                                 self.c_lib.freedv_set_sync(freedv_data, 0)
                         
                         else:
-                            print("---------------------------SIMULATED MISSING FRAME")
+                            logging.critical("---------------------------SIMULATED MISSING FRAME")
                             force = True
                     else:
-                        print("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
+                        logging.info("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
                 
                 
                     # DO UNSYNC AFTER LAST BURST by checking the frame numbers agains the total frames per burst
                     if frame == n_frames_per_burst:
-                        print("LAST FRAME ---> UNSYNC")
+                        logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
                         
                
@@ -330,25 +329,25 @@ class RF():
                     
                     # BURST ACK
                     if frametype == 60:
-                       print("ACK RECEIVED....")
+                       logging.debug("ACK RECEIVED....")
                        arq.burst_ack_received()
                        
                     # FRAME ACK
                     elif frametype == 61:
-                       print("FRAME ACK RECEIVED....")
+                       logging.debug("FRAME ACK RECEIVED....")
                        arq.frame_ack_received()
                        
                     # FRAME RPT
                     elif frametype == 62:
-                       print("REPEAT REQUEST RECEIVED....")
+                       logging.debug("REPEAT REQUEST RECEIVED....")
                        arq.burst_rpt_received(signalling_bytes_out[:-2])
 
                     else:
-                        print("OTHER FRAME: " + str(signalling_bytes_out[:-2]))
+                        logging.debug("OTHER FRAME: " + str(signalling_bytes_out[:-2]))
                     
                     
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                print("ACK-" + str(rxstatus))
+                logging.debug("ACK-" + str(rxstatus))
                 #print(rxstatus)
                 if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
