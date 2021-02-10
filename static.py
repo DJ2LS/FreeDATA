@@ -84,12 +84,17 @@ ARQ_N_RX_FRAMES_PER_BURSTS = 0 # NUMBER OF FRAMES WE ARE WAITING FOR --> GOT DAT
 ARQ_ACK_PAYLOAD_PER_FRAME = 0 # PAYLOAD per ACK frame
 
 ARQ_ACK_RECEIVED = False # set to 1 if ACK received
-ARQ_FRAME_ACK_RECEIVED = False # set to 1 if FRAME ACK received
 ARQ_RX_ACK_TIMEOUT = False # set to 1 if timeut reached
-ARQ_RX_ACK_TIMEOUT_SECONDS = 6.0 #timeout for waiting for ACK frames
+ARQ_RX_ACK_TIMEOUT_SECONDS = 4.0 #timeout for waiting for ACK frames
+
+
+ARQ_FRAME_ACK_RECEIVED = False # set to 1 if FRAME ACK received
+ARQ_RX_FRAME_TIMEOUT = False
+ARQ_RX_FRAME_TIMEOUT_SECONDS = 4.0
+
 
 ARQ_RX_RPT_TIMEOUT = False
-ARQ_RX_RPT_TIMEOUT_SECONDS = 6.0
+ARQ_RX_RPT_TIMEOUT_SECONDS = 4.0
 ARQ_RPT_RECEIVED = False #indicate if RPT frame has been received
 ARQ_RPT_FRAMES = [] #buffer for frames which are requested to repeat
 
