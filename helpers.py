@@ -12,8 +12,8 @@ import logging
 from colorlog import ColoredFormatter
 import crcengine
 
-
 import static
+
 
 
    
@@ -28,15 +28,12 @@ def get_crc_16(data):
     crc_algorithm = crcengine.new('crc16-ccitt-false') #load crc16 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big') 
-    return crc_data
-    
+    return crc_data   
        
 def arq_ack_timeout():
     if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_ACK_TIMEOUT = True
         logging.debug("ARQ_RX_ACK_TIMEOUT")
-    
-    
     
 def arq_rpt_timeout():
     if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
@@ -47,16 +44,13 @@ def arq_frame_timeout():
     if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_FRAME_TIMEOUT = True    
         logging.debug("ARQ_RX_FRAME_TIMEOUT")     
-        
-        
+                
 def arq_reset_timeout(state):
-    
     static.ARQ_RX_ACK_TIMEOUT = state
     static.ARQ_RX_FRAME_TIMEOUT = state
     static.ARQ_RX_RPT_TIMEOUT = state
     
-def arq_reset_ack(state):
-    
+def arq_reset_ack(state):  
     static.ARQ_ACK_RECEIVED = state
     static.ARQ_RPT_RECEIVED = state
     static.ARQ_FRAME_ACK_RECEIVED = state
@@ -69,5 +63,3 @@ def arq_reset_frame_machine():
     static.ARQ_TX_N_FRAMES_PER_BURST = 0
     
 
-    
-    

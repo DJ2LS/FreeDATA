@@ -10,7 +10,8 @@ Created on Tue Dec 22 16:58:45 2020
 import socketserver
 import argparse
 import logging
-
+import threading
+import pyaudio
 
 #import tnc
 import static
@@ -18,13 +19,49 @@ import helpers
 
 
 
+       
 
 
+
+def start_cmd_socket():
+
+    try:
+        logging.info("SRV | STARTING TCP/IP CMD ON PORT: " + str(static.PORT))
+        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
+        cmdserver = socketserver.TCPServer((static.HOST, static.PORT), tnc.CMDTCPRequestHandler)
+        cmdserver.serve_forever()
+    
+    finally:
+        cmdserver.server_close()
+        
+        
+def start_data_socket():
+
+    try:
+        logging.info("SRV | STARTING TCP/IP DATA ON PORT: " + str(static.PORT + 1))
+        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
+        dataserver = socketserver.TCPServer((static.HOST, static.PORT + 1), tnc.DATATCPRequestHandler)
+        dataserver.serve_forever()
+    
+    finally:
+        dataserver.server_close()        
+
+
+
+
+p = pyaudio.PyAudio()
+devices = []
+for x in range(0, p.get_device_count()):
+        devices.append(f"{x} - {p.get_device_info_by_index(x)['name']}")
+        
+for line in devices:
+        print(line) 
+        
+        
+        
+        
 
 if __name__ == '__main__':
-
-
-
 
     static.MYCALLSIGN = b'DJ2LS'
     static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
@@ -61,14 +98,16 @@ if __name__ == '__main__':
     #-------------------------------------------- DEFINE LOGGING    
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s', datefmt='%H:%M:%S', level=logging.INFO)
 
-    #logging.addLevelName(logging.INFO, "\033[1;37m%s\033[1;0m" % 'SUCCESS')
-
-    logging.addLevelName( logging.DEBUG, "\033[1;37m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
-    logging.addLevelName( logging.INFO, "\033[1;32m%s\033[1;0m" % logging.getLevelName(logging.INFO))
+    logging.addLevelName( logging.DEBUG, "\033[1;36m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
+    logging.addLevelName( logging.INFO, "\033[1;37m%s\033[1;0m" % logging.getLevelName(logging.INFO))
     logging.addLevelName( logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName( logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
+    logging.addLevelName( logging.ERROR, "\033[1;31m%s\033[1;0m" % "FAILED")
+    #logging.addLevelName( logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
     logging.addLevelName( logging.CRITICAL, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
     
+    logging.addLevelName( 25, "\033[1;32m%s\033[1;0m" % "SUCCESS")
+    logging.addLevelName( 24, "\033[1;34m%s\033[1;0m" % "DATA")
+
     
     # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
     #'DEBUG'   : 37, # white
@@ -78,13 +117,14 @@ if __name__ == '__main__':
     #'CRITICAL': 41, # white on red bg
     
     
-    #--------------------------------------------START CMD SERVER  
-    logging.info("SRV | STARTING TCP/IP SOCKET ON PORT " + str(static.PORT))
-    try:
-        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
-        server = socketserver.TCPServer((static.HOST, static.PORT), tnc.TCPRequestHandler)
-        server.serve_forever()
-    finally:
-        server.server_close()
+    
+    #--------------------------------------------START CMD & DATA SERVER  
+  
+    cmd_server_thread = threading.Thread(target=start_cmd_socket, name="cmd server")
+    cmd_server_thread.start()
+  
+    data_server_thread = threading.Thread(target=start_data_socket, name="data server")
+    data_server_thread.start()
         
+  
 
