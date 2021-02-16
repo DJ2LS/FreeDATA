@@ -12,8 +12,18 @@ import argparse
 import logging
 import threading
 
+import socket
+
+
 import static
 import helpers
+
+def client(ip, port, message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((ip, port))
+        sock.sendall(bytes(message, 'ascii'))
+        response = str(sock.recv(1024), 'ascii')
+        print("Received: {}".format(response))
       
 
 if __name__ == '__main__':
@@ -58,11 +68,12 @@ if __name__ == '__main__':
     
     import sock # we need to wait until we got all parameters from argparse
   
-    cmd_server_thread = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
-    cmd_server_thread.start()
-  
-    data_server_thread = threading.Thread(target=sock.start_data_socket, name="data server")
-    data_server_thread.start()
-        
-  
+    HOST,PORT = static.HOST, static.PORT
+    server = sock.ThreadedTCPServer((HOST,PORT), sock.ThreadedTCPRequestHandler)
+    
+    server_thread = threading.Thread(target=server.serve_forever, name="CMD-SRV:" + str(static.PORT))
+        # Exit the server thread when the main thread terminates
+    server_thread.daemon = True
+    server_thread.start()
+    logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
 

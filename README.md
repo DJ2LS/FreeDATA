@@ -7,25 +7,12 @@ My first attempt to learn more about FreeDV and how to create a TNC which gets d
 
 David Rowe and the FreeDV team for developing the modem and libraries
 FreeDV Codec 2 : https://github.com/drowe67/codec2
+
+
 This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 
-## ToDo
 
-- [x] ARQ: Stop-And-Wait
-- [x] ARQ: Go-Back-N
-- [x] ARQ: Selective repeating of lost arq frames
-- [x] ARQ: Dynamic number of frames per burst
-- [ ] ARQ: Set frames per burst automatically by channel quality
-- [ ] SETTING: Callsign with selective receiveing
-- [ ] SETTING: Own grid locator
-- [ ] SOCKET: Set settings & commands via command socket
-- [ ] SOCKET: Receive data via data socket
-- [ ] TRX: Control radio via hamlib
-- [ ] MODE: Beacon
-- [ ] MODE: Broadcast
-- [ ] MODE: ARQ AX25
-- [ ] MODE: Gear shifting ARQ
-- [ ] TNC: CLI GUI for basic settings
+
 
 
 ## Setup
