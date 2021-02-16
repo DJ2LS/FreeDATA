@@ -24,6 +24,15 @@ class DATATCPRequestHandler(socketserver.BaseRequestHandler):
             self.data += chunk
             if chunk.endswith(b'\n'):
                 break
+
+        # SEND AN ARQ FRAME  -------------------------
+        if self.data.startswith(b'ARQ:'):
+
+            data = self.data.split(b'ARQ:')
+            data_out = data[1]
+                               
+            TRANSMIT_ARQ = threading.Thread(target=arq.transmit, args=[data_out], name="TRANSMIT_ARQ")
+            TRANSMIT_ARQ.start()
                 
                 
 
@@ -60,25 +69,29 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if self.data.startswith(b'SHOWBUFFERSIZE'):
             self.request.sendall(bytes(static.RX_BUFFER[-1]))
             print(static.RX_BUFFER_SIZE)
-            
-# BROADCAST PARSER  -----------------------------------------------------------
 
-        if self.data.startswith(b'BC:'):
-            #import modem
-            #modem = modem.RF()
-           
-            data = self.data.split(b'BC:')
-            #modem.Transmit(data[1])
-      
-           
-            
-# SEND AN ARQ FRAME  -----------------------------------------------------------
 
-        if self.data.startswith(b'ARQ:'):
 
-            data = self.data.split(b'ARQ:')
-            data_out = data[1]
-                               
-            TRANSMIT_ARQ = threading.Thread(target=arq.transmit, args=[data_out], name="TRANSMIT_ARQ")
-            TRANSMIT_ARQ.start()
-                           
+
+def start_cmd_socket():
+
+    try:
+        logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
+        cmdserver = socketserver.TCPServer((static.HOST, static.PORT), CMDTCPRequestHandler)
+        cmdserver.serve_forever()
+    
+    finally:
+        cmdserver.server_close()
+        
+        
+def start_data_socket():
+
+    try:
+        logging.info("SRV | STARTING TCP/IP SOCKET FOR DATA ON PORT: " + str(static.PORT + 1))
+        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
+        dataserver = socketserver.TCPServer((static.HOST, static.PORT + 1), DATATCPRequestHandler)
+        dataserver.serve_forever()
+    
+    finally:
+        dataserver.server_close()                              

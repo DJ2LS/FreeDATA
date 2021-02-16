@@ -259,17 +259,16 @@ class RF():
                     stuck_in_sync_10_counter += 1
                     
                     
-                #print(stuck_in_sync_counter)
-                #if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv_data) == 10:
-                #    print("stuck in sync #1 --> DOING UNSYNC")
-                #    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
-                #    stuck_in_sync_counter = 0
-                #    stuck_in_sync_10_counter = 0
-                #    data_in = None
+                if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv_data) == 10:
+                    logging.critical("stuck in sync #1")
+                    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
+                    stuck_in_sync_counter = 0
+                    stuck_in_sync_10_counter = 0
+                    data_in = None
   
                     
                 if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
-                    logging.critical("modem stuck in sync")
+                    logging.critical("stuck in sync #2")
                     self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0    
                     stuck_in_sync_10_counter = 0
