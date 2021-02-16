@@ -7,12 +7,17 @@ My first attempt to learn more about FreeDV and how to create a TNC which gets d
 
 David Rowe and the FreeDV team for developing the modem and libraries
 FreeDV Codec 2 : https://github.com/drowe67/codec2
-
-
 This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 
+## ToDo
 
-
+- [ ] ARQ: Stop-And-Wait
+- [ ] ARQ: Go-Back-N
+- [ ] ARQ: Selective repeat lost frames
+- [ ] SETTING: Callsign with selective receiveing
+- [ ] SOCKET: Set Settings 
+- [ ] SOCKET: Send Commands
+- [ ] SOCKET: Receive Data
 
 
 ## Setup
