@@ -14,43 +14,7 @@ import threading
 
 import static
 import helpers
-
-
-
-def start_cmd_socket():
-
-    try:
-        logging.info("SRV | STARTING TCP/IP CMD ON PORT: " + str(static.PORT))
-        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
-        cmdserver = socketserver.TCPServer((static.HOST, static.PORT), sock.CMDTCPRequestHandler)
-        cmdserver.serve_forever()
-    
-    finally:
-        cmdserver.server_close()
-        
-        
-def start_data_socket():
-
-    try:
-        logging.info("SRV | STARTING TCP/IP DATA ON PORT: " + str(static.PORT + 1))
-        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
-        dataserver = socketserver.TCPServer((static.HOST, static.PORT + 1), sock.DATATCPRequestHandler)
-        dataserver.serve_forever()
-    
-    finally:
-        dataserver.server_close()   
-
-
-     
-
-
-
-
-
-        
-        
-        
-        
+      
 
 if __name__ == '__main__':
 
@@ -86,24 +50,18 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     
-    
+    #--------------------------------------------START CMD & DATA SERVER     
     static.FREEDV_DATA_MODE = args.freedv_data_mode
     static.AUDIO_INPUT_DEVICE = args.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = args.audio_output_device
     static.PORT = args.socket_port
     
     import sock # we need to wait until we got all parameters from argparse
-
-    
-    
-    
-    
-    #--------------------------------------------START CMD & DATA SERVER  
   
-    cmd_server_thread = threading.Thread(target=start_cmd_socket, name="cmd server")
+    cmd_server_thread = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
     cmd_server_thread.start()
   
-    data_server_thread = threading.Thread(target=start_data_socket, name="data server")
+    data_server_thread = threading.Thread(target=sock.start_data_socket, name="data server")
     data_server_thread.start()
         
   
