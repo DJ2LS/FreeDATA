@@ -11,10 +11,10 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 
 ## ToDo
 
-- [ ] ARQ: Stop-And-Wait
-- [ ] ARQ: Go-Back-N
-- [ ] ARQ: Selective repeating of lost arq frames
-- [ ] ARQ: Dynamic number of frames per burst
+- [x] ARQ: Stop-And-Wait
+- [x] ARQ: Go-Back-N
+- [x] ARQ: Selective repeating of lost arq frames
+- [x] ARQ: Dynamic number of frames per burst
 - [ ] ARQ: Set frames per burst automatically by channel quality
 - [ ] SETTING: Callsign with selective receiveing
 - [ ] SETTING: Own grid locator
