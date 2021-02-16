@@ -10,7 +10,8 @@ import ctypes
 from ctypes import *
 import pathlib
 import pyaudio
-import sys
+import audioop
+#import sys
 import logging
 import time
 import threading
@@ -19,7 +20,7 @@ import helpers
 import static
 import arq
 
-import audioop
+
 
 
 
