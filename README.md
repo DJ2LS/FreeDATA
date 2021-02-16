@@ -13,11 +13,19 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 
 - [ ] ARQ: Stop-And-Wait
 - [ ] ARQ: Go-Back-N
-- [ ] ARQ: Selective repeat lost frames
+- [ ] ARQ: Selective repeating of lost arq frames
+- [ ] ARQ: Dynamic number of frames per burst
+- [ ] ARQ: Set frames per burst automatically by channel quality
 - [ ] SETTING: Callsign with selective receiveing
-- [ ] SOCKET: Set Settings 
-- [ ] SOCKET: Send Commands
-- [ ] SOCKET: Receive Data
+- [ ] SETTING: Own grid locator
+- [ ] SOCKET: Set settings & commands via command socket
+- [ ] SOCKET: Receive data via data socket
+- [ ] TRX: Control radio via hamlib
+- [ ] MODE: Beacon
+- [ ] MODE: Broadcast
+- [ ] MODE: ARQ AX25
+- [ ] MODE: Gear shifting ARQ
+- [ ] TNC: CLI GUI for basic settings
 
 
 ## Setup
