@@ -7,11 +7,11 @@ Created on Wed Dec 23 11:13:57 2020
 """
 
 # Operator Defaults
-MYCALLSIGN = b''
-MYCALLSIGN_CRC8 = b''
+MYCALLSIGN = b'AA0AA'
+MYCALLSIGN_CRC8 = b'A'
 
-DXCALLSIGN = b''
-DXCALLSIGN_CRC8 = b''
+DXCALLSIGN = b'AA0AA'
+DXCALLSIGN_CRC8 = b'A'
 
 MYGRID = b''
 #---------------------------------

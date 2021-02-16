@@ -12,8 +12,6 @@ import argparse
 import logging
 import threading
 
-import socket
-
 
 import static
 import helpers
@@ -33,20 +31,13 @@ if __name__ == '__main__':
     
     # list audio devices
     helpers.list_audio_devices()
-    
-    
+ 
 
-    static.MYCALLSIGN = b'DJ2LS'
-    static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+    #static.MYCALLSIGN = b'DJ2LS'
+    #static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
 
     static.DXCALLSIGN = b'DH3WO'
-    static.DXCALLSIGN_CRC8 =  helpers.get_crc_8(static.DXCALLSIGN)
-
-    print("MYCALLSIGN " + str(static.MYCALLSIGN))
-    print("MYCALLSIGN_CRC8 " + str(static.MYCALLSIGN_CRC8))
-    
-    print("DXCALLSIGN " + str(static.DXCALLSIGN))
-    print("DXCALLSIGN_CRC8 " + str(static.DXCALLSIGN_CRC8))
+    static.DXCALLSIGN_CRC8 =  helpers.get_crc_8(static.DXCALLSIGN)   
 
 
 
@@ -76,4 +67,7 @@ if __name__ == '__main__':
     server_thread.daemon = True
     server_thread.start()
     logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+
+
+
 

@@ -29,15 +29,17 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         #print(threading.enumerate())
 
         if data == 'SOCKETTEST':
-            response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", 'utf-8')
+            cur_thread = threading.current_thread()
+            response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC ---THREAD: " + str(cur_thread), 'utf-8')
+            
             self.request.sendall(response)
             
         # TRANSMIT ARQ MESSAGE    
         if data.startswith('ARQ:'):
             logging.info("CMD | NEW ARQ DATA")
             
-            data = data.split('ARQ:')
-            data_out = bytes(data[1], 'utf-8')
+            arqdata = data.split('ARQ:')
+            data_out = bytes(arqdata[1], 'utf-8')
 
             TRANSMIT_ARQ = threading.Thread(target=arq.transmit, args=[data_out], name="TRANSMIT_ARQ")
             TRANSMIT_ARQ.start()
@@ -100,15 +102,24 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         if data.startswith('GET:RX_BUFFER:'):
             
             data = data.split('GET:RX_BUFFER:')
-            bufferposition = data[1]
-            
-            if bufferposition == 0:
+            bufferposition = int(data[1])
+            print(static.RX_BUFFER)
+            if bufferposition == -1:
                 if len(static.RX_BUFFER) > 0:
                     self.request.sendall(static.RX_BUFFER[-1])
             else:
-                if len(static.RX_BUFFER) > 0:
+                if bufferposition >= len(static.RX_BUFFER) > 0:
+                    #print(static.RX_BUFFER[0])
+                    #print(static.RX_BUFFER[1])
+                    #print(static.RX_BUFFER[2])
+                    #print(type(bufferposition))
+                    #print(bufferposition)
                     self.request.sendall(static.RX_BUFFER[bufferposition])
 
+        #quit()
+        
+        #self.request.close()
+        #cur_thread.close()
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     socketserver.TCPServer.allow_reuse_address = True
