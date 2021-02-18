@@ -31,14 +31,6 @@ if __name__ == '__main__':
     
     # list audio devices
     helpers.list_audio_devices()
- 
-
-    #static.MYCALLSIGN = b'DJ2LS'
-    #static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-
-    static.DXCALLSIGN = b'DH3WO'
-    static.DXCALLSIGN_CRC8 =  helpers.get_crc_8(static.DXCALLSIGN)   
-
 
 
     #--------------------------------------------GET PARAMETER INPUTS  
@@ -50,19 +42,16 @@ if __name__ == '__main__':
    
     args = parser.parse_args()
     
-    
-    #--------------------------------------------START CMD & DATA SERVER     
     static.FREEDV_DATA_MODE = args.freedv_data_mode
     static.AUDIO_INPUT_DEVICE = args.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = args.audio_output_device
     static.PORT = args.socket_port
-    
+        
+    #--------------------------------------------START CMD SERVER         
     import sock # we need to wait until we got all parameters from argparse
 
     cmd_server_thread = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
     cmd_server_thread.start()
-
-
 
 
 

@@ -19,18 +19,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
     
-        encoding = 'utf-8'
-    
+        encoding = 'utf-8'    
         data = str(self.request.recv(1024), 'utf-8')
-        #cur_thread = threading.current_thread()
-        #response = bytes("{}: {}".format(cur_thread.name, data), 'ascii')
-        #self.request.sendall(response)
-        #print(threading.enumerate())
 
+        # SOCKETTEST
         if data == 'SOCKETTEST':
             cur_thread = threading.current_thread()
-            response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC ---THREAD: " + str(cur_thread), 'utf-8')
-            
+            response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
             self.request.sendall(response)
             
         # TRANSMIT ARQ MESSAGE    
@@ -48,11 +43,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # SETTINGS AND STATUS    
         if data.startswith('SET:MYCALLSIGN:'):
             data = data.split('SET:MYCALLSIGN:')
-            static.MYCALLSIGN = bytes(data[1], encoding)
-            static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-            #self.request.sendall(bytes(static.MYCALLSIGN, encoding))
-            self.request.sendall(static.MYCALLSIGN)
-            logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
+            if bytes(data[1], encoding) == b'':
+                self.request.sendall(b'INVALID CALLSIGN')
+            else:    
+                static.MYCALLSIGN = bytes(data[1], encoding)
+                static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+                self.request.sendall(static.MYCALLSIGN)
+                logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
          
          
         if data == 'GET:MYCALLSIGN':
@@ -102,21 +99,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             data = data.split('GET:RX_BUFFER:')
             bufferposition = int(data[1])-1
-            print(static.RX_BUFFER)
             if bufferposition == -1:
                 if len(static.RX_BUFFER) > 0:
                     self.request.sendall(static.RX_BUFFER[-1])
            
             if bufferposition <= len(static.RX_BUFFER) > 0:
-                    #print(static.RX_BUFFER[0])
-                    #print(static.RX_BUFFER[1])
-                    #print(static.RX_BUFFER[2])
-                    #print(type(bufferposition))
-                    #print(bufferposition)
                     self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
                  
 
-
+        if data == 'DEL:RX_BUFFER':
+            static.RX_BUFFER = []
 
 
 
