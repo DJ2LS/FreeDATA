@@ -58,15 +58,10 @@ if __name__ == '__main__':
     static.PORT = args.socket_port
     
     import sock # we need to wait until we got all parameters from argparse
-  
-    HOST,PORT = static.HOST, static.PORT
-    server = sock.ThreadedTCPServer((HOST,PORT), sock.ThreadedTCPRequestHandler)
-    
-    server_thread = threading.Thread(target=server.serve_forever, name="CMD-SRV:" + str(static.PORT))
-        # Exit the server thread when the main thread terminates
-    server_thread.daemon = True
-    server_thread.start()
-    logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+
+    cmd_server_thread = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
+    cmd_server_thread.start()
+
 
 
 

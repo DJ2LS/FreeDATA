@@ -15,8 +15,7 @@ import static
 import arq
 import helpers
 
-
-class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
+class CMDTCPRequestHandler(socketserver.BaseRequestHandler):    
 
     def handle(self):
     
@@ -102,27 +101,34 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
         if data.startswith('GET:RX_BUFFER:'):
             
             data = data.split('GET:RX_BUFFER:')
-            bufferposition = int(data[1])
+            bufferposition = int(data[1])-1
             print(static.RX_BUFFER)
             if bufferposition == -1:
                 if len(static.RX_BUFFER) > 0:
                     self.request.sendall(static.RX_BUFFER[-1])
-            else:
-                if bufferposition >= len(static.RX_BUFFER) > 0:
+           
+            if bufferposition <= len(static.RX_BUFFER) > 0:
                     #print(static.RX_BUFFER[0])
                     #print(static.RX_BUFFER[1])
                     #print(static.RX_BUFFER[2])
                     #print(type(bufferposition))
                     #print(bufferposition)
-                    self.request.sendall(static.RX_BUFFER[bufferposition])
-
-        #quit()
-        
-        #self.request.close()
-        #cur_thread.close()
-
-class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
-    socketserver.TCPServer.allow_reuse_address = True
-    pass
+                    self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
+                 
 
 
+
+
+
+
+
+def start_cmd_socket():
+
+    try:
+        logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
+        cmdserver = socketserver.TCPServer((static.HOST, static.PORT), CMDTCPRequestHandler)
+        cmdserver.serve_forever()
+    
+    finally:
+        cmdserver.server_close()
