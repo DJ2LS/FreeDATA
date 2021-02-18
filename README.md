@@ -9,7 +9,7 @@ My first attempt to learn more about FreeDV and how to create a TNC which gets d
 - [x] ARQ: Selective repeating of lost arq frames
 - [x] ARQ: Dynamic number of frames per burst
 - [ ] ARQ: Set frames per burst automatically by channel quality
-- [ ] SOCKET: Run commands via TCP/IP socket
+- [x] SOCKET: Run commands via TCP/IP socket
 - [ ] TRX: Control radio via hamlib
 - [ ] MODE: Beacon
 - [ ] MODE: Broadcast
@@ -17,6 +17,7 @@ My first attempt to learn more about FreeDV and how to create a TNC which gets d
 - [ ] MODE: Gear shifting ARQ
 - [ ] TNC: CLI GUI for basic settings
 - [ ] TNC: Multicore support
+- [ ] MODEM: Sample rate conversion
 
 ## Setup
 Install FreeDV-Socket-TNC directly to home folder and compile codec2 automatically
