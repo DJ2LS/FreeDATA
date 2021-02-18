@@ -323,7 +323,7 @@ def transmit(data_out):
                         
                     #--------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
                     elif static.ARQ_FRAME_ACK_RECEIVED == True:
-                        logging.info("----------------------------------------------------------")
+                        
                         logging.info("ARQ | RX | EARLY FRAME ACK RECEIVED")
                         
                         #static.ARQ_N_SENT_FRAMES = #static.TX_BUFFER_SIZE
@@ -363,11 +363,13 @@ def transmit(data_out):
                 # ----------- if no ACK received and out of retries.....stop frame sending
                 if static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
                     logging.error("ARQ | TX | NO BURST OR FRAME ACK RECEIVED | DATA SHOULD BE RESEND!")
+                    logging.error("----------------------------------------------------------")
                     break
 
                 #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
                 elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED == True:
                     logging.log(25,"ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
+                    logging.log(25,"----------------------------------------------------------")
                     break 
  
                 else:
@@ -394,7 +396,7 @@ def transmit(data_out):
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST         
 def get_n_frames_per_burst():
     #n_frames_per_burst = randrange(1,10)
-    n_frames_per_burst = 2     
+    n_frames_per_burst = 5     
     return n_frames_per_burst
     
     

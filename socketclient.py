@@ -23,6 +23,7 @@ def create_string(length):
     # Keep appending random characters using chr(x)
         random_string += (chr(random_integer))
     print("STR:" + str(random_string))
+    
     return random_string
     
     
@@ -42,9 +43,11 @@ args = parser.parse_args()
 
 
 data = create_string(args.datalength)
-data = bytes("ACK:" + "!!!--" + data + "--!!!" + "\n", "utf-8")
+data = bytes("ARQ:" + "" + data + "" + "\n", "utf-8")
 
-print(data)
+
+
+#print(data)
 
 
 HOST, PORT = "localhost", args.socket_port
@@ -60,6 +63,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     received = str(sock.recv(1024), "utf-8")
 
 print("Sent:     {}".format(data))
-print("Received: {}".format(received))
+
 
 

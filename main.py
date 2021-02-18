@@ -12,8 +12,16 @@ import argparse
 import logging
 import threading
 
+
 import static
 import helpers
+
+def client(ip, port, message):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.connect((ip, port))
+        sock.sendall(bytes(message, 'ascii'))
+        response = str(sock.recv(1024), 'ascii')
+        print("Received: {}".format(response))
       
 
 if __name__ == '__main__':
@@ -23,21 +31,6 @@ if __name__ == '__main__':
     
     # list audio devices
     helpers.list_audio_devices()
-    
-    
-
-    static.MYCALLSIGN = b'DJ2LS'
-    static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-
-    static.DXCALLSIGN = b'DH3WO'
-    static.DXCALLSIGN_CRC8 =  helpers.get_crc_8(static.DXCALLSIGN)
-
-    print("MYCALLSIGN " + str(static.MYCALLSIGN))
-    print("MYCALLSIGN_CRC8 " + str(static.MYCALLSIGN_CRC8))
-    
-    print("DXCALLSIGN " + str(static.DXCALLSIGN))
-    print("DXCALLSIGN_CRC8 " + str(static.DXCALLSIGN_CRC8))
-
 
 
     #--------------------------------------------GET PARAMETER INPUTS  
@@ -49,20 +42,16 @@ if __name__ == '__main__':
    
     args = parser.parse_args()
     
-    
-    #--------------------------------------------START CMD & DATA SERVER     
     static.FREEDV_DATA_MODE = args.freedv_data_mode
     static.AUDIO_INPUT_DEVICE = args.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = args.audio_output_device
     static.PORT = args.socket_port
-    
+        
+    #--------------------------------------------START CMD SERVER         
     import sock # we need to wait until we got all parameters from argparse
-  
+
     cmd_server_thread = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
     cmd_server_thread.start()
-  
-    data_server_thread = threading.Thread(target=sock.start_data_socket, name="data server")
-    data_server_thread.start()
-        
-  
+
+
 

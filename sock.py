@@ -9,66 +9,107 @@ Created on Fri Dec 25 21:25:14 2020
 import socketserver
 import threading
 import logging
-
+import time
 
 import static
 import arq
+import helpers
 
-class DATATCPRequestHandler(socketserver.BaseRequestHandler):
+class CMDTCPRequestHandler(socketserver.BaseRequestHandler):    
 
     def handle(self):
     
-        self.data = bytes()
-        while True: 
-            chunk = self.request.recv(8192)#.strip() 
-            self.data += chunk
-            if chunk.endswith(b'\n'):
-                break
+        encoding = 'utf-8'    
+        data = str(self.request.recv(1024), 'utf-8')
 
-        # SEND AN ARQ FRAME  -------------------------
-        if self.data.startswith(b'ARQ:'):
+        # SOCKETTEST
+        if data == 'SOCKETTEST':
+            cur_thread = threading.current_thread()
+            response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
+            self.request.sendall(response)
+            
+        # TRANSMIT ARQ MESSAGE    
+        if data.startswith('ARQ:'):
+            logging.info("CMD | NEW ARQ DATA")
+            
+            arqdata = data.split('ARQ:')
+            data_out = bytes(arqdata[1], 'utf-8')
 
-            data = self.data.split(b'ARQ:')
-            data_out = data[1]
-                               
             TRANSMIT_ARQ = threading.Thread(target=arq.transmit, args=[data_out], name="TRANSMIT_ARQ")
             TRANSMIT_ARQ.start()
-                
-                
+        
+        
+        
+        # SETTINGS AND STATUS    
+        if data.startswith('SET:MYCALLSIGN:'):
+            data = data.split('SET:MYCALLSIGN:')
+            if bytes(data[1], encoding) == b'':
+                self.request.sendall(b'INVALID CALLSIGN')
+            else:    
+                static.MYCALLSIGN = bytes(data[1], encoding)
+                static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+                self.request.sendall(static.MYCALLSIGN)
+                logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
+         
+         
+        if data == 'GET:MYCALLSIGN':
+            self.request.sendall(bytes(static.MYCALLSIGN, encoding))
+                        
+        if data == 'GET:MYCALLSIGN_CRC8':
+            self.request.sendall(bytes(static.MYCALLSIGN_CRC8, encoding))
+            
+        if data == 'GET:DXCALLSIGN':
+            self.request.sendall(bytes(static.DXCALLSIGN, encoding))              
+            
+        # ARQ
+        if data == 'GET:ARQ_STATE':
+            self.request.sendall(bytes(static.ARQ_STATE, encoding))
+            
+        if data == 'GET:TX_N_MAX_RETRIES':
+            self.request.sendall(bytes([static.TX_N_MAX_RETRIES], encoding))
+            
+        if data == 'GET:TX_N_RETRIES':
+            self.request.sendall(bytes([static.TX_N_RETRIES], encoding))
+            
+        if data == 'GET:ARQ_TX_N_FRAMES_PER_BURST':
+            self.request.sendall(bytes([static.ARQ_TX_N_FRAMES_PER_BURST], encoding))
+            
+        if data == 'GET:ARQ_TX_N_BURSTS':
+            self.request.sendall(bytes([static.ARQ_TX_N_BURSTS], encoding))
+            
+        if data == 'GET:ARQ_TX_N_CURRENT_ARQ_FRAME':
+            self.request.sendall(bytes([static.ARQ_TX_N_CURRENT_ARQ_FRAME], encoding))
+            
+        if data == 'GET:ARQ_TX_N_TOTAL_ARQ_FRAMES':
+            self.request.sendall(bytes([static.ARQ_TX_N_TOTAL_ARQ_FRAMES], encoding))
+            
+        if data == 'GET:ARQ_RX_FRAME_N_BURSTS':
+            self.request.sendall(bytes([static.ARQ_RX_FRAME_N_BURSTS], encoding))
+            
+        if data == 'GET:ARQ_RX_N_CURRENT_ARQ_FRAME':
+            self.request.sendall(bytes([static.ARQ_RX_N_CURRENT_ARQ_FRAME], encoding))
+                    
+        if data == 'GET:ARQ_N_ARQ_FRAMES_PER_DATA_FRAME':
+            self.request.sendall(bytes([static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME], encoding))
+            
+        if data == 'GET:RX_BUFFER_LENGTH':
+            self.request.sendall(bytes(str(len(static.RX_BUFFER)),encoding))
 
-class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
+        if data.startswith('GET:RX_BUFFER:'):
+            
+            data = data.split('GET:RX_BUFFER:')
+            bufferposition = int(data[1])-1
+            if bufferposition == -1:
+                if len(static.RX_BUFFER) > 0:
+                    self.request.sendall(static.RX_BUFFER[-1])
+           
+            if bufferposition <= len(static.RX_BUFFER) > 0:
+                    self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
+                 
 
-    def handle(self):
-    
-        self.data = bytes()
-        while True: 
-            chunk = self.request.recv(8192)#.strip() 
-            self.data += chunk
-            if chunk.endswith(b'\n'):
-                break
+        if data == 'DEL:RX_BUFFER':
+            static.RX_BUFFER = []
 
-        
-        
-        # self.request is the TCP socket connected to the client
-        #self.data = self.request.recv(1024).strip()
-###        self.data = self.request.recv(1000000).strip()
-     
-        # interrupt listening loop "while true" by setting MODEM_RECEIVE to False
-        #if len(self.data) > 0:
-       #     static.MODEM_RECEIVE = False
-        
-        
-        ####print("{} wrote:".format(self.client_address[0]))
-        ####print(self.data)
-        
-        # just send back the same data, but upper-cased
-        #####self.request.sendall(self.data.upper())
-        
-        #if self.data == b'TEST':
-            #logging.info("DER TEST KLAPPT! HIER KOMMT DER COMMAND PARSER HIN!")
-        if self.data.startswith(b'SHOWBUFFERSIZE'):
-            self.request.sendall(bytes(static.RX_BUFFER[-1]))
-            print(static.RX_BUFFER_SIZE)
 
 
 
@@ -83,15 +124,3 @@ def start_cmd_socket():
     
     finally:
         cmdserver.server_close()
-        
-        
-def start_data_socket():
-
-    try:
-        logging.info("SRV | STARTING TCP/IP SOCKET FOR DATA ON PORT: " + str(static.PORT + 1))
-        socketserver.TCPServer.allow_reuse_address = True #https://stackoverflow.com/a/16641793
-        dataserver = socketserver.TCPServer((static.HOST, static.PORT + 1), DATATCPRequestHandler)
-        dataserver.serve_forever()
-    
-    finally:
-        dataserver.server_close()                              
