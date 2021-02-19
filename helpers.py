@@ -61,6 +61,7 @@ def arq_reset_frame_machine():
     static.TX_N_RETRIES = 0
     static.ARQ_N_SENT_FRAMES = 0
     static.ARQ_TX_N_FRAMES_PER_BURST = 0
+    static.TNC_STATE = b'IDLE'
     
     
 def setup_logging():

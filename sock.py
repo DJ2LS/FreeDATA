@@ -29,9 +29,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             self.request.sendall(response)
             
         # TRANSMIT ARQ MESSAGE    
-        if data.startswith('ARQ:'):
+        if data.startswith('ARQ:') and static.TNC_STATE == b'IDLE':
             logging.info("CMD | NEW ARQ DATA")
-            
+            static.TNC_STATE = b'BUSY'
             arqdata = data.split('ARQ:')
             data_out = bytes(arqdata[1], 'utf-8')
 

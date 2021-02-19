@@ -14,6 +14,9 @@ DXCALLSIGN = b'AA0AA'
 DXCALLSIGN_CRC8 = b'A'
 
 MYGRID = b''
+
+
+TNC_STATE = b'IDLE'
 #---------------------------------
 
 # Server Defaults

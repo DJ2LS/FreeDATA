@@ -19,7 +19,8 @@ import helpers
 
 
 def data_received(data_in):
-    
+
+        static.TNC_STATE = b'BUSY'
 
         static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big")  - 10 #get number of burst frame 
         static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big") #get number of bursts from received frame
@@ -115,7 +116,8 @@ def data_received(data_in):
             #TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
             modem.transmit_arq_ack(rpt_frame)
             
-         
+        
+        
 # ---------------------------- FRAME MACHINE
         # ---------------  IF LIST NOT CONTAINS "None" stick everything together 
         complete_data_frame = bytearray()   
@@ -144,7 +146,7 @@ def data_received(data_in):
 
                 # --------- AFTER WE SEPARATED BOF AND EOF, STICK EVERYTHING TOGETHER  
                 complete_data_frame = complete_data_frame + arq_frame_payload
-
+            
             
         #check if Begin of Frame BOF and End of Frame EOF are received, then start calculating CRC and sticking everything together
         if static.ARQ_FRAME_BOF_RECEIVED == True and static.ARQ_FRAME_EOF_RECEIVED == True:
@@ -154,7 +156,8 @@ def data_received(data_in):
             #IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS      
             if frame_payload_crc == static.FRAME_CRC:
                  #logging.info("ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! - TIME TO PARTY")
-                 logging.log(25,"ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! - TIME TO PARTY")
+                 logging.log(25,"ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-)")
+                 
                  #append received frame to RX_BUFFER
                  static.RX_BUFFER.append(complete_data_frame)
           
@@ -174,6 +177,7 @@ def data_received(data_in):
                  static.ARQ_FRAME_BOF_RECEIVED = False
                  static.ARQ_FRAME_EOF_RECEIVED = False
                  static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
+                 static.TNC_STATE = b'IDLE'
                  
                  #print("----------------------------------------------------------------")
                  #print(static.RX_BUFFER[-1])
@@ -181,12 +185,13 @@ def data_received(data_in):
                  
             else:
                 logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
-                
+                static.TNC_STATE = b'IDLE'
 
         
 
 
 def transmit(data_out):
+
 
             static.ARQ_PAYLOAD_PER_FRAME = static.FREEDV_DATA_PAYLOAD_PER_FRAME - 8 
             frame_header_length = 6 #4
@@ -204,7 +209,7 @@ def transmit(data_out):
             static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
             
             logging.info("ARQ | TX | DATA FRAME --- BYTES: " + str(len(data_out)) + " ARQ FRAMES: " + str(static.TX_BUFFER_SIZE))
-                      
+      
             # --------------------------------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
    
             static.ARQ_N_SENT_FRAMES = 0 # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
@@ -363,13 +368,14 @@ def transmit(data_out):
                 # ----------- if no ACK received and out of retries.....stop frame sending
                 if static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
                     logging.error("ARQ | TX | NO BURST OR FRAME ACK RECEIVED | DATA SHOULD BE RESEND!")
-                    logging.error("----------------------------------------------------------")
+                    logging.error("------------------------------------------------------")
                     break
 
                 #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
                 elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED == True:
                     logging.log(25,"ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
-                    logging.log(25,"----------------------------------------------------------")
+                    logging.log(25,"------------------------------------------------------")
+                    
                     break 
  
                 else:
