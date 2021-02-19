@@ -19,6 +19,7 @@ MYGRID = b''
 TNC_STATE = b'IDLE'
 
 PTT_STATE = False
+
 #---------------------------------
 
 # Server Defaults
@@ -26,6 +27,38 @@ HOST = "localhost"
 PORT = 3000
 #---------------------------------
 
+# HAMLIB DEFAULTS
+
+#RIG_PTT_NONE 	
+#No PTT available
+
+#RIG_PTT_RIG 	
+#Legacy PTT
+
+#RIG_PTT_SERIAL_DTR 	
+#PTT control through serial DTR signal
+
+#RIG_PTT_SERIAL_RTS 	
+#PTT control through serial RTS signal
+
+#RIG_PTT_PARALLEL 	
+#PTT control through parallel port
+
+#RIG_PTT_RIG_MICDATA 	
+#Legacy PTT, supports RIG_PTT_ON_MIC/RIG_PTT_ON_DATA
+
+#RIG_PTT_CM108 	
+#PTT control through CM108 GPIO pin
+
+HAMLIB_PTT_TYPE = 'RIG_PTT_NONE'
+
+
+
+
+
+
+
+#-------------------------
 # FreeDV Defaults
 FREEDV_RECEIVE = True
 

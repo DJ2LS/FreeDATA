@@ -20,6 +20,8 @@ import helpers
 import static
 import arq
 
+import Hamlib
+
 
 
 
@@ -58,14 +60,51 @@ class RF():
                             )  
         #--------------------------------------------START DECODER THREAD                
         FREEDV_DECODER_THREAD = threading.Thread(target=self.receive, args=[static.FREEDV_DATA_MODE,static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD")
-        FREEDV_DECODER_THREAD.start()  
+        FREEDV_DECODER_THREAD.start()
+        
+        
+        
+        
+        
+        
+        
+        #--------------------------------------------CONFIGURE HAMLIB
+        Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
+
+        # Init RIG_MODEL_DUMMY
+        self.my_rig = Hamlib.Rig(Hamlib.RIG_MODEL_DUMMY)
+        self.my_rig.set_conf("rig_pathname", "/dev/Rig")
+        self.my_rig.set_conf("retry", "5")
+
+        self.my_rig.open ()
+        
+        
+        if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
+        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_DTR':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
+        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_RTS':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
+        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_PARALLEL':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
+        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG_MICDATA':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG_MICDATA
+        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_CM108':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_CM108
+        else:# static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
+            self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
+        
+        self.my_rig.set_ptt(self.hamlib_ptt_type,0)  
 
 #--------------------------------------------------------------------------------------------------------     
     def transmit_arq_ack(self,ack_buffer):
         #print(ack_buffer)
         static.ARQ_STATE = 'SENDING_ACK'
         static.PTT_STATE = True
-    
+        self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
+        
+        
+        
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
@@ -100,11 +139,14 @@ class RF():
         self.stream_tx.write(bytes(txbuffer))
         self.stream_tx.write(bytes(txbuffer))
 
+        self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
+    
+        self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         static.PTT_STATE = True
         static.ARQ_STATE = 'SENDING_DATA'
 
@@ -210,6 +252,7 @@ class RF():
         static.ARQ_STATE = 'IDLE'
         #static.ARQ_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
+        self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
 #--------------------------------------------------------------------------------------------------------         
     def receive(self,data_mode,signalling_mode):
         force = False
