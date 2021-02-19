@@ -60,7 +60,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
         if data == 'GET:DXCALLSIGN':
             self.request.sendall(bytes(static.DXCALLSIGN, encoding))              
+        
+        if data == 'GET:TNC_STATE':
+            self.request.sendall(static.TNC_STATE)
             
+        if data == 'GET:PTT_STATE':
+            self.request.sendall(bytes(str(static.PTT_STATE), encoding))       
+        
+        
+        
+                
         # ARQ
         if data == 'GET:ARQ_STATE':
             self.request.sendall(bytes(static.ARQ_STATE, encoding))

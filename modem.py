@@ -64,6 +64,7 @@ class RF():
     def transmit_arq_ack(self,ack_buffer):
         #print(ack_buffer)
         static.ARQ_STATE = 'SENDING_ACK'
+        static.PTT_STATE = True
     
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
@@ -99,11 +100,12 @@ class RF():
         self.stream_tx.write(bytes(txbuffer))
         self.stream_tx.write(bytes(txbuffer))
 
+        static.PTT_STATE = False
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     def transmit_arq_burst(self):
-        
+        static.PTT_STATE = True
         static.ARQ_STATE = 'SENDING_DATA'
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
@@ -160,7 +162,7 @@ class RF():
                 self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer 
                 txbuffer += bytes(mod_out)
                 txbuffer = txbuffer.rstrip(b'\x00') #lets remove unallocated memory because of wrong buffer :-/
-
+                
         elif static.ARQ_RPT_RECEIVED == True:
             
             for n in range(0,len(static.ARQ_RPT_FRAMES)):
@@ -207,7 +209,7 @@ class RF():
         #time.sleep(0.5)
         static.ARQ_STATE = 'IDLE'
         #static.ARQ_STATE = 'RECEIVING_SIGNALLING'
-        
+        static.PTT_STATE = False
 #--------------------------------------------------------------------------------------------------------         
     def receive(self,data_mode,signalling_mode):
         force = False

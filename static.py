@@ -17,6 +17,8 @@ MYGRID = b''
 
 
 TNC_STATE = b'IDLE'
+
+PTT_STATE = False
 #---------------------------------
 
 # Server Defaults
