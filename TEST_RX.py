@@ -83,6 +83,9 @@ bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
 n_max_modem_samples = c_lib.freedv_get_n_max_modem_samples(freedv)     
 bytes_out = (ctypes.c_ubyte * bytes_per_frame) #bytes_per_frame
 bytes_out = bytes_out() #get pointer from bytes_out
+
+c_lib.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
+
         
 total_n_bytes = 0
 rx_total_frames = 0
@@ -122,7 +125,7 @@ while receive == True:
         if rx_frames == N_FRAMES_PER_BURST:
             rx_frames = 0
             rx_bursts = rx_bursts + 1
-            c_lib.freedv_set_sync(freedv,0)
+            #c_lib.freedv_set_sync(freedv,0) #this should be automatically done by c_lib.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
         
     if rx_bursts == N_BURSTS:
         receive = False   
