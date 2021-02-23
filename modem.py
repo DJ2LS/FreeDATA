@@ -137,6 +137,7 @@ class RF():
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False
+
         static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
@@ -280,13 +281,6 @@ class RF():
             stuck_in_sync_counter = 0
             stuck_in_sync_10_counter = 0
             #
-            
-            
-            #for i in range(0,3):
-            #    data_dummy = bytes(self.c_lib.freedv_nin(freedv_data))
-            #    signalling_dummy = bytes(self.c_lib.freedv_nin(freedv_signalling))
-            #    self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_dummy)
-            #    self.c_lib.freedv_rawdatarx(freedv_signalling, data_bytes_out, signalling_dummy)
     
             while static.ARQ_STATE == 'RECEIVING_DATA':
                 time.sleep(0.01)
@@ -357,16 +351,8 @@ class RF():
                     if frame == n_frames_per_burst:
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
-                        
-                        # clear demod buffer 
-            
-            #for i in range(0,3):
-            #    data_dummy = bytes(self.c_lib.freedv_nin(freedv_data))
-            #    signalling_dummy = bytes(self.c_lib.freedv_nin(freedv_signalling))
-            #    self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_dummy)
-            #    self.c_lib.freedv_rawdatarx(freedv_signalling, data_bytes_out, signalling_dummy)            
-            
-            
+                
+   
             #while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_SIGNALLING':
             while static.ARQ_STATE == 'RECEIVING_SIGNALLING':
                 time.sleep(0.01)
