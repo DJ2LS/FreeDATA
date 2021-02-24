@@ -96,7 +96,7 @@ class RF():
     def transmit_signalling(self,ack_buffer):
         #print(ack_buffer)
         #static.ARQ_STATE = 'SENDING_ACK'
-        static.ARQ_STATE = 'SENDING_SIGNALLING'
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         static.PTT_STATE = True
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         
@@ -136,7 +136,7 @@ class RF():
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False
         
-        static.ARQ_STATE = 'RECEIVING_SIGNALLING'
+        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         #static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
@@ -144,7 +144,7 @@ class RF():
     
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         static.PTT_STATE = True
-        static.ARQ_STATE = 'SENDING_DATA'
+        static.CHANNEL_STATE = 'SENDING_DATA'
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
@@ -243,7 +243,7 @@ class RF():
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
         #static.ARQ_STATE = 'IDLE'
-        static.ARQ_STATE = 'RECEIVING_SIGNALLING'
+        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
 #--------------------------------------------------------------------------------------------------------         
@@ -278,7 +278,7 @@ class RF():
             stuck_in_sync_10_counter = 0
             #
     
-            while static.ARQ_STATE == 'RECEIVING_DATA':
+            while static.CHANNEL_STATE == 'RECEIVING_DATA':
                 time.sleep(0.01)
                 
                 nin = self.c_lib.freedv_nin(freedv_data)
@@ -362,7 +362,7 @@ class RF():
                 
    
             #while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_SIGNALLING':
-            while static.ARQ_STATE == 'RECEIVING_SIGNALLING':
+            while static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
                 time.sleep(0.01)
 
                 nin = self.c_lib.freedv_nin(freedv_signalling)
@@ -418,7 +418,15 @@ class RF():
                        logging.debug("ARQ CONNECT ACK RECEIVED / KEEP ALIVE....")
                        data_handler.arq_received_connect_keep_alive(signalling_bytes_out[:-2])
 
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 222:
+                       logging.debug("ARQ DISCONNECT RECEIVED")
+                       data_handler.arq_disconnect_received(signalling_bytes_out[:-2])
 
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 230:
+                       logging.debug("BEACON RECEIVED")
+                       
                     else:
                         logging.info("OTHER FRAME: " + str(signalling_bytes_out[:-2]))
                         print(frametype)

@@ -33,13 +33,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         data = data[:-1] # remove b'\n'
         data = str(data, 'utf-8')        
 
-        # SOCKETTEST
+        # SOCKETTEST ---------------------------------------------------
         if data == 'SOCKETTEST':
             cur_thread = threading.current_thread()
             response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
             self.request.sendall(response)
         
-        # CQ CQ CQ
+        # CQ CQ CQ -----------------------------------------------------
         if data == 'CQCQCQ':
             for i in range(0,3):
                 data_handler.transmit_cq()
@@ -48,7 +48,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     pass
 
         
-        # PING 
+        # PING ----------------------------------------------------------
         if data.startswith('PING:'):
             #send ping frame and wait for ACK
             pingcommand = data.split('PING:')
@@ -56,22 +56,32 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             data_handler.transmit_ping(dxcallsign)
         
         
-        # ARQ CONNECT TO CALLSIGN
+        # ARQ CONNECT TO CALLSIGN ----------------------------------------
         if data.startswith('ARQ:CONNECT:'):
-            if static.TNC_STATE == b'CONNECTED':
+            arqconnectcommand = data.split('ARQ:CONNECT:')
+            dxcallsign = arqconnectcommand[1]
+            if static.ARQ_STATE == b'CONNECTED':
                 # here we should disconnect
                 pass
                 
             if static.TNC_STATE == b'IDLE':
                 # here we send an "CONNECT FRAME
-                pass    
+                
+                ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, args=[dxcallsign], name="ARQ_CONNECT")
+                ARQ_CONNECT_THREAD.start()
         
-        
+        # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
+        if data == 'ARQ:DISCONNECT':
+
+            ARQ_DISCONNECT_THREAD = threading.Thread(target=data_handler.arq_disconnect, name="ARQ_DISCONNECT")
+            ARQ_DISCONNECT_THREAD.start()  
+
+      
         
             
-        # TRANSMIT ARQ MESSAGE    
+        # TRANSMIT ARQ MESSAGE ------------------------------------------   
         # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
-        if data.startswith('ARQ:') and static.TNC_STATE == b'IDLE':
+        if data.startswith('ARQ:DATA') and static.TNC_STATE == b'IDLE':
             logging.info("CMD | NEW ARQ DATA")
             static.TNC_STATE = b'BUSY'
             arqdata = data.split('ARQ:')
@@ -82,7 +92,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         
         
         
-        # SETTINGS AND STATUS    
+        # SETTINGS AND STATUS ---------------------------------------------   
         if data.startswith('SET:MYCALLSIGN:'):
             data = data.split('SET:MYCALLSIGN:')
             if bytes(data[1], encoding) == b'':
