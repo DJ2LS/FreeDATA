@@ -18,7 +18,7 @@ import threading
 
 import helpers
 import static
-import arq
+import data_handler
 
 import Hamlib
 
@@ -335,7 +335,7 @@ class RF():
                     if 50 >= frametype >= 10:                     
                         if frame != 3 or force == True:
 
-                            arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16 
+                            data_handler.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16 
                                             
                             #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
                             if static.ARQ_RX_BURST_BUFFER.count(None) <= 1:
@@ -382,17 +382,17 @@ class RF():
                     # BURST ACK
                     if frametype == 60:
                        logging.debug("ACK RECEIVED....")
-                       arq.burst_ack_received()
+                       data_handler.burst_ack_received()
                        
                     # FRAME ACK
                     elif frametype == 61:
                        logging.debug("FRAME ACK RECEIVED....")
-                       arq.frame_ack_received()
+                       data_handler.frame_ack_received()
                        
                     # FRAME RPT
                     elif frametype == 62:
                        logging.debug("REPEAT REQUEST RECEIVED....")
-                       arq.burst_rpt_received(signalling_bytes_out[:-2])
+                       data_handler.burst_rpt_received(signalling_bytes_out[:-2])
 
                     # CQ FRAME
                     elif frametype == 1:
@@ -401,12 +401,12 @@ class RF():
                     # PING FRAME
                     elif frametype == 2:
                        logging.debug("PING RECEIVED....")
-                       arq.received_ping(signalling_bytes_out[:-2])
+                       data_handler.received_ping(signalling_bytes_out[:-2])
 
                     # PING ACK
                     elif frametype == 3:
                        logging.debug("PING ACK RECEIVED....")
-                       arq.received_ping_ack(signalling_bytes_out[:-2])
+                       data_handler.received_ping_ack(signalling_bytes_out[:-2])
 
                     else:
                         logging.info("OTHER FRAME: " + str(signalling_bytes_out[:-2]))

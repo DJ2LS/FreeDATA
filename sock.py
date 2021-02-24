@@ -12,7 +12,7 @@ import logging
 import time
 
 import static
-import arq
+import data_handler
 import helpers
 import fec
 
@@ -42,7 +42,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # CQ CQ CQ
         if data == 'CQCQCQ':
             for i in range(0,3):
-                arq.transmit_cq()
+                data_handler.transmit_cq()
                 while static.ARQ_STATE == 'SENDING_SIGNALLING':
                     time.sleep(0.1)
                     pass
@@ -53,7 +53,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #send ping frame and wait for ACK
             pingcommand = data.split('PING:')
             dxcallsign = pingcommand[1]
-            arq.transmit_ping(dxcallsign)
+            data_handler.transmit_ping(dxcallsign)
         
         
         # ARQ CONNECT TO CALLSIGN
@@ -77,7 +77,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             arqdata = data.split('ARQ:')
             data_out = bytes(arqdata[1], 'utf-8')
 
-            TRANSMIT_ARQ = threading.Thread(target=arq.transmit, args=[data_out], name="TRANSMIT_ARQ")
+            TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
             TRANSMIT_ARQ.start()
         
         
