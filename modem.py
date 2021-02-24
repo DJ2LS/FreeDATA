@@ -395,18 +395,29 @@ class RF():
                        data_handler.burst_rpt_received(signalling_bytes_out[:-2])
 
                     # CQ FRAME
-                    elif frametype == 1:
+                    elif frametype == 200:
                        logging.info("CQ RECEIVED....")
                        
                     # PING FRAME
-                    elif frametype == 2:
+                    elif frametype == 210:
                        logging.debug("PING RECEIVED....")
                        data_handler.received_ping(signalling_bytes_out[:-2])
 
                     # PING ACK
-                    elif frametype == 3:
+                    elif frametype == 211:
                        logging.debug("PING ACK RECEIVED....")
                        data_handler.received_ping_ack(signalling_bytes_out[:-2])
+
+                    # ARQ CONNECT
+                    elif frametype == 220:
+                       logging.debug("ARQ CONNECT RECEIVED....")
+                       data_handler.arq_received_connect(signalling_bytes_out[:-2])
+
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 221:
+                       logging.debug("ARQ CONNECT ACK RECEIVED / KEEP ALIVE....")
+                       data_handler.arq_received_connect_keep_alive(signalling_bytes_out[:-2])
+
 
                     else:
                         logging.info("OTHER FRAME: " + str(signalling_bytes_out[:-2]))

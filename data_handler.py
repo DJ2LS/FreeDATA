@@ -17,6 +17,9 @@ modem = modem.RF()
 import helpers
 
 
+#############################################################################################################    
+# ARQ DATA HANDLER
+#############################################################################################################
 
 def data_received(data_in):
 
@@ -439,15 +442,47 @@ def burst_rpt_received(data_in):
         if not missing_area[i:i+2].endswith(b'\x00\x00'):
             missing = missing_area[i:i+2]
             static.ARQ_RPT_FRAMES.insert(0,missing)
+            
+#############################################################################################################    
+# ARQ CONNECT HANDLER
+#############################################################################################################
     
+def arq_connect(callsign):
+    logging.info("CONNECTING ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ callsign + "]")
+    frame_type = bytes([220])
+    connection_frame = frame_type + static.MYCALLSIGN
+
+    TRANSMIT_CONNECT_THREAD = threading.Thread(target=modem.transmit_signalling, args=[connection_frame], name="TRANSMIT_ARQ")
+    TRANSMIT_CONNECT_THREAD.start()    
+
+def arq_received_connect(data_in):
+    dxcallsign = data_in[1:6]
+    static.DXCALLSIGN = bytes(dxcallsign)
+    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+    logging.info("CONNECTING  ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+
+    frame_type = bytes([221])
+    connection_frame = frame_type + static.MYCALLSIGN
+    TRANSMIT_CONNECT_THREAD = threading.Thread(target=modem.transmit_signalling, args=[connection_frame], name="TRANSMIT_ARQ")
+    TRANSMIT_CONNECT_THREAD.start()
     
+def arq_received_connect_keep_alive(data_in):
+    logging.info("CONNECTED ["+ str(static.MYCALLSIGN, 'utf-8') + "] >< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    frame_type = bytes([221])
+    connection_frame = frame_type + static.MYCALLSIGN
+    TRANSMIT_CONNECT_THREAD = threading.Thread(target=modem.transmit_signalling, args=[connection_frame], name="TRANSMIT_ARQ")
+    TRANSMIT_CONNECT_THREAD.start()    
     
+
+#############################################################################################################
+# PING HANDLER
+#############################################################################################################    
     
 def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8')
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] > ["+ callsign + "]")
     
-    frame_type = bytes([2])
+    frame_type = bytes([210])
     ping_payload = b'PING'
 
     ping_frame = frame_type + ping_payload               
@@ -458,10 +493,10 @@ def transmit_ping(callsign):
 def received_ping(data_in):
     logging.info("TX PING ACK")
     
-    frame_type = bytes([3])
+    frame_type = bytes([211])
     ping_payload = b'PING_ACK'
 
-    ping_frame = frame_type + ping_payload               
+    ping_frame = frame_type + static.MYCALLSIGN + ping_payload               
 
     TRANSMIT_PING_THREAD = threading.Thread(target=modem.transmit_signalling, args=[ping_frame], name="TRANSMIT_ARQ")
     TRANSMIT_PING_THREAD.start()
@@ -469,12 +504,20 @@ def received_ping(data_in):
     
         
 def received_ping_ack(data_in):
-    logging.info("PING ACK")
     
+    dxcallsign = data_in[1:6]
+    static.DXCALLSIGN = bytes(dxcallsign)
+    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+    logging.info("PING ACK [" + str(static.DXCALLSIGN) + "]>[" + str(static.MYCALLSIGN) + "]")
+    static.TNC_STATE = 'IDLE'
+
+#############################################################################################################
+# BROADCAST HANDLER
+############################################################################################################# 
         
 def transmit_cq():
     logging.info("CQ CQ CQ")
-    frame_type = bytes([1])
+    frame_type = bytes([200])
     print(frame_type)
     cq_frame = frame_type + static.MYCALLSIGN
     modem.transmit_signalling(cq_frame)
