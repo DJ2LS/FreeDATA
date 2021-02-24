@@ -14,21 +14,63 @@ import time
 import static
 import arq
 import helpers
+import fec
+
 
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):    
 
     def handle(self):
     
         encoding = 'utf-8'    
-        data = str(self.request.recv(1024), 'utf-8')
+        #data = str(self.request.recv(1024), 'utf-8')
+        
+        data = bytes()
+        while True: 
+            chunk = self.request.recv(8192)#.strip() 
+            data += chunk
+            if chunk.endswith(b'\n'):
+                break
+        data = data[:-1] # remove b'\n'
+        data = str(data, 'utf-8')        
 
         # SOCKETTEST
         if data == 'SOCKETTEST':
             cur_thread = threading.current_thread()
             response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
             self.request.sendall(response)
+        
+        # CQ CQ CQ
+        if data == 'CQCQCQ':
+            for i in range(0,3):
+                arq.transmit_cq()
+                while static.ARQ_STATE == 'SENDING_SIGNALLING':
+                    time.sleep(0.1)
+                    pass
+
+        
+        # PING 
+        if data.startswith('PING:'):
+            #send ping frame and wait for ACK
+            pingcommand = data.split('PING:')
+            dxcallsign = pingcommand[1]
+            arq.transmit_ping(dxcallsign)
+        
+        
+        # ARQ CONNECT TO CALLSIGN
+        if data.startswith('ARQ:CONNECT:'):
+            if static.TNC_STATE == b'CONNECTED':
+                # here we should disconnect
+                pass
+                
+            if static.TNC_STATE == b'IDLE':
+                # here we send an "CONNECT FRAME
+                pass    
+        
+        
+        
             
         # TRANSMIT ARQ MESSAGE    
+        # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
         if data.startswith('ARQ:') and static.TNC_STATE == b'IDLE':
             logging.info("CMD | NEW ARQ DATA")
             static.TNC_STATE = b'BUSY'

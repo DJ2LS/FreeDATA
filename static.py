@@ -18,7 +18,7 @@ MYGRID = b''
 
 TNC_STATE = b'IDLE'
 
-PTT_STATE = False
+
 
 #---------------------------------
 
@@ -51,7 +51,7 @@ PORT = 3000
 #PTT control through CM108 GPIO pin
 
 HAMLIB_PTT_TYPE = 'RIG_PTT_NONE'
-
+PTT_STATE = False
 
 
 
@@ -69,6 +69,8 @@ FREEDV_DATA_BYTES_PER_FRAME = 0
 FREEDV_DATA_PAYLOAD_PER_FRAME = 0
 FREEDV_SIGNALLING_BYTES_PER_FRAME = 0
 FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = 0
+
+UNCODED_BER = 1
 #---------------------------------
 
 #Audio Defaults
@@ -85,7 +87,7 @@ AUDIO_CHANNELS = 1
 #---------------------------------
 
 #ARQ DEFAULTS
-TX_N_MAX_RETRIES = 10
+TX_N_MAX_RETRIES = 5
 TX_N_RETRIES = 0
 
 ARQ_TX_N_FRAMES_PER_BURST = 0
@@ -141,10 +143,10 @@ ARQ_N_SENT_FRAMES = 0 #counter for already sent frames
 # RECEIVING_SIGNALLING
 # SENDING_ACK
 # ACK_RECEIVED
-#
-#
-#
-ARQ_STATE = 'RECEIVING_DATA'
+# CONNECTED
+# DISCONNECTED
+# DISCONNECTING
+ARQ_STATE = 'RECEIVING_SIGNALLING'
 
 # ------- TX BUFFER
 TX_BUFFER_SIZE = 0
