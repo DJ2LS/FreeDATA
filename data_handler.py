@@ -23,7 +23,7 @@ import helpers
 
 def data_received(data_in):
 
-        static.TNC_STATE = b'BUSY'
+        static.TNC_STATE = 'BUSY'
 
         static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big")  - 10 #get number of burst frame 
         static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big") #get number of bursts from received frame
@@ -189,7 +189,7 @@ def data_received(data_in):
                  static.ARQ_FRAME_BOF_RECEIVED = False
                  static.ARQ_FRAME_EOF_RECEIVED = False
                  static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
-                 static.TNC_STATE = b'IDLE'
+                 static.TNC_STATE = 'IDLE'
                  
                  #print("----------------------------------------------------------------")
                  #print(static.RX_BUFFER[-1])
@@ -197,7 +197,7 @@ def data_received(data_in):
                  
             else:
                 logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
-                static.ARQ_STATE = b'IDLE'
+                static.ARQ_STATE = 'IDLE'
 
         
 
@@ -469,15 +469,16 @@ def arq_received_connect(data_in):
     TRANSMIT_CONNECT_THREAD.start()
     
 def arq_received_connect_keep_alive(data_in):
-    static.ARQ_STATE = 'CONNECTED' 
-    logging.info("CONNECTED ["+ str(static.MYCALLSIGN, 'utf-8') + "] >< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")
-    frame_type = bytes([221])
-    connection_frame = frame_type + static.MYCALLSIGN
+    if static.ARQ_STATE == 'CONNECTED' or static.ARQ_STATE == 'CONNECTING':
+        static.ARQ_STATE = 'CONNECTED' 
+        logging.info("CONNECTED ["+ str(static.MYCALLSIGN, 'utf-8') + "] >< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+        frame_type = bytes([221])
+        connection_frame = frame_type + static.MYCALLSIGN
     
-    acktimer = threading.Timer(3.0, modem.transmit_signalling, args=[connection_frame])
-    acktimer.start() 
-    #TRANSMIT_CONNECT_THREAD = threading.Thread(target=modem.transmit_signalling, args=[connection_frame], name="TRANSMIT_ARQ")
-    #TRANSMIT_CONNECT_THREAD.start()
+        acktimer = threading.Timer(3.0, modem.transmit_signalling, args=[connection_frame])
+        acktimer.start() 
+        #TRANSMIT_CONNECT_THREAD = threading.Thread(target=modem.transmit_signalling, args=[connection_frame], name="TRANSMIT_ARQ")
+        #TRANSMIT_CONNECT_THREAD.start()
    
 
 def arq_disconnect():
@@ -495,7 +496,7 @@ def arq_disconnect():
      
 def arq_disconnect_received(data_in):
     static.ARQ_STATE = 'DISCONNECTED'     
-    logging.info("DISCONNECTED ["+ str(static.MYCALLSIGN, 'utf-8') + "] >< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")   
+    logging.info("DISCONNECTED ["+ str(static.MYCALLSIGN, 'utf-8') + "] <  > ["+ str(static.DXCALLSIGN, 'utf-8') + "]")   
     static.ARQ_STATE = 'DISCONNECTED'
     static.TNC_STATE = 'IDLE'    
     static.DXCALLSIGN = b''
@@ -553,7 +554,7 @@ def transmit_beacon():
     frame_type = bytes([230])
     print(frame_type)
     beacon_frame = frame_type + static.MYCALLSIGN
-    while static.TNC_STATE = 'BEACON':
+    while static.TNC_STATE == 'BEACON':
         time.sleep(0.01)
         beacontimer = threading.Timer(60.0, modem.transmit_signalling, args=[beacon_frame])
         beacontimer.start()     
