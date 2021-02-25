@@ -107,10 +107,11 @@ class RF():
         payload_per_frame = bytes_per_frame -2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv) #get n_tx_modem_samples which defines the size of the modulation object
-          
+        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)  
+        
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * (n_tx_modem_samples) #*2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples #*2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
         buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
@@ -121,8 +122,7 @@ class RF():
         buffer += crc        # append crc16 to buffer
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         
-        preamble_bytes = self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-           
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)   
         self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
         txbuffer = bytearray()    
         txbuffer += bytes(mod_out_preamble)
@@ -153,13 +153,14 @@ class RF():
          
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)#*2 #get n_tx_modem_samples which defines the size of the modulation object
+        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
           
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * (3520) #*2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples #*2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
-        preamble = self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
 
         txbuffer = bytearray()
         txbuffer += bytes(mod_out_preamble)
