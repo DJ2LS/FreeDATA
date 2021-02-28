@@ -11,6 +11,7 @@ from ctypes import *
 import pathlib
 import pyaudio
 import audioop
+import asyncio
 #import sys
 import logging
 import time
@@ -329,7 +330,7 @@ class RF():
                      static.UNCODED_BER = Terrs/Tbits      
                 
                 
-                if nbytes == bytes_per_frame:###################################################################################################FREEDV_DATA_BYTES_PER_FRAME
+                if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
                    
                     
                     
@@ -351,7 +352,7 @@ class RF():
                     if 50 >= frametype >= 10:                     
                         if frame != 3 or force == True:
 
-                            data_handler.data_received(bytes(bytes_out[:-2])) #send payload data to arq checker without CRC16 
+                            data_handler.arq_data_received(bytes(bytes_out[:-2])) #send payload data to arq checker without CRC16 
                                             
                             #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
                             if static.ARQ_RX_BURST_BUFFER.count(None) <= 1:

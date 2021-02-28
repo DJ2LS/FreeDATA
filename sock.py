@@ -44,6 +44,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data == 'CQCQCQ':
             for i in range(0,3):
                 data_handler.transmit_cq()
+                self.request.sendall(bytes("CALLING CQ"))
                 while static.ARQ_STATE == 'SENDING_SIGNALLING':
                     time.sleep(0.1)
                     pass
@@ -71,25 +72,29 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             if static.TNC_STATE == 'IDLE':
                 # here we send an "CONNECT FRAME
                 
-                ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, name="ARQ_CONNECT")
-                ARQ_CONNECT_THREAD.start()
-        
+                #ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, name="ARQ_CONNECT")
+                #ARQ_CONNECT_THREAD.start()
+                asyncio.run(data_handler.arq_connect())
+                self.request.sendall(bytes("CONNECTING", encoding))
+                #data_handler.arq_connect()
         # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
         if data == 'ARQ:DISCONNECT':
 
-            ARQ_DISCONNECT_THREAD = threading.Thread(target=data_handler.arq_disconnect, name="ARQ_DISCONNECT")
-            ARQ_DISCONNECT_THREAD.start()  
-
-      
+            #ARQ_DISCONNECT_THREAD = threading.Thread(target=data_handler.arq_disconnect, name="ARQ_DISCONNECT")
+            #ARQ_DISCONNECT_THREAD.start()  
+            asyncio.run(data_handler.arq_disconnect())
+            self.request.sendall(bytes("DISCONNECTING", encoding))
+            #data_handler.arq_disconnect()
         
             
         # TRANSMIT ARQ MESSAGE ------------------------------------------   
         # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
-        print(static.ARQ_STATE)
+        #print(static.ARQ_STATE)
         if data.startswith('ARQ:DATA') and static.ARQ_STATE == 'CONNECTED':           
             static.ARQ_READY_FOR_DATA = False
             logging.info("CMD | NEW ARQ DATA")
             asyncio.run(data_handler.arq_open_data_channel())
+            #data_handler.arq_open_data_channel()
             
             #wait until we set the data mode
             # here we need a timeout as well!!!
@@ -102,8 +107,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 arqdata = data.split('ARQ:')
                 data_out = bytes(arqdata[1], 'utf-8')
 
-                TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
-                TRANSMIT_ARQ.start()
+                asyncio.run(data_handler.arq_transmit(data_out))
+                #data_handler.arq_transmit(data_out)
+                #TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
+                #TRANSMIT_ARQ.start()
         
         
         
