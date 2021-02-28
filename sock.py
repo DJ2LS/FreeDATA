@@ -16,6 +16,7 @@ import data_handler
 import helpers
 import fec
 
+import asyncio
 
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):    
 
@@ -60,14 +61,17 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data.startswith('ARQ:CONNECT:'):
             arqconnectcommand = data.split('ARQ:CONNECT:')
             dxcallsign = arqconnectcommand[1]
+            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+            static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            
             if static.ARQ_STATE == 'CONNECTED':
-                # here we should disconnect
+                # here we could disconnect
                 pass
    
             if static.TNC_STATE == 'IDLE':
                 # here we send an "CONNECT FRAME
                 
-                ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, args=[dxcallsign], name="ARQ_CONNECT")
+                ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, name="ARQ_CONNECT")
                 ARQ_CONNECT_THREAD.start()
         
         # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
@@ -81,28 +85,39 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
         # TRANSMIT ARQ MESSAGE ------------------------------------------   
         # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
-        if data.startswith('ARQ:DATA') and static.TNC_STATE == b'IDLE':
+        print(static.ARQ_STATE)
+        if data.startswith('ARQ:DATA') and static.ARQ_STATE == 'CONNECTED':           
+            static.ARQ_READY_FOR_DATA = False
             logging.info("CMD | NEW ARQ DATA")
-            static.TNC_STATE = 'BUSY'
-            arqdata = data.split('ARQ:')
-            data_out = bytes(arqdata[1], 'utf-8')
+            asyncio.run(data_handler.arq_open_data_channel())
+            
+            #wait until we set the data mode
+            # here we need a timeout as well!!!
+            while static.ARQ_READY_FOR_DATA == False:
+                time.sleep(0.01)
+            
+            if static.ARQ_READY_FOR_DATA == True:
+                logging.info("CMD | SENDING ARQ DATA")
+                static.TNC_STATE = 'BUSY'
+                arqdata = data.split('ARQ:')
+                data_out = bytes(arqdata[1], 'utf-8')
 
-            TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
-            TRANSMIT_ARQ.start()
+                TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
+                TRANSMIT_ARQ.start()
         
         
         
         # SETTINGS AND STATUS ---------------------------------------------   
         if data.startswith('SET:MYCALLSIGN:'):
-            data = data.split('SET:MYCALLSIGN:')
-            if bytes(data[1], encoding) == b'':
+            callsign = data.split('SET:MYCALLSIGN:')
+            if bytes(callsign[1], encoding) == b'':
                 self.request.sendall(b'INVALID CALLSIGN')
             else:    
-                static.MYCALLSIGN = bytes(data[1], encoding)
+                static.MYCALLSIGN = bytes(callsign[1], encoding)
                 static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
                 self.request.sendall(static.MYCALLSIGN)
                 logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
-         
+             
          
         if data == 'GET:MYCALLSIGN':
             self.request.sendall(bytes(static.MYCALLSIGN, encoding))
@@ -118,9 +133,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
         if data == 'GET:PTT_STATE':
             self.request.sendall(bytes(str(static.PTT_STATE), encoding))       
-        
-        
-        
                 
         # ARQ
         if data == 'GET:ARQ_STATE':
