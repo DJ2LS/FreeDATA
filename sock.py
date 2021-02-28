@@ -102,7 +102,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 time.sleep(0.01)
             
             if static.ARQ_READY_FOR_DATA == True:
-                logging.info("CMD | SENDING ARQ DATA")
+                #logging.info("CMD | SENDING ARQ DATA")
                 static.TNC_STATE = 'BUSY'
                 arqdata = data.split('ARQ:')
                 data_out = bytes(arqdata[1], 'utf-8')
