@@ -43,7 +43,7 @@ def arq_data_received(data_in):
         arq_percent_burst = int((static.ARQ_N_FRAME / static.ARQ_N_RX_FRAMES_PER_BURSTS)*100)
         arq_percent_frame = int(((static.ARQ_RX_N_CURRENT_ARQ_FRAME)/static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)*100)      
         
-        logging.log(24, "ARQ | RX | " + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_FRAME) + "/" + str(static.ARQ_N_RX_FRAMES_PER_BURSTS) + "] [" + str(arq_percent_burst).zfill(3) + "%] --- T:[" + str(static.ARQ_RX_N_CURRENT_ARQ_FRAME) + "/" + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) + "] [" + str(arq_percent_frame).zfill(3) + "%]" )
+        logging.log(24, "ARQ | RX | " + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_FRAME) + "/" + str(static.ARQ_N_RX_FRAMES_PER_BURSTS) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(static.ARQ_RX_N_CURRENT_ARQ_FRAME) + "/" + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) + "] [" + str(arq_percent_frame).zfill(3) + "%] [PER."+str(static.PER)+"]" )
         
         #allocate ARQ_RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
         # here we will save the N frame of a data frame to N list position so we can explicit search for it
@@ -112,7 +112,7 @@ def arq_data_received(data_in):
                     frame_number = frame_number.to_bytes(2, byteorder='big')  
                     missing_frames += frame_number
                                 
-            logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "]") 
+            logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "] [PER."+str(static.PER)+"]") 
             
             #BUILDING RPT FRAME FOR BURST -----------------------------------------------
             rpt_payload = missing_frames       
@@ -164,7 +164,7 @@ def arq_data_received(data_in):
           
             #IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS      
             if frame_payload_crc == static.FRAME_CRC:
-                 logging.log(25,"ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-)")
+                 logging.log(25,"ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
                  
                  #append received frame to RX_BUFFER
                  static.RX_BUFFER.append(complete_data_frame)
@@ -175,7 +175,7 @@ def arq_data_received(data_in):
             
                 #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
                  time.sleep(1) #0.5
-                 logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) +"] BER: ["+str(static.UNCODED_BER)+"]")
+                 logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) +"] [PER."+str(static.PER)+"]")
                  
                  modem.transmit_signalling(ack_frame)
 
@@ -187,13 +187,13 @@ def arq_data_received(data_in):
                  static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
                  static.TNC_STATE = 'IDLE'
                  static.ARQ_SEND_KEEP_ALIVE = True
-                 logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+                 logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
                  
             else:
                 logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
                 static.ARQ_STATE = 'IDLE'
                 static.ARQ_SEND_KEEP_ALIVE = True
-                logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+                logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
         
 
 async def arq_transmit(data_out):
@@ -257,7 +257,7 @@ async def arq_transmit(data_out):
                 for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
                  
                     if static.ARQ_N_SENT_FRAMES + 1 <= static.TX_BUFFER_SIZE:
-                        logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES+1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES/(static.TX_BUFFER_SIZE)*100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES+1) + "/" + str(static.TX_N_MAX_RETRIES) + "]")
+                        logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES+1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES/(static.TX_BUFFER_SIZE)*100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES+1) + "/" + str(static.TX_N_MAX_RETRIES) + "] [PER."+str(static.PER)+"]")
                     
                                         
                     # lets start a thread to transmit nonblocking
@@ -420,7 +420,7 @@ async def arq_transmit(data_out):
             logging.info("ARQ | TX | BUFFER EMPTY")
             helpers.arq_reset_frame_machine()
             await asyncio.sleep(2)
-            logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+            logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
             arq_transmit_keep_alive()
 
 
@@ -460,7 +460,7 @@ def burst_rpt_received(data_in):
     
 async def arq_connect():
     static.ARQ_STATE = 'CONNECTING' 
-    logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     frame_type = bytes([220])
 
     connection_frame = bytearray(14)
@@ -481,7 +481,7 @@ def arq_received_connect(data_in):
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)    
     #static.FREEDV_DATA_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
 
-    logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "]-> <-["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
 
     frame_type = bytes([221])
     connection_frame = bytearray(14)
@@ -504,7 +504,7 @@ def arq_transmit_keep_alive():
    
 def arq_received_connect_keep_alive(data_in):
     if static.ARQ_SEND_KEEP_ALIVE == True and (static.ARQ_STATE == 'CONNECTING' or static.ARQ_STATE == 'CONNECTED'):
-        logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "] >|< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+        logging.info("CONN ["+ str(static.MYCALLSIGN, 'utf-8') + "] >|< ["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
         static.ARQ_STATE = 'CONNECTED'
         
         frame_type = bytes([221])  
@@ -529,13 +529,13 @@ def arq_received_connect_keep_alive(data_in):
 async def arq_open_data_channel():
     # we need to wait until the last keep alive has been sent.
 
-    logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>> <<["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>> <<["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     static.ARQ_SEND_KEEP_ALIVE = False
     static.ARQ_DATA_CHANNEL_MODE = 12
 
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
-    print("wir warten 2 sekunden...")
+    #print("wir warten 2 sekunden...")
     await asyncio.sleep(2)
     
         
@@ -553,7 +553,7 @@ async def arq_open_data_channel():
     
             
 def arq_received_data_channel_opener(data_in):
-    logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>> <<["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>> <<["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     static.ARQ_SEND_KEEP_ALIVE = False
     static.ARQ_DATA_CHANNEL_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
     #static.ARQ_READY_FOR_DATA = int.from_bytes(bytes(data_in[13:14]), "big")
@@ -577,7 +577,7 @@ def arq_received_channel_is_open(data_in):
     static.ARQ_SEND_KEEP_ALIVE == False
     
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
-        logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>>|<<["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+        logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>>|<<["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
         time.sleep(1)
         static.ARQ_READY_FOR_DATA = True
         #static.CHANNEL_STATE = 'RECEIVING_DATA':      
@@ -592,7 +592,7 @@ async def arq_disconnect():
     # we need to create a "force ignore all" so we don't receive frames any more... Then we don't need a timer
     static.ARQ_SEND_KEEP_ALIVE == False
     static.ARQ_STATE = 'DISCONNECTING' 
-    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "] <-> ["+ str(static.DXCALLSIGN, 'utf-8') + "]")   
+    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "] <-> ["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")   
     frame_type = bytes([222])
     disconnection_frame = frame_type + static.MYCALLSIGN
            
@@ -602,14 +602,14 @@ async def arq_disconnect():
     await asyncio.sleep(5)
     modem.transmit_signalling(disconnection_frame)
     
-    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "]")   
+    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")   
     static.ARQ_STATE = 'IDLE'
     static.DXCALLSIGN = b''
     static.DXCALLSIGN_CRC8 = b''
      
 def arq_disconnect_received(data_in):
     static.ARQ_STATE = 'DISCONNECTED'     
-    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "]")   
+    logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")   
     static.ARQ_STATE = 'DISCONNECTED'
     static.TNC_STATE = 'IDLE'    
     static.DXCALLSIGN = b''
@@ -623,7 +623,7 @@ def arq_disconnect_received(data_in):
     
 def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8')
-    logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     frame_type = bytes([210])
     ping_payload = b'PING'
     ping_frame = frame_type + ping_payload               
@@ -635,7 +635,7 @@ def transmit_ping(callsign):
         
 def received_ping(data_in):
 
-    logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] <<< ["+ str(static.DXCALLSIGN, 'utf-8') + "]")
+    logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] <<< ["+ str(static.DXCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     frame_type = bytes([211])
     ping_payload = b'PING_ACK'
     ping_frame = frame_type + static.MYCALLSIGN + ping_payload               
@@ -650,7 +650,7 @@ def received_ping_ack(data_in):
     dxcallsign = data_in[1:6]
     static.DXCALLSIGN = bytes(dxcallsign)
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
-    logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "]")
+    logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [PER."+str(static.PER)+"]")
     static.TNC_STATE = 'IDLE'
 
 #############################################################################################################

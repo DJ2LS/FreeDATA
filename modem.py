@@ -331,7 +331,7 @@ class RF():
                 
                 
                 if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
-                   
+                    self.calculate_per(freedv)
                     
                     
                     rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
@@ -424,13 +424,13 @@ class RF():
                     else:
                         logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
                         print(frametype)
-                    # DO UNSYNC AFTER LAST BURST by checking the frame numbers agains the total frames per burst
+                    # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
                     if frame == n_frames_per_burst:
                     
 
                         #reset bit error counters
-                        self.c_lib.freedv_set_total_bit_errors(freedv,0)
-                        self.c_lib.freedv_set_total_bits(freedv,0)
+                        #self.c_lib.freedv_set_total_bit_errors(freedv,0)
+                        #self.c_lib.freedv_set_total_bits(freedv,0)
                         
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
@@ -440,4 +440,15 @@ class RF():
                 if rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                     print("SIGNALLING -SYNC 10- Trigger")
+ 
+  
+    def calculate_per(self,freedv):
+        Tbits = self.c_lib.freedv_get_total_bits(freedv)
+        Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
+        if Tbits != 0:
+            per = (Terrs/Tbits)*100 
+            static.PER = int(per)
+            
+        self.c_lib.freedv_set_total_bit_errors(freedv,0)
+        self.c_lib.freedv_set_total_bits(freedv,0)                       
        
