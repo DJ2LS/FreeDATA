@@ -288,14 +288,21 @@ class RF():
             stuck_in_sync_counter = 0
             stuck_in_sync_10_counter = 0
             #
-    
+            
+            # here we do a buffer cleanup before returning to demod loop
+            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            
+            #demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 
                 
                 static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
                 static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
                 
-                time.sleep(0.01)
+                #time.sleep(0.01)
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
@@ -324,14 +331,14 @@ class RF():
                 #-----------------------------------
                 
                 # get bit errors
-                Tbits = self.c_lib.freedv_get_total_bits(freedv)
-                Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
-                if Tbits != 0:
-                     static.UNCODED_BER = Terrs/Tbits      
+                #Tbits = self.c_lib.freedv_get_total_bits(freedv)
+                #Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
+                #if Tbits != 0:
+                #     static.UNCODED_BER = Terrs/Tbits      
                 
                 
                 if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
-                    self.calculate_per(freedv)
+                    self.calculate_ber(freedv)
                     
                     
                     rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
@@ -442,12 +449,12 @@ class RF():
                     print("SIGNALLING -SYNC 10- Trigger")
  
   
-    def calculate_per(self,freedv):
+    def calculate_ber(self,freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
         if Tbits != 0:
-            per = (Terrs/Tbits)*100 
-            static.PER = int(per)
+            ber = (Terrs/Tbits)*100 
+            static.BER = int(ber)
             
         self.c_lib.freedv_set_total_bit_errors(freedv,0)
         self.c_lib.freedv_set_total_bits(freedv,0)                       
