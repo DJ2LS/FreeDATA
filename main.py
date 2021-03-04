@@ -23,9 +23,6 @@ if __name__ == '__main__':
 
     # config logging
     helpers.setup_logging()
-    
-    # list audio devices
-    helpers.list_audio_devices()
 
 
     #--------------------------------------------GET PARAMETER INPUTS  

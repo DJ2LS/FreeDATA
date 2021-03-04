@@ -113,19 +113,3 @@ def setup_logging():
     #'ERROR'   : 31, # red
     #'CRITICAL': 41, # white on red bg    
 
-
-
-def list_audio_devices():
-    p = pyaudio.PyAudio()
-    devices = []
-    for x in range(0, p.get_device_count()):
-        devices.append(f"{x} - {p.get_device_info_by_index(x)['name']}")
-        
-    for line in devices:
-        print(line) 
-        
-
-        
-        
-        
-             
