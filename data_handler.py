@@ -11,6 +11,7 @@ import threading
 import time
 from random import randrange
 import asyncio
+import trio
 
 import static
 import modem
@@ -24,6 +25,7 @@ import helpers
 # ARQ DATA HANDLER
 #############################################################################################################
 
+    
 def arq_data_received(data_in):
 
         static.TNC_STATE = 'BUSY'
@@ -87,6 +89,7 @@ def arq_data_received(data_in):
 
             #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(ack_frame)
+            static.CHANNEL_STATE = 'RECEIVING_DATA'
             #TRANSMIT_ARQ_ACK_THREAD = threading.Thread(target=modem.transmit_arq_ack, args=[ack_frame], name="TRANSMIT_ARQ_BURST")
             #TRANSMIT_ARQ_ACK_THREAD.start()
             #while static.ARQ_STATE == 'SENDING_ACK':
@@ -120,7 +123,7 @@ def arq_data_received(data_in):
         
             #TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(rpt_frame)
-                  
+            static.CHANNEL_STATE = 'RECEIVING_DATA'      
         
 # ---------------------------- FRAME MACHINE
         # ---------------  IF LIST NOT CONTAINS "None" stick everything together 
@@ -178,7 +181,8 @@ def arq_data_received(data_in):
                  logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) +"] [BER."+str(static.BER)+"]")
                  
                  modem.transmit_signalling(ack_frame)
-
+                 
+                 static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
                  # clearing buffers and resetting counters
                  static.ARQ_RX_BURST_BUFFER = []
                  static.ARQ_RX_FRAME_BUFFER = []
@@ -187,12 +191,16 @@ def arq_data_received(data_in):
                  static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
                  static.TNC_STATE = 'IDLE'
                  static.ARQ_SEND_KEEP_ALIVE = True
+                 static.ARQ_READY_FOR_DATA = False
                  logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
                  
             else:
+                print("ARQ_FRAME_BOF_RECEIVED " + str(static.ARQ_FRAME_BOF_RECEIVED))
+                print("ARQ_FRAME_EOF_RECEIVED " + str(static.ARQ_FRAME_EOF_RECEIVED))
                 logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
                 static.ARQ_STATE = 'IDLE'
                 static.ARQ_SEND_KEEP_ALIVE = True
+                static.ARQ_READY_FOR_DATA = False
                 logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
         
 
@@ -264,9 +272,9 @@ async def arq_transmit(data_out):
                     #TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
                     #TRANSMIT_ARQ_BURST_THREAD.start()
                     #asyncio.run(modem.transmit_arq_burst())
-                    modem.transmit_arq_burst()
+                    await modem.transmit_arq_burst()
                     # lets wait during sending. After sending is finished we will continue
-                    while static.CHANNEL_STATE == 'SENDING_DATA':
+                    while static.CHANNEL_STATE == 'SENDING_DATA':    
                         time.sleep(0.01)
                        
                     # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
@@ -276,7 +284,18 @@ async def arq_transmit(data_out):
                        
                     helpers.arq_reset_timeout(False)
                     helpers.arq_reset_ack(False)
-                            
+                    #print(static.ARQ_RX_ACK_TIMEOUT)
+                    #print("timeout......?!?")
+                    #asyncio.ensure_future(helpers.set_variable_after_timeout())
+                    ##################task = asyncio.create_task(helpers.set_after_timeout())
+                    #async with trio.open_nursery() as nursery:
+                    #   nursery.start_soon(helpers.set_after_timeout()) 
+                    
+                    
+                    #print("TIMEOUT glaube gestartet...")
+                    #print(task)
+                    #print(static.ARQ_RX_ACK_TIMEOUT)
+                    
                     acktimer = threading.Timer(static.ARQ_RX_ACK_TIMEOUT_SECONDS, helpers.arq_ack_timeout)
                     acktimer.start() 
                     
@@ -301,12 +320,10 @@ async def arq_transmit(data_out):
                         #TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
                         #TRANSMIT_ARQ_BURST_THREAD.start()
                         #asyncio.run(modem.transmit_arq_burst())
-                        modem.transmit_arq_burst()
+                        await modem.transmit_arq_burst()
                         # lets wait during sending. After sending is finished we will continue
                         while static.ARQ_STATE == 'SENDING_DATA':
                             time.sleep(0.01)
-            
-            
                         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
              
                         helpers.arq_reset_timeout(False)
@@ -389,16 +406,19 @@ async def arq_transmit(data_out):
                 # ----------- if no ACK received and out of retries.....stop frame sending
                 if static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
                     logging.error("ARQ | TX | NO ACK RECEIVED | DATA SHOULD BE RESEND!")
+                    static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
                     logging.error("------------------------------------------------------")
                     break
 
                 #-------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
                 elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED == True:
                     logging.log(25,"ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
+                    static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
                     break
                 
                 elif static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_FRAME_TIMEOUT == True:
                     logging.error("ARQ | TX | NO FRAME ACK RECEIVED")
+                    static.CHANNEL_STATE = 'RECEIVING_DATA'
                     break  
  
                 else:
@@ -427,8 +447,8 @@ async def arq_transmit(data_out):
 
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST         
 def get_n_frames_per_burst():
-    n_frames_per_burst = randrange(1,10)
-    #n_frames_per_burst = 1   
+    #n_frames_per_burst = randrange(1,10)
+    n_frames_per_burst = 1   
     return n_frames_per_burst
     
     
@@ -544,7 +564,7 @@ async def arq_open_data_channel():
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
-    connection_frame[13:14] = bytes([225]) 
+    #connection_frame[13:14] = bytes([225]) 
 
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
@@ -563,7 +583,7 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
-    connection_frame[13:14] = bytes([226]) 
+    #connection_frame[13:14] = bytes([226]) 
 
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)

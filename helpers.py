@@ -11,6 +11,7 @@ import threading
 import logging
 import crcengine
 import pyaudio
+import asyncio
 
 import data_handler
 
@@ -31,6 +32,17 @@ def get_crc_16(data):
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big') 
     return crc_data   
+
+async def set_after_timeout():
+    while True:
+        logging.info("HALLO?!?")
+        time.sleep(1)
+        print("HALLOIOIOIOIOIOI")
+        static.ARQ_RX_ACK_TIMEOUT = True
+        await asyncio.sleep(1.1)
+    #await asyncio.sleep(timeout) 
+    #vars()[variable] = value
+
     
     
 def arq_disconnect_timeout():
@@ -39,17 +51,17 @@ def arq_disconnect_timeout():
        
        
 def arq_ack_timeout():
-    if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
+    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_ACK_TIMEOUT = True
         logging.debug("ARQ_RX_ACK_TIMEOUT")
     
 def arq_rpt_timeout():
-    if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
+    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_RPT_TIMEOUT = True    
         logging.debug("ARQ_RX_RPT_TIMEOUT")    
 
 def arq_frame_timeout():
-    if static.ARQ_STATE == 'RECEIVING_SIGNALLING':
+    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_FRAME_TIMEOUT = True    
         logging.debug("ARQ_RX_FRAME_TIMEOUT")     
                 
@@ -71,6 +83,8 @@ def arq_reset_frame_machine():
     static.ARQ_TX_N_FRAMES_PER_BURST = 0
     static.TNC_STATE = b'IDLE'                
     static.ARQ_SEND_KEEP_ALIVE = True
+    static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+    static.ARQ_READY_FOR_DATA = False
     
     #start sending keep alive after some seconds
     #acktimer = threading.Timer(3.0, data_handler.arq_connect)
@@ -109,3 +123,9 @@ def list_audio_devices():
         
     for line in devices:
         print(line) 
+        
+
+        
+        
+        
+             

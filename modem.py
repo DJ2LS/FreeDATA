@@ -100,7 +100,10 @@ class RF():
     def transmit_signalling(self,ack_buffer):
         #print(ack_buffer)
         #static.ARQ_STATE = 'SENDING_ACK'
+        
+        state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        
         static.PTT_STATE = True
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         
@@ -140,14 +143,16 @@ class RF():
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False
         
-        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+        static.CHANNEL_STATE = state_before_transmit
+        #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         #static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
-    def transmit_arq_burst(self):
+    async def transmit_arq_burst(self):
     
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         static.PTT_STATE = True
+        state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_DATA'
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
@@ -248,6 +253,7 @@ class RF():
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
         #static.ARQ_STATE = 'IDLE'
+        #static.CHANNEL_STATE = state_before_transmit
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
@@ -282,7 +288,7 @@ class RF():
         bytes_out = bytes_out() #get pointer to bytes_out    
 
         while static.FREEDV_RECEIVE == True:
-            time.sleep(0.01)
+            time.sleep(0.05)
             
             # stuck in sync counter
             stuck_in_sync_counter = 0
@@ -292,8 +298,6 @@ class RF():
             # here we do a buffer cleanup before returning to demod loop
             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
-            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
-            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
             
             #demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
@@ -302,7 +306,7 @@ class RF():
                 static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
                 static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
                 
-                #time.sleep(0.01)
+                time.sleep(0.01)
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
@@ -329,12 +333,6 @@ class RF():
                     stuck_in_sync_counter = 0    
                     stuck_in_sync_10_counter = 0
                 #-----------------------------------
-                
-                # get bit errors
-                #Tbits = self.c_lib.freedv_get_total_bits(freedv)
-                #Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
-                #if Tbits != 0:
-                #     static.UNCODED_BER = Terrs/Tbits      
                 
                 
                 if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
@@ -433,20 +431,16 @@ class RF():
                         print(frametype)
                     # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
                     if frame == n_frames_per_burst:
-                    
-
-                        #reset bit error counters
-                        #self.c_lib.freedv_set_total_bit_errors(freedv,0)
-                        #self.c_lib.freedv_set_total_bits(freedv,0)
                         
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                 
                 rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
-                #logging.info("DATA-" + str(rxstatus))
+                #logging.info("DATA-" + str(mode) + " " +str(rxstatus))
                 if rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
-                    print("SIGNALLING -SYNC 10- Trigger")
+                    print(" -SYNC 10- Trigger - M:" + str(mode))
+                    self.calculate_ber(freedv)
  
   
     def calculate_ber(self,freedv):

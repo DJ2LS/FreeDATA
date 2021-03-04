@@ -93,6 +93,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data.startswith('ARQ:DATA') and static.ARQ_STATE == 'CONNECTED':           
             static.ARQ_READY_FOR_DATA = False
             logging.info("CMD | NEW ARQ DATA")
+            self.request.sendall(b'SENDIN ARQ DATA')
             asyncio.run(data_handler.arq_open_data_channel())
             #data_handler.arq_open_data_channel()
             
@@ -108,6 +109,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 data_out = bytes(arqdata[1], 'utf-8')
 
                 asyncio.run(data_handler.arq_transmit(data_out))
+                
                 #data_handler.arq_transmit(data_out)
                 #TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
                 #TRANSMIT_ARQ.start()
