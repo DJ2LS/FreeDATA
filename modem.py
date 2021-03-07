@@ -281,10 +281,9 @@ class RF():
         else:
             pass
             
-        #vars()['food']   
       
       
-        bytes_out = (ctypes.c_ubyte * bytes_per_frame) ################################################################## DATA BYTES PER FRAME SETZEN!
+        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
         bytes_out = bytes_out() #get pointer to bytes_out    
 
         while static.FREEDV_RECEIVE == True:
@@ -301,12 +300,11 @@ class RF():
             
             #demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
-                
-                
+                time.sleep(0.01)
+                # refresh vars, so the correct parameters of the used mode are set
                 static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
                 static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
                 
-                time.sleep(0.01)
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
@@ -315,6 +313,7 @@ class RF():
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
                 #logging.debug(self.c_lib.freedv_get_rx_status(freedv))
                 #print("listening-" + str(mode) + "-" + str(self.c_lib.freedv_get_rx_status(freedv)))
+                
                 #-------------STUCK IN SYNC DETECTOR            
                 stuck_in_sync_counter += 1
                 if self.c_lib.freedv_get_rx_status(freedv) == 10:
@@ -337,11 +336,7 @@ class RF():
                 
                 if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
                     self.calculate_ber(freedv)
-                    
-                    
-                    rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
-                    #logging.debug("DATA-" + str(rxstatus))
-                
+
                     # counter reset for stuck in sync counter
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
@@ -429,9 +424,9 @@ class RF():
                     else:
                         logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
                         print(frametype)
+                    
                     # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
-                    if frame == n_frames_per_burst:
-                        
+                    if frame == n_frames_per_burst: 
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                 
@@ -439,7 +434,7 @@ class RF():
                 #logging.info("DATA-" + str(mode) + " " +str(rxstatus))
                 if rxstatus == 10:
                     self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
-                    print(" -SYNC 10- Trigger - M:" + str(mode))
+                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode))
                     self.calculate_ber(freedv)
  
   
