@@ -644,9 +644,13 @@ def arq_disconnect_received(data_in):
 def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8')
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
-    frame_type = bytes([210])
-    ping_payload = b'PING'
-    ping_frame = frame_type + ping_payload               
+    
+    ping_frame = bytearray(14)
+    ping_frame[:1] = bytes([210])
+    ping_frame[1:2] = static.DXCALLSIGN_CRC8
+    ping_frame[2:3] = static.MYCALLSIGN_CRC8
+    ping_frame[3:9] = static.MYCALLSIGN
+    
 
     # wait while sending....
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
@@ -655,20 +659,27 @@ def transmit_ping(callsign):
         
 def received_ping(data_in):
 
+    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3])
+    static.DXCALLSIGN = bytes(data_in[3:9])
+
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] <<< ["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
-    frame_type = bytes([211])
-    ping_payload = b'PING_ACK'
-    ping_frame = frame_type + static.MYCALLSIGN + ping_payload
+
+    ping_frame = bytearray(14)
+    ping_frame[:1] = bytes([211])
+    ping_frame[1:2] = static.DXCALLSIGN_CRC8
+    ping_frame[2:3] = static.MYCALLSIGN_CRC8
+    ping_frame[3:9] = static.MYCALLSIGN
+    
     # wait while sending....
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     modem.transmit_signalling(ping_frame)
                    
 def received_ping_ack(data_in):
-    
-    dxcallsign = data_in[1:6]
-    static.DXCALLSIGN = bytes(dxcallsign)
-    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+
+    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3])
+    static.DXCALLSIGN = bytes(data_in[3:9])
+
     logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
     static.TNC_STATE = 'IDLE'
 
