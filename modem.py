@@ -11,6 +11,7 @@ from ctypes import *
 import pathlib
 import pyaudio
 import audioop
+import asyncio
 #import sys
 import logging
 import time
@@ -18,14 +19,9 @@ import threading
 
 import helpers
 import static
-import arq
+import data_handler
 
 import Hamlib
-
-
-
-
-
 
 
 
@@ -59,9 +55,17 @@ class RF():
                             output_device_index=static.AUDIO_OUTPUT_DEVICE,  #static.AUDIO_OUTPUT_DEVICE
                             )  
         #--------------------------------------------START DECODER THREAD                
-        FREEDV_DECODER_THREAD = threading.Thread(target=self.receive, args=[static.FREEDV_DATA_MODE,static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD")
-        FREEDV_DECODER_THREAD.start()
+        FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_10.start()
         
+        FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_11.start()
+        
+        FREEDV_DECODER_THREAD_12 = threading.Thread(target=self.receive, args=[12], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_12.start()
+        
+        FREEDV_DECODER_THREAD_14 = threading.Thread(target=self.receive, args=[static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_14.start()
        
         
         #--------------------------------------------CONFIGURE HAMLIB
@@ -93,9 +97,13 @@ class RF():
         self.my_rig.set_ptt(self.hamlib_ptt_type,0)  
 
 #--------------------------------------------------------------------------------------------------------     
-    def transmit_arq_ack(self,ack_buffer):
+    def transmit_signalling(self,ack_buffer):
         #print(ack_buffer)
-        static.ARQ_STATE = 'SENDING_ACK'
+        #static.ARQ_STATE = 'SENDING_ACK'
+        
+        state_before_transmit = static.CHANNEL_STATE
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        
         static.PTT_STATE = True
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         
@@ -106,10 +114,11 @@ class RF():
         payload_per_frame = bytes_per_frame -2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv) #get n_tx_modem_samples which defines the size of the modulation object
-          
+        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)  
+        
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * (n_tx_modem_samples) #*2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples #*2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
         buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
@@ -120,11 +129,7 @@ class RF():
         buffer += crc        # append crc16 to buffer
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
         
-        preamble_bytes = self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-        #print(n_tx_modem_samples)
-        #print(preamble_bytes)
-        #print(len(mod_out_preamble))
-           
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)   
         self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
         txbuffer = bytearray()    
         txbuffer += bytes(mod_out_preamble)
@@ -137,15 +142,18 @@ class RF():
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False
-
-        static.ARQ_STATE = 'RECEIVING_DATA'
+        
+        static.CHANNEL_STATE = state_before_transmit
+        #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+        #static.ARQ_STATE = 'RECEIVING_DATA'
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
-    def transmit_arq_burst(self):
+    async def transmit_arq_burst(self):
     
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         static.PTT_STATE = True
-        static.ARQ_STATE = 'SENDING_DATA'
+        state_before_transmit = static.CHANNEL_STATE
+        static.CHANNEL_STATE = 'SENDING_DATA'
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
@@ -154,17 +162,15 @@ class RF():
          
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)#*2 #get n_tx_modem_samples which defines the size of the modulation object
+        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
           
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * (3520) #*2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples #*2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
-        preamble = self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
-        #print(n_tx_modem_samples)
-        #print(preamble)
-        #print(len(mod_out_preamble))
-        
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
+
         txbuffer = bytearray()
         txbuffer += bytes(mod_out_preamble)
 
@@ -246,155 +252,199 @@ class RF():
        
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
-        static.ARQ_STATE = 'IDLE'
-        #static.ARQ_STATE = 'RECEIVING_SIGNALLING'
+        #static.ARQ_STATE = 'IDLE'
+        #static.CHANNEL_STATE = state_before_transmit
+        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
 #--------------------------------------------------------------------------------------------------------         
-    def receive(self,data_mode,signalling_mode):
+
+    def receive(self,mode):
         force = True
         
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
+        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)      
+        freedv = self.c_lib.freedv_open(mode)
+ 
+        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+ 
+        if mode == static.FREEDV_SIGNALLING_MODE:
+            static.FREEDV_SIGNALLING_BYTES_PER_FRAME = bytes_per_frame
+            static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = bytes_per_frame - 2
+            
+            self.c_lib.freedv_set_frames_per_burst(freedv, 1);
         
-        freedv_data = self.c_lib.freedv_open(data_mode)
-        freedv_signalling = self.c_lib.freedv_open(signalling_mode)      
+        elif mode == static.ARQ_DATA_CHANNEL_MODE:
+            static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
+            static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
+            
+            self.c_lib.freedv_set_frames_per_burst(freedv, 0);
+        else:
+            pass
+            
+      
+      
+        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+        bytes_out = bytes_out() #get pointer to bytes_out    
 
-        static.FREEDV_DATA_BYTES_PER_FRAME = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv_data)/8)
-        static.FREEDV_DATA_PAYLOAD_PER_FRAME = static.FREEDV_DATA_BYTES_PER_FRAME -2
-        static.FREEDV_SIGNALLING_BYTES_PER_FRAME = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv_signalling)/8)
-        static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = static.FREEDV_SIGNALLING_BYTES_PER_FRAME -2
-  
-        data_bytes_out = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME)
-        data_bytes_out = data_bytes_out() #get pointer to bytes_out    
-
-        signalling_bytes_out = (ctypes.c_ubyte * static.FREEDV_SIGNALLING_BYTES_PER_FRAME)
-        signalling_bytes_out = signalling_bytes_out() #get pointer to bytes_out 
-        
-        self.c_lib.freedv_set_frames_per_burst(freedv_data, 0);
-        self.c_lib.freedv_set_frames_per_burst(freedv_signalling, 1);
-        
-        # with this we can interrupt receiving        
         while static.FREEDV_RECEIVE == True:
-            time.sleep(0.01)
+            time.sleep(0.05)
             
             # stuck in sync counter
             stuck_in_sync_counter = 0
             stuck_in_sync_10_counter = 0
             #
-    
-            while static.ARQ_STATE == 'RECEIVING_DATA':
+            
+            # here we do a buffer cleanup before returning to demod loop
+            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            
+            #demod loop
+            while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
+                # refresh vars, so the correct parameters of the used mode are set
+                static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
+                static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
                 
-                nin = self.c_lib.freedv_nin(freedv_data)
+                nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
-
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
                 #print(audioop.rms(data_in, 2))
-                
                 #self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
-                nbytes = self.c_lib.freedv_rawdatarx(freedv_data, data_bytes_out, data_in) # demodulate audio
-                logging.debug(self.c_lib.freedv_get_rx_status(freedv_data))
+                nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
+                #logging.debug(self.c_lib.freedv_get_rx_status(freedv))
+                #print("listening-" + str(mode) + "-" + str(self.c_lib.freedv_get_rx_status(freedv)))
                 
                 #-------------STUCK IN SYNC DETECTOR            
                 stuck_in_sync_counter += 1
-                if self.c_lib.freedv_get_rx_status(freedv_data) == 10:
+                if self.c_lib.freedv_get_rx_status(freedv) == 10:
                     stuck_in_sync_10_counter += 1
                     
                     
-                if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv_data) == 10:
+                if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
                     logging.critical("stuck in sync #1")
-                    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
+                    self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
                     
                 if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
                     logging.critical("stuck in sync #2")
-                    self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
+                    self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0    
                     stuck_in_sync_10_counter = 0
                 #-----------------------------------
-            
-                      
-                if nbytes == static.FREEDV_DATA_BYTES_PER_FRAME:
-                    rxstatus = self.c_lib.freedv_get_rx_status(freedv_data)     
-                    logging.debug("DATA-" + str(rxstatus))
                 
+                
+                if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
+                    self.calculate_ber(freedv)
+
                     # counter reset for stuck in sync counter
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
                     #
                                           
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
-                    frametype = int.from_bytes(bytes(data_bytes_out[:1]), "big")
+                    frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
                     frame = frametype - 10
-                    n_frames_per_burst = int.from_bytes(bytes(data_bytes_out[1:2]), "big")
+                    n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
                         
                     #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
                     
                     if 50 >= frametype >= 10:                     
                         if frame != 3 or force == True:
-                            arq.data_received(bytes(data_bytes_out[:-2])) #send payload data to arq checker without CRC16 
+
+                            data_handler.arq_data_received(bytes(bytes_out[:-2])) #send payload data to arq checker without CRC16 
                                             
                             #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
                             if static.ARQ_RX_BURST_BUFFER.count(None) <= 1:
                                 logging.debug("FULL BURST BUFFER ---> UNSYNC")
-                                self.c_lib.freedv_set_sync(freedv_data, 0)
+                                self.c_lib.freedv_set_sync(freedv, 0)
                         
                         else:
                             logging.critical("---------------------------SIMULATED MISSING FRAME")
                             force = True
-                    else:
-                        logging.info("MODE: " + str(data_mode) + " DATA: " + str(bytes(data_bytes_out)))                                
-                
-                
-                    # DO UNSYNC AFTER LAST BURST by checking the frame numbers agains the total frames per burst
-                    if frame == n_frames_per_burst:
-                        logging.debug("LAST FRAME ---> UNSYNC")
-                        self.c_lib.freedv_set_sync(freedv_data, 0) #FORCE UNSYNC
-                
-   
-            #while static.ARQ_STATE == 'IDLE' or static.ARQ_STATE == 'RECEIVING_SIGNALLING':
-            while static.ARQ_STATE == 'RECEIVING_SIGNALLING':
-                time.sleep(0.01)
 
-                nin = self.c_lib.freedv_nin(freedv_signalling)
-                #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
-
-                data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
-                
-                #self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), signalling_bytes_out, data_in] # check if really neccessary 
-                nbytes = self.c_lib.freedv_rawdatarx(freedv_signalling, signalling_bytes_out, data_in) # demodulate audio
-                             
-                # CHECK IF FRAME CONTAINS ACK------------------------         
-                
-                if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME:
-                    #self.c_lib.freedv_set_sync(freedv_signalling, 0)
-                    frametype = int.from_bytes(bytes(signalling_bytes_out[:1]), "big")
-                    
                     # BURST ACK
-                    if frametype == 60:
+                    elif frametype == 60:
                        logging.debug("ACK RECEIVED....")
-                       arq.burst_ack_received()
+                       data_handler.burst_ack_received()
                        
                     # FRAME ACK
                     elif frametype == 61:
                        logging.debug("FRAME ACK RECEIVED....")
-                       arq.frame_ack_received()
+                       data_handler.frame_ack_received()
                        
                     # FRAME RPT
                     elif frametype == 62:
                        logging.debug("REPEAT REQUEST RECEIVED....")
-                       arq.burst_rpt_received(signalling_bytes_out[:-2])
+                       data_handler.burst_rpt_received(bytes_out[:-2])
 
+                    # CQ FRAME
+                    elif frametype == 200:
+                       logging.info("CQ RECEIVED....")
+                       
+                    # PING FRAME
+                    elif frametype == 210:
+                       logging.debug("PING RECEIVED....")
+                       data_handler.received_ping(bytes_out[:-2])
+
+                    # PING ACK
+                    elif frametype == 211:
+                       logging.debug("PING ACK RECEIVED....")
+                       data_handler.received_ping_ack(bytes_out[:-2])
+
+                    # ARQ CONNECT
+                    elif frametype == 220:
+                       logging.debug("ARQ CONNECT RECEIVED....")
+                       data_handler.arq_received_connect(bytes_out[:-2])
+
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 221:
+                       logging.debug("ARQ CONNECT ACK RECEIVED / KEEP ALIVE....")
+                       data_handler.arq_received_connect_keep_alive(bytes_out[:-2])
+
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 222:
+                       logging.debug("ARQ DISCONNECT RECEIVED")
+                       data_handler.arq_disconnect_received(bytes_out[:-2])
+
+                   # ARQ FILE TRANSFER RECEIVED!
+                    elif frametype == 225:
+                       logging.debug("ARQ arq_received_data_channel_opener RECEIVED")
+                       data_handler.arq_received_data_channel_opener(bytes_out[:-2])
+                    
+                    # ARQ CHANNEL IS OPENED
+                    elif frametype == 226:
+                       logging.debug("ARQ arq_received_channel_is_open RECEIVED")
+                       data_handler.arq_received_channel_is_open(bytes_out[:-2])
+  
+                    # ARQ CONNECT ACK / KEEP ALIVE
+                    elif frametype == 230:
+                       logging.debug("BEACON RECEIVED")
+                       
                     else:
-                        logging.debug("OTHER FRAME: " + str(signalling_bytes_out[:-2]))
+                        logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
+                        print(frametype)
                     
-                    
-                rxstatus = self.c_lib.freedv_get_rx_status(freedv_signalling)     
-                logging.debug("ACK-" + str(rxstatus))
+                    # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
+                    if frame == n_frames_per_burst: 
+                        logging.debug("LAST FRAME ---> UNSYNC")
+                        self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
+                
+                rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
+                #logging.info("DATA-" + str(mode) + " " +str(rxstatus))
                 if rxstatus == 10:
-                    #self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
-                    print("SIGNALLING -SYNC 10- Trigger")
-                #if nbytes == static.FREEDV_SIGNALLING_BYTES_PER_FRAME or rxstatus == 10:
-                #    self.c_lib.freedv_set_sync(freedv_signalling, 0) #FORCE UNSYNC
-
+                    self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
+                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode))
+                    self.calculate_ber(freedv)
+ 
+  
+    def calculate_ber(self,freedv):
+        Tbits = self.c_lib.freedv_get_total_bits(freedv)
+        Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
+        if Tbits != 0:
+            ber = (Terrs/Tbits)*100 
+            static.BER = int(ber)
+            
+        self.c_lib.freedv_set_total_bit_errors(freedv,0)
+        self.c_lib.freedv_set_total_bits(freedv,0)                       
+       

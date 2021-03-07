@@ -43,7 +43,7 @@ args = parser.parse_args()
 
 
 data = create_string(args.datalength)
-data = bytes("ARQ:" + "" + data + "" + "\n", "utf-8")
+data = bytes("ARQ:DATA:" + "" + data + "" + "\n", "utf-8")
 
 
 

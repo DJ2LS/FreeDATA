@@ -24,12 +24,14 @@ args = parser.parse_args()
 ip, port = "localhost", args.socket_port
 message = args.data
 
+print(len(b'\n'))
 
+while True:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
-with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        print(ip)
-        print(port)
         sock.connect((ip, port))
-        sock.sendall(bytes(message, 'utf-8'))
+        sock.sendall(bytes(message, 'utf-8') + b'\n')
         response = str(sock.recv(1024), 'utf-8')
-        print("Received: {}".format(response))
+        print("CMD: {}".format(response))
+        False
+        break
