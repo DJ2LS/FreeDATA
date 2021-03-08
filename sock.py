@@ -10,6 +10,7 @@ import socketserver
 import threading
 import logging
 import time
+import json
 
 import static
 import data_handler
@@ -43,8 +44,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # CQ CQ CQ -----------------------------------------------------
         if data == 'CQCQCQ':
             for i in range(0,3):
-                data_handler.transmit_cq()
-                self.request.sendall(bytes("CALLING CQ"))
+                asyncio.run(data_handler.transmit_cq())
+                #self.request.sendall(bytes("CALLING CQ"))
                 while static.ARQ_STATE == 'SENDING_SIGNALLING':
                     time.sleep(0.1)
                     pass
@@ -90,10 +91,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # TRANSMIT ARQ MESSAGE ------------------------------------------   
         # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
         #print(static.ARQ_STATE)
-        if data.startswith('ARQ:DATA') and static.ARQ_STATE == 'CONNECTED':           
+        if data.startswith('ARQ:DATA:') and static.ARQ_STATE == 'CONNECTED':           
             static.ARQ_READY_FOR_DATA = False
             logging.info("CMD | NEW ARQ DATA")
-            self.request.sendall(b'SENDIN ARQ DATA')
+            self.request.sendall(b'SENDING ARQ DATA')
             asyncio.run(data_handler.arq_open_data_channel())
             #data_handler.arq_open_data_channel()
             
@@ -126,56 +127,43 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
                 self.request.sendall(static.MYCALLSIGN)
                 logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
-             
-         
+              
+            
         if data == 'GET:MYCALLSIGN':
             self.request.sendall(bytes(static.MYCALLSIGN, encoding))
                         
-        if data == 'GET:MYCALLSIGN_CRC8':
-            self.request.sendall(bytes(static.MYCALLSIGN_CRC8, encoding))
+        #if data == 'GET:MYCALLSIGN_CRC8':
+        #    self.request.sendall(bytes(static.MYCALLSIGN_CRC8, encoding))
             
         if data == 'GET:DXCALLSIGN':
             self.request.sendall(bytes(static.DXCALLSIGN, encoding))              
         
         if data == 'GET:TNC_STATE':
-            self.request.sendall(static.TNC_STATE)
-            
-        if data == 'GET:PTT_STATE':
-            self.request.sendall(bytes(str(static.PTT_STATE), encoding))       
-                
-        # ARQ
-        if data == 'GET:ARQ_STATE':
-            self.request.sendall(bytes(static.ARQ_STATE, encoding))
-            
-        if data == 'GET:TX_N_MAX_RETRIES':
-            self.request.sendall(bytes([static.TX_N_MAX_RETRIES], encoding))
-            
-        if data == 'GET:TX_N_RETRIES':
-            self.request.sendall(bytes([static.TX_N_RETRIES], encoding))
-            
-        if data == 'GET:ARQ_TX_N_FRAMES_PER_BURST':
-            self.request.sendall(bytes([static.ARQ_TX_N_FRAMES_PER_BURST], encoding))
-            
-        if data == 'GET:ARQ_TX_N_BURSTS':
-            self.request.sendall(bytes([static.ARQ_TX_N_BURSTS], encoding))
-            
-        if data == 'GET:ARQ_TX_N_CURRENT_ARQ_FRAME':
-            self.request.sendall(bytes([static.ARQ_TX_N_CURRENT_ARQ_FRAME], encoding))
-            
-        if data == 'GET:ARQ_TX_N_TOTAL_ARQ_FRAMES':
-            self.request.sendall(bytes([static.ARQ_TX_N_TOTAL_ARQ_FRAMES], encoding))
-            
-        if data == 'GET:ARQ_RX_FRAME_N_BURSTS':
-            self.request.sendall(bytes([static.ARQ_RX_FRAME_N_BURSTS], encoding))
-            
-        if data == 'GET:ARQ_RX_N_CURRENT_ARQ_FRAME':
-            self.request.sendall(bytes([static.ARQ_RX_N_CURRENT_ARQ_FRAME], encoding))
-                    
-        if data == 'GET:ARQ_N_ARQ_FRAMES_PER_DATA_FRAME':
-            self.request.sendall(bytes([static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME], encoding))
-            
-        if data == 'GET:RX_BUFFER_LENGTH':
-            self.request.sendall(bytes(str(len(static.RX_BUFFER)),encoding))
+            output = {
+                "PTT_STATE": str(static.PTT_STATE),
+                "CHANNEL_STATE": static.CHANNEL_STATE,
+                "TNC_STATE": static.TNC_STATE,
+                "ARQ_STATE": static.ARQ_STATE
+            }
+            jsondata = json.dumps(output)
+            self.request.sendall(bytes(jsondata, encoding))
+           
+        if data == 'GET:DATA_STATE':
+            output = {
+                "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
+                "TX_N_MAX_RETRIES": static.TX_N_MAX_RETRIES,
+                "ARQ_TX_N_FRAMES_PER_BURST": static.ARQ_TX_N_FRAMES_PER_BURST,
+                "ARQ_TX_N_BURSTS": static.ARQ_TX_N_BURSTS,
+                "ARQ_TX_N_CURRENT_ARQ_FRAME": static.ARQ_TX_N_CURRENT_ARQ_FRAME,
+                "ARQ_TX_N_TOTAL_ARQ_FRAMES": static.ARQ_TX_N_TOTAL_ARQ_FRAMES,
+                "ARQ_RX_FRAME_N_BURSTS": static.ARQ_RX_FRAME_N_BURSTS,
+                "ARQ_RX_N_CURRENT_ARQ_FRAME": static.ARQ_RX_N_CURRENT_ARQ_FRAME,                                                                
+                "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME                                                              
+            }
+            jsondata = json.dumps(output)
+            self.request.sendall(bytes(jsondata, encoding))                 
+       
+   
 
         if data.startswith('GET:RX_BUFFER:'):
             
