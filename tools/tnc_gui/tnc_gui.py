@@ -2,6 +2,7 @@ import socket
 import random
 import threading
 import time
+import json
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -23,40 +24,41 @@ def create_string(length):
     
 def send_command(command):
     
-    #ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
-    
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.connect((ip, port))
-        if isinstance(command, str):
-            command = bytes(command, 'utf-8')
-
-        sock.sendall(command + b'\n')
-        response = str(sock.recv(1024), 'utf-8')
-
-def get_arq_state():
-    while True:
-        time.sleep(0.04)
-        command = bytes('GET:ARQ_STATE', 'utf-8')
+    ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
+    try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((ip, port))
-            time.sleep(0.01)
-            sock.sendall(command + b'\n')
-            received = str(sock.recv(1024), "utf-8")
-            print(received)
-            builder.get_object('arq_state').set_text(received)
+            if isinstance(command, str):
+                 command = bytes(command, 'utf-8')
 
-def get_channel_state():
-    while True:
-        time.sleep(0.04)
-        command = bytes('GET:CHANNEL_STATE', 'utf-8')
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((ip, port))
-            time.sleep(0.01)
             sock.sendall(command + b'\n')
-            received = str(sock.recv(1024), "utf-8")
-            print(received)
-            builder.get_object('channel_state').set_text(received)
+            #response = str(sock.recv(1024), 'utf-8')
+            sock.close()
+    except:
+        pass    
             
+         
+            
+def get_tnc_state():
+    while True:
+        time.sleep(0.05)      
+        ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text()) 
+        command = bytes('GET:TNC_STATE', 'utf-8')
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((ip, port))
+                sock.sendall(command + b'\n')
+                received = str(sock.recv(1024), "utf-8")
+                received_json = json.loads(received)
+                
+                builder.get_object('ptt_state').set_text(received_json["PTT_STATE"])
+                builder.get_object('channel_state').set_text(received_json["CHANNEL_STATE"])
+                builder.get_object('tnc_state').set_text(received_json["TNC_STATE"])
+                builder.get_object('arq_state').set_text(received_json["ARQ_STATE"])
+                
+                sock.close()            
+        except:
+            pass    
             
 class Handler:
     def onDestroy(self, *args):
@@ -93,14 +95,15 @@ builder.connect_signals(Handler())
 window = builder.get_object("main_window")
 window.show_all()
 
-ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
+#ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
 
-GET_ARQ_STATE_THREAD = threading.Thread(target=get_arq_state, name="FREEDV_DECODER_THREAD")
-GET_ARQ_STATE_THREAD.start()
+GET_TNC_STATE_THREAD = threading.Thread(target=get_tnc_state, args=[], name="FREEDV_DECODER_THREAD")
+GET_TNC_STATE_THREAD.start()
 
-GET_CHANNEL_STATE_THREAD = threading.Thread(target=get_channel_state, name="FREEDV_DECODER_THREAD")
-GET_CHANNEL_STATE_THREAD.start()
+#GET_CHANNEL_STATE_THREAD = threading.Thread(target=get_channel_state, name="FREEDV_DECODER_THREAD")
+#GET_CHANNEL_STATE_THREAD.start()
 
 
 Gtk.main()
+
 
