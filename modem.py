@@ -146,6 +146,7 @@ class RF():
         static.CHANNEL_STATE = state_before_transmit
         #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         #static.ARQ_STATE = 'RECEIVING_DATA'
+        self.c_lib.freedv_close(freedv) 
         time.sleep(0.5)
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
@@ -256,7 +257,8 @@ class RF():
         #static.ARQ_STATE = 'IDLE'
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
-        self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
+        self.my_rig.set_ptt(self.hamlib_ptt_type,0)
+        self.c_lib.freedv_close(freedv) 
 #--------------------------------------------------------------------------------------------------------         
 
     def receive(self,mode):
@@ -264,7 +266,6 @@ class RF():
         
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)      
         freedv = self.c_lib.freedv_open(mode)
- 
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
  
         if mode == static.FREEDV_SIGNALLING_MODE:
