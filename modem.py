@@ -146,6 +146,7 @@ class RF():
         static.CHANNEL_STATE = state_before_transmit
         #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         #static.ARQ_STATE = 'RECEIVING_DATA'
+        time.sleep(0.5)
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     async def transmit_arq_burst(self):
@@ -253,7 +254,6 @@ class RF():
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
         #static.ARQ_STATE = 'IDLE'
-        #static.CHANNEL_STATE = state_before_transmit
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
@@ -294,6 +294,9 @@ class RF():
             stuck_in_sync_10_counter = 0
             #
             
+            # here we do an unsync to be sure, the modem is in idle state and ready for new data
+            self.c_lib.freedv_set_sync(freedv, 0)
+            
             # here we do a buffer cleanup before returning to demod loop
             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
@@ -318,16 +321,17 @@ class RF():
                 stuck_in_sync_counter += 1
                 if self.c_lib.freedv_get_rx_status(freedv) == 10:
                     stuck_in_sync_10_counter += 1
-                    
+                    self.c_lib.freedv_set_sync(freedv, 0)
+                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode))
                     
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
-                    logging.critical("stuck in sync #1")
+                    logging.critical("MODEM | stuck in sync #1")
                     self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
                     
                 if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
-                    logging.critical("stuck in sync #2")
+                    logging.critical("MODEM | stuck in sync #2")
                     self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                     stuck_in_sync_counter = 0    
                     stuck_in_sync_10_counter = 0
@@ -380,7 +384,8 @@ class RF():
 
                     # CQ FRAME
                     elif frametype == 200:
-                       logging.info("CQ RECEIVED....")
+                       logging.debug("CQ RECEIVED....")
+                       data_handler.received_cq(bytes_out[:-2])
                        
                     # PING FRAME
                     elif frametype == 210:
@@ -430,14 +435,7 @@ class RF():
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                 
-                rxstatus = self.c_lib.freedv_get_rx_status(freedv)     
-                #logging.info("DATA-" + str(mode) + " " +str(rxstatus))
-                if rxstatus == 10:
-                    self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
-                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode))
-                    self.calculate_ber(freedv)
- 
-  
+              
     def calculate_ber(self,freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)

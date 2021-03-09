@@ -689,10 +689,23 @@ def received_ping_ack(data_in):
         
 async def transmit_cq():
     logging.info("CQ CQ CQ")
-    frame_type = bytes([200])
-    cq_frame = frame_type + static.MYCALLSIGN
-    modem.transmit_signalling(cq_frame)
     
+    cq_frame = bytearray(14)
+    cq_frame[:1] = bytes([200])
+    cq_frame[1:2] = bytes(1) #b'\x00'
+    cq_frame[2:3] = static.MYCALLSIGN_CRC8
+    cq_frame[3:9] = static.MYCALLSIGN
+    
+    for i in range(0,3):
+        
+        modem.transmit_signalling(cq_frame)
+        
+        while static.ARQ_STATE == 'SENDING_SIGNALLING':
+            time.sleep(0.1)
+                         
+def received_cq(data_in):
+    
+    logging.info("CQ [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER."+str(static.BER)+"]")                    
 
 async def transmit_beacon():
     logging.info("BEACON")
