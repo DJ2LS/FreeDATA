@@ -84,9 +84,14 @@ def arq_data_received(data_in):
             logging.info("ARQ | TX | BURST ACK")
             
             #BUILDING ACK FRAME FOR BURST ----------------------------------------------- 
-            ack_payload = b'ACK'
-            ack_frame = b'<' + ack_payload # < = 60   
-
+            #ack_payload = b'ACK'
+            #ack_frame = b'<' + ack_payload # < = 60   
+            
+            ack_frame = bytearray(14)
+            ack_frame[:1] = bytes([60])
+            ack_frame[1:2] = static.DXCALLSIGN_CRC8
+            ack_frame[2:3] = static.MYCALLSIGN_CRC8
+            
             #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(ack_frame)
             static.CHANNEL_STATE = 'RECEIVING_DATA'
@@ -118,9 +123,14 @@ def arq_data_received(data_in):
             logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "] [BER."+str(static.BER)+"]") 
             
             #BUILDING RPT FRAME FOR BURST -----------------------------------------------
-            rpt_payload = missing_frames       
-            rpt_frame = b'>' + rpt_payload #> = 63 --> 62?!?!?!?!
-        
+            #rpt_payload = missing_frames       
+            #rpt_frame = b'>' + rpt_payload #> = 63 --> 62?!?!?!?!
+            rpt_frame = bytearray(14)
+            rpt_frame[:1] = bytes([63])
+            rpt_frame[1:2] = static.DXCALLSIGN_CRC8
+            rpt_frame[2:3] = static.MYCALLSIGN_CRC8
+            rpt_frame[3:9] = missing_frames 
+                         
             #TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(rpt_frame)
             static.CHANNEL_STATE = 'RECEIVING_DATA'      
@@ -173,8 +183,13 @@ def arq_data_received(data_in):
                  static.RX_BUFFER.append(complete_data_frame)
           
                 #BUILDING ACK FRAME FOR DATA FRAME -----------------------------------------------              
-                 ack_payload = b'FRAME_ACK'
-                 ack_frame = b'='+ ack_payload + bytes(static.FRAME_CRC) # < = 61                   
+                 #ack_payload = b'FRAME_ACK'
+                 #ack_frame = b'='+ ack_payload + bytes(static.FRAME_CRC) # < = 61 
+                 
+                 ack_frame = bytearray(14)
+                 ack_frame[:1] = bytes([61])
+                 ack_frame[1:2] = static.DXCALLSIGN_CRC8
+                 ack_frame[2:3] = static.MYCALLSIGN_CRC8                  
             
                 #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
                  time.sleep(1) #0.5
@@ -613,14 +628,19 @@ async def arq_disconnect():
     static.ARQ_SEND_KEEP_ALIVE == False
     static.ARQ_STATE = 'DISCONNECTING' 
     logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "] <-> ["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")   
-    frame_type = bytes([222])
-    disconnection_frame = frame_type + static.MYCALLSIGN
+    #frame_type = bytes([222])
+    #disconnection_frame = frame_type + static.MYCALLSIGN
+    
+    disc_frame = bytearray(14)
+    disc_frame[:1] = bytes([222])
+    disc_frame[1:2] = static.DXCALLSIGN_CRC8
+    disc_frame[2:3] = static.MYCALLSIGN_CRC8
            
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     
     await asyncio.sleep(5)
-    modem.transmit_signalling(disconnection_frame)
+    modem.transmit_signalling(disc_frame)
     
     logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")   
     static.ARQ_STATE = 'IDLE'
@@ -657,6 +677,7 @@ def transmit_ping(callsign):
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     modem.transmit_signalling(ping_frame)
+    
         
 def received_ping(data_in):
 
@@ -693,7 +714,7 @@ async def transmit_cq():
     
     cq_frame = bytearray(14)
     cq_frame[:1] = bytes([200])
-    cq_frame[1:2] = b'\x01' #b'\x00'
+    cq_frame[1:2] = b'\x01'
     cq_frame[2:3] = static.MYCALLSIGN_CRC8
     cq_frame[3:9] = static.MYCALLSIGN
     

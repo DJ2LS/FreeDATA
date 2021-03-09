@@ -75,7 +75,6 @@ class RF():
         self.my_rig = Hamlib.Rig(Hamlib.RIG_MODEL_DUMMY)
         self.my_rig.set_conf("rig_pathname", "/dev/Rig")
         self.my_rig.set_conf("retry", "5")
-
         self.my_rig.open ()
         
         
@@ -135,9 +134,8 @@ class RF():
         txbuffer += bytes(mod_out_preamble)
         txbuffer += bytes(mod_out)
      
-        # -------------- transmit audio twice
-        
-        logging.debug("SEND SIGNALLING FRAME " + str(ack_buffer))
+        # -------------- transmit audio
+        logging.debug("SENDING SIGNALLING FRAME " + str(ack_buffer))
         self.stream_tx.write(bytes(txbuffer))
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
