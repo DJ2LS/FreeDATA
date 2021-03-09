@@ -25,19 +25,21 @@ def create_string(length):
     
     
 def send_command(command):
-    
-    ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((ip, port))
-            if isinstance(command, str):
-                 command = bytes(command, 'utf-8')
+    while True:
+        ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((ip, port))
+                if isinstance(command, str):
+                    command = bytes(command, 'utf-8')
 
-            sock.sendall(command + b'\n')
+                sock.sendall(command + b'\n')
+                print("done.....")
+                break
             #response = str(sock.recv(1024), 'utf-8')
-            sock.close()
-    except:
-        pass    
+            #sock.close()
+        except:
+            pass    
             
          
 def get_tnc_state():
@@ -66,9 +68,9 @@ def get_tnc_state_worker():
                 builder.get_object('tnc_state').set_text(received_json["TNC_STATE"])
                 builder.get_object('arq_state').set_text(received_json["ARQ_STATE"])
 
-                builder.get_object('levelbar').set_min_value(0.0)
-                builder.get_object('levelbar').set_max_value(10.0)
-                builder.get_object('levelbar').set_value(received_json["AUDIO_RMS"])
+                #builder.get_object('levelbar').set_min_value(0.0)
+                #builder.get_object('levelbar').set_max_value(10000.0)
+                builder.get_object('levelbar').set_value(int(received_json["AUDIO_RMS"]))
 
                 sock.close()            
         except:

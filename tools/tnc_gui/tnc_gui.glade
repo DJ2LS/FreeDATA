@@ -4,9 +4,10 @@
   <requires lib="gtk+" version="3.20"/>
   <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
-    <property name="resizable">False</property>
-    <property name="default_width">650</property>
+    <property name="role">FreeDV JATE</property>
+    <property name="default_width">1000</property>
     <property name="default_height">400</property>
+    <property name="icon_name">face-smile</property>
     <child type="titlebar">
       <placeholder/>
     </child>
@@ -17,19 +18,6 @@
         <property name="width">200</property>
         <property name="height">200</property>
         <child>
-          <object class="GtkLevelBar" id="progressbar">
-            <property name="width_request">430</property>
-            <property name="height_request">34</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-          </object>
-          <packing>
-            <property name="x">16</property>
-            <property name="y">488</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkButtonBox">
             <property name="width_request">464</property>
             <property name="height_request">80</property>
@@ -38,6 +26,7 @@
             <property name="layout_style">start</property>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">ARQ CMD</property>
@@ -110,6 +99,7 @@
             </child>
           </object>
           <packing>
+            <property name="x">15</property>
             <property name="y">136</property>
           </packing>
         </child>
@@ -120,6 +110,22 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="layout_style">start</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="width_request">150</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">MY STATION</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkEntry" id="callsign">
                 <property name="visible">True</property>
@@ -132,7 +138,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -150,22 +156,37 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="x">10</property>
+            <property name="x">15</property>
             <property name="y">51</property>
           </packing>
         </child>
         <child>
           <object class="GtkButtonBox">
-            <property name="width_request">108</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="layout_style">start</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="width_request">150</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">BROADCAST</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkButton" id="call_cq">
                 <property name="label" translatable="yes">CQ CQ CQ</property>
@@ -177,17 +198,17 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="x">10</property>
+            <property name="x">15</property>
             <property name="y">93</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButtonBox">
+          <object class="GtkButtonBox" id="ARQ DATA BOX">
             <property name="width_request">378</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
@@ -195,6 +216,7 @@
             <property name="layout_style">start</property>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">ARQ DATA</property>
@@ -239,8 +261,22 @@
                 <property name="position">2</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkProgressBar" id="progressbar">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">3</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
           </object>
           <packing>
+            <property name="x">15</property>
             <property name="y">175</property>
           </packing>
         </child>
@@ -254,6 +290,7 @@
             <property name="row_homogeneous">True</property>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">ARQ</property>
@@ -279,6 +316,7 @@
             </child>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">CHANNEL</property>
@@ -304,6 +342,7 @@
             </child>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">TNC</property>
@@ -329,6 +368,7 @@
             </child>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">PTT</property>
@@ -367,9 +407,11 @@
             <property name="layout_style">start</property>
             <child>
               <object class="GtkLabel">
+                <property name="width_request">150</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">CONNECTION</property>
+                <property name="wrap">True</property>
                 <attributes>
                   <attribute name="weight" value="bold"/>
                 </attributes>
@@ -414,6 +456,48 @@
           </object>
           <packing>
             <property name="x">15</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="width_request">403</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">start</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">RMS</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLevelBar" id="levelbar">
+                <property name="width_request">310</property>
+                <property name="height_request">34</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="hexpand">True</property>
+                <property name="max_value">10000</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="x">487</property>
           </packing>
         </child>
       </object>
