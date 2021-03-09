@@ -5,7 +5,7 @@
   <object class="GtkWindow" id="main_window">
     <property name="can_focus">False</property>
     <property name="resizable">False</property>
-    <property name="default_width">600</property>
+    <property name="default_width">650</property>
     <property name="default_height">400</property>
     <child type="titlebar">
       <placeholder/>
@@ -17,35 +17,6 @@
         <property name="width">200</property>
         <property name="height">200</property>
         <child>
-          <object class="GtkEntry" id="host">
-            <property name="width_request">30</property>
-            <property name="height_request">30</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="width_chars">10</property>
-            <property name="text" translatable="yes">localhost</property>
-          </object>
-          <packing>
-            <property name="x">30</property>
-            <property name="y">20</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkEntry" id="port">
-            <property name="width_request">30</property>
-            <property name="height_request">30</property>
-            <property name="visible">True</property>
-            <property name="can_focus">True</property>
-            <property name="width_chars">6</property>
-            <property name="max_width_chars">6</property>
-            <property name="text" translatable="yes">3000</property>
-          </object>
-          <packing>
-            <property name="x">130</property>
-            <property name="y">20</property>
-          </packing>
-        </child>
-        <child>
           <object class="GtkLevelBar" id="progressbar">
             <property name="width_request">430</property>
             <property name="height_request">34</property>
@@ -54,8 +25,8 @@
             <property name="hexpand">True</property>
           </object>
           <packing>
-            <property name="x">34</property>
-            <property name="y">292</property>
+            <property name="x">16</property>
+            <property name="y">488</property>
           </packing>
         </child>
         <child>
@@ -65,6 +36,21 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="layout_style">start</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">ARQ CMD</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
             <child>
               <object class="GtkEntry" id="dxcall">
                 <property name="visible">True</property>
@@ -77,7 +63,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="position">1</property>
               </packing>
             </child>
             <child>
@@ -91,7 +77,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="position">2</property>
               </packing>
             </child>
             <child>
@@ -105,7 +91,7 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">2</property>
+                <property name="position">3</property>
               </packing>
             </child>
             <child>
@@ -119,12 +105,11 @@
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="position">3</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
           <packing>
-            <property name="x">28</property>
             <property name="y">136</property>
           </packing>
         </child>
@@ -170,7 +155,7 @@
             </child>
           </object>
           <packing>
-            <property name="x">30</property>
+            <property name="x">10</property>
             <property name="y">51</property>
           </packing>
         </child>
@@ -197,7 +182,7 @@
             </child>
           </object>
           <packing>
-            <property name="x">30</property>
+            <property name="x">10</property>
             <property name="y">93</property>
           </packing>
         </child>
@@ -256,27 +241,29 @@
             </child>
           </object>
           <packing>
-            <property name="x">8</property>
             <property name="y">175</property>
           </packing>
         </child>
         <child>
-          <object class="GtkButtonBox">
-            <property name="width_request">170</property>
+          <object class="GtkGrid">
+            <property name="width_request">500</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="layout_style">start</property>
+            <property name="column_spacing">40</property>
+            <property name="row_homogeneous">True</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">ARQ STATE:</property>
+                <property name="label" translatable="yes">ARQ</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
             <child>
@@ -286,34 +273,22 @@
                 <property name="label" translatable="yes">label</property>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
               </packing>
             </child>
-          </object>
-          <packing>
-            <property name="x">31</property>
-            <property name="y">225</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkButtonBox">
-            <property name="width_request">100</property>
-            <property name="height_request">81</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="layout_style">start</property>
             <child>
               <object class="GtkLabel">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
-                <property name="label" translatable="yes">CHANNEL SATE</property>
+                <property name="label" translatable="yes">CHANNEL</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
               </object>
               <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
               </packing>
             </child>
             <child>
@@ -323,15 +298,122 @@
                 <property name="label" translatable="yes">label</property>
               </object>
               <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">TNC</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="tnc_state">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">label</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">PTT</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ptt_state">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">label</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">3</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="x">15</property>
+            <property name="y">250</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkButtonBox">
+            <property name="width_request">255</property>
+            <property name="height_request">80</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="layout_style">start</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">CONNECTION</property>
+                <attributes>
+                  <attribute name="weight" value="bold"/>
+                </attributes>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkEntry" id="host">
+                <property name="width_request">98</property>
+                <property name="height_request">34</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="width_chars">10</property>
+                <property name="text" translatable="yes">localhost</property>
+              </object>
+              <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkEntry" id="port">
+                <property name="width_request">30</property>
+                <property name="height_request">30</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="width_chars">6</property>
+                <property name="max_width_chars">6</property>
+                <property name="text" translatable="yes">3000</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
-            <property name="x">280</property>
-            <property name="y">231</property>
+            <property name="x">15</property>
           </packing>
         </child>
       </object>
