@@ -3,9 +3,11 @@ import random
 import threading
 import time
 import json
+
+
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk
+from gi.repository import GLib, Gtk, GObject
 
 def create_string(length):
     random_string = ''
@@ -38,9 +40,15 @@ def send_command(command):
         pass    
             
          
-            
 def get_tnc_state():
-    while True:
+    print("starten wir mal....")
+    GLib.idle_add(get_tnc_state_worker) 
+    #GObject.timeout_add(1000, pulse)   
+      
+def get_tnc_state_worker():
+    
+    #while True:
+        
         time.sleep(0.05)      
         ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text()) 
         command = bytes('GET:TNC_STATE', 'utf-8')
@@ -51,14 +59,54 @@ def get_tnc_state():
                 received = str(sock.recv(1024), "utf-8")
                 received_json = json.loads(received)
                 
+                print(received_json)
+                
                 builder.get_object('ptt_state').set_text(received_json["PTT_STATE"])
                 builder.get_object('channel_state').set_text(received_json["CHANNEL_STATE"])
                 builder.get_object('tnc_state').set_text(received_json["TNC_STATE"])
                 builder.get_object('arq_state').set_text(received_json["ARQ_STATE"])
+
+                builder.get_object('levelbar').set_min_value(0.0)
+                builder.get_object('levelbar').set_max_value(10.0)
+                builder.get_object('levelbar').set_value(received_json["AUDIO_RMS"])
+
+                sock.close()            
+        except:
+            pass   
+        GObject.timeout_add(200, get_tnc_state_worker) 
+def get_data_state():
+    GLib.idle_add(get_data_state_worker)
+
+
+def get_data_state_worker():
+    #while True:
+            
+        ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text()) 
+        command = bytes('GET:DATA_STATE', 'utf-8')
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                sock.connect((ip, port))
+                sock.sendall(command + b'\n')
+                received = str(sock.recv(1024), "utf-8")
+                received_json = json.loads(received)
+                #print(received_json)
+
+ 
+                #print(received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"])
+                #print(received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"])
+                
+                if received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"] > 0:
+                    percentage = received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"] / received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"]
+                    print(percentage + 1)
+
+                builder.get_object('progressbar').set_fraction('0.2') 
+                builder.get_object('progressbar').set_text('123')    
+                builder.get_object('progressbar').set_show_text('456')                
                 
                 sock.close()            
         except:
-            pass    
+            pass
+        GObject.timeout_add(200, get_data_state_worker)         
             
 class Handler:
     def onDestroy(self, *args):
@@ -69,11 +117,11 @@ class Handler:
         send_command('SET:MYCALLSIGN:' + call)
 
     def ping(self, button):
-        call = builder.get_object('callsign').get_text()
+        call = builder.get_object('dxcall').get_text()
         send_command('PING:' + call)
         
     def connect(self, button):
-        call = builder.get_object('callsign').get_text()
+        call = builder.get_object('dxcall').get_text()
         send_command('ARQ:CONNECT:' + call)
         
     def disconnect(self, button):
@@ -95,15 +143,13 @@ builder.connect_signals(Handler())
 window = builder.get_object("main_window")
 window.show_all()
 
-#ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text())
 
-GET_TNC_STATE_THREAD = threading.Thread(target=get_tnc_state, args=[], name="FREEDV_DECODER_THREAD")
+
+GET_TNC_STATE_THREAD = threading.Thread(target=get_tnc_state, args=[], name="TNC STATE")
 GET_TNC_STATE_THREAD.start()
 
-#GET_CHANNEL_STATE_THREAD = threading.Thread(target=get_channel_state, name="FREEDV_DECODER_THREAD")
-#GET_CHANNEL_STATE_THREAD.start()
+GET_DATA_STATE_THREAD = threading.Thread(target=get_data_state, args=[], name="DATA STATE")
+GET_DATA_STATE_THREAD.start()
 
 
 Gtk.main()
-
-
