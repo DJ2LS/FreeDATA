@@ -661,7 +661,7 @@ def arq_disconnect_received(data_in):
 # PING HANDLER
 #############################################################################################################    
     
-def transmit_ping(callsign):
+async def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
@@ -721,7 +721,7 @@ async def transmit_cq():
     for i in range(0,3):
         
         modem.transmit_signalling(cq_frame)
-        
+
         while static.ARQ_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.1)
                          

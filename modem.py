@@ -53,7 +53,10 @@ class RF():
                             frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER, #n_nom_modem_samples
                             output=True,
                             output_device_index=static.AUDIO_OUTPUT_DEVICE,  #static.AUDIO_OUTPUT_DEVICE
-                            )  
+                            ) 
+                            
+                            
+        self.streambuffer = bytes(2)                     
         #--------------------------------------------START DECODER THREAD                
         FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD_10")
         FREEDV_DECODER_THREAD_10.start()
@@ -67,7 +70,10 @@ class RF():
         FREEDV_DECODER_THREAD_14 = threading.Thread(target=self.receive, args=[static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD_14")
         FREEDV_DECODER_THREAD_14.start()
        
+        FREEDV_PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="FREEDV_DECODER_THREAD_14")
+        FREEDV_PLAYBACK_THREAD.start()
         
+                
         #--------------------------------------------CONFIGURE HAMLIB
         Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
 
@@ -76,6 +82,7 @@ class RF():
         self.my_rig.set_conf("rig_pathname", "/dev/Rig")
         self.my_rig.set_conf("retry", "5")
         self.my_rig.open ()
+        
         
         
         if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
@@ -94,9 +101,29 @@ class RF():
             self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0)  
+        
 
+    def play_audio(self):
+        
+        while True:  
+            time.sleep(0.11)
+            state_before_transmit = static.CHANNEL_STATE
+            #print(len(self.streambuffer))
+            #print(bytes(self.streambuffer))
+            #print(static.CHANNEL_STATE)
+            
+            #print(len(self.streambuffer))
+            while len(self.streambuffer) > 0:
+                static.CHANNEL_STATE = 'SENDING_SIGNALLING'    
+                if len(self.streambuffer) > 0:
+                    print("test")
+                    print(len(self.streambuffer))
+                    self.stream_tx.write(self.streambuffer)
+                    time.sleep(0.1)
+                    self.streambuffer = bytes(0)
+            static.CHANNEL_STATE = state_before_transmit
 #--------------------------------------------------------------------------------------------------------     
-    def transmit_signalling(self,ack_buffer):
+    def transmit_signalling(self,data_out):
 
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
@@ -117,7 +144,7 @@ class RF():
         mod_out_preamble = mod_out_preamble()
 
         buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
-        buffer[:len(ack_buffer)] = ack_buffer # set buffersize to length of data which will be send
+        buffer[:len(data_out)] = data_out # set buffersize to length of data which will be send
 
         crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
         crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
@@ -126,20 +153,25 @@ class RF():
         
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)   
         self.c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer     
+        
         txbuffer = bytearray()    
         txbuffer += bytes(mod_out_preamble)
         txbuffer += bytes(mod_out)
      
         # -------------- transmit audio
-        logging.debug("SENDING SIGNALLING FRAME " + str(ack_buffer))
-        self.stream_tx.write(bytes(txbuffer))
-        
+        logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
+        #asyncio.run(self.stream_tx.write(bytes(txbuffer)))
+        #self.stream_tx.write(bytes(txbuffer)) 
+        self.streambuffer = bytes() 
+        self.streambuffer = bytes(txbuffer)
+        #print(self.streambuffer)
+        #print(len(self.streambuffer))
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False        
         static.CHANNEL_STATE = state_before_transmit
         
         self.c_lib.freedv_close(freedv) 
-        time.sleep(0.5)
+        #time.sleep(0.5)
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
     async def transmit_arq_burst(self):
@@ -316,7 +348,6 @@ class RF():
                     stuck_in_sync_10_counter += 1
                     #self.c_lib.freedv_set_sync(freedv, 0)
                     logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
-
                     
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
                     logging.critical("MODEM | stuck in sync #1")

@@ -20,6 +20,10 @@ import helpers
 
 
 
+import asyncbg
+
+
+
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):    
 
     def handle(self):
@@ -45,6 +49,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # CQ CQ CQ -----------------------------------------------------
         if data == 'CQCQCQ':
             asyncio.run(data_handler.transmit_cq())
+            #asyncio.run(asyncbg.call(data_handler.transmit_cq))
             #######self.request.sendall(b'CALLING CQ')
 
         
@@ -53,8 +58,18 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #send ping frame and wait for ACK
             pingcommand = data.split('PING:')
             dxcallsign = pingcommand[1]
-            data_handler.transmit_ping(dxcallsign)
-        
+            #data_handler.transmit_ping(dxcallsign)
+            ##loop = asyncio.get_event_loop()
+            ##loop.create_task(data_handler.transmit_ping(dxcallsign))
+            ##loop.run()
+            
+            #asyncio.new_event_loop()
+            #asyncio.ensure_future(data_handler.transmit_ping(dxcallsign))
+            
+            asyncio.run(data_handler.transmit_ping(dxcallsign))
+            
+            #asyncio.create_task(data_handler.transmit_ping(dxcallsign))
+            #asyncio.run(data_handler.transmit_ping(dxcallsign))
         
         # ARQ CONNECT TO CALLSIGN ----------------------------------------
         if data.startswith('ARQ:CONNECT:'):
@@ -105,9 +120,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 static.TNC_STATE = 'BUSY'
                 arqdata = data.split('ARQ:')
                 data_out = bytes(arqdata[1], 'utf-8')
+                
 
                 asyncio.run(data_handler.arq_transmit(data_out))
-                
+                ###asyncio.run(asyncbg.call(data_handler.arq_transmit, data_out))
+                print("die funktion läuft weiter...")
                 #data_handler.arq_transmit(data_out)
                 #TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
                 #TRANSMIT_ARQ.start()
@@ -146,14 +163,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data == 'GET:DATA_STATE':
             output = {
                 "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
-                "TX_N_MAX_RETRIES": static.TX_N_MAX_RETRIES,
-                "ARQ_TX_N_FRAMES_PER_BURST": static.ARQ_TX_N_FRAMES_PER_BURST,
-                "ARQ_TX_N_BURSTS": static.ARQ_TX_N_BURSTS,
-                "ARQ_TX_N_CURRENT_ARQ_FRAME": static.ARQ_TX_N_CURRENT_ARQ_FRAME,
-                "ARQ_TX_N_TOTAL_ARQ_FRAMES": static.ARQ_TX_N_TOTAL_ARQ_FRAMES,
-                "ARQ_RX_FRAME_N_BURSTS": static.ARQ_RX_FRAME_N_BURSTS,
-                "ARQ_RX_N_CURRENT_ARQ_FRAME": static.ARQ_RX_N_CURRENT_ARQ_FRAME,                                                                
-                "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME                                                              
+                "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
+                "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
+                "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
+                "ARQ_TX_N_CURRENT_ARQ_FRAME": str(static.ARQ_TX_N_CURRENT_ARQ_FRAME),
+                "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(static.ARQ_TX_N_TOTAL_ARQ_FRAMES),
+                "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
+                "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),                                                                
+                "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME )                                                             
             }
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))                 
