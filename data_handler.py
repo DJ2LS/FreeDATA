@@ -571,9 +571,8 @@ async def arq_open_data_channel():
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     #print("wir warten 2 sekunden...")
-    await asyncio.sleep(2)
-    
-        
+    await asyncio.sleep(4)
+     
     connection_frame = bytearray(14)
     connection_frame[:1] = bytes([225])
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
@@ -583,6 +582,7 @@ async def arq_open_data_channel():
 
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
+        
     modem.transmit_signalling(connection_frame)
     
     
@@ -639,7 +639,7 @@ async def arq_disconnect():
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     
-    await asyncio.sleep(5)
+    await asyncio.sleep(4)
     modem.transmit_signalling(disc_frame)
     
     logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")   

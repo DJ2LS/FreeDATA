@@ -45,7 +45,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         # CQ CQ CQ -----------------------------------------------------
         if data == 'CQCQCQ':
             asyncio.run(data_handler.transmit_cq())
-            self.request.sendall(b'CALLING CQ')
+            #######self.request.sendall(b'CALLING CQ')
 
         
         # PING ----------------------------------------------------------
@@ -73,7 +73,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 #ARQ_CONNECT_THREAD = threading.Thread(target=data_handler.arq_connect, name="ARQ_CONNECT")
                 #ARQ_CONNECT_THREAD.start()
                 asyncio.run(data_handler.arq_connect())
-                self.request.sendall(bytes("CONNECTING", encoding))
+                ########self.request.sendall(bytes("CONNECTING", encoding))
                 #data_handler.arq_connect()
         # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
         if data == 'ARQ:DISCONNECT':
@@ -81,7 +81,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #ARQ_DISCONNECT_THREAD = threading.Thread(target=data_handler.arq_disconnect, name="ARQ_DISCONNECT")
             #ARQ_DISCONNECT_THREAD.start()  
             asyncio.run(data_handler.arq_disconnect())
-            self.request.sendall(bytes("DISCONNECTING", encoding))
+            ########self.request.sendall(bytes("DISCONNECTING", encoding))
             #data_handler.arq_disconnect()
         
             
@@ -91,7 +91,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data.startswith('ARQ:DATA:') and static.ARQ_STATE == 'CONNECTED':           
             static.ARQ_READY_FOR_DATA = False
             logging.info("CMD | NEW ARQ DATA")
-            self.request.sendall(b'SENDING ARQ DATA')
+            ########self.request.sendall(b'SENDING ARQ DATA')
             asyncio.run(data_handler.arq_open_data_channel())
             #data_handler.arq_open_data_channel()
             
@@ -122,16 +122,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             else:    
                 static.MYCALLSIGN = bytes(callsign[1], encoding)
                 static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-                self.request.sendall(static.MYCALLSIGN)
+                ########self.request.sendall(static.MYCALLSIGN)
                 logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
-              
-            
+                         
         if data == 'GET:MYCALLSIGN':
             self.request.sendall(bytes(static.MYCALLSIGN, encoding))
                         
-        #if data == 'GET:MYCALLSIGN_CRC8':
-        #    self.request.sendall(bytes(static.MYCALLSIGN_CRC8, encoding))
-            
+   
         if data == 'GET:DXCALLSIGN':
             self.request.sendall(bytes(static.DXCALLSIGN, encoding))              
         
@@ -140,7 +137,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 "PTT_STATE": str(static.PTT_STATE),
                 "CHANNEL_STATE": str(static.CHANNEL_STATE),
                 "TNC_STATE": str(static.TNC_STATE),
-                "ARQ_STATE": str(static.ARQ_STATE)
+                "ARQ_STATE": str(static.ARQ_STATE),
+                "AUDIO_RMS": str(static.AUDIO_RMS)
             }
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))
@@ -159,11 +157,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             }
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))                 
-       
-   
+         
 
         if data.startswith('GET:RX_BUFFER:'):
-            
             data = data.split('GET:RX_BUFFER:')
             bufferposition = int(data[1])-1
             if bufferposition == -1:
@@ -177,7 +173,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data == 'DEL:RX_BUFFER':
             static.RX_BUFFER = []
 
-
+        #self.request.close()
+        
 
 
 

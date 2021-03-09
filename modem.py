@@ -55,16 +55,16 @@ class RF():
                             output_device_index=static.AUDIO_OUTPUT_DEVICE,  #static.AUDIO_OUTPUT_DEVICE
                             )  
         #--------------------------------------------START DECODER THREAD                
-        FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD_10")
         FREEDV_DECODER_THREAD_10.start()
         
-        FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD_11")
         FREEDV_DECODER_THREAD_11.start()
         
-        FREEDV_DECODER_THREAD_12 = threading.Thread(target=self.receive, args=[12], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_12 = threading.Thread(target=self.receive, args=[12], name="FREEDV_DECODER_THREAD_12")
         FREEDV_DECODER_THREAD_12.start()
         
-        FREEDV_DECODER_THREAD_14 = threading.Thread(target=self.receive, args=[static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD")
+        FREEDV_DECODER_THREAD_14 = threading.Thread(target=self.receive, args=[static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD_14")
         FREEDV_DECODER_THREAD_14.start()
        
         
@@ -97,16 +97,12 @@ class RF():
 
 #--------------------------------------------------------------------------------------------------------     
     def transmit_signalling(self,ack_buffer):
-        #print(ack_buffer)
-        #static.ARQ_STATE = 'SENDING_ACK'
-        
+
         state_before_transmit = static.CHANNEL_STATE
-        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-        
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
         static.PTT_STATE = True
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
-        
-                
+                       
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
@@ -139,11 +135,9 @@ class RF():
         self.stream_tx.write(bytes(txbuffer))
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
-        static.PTT_STATE = False
-        
+        static.PTT_STATE = False        
         static.CHANNEL_STATE = state_before_transmit
-        #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-        #static.ARQ_STATE = 'RECEIVING_DATA'
+        
         self.c_lib.freedv_close(freedv) 
         time.sleep(0.5)
 #--------------------------------------------------------------------------------------------------------     
@@ -156,7 +150,8 @@ class RF():
         static.CHANNEL_STATE = 'SENDING_DATA'
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        freedv = self.c_lib.freedv_open(static.FREEDV_DATA_MODE)
+        freedv = self.c_lib.freedv_open(static.ARQ_DATA_CHANNEL_MODE)
+        
         static.FREEDV_DATA_BYTES_PER_FRAME = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
         static.FREEDV_DATA_PAYLOAD_PER_FRAME = static.FREEDV_DATA_BYTES_PER_FRAME -2
          
@@ -236,8 +231,6 @@ class RF():
                        static.MYCALLSIGN_CRC8 + \
                        payload_data                                      
 
-                #print(arqframe)
-
                 buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME) # create TX buffer 
                 buffer[:len(arqframe)] = arqframe # set buffersize to length of data which will be send
                                 
@@ -252,10 +245,11 @@ class RF():
        
         # -------------- transmit audio
         self.stream_tx.write(bytes(txbuffer)) 
-        #static.ARQ_STATE = 'IDLE'
+        
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
         self.my_rig.set_ptt(self.hamlib_ptt_type,0)
+        
         self.c_lib.freedv_close(freedv) 
 #--------------------------------------------------------------------------------------------------------         
 
@@ -310,7 +304,7 @@ class RF():
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 data_in = self.stream_rx.read(nin,  exception_on_overflow = False)  
-                #print(audioop.rms(data_in, 2))
+                static.AUDIO_RMS = audioop.rms(data_in, 2)
                 #self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary 
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
                 #logging.debug(self.c_lib.freedv_get_rx_status(freedv))
@@ -320,8 +314,9 @@ class RF():
                 stuck_in_sync_counter += 1
                 if self.c_lib.freedv_get_rx_status(freedv) == 10:
                     stuck_in_sync_10_counter += 1
-                    self.c_lib.freedv_set_sync(freedv, 0)
-                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode))
+                    #self.c_lib.freedv_set_sync(freedv, 0)
+                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
+
                     
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
                     logging.critical("MODEM | stuck in sync #1")
@@ -439,6 +434,14 @@ class RF():
                 
                     bytes_out = (ctypes.c_ubyte * bytes_per_frame)
                     bytes_out = bytes_out() #get pointer to bytes_out 
+                    
+                    if mode == 14:
+                        self.c_lib.freedv_set_sync(freedv, 0)
+                        for i in range(0,10):
+                            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+                            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+ 
+ 
                     
     def calculate_ber(self,freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
