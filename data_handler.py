@@ -643,6 +643,7 @@ def arq_disconnect_received(data_in):
     
 def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8')
+    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
     
     ping_frame = bytearray(14)
@@ -692,7 +693,7 @@ async def transmit_cq():
     
     cq_frame = bytearray(14)
     cq_frame[:1] = bytes([200])
-    cq_frame[1:2] = bytes(1) #b'\x00'
+    cq_frame[1:2] = b'\x01' #b'\x00'
     cq_frame[2:3] = static.MYCALLSIGN_CRC8
     cq_frame[3:9] = static.MYCALLSIGN
     
@@ -704,7 +705,8 @@ async def transmit_cq():
             time.sleep(0.1)
                          
 def received_cq(data_in):
-    
+    static.DXCALLSIGN = b''
+    static.DXCALLSIGN_CRC8 = b''
     logging.info("CQ [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER."+str(static.BER)+"]")                    
 
 async def transmit_beacon():

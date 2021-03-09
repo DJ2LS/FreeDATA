@@ -337,8 +337,8 @@ class RF():
                     stuck_in_sync_10_counter = 0
                 #-----------------------------------
                 
-                
-                if nbytes == bytes_per_frame:##########################################################FREEDV_DATA_BYTES_PER_FRAME
+                # forward data only if broadcast or we are the receiver
+                if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     self.calculate_ber(freedv)
 
                     # counter reset for stuck in sync counter
@@ -425,7 +425,7 @@ class RF():
                     # ARQ CONNECT ACK / KEEP ALIVE
                     elif frametype == 230:
                        logging.debug("BEACON RECEIVED")
-                       
+    
                     else:
                         logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
                         print(frametype)
@@ -435,7 +435,12 @@ class RF():
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0) #FORCE UNSYNC
                 
-              
+                
+                    # clear bytes_out buffer to be ready for next frames after successfull decoding
+                
+                    bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+                    bytes_out = bytes_out() #get pointer to bytes_out 
+                    
     def calculate_ber(self,freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)

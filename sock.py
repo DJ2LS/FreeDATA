@@ -37,18 +37,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
         # SOCKETTEST ---------------------------------------------------
         if data == 'SOCKETTEST':
-            cur_thread = threading.current_thread()
+            #cur_thread = threading.current_thread()
             response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
             self.request.sendall(response)
         
         # CQ CQ CQ -----------------------------------------------------
         if data == 'CQCQCQ':
-            for i in range(0,3):
-                asyncio.run(data_handler.transmit_cq())
-                #self.request.sendall(bytes("CALLING CQ"))
-                while static.ARQ_STATE == 'SENDING_SIGNALLING':
-                    time.sleep(0.1)
-                    pass
+            asyncio.run(data_handler.transmit_cq())
+            self.request.sendall(b'CALLING CQ')
 
         
         # PING ----------------------------------------------------------
@@ -141,9 +137,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if data == 'GET:TNC_STATE':
             output = {
                 "PTT_STATE": str(static.PTT_STATE),
-                "CHANNEL_STATE": static.CHANNEL_STATE,
-                "TNC_STATE": static.TNC_STATE,
-                "ARQ_STATE": static.ARQ_STATE
+                "CHANNEL_STATE": str(static.CHANNEL_STATE),
+                "TNC_STATE": str(static.TNC_STATE),
+                "ARQ_STATE": str(static.ARQ_STATE)
             }
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))
