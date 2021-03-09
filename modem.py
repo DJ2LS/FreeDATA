@@ -56,7 +56,8 @@ class RF():
                             ) 
                             
                             
-        self.streambuffer = bytes(2)                     
+        self.streambuffer = bytes(0)
+        self.audio_writing_to_stream = False                     
         #--------------------------------------------START DECODER THREAD                
         FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD_10")
         FREEDV_DECODER_THREAD_10.start()
@@ -102,26 +103,21 @@ class RF():
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0)  
         
-
+#--------------------------------------------------------------------------------------------------------     
     def play_audio(self):
         
         while True:  
-            time.sleep(0.11)
-            state_before_transmit = static.CHANNEL_STATE
-            #print(len(self.streambuffer))
-            #print(bytes(self.streambuffer))
-            #print(static.CHANNEL_STATE)
-            
-            #print(len(self.streambuffer))
+            time.sleep(0.01)
+            #state_before_transmit = static.CHANNEL_STATE
+
             while len(self.streambuffer) > 0:
-                static.CHANNEL_STATE = 'SENDING_SIGNALLING'    
+                time.sleep(0.01)    
                 if len(self.streambuffer) > 0:
-                    print("test")
-                    print(len(self.streambuffer))
+                    self.audio_writing_to_stream = True
                     self.stream_tx.write(self.streambuffer)
-                    time.sleep(0.1)
-                    self.streambuffer = bytes(0)
-            static.CHANNEL_STATE = state_before_transmit
+                    self.streambuffer = bytes()
+            #static.CHANNEL_STATE = state_before_transmit
+            self.audio_writing_to_stream = False
 #--------------------------------------------------------------------------------------------------------     
     def transmit_signalling(self,data_out):
 
@@ -160,12 +156,16 @@ class RF():
      
         # -------------- transmit audio
         logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
-        #asyncio.run(self.stream_tx.write(bytes(txbuffer)))
-        #self.stream_tx.write(bytes(txbuffer)) 
+        
         self.streambuffer = bytes() 
         self.streambuffer = bytes(txbuffer)
-        #print(self.streambuffer)
-        #print(len(self.streambuffer))
+        self.audio_writing_to_stream = True
+
+        #wait until audio has been processed
+        while self.audio_writing_to_stream == True:
+            time.sleep(0.01)
+            static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False        
         static.CHANNEL_STATE = state_before_transmit
