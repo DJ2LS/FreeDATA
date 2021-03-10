@@ -144,7 +144,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 "CHANNEL_STATE": str(static.CHANNEL_STATE),
                 "TNC_STATE": str(static.TNC_STATE),
                 "ARQ_STATE": str(static.ARQ_STATE),
-                "AUDIO_RMS": str(static.AUDIO_RMS)
+                "AUDIO_RMS": str(static.AUDIO_RMS),
+                "BER": str(static.BER)
             }
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))
