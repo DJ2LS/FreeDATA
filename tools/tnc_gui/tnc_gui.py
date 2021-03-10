@@ -61,7 +61,7 @@ def get_tnc_state_worker():
                 received = str(sock.recv(1024), "utf-8")
                 received_json = json.loads(received)
                 
-                print(received_json)
+                #print(received_json)
                 
                 builder.get_object('ptt_state').set_text(received_json["PTT_STATE"])
                 builder.get_object('channel_state').set_text(received_json["CHANNEL_STATE"])
@@ -75,14 +75,15 @@ def get_tnc_state_worker():
                 sock.close()            
         except:
             pass   
-        GObject.timeout_add(200, get_tnc_state_worker) 
+        #GObject.timeout_add(200, get_tnc_state_worker)
+        GLib.timeout_add(200, get_tnc_state_worker) 
 def get_data_state():
     GLib.idle_add(get_data_state_worker)
 
 
 def get_data_state_worker():
     #while True:
-            
+        
         ip, port = builder.get_object('host').get_text(), int(builder.get_object('port').get_text()) 
         command = bytes('GET:DATA_STATE', 'utf-8')
         try:
@@ -92,24 +93,47 @@ def get_data_state_worker():
                 received = str(sock.recv(1024), "utf-8")
                 received_json = json.loads(received)
                 #print(received_json)
-
- 
-                #print(received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"])
-                #print(received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"])
+                #builder.get_object('progressbar_tx').set_fraction(0.2)
+                #builder.get_object('progressbar_rx').set_fraction(0.2)
                 
-                if received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"] > 0:
-                    percentage = received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"] / received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"]
-                    print(percentage + 1)
 
-                builder.get_object('progressbar').set_fraction('0.2') 
-                builder.get_object('progressbar').set_text('123')    
-                builder.get_object('progressbar').set_show_text('456')                
+
+                print(received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"])
+                print(received_json["ARQ_TX_N_TOTAL_ARQ_FRAMES"])
+                print(received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"])
+                print(received_json["ARQ_RX_N_CURRENT_ARQ_FRAME"])
+                print("-------")
+                if int(received_json["ARQ_TX_N_TOTAL_ARQ_FRAMES"]) > 0:
+                    percentage_tx = int(received_json["ARQ_TX_N_CURRENT_ARQ_FRAME"]) / int(received_json["ARQ_TX_N_TOTAL_ARQ_FRAMES"])
+                    print(percentage_tx)
+                else:
+                    #print("0")
+                    percentage_tx = 0.0
+                print(percentage_tx)
+                builder.get_object('progressbar_tx').set_fraction(percentage_tx)
+                
+                
+                if int(received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"]) > 0:
+                    percentage_rx = int(received_json["ARQ_RX_N_CURRENT_ARQ_FRAME"]) / int(received_json["ARQ_N_ARQ_FRAMES_PER_DATA_FRAME"])
+                    #print(percentage_rx)
+                else:
+                    #print("0")
+                    percentage_rx = 0.0
+                #print(percentage_rx)
+                builder.get_object('progressbar_rx').set_fraction(percentage_rx)
+                
+                
+                
+                
+                 
+                #builder.get_object('progressbar').set_text('123')    
+                #builder.get_object('progressbar').set_show_text('456')                
                 
                 sock.close()            
         except:
             pass
-        GObject.timeout_add(200, get_data_state_worker)         
-            
+#        GObject.timeout_add(200, get_data_state_worker)         
+        GLib.timeout_add(200, get_data_state_worker)                     
 class Handler:
     def onDestroy(self, *args):
         Gtk.main_quit()
@@ -129,12 +153,26 @@ class Handler:
     def disconnect(self, button):
         send_command('ARQ:DISCONNECT')
 
-    def send_arq_data(self, button):
-        datalength = int(builder.get_object('arqbytes').get_text())
-        data = create_string(datalength)
+    def send_arq_data_100(self, button):
+        data = create_string(100)
         data = bytes("ARQ:DATA:" + data, 'utf-8')
         send_command(data)
 
+    def send_arq_data_200(self, button):
+        data = create_string(200)
+        data = bytes("ARQ:DATA:" + data, 'utf-8')
+        send_command(data)
+
+    def send_arq_data_400(self, button):
+        data = create_string(400)
+        data = bytes("ARQ:DATA:" + data, 'utf-8')
+        send_command(data)
+        
+    def send_arq_data_800(self, button):
+        data = create_string(800)
+        data = bytes("ARQ:DATA:" + data, 'utf-8')
+        send_command(data)
+        
     def send_cq(self, button):
         send_command('CQCQCQ')
 

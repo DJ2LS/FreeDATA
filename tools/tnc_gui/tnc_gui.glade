@@ -209,10 +209,11 @@
         </child>
         <child>
           <object class="GtkButtonBox" id="ARQ DATA BOX">
-            <property name="width_request">378</property>
+            <property name="width_request">790</property>
             <property name="height_request">80</property>
             <property name="visible">True</property>
             <property name="can_focus">False</property>
+            <property name="homogeneous">True</property>
             <property name="layout_style">start</property>
             <child>
               <object class="GtkLabel">
@@ -232,14 +233,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkSpinButton" id="arqbytes">
+              <object class="GtkButton" id="send_arq_data_100">
+                <property name="label" translatable="yes">Send 100 Bytes</property>
+                <property name="width_request">-1</property>
+                <property name="height_request">-1</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="text" translatable="yes">Bytes</property>
-                <property name="placeholder_text" translatable="yes">100</property>
-                <property name="climb_rate">1</property>
-                <property name="numeric">True</property>
-                <property name="value">100</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="send_arq_data_100" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -248,12 +249,14 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButton" id="send_arq_data">
-                <property name="label" translatable="yes">Send</property>
+              <object class="GtkButton" id="send_arq_data_200">
+                <property name="label" translatable="yes">Send 200 Bytes</property>
+                <property name="width_request">-1</property>
+                <property name="height_request">-1</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
-                <signal name="clicked" handler="send_arq_data" swapped="no"/>
+                <signal name="clicked" handler="send_arq_data_200" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -262,16 +265,36 @@
               </packing>
             </child>
             <child>
-              <object class="GtkProgressBar" id="progressbar">
+              <object class="GtkButton" id="send_arq_data_400">
+                <property name="label" translatable="yes">Send 400 Bytes</property>
+                <property name="width_request">-1</property>
+                <property name="height_request">-1</property>
                 <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="show_text">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="send_arq_data_400" swapped="no"/>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
                 <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="send_arq_data_800">
+                <property name="label" translatable="yes">Send 800 Bytes</property>
+                <property name="width_request">-1</property>
+                <property name="height_request">-1</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <signal name="clicked" handler="send_arq_data_800" swapped="no"/>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>
@@ -395,7 +418,7 @@
           </object>
           <packing>
             <property name="x">15</property>
-            <property name="y">250</property>
+            <property name="y">300</property>
           </packing>
         </child>
         <child>
@@ -498,6 +521,63 @@
           </object>
           <packing>
             <property name="x">487</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="width_request">640</property>
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <child>
+              <object class="GtkProgressBar" id="progressbar_tx">
+                <property name="width_request">615</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">TX</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkProgressBar" id="progressbar_rx">
+                <property name="width_request">615</property>
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="show_text">True</property>
+              </object>
+              <packing>
+                <property name="left_attach">1</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">RX</property>
+              </object>
+              <packing>
+                <property name="left_attach">0</property>
+                <property name="top_attach">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="x">170</property>
+            <property name="y">250</property>
           </packing>
         </child>
       </object>
