@@ -124,7 +124,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 asyncio.run(data_handler.arq_transmit(data_out))
                 ###asyncio.run(asyncbg.call(data_handler.arq_transmit, data_out))
-                print("die funktion läuft weiter...")
+                #print("die funktion läuft weiter...")
                 #data_handler.arq_transmit(data_out)
                 #TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
                 #TRANSMIT_ARQ.start()
@@ -166,8 +166,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
                 "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
                 "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
-                "ARQ_TX_N_CURRENT_ARQ_FRAME": str(static.ARQ_TX_N_CURRENT_ARQ_FRAME),
-                "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(static.ARQ_TX_N_TOTAL_ARQ_FRAMES),
+                "ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
+                "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
                 "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                 "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),                                                                
                 "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME )                                                             

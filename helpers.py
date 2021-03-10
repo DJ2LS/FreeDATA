@@ -81,7 +81,19 @@ def arq_reset_frame_machine():
     static.TX_N_RETRIES = 0
     static.ARQ_N_SENT_FRAMES = 0
     static.ARQ_TX_N_FRAMES_PER_BURST = 0
-    static.TNC_STATE = b'IDLE'                
+    static.ARQ_TX_N_CURRENT_ARQ_FRAME = 0
+    static.ARQ_TX_N_TOTAL_ARQ_FRAMES = 0
+    static.ARQ_TX_N_CURRENT_ARQ_FRAME = 0
+    
+    static.ARQ_RX_N_CURRENT_ARQ_FRAME = 0
+    static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
+    static.ARQ_FRAME_BOF_RECEIVED = False
+    static.ARQ_FRAME_EOF_RECEIVED = False  
+    
+                 
+
+    
+    static.TNC_STATE = 'IDLE'                
     static.ARQ_SEND_KEEP_ALIVE = True
     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
     static.ARQ_READY_FOR_DATA = False

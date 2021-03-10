@@ -204,9 +204,11 @@ def arq_data_received(data_in):
                  static.ARQ_FRAME_BOF_RECEIVED = False
                  static.ARQ_FRAME_EOF_RECEIVED = False
                  static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
+                 static.ARQ_RX_N_CURRENT_ARQ_FRAME = 0
                  static.TNC_STATE = 'IDLE'
                  static.ARQ_SEND_KEEP_ALIVE = True
                  static.ARQ_READY_FOR_DATA = False
+                 
                  logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
                  
             else:
