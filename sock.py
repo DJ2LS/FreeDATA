@@ -99,37 +99,23 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             ########self.request.sendall(bytes("DISCONNECTING", encoding))
             #data_handler.arq_disconnect()
         
-            
-        # TRANSMIT ARQ MESSAGE ------------------------------------------   
-        # wen need to change the TNC_STATE to "CONNECTE" and need to make sure we have a valid callsign and callsign crc8 of the DX station
-        #print(static.ARQ_STATE)
-        if data.startswith('ARQ:DATA:') and static.ARQ_STATE == 'CONNECTED':           
+          
+        
+        
+        
+        
+        if data.startswith('ARQ:OPEN_DATA_CHANNEL') and static.ARQ_STATE == 'CONNECTED':
             static.ARQ_READY_FOR_DATA = False
-            logging.info("CMD | NEW ARQ DATA")
-            ########self.request.sendall(b'SENDING ARQ DATA')
+            static.TNC_STATE = 'BUSY'
             asyncio.run(data_handler.arq_open_data_channel())
-            #data_handler.arq_open_data_channel()
-            
-            #wait until we set the data mode
-            # here we need a timeout as well!!!
-            while static.ARQ_READY_FOR_DATA == False:
-                time.sleep(0.01)
-            
-            if static.ARQ_READY_FOR_DATA == True:
-                #logging.info("CMD | SENDING ARQ DATA")
-                static.TNC_STATE = 'BUSY'
-                arqdata = data.split('ARQ:')
-                data_out = bytes(arqdata[1], 'utf-8')
-                
+        
+        if data.startswith('ARQ:DATA:') and static.ARQ_STATE == 'CONNECTED' and static.ARQ_READY_FOR_DATA == True:           
 
-                asyncio.run(data_handler.arq_transmit(data_out))
-                ###asyncio.run(asyncbg.call(data_handler.arq_transmit, data_out))
-                #print("die funktion läuft weiter...")
-                #data_handler.arq_transmit(data_out)
-                #TRANSMIT_ARQ = threading.Thread(target=data_handler.transmit, args=[data_out], name="TRANSMIT_ARQ")
-                #TRANSMIT_ARQ.start()
-        
-        
+            static.TNC_STATE = 'BUSY'
+            arqdata = data.split('ARQ:')
+            data_out = bytes(arqdata[1], 'utf-8')
+            asyncio.run(data_handler.arq_transmit(data_out))
+            
         
         # SETTINGS AND STATUS ---------------------------------------------   
         if data.startswith('SET:MYCALLSIGN:'):
