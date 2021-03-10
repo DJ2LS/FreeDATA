@@ -96,6 +96,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #ARQ_DISCONNECT_THREAD = threading.Thread(target=data_handler.arq_disconnect, name="ARQ_DISCONNECT")
             #ARQ_DISCONNECT_THREAD.start()  
             asyncio.run(data_handler.arq_disconnect())
+            
             ########self.request.sendall(bytes("DISCONNECTING", encoding))
             #data_handler.arq_disconnect()
         
@@ -114,8 +115,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             static.TNC_STATE = 'BUSY'
             arqdata = data.split('ARQ:')
             data_out = bytes(arqdata[1], 'utf-8')
-            asyncio.run(data_handler.arq_transmit(data_out))
             
+            ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
+            ARQ_DATA_THREAD.start()     
+            #asyncio.run(data_handler.arq_transmit(data_out))
         
         # SETTINGS AND STATUS ---------------------------------------------   
         if data.startswith('SET:MYCALLSIGN:'):

@@ -176,7 +176,7 @@ class RF():
         #time.sleep(0.5)
 #--------------------------------------------------------------------------------------------------------     
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT 
-    async def transmit_arq_burst(self):
+    def transmit_arq_burst(self):
     
         self.my_rig.set_ptt(self.hamlib_ptt_type,1) 
         static.PTT_STATE = True

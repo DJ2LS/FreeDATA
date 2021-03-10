@@ -11,7 +11,7 @@ import threading
 import time
 from random import randrange
 import asyncio
-import trio
+#import trio
 
 import static
 import modem
@@ -19,7 +19,7 @@ modem = modem.RF()
 import helpers
 
 
-
+import sys
 
 #############################################################################################################    
 # ARQ DATA HANDLER
@@ -227,7 +227,7 @@ def arq_data_received(data_in):
                 logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
         
 
-async def arq_transmit(data_out):
+def arq_transmit(data_out):
             # we need to set payload per frame manually at this point. maybe we can do this more dynmic.
             if static.ARQ_DATA_CHANNEL_MODE == 10:
                 payload_per_frame = 512-2
@@ -295,7 +295,8 @@ async def arq_transmit(data_out):
                     #TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
                     #TRANSMIT_ARQ_BURST_THREAD.start()
                     #asyncio.run(modem.transmit_arq_burst())
-                    await modem.transmit_arq_burst()
+                    #await modem.transmit_arq_burst()
+                    modem.transmit_arq_burst()
                     # lets wait during sending. After sending is finished we will continue
                     while static.CHANNEL_STATE == 'SENDING_DATA':    
                         time.sleep(0.01)
@@ -344,7 +345,8 @@ async def arq_transmit(data_out):
                         #TRANSMIT_ARQ_BURST_THREAD = threading.Thread(target=modem.transmit_arq_burst, name="TRANSMIT_ARQ_BURST")
                         #TRANSMIT_ARQ_BURST_THREAD.start()
                         #asyncio.run(modem.transmit_arq_burst())
-                        await modem.transmit_arq_burst()
+                        #await modem.transmit_arq_burst()
+                        modem.transmit_arq_burst()
                         # lets wait during sending. After sending is finished we will continue
                         while static.ARQ_STATE == 'SENDING_DATA':
                             time.sleep(0.01)
@@ -463,10 +465,14 @@ async def arq_transmit(data_out):
             
             logging.info("ARQ | TX | BUFFER EMPTY")
             helpers.arq_reset_frame_machine()
-            await asyncio.sleep(2)
+            #await asyncio.sleep(2)
+            time.sleep(2)
             logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]<< >>["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
             arq_transmit_keep_alive()
-
+            
+            # this should close our thread so we are saving memory...
+            #https://stackoverflow.com/questions/905189/why-does-sys-exit-not-exit-when-called-inside-a-thread-in-python
+            sys.exit()
 
 
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST         
