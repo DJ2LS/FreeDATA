@@ -91,9 +91,11 @@ def arq_data_received(data_in):
             ack_frame[:1] = bytes([60])
             ack_frame[1:2] = static.DXCALLSIGN_CRC8
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
-            
+            print(ack_frame)
             #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(ack_frame)
+            while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+                time.sleep(0.01)
             static.CHANNEL_STATE = 'RECEIVING_DATA'
             #TRANSMIT_ARQ_ACK_THREAD = threading.Thread(target=modem.transmit_arq_ack, args=[ack_frame], name="TRANSMIT_ARQ_BURST")
             #TRANSMIT_ARQ_ACK_THREAD.start()
@@ -133,6 +135,8 @@ def arq_data_received(data_in):
                          
             #TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(rpt_frame)
+            while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+                time.sleep(0.01)
             static.CHANNEL_STATE = 'RECEIVING_DATA'      
         
 # ---------------------------- FRAME MACHINE
@@ -196,7 +200,9 @@ def arq_data_received(data_in):
                  logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) +"] [BER."+str(static.BER)+"]")
                  
                  modem.transmit_signalling(ack_frame)
-                 
+                 while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+                     time.sleep(0.01)  
+                                    
                  static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
                  # clearing buffers and resetting counters
                  static.ARQ_RX_BURST_BUFFER = []
@@ -296,8 +302,9 @@ async def arq_transmit(data_out):
                        
                     # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
                     
-                    logging.debug("ARQ | RX | WAITING FOR BURST ACK")
+                    logging.info("ARQ | RX | WAITING FOR BURST ACK")
                     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+                    #print(static.CHANNEL_STATE)
                        
                     helpers.arq_reset_timeout(False)
                     helpers.arq_reset_ack(False)
@@ -327,7 +334,7 @@ async def arq_transmit(data_out):
                     # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
                     while static.ARQ_ACK_RECEIVED != True and static.ARQ_RPT_RECEIVED != True and static.ARQ_FRAME_ACK_RECEIVED != True and static.ARQ_RX_FRAME_TIMEOUT != True and static.ARQ_RX_ACK_TIMEOUT != True:
                         time.sleep(0.01) # lets reduce CPU load a little bit
-                        logging.debug(static.ARQ_STATE)
+                        logging.debug(static.CHANNEL_STATE)
                                             
                     if static.ARQ_RPT_RECEIVED == True:
                     
@@ -510,7 +517,9 @@ async def arq_connect():
     #print(connection_frame)
 
     modem.transmit_signalling(connection_frame)
-    
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)    
+        
 def arq_received_connect(data_in):
     static.ARQ_STATE = 'CONNECTING' 
     
@@ -529,15 +538,20 @@ def arq_received_connect(data_in):
 
     #send ACK for connect
     modem.transmit_signalling(connection_frame)
-    
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)
+            
+                
 def arq_transmit_keep_alive():
     frame_type = bytes([221])
     connection_frame = bytearray(14)
     connection_frame[:1] = frame_type
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
+    
     modem.transmit_signalling(connection_frame)
-   
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)   
    
 def arq_received_connect_keep_alive(data_in):
     if static.ARQ_SEND_KEEP_ALIVE == True and (static.ARQ_STATE == 'CONNECTING' or static.ARQ_STATE == 'CONNECTED'):
@@ -554,7 +568,9 @@ def arq_received_connect_keep_alive(data_in):
         
         #lets wait a second before sending
         acktimer = threading.Timer(1.0, modem.transmit_signalling, args=[connection_frame])
-        acktimer.start() 
+        acktimer.start()
+        while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+            time.sleep(0.01) 
     else:
         pass
         #print("keep alive = False")
@@ -582,11 +598,10 @@ async def arq_open_data_channel():
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
     #connection_frame[13:14] = bytes([225]) 
 
-    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        time.sleep(0.01)
-        
+
     modem.transmit_signalling(connection_frame)
-    
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)    
     
             
 def arq_received_data_channel_opener(data_in):
@@ -602,9 +617,10 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
     #connection_frame[13:14] = bytes([226]) 
 
+    modem.transmit_signalling(connection_frame)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
-    modem.transmit_signalling(connection_frame)
+    
     #print("waiting for data....")
     static.CHANNEL_STATE = 'RECEIVING_DATA'
     # einen timeout benötigen wir auch noch....    
@@ -617,7 +633,6 @@ def arq_received_channel_is_open(data_in):
         logging.info("DATA ["+ str(static.MYCALLSIGN, 'utf-8') + "]>>|<<["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
         time.sleep(1)
         static.ARQ_READY_FOR_DATA = True
-        #static.CHANNEL_STATE = 'RECEIVING_DATA':      
 
 
 #############################################################################################################
@@ -638,12 +653,14 @@ async def arq_disconnect():
     disc_frame[1:2] = static.DXCALLSIGN_CRC8
     disc_frame[2:3] = static.MYCALLSIGN_CRC8
            
-    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        time.sleep(0.01)
+    #while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+    #    time.sleep(0.01)
     
     await asyncio.sleep(4)
     modem.transmit_signalling(disc_frame)
-    
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01) 
+           
     logging.info("DISC ["+ str(static.MYCALLSIGN, 'utf-8') + "]< X >["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")   
     static.ARQ_STATE = 'IDLE'
     static.DXCALLSIGN = b''
@@ -676,10 +693,9 @@ async def transmit_ping(callsign):
     
 
     # wait while sending....
-    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        time.sleep(0.01)
     modem.transmit_signalling(ping_frame)
-    
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)    
         
 def received_ping(data_in):
 
@@ -695,10 +711,9 @@ def received_ping(data_in):
     ping_frame[3:9] = static.MYCALLSIGN
     
     # wait while sending....
-    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        time.sleep(0.01)
     modem.transmit_signalling(ping_frame)
-                   
+    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        time.sleep(0.01)                   
 def received_ping_ack(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3])
@@ -723,9 +738,8 @@ async def transmit_cq():
     for i in range(0,3):
         
         modem.transmit_signalling(cq_frame)
-
-        while static.ARQ_STATE == 'SENDING_SIGNALLING':
-            time.sleep(0.1)
+        while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+            time.sleep(0.01)
                          
 def received_cq(data_in):
     static.DXCALLSIGN = b''
@@ -740,4 +754,5 @@ async def transmit_beacon():
     while static.TNC_STATE == 'BEACON':
         await asyncio.sleep(60)
         modem.transmit_signalling(beacon_frame)
-
+        while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+            time.sleep(0.01)

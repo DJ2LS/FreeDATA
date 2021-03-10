@@ -113,6 +113,7 @@ class RF():
             while len(self.streambuffer) > 0:
                 time.sleep(0.01)    
                 if len(self.streambuffer) > 0:
+                    #print(self.streambuffer)
                     self.audio_writing_to_stream = True
                     self.stream_tx.write(self.streambuffer)
                     self.streambuffer = bytes()
@@ -165,6 +166,7 @@ class RF():
         while self.audio_writing_to_stream == True:
             time.sleep(0.01)
             static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+            #print("sending signalling...")
         
         self.my_rig.set_ptt(self.hamlib_ptt_type,0) 
         static.PTT_STATE = False        
@@ -276,7 +278,18 @@ class RF():
  
        
         # -------------- transmit audio
-        self.stream_tx.write(bytes(txbuffer)) 
+        
+        
+        #self.stream_tx.write(bytes(txbuffer)) 
+        self.streambuffer = bytes() 
+        self.streambuffer = bytes(txbuffer)
+        self.audio_writing_to_stream = True
+
+        #wait until audio has been processed
+        while self.audio_writing_to_stream == True:
+            time.sleep(0.01)
+            static.CHANNEL_STATE = 'SENDING_DATA'
+            #print("sending data...")
         
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         static.PTT_STATE = False
@@ -329,6 +342,7 @@ class RF():
             #demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
+
                 # refresh vars, so the correct parameters of the used mode are set
                 static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
                 static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
@@ -471,7 +485,10 @@ class RF():
                         for i in range(0,10):
                             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
                             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
- 
+                else:
+                    # for debugging purposes to receive all data
+                    pass
+                    #print(bytes_out[:-2]) 
  
                     
     def calculate_ber(self,freedv):
