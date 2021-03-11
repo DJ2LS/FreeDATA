@@ -11,7 +11,7 @@ import threading
 import time
 from random import randrange
 import asyncio
-#import trio
+import sys
 
 import static
 import modem
@@ -19,7 +19,7 @@ modem = modem.RF()
 import helpers
 
 
-import sys
+
 
 #############################################################################################################    
 # ARQ DATA HANDLER
@@ -687,7 +687,7 @@ def arq_disconnect_received(data_in):
 #############################################################################################################    
     
 async def transmit_ping(callsign):
-    static.DXCALLSIGN = bytes(callsign, 'utf-8')
+    static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
     
@@ -705,8 +705,8 @@ async def transmit_ping(callsign):
         
 def received_ping(data_in):
 
-    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3])
-    static.DXCALLSIGN = bytes(data_in[3:9])
+    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
+    static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
 
     logging.info("PING ["+ str(static.MYCALLSIGN, 'utf-8') + "] <<< ["+ str(static.DXCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
 
@@ -722,8 +722,8 @@ def received_ping(data_in):
         time.sleep(0.01)                   
 def received_ping_ack(data_in):
 
-    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3])
-    static.DXCALLSIGN = bytes(data_in[3:9])
+    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
+    static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
 
     logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [BER."+str(static.BER)+"]")
     static.TNC_STATE = 'IDLE'
@@ -750,7 +750,25 @@ async def transmit_cq():
 def received_cq(data_in):
     static.DXCALLSIGN = b''
     static.DXCALLSIGN_CRC8 = b''
-    logging.info("CQ [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER."+str(static.BER)+"]")                    
+    logging.info("CQ [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER."+str(static.BER)+"]")  
+    
+    ## here we add the received station to the heard stations buffer
+    dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
+    # check if buffer empty
+    if len(static.HEARD_STATIONS) == 0:
+        static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
+    # if not, we search and update 
+    else:
+        for i in range(0,len(static.HEARD_STATIONS)):
+            # update callsign with new timestamp
+            if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
+                static.HEARD_STATIONS[i] = [dxcallsign, int(time.time())]
+                break
+            # insert if nothing found
+            if i == len(static.HEARD_STATIONS)-1:
+                static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
+                break
+          
 
 async def transmit_beacon():
     logging.info("BEACON")
