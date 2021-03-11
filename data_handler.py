@@ -91,7 +91,7 @@ def arq_data_received(data_in):
             ack_frame[:1] = bytes([60])
             ack_frame[1:2] = static.DXCALLSIGN_CRC8
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
-            print(ack_frame)
+            #print(ack_frame)
             #TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             modem.transmit_signalling(ack_frame)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
