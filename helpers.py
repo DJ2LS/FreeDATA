@@ -90,9 +90,7 @@ def arq_reset_frame_machine():
     static.ARQ_FRAME_BOF_RECEIVED = False
     static.ARQ_FRAME_EOF_RECEIVED = False  
     
-                 
 
-    
     static.TNC_STATE = 'IDLE'                
     static.ARQ_SEND_KEEP_ALIVE = True
     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
