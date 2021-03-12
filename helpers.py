@@ -64,7 +64,7 @@ def connection_keep_alive_watchdog():
 
     if static.ARQ_STATE == 'CONNECTED' and not static.ARQ_READY_FOR_DATA and static.TNC_STATE == 'IDLE' and static.ARQ_SEND_KEEP_ALIVE:
         time.sleep(0.01)
-        if static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED + 20 > time.time():
+        if static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED + 10 > time.time():
             static.ARQ_SEND_KEEP_ALIVE = True
         else:
             # TODO: show time out message
@@ -83,7 +83,7 @@ def data_channel_keep_alive_watchdog():
 
     if static.ARQ_STATE == 'CONNECTED' and static.TNC_STATE == 'BUSY' and not static.ARQ_SEND_KEEP_ALIVE:
         time.sleep(0.01)
-        if static.ARQ_DATA_CHANNEL_LAST_RECEIVED + 20 > time.time():
+        if static.ARQ_DATA_CHANNEL_LAST_RECEIVED + 10 > time.time():
             static.ARQ_SEND_KEEP_ALIVE = False
             #print("alles okay mit den daten....")
         else:

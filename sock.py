@@ -17,8 +17,6 @@ import data_handler
 import helpers
 
 
-
-
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
@@ -98,6 +96,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             static.ARQ_READY_FOR_DATA = False
             static.TNC_STATE = 'BUSY'
             asyncio.run(data_handler.arq_open_data_channel())
+            
 
         if data.startswith('ARQ:DATA:') and static.ARQ_STATE == 'CONNECTED' and static.ARQ_READY_FOR_DATA == True:
 
