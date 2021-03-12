@@ -16,6 +16,13 @@ import static
 
 
 def get_crc_8(data):
+    """
+    Author: DJ2LS
+    
+    Get the CRC8 of a byte string
+    
+    param: data = bytes()
+    """
     crc_algorithm = crcengine.new('crc8-ccitt')  # load crc8 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(1, byteorder='big')
@@ -23,6 +30,13 @@ def get_crc_8(data):
 
 
 def get_crc_16(data):
+    """
+    Author: DJ2LS
+    
+    Get the CRC16 of a byte string
+    
+    param: data = bytes()
+    """
     crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big')
@@ -30,10 +44,11 @@ def get_crc_16(data):
 
 
 async def set_after_timeout():
+    """
+    Author: DJ2LS
+    """
     while True:
-        logging.info("HALLO?!?")
         time.sleep(1)
-        print("HALLOIOIOIOIOIOI")
         static.ARQ_RX_ACK_TIMEOUT = True
         await asyncio.sleep(1.1)
     # await asyncio.sleep(timeout)
@@ -41,41 +56,66 @@ async def set_after_timeout():
 
 
 def arq_disconnect_timeout():
+    """
+    Author: DJ2LS
+    """
     static.ARQ_WAIT_FOR_DISCONNECT = True
     logging.debug("ARQ_WAIT_FOR_DISCONNECT")
 
 
 def arq_ack_timeout():
+    """
+    Author: DJ2LS
+    """
     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_ACK_TIMEOUT = True
         logging.debug("ARQ_RX_ACK_TIMEOUT")
 
 
 def arq_rpt_timeout():
+    """
+    Author: DJ2LS
+    """
     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_RPT_TIMEOUT = True
         logging.debug("ARQ_RX_RPT_TIMEOUT")
 
 
 def arq_frame_timeout():
+    """
+    Author: DJ2LS
+    """
     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
         static.ARQ_RX_FRAME_TIMEOUT = True
         logging.debug("ARQ_RX_FRAME_TIMEOUT")
 
 
 def arq_reset_timeout(state):
+    """
+    Author: DJ2LS
+    """
     static.ARQ_RX_ACK_TIMEOUT = state
     static.ARQ_RX_FRAME_TIMEOUT = state
     static.ARQ_RX_RPT_TIMEOUT = state
 
 
 def arq_reset_ack(state):
+    """
+    Author: DJ2LS
+    """
     static.ARQ_ACK_RECEIVED = state
     static.ARQ_RPT_RECEIVED = state
     static.ARQ_FRAME_ACK_RECEIVED = state
 
 
 def arq_reset_frame_machine():
+    """
+    Author: DJ2LS
+    
+    Reset the frame machine parameters to default,
+    so we need to call just a function
+    
+    """
     arq_reset_timeout(False)
     arq_reset_ack(False)
     static.TX_N_RETRIES = 0
@@ -95,14 +135,13 @@ def arq_reset_frame_machine():
     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
     static.ARQ_READY_FOR_DATA = False
 
-    # start sending keep alive after some seconds
-    #acktimer = threading.Timer(3.0, data_handler.arq_connect)
-    # acktimer.start()
-    # await asyncio.sleep(2)
-    # modem.transmit_arq_connect()
-
-
 def setup_logging():
+    """
+    Author: DJ2LS
+    
+    Set the custom logging format so we can use colors
+    
+    """
 
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s', datefmt='%H:%M:%S', level=logging.INFO)
 
