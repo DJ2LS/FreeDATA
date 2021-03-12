@@ -28,7 +28,8 @@ modem = modem.RF()
 def arq_data_received(data_in):
 
     static.TNC_STATE = 'BUSY'
-
+    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+    
     static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
     static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
     static.ARQ_RX_N_CURRENT_ARQ_FRAME = int.from_bytes(bytes(data_in[2:4]), "big")  # get current number of total frames
@@ -520,7 +521,8 @@ async def arq_connect():
 
 def arq_received_connect(data_in):
     static.ARQ_STATE = 'CONNECTING'
-
+    static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED = int(time.time())
+    
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     # static.FREEDV_DATA_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
@@ -541,6 +543,8 @@ def arq_received_connect(data_in):
 
 
 def arq_transmit_keep_alive():
+    static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED = int(time.time()) # we need to reset the counter at this point
+    
     frame_type = bytes([221])
     connection_frame = bytearray(14)
     connection_frame[:1] = frame_type
@@ -555,8 +559,10 @@ def arq_transmit_keep_alive():
 def arq_received_connect_keep_alive(data_in):
     if static.ARQ_SEND_KEEP_ALIVE == True and (static.ARQ_STATE == 'CONNECTING' or static.ARQ_STATE == 'CONNECTED'):
         logging.info("CONN [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+        
         static.ARQ_STATE = 'CONNECTED'
-
+        static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED = int(time.time())
+ 
         frame_type = bytes([221])
         connection_frame = bytearray(14)
         connection_frame[:1] = frame_type
@@ -584,7 +590,8 @@ async def arq_open_data_channel():
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
     static.ARQ_SEND_KEEP_ALIVE = False
     static.ARQ_DATA_CHANNEL_MODE = 12
-
+    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+    
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
     # print("wir warten 2 sekunden...")
@@ -604,8 +611,12 @@ async def arq_open_data_channel():
 
 def arq_received_data_channel_opener(data_in):
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    
+    static.ARQ_STATE = 'CONNECTED'
+    static.TNC_STATE = 'BUSY'
     static.ARQ_SEND_KEEP_ALIVE = False
     static.ARQ_DATA_CHANNEL_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
+    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())    
     # static.ARQ_READY_FOR_DATA = int.from_bytes(bytes(data_in[13:14]), "big")
 
     connection_frame = bytearray(14)
@@ -619,19 +630,23 @@ def arq_received_data_channel_opener(data_in):
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
-    # print("waiting for data....")
+    print("waiting for data....")
     static.CHANNEL_STATE = 'RECEIVING_DATA'
-    # einen timeout benötigen wir auch noch....
+    
+
+    
     # und ab hier geht es dann in den "RECEIVING_DATA" mode....
 
 
 def arq_received_channel_is_open(data_in):
-    static.ARQ_SEND_KEEP_ALIVE == False
+    static.ARQ_SEND_KEEP_ALIVE = False
+    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
         logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
         time.sleep(1)
         static.ARQ_READY_FOR_DATA = True
+        static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
 
 # ############################################################################################################
