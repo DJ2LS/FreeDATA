@@ -174,6 +174,11 @@ class RF():
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT
 
     def transmit_arq_burst(self):
+    
+        # we could place this timing part inside the modem...
+        # lets see if this is a good idea..
+        static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+    
 
         self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
         static.PTT_STATE = True
@@ -384,6 +389,9 @@ class RF():
                     n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
                     #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
+                    
+                    
+                
 
                     if 50 >= frametype >= 10:
                         if frame != 3 or force == True:
@@ -431,12 +439,12 @@ class RF():
 
                     # ARQ CONNECT
                     elif frametype == 220:
-                        logging.debug("ARQ CONNECT RECEIVED....")
+                        logging.info("ARQ CONNECT RECEIVED....")
                         data_handler.arq_received_connect(bytes_out[:-2])
 
                     # ARQ CONNECT ACK / KEEP ALIVE
                     elif frametype == 221:
-                        logging.debug("ARQ CONNECT ACK RECEIVED / KEEP ALIVE....")
+                        logging.info("ARQ CONNECT ACK RECEIVED / KEEP ALIVE....")
                         data_handler.arq_received_connect_keep_alive(bytes_out[:-2])
 
                     # ARQ CONNECT ACK / KEEP ALIVE
