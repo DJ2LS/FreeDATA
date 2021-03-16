@@ -158,6 +158,28 @@ def arq_reset_frame_machine():
     static.ARQ_READY_FOR_DATA = False
 
 
+def add_to_heard_stations(dxcallsign, datatype):
+    # check if buffer empty
+    if len(static.HEARD_STATIONS) == 0:
+        static.HEARD_STATIONS.append([dxcallsign, int(time.time()), datatype])
+    # if not, we search and update
+    else:
+        for i in range(0, len(static.HEARD_STATIONS)):
+            # update callsign with new timestamp
+            if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
+                static.HEARD_STATIONS[i] = [dxcallsign, int(time.time()), datatype]
+                break
+            # insert if nothing found
+            if i == len(static.HEARD_STATIONS) - 1:
+                static.HEARD_STATIONS.append([dxcallsign, int(time.time()), datatype])
+                break
+                
+                
+#    for idx, item in enumerate(static.HEARD_STATIONS):
+#        if dxcallsign in item:
+#            item = [dxcallsign, int(time.time())]
+#            static.HEARD_STATIONS[idx] = item                
+                
 def setup_logging():
     """
     Author: DJ2LS

@@ -488,7 +488,8 @@ def arq_received_data_channel_opener(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    
+    helpers.add_to_heard_stations(static.DXCALLSIGN, 'DATA-CHANNEL')
+        
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
     
     static.ARQ_STATE = 'DATA'
@@ -501,6 +502,7 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[:1] = bytes([226])
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
+    connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
 
@@ -514,7 +516,13 @@ def arq_received_data_channel_opener(data_in):
 
 
 def arq_received_channel_is_open(data_in):
+
+    static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
+    static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
+    helpers.add_to_heard_stations(static.DXCALLSIGN, 'DATA-CHANNEL')
+    
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+
 
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
         logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
@@ -551,7 +559,7 @@ def received_ping(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-
+    helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING')
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
 
     ping_frame = bytearray(14)
@@ -570,7 +578,8 @@ def received_ping_ack(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-
+    helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING-ACK')
+    
     logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
     static.TNC_STATE = 'IDLE'
 
@@ -602,20 +611,9 @@ def received_cq(data_in):
 
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
-    # check if buffer empty
-    if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
-    # if not, we search and update
-    else:
-        for i in range(0, len(static.HEARD_STATIONS)):
-            # update callsign with new timestamp
-            if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [dxcallsign, int(time.time())]
-                break
-            # insert if nothing found
-            if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
-                break
+    helpers.add_to_heard_stations(dxcallsign, 'CQ CQ CQ')
+
+
 
 
 async def transmit_beacon():
@@ -637,17 +635,4 @@ def received_beacon():
 
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
-    # check if buffer empty
-    if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
-    # if not, we search and update
-    else:
-        for i in range(0, len(static.HEARD_STATIONS)):
-            # update callsign with new timestamp
-            if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [dxcallsign, int(time.time())]
-                break
-            # insert if nothing found
-            if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append([dxcallsign, int(time.time())])
-                break
+    helpers.add_to_heard_stations(dxcallsign, 'BEACON')
