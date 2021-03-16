@@ -337,6 +337,15 @@ class RF():
             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
 
+ 
+            #stats = 0
+            #stats = self.c_lib.freedv_get_modem_extended_stats(freedv, stats);
+            #print(stats)
+                    
+            #        freedv_get_modem_stats(freedv, &sync, &snr_est);
+            #freedv_get_modem_extended_stats(freedv, &stats);
+            
+            
             # demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
@@ -377,6 +386,7 @@ class RF():
                 # forward data only if broadcast or we are the receiver
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     self.calculate_ber(freedv)
+                    self.calculate_snr(freedv)
 
                     # counter reset for stuck in sync counter
                     stuck_in_sync_counter = 0
@@ -500,3 +510,13 @@ class RF():
 
         self.c_lib.freedv_set_total_bit_errors(freedv, 0)
         self.c_lib.freedv_set_total_bits(freedv, 0)
+        
+    def calculate_snr(self, freedv):
+    
+        modem_stats_snr = c_float()
+        modem_stats_sync = c_int()
+
+        self.c_lib.freedv_get_modem_stats(freedv,byref(modem_stats_sync), byref(modem_stats_snr))
+        modem_stats_snr = modem_stats_snr.value
+        static.SNR = int(modem_stats_snr)
+        print(static.SNR)

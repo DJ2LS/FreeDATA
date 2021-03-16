@@ -140,7 +140,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 "TNC_STATE": str(static.TNC_STATE),
                 "ARQ_STATE": str(static.ARQ_STATE),
                 "AUDIO_RMS": str(static.AUDIO_RMS),
-                "BER": str(static.BER)
+                "BER": str(static.BER),
+                "SNR": str(static.SNR)
             }
             
             jsondata = json.dumps(output)

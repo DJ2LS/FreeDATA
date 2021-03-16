@@ -61,6 +61,7 @@ FREEDV_SIGNALLING_BYTES_PER_FRAME = 0
 FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = 0
 
 BER = 0
+SNR = 0
 # ---------------------------------
 
 # Audio Defaults
