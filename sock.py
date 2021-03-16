@@ -95,10 +95,15 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if received_json["command"] == "ARQ:OPEN_DATA_CHANNEL": # and static.ARQ_STATE == 'CONNECTED':
             static.ARQ_READY_FOR_DATA = False
             static.TNC_STATE = 'BUSY'
+            
+            dxcallsign = received_json["dxcallsign"]
+            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+            static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            
             asyncio.run(data_handler.arq_open_data_channel())
             
 
-        if received_json["command"] == "ARQ:DATA" and static.ARQ_STATE == 'CONNECTED' and static.ARQ_READY_FOR_DATA == True:
+        if received_json["command"] == "ARQ:DATA" and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
             static.TNC_STATE = 'BUSY'
 
             data_out = bytes(received_json["data"], 'utf-8')
@@ -108,7 +113,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # asyncio.run(data_handler.arq_transmit(data_out))
 
         # SETTINGS AND STATUS ---------------------------------------------
-        #if data.startswith('SET:MYCALLSIGN:'):
         if received_json["command"] == 'SET:MYCALLSIGN':
             callsign = received_json["parameter"]
 

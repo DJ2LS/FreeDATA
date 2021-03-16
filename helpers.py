@@ -51,29 +51,8 @@ def watchdog():
     """
     while True:
         time.sleep(0.01)
-        connection_keep_alive_watchdog()
         data_channel_keep_alive_watchdog()
-        
-def connection_keep_alive_watchdog():
-    """
-    Author: DJ2LS
-    
-    Function to trigger a DISCONNECT, if timeout for receiving a keep alive frame is reached
-   
-    """
 
-    if static.ARQ_STATE == 'CONNECTED' and not static.ARQ_READY_FOR_DATA and static.TNC_STATE == 'IDLE' and static.ARQ_SEND_KEEP_ALIVE:
-        time.sleep(0.01)
-        if static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED + 10 > time.time():
-            static.ARQ_SEND_KEEP_ALIVE = True
-        else:
-            # TODO: show time out message
-            static.ARQ_SEND_KEEP_ALIVE = False
-            static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED = 0
-            static.ARQ_STATE = 'IDLE'
-            print("keep alive timeout")
-            asyncio.run(data_handler.arq_disconnect())
-            
 def data_channel_keep_alive_watchdog():
     """
     Author: DJ2LS
@@ -81,41 +60,15 @@ def data_channel_keep_alive_watchdog():
    
     """
 
-    if static.ARQ_STATE == 'CONNECTED' and static.TNC_STATE == 'BUSY' and not static.ARQ_SEND_KEEP_ALIVE:
+    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY': # and not static.ARQ_SEND_KEEP_ALIVE:
         time.sleep(0.01)
         if static.ARQ_DATA_CHANNEL_LAST_RECEIVED + 10 > time.time():
-            static.ARQ_SEND_KEEP_ALIVE = False
-            #print("alles okay mit den daten....")
+            pass
         else:
-            # TODO: show time out message
-            # static.ARQ_SEND_KEEP_ALIVE = True
             static.ARQ_DATA_CHANNEL_LAST_RECEIVED = 0
-            print("data keep alive timeout")
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
             arq_reset_frame_machine()
-            data_handler.arq_transmit_keep_alive()
-            
-                        
-    
-    
-    
-async def set_after_timeout():
-    """
-    Author: DJ2LS
-    """
-    while True:
-        time.sleep(1)
-        static.ARQ_RX_ACK_TIMEOUT = True
-        await asyncio.sleep(1.1)
-    # await asyncio.sleep(timeout)
-    #vars()[variable] = value
 
-
-def arq_disconnect_timeout():
-    """
-    Author: DJ2LS
-    """
-    static.ARQ_WAIT_FOR_DISCONNECT = True
-    logging.debug("ARQ_WAIT_FOR_DISCONNECT")
 
 
 def arq_ack_timeout():
@@ -184,9 +137,14 @@ def arq_reset_frame_machine():
     static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0
     static.ARQ_FRAME_BOF_RECEIVED = False
     static.ARQ_FRAME_EOF_RECEIVED = False
-
+    
+    static.ARQ_RX_BURST_BUFFER = []
+    static.ARQ_RX_FRAME_BUFFER = []
+    
     static.TNC_STATE = 'IDLE'
-    static.ARQ_SEND_KEEP_ALIVE = True
+    static.ARQ_STATE = 'IDLE'
+    ###static.ARQ_CONNECTION_KEEP_ALIVE_RECEIVED = int(time.time()) # we need to reset the counter at this point
+    ###static.ARQ_SEND_KEEP_ALIVE = True
     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
     static.ARQ_READY_FOR_DATA = False
 
@@ -196,7 +154,14 @@ def setup_logging():
     Author: DJ2LS
 
     Set the custom logging format so we can use colors
-
+    
+    # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
+    # 'DEBUG'   : 37, # white
+    # 'INFO'    : 36, # cyan
+    # 'WARNING' : 33, # yellow
+    # 'ERROR'   : 31, # red
+    # 'CRITICAL': 41, # white on red bg
+    
     """
 
     logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s', datefmt='%H:%M:%S', level=logging.INFO)
@@ -211,9 +176,4 @@ def setup_logging():
     logging.addLevelName(25, "\033[1;32m%s\033[1;0m" % "SUCCESS")
     logging.addLevelName(24, "\033[1;34m%s\033[1;0m" % "DATA")
 
-    # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-    # 'DEBUG'   : 37, # white
-    # 'INFO'    : 36, # cyan
-    # 'WARNING' : 33, # yellow
-    # 'ERROR'   : 31, # red
-    # 'CRITICAL': 41, # white on red bg
+
