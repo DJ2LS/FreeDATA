@@ -275,7 +275,7 @@ def arq_transmit(data_out):
 
             # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
 
-            logging.info("ARQ | RX | WAITING FOR BURST ACK")
+            logging.debug("ARQ | RX | WAITING FOR BURST ACK")
             static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
             helpers.arq_reset_timeout(False)
@@ -316,7 +316,7 @@ def arq_transmit(data_out):
 
                 while static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_RPT_TIMEOUT == False:
                     time.sleep(0.01)  # lets reduce CPU load a little bit
-                    logging.debug(static.ARQ_STATE)
+                    logging.info(static.ARQ_STATE)
 
                     if static.ARQ_ACK_RECEIVED == True:
 
@@ -334,7 +334,7 @@ def arq_transmit(data_out):
 
            # --------------------------------------------------------------------------------------------------------------
 
-            elif static.ARQ_ACK_RECEIVED == True and static.ARQ_RX_ACK_TIMEOUT == 1:
+            elif static.ARQ_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
                 logging.warning("ARQ | RX | ACK TIMEOUT!")
                 pass  # no break here so we can continue with the next try of repeating the burst
 
@@ -356,7 +356,9 @@ def arq_transmit(data_out):
                 break
 
             else:
-                logging.debug("------------------------------->NO RULE MATCHED!")
+                logging.info("------------------------------->NO RULE MATCHED!")
+                print("ARQ_ACK_RECEIVED " + str(static.ARQ_ACK_RECEIVED))
+                print("ARQ_RX_ACK_TIMEOUT " + str(static.ARQ_RX_ACK_TIMEOUT))
                 break
 
         # --------------------------------WAITING AREA FOR FRAME ACKs

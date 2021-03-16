@@ -62,14 +62,23 @@ def data_channel_keep_alive_watchdog():
 
     if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY': # and not static.ARQ_SEND_KEEP_ALIVE:
         time.sleep(0.01)
-        if static.ARQ_DATA_CHANNEL_LAST_RECEIVED + 10 > time.time():
+        if static.ARQ_DATA_CHANNEL_LAST_RECEIVED + 30 > time.time():
             pass
         else:
             static.ARQ_DATA_CHANNEL_LAST_RECEIVED = 0
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
             arq_reset_frame_machine()
 
 
+#async def set_after_timeout():
+#    """
+#    Author: DJ2LS
+#    """
+#    while True:
+#        time.sleep(1)
+#        static.ARQ_RX_ACK_TIMEOUT = True
+#        await asyncio.sleep(1.1)
+        
 
 def arq_ack_timeout():
     """
