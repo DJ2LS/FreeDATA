@@ -26,9 +26,24 @@ modem = modem.RF()
 
 
 def arq_data_received(data_in):
+    # define some frame sizes so we can calculate the baud rate e.g.
+    if static.ARQ_DATA_CHANNEL_MODE == 10:
+        payload_per_frame = 512 - 2
+    elif static.ARQ_DATA_CHANNEL_MODE == 11:
+        payload_per_frame = 256 - 2
+    elif static.ARQ_DATA_CHANNEL_MODE == 12:
+        payload_per_frame = 128 - 2
+    elif static.ARQ_DATA_CHANNEL_MODE == 14:
+        payload_per_frame = 16 - 2
+    else:
+        payload_per_frame = 16 - 2
 
+    static.ARQ_PAYLOAD_PER_FRAME = payload_per_frame - 8
+ 
+    # 
     static.TNC_STATE = 'BUSY'
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+       
     
     static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
     static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
@@ -59,6 +74,10 @@ def arq_data_received(data_in):
     except IndexError:
 
         static.ARQ_RX_FRAME_BUFFER = []
+        
+        #on a new transmission we reset the timer
+        static.ARQ_START_OF_TRANSMISSION = int(time.time()) + 4
+        
         for i in range(0, static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME + 1):
             static.ARQ_RX_FRAME_BUFFER.insert(i, None)
 
@@ -72,6 +91,7 @@ def arq_data_received(data_in):
     except IndexError:
 
         static.ARQ_RX_BURST_BUFFER = []
+       
         for i in range(0, static.ARQ_N_RX_FRAMES_PER_BURSTS + 1):
             static.ARQ_RX_BURST_BUFFER.insert(i, None)
 
@@ -173,7 +193,11 @@ def arq_data_received(data_in):
         # IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS
         if frame_payload_crc == static.FRAME_CRC:
             logging.log(25, "ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
-
+            
+            transfer_rates = helpers.calculate_transfer_rate()
+            print(str(transfer_rates[0]) + " bit/s")
+            print(str(transfer_rates[1]) + " B/min")
+            
             # append received frame to RX_BUFFER
             static.RX_BUFFER.append(complete_data_frame)
 
@@ -184,7 +208,7 @@ def arq_data_received(data_in):
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
 
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
-            time.sleep(1)  # 0.5
+            time.sleep(0.5)  # 0.5
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [BER." + str(static.BER) + "]")
 
             modem.transmit_signalling(ack_frame)
@@ -413,7 +437,9 @@ def arq_transmit(data_out):
                 pass
 
     # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE
-
+    transfer_rates = helpers.calculate_transfer_rate()
+    print(str(transfer_rates[0]) + " bit/s")
+    print(str(transfer_rates[1]) + " B/min")
     logging.info("ARQ | TX | BUFFER EMPTY")
     helpers.arq_reset_frame_machine()
     # await asyncio.sleep(2)
@@ -432,6 +458,11 @@ def get_n_frames_per_burst():
     #n_frames_per_burst = randrange(1,10)
     n_frames_per_burst = 1
     return n_frames_per_burst
+
+
+def get_best_mode_for_transmission():
+    return 12
+
 
 
 def burst_ack_received():
@@ -466,7 +497,7 @@ async def arq_open_data_channel():
 
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
 
-    static.ARQ_DATA_CHANNEL_MODE = 12
+    static.ARQ_DATA_CHANNEL_MODE = get_best_mode_for_transmission()
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
     
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':

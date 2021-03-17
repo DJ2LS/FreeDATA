@@ -334,17 +334,10 @@ class RF():
             self.c_lib.freedv_set_sync(freedv, 0)
 
             # here we do a buffer cleanup before returning to demod loop
-            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            #for i in range(0, 10):
+            #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+            #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
 
- 
-            #stats = 0
-            #stats = self.c_lib.freedv_get_modem_extended_stats(freedv, stats);
-            #print(stats)
-                    
-            #        freedv_get_modem_stats(freedv, &sync, &snr_est);
-            #freedv_get_modem_extended_stats(freedv, &stats);
-            
             
             # demod loop
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
@@ -382,9 +375,11 @@ class RF():
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
                 # -----------------------------------
-
+                #self.calculate_ber(freedv)
+                self.calculate_snr(freedv)
                 # forward data only if broadcast or we are the receiver
-                if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
+                # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
+                if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     self.calculate_ber(freedv)
                     self.calculate_snr(freedv)
 
@@ -401,7 +396,7 @@ class RF():
                     #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
                     
                     
-                
+                    
 
                     if 50 >= frametype >= 10:
                         if frame != 3 or force == True:
@@ -485,7 +480,10 @@ class RF():
                     if frame == n_frames_per_burst:
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-
+                        for i in range(0, 10):
+                            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+                            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+                            
                     # clear bytes_out buffer to be ready for next frames after successfull decoding
 
                     bytes_out = (ctypes.c_ubyte * bytes_per_frame)
@@ -504,6 +502,7 @@ class RF():
     def calculate_ber(self, freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
+        
         if Tbits != 0:
             ber = (Terrs / Tbits) * 100
             static.BER = int(ber)
@@ -515,8 +514,7 @@ class RF():
     
         modem_stats_snr = c_float()
         modem_stats_sync = c_int()
-
+        
         self.c_lib.freedv_get_modem_stats(freedv,byref(modem_stats_sync), byref(modem_stats_snr))
         modem_stats_snr = modem_stats_snr.value
         static.SNR = int(modem_stats_snr)
-        print(static.SNR)

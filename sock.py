@@ -11,6 +11,7 @@ import threading
 import logging
 import json
 import asyncio
+import time
 
 import static
 import data_handler
@@ -105,7 +106,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
         if received_json["command"] == "ARQ:DATA" and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
             static.TNC_STATE = 'BUSY'
-
+            
+            #on a new transmission we reset the timer
+            static.ARQ_START_OF_TRANSMISSION = int(time.time())
+            
             data_out = bytes(received_json["data"], 'utf-8')
 
             ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
