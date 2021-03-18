@@ -30,7 +30,7 @@ def arq_data_received(data_in):
     if static.ARQ_DATA_CHANNEL_MODE == 10:
         payload_per_frame = 512 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 11:
-        payload_per_frame = 256 - 2
+        payload_per_frame = 258 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 12:
         payload_per_frame = 128 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 14:
@@ -224,6 +224,7 @@ def arq_data_received(data_in):
         else:
             print("ARQ_FRAME_BOF_RECEIVED " + str(static.ARQ_FRAME_BOF_RECEIVED))
             print("ARQ_FRAME_EOF_RECEIVED " + str(static.ARQ_FRAME_EOF_RECEIVED))
+            print(static.ARQ_RX_FRAME_BUFFER)
             logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
             
             helpers.arq_reset_frame_machine()
@@ -235,7 +236,7 @@ def arq_transmit(data_out):
     if static.ARQ_DATA_CHANNEL_MODE == 10:
         payload_per_frame = 512 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 11:
-        payload_per_frame = 256 - 2
+        payload_per_frame = 258 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 12:
         payload_per_frame = 128 - 2
     elif static.ARQ_DATA_CHANNEL_MODE == 14:
@@ -465,7 +466,7 @@ def get_n_frames_per_burst():
 
 def get_best_mode_for_transmission():
     
-    mode = 12
+    mode = 11
     
     return mode
 
