@@ -157,6 +157,34 @@ def arq_reset_frame_machine():
     static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
     static.ARQ_READY_FOR_DATA = False
 
+    static.ARQ_START_OF_TRANSMISSION = 0
+
+def calculate_transfer_rate():
+   
+   if static.ARQ_TX_N_TOTAL_ARQ_FRAMES == 0:
+       total_n_frames = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
+   elif static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME == 0:
+       total_n_frames = int.from_bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES, "big")
+
+
+   total_bytes = (total_n_frames * static.ARQ_PAYLOAD_PER_FRAME)
+   total_transmission_time = time.time() - static.ARQ_START_OF_TRANSMISSION
+   
+   burst_bytes = static.ARQ_PAYLOAD_PER_FRAME
+   burst_transmission_time = time.time() - static.ARQ_START_OF_BURST
+
+   static.ARQ_BITS_PER_SECOND_TRANSMISSION = int((total_bytes * 8) / total_transmission_time)
+   static.ARQ_BYTES_PER_MINUTE_TRANSMISSION = int(((total_bytes) / total_transmission_time) * 60)
+  
+   static.ARQ_BITS_PER_SECOND_BURST = int((burst_bytes * 8) / burst_transmission_time)
+   static.ARQ_BYTES_PER_MINUTE_BURST = int(((burst_bytes) / burst_transmission_time) * 60)
+   
+     
+   return [static.ARQ_BITS_PER_SECOND_TRANSMISSION, static.ARQ_BYTES_PER_MINUTE_TRANSMISSION, static.ARQ_BITS_PER_SECOND_BURST, static.ARQ_BYTES_PER_MINUTE_BURST]
+
+
+
+                
 
 def add_to_heard_stations(dxcallsign, datatype):
     # check if buffer empty

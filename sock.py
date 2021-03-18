@@ -89,8 +89,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 asyncio.run(data_handler.arq_connect())
 
         # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
-        if received_json["command"] == "ARQ:DISCONNECT":
-            asyncio.run(data_handler.arq_disconnect())
+        #if received_json["command"] == "ARQ:DISCONNECT":
+        #    asyncio.run(data_handler.arq_disconnect())
 
 
         if received_json["command"] == "ARQ:OPEN_DATA_CHANNEL": # and static.ARQ_STATE == 'CONNECTED':

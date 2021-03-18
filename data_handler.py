@@ -112,6 +112,7 @@ def arq_data_received(data_in):
 
         # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
         modem.transmit_signalling(ack_frame)
+       
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
         static.CHANNEL_STATE = 'RECEIVING_DATA'
@@ -212,6 +213,7 @@ def arq_data_received(data_in):
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [BER." + str(static.BER) + "]")
 
             modem.transmit_signalling(ack_frame)
+            
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
             
@@ -289,7 +291,7 @@ def arq_transmit(data_out):
         for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
 
             if static.ARQ_N_SENT_FRAMES + 1 <= static.TX_BUFFER_SIZE:
-                logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES + 1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES / (static.TX_BUFFER_SIZE) * 100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES + 1) + "/" + str(static.TX_N_MAX_RETRIES) + "] [BER." + str(static.BER) + "]")
+                logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES + 1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES / (static.TX_BUFFER_SIZE) * 100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES + 1) + "/" + str(static.TX_N_MAX_RETRIES) + "]")
 
 
             modem.transmit_arq_burst()
@@ -364,7 +366,8 @@ def arq_transmit(data_out):
 
             # --------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
             elif static.ARQ_ACK_RECEIVED == True:
-                logging.info("ARQ | RX | ACK")
+                transfer_rates = helpers.calculate_transfer_rate()
+                logging.info("ARQ | RX | ACK [" + str(transfer_rates[2]) + " bit/s | " + str(transfer_rates[3]) + " B/min]")
                 acktimer.cancel()
                 # -----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                 static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
@@ -438,8 +441,8 @@ def arq_transmit(data_out):
 
     # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE
     transfer_rates = helpers.calculate_transfer_rate()
-    print(str(transfer_rates[0]) + " bit/s")
-    print(str(transfer_rates[1]) + " B/min")
+    logging.info("RATE (DATA/ACK) :[" + str(transfer_rates[0]) + " bit/s | " + str(transfer_rates[1]) + " B/min]")
+
     logging.info("ARQ | TX | BUFFER EMPTY")
     helpers.arq_reset_frame_machine()
     # await asyncio.sleep(2)
@@ -461,7 +464,10 @@ def get_n_frames_per_burst():
 
 
 def get_best_mode_for_transmission():
-    return 12
+    
+    mode = 12
+    
+    return mode
 
 
 
@@ -537,6 +543,7 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
 
+    modem.transmit_signalling(connection_frame)
     modem.transmit_signalling(connection_frame)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)

@@ -43,7 +43,7 @@ class RF():
                                      rate=static.AUDIO_SAMPLE_RATE_RX,
                                      frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER,
                                      input=True,
-                                     input_device_index=static.AUDIO_INPUT_DEVICE,
+                                     input_device_index=static.AUDIO_INPUT_DEVICE
                                      )
         # --------------------------------------------OPEN AUDIO CHANNEL TX
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
@@ -97,6 +97,10 @@ class RF():
             self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
         self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+
+
+
+
 
 # --------------------------------------------------------------------------------------------------------
     def play_audio(self):
@@ -178,6 +182,7 @@ class RF():
         # we could place this timing part inside the modem...
         # lets see if this is a good idea..
         static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+        static.ARQ_START_OF_BURST = int(time.time()) # we need to update our timeout timestamp
     
 
         self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
@@ -330,13 +335,18 @@ class RF():
             stuck_in_sync_10_counter = 0
             #
 
+
+
             # here we do an unsync to be sure, the modem is in idle state and ready for new data
-            self.c_lib.freedv_set_sync(freedv, 0)
+            # tests are showing, that this causes sync 10 triggers. So we should definitely not do this here!
+            #self.c_lib.freedv_set_sync(freedv, 0)
 
             # here we do a buffer cleanup before returning to demod loop
-            #for i in range(0, 10):
+            # tests are showing, that this causes sync 10 triggers. So we should definitely not do this here!
+            #for i in range(0, 3):
             #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
             #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+            #    #self.stream_rx.read(10, exception_on_overflow=False)
 
             
             # demod loop
@@ -349,7 +359,11 @@ class RF():
 
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
+
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
+                
+                
+                
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 # self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
@@ -360,8 +374,9 @@ class RF():
                 stuck_in_sync_counter += 1
                 if self.c_lib.freedv_get_rx_status(freedv) == 10:
                     stuck_in_sync_10_counter += 1
-                    #self.c_lib.freedv_set_sync(freedv, 0)
-                    logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
+                    if mode != 14:
+                        self.c_lib.freedv_set_sync(freedv, 0)
+                        logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
 
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
                     logging.critical("MODEM | stuck in sync #1")
@@ -480,7 +495,7 @@ class RF():
                     if frame == n_frames_per_burst:
                         logging.debug("LAST FRAME ---> UNSYNC")
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-                        for i in range(0, 10):
+                        for i in range(0, 3):
                             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
                             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
                             
@@ -491,7 +506,7 @@ class RF():
 
                     if mode == 14:
                         self.c_lib.freedv_set_sync(freedv, 0)
-                        for i in range(0, 10):
+                        for i in range(0, 3):
                             dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
                             self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
                 else:
