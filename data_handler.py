@@ -501,8 +501,8 @@ async def arq_open_data_channel():
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
     while not static.ARQ_READY_FOR_DATA:
-        for attempt in range(0,3):
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt + 1) + "/" + str(3) + "]")
+        for attempt in range(0,static.ARQ_OPEN_DATA_CHANNEL_RETRIES):
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt + 1) + "/" + str(static.ARQ_OPEN_DATA_CHANNEL_RETRIES) + "]")
             modem.transmit_signalling(connection_frame)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
@@ -513,7 +513,11 @@ async def arq_open_data_channel():
                 if static.ARQ_READY_FOR_DATA:
                     break
             if static.ARQ_READY_FOR_DATA:
-                break        
+                break
+            
+            if not static.ARQ_READY_FOR_DATA and attempt + 1 == static.ARQ_OPEN_DATA_CHANNEL_RETRIES:
+                logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                sys.exit()
 
 
 def arq_received_data_channel_opener(data_in):
