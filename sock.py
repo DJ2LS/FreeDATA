@@ -104,15 +104,24 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             asyncio.run(data_handler.arq_open_data_channel())
             
 
-        if received_json["command"] == "ARQ:DATA" and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+        if received_json["command"] == "ARQ:DATA":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
             static.TNC_STATE = 'BUSY'
             
             #on a new transmission we reset the timer
             static.ARQ_START_OF_TRANSMISSION = int(time.time())
             
+            
+            dxcallsign = received_json["dxcallsign"]
+            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+            static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            
+            
             data_out = bytes(received_json["data"], 'utf-8')
 
-            ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
+            #ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
+            #ARQ_DATA_THREAD.start()
+            
+            ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out], name="ARQ_DATA")
             ARQ_DATA_THREAD.start()
             # asyncio.run(data_handler.arq_transmit(data_out))
 

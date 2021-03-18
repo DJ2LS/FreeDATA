@@ -464,10 +464,8 @@ def get_n_frames_per_burst():
     return n_frames_per_burst
 
 
-def get_best_mode_for_transmission():
-    
-    mode = 11
-    
+def get_best_mode_for_transmission():    
+    mode = 10
     return mode
 
 
@@ -500,9 +498,17 @@ def burst_rpt_received(data_in):
 # ############################################################################################################
 
 
-async def arq_open_data_channel():
+def open_dc_and_transmit(data_out):
+    if not static.ARQ_READY_FOR_DATA:
+        asyncio.run(arq_open_data_channel())
+    # wait until data channel is open
+    while not static.ARQ_READY_FOR_DATA:
+        time.sleep(0.01)
+    # transmit data    
+    arq_transmit(data_out)
 
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+
+async def arq_open_data_channel():
 
     static.ARQ_DATA_CHANNEL_MODE = get_best_mode_for_transmission()
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
@@ -517,9 +523,20 @@ async def arq_open_data_channel():
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
-    modem.transmit_signalling(connection_frame)
-    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        time.sleep(0.01)
+    while not static.ARQ_READY_FOR_DATA:
+        for attempt in range(0,3):
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt + 1) + "/" + str(3) + "]")
+            modem.transmit_signalling(connection_frame)
+            while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+                time.sleep(0.01)
+        
+            timeout = time.time() + 5    
+            while time.time() < timeout:    
+                # break if data channel is openend    
+                if static.ARQ_READY_FOR_DATA:
+                    break
+            if static.ARQ_READY_FOR_DATA:
+                break        
 
 
 def arq_received_data_channel_opener(data_in):
