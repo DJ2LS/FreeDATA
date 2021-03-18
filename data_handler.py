@@ -187,7 +187,7 @@ def arq_data_received(data_in):
             logging.debug(complete_data_frame)
 
     # check if Begin of Frame BOF and End of Frame EOF are received, then start calculating CRC and sticking everything together
-    if static.ARQ_FRAME_BOF_RECEIVED == True and static.ARQ_FRAME_EOF_RECEIVED == True:
+    if static.ARQ_FRAME_BOF_RECEIVED and static.ARQ_FRAME_EOF_RECEIVED:
 
         frame_payload_crc = helpers.get_crc_16(complete_data_frame)
 
@@ -308,9 +308,6 @@ def arq_transmit(data_out):
             helpers.arq_reset_timeout(False)
             helpers.arq_reset_ack(False)
 
-            acktimer = threading.Timer(static.ARQ_RX_ACK_TIMEOUT_SECONDS, helpers.arq_ack_timeout)
-            acktimer.start()
-
             logging.debug(".............................")
             logging.debug("static.ARQ_STATE " + str(static.ARQ_STATE))
             logging.debug("static.ARQ_FRAME_ACK_RECEIVED " + str(static.ARQ_FRAME_ACK_RECEIVED))
@@ -318,14 +315,14 @@ def arq_transmit(data_out):
             logging.debug("static.ARQ_RX_ACK_TIMEOUT " + str(static.ARQ_RX_ACK_TIMEOUT))
             logging.debug("static.ARQ_RPT_RECEIVED " + str(static.ARQ_RPT_RECEIVED))
             logging.debug(".............................")
-
+            
+            burstacktimeout = time.time() + static.ARQ_RX_ACK_TIMEOUT_SECONDS
             # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-            while static.ARQ_ACK_RECEIVED != True and static.ARQ_RPT_RECEIVED != True and static.ARQ_FRAME_ACK_RECEIVED != True and static.ARQ_RX_FRAME_TIMEOUT != True and static.ARQ_RX_ACK_TIMEOUT != True:
+            while not static.ARQ_ACK_RECEIVED and not static.ARQ_RPT_RECEIVED and not static.ARQ_FRAME_ACK_RECEIVED and time.time() < burstacktimeout:# and static.ARQ_RX_FRAME_TIMEOUT != True and static.ARQ_RX_ACK_TIMEOUT != True:
                 time.sleep(0.01)  # lets reduce CPU load a little bit
                 logging.debug(static.CHANNEL_STATE)
 
-            if static.ARQ_RPT_RECEIVED == True:
-
+            if static.ARQ_RPT_RECEIVED:
                 logging.warning("ARQ | RX | REQUEST FOR REPEATING FRAMES: " + str(static.ARQ_RPT_FRAMES))
                 logging.warning("ARQ | TX | SENDING REQUESTED FRAMES: " + str(static.ARQ_RPT_FRAMES))
 
@@ -338,48 +335,41 @@ def arq_transmit(data_out):
                 helpers.arq_reset_timeout(False)
                 helpers.arq_reset_ack(False)
 
-                rpttimer = threading.Timer(static.ARQ_RX_RPT_TIMEOUT_SECONDS, helpers.arq_rpt_timeout)
-                rpttimer.start()
+                rpttimeout = time.time() + static.ARQ_RX_RPT_TIMEOUT_SECONDS
 
-                while static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_RPT_TIMEOUT == False:
+                while not static.ARQ_ACK_RECEIVED and not static.ARQ_FRAME_ACK_RECEIVED and time.time() < rpttimeout: #static.ARQ_RX_RPT_TIMEOUT == False:
                     time.sleep(0.01)  # lets reduce CPU load a little bit
                     logging.info(static.ARQ_STATE)
 
-                    if static.ARQ_ACK_RECEIVED == True:
-
+                    if static.ARQ_ACK_RECEIVED:
                         logging.info("ARQ | RX | ACK AFTER RPT")
                         rpttimer.cancel()
                         helpers.arq_reset_ack(True)
                         static.ARQ_RPT_FRAMES = []
 
-                if static.ARQ_RX_RPT_TIMEOUT == True and static.ARQ_ACK_RECEIVED == False:
-
+                if static.ARQ_RX_RPT_TIMEOUT and not static.ARQ_ACK_RECEIVED:
                     logging.error("ARQ | Burst lost....")
 
                     helpers.arq_reset_ack(False)
                     static.ARQ_RPT_FRAMES = []
 
            # --------------------------------------------------------------------------------------------------------------
-
-            elif static.ARQ_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
+            elif not static.ARQ_ACK_RECEIVED: # and static.ARQ_RX_ACK_TIMEOUT == True:
                 logging.warning("ARQ | RX | ACK TIMEOUT!")
                 pass  # no break here so we can continue with the next try of repeating the burst
 
             # --------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
-            elif static.ARQ_ACK_RECEIVED == True:
+            elif static.ARQ_ACK_RECEIVED:
                 transfer_rates = helpers.calculate_transfer_rate()
                 logging.info("ARQ | RX | ACK [" + str(transfer_rates[2]) + " bit/s | " + str(transfer_rates[3]) + " B/min]")
-                acktimer.cancel()
                 # -----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                 static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
                 break
 
             # --------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
-            elif static.ARQ_FRAME_ACK_RECEIVED == True:
-
+            elif static.ARQ_FRAME_ACK_RECEIVED:
                 logging.info("ARQ | RX | EARLY FRAME ACK RECEIVED")
 
-                # static.ARQ_N_SENT_FRAMES = #static.TX_BUFFER_SIZE
                 static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
                 break
 
@@ -403,42 +393,30 @@ def arq_transmit(data_out):
         logging.debug("static.ARQ_RPT_RECEIVED          " + str(static.ARQ_RPT_RECEIVED))
         logging.debug("static.ARQ_TX_N_FRAMES_PER_BURST " + str(static.ARQ_TX_N_FRAMES_PER_BURST))
 
-        frametimer = threading.Timer(static.ARQ_RX_FRAME_TIMEOUT_SECONDS, helpers.arq_frame_timeout)
-        frametimer.start()
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
+        frameacktimeout = time.time() + static.ARQ_RX_FRAME_TIMEOUT_SECONDS
         # wait for frame ACK if we processed the last frame/burst
-        while static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_FRAME_TIMEOUT == False and static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE:
+        while not static.ARQ_FRAME_ACK_RECEIVED and time.time() < frameacktimeout and static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE:
             time.sleep(0.01)  # lets reduce CPU load a little bit
             logging.debug("WAITING FOR FRAME ACK")
 
         # ----------- if no ACK received and out of retries.....stop frame sending
-        if static.ARQ_ACK_RECEIVED == False and static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_ACK_TIMEOUT == True:
+        if not static.ARQ_ACK_RECEIVED and not static.ARQ_FRAME_ACK_RECEIVED: # and static.ARQ_RX_ACK_TIMEOUT == True:
             logging.error("ARQ | TX | NO ACK RECEIVED | DATA SHOULD BE RESEND!")
             break
 
         # -------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
-        elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED == True:
+        elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED:
             logging.log(25, "ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
             break
-
-        elif static.ARQ_FRAME_ACK_RECEIVED == False and static.ARQ_RX_FRAME_TIMEOUT == True:
+            
+        elif not static.ARQ_FRAME_ACK_RECEIVED: # == False and static.ARQ_RX_FRAME_TIMEOUT == True:
             logging.error("ARQ | TX | NO FRAME ACK RECEIVED")
             break
 
         else:
             logging.debug("NO MATCHING RULE AT THE END")
-
-            # stop all timers
-            try:
-                frametimer.cancel()
-            except Exception:
-                pass
-
-            try:
-                acktimer.cancel()
-            except Exception:
-                pass
 
     # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE
     transfer_rates = helpers.calculate_transfer_rate()
@@ -450,7 +428,6 @@ def arq_transmit(data_out):
     time.sleep(2)
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
     
-    #####arq_transmit_keep_alive()
 
     # this should close our thread so we are saving memory...
     # https://stackoverflow.com/questions/905189/why-does-sys-exit-not-exit-when-called-inside-a-thread-in-python

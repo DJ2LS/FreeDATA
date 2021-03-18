@@ -70,43 +70,6 @@ def data_channel_keep_alive_watchdog():
             arq_reset_frame_machine()
 
 
-#async def set_after_timeout():
-#    """
-#    Author: DJ2LS
-#    """
-#    while True:
-#        time.sleep(1)
-#        static.ARQ_RX_ACK_TIMEOUT = True
-#        await asyncio.sleep(1.1)
-        
-
-def arq_ack_timeout():
-    """
-    Author: DJ2LS
-    """
-    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
-        static.ARQ_RX_ACK_TIMEOUT = True
-        logging.debug("ARQ_RX_ACK_TIMEOUT")
-
-
-def arq_rpt_timeout():
-    """
-    Author: DJ2LS
-    """
-    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
-        static.ARQ_RX_RPT_TIMEOUT = True
-        logging.debug("ARQ_RX_RPT_TIMEOUT")
-
-
-def arq_frame_timeout():
-    """
-    Author: DJ2LS
-    """
-    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING':
-        static.ARQ_RX_FRAME_TIMEOUT = True
-        logging.debug("ARQ_RX_FRAME_TIMEOUT")
-
-
 def arq_reset_timeout(state):
     """
     Author: DJ2LS
