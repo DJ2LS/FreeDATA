@@ -140,7 +140,7 @@ def arq_data_received(data_in):
 
         # BUILDING RPT FRAME FOR BURST -----------------------------------------------
         rpt_frame = bytearray(14)
-        rpt_frame[:1] = bytes([63])
+        rpt_frame[:1] = bytes([62])
         rpt_frame[1:2] = static.DXCALLSIGN_CRC8
         rpt_frame[2:3] = static.MYCALLSIGN_CRC8
         rpt_frame[3:9] = missing_frames
@@ -339,11 +339,11 @@ def arq_transmit(data_out):
 
                 while not static.ARQ_ACK_RECEIVED and not static.ARQ_FRAME_ACK_RECEIVED and time.time() < rpttimeout: #static.ARQ_RX_RPT_TIMEOUT == False:
                     time.sleep(0.01)  # lets reduce CPU load a little bit
-                    logging.info(static.ARQ_STATE)
+                    #logging.info(static.ARQ_STATE)
 
                     if static.ARQ_ACK_RECEIVED:
                         logging.info("ARQ | RX | ACK AFTER RPT")
-                        rpttimer.cancel()
+                        #rpttimer.cancel()
                         helpers.arq_reset_ack(True)
                         static.ARQ_RPT_FRAMES = []
 
@@ -353,10 +353,24 @@ def arq_transmit(data_out):
                     helpers.arq_reset_ack(False)
                     static.ARQ_RPT_FRAMES = []
 
+
+            # --------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
+            elif static.ARQ_FRAME_ACK_RECEIVED:
+                logging.info("ARQ | RX | EARLY FRAME ACK RECEIVED #2")
+
+                static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
+                break
+
            # --------------------------------------------------------------------------------------------------------------
             elif not static.ARQ_ACK_RECEIVED: # and static.ARQ_RX_ACK_TIMEOUT == True:
                 logging.warning("ARQ | RX | ACK TIMEOUT!")
                 pass  # no break here so we can continue with the next try of repeating the burst
+
+
+           
+
+
+
 
             # --------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
             elif static.ARQ_ACK_RECEIVED:
@@ -366,19 +380,21 @@ def arq_transmit(data_out):
                 static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
                 break
 
-            # --------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
-            elif static.ARQ_FRAME_ACK_RECEIVED:
-                logging.info("ARQ | RX | EARLY FRAME ACK RECEIVED")
 
-                static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
-                break
+                
 
             else:
                 logging.info("------------------------------->NO RULE MATCHED!")
                 print("ARQ_ACK_RECEIVED " + str(static.ARQ_ACK_RECEIVED))
                 print("ARQ_RX_ACK_TIMEOUT " + str(static.ARQ_RX_ACK_TIMEOUT))
                 break
+                
+            print("static.ARQ_ACK_RECEIVED" + str(static.ARQ_ACK_RECEIVED))
+            print("static.ARQ_FRAME_ACK_RECEIVED" + str(static.ARQ_FRAME_ACK_RECEIVED))
+            print("static.ARQ_N_SENT_FRAMES" + str(static.ARQ_N_SENT_FRAMES))    
+            print("static.ARQ_TX_N_TOTAL_ARQ_FRAMES" + str(static.ARQ_TX_N_TOTAL_ARQ_FRAMES))                        
 
+            
         # --------------------------------WAITING AREA FOR FRAME ACKs
 
         logging.debug("static.ARQ_N_SENT_FRAMES         " + str(static.ARQ_N_SENT_FRAMES))
@@ -462,7 +478,7 @@ def burst_rpt_received(data_in):
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
     static.ARQ_RPT_FRAMES = []
 
-    missing_area = bytes(data_in[1:9])
+    missing_area = bytes(data_in[3:12])  # 1:9
 
     for i in range(0, 6, 2):
         if not missing_area[i:i + 2].endswith(b'\x00\x00'):
