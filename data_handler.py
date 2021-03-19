@@ -269,7 +269,7 @@ def arq_transmit(data_out):
     static.ARQ_N_SENT_FRAMES = 0  # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
     while static.ARQ_N_SENT_FRAMES <= static.TX_BUFFER_SIZE:
 
-        static.ARQ_TX_N_FRAMES_PER_BURST = get_n_frames_per_burst()
+        #static.ARQ_TX_N_FRAMES_PER_BURST = get_n_frames_per_burst()
 
         # ----------- CREATE FRAME TOTAL PAYLOAD TO BE ABLE TO CREATE CRC FOR IT
         try:  # DETECT IF LAST BURST TO PREVENT INDEX ERROR OF BUFFER
@@ -411,7 +411,7 @@ def arq_transmit(data_out):
             logging.log(25, "ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
             break
             
-        elif not static.ARQ_FRAME_ACK_RECEIVED: # == False and static.ARQ_RX_FRAME_TIMEOUT == True:
+        elif not static.ARQ_FRAME_ACK_RECEIVED and time.time() > frameacktimeout: # == False and static.ARQ_RX_FRAME_TIMEOUT == True:
             logging.error("ARQ | TX | NO FRAME ACK RECEIVED")
             break
 
@@ -437,7 +437,7 @@ def arq_transmit(data_out):
 # BURST MACHINE TO DEFINE N BURSTS PER FRAME    ---> LATER WE CAN USE CHANNEL MESSUREMENT TO SET FRAMES PER BURST
 def get_n_frames_per_burst():
     #n_frames_per_burst = randrange(1,10)
-    n_frames_per_burst = 1
+    n_frames_per_burst = 2
     return n_frames_per_burst
 
 
@@ -475,19 +475,35 @@ def burst_rpt_received(data_in):
 # ############################################################################################################
 
 
-def open_dc_and_transmit(data_out):
+def open_dc_and_transmit(data_out, mode, n_frames):
     if not static.ARQ_READY_FOR_DATA:
-        asyncio.run(arq_open_data_channel())
+
+
+        if n_frames != 0:
+            static.ARQ_TX_N_FRAMES_PER_BURST = int(n_frames)
+
+        else:
+            static.ARQ_TX_N_FRAMES_PER_BURST = get_n_frames_per_burst()
+
+
+        asyncio.run(arq_open_data_channel(mode))
     # wait until data channel is open
     while not static.ARQ_READY_FOR_DATA:
         time.sleep(0.01)
     # transmit data    
     arq_transmit(data_out)
+    
 
 
-async def arq_open_data_channel():
 
-    static.ARQ_DATA_CHANNEL_MODE = get_best_mode_for_transmission()
+async def arq_open_data_channel(mode):
+    print(type(mode))
+    if mode == 0:
+        static.ARQ_DATA_CHANNEL_MODE = get_best_mode_for_transmission()
+        print(static.ARQ_DATA_CHANNEL_MODE)
+    else:
+        static.ARQ_DATA_CHANNEL_MODE = int(mode)
+    
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
     
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':

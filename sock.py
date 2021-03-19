@@ -118,10 +118,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             data_out = bytes(received_json["data"], 'utf-8')
 
+            mode = int(received_json["mode"])
+            
+            n_frames = int(received_json["n_frames"])
+            
             #ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
             #ARQ_DATA_THREAD.start()
             
-            ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out], name="ARQ_DATA")
+            ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
             ARQ_DATA_THREAD.start()
             # asyncio.run(data_handler.arq_transmit(data_out))
 
