@@ -233,8 +233,6 @@ class RF():
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
 
-                # print(arqframe)
-
                 buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME)  # create TX buffer
                 buffer[:len(arqframe)] = arqframe  # set buffersize to length of data which will be send
 
@@ -250,10 +248,12 @@ class RF():
 
             for n in range(0, len(static.ARQ_RPT_FRAMES)):
 
+
                 missing_frame = int.from_bytes(static.ARQ_RPT_FRAMES[n], "big")
 
             # ---------------------------BUILD ARQ BURST ---------------------------------------------------------------------
                 frame_type = 10 + missing_frame  # static.ARQ_TX_N_FRAMES_PER_BURST
+
                 frame_type = bytes([frame_type])
 
                 payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + missing_frame - 1])
@@ -271,6 +271,7 @@ class RF():
                     static.DXCALLSIGN_CRC8 + \
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
+
 
                 buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME)  # create TX buffer
                 buffer[:len(arqframe)] = arqframe  # set buffersize to length of data which will be send
@@ -304,7 +305,7 @@ class RF():
 # --------------------------------------------------------------------------------------------------------
 
     def receive(self, mode):
-        force = True
+        force = False
 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(mode)
@@ -328,7 +329,7 @@ class RF():
         bytes_out = bytes_out()  # get pointer to bytes_out
 
         while static.FREEDV_RECEIVE == True:
-            time.sleep(0.05)
+            time.sleep(0.01)
 
             # stuck in sync counter
             stuck_in_sync_counter = 0
@@ -354,16 +355,15 @@ class RF():
                 time.sleep(0.01)
 
                 # refresh vars, so the correct parameters of the used mode are set
-                static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
-                static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
+                if mode == static.ARQ_DATA_CHANNEL_MODE:
+                    static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
+                    static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
 
                 nin = self.c_lib.freedv_nin(freedv)
                 #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
 
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
-                
-                
-                
+
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 # self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
@@ -384,16 +384,17 @@ class RF():
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
 
-                if stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
+                elif stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
                     logging.critical("MODEM | stuck in sync #2")
                     self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
                     stuck_in_sync_counter = 0
                     stuck_in_sync_10_counter = 0
                 # -----------------------------------
-                #self.calculate_ber(freedv)
+
                 self.calculate_snr(freedv)
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
+                # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     self.calculate_ber(freedv)
                     self.calculate_snr(freedv)
@@ -409,9 +410,6 @@ class RF():
                     n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
                     #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
-                    
-                    
-                    
 
                     if 50 >= frametype >= 10:
                         if frame != 3 or force == True:
@@ -442,6 +440,11 @@ class RF():
                         logging.debug("REPEAT REQUEST RECEIVED....")
                         data_handler.burst_rpt_received(bytes_out[:-2])
 
+                    # FRAME NAK
+                    elif frametype == 63:
+                        logging.debug("FRAME NAK RECEIVED....")
+                        data_handler.frame_nack_received(bytes_out[:-2])
+                        
                     # CQ FRAME
                     elif frametype == 200:
                         logging.debug("CQ RECEIVED....")
@@ -532,4 +535,7 @@ class RF():
         
         self.c_lib.freedv_get_modem_stats(freedv,byref(modem_stats_sync), byref(modem_stats_snr))
         modem_stats_snr = modem_stats_snr.value
-        static.SNR = int(modem_stats_snr)
+        try:
+            static.SNR = int(modem_stats_snr)
+        except:
+            static.SNR = 0

@@ -194,10 +194,7 @@ def arq_data_received(data_in):
         # IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS
         if frame_payload_crc == static.FRAME_CRC:
             logging.log(25, "ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
-            
-            transfer_rates = helpers.calculate_transfer_rate()
-            print(str(transfer_rates[0]) + " bit/s")
-            print(str(transfer_rates[1]) + " B/min")
+
             
             # append received frame to RX_BUFFER
             static.RX_BUFFER.append(complete_data_frame)
@@ -209,11 +206,11 @@ def arq_data_received(data_in):
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
 
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
-            time.sleep(0.5)  # 0.5
+            #time.sleep(0.5)  # 0.5
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [BER." + str(static.BER) + "]")
 
             modem.transmit_signalling(ack_frame)
-            
+            modem.transmit_signalling(ack_frame)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
             
@@ -226,6 +223,21 @@ def arq_data_received(data_in):
             print("ARQ_FRAME_EOF_RECEIVED " + str(static.ARQ_FRAME_EOF_RECEIVED))
             print(static.ARQ_RX_FRAME_BUFFER)
             logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
+
+            # BUILDING ACK FRAME FOR DATA FRAME -----------------------------------------------
+            nak_frame = bytearray(14)
+            nak_frame[:1] = bytes([63])
+            nak_frame[1:2] = static.DXCALLSIGN_CRC8
+            nak_frame[2:3] = static.MYCALLSIGN_CRC8
+
+            # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
+            #time.sleep(0.5)  # 0.5
+            logging.info("ARQ | TX | NAK")
+
+            modem.transmit_signalling(nak_frame)
+            while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+                time.sleep(0.01)
+
             
             helpers.arq_reset_frame_machine()
             
@@ -353,6 +365,8 @@ def arq_transmit(data_out):
                     helpers.arq_reset_ack(False)
                     static.ARQ_RPT_FRAMES = []
 
+            # the order of ACK check is important! speciall the FRAME ACK after RPT needs to be checked really early!
+
 
             # --------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
             elif static.ARQ_FRAME_ACK_RECEIVED:
@@ -365,11 +379,6 @@ def arq_transmit(data_out):
             elif not static.ARQ_ACK_RECEIVED: # and static.ARQ_RX_ACK_TIMEOUT == True:
                 logging.warning("ARQ | RX | ACK TIMEOUT!")
                 pass  # no break here so we can continue with the next try of repeating the burst
-
-
-           
-
-
 
 
             # --------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
@@ -389,11 +398,6 @@ def arq_transmit(data_out):
                 print("ARQ_RX_ACK_TIMEOUT " + str(static.ARQ_RX_ACK_TIMEOUT))
                 break
                 
-            print("static.ARQ_ACK_RECEIVED" + str(static.ARQ_ACK_RECEIVED))
-            print("static.ARQ_FRAME_ACK_RECEIVED" + str(static.ARQ_FRAME_ACK_RECEIVED))
-            print("static.ARQ_N_SENT_FRAMES" + str(static.ARQ_N_SENT_FRAMES))    
-            print("static.ARQ_TX_N_TOTAL_ARQ_FRAMES" + str(static.ARQ_TX_N_TOTAL_ARQ_FRAMES))                        
-
             
         # --------------------------------WAITING AREA FOR FRAME ACKs
 
@@ -424,7 +428,7 @@ def arq_transmit(data_out):
 
         # -------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
         elif static.ARQ_N_SENT_FRAMES == static.TX_BUFFER_SIZE and static.ARQ_FRAME_ACK_RECEIVED:
-            logging.log(25, "ARQ | RX | FRAME ACK RECEIVED - DATA TRANSMITTED! :-)")
+            logging.log(25, "ARQ | RX | FRAME ACK! - DATA TRANSMITTED! :-)")
             break
             
         elif not static.ARQ_FRAME_ACK_RECEIVED and time.time() > frameacktimeout: # == False and static.ARQ_RX_FRAME_TIMEOUT == True:
@@ -485,6 +489,8 @@ def burst_rpt_received(data_in):
             missing = missing_area[i:i + 2]
             static.ARQ_RPT_FRAMES.insert(0, missing)
 
+def frame_nack_received():
+    print("NAK RECEIVED :-/")
 
 # ############################################################################################################
 # ARQ DATA CHANNEL HANDLER
@@ -506,6 +512,10 @@ def open_dc_and_transmit(data_out, mode, n_frames):
     # wait until data channel is open
     while not static.ARQ_READY_FOR_DATA:
         time.sleep(0.01)
+        
+    #on a new transmission we reset the timer
+    static.ARQ_START_OF_TRANSMISSION = int(time.time())
+                
     # transmit data    
     arq_transmit(data_out)
     
@@ -513,7 +523,7 @@ def open_dc_and_transmit(data_out, mode, n_frames):
 
 
 async def arq_open_data_channel(mode):
-    print(type(mode))
+
     if mode == 0:
         static.ARQ_DATA_CHANNEL_MODE = get_best_mode_for_transmission()
         print(static.ARQ_DATA_CHANNEL_MODE)
@@ -575,7 +585,7 @@ def arq_received_data_channel_opener(data_in):
 
 
     modem.transmit_signalling(connection_frame)
-    modem.transmit_signalling(connection_frame)
+    #modem.transmit_signalling(connection_frame)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
