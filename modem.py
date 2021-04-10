@@ -35,8 +35,8 @@ class RF():
         # --------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
         #static.AUDIO_SAMPLE_RATE_RX = int(self.p.get_device_info_by_index(static.AUDIO_INPUT_DEVICE)['defaultSampleRate'])
         #static.AUDIO_SAMPLE_RATE_TX = int(self.p.get_device_info_by_index(static.AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
-        static.AUDIO_SAMPLE_RATE_TX = 8000
-        static.AUDIO_SAMPLE_RATE_RX = 8000
+        static.AUDIO_SAMPLE_RATE_TX = 48000
+        static.AUDIO_SAMPLE_RATE_RX = 48000
         # --------------------------------------------OPEN AUDIO CHANNEL RX
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                      channels=static.AUDIO_CHANNELS,
@@ -60,8 +60,8 @@ class RF():
         FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD_10")
         FREEDV_DECODER_THREAD_10.start()
 
-        FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD_11")
-        FREEDV_DECODER_THREAD_11.start()
+        #FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD_11")
+        #FREEDV_DECODER_THREAD_11.start()
 
         FREEDV_DECODER_THREAD_12 = threading.Thread(target=self.receive, args=[12], name="FREEDV_DECODER_THREAD_12")
         FREEDV_DECODER_THREAD_12.start()
@@ -114,7 +114,8 @@ class RF():
                 if len(self.streambuffer) > 0:
                     # print(self.streambuffer)
                     self.audio_writing_to_stream = True
-                    self.stream_tx.write(self.streambuffer)
+                    audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)                                           
+                    self.stream_tx.write(audio[0])
                     self.streambuffer = bytes()
             #static.CHANNEL_STATE = state_before_transmit
             self.audio_writing_to_stream = False
@@ -360,10 +361,11 @@ class RF():
                     static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
 
                 nin = self.c_lib.freedv_nin(freedv)
-                #nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
+                nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
 
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
-
+                data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
+                data_in = data_in[0]
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 # self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
