@@ -24,9 +24,12 @@ import data_handler
 import Hamlib
 
 
+
 class RF():
 
     def __init__(self):
+        
+    
         # -------------------------------------------- LOAD FREEDV
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
@@ -135,11 +138,16 @@ class RF():
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)  # get n_tx_modem_samples which defines the size of the modulation object
         n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
-
+        n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
+        
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
+        
         mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
+
+        mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_postamble = mod_out_postamble()
 
         buffer = bytearray(payload_per_frame)  # use this if CRC16 checksum is required ( DATA1-3)
         buffer[:len(data_out)] = data_out  # set buffersize to length of data which will be send
@@ -151,11 +159,14 @@ class RF():
 
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
         self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
+        self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+
 
         txbuffer = bytearray()
         txbuffer += bytes(mod_out_preamble)
         txbuffer += bytes(mod_out)
-
+        txbuffer += bytes(mod_out_postamble)
+        
         # -------------- transmit audio
         logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
@@ -200,17 +211,23 @@ class RF():
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)  # *2 #get n_tx_modem_samples which defines the size of the modulation object
         n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
-
+        n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
+        
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
+        
         mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_preamble = mod_out_preamble()
 
+        mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
+        mod_out_postamble = mod_out_postamble()
+        
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
 
         txbuffer = bytearray()
         txbuffer += bytes(mod_out_preamble)
 
+        
         if static.ARQ_RPT_RECEIVED == False:
             for n in range(0, static.ARQ_TX_N_FRAMES_PER_BURST):
 
@@ -243,7 +260,10 @@ class RF():
 
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
+                self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+                                
                 txbuffer += bytes(mod_out)
+                txbuffer += bytes(mod_out_postamble)
 
         elif static.ARQ_RPT_RECEIVED == True:
 
@@ -283,7 +303,12 @@ class RF():
 
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
+                self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+                
                 txbuffer += bytes(mod_out)
+                txbuffer += bytes(mod_out_postamble)
+
+
 
         # -------------- transmit audio
 
@@ -352,6 +377,7 @@ class RF():
 
             
             # demod loop
+            
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
 
@@ -362,15 +388,20 @@ class RF():
 
                 nin = self.c_lib.freedv_nin(freedv)
                 nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
-
+                
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
                 data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
                 data_in = data_in[0]
+                
+                #data_in = audioop.mul(data_in, 2, 0.5)  
+                #print(audioop.maxpp(data_in, 2))
+                
+                
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
-                # self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), data_bytes_out, data_in] # check if really neccessary
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
                 # logging.debug(self.c_lib.freedv_get_rx_status(freedv))
-                #print("listening-" + str(mode) + "-" + str(self.c_lib.freedv_get_rx_status(freedv)))
+                print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
+                print(static.CHANNEL_STATE)
 
                 # -------------STUCK IN SYNC DETECTOR
                 stuck_in_sync_counter += 1
