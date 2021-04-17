@@ -259,6 +259,7 @@ class RF():
                 buffer += crc        # append crc16 to buffer
 
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
+                
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
                 self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
                                 
@@ -302,6 +303,7 @@ class RF():
                 buffer += crc        # append crc16 to buffer
 
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
+                
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
                 self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
                 
@@ -400,8 +402,8 @@ class RF():
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
                 # logging.debug(self.c_lib.freedv_get_rx_status(freedv))
-                print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
-                print(static.CHANNEL_STATE)
+                ##print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
+                ##print(static.CHANNEL_STATE)
 
                 # -------------STUCK IN SYNC DETECTOR
                 stuck_in_sync_counter += 1
@@ -409,6 +411,8 @@ class RF():
                     stuck_in_sync_10_counter += 1
                     if mode != 14:
                         self.c_lib.freedv_set_sync(freedv, 0)
+
+                        
                         logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
 
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
@@ -530,10 +534,18 @@ class RF():
                     # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
                     if frame == n_frames_per_burst:
                         logging.debug("LAST FRAME ---> UNSYNC")
+                        print("jahallo  alles erhalten")
+     
+                        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+                        bytes_out = bytes_out()  # get pointer to bytes_out
+
+     
+                        self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
+                        
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-                        for i in range(0, 3):
-                            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-                            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+                        #for i in range(0, 3):
+                        #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+                        #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
                             
                     # clear bytes_out buffer to be ready for next frames after successfull decoding
 
@@ -541,10 +553,15 @@ class RF():
                     bytes_out = bytes_out()  # get pointer to bytes_out
 
                     if mode == 14:
-                        self.c_lib.freedv_set_sync(freedv, 0)
-                        for i in range(0, 3):
-                            dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-                            self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
+                        print("mmmmmh")
+                        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+                        bytes_out = bytes_out()  # get pointer to bytes_out
+
+                    #    self.c_lib.freedv_set_sync(freedv, 0)
+                    #    self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
+                        #for i in range(0, 3):
+                        #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
+                        #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
                 else:
                     # for debugging purposes to receive all data
                     pass

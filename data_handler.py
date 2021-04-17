@@ -515,7 +515,11 @@ def open_dc_and_transmit(data_out, mode, n_frames):
         
     #on a new transmission we reset the timer
     static.ARQ_START_OF_TRANSMISSION = int(time.time())
-                
+    
+    
+    # lets wait a little bit
+    time.sleep(1)
+               
     # transmit data    
     arq_transmit(data_out)
     

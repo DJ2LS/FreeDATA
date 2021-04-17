@@ -37,3 +37,6 @@ if __name__ == '__main__':
 
     CMD_SERVER_THREAD = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
     CMD_SERVER_THREAD.start()
+    
+    WATCHDOG_SERVER_THREAD = threading.Thread(target=helpers.watchdog, name="watchdog")
+    WATCHDOG_SERVER_THREAD.start()    
