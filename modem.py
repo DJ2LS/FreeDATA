@@ -171,7 +171,10 @@ class RF():
         logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
         self.streambuffer = bytes()
-        self.streambuffer = bytes(txbuffer)
+        self.streambuffer += bytes(txbuffer)
+        # double signalling frame transmission
+        self.streambuffer += bytes(txbuffer)
+        
         self.audio_writing_to_stream = True
 
         # wait until audio has been processed
@@ -262,9 +265,10 @@ class RF():
                 
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
                 self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                                
+                
+                #txbuffer += bytes(mod_out_preamble)                
                 txbuffer += bytes(mod_out)
-                txbuffer += bytes(mod_out_postamble)
+                #txbuffer += bytes(mod_out_postamble)
 
         elif static.ARQ_RPT_RECEIVED == True:
 
@@ -308,12 +312,14 @@ class RF():
                 self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
                 
                 txbuffer += bytes(mod_out)
-                txbuffer += bytes(mod_out_postamble)
+                #txbuffer += bytes(mod_out_postamble)
 
 
 
         # -------------- transmit audio
-
+        txbuffer += bytes(mod_out_postamble)
+        
+        
         # self.stream_tx.write(bytes(txbuffer))
         self.streambuffer = bytes()
         self.streambuffer = bytes(txbuffer)
@@ -378,8 +384,7 @@ class RF():
             #    #self.stream_rx.read(10, exception_on_overflow=False)
 
             
-            # demod loop
-            
+            # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
 
@@ -402,7 +407,7 @@ class RF():
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
                 # logging.debug(self.c_lib.freedv_get_rx_status(freedv))
-                ##print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
+                print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
                 ##print(static.CHANNEL_STATE)
 
                 # -------------STUCK IN SYNC DETECTOR
@@ -540,7 +545,7 @@ class RF():
                         bytes_out = bytes_out()  # get pointer to bytes_out
 
      
-                        self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
+                        #self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
                         
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
                         #for i in range(0, 3):
