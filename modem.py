@@ -159,10 +159,19 @@ class RF():
             while len(self.streambuffer) > 0:
                 time.sleep(0.01)
                 if len(self.streambuffer) > 0:
-                    # print(self.streambuffer)
                     self.audio_writing_to_stream = True
-                    audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)                                           
-                    self.stream_tx.write(audio[0])
+                    print("es geht los...")
+                    
+                    #audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)                                           
+                    #self.stream_tx.write(audio[0])
+
+                    self.streambuffer = bytes(self.streambuffer)
+                    #print(type(self.streambuffer))
+                    #print(self.streambuffer)
+                    
+                    # we need t wait a little bit until the buffer is filled. If we are not waiting, we are sending empty data
+                    time.sleep(0.1)
+                    self.stream_tx.write(self.streambuffer)
                     self.streambuffer = bytes()
             #static.CHANNEL_STATE = state_before_transmit
             self.audio_writing_to_stream = False
@@ -204,6 +213,9 @@ class RF():
         self.streambuffer += bytes(mod_out_preamble)
         self.streambuffer += bytes(mod_out)
         self.streambuffer += bytes(mod_out_postamble)
+        
+        converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
+        self.streambuffer = bytes(converted_audio[0])
                        
         # -------------- transmit audio
         #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
@@ -234,7 +246,6 @@ class RF():
         static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
         static.ARQ_START_OF_BURST = int(time.time()) # we need to update our timeout timestamp
     
-
         self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
 
         state_before_transmit = static.CHANNEL_STATE
@@ -260,15 +271,15 @@ class RF():
         mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_postamble = mod_out_postamble()
         
+
+        self.streambuffer = bytearray()
+
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-
-        txbuffer = bytearray()
-        txbuffer += bytes(mod_out_preamble)
-
+        self.streambuffer += bytes(mod_out_preamble)
         
-        if static.ARQ_RPT_RECEIVED == False:
+        if not static.ARQ_RPT_RECEIVED:
+               
             for n in range(0, static.ARQ_TX_N_FRAMES_PER_BURST):
-
                 # ---------------------------BUILD ARQ BURST ---------------------------------------------------------------------
                 frame_type = 10 + n + 1  # static.ARQ_TX_N_FRAMES_PER_BURST
                 frame_type = bytes([frame_type])
@@ -299,16 +310,12 @@ class RF():
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
                 
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
-                self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                
-                txbuffer += bytes(mod_out_preamble)                
-                txbuffer += bytes(mod_out)
-                txbuffer += bytes(mod_out_postamble)
+                self.streambuffer += bytes(mod_out)
+               
 
-        elif static.ARQ_RPT_RECEIVED == True:
+        elif static.ARQ_RPT_RECEIVED:
 
             for n in range(0, len(static.ARQ_RPT_FRAMES)):
-
 
                 missing_frame = int.from_bytes(static.ARQ_RPT_FRAMES[n], "big")
 
@@ -333,7 +340,6 @@ class RF():
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
 
-
                 buffer = bytearray(static.FREEDV_DATA_PAYLOAD_PER_FRAME)  # create TX buffer
                 buffer[:len(arqframe)] = arqframe  # set buffersize to length of data which will be send
 
@@ -343,31 +349,29 @@ class RF():
 
                 data = (ctypes.c_ubyte * static.FREEDV_DATA_BYTES_PER_FRAME).from_buffer_copy(buffer)
                 
-                self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
-                self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                
-                txbuffer += bytes(mod_out)
-                #txbuffer += bytes(mod_out_postamble)
+                self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer              
+                self.streambuffer += bytes(mod_out)
 
-
+                       
+        self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+        self.streambuffer += bytes(mod_out_postamble)
+        
+        converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
+        self.streambuffer = bytes(converted_audio[0])
+        
+        print(len(self.streambuffer))                        
 
         # -------------- transmit audio
-        txbuffer += bytes(mod_out_postamble)
-        
-        
-        # self.stream_tx.write(bytes(txbuffer))
-        self.streambuffer = bytes()
-        self.streambuffer = bytes(txbuffer)
-        
         
         self.ptt_and_wait(True)
         self.audio_writing_to_stream = True
 
+
         # wait until audio has been processed
-        while self.audio_writing_to_stream == True:
+        while self.audio_writing_to_stream:
             time.sleep(0.01)
             static.CHANNEL_STATE = 'SENDING_DATA'
-            #print("sending data...")
+
 
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
@@ -395,7 +399,8 @@ class RF():
 
             self.c_lib.freedv_set_frames_per_burst(freedv, 0)
         else:
-            pass
+            #pass
+            self.c_lib.freedv_set_frames_per_burst(freedv, 0)
 
         bytes_out = (ctypes.c_ubyte * bytes_per_frame)
         bytes_out = bytes_out()  # get pointer to bytes_out
@@ -444,18 +449,15 @@ class RF():
                 
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
-                # logging.debug(self.c_lib.freedv_get_rx_status(freedv))
                 print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
-                ##print(static.CHANNEL_STATE)
+
 
                 # -------------STUCK IN SYNC DETECTOR
                 stuck_in_sync_counter += 1
                 if self.c_lib.freedv_get_rx_status(freedv) == 10:
                     stuck_in_sync_10_counter += 1
                     if mode != 14:
-                        self.c_lib.freedv_set_sync(freedv, 0)
-
-                        
+                        #self.c_lib.freedv_set_sync(freedv, 0)
                         logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
 
                 if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
@@ -476,6 +478,7 @@ class RF():
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
+                    
                     self.calculate_ber(freedv)
                     self.calculate_snr(freedv)
 
@@ -595,10 +598,9 @@ class RF():
                     bytes_out = (ctypes.c_ubyte * bytes_per_frame)
                     bytes_out = bytes_out()  # get pointer to bytes_out
 
-                    if mode == 14:
-                        print("mmmmmh")
-                        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
-                        bytes_out = bytes_out()  # get pointer to bytes_out
+                    #if mode == 14:
+                    #    bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+                    #    bytes_out = bytes_out()  # get pointer to bytes_out
 
                     #    self.c_lib.freedv_set_sync(freedv, 0)
                     #    self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
