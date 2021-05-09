@@ -134,13 +134,13 @@ class RF():
             static.PTT_STATE = True
             self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
 
-            ptt_togle_timeout = time.time() + 0.2
+            ptt_togle_timeout = time.time() + 0.1
             while time.time() < ptt_togle_timeout:
                 pass
 
         else:
         
-            ptt_togle_timeout = time.time() + 0.3
+            ptt_togle_timeout = time.time() + 0.2
             while time.time() < ptt_togle_timeout:
                 pass
                 
@@ -160,7 +160,7 @@ class RF():
                 time.sleep(0.01)
                 if len(self.streambuffer) > 0:
                     self.audio_writing_to_stream = True
-                    print("es geht los...")
+                    #print("es geht los...")
                     
                     #audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)                                           
                     #self.stream_tx.write(audio[0])
@@ -359,7 +359,7 @@ class RF():
         converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
         
-        print(len(self.streambuffer))                        
+        #print(len(self.streambuffer))                        
 
         # -------------- transmit audio
         
@@ -449,7 +449,7 @@ class RF():
                 
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
-                print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
+                ################print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
 
                 # -------------STUCK IN SYNC DETECTOR
@@ -631,6 +631,7 @@ class RF():
         self.c_lib.freedv_get_modem_stats(freedv,byref(modem_stats_sync), byref(modem_stats_snr))
         modem_stats_snr = modem_stats_snr.value
         try:
-            static.SNR = int(modem_stats_snr)
+            #static.SNR = int(modem_stats_snr)
+            static.SNR = round(modem_stats_snr,1)
         except:
             static.SNR = 0

@@ -60,7 +60,7 @@ def arq_data_received(data_in):
     arq_percent_burst = int((static.ARQ_N_FRAME / static.ARQ_N_RX_FRAMES_PER_BURSTS) * 100)
     arq_percent_frame = int(((static.ARQ_RX_N_CURRENT_ARQ_FRAME) / static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) * 100)
 
-    logging.log(24, "ARQ | RX | " + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_FRAME) + "/" + str(static.ARQ_N_RX_FRAMES_PER_BURSTS) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(static.ARQ_RX_N_CURRENT_ARQ_FRAME) + "/" + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) + "] [" + str(arq_percent_frame).zfill(3) + "%] [BER." + str(static.BER) + "]")
+    logging.log(24, "ARQ | RX | " + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_FRAME) + "/" + str(static.ARQ_N_RX_FRAMES_PER_BURSTS) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(static.ARQ_RX_N_CURRENT_ARQ_FRAME) + "/" + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) + "] [" + str(arq_percent_frame).zfill(3) + "%] [SNR:" + str(static.SNR) + "]")
 
     # allocate ARQ_RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
     # here we will save the N frame of a data frame to N list position so we can explicit search for it
@@ -112,7 +112,7 @@ def arq_data_received(data_in):
 
         # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
         modem.transmit_signalling(ack_frame)
-       
+        #modem.transmit_signalling(ack_frame)
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
         static.CHANNEL_STATE = 'RECEIVING_DATA'
@@ -136,7 +136,7 @@ def arq_data_received(data_in):
                 frame_number = frame_number.to_bytes(2, byteorder='big')
                 missing_frames += frame_number
 
-        logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "] [BER." + str(static.BER) + "]")
+        logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "] [SNR:" + str(static.SNR) + "]")
 
         # BUILDING RPT FRAME FOR BURST -----------------------------------------------
         rpt_frame = bytearray(14)
@@ -207,16 +207,16 @@ def arq_data_received(data_in):
 
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             #time.sleep(0.5)  # 0.5
-            logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [BER." + str(static.BER) + "]")
+            logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [SNR:" + str(static.SNR) + "]")
 
             modem.transmit_signalling(ack_frame)
-            modem.transmit_signalling(ack_frame)
+            #modem.transmit_signalling(ack_frame)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
             
             helpers.arq_reset_frame_machine()
 
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
             
         else:
             print("ARQ_FRAME_BOF_RECEIVED " + str(static.ARQ_FRAME_BOF_RECEIVED))
@@ -241,7 +241,7 @@ def arq_data_received(data_in):
             
             helpers.arq_reset_frame_machine()
             
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
 def arq_transmit(data_out):
     # we need to set payload per frame manually at this point. maybe we can do this more dynmic.
@@ -446,7 +446,7 @@ def arq_transmit(data_out):
     helpers.arq_reset_frame_machine()
     # await asyncio.sleep(2)
     time.sleep(2)
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
 
     # this should close our thread so we are saving memory...
@@ -462,7 +462,7 @@ def get_n_frames_per_burst():
 
 
 def get_best_mode_for_transmission():    
-    mode = 10
+    mode = 14
     return mode
 
 
@@ -518,7 +518,7 @@ def open_dc_and_transmit(data_out, mode, n_frames):
     
     
     # lets wait a little bit
-    time.sleep(1)
+    #time.sleep(5)
                
     # transmit data    
     arq_transmit(data_out)
@@ -572,11 +572,11 @@ def arq_received_data_channel_opener(data_in):
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN, 'DATA-CHANNEL')
         
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
     static.ARQ_STATE = 'DATA'
     static.TNC_STATE = 'BUSY'
-    static.ARQ_SEND_KEEP_ALIVE = False
+
     static.ARQ_DATA_CHANNEL_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())    
 
@@ -593,7 +593,13 @@ def arq_received_data_channel_opener(data_in):
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+    
+    #time.sleep(1)
+    
+    wait_until_receive_data = time.time() + 1
+    while time.time() < wait_until_receive_data:
+        pass
     static.CHANNEL_STATE = 'RECEIVING_DATA'
     # and now we are going to "RECEIVING_DATA" mode....
 
@@ -608,7 +614,7 @@ def arq_received_channel_is_open(data_in):
 
 
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
-        logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+        logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
         
         static.ARQ_STATE = 'DATA'
         static.ARQ_READY_FOR_DATA = True
@@ -624,7 +630,7 @@ def arq_received_channel_is_open(data_in):
 async def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
-    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame = bytearray(14)
     ping_frame[:1] = bytes([210])
@@ -643,7 +649,7 @@ def received_ping(data_in):
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING')
-    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame = bytearray(14)
     ping_frame[:1] = bytes([211])
@@ -653,6 +659,7 @@ def received_ping(data_in):
 
     # wait while sending....
     modem.transmit_signalling(ping_frame)
+    #modem.transmit_signalling(ping_frame)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
@@ -663,7 +670,7 @@ def received_ping_ack(data_in):
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING-ACK')
     
-    logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     static.TNC_STATE = 'IDLE'
 
 # ############################################################################################################
@@ -680,17 +687,23 @@ async def transmit_cq():
     cq_frame[2:3] = static.MYCALLSIGN_CRC8
     cq_frame[3:9] = static.MYCALLSIGN
 
+    
+    
     for i in range(0, 3):
-
+        
         modem.transmit_signalling(cq_frame)
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
-
+        
+        time_between_cq = time.time() + 1    
+        while time.time() < time_between_cq:
+            pass
+            
 
 def received_cq(data_in):
     static.DXCALLSIGN = b''
     static.DXCALLSIGN_CRC8 = b''
-    logging.info("CQ RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("CQ RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [SNR" + str(static.SNR) + "]")
 
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
@@ -714,7 +727,7 @@ async def transmit_beacon():
 def received_beacon():
     static.DXCALLSIGN = b''
     static.DXCALLSIGN_CRC8 = b''
-    logging.info("BEACON RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [BER." + str(static.BER) + "]")
+    logging.info("BEACON RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [SNR" + str(static.SNR) + "]")
 
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
