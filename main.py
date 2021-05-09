@@ -23,6 +23,10 @@ if __name__ == '__main__':
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
     PARSER.add_argument('--port', dest="socket_port", default=3000, help="Socket port", type=int)
+    PARSER.add_argument('--deviceport', dest="hamlib_device_port", default="/dev/ttyUSB", help="Socket port", type=str)
+    PARSER.add_argument('--deviceid', dest="hamlib_device_id", default=311, help="Socket port", type=int)    
+
+
     # parser.add_argument('--mode', dest="freedv_data_mode", default=12, help="Set the mode.", type=int)
 
     ARGS = PARSER.parse_args()
@@ -31,6 +35,11 @@ if __name__ == '__main__':
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
     static.PORT = ARGS.socket_port
+
+
+    static.HAMLIB_DEVICE_ID = ARGS.hamlib_device_id
+    static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
+
 
     # --------------------------------------------START CMD SERVER
     import sock  # we need to wait until we got all parameters from argparse first

@@ -79,17 +79,39 @@ class RF():
         Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
 
         # Init RIG_MODEL_DUMMY
-        self.my_rig = Hamlib.Rig(Hamlib.RIG_MODEL_DUMMY)
-        self.my_rig.set_conf("rig_pathname", "/dev/Rig")
+        self.my_rig = Hamlib.Rig(static.HAMLIB_DEVICE_ID)
+        self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
+
         self.my_rig.set_conf("retry", "5")
-        self.my_rig.open()
+        self.my_rig.set_conf("serial_speed", "19200")
+
+        #self.my_rig.set_conf("dtr_state", "OFF")
+    #my_rig.set_conf("rts_state", "OFF")
+        #self.my_rig.set_conf("ptt_type", "RTS")
+    #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
+    
+        self.my_rig.set_conf("serial_handshake", "None")
+        self.my_rig.set_conf("stop_bits", "1")
+        self.my_rig.set_conf("data_bits", "8")
+    
+        
+    #my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
+    #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
+    #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)    
+    
+
+    
 
         if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
             self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
         elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_DTR':
             self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
-        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_RTS':
+        elif static.HAMLIB_PTT_TYPE == 'RTS':
             self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
+            self.my_rig.set_conf("dtr_state", "OFF")
+            self.my_rig.set_conf("ptt_type", "RTS")
+            
+            
         elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_PARALLEL':
             self.hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
         elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG_MICDATA':
@@ -99,13 +121,35 @@ class RF():
         else:  # static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
             self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
-        self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+        #self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
 
 
-
+        self.my_rig.open()
 
 
 # --------------------------------------------------------------------------------------------------------
+    def ptt_and_wait(self, state):
+               
+        if state:
+            static.PTT_STATE = True
+            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+
+            ptt_togle_timeout = time.time() + 0.2
+            while time.time() < ptt_togle_timeout:
+                pass
+
+        else:
+        
+            ptt_togle_timeout = time.time() + 0.3
+            while time.time() < ptt_togle_timeout:
+                pass
+                
+            static.PTT_STATE = False
+            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+
+
+
+
     def play_audio(self):
 
         while True:
@@ -125,12 +169,7 @@ class RF():
 # --------------------------------------------------------------------------------------------------------
 
     def transmit_signalling(self, data_out):
-
-        state_before_transmit = static.CHANNEL_STATE
-        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-        static.PTT_STATE = True
-        self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-
+        
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -161,34 +200,30 @@ class RF():
         self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
         self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
 
-
-        txbuffer = bytearray()
-        txbuffer += bytes(mod_out_preamble)
-        txbuffer += bytes(mod_out)
-        txbuffer += bytes(mod_out_postamble)
-        
+        self.streambuffer = bytearray()
+        self.streambuffer += bytes(mod_out_preamble)
+        self.streambuffer += bytes(mod_out)
+        self.streambuffer += bytes(mod_out_postamble)
+                       
         # -------------- transmit audio
-        logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
+        #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
-        self.streambuffer = bytes()
-        self.streambuffer += bytes(txbuffer)
-        # double signalling frame transmission
-        self.streambuffer += bytes(txbuffer)
+        state_before_transmit = static.CHANNEL_STATE
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         
+        self.ptt_and_wait(True)
         self.audio_writing_to_stream = True
 
         # wait until audio has been processed
-        while self.audio_writing_to_stream == True:
+        while self.audio_writing_to_stream:
             time.sleep(0.01)
             static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-            #print("sending signalling...")
 
-        self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
-        static.PTT_STATE = False
+        self.ptt_and_wait(False)                
         static.CHANNEL_STATE = state_before_transmit
 
         self.c_lib.freedv_close(freedv)
-        # time.sleep(0.5)
+
 # --------------------------------------------------------------------------------------------------------
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT
 
@@ -201,7 +236,7 @@ class RF():
     
 
         self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-        static.PTT_STATE = True
+
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_DATA'
 
@@ -266,9 +301,9 @@ class RF():
                 self.c_lib.freedv_rawdatatx(freedv, mod_out, data)  # modulate DATA and safe it into mod_out pointer
                 self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
                 
-                #txbuffer += bytes(mod_out_preamble)                
+                txbuffer += bytes(mod_out_preamble)                
                 txbuffer += bytes(mod_out)
-                #txbuffer += bytes(mod_out_postamble)
+                txbuffer += bytes(mod_out_postamble)
 
         elif static.ARQ_RPT_RECEIVED == True:
 
@@ -323,6 +358,9 @@ class RF():
         # self.stream_tx.write(bytes(txbuffer))
         self.streambuffer = bytes()
         self.streambuffer = bytes(txbuffer)
+        
+        
+        self.ptt_and_wait(True)
         self.audio_writing_to_stream = True
 
         # wait until audio has been processed
@@ -332,8 +370,8 @@ class RF():
             #print("sending data...")
 
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-        static.PTT_STATE = False
-        self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+
+        self.ptt_and_wait(False)
 
         self.c_lib.freedv_close(freedv)
 # --------------------------------------------------------------------------------------------------------
