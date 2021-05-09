@@ -10,13 +10,10 @@ Created on Tue Dec 22 16:58:45 2020
 
 import argparse
 import threading
-import static
-import helpers
+
 
 if __name__ == '__main__':
 
-    # config logging
-    helpers.setup_logging()
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
@@ -26,23 +23,23 @@ if __name__ == '__main__':
     PARSER.add_argument('--deviceport', dest="hamlib_device_port", default="/dev/ttyUSB", help="Socket port", type=str)
     PARSER.add_argument('--deviceid', dest="hamlib_device_id", default=311, help="Socket port", type=int)    
 
-
-    # parser.add_argument('--mode', dest="freedv_data_mode", default=12, help="Set the mode.", type=int)
-
     ARGS = PARSER.parse_args()
-
-    # static.FREEDV_DATA_MODE = args.freedv_data_mode
+    
+    # we need to wait until we got all parameters from argparse first 
+    import static
+    import sock     
+    import helpers
+    
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
     static.PORT = ARGS.socket_port
-
-
     static.HAMLIB_DEVICE_ID = ARGS.hamlib_device_id
     static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
 
+    # config logging
+    helpers.setup_logging()
 
     # --------------------------------------------START CMD SERVER
-    import sock  # we need to wait until we got all parameters from argparse first
 
     CMD_SERVER_THREAD = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
     CMD_SERVER_THREAD.start()
