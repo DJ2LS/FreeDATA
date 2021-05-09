@@ -26,40 +26,11 @@ chmod +x ~/install_socket_tnc.sh
 
 ## Usage main program
 ```
-./main.py --port 3000 --tx 1 --rx 1
+python3 main.py --rx 1 --tx 1 --deviceport /dev/ttyUSB0 --deviceid 311
 ```
 
-## Usage testclient
+## Usage GUI
 ```
-./socketclient.py --port 3000 --data "BC: hello"
+cd tools/tnc_gui
+python3 tnc_gui.py
 ```
-
-
-## Socket Commands
-
-Send a simple broadcast
-```
-BC:<DATA>    
-```
-Send an ARQ like frame which will ask the receiver for acknowledgement
-```
-ACK:<DATA>    
-```
-
-
-## Other stuff
-
-### Audio sinkhole
-Send real audio without external devices or sound cards
-```
-sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2 
-```
-### TNC 1
-```
-./main.py --port 3000 --tx 1 --rx 1
-```
-### TNC 2
-```
-./main.py --port 3001 --tx 2 --rx 2
-```
-
