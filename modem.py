@@ -324,8 +324,11 @@ class RF():
 
                 frame_type = bytes([frame_type])
 
-                payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + missing_frame - 1])
-
+                try:
+                    payload_data = bytes(static.TX_BUFFER[static.ARQ_N_SENT_FRAMES + missing_frame - 1])
+                except:
+                    print("modem buffer selection problem with ARQ RPT frames")
+                    
                 n_current_arq_frame = static.ARQ_N_SENT_FRAMES + missing_frame
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
 
@@ -358,8 +361,6 @@ class RF():
         
         converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
-        
-        #print(len(self.streambuffer))                        
 
         # -------------- transmit audio
         
@@ -479,7 +480,6 @@ class RF():
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
-                    self.calculate_ber(freedv)
                     self.calculate_snr(freedv)
 
                     # counter reset for stuck in sync counter
@@ -580,33 +580,17 @@ class RF():
                     # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
                     if frame == n_frames_per_burst:
                         logging.debug("LAST FRAME ---> UNSYNC")
-                        print("jahallo  alles erhalten")
      
                         bytes_out = (ctypes.c_ubyte * bytes_per_frame)
                         bytes_out = bytes_out()  # get pointer to bytes_out
 
-     
-                        #self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
-                        
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-                        #for i in range(0, 3):
-                        #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-                        #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
-                            
+ 
                     # clear bytes_out buffer to be ready for next frames after successfull decoding
 
                     bytes_out = (ctypes.c_ubyte * bytes_per_frame)
                     bytes_out = bytes_out()  # get pointer to bytes_out
 
-                    #if mode == 14:
-                    #    bytes_out = (ctypes.c_ubyte * bytes_per_frame)
-                    #    bytes_out = bytes_out()  # get pointer to bytes_out
-
-                    #    self.c_lib.freedv_set_sync(freedv, 0)
-                    #    self.stream_rx.read(static.AUDIO_FRAMES_PER_BUFFER, exception_on_overflow=False)
-                        #for i in range(0, 3):
-                        #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-                        #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
                 else:
                     # for debugging purposes to receive all data
                     pass
@@ -631,7 +615,6 @@ class RF():
         self.c_lib.freedv_get_modem_stats(freedv,byref(modem_stats_sync), byref(modem_stats_snr))
         modem_stats_snr = modem_stats_snr.value
         try:
-            #static.SNR = int(modem_stats_snr)
             static.SNR = round(modem_stats_snr,1)
         except:
             static.SNR = 0

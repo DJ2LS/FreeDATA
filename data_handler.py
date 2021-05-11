@@ -306,7 +306,10 @@ def arq_transmit(data_out):
             if static.ARQ_N_SENT_FRAMES + 1 <= static.TX_BUFFER_SIZE:
                 logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES + 1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES / (static.TX_BUFFER_SIZE) * 100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES + 1) + "/" + str(static.TX_N_MAX_RETRIES) + "]")
 
-
+            # lets refresh all timers and ack states before sending a new frame
+            helpers.arq_reset_ack(False)
+            helpers.arq_reset_timeout(False)
+            
             modem.transmit_arq_burst()
             # lets wait during sending. After sending is finished we will continue
             while static.CHANNEL_STATE == 'SENDING_DATA':
@@ -317,8 +320,8 @@ def arq_transmit(data_out):
             logging.debug("ARQ | RX | WAITING FOR BURST ACK")
             static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
-            helpers.arq_reset_timeout(False)
-            helpers.arq_reset_ack(False)
+            #helpers.arq_reset_timeout(False)
+            #helpers.arq_reset_ack(False)
 
             logging.debug(".............................")
             logging.debug("static.ARQ_STATE " + str(static.ARQ_STATE))
@@ -355,16 +358,20 @@ def arq_transmit(data_out):
 
                     if static.ARQ_ACK_RECEIVED:
                         logging.info("ARQ | RX | ACK AFTER RPT")
-                        #rpttimer.cancel()
                         helpers.arq_reset_ack(True)
                         static.ARQ_RPT_FRAMES = []
+                        static.ARQ_N_SENT_FRAMES = static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST
+                        
+
 
                 if static.ARQ_RX_RPT_TIMEOUT and not static.ARQ_ACK_RECEIVED:
                     logging.error("ARQ | Burst lost....")
 
                     helpers.arq_reset_ack(False)
                     static.ARQ_RPT_FRAMES = []
-
+                
+                #break    
+                    
             # the order of ACK check is important! speciall the FRAME ACK after RPT needs to be checked really early!
 
 
@@ -445,7 +452,7 @@ def arq_transmit(data_out):
     logging.info("ARQ | TX | BUFFER EMPTY")
     helpers.arq_reset_frame_machine()
     # await asyncio.sleep(2)
-    time.sleep(2)
+    #time.sleep(2)
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
 
