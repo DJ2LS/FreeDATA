@@ -687,13 +687,16 @@ def received_ping_ack(data_in):
 
 async def transmit_cq():
     logging.info("CQ CQ CQ")
+    static.MYGRID = b'JN48ea'
 
     cq_frame = bytearray(14)
     cq_frame[:1] = bytes([200])
     cq_frame[1:2] = b'\x01'
-    cq_frame[2:3] = static.MYCALLSIGN_CRC8
-    cq_frame[3:9] = static.MYCALLSIGN
-
+    #cq_frame[2:3] = static.MYCALLSIGN_CRC8
+    #cq_frame[3:9] = static.MYCALLSIGN
+    cq_frame[2:8] = static.MYCALLSIGN
+    cq_frame[8:14] = static.MYGRID
+    #print(cq_frame)
     
     
     for i in range(0, 3):
@@ -710,10 +713,12 @@ async def transmit_cq():
 def received_cq(data_in):
     static.DXCALLSIGN = b''
     static.DXCALLSIGN_CRC8 = b''
-    logging.info("CQ RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [SNR" + str(static.SNR) + "]")
 
     # here we add the received station to the heard stations buffer
-    dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
+    dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
+    dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
+    
+    logging.info("CQ RCVD [" + str(dxcallsign), 'utf-8') + "]["+str(dxgrid), 'utf-8')+"] [SNR" + str(static.SNR) + "]")
     helpers.add_to_heard_stations(dxcallsign, 'CQ CQ CQ')
 
 
