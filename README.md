@@ -18,10 +18,17 @@ This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
 ## Setup
 Install FreeDV-Socket-TNC directly to home folder and compile codec2 automatically
 ```
-sudo apt install portaudio19-dev build-essential cmake
+sudo apt install python3-pyaudio build-essential cmake
+python3 -m pip install crcengine ( if stuck in installing, run as superuser - sudo )
+sudo adduser $USER dialout
 wget https://raw.githubusercontent.com/DJ2LS/FreeDV-Socket-TNC/dev/install_socket_tnc.sh -O ~/install_socket_tnc.sh
 chmod +x ~/install_socket_tnc.sh
 ./install_socket_tnc.sh
+```
+## List audio interfaces
+```
+cd ~/FreeDV-JATE
+python3 tools/list_audio_devices.py
 ```
 
 ## Usage main program
