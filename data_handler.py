@@ -718,7 +718,7 @@ def received_cq(data_in):
     dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     
-    logging.info("CQ RCVD [" + str(dxcallsign), 'utf-8') + "]["+str(dxgrid), 'utf-8')+"] [SNR" + str(static.SNR) + "]")
+    logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
     helpers.add_to_heard_stations(dxcallsign, 'CQ CQ CQ')
 
 
