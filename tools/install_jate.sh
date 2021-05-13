@@ -24,3 +24,7 @@ make
 cd ~/FreeDV-JATE/codec2/build_linux && rm -Rf *
 cmake -DLPCNET_BUILD_DIR=~/FreeDV-JATE/LPCNet/build_linux ..
 make
+
+
+cd ~/FreeDV-JATE/tools/
+git clone https://github.com/DJ2LS/FreeDV-JATE-GUI.git
