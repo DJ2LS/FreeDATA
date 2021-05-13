@@ -408,26 +408,7 @@ class RF():
 
         while static.FREEDV_RECEIVE == True:
             time.sleep(0.01)
-
-            # stuck in sync counter
-            stuck_in_sync_counter = 0
-            stuck_in_sync_10_counter = 0
-            #
-
-
-
-            # here we do an unsync to be sure, the modem is in idle state and ready for new data
-            # tests are showing, that this causes sync 10 triggers. So we should definitely not do this here!
-            #self.c_lib.freedv_set_sync(freedv, 0)
-
-            # here we do a buffer cleanup before returning to demod loop
-            # tests are showing, that this causes sync 10 triggers. So we should definitely not do this here!
-            #for i in range(0, 3):
-            #    dummy_mod = bytes(self.c_lib.freedv_nin(freedv))
-            #    self.c_lib.freedv_rawdatarx(freedv, bytes_out, dummy_mod)
-            #    #self.stream_rx.read(10, exception_on_overflow=False)
-
-            
+          
             # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
@@ -443,36 +424,10 @@ class RF():
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
                 data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
                 data_in = data_in[0]
-                
-                #data_in = audioop.mul(data_in, 2, 0.5)  
-                #print(audioop.maxpp(data_in, 2))
-                
-                
+                                
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
-                ################print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
-
-
-                # -------------STUCK IN SYNC DETECTOR
-                stuck_in_sync_counter += 1
-                if self.c_lib.freedv_get_rx_status(freedv) == 10:
-                    stuck_in_sync_10_counter += 1
-                    if mode != 14:
-                        #self.c_lib.freedv_set_sync(freedv, 0)
-                        logging.warning("MODEM | SYNC 10 TRIGGER | M:" + str(mode) + " | " + str(static.CHANNEL_STATE))
-
-                if stuck_in_sync_counter == 33 and self.c_lib.freedv_get_rx_status(freedv) == 10:
-                    logging.critical("MODEM | stuck in sync #1")
-                    self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-                    stuck_in_sync_counter = 0
-                    stuck_in_sync_10_counter = 0
-
-                elif stuck_in_sync_counter >= 66 and stuck_in_sync_10_counter >= 2:
-                    logging.critical("MODEM | stuck in sync #2")
-                    self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-                    stuck_in_sync_counter = 0
-                    stuck_in_sync_10_counter = 0
-                # -----------------------------------
+                #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
                 self.calculate_snr(freedv)
                 # forward data only if broadcast or we are the receiver
@@ -481,11 +436,6 @@ class RF():
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
-
-                    # counter reset for stuck in sync counter
-                    stuck_in_sync_counter = 0
-                    stuck_in_sync_10_counter = 0
-                    #
 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
