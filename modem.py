@@ -27,19 +27,13 @@ import Hamlib
 
 class RF():
 
-    def __init__(self):
-        
+    def __init__(self):       
     
         # -------------------------------------------- LOAD FREEDV
         libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
         self.c_lib = ctypes.CDLL(libname)
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         self.p = pyaudio.PyAudio()
-        # --------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
-        #static.AUDIO_SAMPLE_RATE_RX = int(self.p.get_device_info_by_index(static.AUDIO_INPUT_DEVICE)['defaultSampleRate'])
-        #static.AUDIO_SAMPLE_RATE_TX = int(self.p.get_device_info_by_index(static.AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
-        static.AUDIO_SAMPLE_RATE_TX = 48000
-        static.AUDIO_SAMPLE_RATE_RX = 48000
         # --------------------------------------------OPEN AUDIO CHANNEL RX
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                      channels=static.AUDIO_CHANNELS,
@@ -76,56 +70,60 @@ class RF():
         FREEDV_PLAYBACK_THREAD.start()
 
         # --------------------------------------------CONFIGURE HAMLIB
-        Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
 
-        # Init RIG_MODEL_DUMMY
-        self.my_rig = Hamlib.Rig(static.HAMLIB_DEVICE_ID)
-        self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
 
-        self.my_rig.set_conf("retry", "5")
-        self.my_rig.set_conf("serial_speed", "19200")
+        # try to init hamlib
+        try:
+            Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
+            
+            self.my_rig = Hamlib.Rig(static.HAMLIB_DEVICE_ID)
+            self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
+
+            self.my_rig.set_conf("retry", "5")
+            self.my_rig.set_conf("serial_speed", "19200")
 
         #self.my_rig.set_conf("dtr_state", "OFF")
-    #my_rig.set_conf("rts_state", "OFF")
+        #my_rig.set_conf("rts_state", "OFF")
         #self.my_rig.set_conf("ptt_type", "RTS")
-    #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
+        #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
     
-        self.my_rig.set_conf("serial_handshake", "None")
-        self.my_rig.set_conf("stop_bits", "1")
-        self.my_rig.set_conf("data_bits", "8")
-    
-        
-    #my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
-    #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
-    #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)    
-    
+            self.my_rig.set_conf("serial_handshake", "None")
+            self.my_rig.set_conf("stop_bits", "1")
+            self.my_rig.set_conf("data_bits", "8")
+           
+        #my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
+        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
+        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)    
 
-    
-
-        if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
-        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_DTR':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
-        elif static.HAMLIB_PTT_TYPE == 'RTS':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
-            self.my_rig.set_conf("dtr_state", "OFF")
-            self.my_rig.set_conf("ptt_type", "RTS")
+            if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
             
+            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_DTR':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
             
-        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_PARALLEL':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
-        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG_MICDATA':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG_MICDATA
-        elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_CM108':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_CM108
-        else:  # static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
-            self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
+            elif static.HAMLIB_PTT_TYPE == 'RTS':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
+                self.my_rig.set_conf("dtr_state", "OFF")
+                self.my_rig.set_conf("ptt_type", "RTS")      
+                  
+            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_PARALLEL':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
+            
+            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG_MICDATA':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG_MICDATA
+            
+            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_CM108':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_CM108
+            
+            else:  # static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
-        #self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
 
-
-        self.my_rig.open()
-
+            self.my_rig.open()
+            
+        except:
+            print("can't open rig")
+            
 
 # --------------------------------------------------------------------------------------------------------
     def ptt_and_wait(self, state):
@@ -154,26 +152,18 @@ class RF():
 
         while True:
             time.sleep(0.01)
-            #state_before_transmit = static.CHANNEL_STATE
 
             while len(self.streambuffer) > 0:
                 time.sleep(0.01)
                 if len(self.streambuffer) > 0:
                     self.audio_writing_to_stream = True
-                    #print("es geht los...")
-                    
-                    #audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)                                           
-                    #self.stream_tx.write(audio[0])
-
                     self.streambuffer = bytes(self.streambuffer)
-                    #print(type(self.streambuffer))
-                    #print(self.streambuffer)
                     
                     # we need t wait a little bit until the buffer is filled. If we are not waiting, we are sending empty data
                     time.sleep(0.1)
                     self.stream_tx.write(self.streambuffer)
                     self.streambuffer = bytes()
-            #static.CHANNEL_STATE = state_before_transmit
+                    
             self.audio_writing_to_stream = False
 # --------------------------------------------------------------------------------------------------------
 
