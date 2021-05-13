@@ -144,7 +144,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if received_json["command"] == 'GET:STATION_INFO':
             output = {
                 "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
-                "DX_CALLSIGN": str(static.DXCALLSIGN, encoding)  
+                "DX_CALLSIGN": str(static.DXCALLSIGN, encoding),
+                "DX_GRID": str(static.DXGRID, encoding)  
             }
             
             jsondata = json.dumps(output)
@@ -183,7 +184,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         if received_json["command"] == 'GET:HEARD_STATIONS':
             output = []
             for i in range(0, len(static.HEARD_STATIONS)):
-                output.append({"CALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][1], "DATATYPE": static.HEARD_STATIONS[i][2]})
+                output.append({"CALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
 
             jsondata = json.dumps(output)
             self.request.sendall(bytes(jsondata, encoding))

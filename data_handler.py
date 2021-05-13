@@ -662,7 +662,7 @@ def received_ping(data_in):
     ping_frame[:1] = bytes([211])
     ping_frame[1:2] = static.DXCALLSIGN_CRC8
     ping_frame[2:3] = static.MYCALLSIGN_CRC8
-    ping_frame[3:9] = static.MYCALLSIGN
+    ping_frame[3:9] = static.MYGRID
 
     # wait while sending....
     modem.transmit_signalling(ping_frame)
@@ -674,10 +674,12 @@ def received_ping(data_in):
 def received_ping_ack(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
-    static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING-ACK')
+    static.DXGRID = bytes(data_in[3:9]).rstrip(b'\x00')
     
-    logging.info("PING [" + str(static.DXCALLSIGN, 'utf-8') + "] >|< [" + str(static.MYCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+    
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK')
+    
+    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]["+ str(static.DXGRID, 'utf-8') +"] [SNR:" + str(static.SNR) + "]")
     static.TNC_STATE = 'IDLE'
 
 # ############################################################################################################
@@ -711,24 +713,23 @@ async def transmit_cq():
             
 
 def received_cq(data_in):
-    static.DXCALLSIGN = b''
-    static.DXCALLSIGN_CRC8 = b''
-
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     
     logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
-    helpers.add_to_heard_stations(dxcallsign, 'CQ CQ CQ')
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ')
 
 
 
 
 async def transmit_beacon():
     logging.info("BEACON")
-    frame_type = bytes([230])
-    print(frame_type)
-    beacon_frame = frame_type + static.MYCALLSIGN
+    beacon_frame[:1] = bytes([230])
+    beacon_frame[1:2] = b'\x01'
+    beacon_frame[2:8] = static.MYCALLSIGN
+    beacon_frame[8:14] = static.MYGRID
+
     while static.TNC_STATE == 'BEACON':
         await asyncio.sleep(60)
         modem.transmit_signalling(beacon_frame)
@@ -737,10 +738,9 @@ async def transmit_beacon():
 
 
 def received_beacon():
-    static.DXCALLSIGN = b''
-    static.DXCALLSIGN_CRC8 = b''
-    logging.info("BEACON RCVD [" + str(bytes(data_in[3:9]), 'utf-8') + "] [SNR" + str(static.SNR) + "]")
-
     # here we add the received station to the heard stations buffer
-    dxcallsign = bytes(data_in[3:9]).rstrip(b'\x00')
+    dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
+    dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
+    
+    logging.info("BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
     helpers.add_to_heard_stations(dxcallsign, 'BEACON')
