@@ -689,7 +689,6 @@ def received_ping_ack(data_in):
 
 async def transmit_cq():
     logging.info("CQ CQ CQ")
-    static.MYGRID = b'JN48ea'
 
     cq_frame = bytearray(14)
     cq_frame[:1] = bytes([200])
