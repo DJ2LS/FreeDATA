@@ -14,6 +14,7 @@ DXCALLSIGN = b'AA0AA'
 DXCALLSIGN_CRC8 = b'A'
 
 MYGRID = b''
+DXGRID = b''
 
 # ---------------------------------
 
@@ -48,7 +49,7 @@ PORT = 3000
 HAMLIB_PTT_TYPE = 'RTS'
 PTT_STATE = False
 
-HAMLIB_DEVICE_ID = 311
+HAMLIB_DEVICE_ID = 0
 HAMLIB_DEVICE_PORT = '/dev/ttyUSB0'
 # -------------------------
 # FreeDV Defaults
