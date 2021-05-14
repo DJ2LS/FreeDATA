@@ -140,7 +140,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
                 logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
   
-            
+        if received_json["command"] == 'SET:MYGRID':
+            mygrid = received_json["parameter"]
+
+            if bytes(mygrid, encoding) == b'':
+                self.request.sendall(b'INVALID GRID')
+            else:
+                static.MYGRID = bytes(mygrid, encoding)
+                logging.info("CMD | MYGRID: " + str(static.MYGRID))
+                
+                            
         if received_json["command"] == 'GET:STATION_INFO':
             output = {
                 "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
