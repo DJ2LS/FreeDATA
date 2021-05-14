@@ -577,7 +577,7 @@ def arq_received_data_channel_opener(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN, 'DATA-CHANNEL')
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL')
         
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
@@ -615,7 +615,7 @@ def arq_received_channel_is_open(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN, 'DATA-CHANNEL')
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL')
     
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
@@ -655,7 +655,7 @@ def received_ping(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN, 'PING')
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING')
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame = bytearray(14)
@@ -743,4 +743,4 @@ def received_beacon():
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     
     logging.info("BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
-    helpers.add_to_heard_stations(dxcallsign, 'BEACON')
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON')
