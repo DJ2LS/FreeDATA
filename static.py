@@ -52,6 +52,8 @@ PTT_STATE = False
 
 HAMLIB_DEVICE_ID = 0
 HAMLIB_DEVICE_PORT = '/dev/ttyUSB0'
+
+HAMLIB_FREQUENCY = 0
 # -------------------------
 # FreeDV Defaults
 FREEDV_RECEIVE = True

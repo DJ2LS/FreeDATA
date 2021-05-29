@@ -80,7 +80,7 @@ class RF():
             self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
 
             self.my_rig.set_conf("retry", "5")
-            self.my_rig.set_conf("serial_speed", "19200")
+            self.my_rig.set_conf("serial_speed", "9600")
 
         #self.my_rig.set_conf("dtr_state", "OFF")
         #my_rig.set_conf("rts_state", "OFF")
@@ -120,7 +120,7 @@ class RF():
 
 
             self.my_rig.open()
-            
+
         except:
             print("can't open rig")
             
@@ -398,6 +398,9 @@ class RF():
 
         while static.FREEDV_RECEIVE == True:
             time.sleep(0.01)
+            
+            # lets update the frequency 
+            static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
           
             # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
@@ -426,6 +429,7 @@ class RF():
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
+
 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -558,3 +562,11 @@ class RF():
             static.SNR = round(modem_stats_snr,1)
         except:
             static.SNR = 0
+            
+      
+
+
+        
+
+        
+
