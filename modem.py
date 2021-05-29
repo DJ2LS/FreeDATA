@@ -399,9 +399,9 @@ class RF():
         while static.FREEDV_RECEIVE == True:
             time.sleep(0.01)
             
-            # lets update the frequency 
-            static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
-          
+            # lets get the frequency, mode and bandwith
+            self.get_radio_stats()
+            
             # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
@@ -562,6 +562,11 @@ class RF():
             static.SNR = round(modem_stats_snr,1)
         except:
             static.SNR = 0
+            
+    def get_radio_stats(self):
+        static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
+        (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
+        static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
             
       
 
