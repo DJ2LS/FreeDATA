@@ -76,26 +76,26 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
             # ARQ CONNECT TO CALLSIGN ----------------------------------------
             #if data.startswith('ARQ:CONNECT:'):
-            if received_json["command"] == "ARQ:CONNECT":
-            
-                dxcallsign = received_json["dxcallsign"]
-                static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            #if received_json["command"] == "ARQ:CONNECT":
+            # 
+            #    dxcallsign = received_json["dxcallsign"]
+            #    static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+            #    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
 
-                if static.ARQ_STATE == 'CONNECTED':
-                    # here we could disconnect
-                    pass
+            #    if static.ARQ_STATE == 'CONNECTED':
+            #        # here we could disconnect
+            #        pass
 
-                if static.TNC_STATE == 'IDLE':
+            #    if static.TNC_STATE == 'IDLE':
 
-                    asyncio.run(data_handler.arq_connect())
+            #        asyncio.run(data_handler.arq_connect())
 
             # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
             #if received_json["command"] == "ARQ:DISCONNECT":
             #    asyncio.run(data_handler.arq_disconnect())
 
 
-            if received_json["command"] == "ARQ:OPEN_DATA_CHANNEL": # and static.ARQ_STATE == 'CONNECTED':
+            if received_json["type"] == 'ARQ' and received_json["command"] == "OPEN_DATA_CHANNEL": # and static.ARQ_STATE == 'CONNECTED':
                 static.ARQ_READY_FOR_DATA = False
                 static.TNC_STATE = 'BUSY'
                 
@@ -106,7 +106,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 asyncio.run(data_handler.arq_open_data_channel())
                 
 
-            if received_json["command"] == "ARQ:DATA":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+            if received_json["type"] == 'ARQ' and received_json["command"] == "DATA":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
                 static.TNC_STATE = 'BUSY'
                 
                 #on a new transmission we reset the timer
@@ -132,7 +132,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 # asyncio.run(data_handler.arq_transmit(data_out))
 
             # SETTINGS AND STATUS ---------------------------------------------
-            if received_json["command"] == 'SET:MYCALLSIGN':
+            if received_json["type"] == 'SET' and received_json["command"] == 'MYCALLSIGN':
                 callsign = received_json["parameter"]
 
                 if bytes(callsign, encoding) == b'':
@@ -142,7 +142,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
                     logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
       
-            if received_json["command"] == 'SET:MYGRID':
+            if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
                 mygrid = received_json["parameter"]
 
                 if bytes(mygrid, encoding) == b'':
@@ -152,8 +152,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     logging.info("CMD | MYGRID: " + str(static.MYGRID))
                     
                                 
-            if received_json["command"] == 'GET:STATION_INFO':
+            if received_json["type"] == 'GET' and received_json["command"] == 'STATION_INFO':
                 output = {
+                    "COMMAND": "STATION_INFO",
                     "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
                     "DX_CALLSIGN": str(static.DXCALLSIGN, encoding),
                     "DX_GRID": str(static.DXGRID, encoding)  
@@ -162,8 +163,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 jsondata = json.dumps(output)
                 self.request.sendall(bytes(jsondata, encoding))
 
-            if received_json["command"] == 'GET:TNC_STATE':
+            if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
                 output = {
+                    "COMMAND": "TNC_STATE",
                     "PTT_STATE": str(static.PTT_STATE),
                     "CHANNEL_STATE": str(static.CHANNEL_STATE),
                     "TNC_STATE": str(static.TNC_STATE),
@@ -176,8 +178,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 jsondata = json.dumps(output)
                 self.request.sendall(bytes(jsondata, encoding))
 
-            if received_json["command"] == 'GET:DATA_STATE':
+            if received_json["type"] == 'GET' and received_json["command"] == 'DATA_STATE':
                 output = {
+                    "COMMAND": "DATA_STATE",
                     "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
                     "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
                     "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
@@ -192,16 +195,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 jsondata = json.dumps(output)
                 self.request.sendall(bytes(jsondata, encoding))
 
-            if received_json["command"] == 'GET:HEARD_STATIONS':
+            if received_json["type"] == 'GET' and received_json["command"] == 'HEARD_STATIONS':
                 output = []
                 for i in range(0, len(static.HEARD_STATIONS)):
-                    output.append({"CALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
+                    output.append({"COMMAND": "HEARD_STATIONS", "CALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
 
                 jsondata = json.dumps(output)
                 self.request.sendall(bytes(jsondata, encoding))
 
 
-            if received_json["command"] == 'GET:RX_BUFFER':
+            if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
                 data = data.split('GET:RX_BUFFER:')
                 bufferposition = int(data[1]) - 1
                 if bufferposition == -1:
@@ -211,7 +214,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if bufferposition <= len(static.RX_BUFFER) > 0:
                     self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
 
-            if received_json["command"] == 'DEL:RX_BUFFER':
+            if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                 static.RX_BUFFER = []
 
 def start_cmd_socket():
