@@ -45,11 +45,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             # convert data to json object
             # we need to do some error handling in case of socket timeout
+            
             try:
                 received_json = json.loads(data)
+                print(received_json)
             except:
-                pass
-            print(received_json)
+                received_json = bytes()
+            
 
             # GET COMMANDS
             # "command" : "..."
