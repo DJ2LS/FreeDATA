@@ -21,22 +21,34 @@ import helpers
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        while 1:
+    
+        # loop through socket buffer until timeout is reached. then close buffer
+        socketTimeout = time.time() + 3
+        while socketTimeout > time.time():
             time.sleep(0.01)
             encoding = 'utf-8'
             #data = str(self.request.recv(1024), 'utf-8')
 
             data = bytes()
-            while True:
-                chunk = self.request.recv(8192)  # .strip()
+            
+            # we need to loop through buffer until end of chunk is reached or timeout occured
+            while True and socketTimeout > time.time():
+                chunk = self.request.recv(1024)  # .strip()
                 data += chunk
                 if chunk.endswith(b'\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
             
+            if len(data) > 0:
+                socketTimeout = time.time() + static.SOCKET_TIMEOUT
+            
             # convert data to json object
-            received_json = json.loads(data)
+            # we need to do some error handling in case of socket timeout
+            try:
+                received_json = json.loads(data)
+            except:
+                pass
             print(received_json)
 
             # GET COMMANDS
@@ -216,6 +228,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
             if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                 static.RX_BUFFER = []
+                
+        print("sock timeout...")
 
 def start_cmd_socket():
 

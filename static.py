@@ -19,8 +19,9 @@ DXGRID = b''
 # ---------------------------------
 
 # Server Defaults
-HOST = "localhost"
+HOST = "0.0.0.0"
 PORT = 3000
+SOCKET_TIMEOUT = 3 # seconds
 # ---------------------------------
 
 # HAMLIB DEFAULTS
