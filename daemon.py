@@ -14,7 +14,13 @@ import socketserver
 import pyaudio
 import time
 import json
-PORT = 3001
+import subprocess
+import os
+import static
+
+#PORT = 3001
+#TNCPROCESS = 0
+#TNCSTARTED = False
 
 #p = pyaudio.PyAudio()
 #info = p.get_host_api_info_by_index(0)
@@ -91,22 +97,39 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # "dxcallsign" : "..."
             # "data" : "..."
             
-            print(received_json)
+            #print(received_json)
             #print(received_json["type"])
             #print(received_json["command"]) 
             try:
+                print(static.TNCSTARTED)
 
-                
-                if received_json["type"] == 'SET' and received_json["command"] == 'TNC_STATUS':
+
+
+
+                if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
                     parameter = received_json["parameter"]
+                    print("STARTING TNC !!!!!")
+                    #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
+                    p = subprocess.Popen("exec python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028", shell=True)
+                    static.TNCPROCESS = p#.pid
+                    print(static.TNCPROCESS)
+                    static.TNCSTARTED = True
 
-
+                if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':
+                    parameter = received_json["parameter"]
+                    static.TNCPROCESS.kill()
+                    print("KILLING PROCESS ------------")
+                    #os.kill(static.TNCPROCESS, signal.SIGKILL)
+                    static.TNCSTARTED = False
+                    
                 if received_json["type"] == 'GET' and received_json["command"] == 'DAEMON_STATE':
 
                     data = {'COMMAND' : 'DAEMON_STATE', 'DAEMON_STATE' : [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': []}
 
-                    data["DAEMON_STATE"].append({"STATUS": "stopped"})
-
+                    if static.TNCSTARTED:
+                        data["DAEMON_STATE"].append({"STATUS": "running"})
+                    else:
+                        data["DAEMON_STATE"].append({"STATUS": "stopped"})
 
                     p = pyaudio.PyAudio()
                     for i in range(0, p.get_device_count()):
@@ -120,15 +143,19 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         if maxOutputChannels > 0:                        
                             data["OUTPUT_DEVICES"].append({"ID": i, "NAME" : name})  
                           
-                    print(data)
+          
+
+                    #print(data)
                     jsondata = json.dumps(data)
                     self.request.sendall(bytes(jsondata, encoding))
                 
               
             
             #exception, if JSON cant be decoded
-            except:
-                print("Wrong command")        
+            except Exception as e:
+                print('PROGRAM ERROR: %s' %str(e))
+                print("Wrong command") 
+
         print("Client disconnected...")
 
 
@@ -141,7 +168,6 @@ if __name__ == '__main__':
 
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
-
 
     # --------------------------------------------START CMD SERVER
 

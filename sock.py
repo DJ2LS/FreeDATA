@@ -50,7 +50,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             try:
                 received_json = json.loads(data)
-                print(received_json)
+                #print(received_json)
             except:
                 received_json = ''
             
@@ -191,12 +191,22 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "SNR": str(static.SNR),
                         "FREQUENCY" : str(static.HAMLIB_FREQUENCY),
                         "MODE" : str(static.HAMLIB_MODE),
-                        "BANDWITH" : str(static.HAMLIB_BANDWITH)
+                        "BANDWITH" : str(static.HAMLIB_BANDWITH),
+                        "FFT" : str(static.FFT)
+                    }
+                    
+                    jsondata = json.dumps(output)
+                    print(len(jsondata))
+                    self.request.sendall(bytes(jsondata, encoding))
+                
+                if received_json["type"] == 'GET' and received_json["command"] == 'FFT':
+                    output = {
+                        "FFT" : str(static.FFT)
                     }
                     
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
-
+                
                 if received_json["type"] == 'GET' and received_json["command"] == 'DATA_STATE':
                     output = {
                         "COMMAND": "DATA_STATE",

@@ -6,6 +6,15 @@ Created on Wed Dec 23 11:13:57 2020
 @author: DJ2LS
 """
 
+# DAEMON
+DAEMONPORT = 3001
+TNCSTARTED = False
+TNCPROCESS = 0
+
+
+
+
+
 # Operator Defaults
 MYCALLSIGN = b'AA0AA'
 MYCALLSIGN_CRC8 = b'A'
@@ -83,6 +92,7 @@ MODEM_SAMPLE_RATE = 8000  # 8000
 AUDIO_FRAMES_PER_BUFFER = 8192  # 256 # 512 # 1024 #2048   --> nicht 880                       # 128 gut, 256, 1024 16384
 AUDIO_CHANNELS = 1
 AUDIO_RMS = 0
+FFT = []
 # ---------------------------------
 
 # ARQ DEFAULTS
