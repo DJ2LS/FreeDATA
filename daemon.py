@@ -107,13 +107,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
-                    rx_audio = parameter = received_json["parameter"][0]["rx_audio"]
-                    tx_audio = parameter = received_json["parameter"][0]["tx_audio"]
-                    deviceid = parameter = received_json["parameter"][0]["deviceid"]
-                    deviceport = parameter = received_json["parameter"][0]["deviceport"]
-                    ptt = parameter = received_json["parameter"][0]["ptt"]
+                    rx_audio = received_json["parameter"][0]["rx_audio"]
+                    tx_audio = received_json["parameter"][0]["tx_audio"]
+                    deviceid = received_json["parameter"][0]["deviceid"]
+                    deviceport = received_json["parameter"][0]["deviceport"]
+                    ptt = received_json["parameter"][0]["ptt"]
                     print("STARTING TNC !!!!!")
-                    #print(deviceid)
+                    print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
                     p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --ptt "+ str(ptt), shell=True)
                     static.TNCPROCESS = p#.pid
