@@ -25,6 +25,12 @@ import Hamlib
 
 
 
+
+# test
+import numpy as np
+from scipy.fft import fft, ifft
+from scipy import signal
+
 class RF():
 
     def __init__(self):       
@@ -415,6 +421,10 @@ class RF():
                 nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
+                
+                self.calculate_fft(data_in)
+                
+                
                 data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
                 data_in = data_in[0]
                                 
@@ -569,9 +579,71 @@ class RF():
         static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
             
       
+    def calculate_fft(self, data_in):
+        data_in_array = np.frombuffer(data_in, dtype=np.int16)
+                #print(fft_raw)
+        #fft_raw = fft(data_in_array)
+                #print(fft_raw)
+                #fft_raw = data_in.hex()
+                #print(fft_raw)
+                #static.FFT = fft_raw.tolist()
+        #fft_raw = fft_raw.tobytes()
+        
+        rate = 48000
+        M = 1024
+        freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, window='hanning', nperseg=1024, noverlap=M - 100, detrend=False, scaling='spectrum', return_onesided=True) 
+        
+        freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, return_onesided=True, axis=-1) 
+        
+        
+        
+        
+        #print(Sx)
+        
+        #fft_raw = Sx.tobytes()
+        #print(fft_raw)
+        #static.FFT = fft_raw.hex()
+        #static.FFT = fft_raw
+        data_in = np.frombuffer(data_in, dtype=np.int16)
+        data = fft(data_in)
+        #print(data)
+        #data = getFFT(data_in, 48000, 2048)
+        #print(data)
 
+        #data = abs(data) * 2 / np.sum(8192)
+        
+        #data = abs(data) // np.sum(1024)
 
         
+        #data = np.frombuffer(data_in, dtype=np.int16)
+        data.resize((1,2048))
+        #data = np.delete(data,0)
+        
+        
+        #data = data.tobytes()
+        #print(data)
+        static.FFT = data.tolist()
+        #static.FFT = data.hex()
+        
+def getFFT(data, rate, chunk_size, log_scale=False):
+    data = data * np.hamming(len(data))
+    try:
+        FFT = np.abs(np.fft.rfft(data)[1:])
+    except:
+        FFT = np.fft.fft(data)
+        left, right = np.split(np.abs(FFT), 2)
+        FFT = np.add(left, right[::-1])
+
+    #fftx = np.fft.fftfreq(chunk_size, d=1.0/rate)
+    #fftx = np.split(np.abs(fftx), 2)[0]
+
+    if log_scale:
+        try:
+            FFT = np.multiply(20, np.log10(FFT))
+        except Exception as e:
+            print('Log(FFT) failed: %s' %str(e))
+
+    return FFT
 
         
 
