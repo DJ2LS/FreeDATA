@@ -1,5 +1,6 @@
 # codec2 | FreeDATA
-My attempt to create a free and opensource TNC with a nice GUI for codec2 to send data over HF channels. 
+My attempt to create a free and opensource TNC with a GUI for [codec2](https://github.com/drowe67/codec2) to send data over HF channels. 
+The TNC itself will be completely controllable via network.
 
 ## Under development
 The project is still a prototype and not usable at this time.
