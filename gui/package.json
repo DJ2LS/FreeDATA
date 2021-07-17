@@ -1,0 +1,30 @@
+{
+  "name": "freedv-jate-gui",
+  "version": "0.0.1",
+  "description": "GUI for FreeDV JATE ",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DJ2LS/FreeDV-JATE-GUI.git"
+  },
+  "keywords": [
+    "TNC",
+    "GUI",
+    "FreeDV",
+    "codec2"
+  ],
+  "author": "DJ2LS",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/DJ2LS/FreeDV-JATE-GUI/issues"
+  },
+  "homepage": "https://github.com/DJ2LS/FreeDV-JATE-GUI#readme",
+  "dependencies": {
+    "@electron/remote": "^1.2.0",
+    "bootstrap": "^5.0.1"
+  }
+}
