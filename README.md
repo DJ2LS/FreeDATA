@@ -1,44 +1,10 @@
-# FreeDV-JATE
-## FreeDV- Just Another TNC Experiment
-My first attempt to learn more about FreeDV and how to create a TNC which gets data from a TCP/IP socket 
+# codec2 | FreeDATA
+My attempt to create a free and opensource TNC with a nice GUI for codec2 to send data over HF channels. 
 
+## Under development
+The project is still a prototype and not usable at this time.
 
 
 ## Credits
-
 David Rowe and the FreeDV team for developing the modem and libraries
 FreeDV Codec 2 : https://github.com/drowe67/codec2
-
-
-This software has been heavily inspired by https://github.com/xssfox/freedv-tnc/
-
-
-
-
-
-## Setup
-Install FreeDV-Socket-TNC directly to home folder and compile codec2 automatically
-```
-sudo apt install python3-pyaudio build-essential cmake
-python3 -m pip install crcengine ( if stuck in installing, run as superuser - sudo )
-sudo adduser $USER dialout
-wget https://raw.githubusercontent.com/DJ2LS/FreeDV-Socket-TNC/dev/install_socket_tnc.sh -O ~/install_socket_tnc.sh
-chmod +x ~/install_socket_tnc.sh
-./install_socket_tnc.sh
-```
-## List audio interfaces
-```
-cd ~/FreeDV-JATE
-python3 tools/list_audio_devices.py
-```
-
-## Usage main program
-```
-python3 main.py --rx 1 --tx 1 --deviceport /dev/ttyUSB0 --deviceid 311
-```
-
-## Usage GUI
-```
-cd tools/tnc_gui
-python3 tnc_gui.py
-```
