@@ -523,10 +523,6 @@ def open_dc_and_transmit(data_out, mode, n_frames):
     #on a new transmission we reset the timer
     static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
-    # lets wait a little bit so RX station is ready for receiving
-    wait_before_data_timer = time.time() + 0.5
-    while time.time() < wait_before_data_timer:
-        pass    
     
     # lets wait a little bit
     #time.sleep(5)
