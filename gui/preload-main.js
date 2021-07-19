@@ -1,5 +1,10 @@
 const sock = require('./sock.js')
 const daemon = require('./daemon.js')
+
+setInterval(daemon.getDaemonState, 1000) 
+setInterval(sock.getTncState, 250)  
+
+
 const { ipcRenderer } = require('electron');
 
 
@@ -7,9 +12,19 @@ const { ipcRenderer } = require('electron');
 
 
 window.addEventListener('DOMContentLoaded', () => {
+
+/*
+globals.tnc_host = document.getElementById("tnc_adress").value
+globals.tnc_port = document.getElementById("tnc_port").value
+console.log(globals.tnc_host)
+console.log(globals.tnc_port)
+setInterval(sock.connectTNC, 500)  
+*/
+//setInterval( function() { sock.connectTNC(tnc_host, tnc_port); }, 500 );
+
   
-setInterval(sock.getTncState, 1000)  
-setInterval(daemon.getDaemonState, 250)  
+//setInterval(sock.getTncState, 500)  
+//setInterval(daemon.getDaemonState, 500)  
 //setInterval(uiMain.updateFFT, 250)  
 
 
@@ -27,17 +42,60 @@ setInterval(daemon.getDaemonState, 250)
    document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value
         sock.saveMyCall(callsign)
-        //uiMain.getTncState()
+        /*        
+        let Data = {
+            command: "saveMyCall",
+            callsign: document.getElementById("myCall").value
+        };
+        ipcRenderer.send('run-tnc-command', Data);
+        
+        */
+        
+        
     })  
 
    // saveMyGrid button clicked 
    document.getElementById("saveMyGrid").addEventListener("click", () => {
         grid = document.getElementById("myGrid").value
         sock.saveMyGrid(grid)
-        //uiMain.getTncState()
+       /*
+        let Data = {
+            command: "saveMyGrid",
+            grid: document.getElementById("myGrid").value
+        };
+        ipcRenderer.send('run-tnc-command', Data);
+*/
     })  
     
+    // startPing button clicked 
+   document.getElementById("sendPing").addEventListener("click", () => {
+        dxcallsign = document.getElementById("dxCall").value
+        sock.sendPing(dxcallsign)
+        /*        
+        let Data = {
+            command: "saveMyCall",
+            callsign: document.getElementById("myCall").value
+        };
+        ipcRenderer.send('run-tnc-command', Data);
+        
+        */
+        
+        
+    })  
     
+           // sendCQ button clicked 
+   document.getElementById("sendCQ").addEventListener("click", () => {
+    sock.sendCQ()
+
+        
+        
+    })  
+       
+       
+       
+       
+       
+
    // startTNC button clicked 
    document.getElementById("startTNC").addEventListener("click", () => {        
         var rx_audio = document.getElementById("audio_input_selectbox").value
@@ -47,11 +105,29 @@ setInterval(daemon.getDaemonState, 250)
         var ptt = document.getElementById("hamlib_ptt").value
 
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt)
+        /*
+         let Data = {
+            command: "startTNC",
+            rx_audio : document.getElementById("audio_input_selectbox").value,
+            tx_audio : document.getElementById("audio_output_selectbox").value,   
+            deviceid : document.getElementById("hamlib_deviceid").value,
+            deviceport : document.getElementById("hamlib_deviceport").value,
+            ptt : document.getElementById("hamlib_ptt").value,
+        };
+        ipcRenderer.send('run-daemon-command', Data);
+        */
+        
+        
     })  
 
    // stopTNC button clicked 
    document.getElementById("stopTNC").addEventListener("click", () => {        
         daemon.stopTNC()
+  /*               let Data = {
+            command: "stopTNC",
+        };
+        ipcRenderer.send('run-daemon-command', Data);
+   */
     })  
         
    // openDataModule button clicked 
@@ -81,6 +157,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 // PTT STATE
     if(arg.ptt_state == 'True'){
     		document.getElementById("ptt_state").className = "btn btn-danger";
+    		console.log("PTT TRUE!!!")
+
     	} else if(arg.ptt_state == 'False'){
     		document.getElementById("ptt_state").className = "btn btn-success";	
     	} else {
@@ -216,3 +294,37 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 	}			
 
    });
+   
+   
+   
+   
+   
+   ipcRenderer.on('run-tnc-command', (event, arg) => {
+    if (arg.command == 'saveMyCall'){
+        sock.saveMyCall(arg.callsign)
+    }
+    if (arg.command == 'saveMyGrid'){
+        sock.saveMyGrid(arg.grid)
+    }
+    if (arg.command == 'ping'){
+     sock.sendPing(arg.dxcallsign)
+    }    
+      });
+
+
+/*
+   ipcRenderer.on('run-daemon-command', (event, arg) => {
+    if (arg.command == 'startTNC'){
+           daemon.startTNC(arg.rx_audio, arg.tx_audio, arg.deviceid, arg.deviceport, arg.ptt)
+
+    }
+    if (arg.command == 'stopTNC'){
+        daemon.stopTNC()
+
+    }
+      });
+
+*/
+
+
+   

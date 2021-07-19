@@ -1,9 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
 
-//require('@electron/remote/main').initialize()
-
-
 let win = null;
 let data = null;
 
@@ -16,7 +13,7 @@ function createWindow () {
     webPreferences: {
       //preload: path.join(__dirname, 'preload-main.js'),
       preload: require.resolve('./preload-main.js'),
-      nodeIntegration: true,
+      nodeIntegration: false,
       contextIsolation: false,
       enableRemoteModule: false, //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 https://github.com/electron/remote
     }
@@ -36,8 +33,15 @@ function createWindow () {
     parent: win,
     webPreferences: {
         preload: require.resolve('./preload-data.js'),
+       nodeIntegration: false,
+
     }
   })
+    //open dev tools
+  data.webContents.openDevTools({
+    mode    : 'undocked',
+    activate: true,
+})
    data.loadFile('src/data-module.html')
     data.hide()    
 
@@ -115,7 +119,7 @@ app.on('window-all-closed', () => {
 
 
 
-
+// IPC HANDLER
 ipcMain.on('show-data-window', (event, arg) => {
     data.show()
 });
@@ -134,3 +138,51 @@ ipcMain.on('request-update-daemon-connection', (event, arg) => {
     win.webContents.send('action-update-daemon-connection', arg);
 });
 
+ipcMain.on('run-tnc-command', (event, arg) => {
+ win.webContents.send('run-tnc-command', arg);
+
+/*
+    if (arg.command == 'saveMyCall'){
+        sock.saveMyCall(arg.callsign)
+    }
+    if (arg.command == 'saveMyGrid'){
+        sock.saveMyGrid(arg.grid)
+    }
+    if (arg.command == 'ping'){
+     sock.sendPing(arg.dxcallsign)
+    }    
+*/
+});
+
+
+/*
+ipcMain.on('run-daemon-command', (event, arg) => {
+ win.webContents.send('run-daemon-command', arg);
+*/
+/*
+    if (arg.command == 'startTNC'){
+           daemon.startTNC(arg.rx_audio, arg.tx_audio, arg.deviceid, arg.deviceport, arg.ptt)
+
+    }
+    if (arg.command == 'stopTNC'){
+        daemon.stopTNC()
+
+    }
+});
+
+*/
+
+
+//setInterval(sock.getTncState, 500)  
+//setInterval(daemon.getDaemonState, 500) 
+/*
+setInterval(function(){
+        sock.getTncState();
+    }, 1000);
+  */  
+/*    
+setInterval(function(){
+        daemon.getDaemonState();
+    }, 1000);
+  */  
+    

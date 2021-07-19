@@ -1,24 +1,31 @@
 var net = require('net');
+//const globals = require('./globals.js')
 
 const { ipcRenderer } = require('electron');
 
+//var client = new net.Socket();
 var client = new net.Socket();
 var msg = ''; // Current message, per connection.
 
+ setTimeout(connectTNC, 3000)
+ 
 
 
-setTimeout(connectTNC, 500)
 
 function connectTNC(){
+//exports.connectTNC = function(){
 
     console.log('connecting to TNC...')
     
     //clear message buffer after reconnecting or inital connection
     msg = '';
     
-    tnc_host = document.getElementById("tnc_adress").value
-    tnc_port = document.getElementById("tnc_port").value
-    client.connect(tnc_port, tnc_host)
+   // tnc_host = document.getElementById("tnc_adress").value
+    //tnc_port = document.getElementById("tnc_port").value
+   
+    tnc_host = '192.168.178.163'
+    tnc_port = 3000
+      client.connect(tnc_port, tnc_host)
     //client.setTimeout(5000);
 }
 
@@ -43,6 +50,8 @@ client.on('error', function(data) {
 	    ipcRenderer.send('request-update-tnc-state', Data);	
 	
     setTimeout(connectTNC, 2000)
+   // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
+
 });
 
 /*
@@ -54,7 +63,11 @@ client.on('close', function(data) {
 
 client.on('end', function(data) {
 	console.log('TNC connection ended');
-    setTimeout(connectTNC, 2000)  
+    //setTimeout(connectTNC, 2000)  
+    setTimeout(connectTNC, 0)  
+
+  //      setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
+
 });
 
 
@@ -71,10 +84,13 @@ client.on('end', function(data) {
     
     if(client.readyState == 'closed'){
    		//uiMain.setTNCconnection('closed')
+   		console.log("CLOSED!!!!!")
     }
 
     if(client.readyState == 'opening'){
 		//uiMain.setTNCconnection('opening')
+   		console.log("OPENING!!!!!")
+
     }       
 }
 
@@ -146,6 +162,7 @@ stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data
                     rms_level : (data['AUDIO_RMS']/1000)*100
 
         };
+        console.log(Data)
 	    ipcRenderer.send('request-update-tnc-state', Data);
 		
 		
@@ -176,18 +193,43 @@ function hexToBytes(hex) {
 
 
 
-//Save callsign 
+//Save myCall 
   exports.saveMyCall = function(callsign){
         command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "'+ callsign +'" }'
         writeTncCommand(command)
 }
 
+// Save myGrid
   exports.saveMyGrid = function(grid){
         command = '{"type" : "SET", "command": "MYGRID" , "parameter": "'+ grid +'" }'
         writeTncCommand(command)
 }
 
+//Get TNC State
  exports.getTncState = function(){
         command = '{"type" : "GET", "command": "TNC_STATE"}';
         writeTncCommand(command)
+}
+
+// Send Ping
+ exports.sendPing = function(dxcallsign){
+        command = '{"type" : "PING", "command" : "PING", "dxcallsign" : "' + dxcallsign + '"}'
+        writeTncCommand(command)
+}
+
+// Send CQ
+ exports.sendCQ = function(){
+          command = '{"type" : "CQ", "command" : "CQCQCQ"}'
+
+        writeTncCommand(command)
+        console.log("COMMAND WURDE GESCHRIEBEN UND AUSGEFIEHT!!!!")
+        
+            tnc_host = '192.168.178.163'
+    tnc_port = 3000
+    var testclient = new net.Socket();
+
+      //testclient.connect(tnc_port, tnc_host)
+      //testclient.write(command + '\n');
+        
+        
 }
