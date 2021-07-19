@@ -523,6 +523,10 @@ def open_dc_and_transmit(data_out, mode, n_frames):
     #on a new transmission we reset the timer
     static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
+    # lets wait a little bit so RX station is ready for receiving
+    wait_before_data_timer = time.time() + 0.5
+    while time.time() < wait_before_data_timer:
+        pass    
     
     # lets wait a little bit
     #time.sleep(5)
@@ -634,7 +638,8 @@ def arq_received_channel_is_open(data_in):
 # PING HANDLER
 # ############################################################################################################
 
-async def transmit_ping(callsign):
+#async def transmit_ping(callsign):
+def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
@@ -687,7 +692,8 @@ def received_ping_ack(data_in):
 # ############################################################################################################
 
 
-async def transmit_cq():
+#async def transmit_cq():
+def transmit_cq():
     logging.info("CQ CQ CQ")
 
     cq_frame = bytearray(14)

@@ -24,7 +24,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         print("Client connected...")    
         
         # loop through socket buffer until timeout is reached. then close buffer
-        socketTimeout = time.time() + 3
+        socketTimeout = time.time() + 10
         while socketTimeout > time.time():
 
             time.sleep(0.01)
@@ -50,9 +50,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             try:
                 received_json = json.loads(data)
-                #print(received_json)
+                print(received_json)
             except:
                 received_json = ''
+
             
 
             # GET COMMANDS
@@ -80,16 +81,21 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 # CQ CQ CQ -----------------------------------------------------
                 #if data == 'CQCQCQ':
                 if received_json["command"] == "CQCQCQ":
-                    asyncio.run(data_handler.transmit_cq())
-
+                    socketTimeout = 0
+                    #asyncio.run(data_handler.transmit_cq())
+                    CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
+                    CQ_THREAD.start()
 
                 # PING ----------------------------------------------------------
                 #if data.startswith('PING:'):
-                if received_json["command"] == "PING":
+                if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
+                    print(received_json)
                     dxcallsign = received_json["dxcallsign"]
-                    asyncio.run(data_handler.transmit_ping(dxcallsign))
-
+                    #asyncio.run(data_handler.transmit_ping(dxcallsign))
+                    PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
+                    PING_THREAD.start()
+                    
                 # ARQ CONNECT TO CALLSIGN ----------------------------------------
                 #if data.startswith('ARQ:CONNECT:'):
                 #if received_json["command"] == "ARQ:CONNECT":
