@@ -5,6 +5,12 @@ The TNC itself will be completely controllable via network.
 ## Under development
 The project is still a prototype and not usable at this time.
 
+## Installation Ubuntu
+sudo apt install npm
+npm install electron --save-dev
+sudo apt install python3
+
+
 ## GUI Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
 
