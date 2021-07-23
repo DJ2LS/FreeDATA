@@ -7,7 +7,8 @@ The project is still a prototype and not usable at this time.
 
 ## Installation Ubuntu
 sudo apt install npm
-npm install electron --save-dev
+npm install electron --save
+npm i
 sudo apt install python3
 
 
