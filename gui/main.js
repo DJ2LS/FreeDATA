@@ -1,8 +1,17 @@
 const { app, BrowserWindow, ipcMain } = require('electron')
 const path = require('path')
+var config = require('./config.json');
+
+
+
 
 let win = null;
 let data = null;
+
+
+
+
+
 
 function createWindow () {
   
@@ -13,7 +22,7 @@ function createWindow () {
     webPreferences: {
       //preload: path.join(__dirname, 'preload-main.js'),
       preload: require.resolve('./preload-main.js'),
-      nodeIntegration: false,
+      nodeIntegration: true,
       contextIsolation: false,
       enableRemoteModule: false, //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 https://github.com/electron/remote
     }
@@ -33,7 +42,7 @@ function createWindow () {
     parent: win,
     webPreferences: {
         preload: require.resolve('./preload-data.js'),
-       nodeIntegration: false,
+       nodeIntegration: true,
 
     }
   })
@@ -128,6 +137,15 @@ ipcMain.on('show-data-window', (event, arg) => {
 ipcMain.on('request-update-tnc-state', (event, arg) => {
     win.webContents.send('action-update-tnc-state', arg);
     data.webContents.send('action-update-tnc-state', arg);
+});
+
+ipcMain.on('request-update-data-state', (event, arg) => {
+    //win.webContents.send('action-update-data-state', arg);
+    data.webContents.send('action-update-data-state', arg);
+});
+
+ipcMain.on('request-update-heard-stations', (event, arg) => {
+    //win.webContents.send('action-update-heard-stations', arg);
 });
 
 ipcMain.on('request-update-daemon-state', (event, arg) => {

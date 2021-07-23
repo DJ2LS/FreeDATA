@@ -1,14 +1,11 @@
 var net = require('net');
+var config = require('./config.json');
+
 
 var daemon = new net.Socket();
 var msg = ''; // Current message, per connection.
 
-
-
 const { ipcRenderer } = require('electron');
-
-
-
 
 
 setTimeout(connectDAEMON, 500)
@@ -22,10 +19,10 @@ function connectDAEMON(){
     
     //daemon_host = document.getElementById("daemon_adress").value
     //daemon_port = document.getElementById("daemon_port").value
-    daemon_host = '192.168.178.163'
-    daemon_port = 3001
+    //daemon_host = '192.168.178.163'
+    //daemon_port = 3001
     
-    daemon.connect(daemon_port, daemon_host)
+    daemon.connect(config.daemon_port, config.daemon_host)
     //client.setTimeout(5000);
 }
 
@@ -58,8 +55,8 @@ writeDaemonCommand = function(command){
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
 	// if socket openend, we are able to run commands
     if(daemon.readyState == 'open'){
-    	//uiMain.setDAEMONconnection('open')	
-    	
+    	//uiMain.setDAEMONconnection('open')	 
+    	console.log(command)   	
 	    daemon.write(command + '\n');
     }
     
@@ -73,9 +70,9 @@ writeDaemonCommand = function(command){
     
     
     let Data = {
-                    daemon_connection: daemon.readyState,
+             daemon_connection: daemon.readyState,
         };
-	    ipcRenderer.send('request-update-daemon-connection', Data);  
+	   ipcRenderer.send('request-update-daemon-connection', Data);  
 }
 
 
@@ -102,10 +99,7 @@ daemon.on('data', function(data) {
       msg = '';
       /*console.log("EOF detected!")*/
       
-      	if(data['COMMAND'] == 'DAEMON_STATE'){
-      		
-      		
-      		
+      	if(data['COMMAND'] == 'DAEMON_STATE'){      		      			    
       			    let Data = {
                     input_devices: data['INPUT_DEVICES'],
                     output_devices: data['OUTPUT_DEVICES'],
@@ -148,6 +142,7 @@ function hexToBytes(hex) {
 
 
  exports.getDaemonState = function(){
+//function getDaemonState(){
         command = '{"type" : "GET", "command": "DAEMON_STATE"}'
         writeDaemonCommand(command)
 }

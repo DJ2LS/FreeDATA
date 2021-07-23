@@ -1,5 +1,5 @@
 var net = require('net');
-//const globals = require('./globals.js')
+var config = require('./config.json');
 
 const { ipcRenderer } = require('electron');
 
@@ -20,12 +20,11 @@ function connectTNC(){
     //clear message buffer after reconnecting or inital connection
     msg = '';
     
-   // tnc_host = document.getElementById("tnc_adress").value
-    //tnc_port = document.getElementById("tnc_port").value
+    console.log(exports)
    
-    tnc_host = '192.168.178.163'
-    tnc_port = 3000
-      client.connect(tnc_port, tnc_host)
+    //tnc_host = '192.168.178.163'
+    //tnc_port = 3000
+      client.connect(config.tnc_port, config.tnc_host)
     //client.setTimeout(5000);
 }
 
@@ -138,19 +137,6 @@ stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data
 	
 	
 	if(data['COMMAND'] == 'TNC_STATE'){
-	    
-
-
-
-		// FFT
-		//fft_raw = data['FFT']
-		//var fft = Buffer.from(fft_raw, "hex")
-		//var fft = hexToBytes(fft_raw)
-		//var fft = Array.from(fft_raw)
-		//console.log(typeof(fft))
-		
-		
-			    
 	    let Data = {
                     ptt_state: data['PTT_STATE'],
                     busy_state: data['TNC_STATE'],
@@ -160,19 +146,40 @@ stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data
                     mode: data['MODE'],
                     bandwith: data['BANDWITH'],
                     rms_level : (data['AUDIO_RMS']/1000)*100
-
         };
         console.log(Data)
-	    ipcRenderer.send('request-update-tnc-state', Data);
-		
-		
-		var fft = Array.from({length: 2048}, () => Math.floor(Math.random() * 10));
-		//console.log(fft)
-		//uiMain.updateFFT(fft)
-		
-				
+	    ipcRenderer.send('request-update-tnc-state', Data);	
 	}
 	
+	if(data['COMMAND'] == 'DATA_STATE'){
+	    let Data = {
+                    rx_buffer_length: data['RX_BUFFER_LENGTH'],
+                    tx_n_max_retries: data['TX_N_MAX_RETRIES'],
+                    arq_tx_n_frames_per_burst: data['ARQ_TX_N_FRAMES_PER_BURST'],
+                    arq_tx_n_bursts: data['ARQ_TX_N_BURSTS'],
+                    arq_tx_n_current_arq_frame: data['ARQ_TX_N_CURRENT_ARQ_FRAME'],
+                    arq_tx_n_total_arq_frames : data['ARQ_TX_N_TOTAL_ARQ_FRAMES'],
+                    arq_rx_frame_n_bursts: data['ARQ_RX_FRAME_N_BURSTS'],
+                    arq_rx_n_current_arq_frame: data['ARQ_RX_N_CURRENT_ARQ_FRAME'],
+                    arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
+        };
+        console.log(Data)
+	    ipcRenderer.send('request-update-data-state', Data);	
+	}
+
+	if(data['COMMAND'] == 'HEARD_STATIONS'){
+	    let Data = {
+                    dxcallsign: data['DXCALLSIGN'],
+                    dxgrid: data['DXGRID'],
+                    timestamp: data['TIMESTAMP'],
+                    datatype: data['DATATYPE'],
+        };
+        console.log(Data)
+	    ipcRenderer.send('request-update-heard-stations', Data);	
+	}
+	
+	
+		
 	// check if EOF	...
     }
 	
@@ -211,6 +218,19 @@ function hexToBytes(hex) {
         writeTncCommand(command)
 }
 
+//Get DATA State
+ exports.getDataState = function(){
+        command = '{"type" : "GET", "command": "DATA_STATE"}';
+        writeTncCommand(command)
+}
+
+//Get Heard Stations
+ exports.getHeardStations = function(){
+        command = '{"type" : "GET", "command": "HEARD_STATIONS"}';
+        writeTncCommand(command)
+}
+
+
 // Send Ping
  exports.sendPing = function(dxcallsign){
         command = '{"type" : "PING", "command" : "PING", "dxcallsign" : "' + dxcallsign + '"}'
@@ -220,16 +240,5 @@ function hexToBytes(hex) {
 // Send CQ
  exports.sendCQ = function(){
           command = '{"type" : "CQ", "command" : "CQCQCQ"}'
-
-        writeTncCommand(command)
-        console.log("COMMAND WURDE GESCHRIEBEN UND AUSGEFIEHT!!!!")
-        
-            tnc_host = '192.168.178.163'
-    tnc_port = 3000
-    var testclient = new net.Socket();
-
-      //testclient.connect(tnc_port, tnc_host)
-      //testclient.write(command + '\n');
-        
-        
+        writeTncCommand(command)      
 }

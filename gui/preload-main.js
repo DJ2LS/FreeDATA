@@ -1,31 +1,53 @@
 const sock = require('./sock.js')
 const daemon = require('./daemon.js')
+const configPath = './config.json'
+const config = require(configPath);
+const { ipcRenderer } = require('electron');
+const fs = require('fs');
 
+
+
+
+
+
+
+
+
+
+
+// START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000) 
 setInterval(sock.getTncState, 250)  
+setInterval(sock.getDataState, 500)  
+setInterval(sock.getHeardStations, 500)  
 
 
-const { ipcRenderer } = require('electron');
+
+// UPDATE FFT DEMO 
+
+ updateFFT = function(fft){
+    var fft = Array.from({length: 2048}, () => Math.floor(Math.random() * 10));
+ 	spectrum.addData(fft);
+}
+setInterval(updateFFT, 250)  
+
+
+
+
+
+
 
 
 
 
 
 window.addEventListener('DOMContentLoaded', () => {
+// LOAD SETTINGS
+document.getElementById("tnc_adress").value = config.tnc_host
+document.getElementById("tnc_port").value = config.tnc_port
+document.getElementById("myCall").value = config.mycall
+document.getElementById("myGrid").value = config.mygrid
 
-/*
-globals.tnc_host = document.getElementById("tnc_adress").value
-globals.tnc_port = document.getElementById("tnc_port").value
-console.log(globals.tnc_host)
-console.log(globals.tnc_port)
-setInterval(sock.connectTNC, 500)  
-*/
-//setInterval( function() { sock.connectTNC(tnc_host, tnc_port); }, 500 );
-
-  
-//setInterval(sock.getTncState, 500)  
-//setInterval(daemon.getDaemonState, 500)  
-//setInterval(uiMain.updateFFT, 250)  
 
 
 
@@ -36,11 +58,35 @@ setInterval(sock.connectTNC, 500)
     });
 
 
+// on change port and host
+
+  document.getElementById("tnc_adress").addEventListener("change", () => {
+    console.log(document.getElementById("tnc_adress").value)
+    config.tnc_host = document.getElementById("tnc_adress").value
+    config.daemon_host = document.getElementById("tnc_adress").value
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    });
+
+  document.getElementById("tnc_port").addEventListener("change", () => {
+    config.tnc_port = document.getElementById("tnc_port").value
+    config.daemon_port = document.getElementById("tnc_port").value + 1
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+});
+
+
+   // tnc_host = document.getElementById("tnc_adress").value
+    //tnc_port = document.getElementById("tnc_port").value
+
 
 
    // saveMyCall button clicked 
    document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value
+        config.mycall = callsign
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
         sock.saveMyCall(callsign)
         /*        
         let Data = {
@@ -52,11 +98,14 @@ setInterval(sock.connectTNC, 500)
         */
         
         
-    })  
+    });  
 
    // saveMyGrid button clicked 
    document.getElementById("saveMyGrid").addEventListener("click", () => {
         grid = document.getElementById("myGrid").value
+        config.mygrid = grid
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
         sock.saveMyGrid(grid)
        /*
         let Data = {
@@ -65,7 +114,7 @@ setInterval(sock.connectTNC, 500)
         };
         ipcRenderer.send('run-tnc-command', Data);
 */
-    })  
+    });
     
     // startPing button clicked 
    document.getElementById("sendPing").addEventListener("click", () => {
@@ -81,7 +130,7 @@ setInterval(sock.connectTNC, 500)
         */
         
         
-    })  
+    });  
     
            // sendCQ button clicked 
    document.getElementById("sendCQ").addEventListener("click", () => {
@@ -89,7 +138,7 @@ setInterval(sock.connectTNC, 500)
 
         
         
-    })  
+    });  
        
        
        
@@ -105,6 +154,9 @@ setInterval(sock.connectTNC, 500)
         var ptt = document.getElementById("hamlib_ptt").value
 
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt)
+        setTimeout( function() { sock.saveMyCall(config.mycall); }, 5000 );
+        setTimeout( function() { sock.saveMyGrid(config.mygrid); }, 5000 );
+
         /*
          let Data = {
             command: "startTNC",
