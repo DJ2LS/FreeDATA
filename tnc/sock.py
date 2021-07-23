@@ -233,7 +233,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["type"] == 'GET' and received_json["command"] == 'HEARD_STATIONS':
                     output = []
                     for i in range(0, len(static.HEARD_STATIONS)):
-                        output.append({"COMMAND": "HEARD_STATIONS", "CALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
+                        output.append({"COMMAND": "HEARD_STATIONS", "DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
 
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
