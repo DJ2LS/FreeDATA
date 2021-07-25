@@ -17,7 +17,7 @@ import json
 import subprocess
 import os
 import static
-
+import psutil
 #PORT = 3001
 #TNCPROCESS = 0
 #TNCSTARTED = False
@@ -78,6 +78,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             try:
                 received_json = json.loads(data)
+                print(received_json)
 
             except:
                 received_json = ''
@@ -130,7 +131,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                 if received_json["type"] == 'GET' and received_json["command"] == 'DAEMON_STATE':
 
-                    data = {'COMMAND' : 'DAEMON_STATE', 'DAEMON_STATE' : [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': []}
+                    data = {'COMMAND' : 'DAEMON_STATE', 'DAEMON_STATE' : [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': [],"CPU": str(psutil.cpu_percent()),"RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
 
                     if static.TNCSTARTED:
                         data["DAEMON_STATE"].append({"STATUS": "running"})
