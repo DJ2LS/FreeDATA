@@ -42,21 +42,30 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
+            print(data)
             
             if len(data) > 0:
                 socketTimeout = time.time() + static.SOCKET_TIMEOUT
             
             # convert data to json object
             # we need to do some error handling in case of socket timeout
-            
+
             try:
                 received_json = json.loads(data)
                 #print(received_json)
-            except:
-                received_json = ''
-
-            
-
+            #except:
+            #    received_json = ''
+            #    print(data)
+            #except Exception as e:
+            #    #print("Wrong command: " + data)
+            #    #print(e)
+            #    exc_type, exc_obj, exc_tb = sys.exc_info()
+            #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+            #    print(exc_type, fname, exc_tb.tb_lineno)
+            except json.decoder.JSONDecodeError as e:
+                print(e)
+                print("#################################")
+                print(data)
             # GET COMMANDS
             # "command" : "..."
             
@@ -240,15 +249,17 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
-                print(static.HEARD_STATIONS)
+
                 if received_json["type"] == 'GET' and received_json["command"] == 'HEARD_STATIONS':
                     print("HEARD STATIONS COMMAND!")
-                    output = []
-                    for i in range(0, len(static.HEARD_STATIONS)):
-                        output.append({"COMMAND": "HEARD_STATIONS", "DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
 
-                    jsondata = json.loads(output)
+                    data = {"COMMAND": "HEARD_STATIONS", "STATIONS" : []}
+                    for i in range(0, len(static.HEARD_STATIONS)):
+                        data["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
+
+                    jsondata = json.dumps(data)
                     self.request.sendall(bytes(jsondata, encoding))
+
 
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
