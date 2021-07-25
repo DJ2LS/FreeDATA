@@ -122,7 +122,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // PTT STATE
     if (arg.ptt_state == 'True') {
         document.getElementById("ptt_state").className = "btn btn-danger";
-        console.log("PTT TRUE!!!")
 
     } else if (arg.ptt_state == 'False') {
         document.getElementById("ptt_state").className = "btn btn-success";
@@ -151,7 +150,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // RMS
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
-
+    
     // CHANNEL STATE
     if (arg.channel_state == 'RECEIVING_SIGNALLING') {
         document.getElementById("signalling_state").className = "btn btn-success";
@@ -188,6 +187,27 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
+
+
+    // RAM
+    document.getElementById("progressbar_ram").setAttribute("aria-valuenow", arg.ram_usage)
+    document.getElementById("progressbar_ram").setAttribute("style", "width:" + arg.ram_usage + "%;")
+    document.getElementById("progressbar_ram_value").innerHTML = arg.ram_usage + "%"
+
+    console.log("RAM: " + arg.ram_usage)
+
+
+    
+    // CPU
+    document.getElementById("progressbar_cpu").setAttribute("aria-valuenow", arg.cpu_usage)
+    document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
+    document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
+    console.log("CPU: " +arg.cpu_usage)
+    
+    // VERSION
+    document.getElementById("tncversion").innerHTML = arg.version
+    console.log("VERSION: " + arg.version)
+   
     // UPDATE AUDIO INPUT
 
     if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
@@ -258,6 +278,9 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
+ipcRenderer.on('action-update-heared-stations', (event, arg) => {
+console.log(arg)
+});
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'saveMyCall') {

@@ -52,7 +52,6 @@ writeDaemonCommand = function(command) {
     // if socket openend, we are able to run commands
     if (daemon.readyState == 'open') {
         //uiMain.setDAEMONconnection('open')	 
-        console.log(command)
         daemon.write(command + '\n');
     }
 
@@ -97,8 +96,10 @@ daemon.on('data', function(data) {
             let Data = {
                 input_devices: data['INPUT_DEVICES'],
                 output_devices: data['OUTPUT_DEVICES'],
-                tnc_running_state: data['DAEMON_STATE'][0]['STATUS']
-
+                tnc_running_state: data['DAEMON_STATE'][0]['STATUS'],
+                ram_usage: data['RAM'],
+                cpu_usage: data['CPU'],
+                version: data['VERSION'],
             };
             ipcRenderer.send('request-update-daemon-state', Data);
 
