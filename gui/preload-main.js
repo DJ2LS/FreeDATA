@@ -32,6 +32,14 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("tnc_port").value = config.tnc_port
     document.getElementById("myCall").value = config.mycall
     document.getElementById("myGrid").value = config.mygrid
+    document.getElementById('hamlib_deviceid').value = config.deviceid 
+    document.getElementById('hamlib_deviceport').value = config.deviceport
+    document.getElementById('hamlib_serialspeed').value = config.serialspeed
+    document.getElementById('hamlib_ptt').value = config.ptt
+
+
+
+
 
     // Create spectrum object on canvas with ID "waterfall"
     global.spectrum = new Spectrum(
@@ -93,6 +101,14 @@ window.addEventListener('DOMContentLoaded', () => {
         var deviceport = document.getElementById("hamlib_deviceport").value
         var serialspeed = document.getElementById("hamlib_serialspeed").value
         var ptt = document.getElementById("hamlib_ptt").value
+
+
+        config.deviceid = deviceid
+        config.deviceport = deviceport
+        config.serialspeed = serialspeed
+        config.ptt = ptt
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
 
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed)
         setTimeout(function() {
@@ -241,7 +257,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = false
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
-       document.getElementById("hamlib_serialspeed").disabled = false
+       document.getElementById("hamlib_serialspeed").disabled = true
 
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
@@ -255,7 +271,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = true
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
-       document.getElementById("hamlib_serialspeed").disabled = true
+       document.getElementById("hamlib_serialspeed").disabled = false
 
     }
 
@@ -276,9 +292,67 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
-ipcRenderer.on('action-update-heared-stations', (event, arg) => {
-console.log(arg)
+ipcRenderer.on('action-update-heard-stations', (event, arg) => {
+console.log(arg.stations)
+console.log(arg.stations[0]['DXGRID'])
+
+   var tbl = document.getElementById("heardstations");           
+document.getElementById("heardstations").innerHTML = ''     
+ 
+for (i = 0; i < arg.stations.length; i++) {
+
+            var row = document.createElement("tr");
+//https://stackoverflow.com/q/51421470 
+ 
+//https://stackoverflow.com/a/847196 
+ timestampRaw = arg.stations[i]['TIMESTAMP']
+ var date = new Date(timestampRaw * 1000);
+var hours = date.getHours();
+var minutes = "0" + date.getMinutes();
+var seconds = "0" + date.getSeconds();
+var datetime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+             var timestamp = document.createElement("td");
+ var timestampText = document.createElement('span');
+ timestampText.innerText = datetime
+  timestamp.appendChild(timestampText);
+
+var dxCall = document.createElement("td");
+ var dxCallText = document.createElement('span'); 
+ dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
+ dxCall.appendChild(dxCallText); 
+
+var dxGrid = document.createElement("td");
+ var dxGridText = document.createElement('span'); 
+ dxGridText.innerText = arg.stations[i]['DXGRID']
+ dxGrid.appendChild(dxGridText); 
+ 
+ 
+ var dataType = document.createElement("td");
+ var dataTypeText = document.createElement('span'); 
+ dataTypeText.innerText = arg.stations[i]['DATATYPE']
+ dataType.appendChild(dataTypeText); 
+ 
+ 
+   
+row.appendChild(timestamp);
+row.appendChild(dxCall);  
+row.appendChild(dxGrid);  
+row.appendChild(dataType);  
+
+tbl.appendChild(row);  
+        }
+
 });
+
+
+
+
+
+
+
+
+
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'saveMyCall') {

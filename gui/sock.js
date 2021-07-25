@@ -138,13 +138,11 @@ client.on('data', function(data) {
         }
 
         if (data['COMMAND'] == 'HEARD_STATIONS') {
+            //console.log(data['STATIONS'])
             let Data = {
-                dxcallsign: data['DXCALLSIGN'],
-                dxgrid: data['DXGRID'],
-                timestamp: data['TIMESTAMP'],
-                datatype: data['DATATYPE'],
+                stations: data['STATIONS'],
             };
-            console.log(Data)
+            //console.log(Data)
             ipcRenderer.send('request-update-heard-stations', Data);
         }
 
@@ -186,7 +184,7 @@ exports.getTncState = function() {
 //Get DATA State
 exports.getDataState = function() {
     command = '{"type" : "GET", "command" : "DATA_STATE"}';
-    writeTncCommand(command)
+    //writeTncCommand(command)
 }
 
 //Get Heard Stations
