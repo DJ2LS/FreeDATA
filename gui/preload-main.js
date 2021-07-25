@@ -91,9 +91,10 @@ window.addEventListener('DOMContentLoaded', () => {
         var tx_audio = document.getElementById("audio_output_selectbox").value
         var deviceid = document.getElementById("hamlib_deviceid").value
         var deviceport = document.getElementById("hamlib_deviceport").value
+        var serialspeed = document.getElementById("hamlib_serialspeed").value
         var ptt = document.getElementById("hamlib_ptt").value
 
-        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt)
+        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed)
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
         }, 5000);
@@ -193,20 +194,14 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_ram").setAttribute("aria-valuenow", arg.ram_usage)
     document.getElementById("progressbar_ram").setAttribute("style", "width:" + arg.ram_usage + "%;")
     document.getElementById("progressbar_ram_value").innerHTML = arg.ram_usage + "%"
-
-    console.log("RAM: " + arg.ram_usage)
-
-
     
     // CPU
     document.getElementById("progressbar_cpu").setAttribute("aria-valuenow", arg.cpu_usage)
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
-    console.log("CPU: " +arg.cpu_usage)
     
     // VERSION
     document.getElementById("tncversion").innerHTML = arg.version
-    console.log("VERSION: " + arg.version)
    
     // UPDATE AUDIO INPUT
 
@@ -246,6 +241,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = false
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
+       document.getElementById("hamlib_serialspeed").disabled = false
 
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
@@ -259,6 +255,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = true
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
+       document.getElementById("hamlib_serialspeed").disabled = true
+
     }
 
 });

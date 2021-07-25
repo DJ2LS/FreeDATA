@@ -131,7 +131,7 @@ exports.getDaemonState = function() {
 // ` `== multi line string
 
 
-exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, ptt) {
+exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed) {
     var json_command = JSON.stringify({
         type: 'SET',
         command: 'STARTTNC',
@@ -140,7 +140,9 @@ exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, ptt) {
             tx_audio: tx_audio,
             deviceid: deviceid,
             deviceport: deviceport,
-            ptt: ptt
+            ptt: ptt,
+            serialspeed: serialspeed
+
             }]
     })
 

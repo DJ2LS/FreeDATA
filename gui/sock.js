@@ -115,7 +115,7 @@ client.on('data', function(data) {
                 frequency: data['FREQUENCY'],
                 mode: data['MODE'],
                 bandwith: data['BANDWITH'],
-                rms_level: (data['AUDIO_RMS'] / 1000) * 100
+                rms_level: (data['AUDIO_RMS'] / 1000) * 100,
             };
             console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
@@ -179,22 +179,22 @@ exports.saveMyGrid = function(grid) {
 
 //Get TNC State
 exports.getTncState = function() {
-    command = '{"type" : "GET", "command": "TNC_STATE"}';
+    command = '{"type" : "GET", "command" : "TNC_STATE"}';
     writeTncCommand(command)
 }
 
 //Get DATA State
 exports.getDataState = function() {
-    command = '{"type" : "GET", "command": "DATA_STATE"}';
+    command = '{"type" : "GET", "command" : "DATA_STATE"}';
     writeTncCommand(command)
 }
 
 //Get Heard Stations
 exports.getHeardStations = function() {
-    command = '{"type" : "GET", "command": "HEARD_STATIONS"}';
+    command = '{"type" : "GET", "command" : "HEARD_STATIONS"}';
     writeTncCommand(command)
 }
-
+ 
 
 // Send Ping
 exports.sendPing = function(dxcallsign) {

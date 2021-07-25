@@ -102,7 +102,7 @@ ipcMain.on('request-update-data-state', (event, arg) => {
 });
 
 ipcMain.on('request-update-heard-stations', (event, arg) => {
-    //win.webContents.send('action-update-heard-stations', arg);
+    win.webContents.send('action-update-heard-stations', arg);
 });
 
 ipcMain.on('request-update-daemon-state', (event, arg) => {
