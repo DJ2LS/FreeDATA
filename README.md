@@ -11,6 +11,7 @@ npm install electron --save
 npm i
 sudo apt install python3
 
+pip3 install psutil
 
 ## GUI Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
