@@ -112,11 +112,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     tx_audio = received_json["parameter"][0]["tx_audio"]
                     deviceid = received_json["parameter"][0]["deviceid"]
                     deviceport = received_json["parameter"][0]["deviceport"]
+                    serialspeed = received_json["parameter"][0]["serialspeed"]
                     ptt = received_json["parameter"][0]["ptt"]
                     print("STARTING TNC !!!!!")
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
-                    p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --ptt "+ str(ptt), shell=True)
+                    p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     static.TNCPROCESS = p#.pid
                     #print(parameter)
                     # print(static.TNCPROCESS)

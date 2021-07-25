@@ -86,7 +86,7 @@ class RF():
             self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
 
             self.my_rig.set_conf("retry", "5")
-            self.my_rig.set_conf("serial_speed", "9600")
+            self.my_rig.set_conf("serial_speed", static.HAMLIB_SERIAL_SPEED)
 
         #self.my_rig.set_conf("dtr_state", "OFF")
         #my_rig.set_conf("rts_state", "OFF")

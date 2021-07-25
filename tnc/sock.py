@@ -17,6 +17,7 @@ import static
 import data_handler
 import helpers
 
+import sys, os
 
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
@@ -50,7 +51,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             try:
                 received_json = json.loads(data)
-                print(received_json)
+                #print(received_json)
             except:
                 received_json = ''
 
@@ -73,10 +74,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             try:
                 # SOCKETTEST ---------------------------------------------------
                 #if data == 'SOCKETTEST':
-                if received_json["command"] == "SOCKETTEST":
-                    #cur_thread = threading.current_thread()
-                    response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
-                    self.request.sendall(response)
+                #if received_json["command"] == "SOCKETTEST":
+                #    #cur_thread = threading.current_thread()
+                #    response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
+                #    self.request.sendall(response)
 
                 # CQ CQ CQ -----------------------------------------------------
                 #if data == 'CQCQCQ':
@@ -198,11 +199,20 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "FREQUENCY" : str(static.HAMLIB_FREQUENCY),
                         "MODE" : str(static.HAMLIB_MODE),
                         "BANDWITH" : str(static.HAMLIB_BANDWITH),
-                        "FFT" : str(static.FFT)
+                        "FFT" : str(static.FFT),
+                        #"RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
+                        #"TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
+                        #"ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
+                        #"ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
+                        #"ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
+                        #"ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
+                        #"ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
+                        #"ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
+                        #"ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
                     }
                     
                     jsondata = json.dumps(output)
-                    print(len(jsondata))
+                    #print(len(jsondata))
                     self.request.sendall(bytes(jsondata, encoding))
                 
                 if received_json["type"] == 'GET' and received_json["command"] == 'FFT':
@@ -230,12 +240,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
+                print(static.HEARD_STATIONS)
                 if received_json["type"] == 'GET' and received_json["command"] == 'HEARD_STATIONS':
+                    print("HEARD STATIONS COMMAND!")
                     output = []
                     for i in range(0, len(static.HEARD_STATIONS)):
                         output.append({"COMMAND": "HEARD_STATIONS", "DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3]})
 
-                    jsondata = json.dumps(output)
+                    jsondata = json.loads(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
 
@@ -253,8 +265,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.RX_BUFFER = []
             
             #exception, if JSON cant be decoded
-            except:
-                print("Wrong command")        
+            except Exception as e:
+                #print("Wrong command: " + data)
+                #print(e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)                        
         print("Client disconnected...")
 
 def start_cmd_socket():
