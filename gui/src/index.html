@@ -9,6 +9,34 @@
         <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
         <!-- Waterfall CSS -->
         <link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
+        <style>
+        
+        /**  
+        * disable scrolling in main window
+       */ 
+        
+        body { 
+  padding-right: 0px !important;
+  overflow-y: hidden !important;
+}
+
+/**
+ * Progress bars with centered text
+ */
+
+.progress {
+    position: relative;
+}
+
+.progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: black;
+ }
+
+
+        </style>
         <title>codec2 | FreeDATA</title>
     </head>
     <body>
@@ -65,7 +93,9 @@
                                 </select>
                             </div>
                             <div class="progress" style="height: 20px;" >
-                                <div class="progress-bar progress-bar-striped bg-primary" id="rms_level" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">RX AUDIO LEVEL</div>
+                                <div class="progress-bar progress-bar-striped bg-primary" id="rms_level" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                 <p class="justify-content-center d-flex position-absolute w-100">RX AUDIO LEVEL</p>
+
                             </div>
                         </div>
                         <div class="card-footer text-muted small">
@@ -383,11 +413,60 @@
                     <div class="card text-dark bg-light mb-2" >
                         <div class="card-header">3. TNC</div>
                         <div class="card-body">
-                            <div class="input-group input-group-sm">
+                           <!--
+                            <div class="input-group input-group-sm mb-2">
                                 <button type="button" id="startTNC"class="btn btn-success">Start</button>
                                 <span class="input-group-text" id="tnc_running_state">---</span>
                                 <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
                             </div>
+-->
+
+                            <div class="container"> 
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        -->
+                                    </div>
+                                    <div class="col">
+                                        <div class="input-group input-group-sm mb-2">
+                                            <button type="button" id="startTNC"class="btn btn-success">Start</button>
+                                            <span class="input-group-text" id="tnc_running_state">---</span>
+                                            <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
+                                        </div>   
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        CPU
+                                    </div>
+                                <div class="col">
+                                    <div class="progress" style="height: 20px;" >
+                                        <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_cpu" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_cpu_value"></p>
+                                    </div>    
+                                </div>
+                             </div>
+                            <div class="row">
+                                <div class="col-md-auto">
+                                    RAM
+                                </div>
+                            <div class="col">     
+                                <div class="progress" style="height: 20px;" >
+                                    <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_ram" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                   <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_ram_value"></p>
+
+                                </div>    
+                            </div>
+                        </div> 
+                        <div class="row">
+                            <div class="col-md-auto">
+                                Version
+                            </div>
+                        <div class="col-md-auto">    
+                              <p class="text-start mb-0" id="tncversion"></p>   
+                         </div>
+                     </div>
+                </div>
+                 
                         </div>
                         <div class="card-footer text-muted small">
                             TNC settings
@@ -396,6 +475,7 @@
                 </div>
             </div>
         </div>
+        <hr>
         <div class="container mt-2">
             <div class="row">
                 <div class="col">
@@ -458,19 +538,83 @@
                     </div>
                 </div>
             </div>
+
+
+            <div class="row">
+                <div class="col">
+                    <div class="card text-dark bg-light mb-1" style="height: 360px">
+                        <div class="card-header"> SPECTRUM</div>
+                        <!--<div class="card-body">-->
+                            <canvas id="waterfall"></canvas>
+                       <!-- </div>-->
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card text-dark bg-light mb-1" style="height: 360px">
+                        <div class="card-header">HEARED STATIONS</div>
+                        <div class="card-body">
+                        
+                        <!-- START OF TABLE FOR HEARD STATIONS -->
+                        
+                        <table class="table">
+  <thead>
+    <tr>
+      <th scope="col">Timestamp</th>
+      <th scope="col">DXCall</th>
+      <th scope="col">DXGrid</th>
+      <th scope="col">Type</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">1</th>
+      <td>Mark</td>
+      <td>Otto</td>
+      <td>@mdo</td>
+    </tr>
+    <tr>
+      <th scope="row">2</th>
+      <td>Jacob</td>
+      <td>Thornton</td>
+      <td>@fat</td>
+    </tr>
+    <tr>
+      <th scope="row">3</th>
+      <td colspan="2">Larry the Bird</td>
+      <td>@twitter</td>
+    </tr>
+  </tbody>
+</table>
+                        
+                         <!-- END OF HEARD STATIONS TABLE -->  
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+
+
+
+
         </div>
+        
+        <!--
         <div class="container mt-2">
             <div class="row">
                 <div class="col-md-autio">
                     <div class="card text-dark bg-light mb-3">
                         <div class="card-header">Spectrum</div>
-                        <!--<div class="card-body">-->
                         <canvas id="waterfall"></canvas>
-                        <!--</div>-->
                     </div>
                 </div>
             </div>
         </div>
+        
+        
+        -->
         </div>
         <!--
             <div class="container-fluid">
