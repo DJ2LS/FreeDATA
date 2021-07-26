@@ -12,7 +12,7 @@ const fs = require('fs');
 setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 250)
 setInterval(sock.getDataState, 500)
-setInterval(sock.getHeardStations, 500)
+setInterval(sock.getHeardStations, 1000)
 
 
 // UPDATE FFT DEMO 
@@ -254,6 +254,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('stopTNC').disabled = false
         document.getElementById('startTNC').disabled = true
         document.getElementById('myCall').disabled = false
+        document.getElementById('dxCall').disabled = false
         document.getElementById('saveMyCall').disabled = false
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
@@ -268,6 +269,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('stopTNC').disabled = true
         document.getElementById('startTNC').disabled = false
         document.getElementById('myCall').disabled = true
+        document.getElementById('dxCall').disabled = true
         document.getElementById('saveMyCall').disabled = true
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
@@ -364,4 +366,11 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'ping') {
         sock.sendPing(arg.dxcallsign)
     }
+    
+     if (arg.command == 'sendFile') {
+        sock.sendFile(arg.dxcallsign, arg.mode, arg.frames, arg.filename, arg.filetype, arg.data, arg.checksum)
+    }
+     if (arg.command == 'sendMessage') {
+        sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum)
+    }    
 });

@@ -20,10 +20,24 @@ window.addEventListener('DOMContentLoaded', () => {
         };
         ipcRenderer.send('run-tnc-command', Data);
     })
+    
+    
 
 
     document.getElementById("startTransmission").addEventListener("click", () => {
-        alert("HALLO ")
+        let Data = {
+            command: "sendFile",
+            dxcallsign: document.getElementById("dxCall").value,
+            mode: document.getElementById("datamode").value,
+            frames: document.getElementById("framesperburst").value,
+            filetype: 'txt',
+            filename: 'testfile',
+            data: '1234567',
+            crc: '123123123',
+        };
+        ipcRenderer.send('run-tnc-command', Data);
+        
+        
     })
 
 })
