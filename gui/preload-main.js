@@ -295,13 +295,26 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 });
 
 ipcRenderer.on('action-update-heard-stations', (event, arg) => {
-console.log(arg.stations)
-console.log(arg.stations[0]['DXGRID'])
+//console.log(arg.stations)
+//console.log(arg.stations[0]['DXGRID'])
 
    var tbl = document.getElementById("heardstations");           
 document.getElementById("heardstations").innerHTML = ''     
  
 for (i = 0; i < arg.stations.length; i++) {
+
+
+// first we update the PING window
+console.log(document.getElementById("dxCall").value)
+if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value){
+document.getElementById("pingDistance") = arg.stations[i]['DXGRID']
+document.getElementById("pingDB") = arg.stations[i]['SNR']
+
+}
+
+
+
+// now we update the heard stations list
 
             var row = document.createElement("tr");
 //https://stackoverflow.com/q/51421470 
