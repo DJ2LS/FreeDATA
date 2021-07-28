@@ -660,7 +660,7 @@ def received_ping(data_in):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING')
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR)
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame = bytearray(14)

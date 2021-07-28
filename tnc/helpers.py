@@ -149,20 +149,20 @@ def calculate_transfer_rate():
 
                 
 
-def add_to_heard_stations(dxcallsign,dxgrid, datatype):
+def add_to_heard_stations(dxcallsign,dxgrid, datatype, snr):
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append([dxcallsign,dxgrid, int(time.time()), datatype])
+        static.HEARD_STATIONS.append([dxcallsign,dxgrid, int(time.time()), datatype, snr])
     # if not, we search and update
     else:
         for i in range(0, len(static.HEARD_STATIONS)):
             # update callsign with new timestamp
             if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [dxcallsign,dxgrid, int(time.time()), datatype]
+                static.HEARD_STATIONS[i] = [dxcallsign,dxgrid, int(time.time()), datatype, snr]
                 break
             # insert if nothing found
             if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append([dxcallsign,dxgrid, int(time.time()), datatype])
+                static.HEARD_STATIONS.append([dxcallsign,dxgrid, int(time.time()), datatype, snr])
                 break
                 
                 

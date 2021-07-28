@@ -137,7 +137,6 @@ class RF():
         if state:
             static.PTT_STATE = True
             self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-
             ptt_togle_timeout = time.time() + 0.1
             while time.time() < ptt_togle_timeout:
                 pass
@@ -228,8 +227,13 @@ class RF():
             static.CHANNEL_STATE = 'SENDING_SIGNALLING'
 
         self.ptt_and_wait(False)                
-        static.CHANNEL_STATE = state_before_transmit
-
+        ## we have a problem with the receiving state
+        ##static.CHANNEL_STATE = state_before_transmit
+        if state_before_transmit != 'RECEIVING_DATA':
+            static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+        else:
+            static.CHANNEL_STATE = state_before_transmit
+            
         self.c_lib.freedv_close(freedv)
 
 # --------------------------------------------------------------------------------------------------------
