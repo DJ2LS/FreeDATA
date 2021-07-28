@@ -307,8 +307,8 @@ for (i = 0; i < arg.stations.length; i++) {
 // first we update the PING window
 console.log(document.getElementById("dxCall").value)
 if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value){
-document.getElementById("pingDistance") = arg.stations[i]['DXGRID']
-document.getElementById("pingDB") = arg.stations[i]['SNR']
+document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
 
 }
 

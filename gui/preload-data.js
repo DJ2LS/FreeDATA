@@ -33,7 +33,7 @@ window.addEventListener('DOMContentLoaded', () => {
             filetype: 'txt',
             filename: 'testfile',
             data: '1234567',
-            crc: '123123123',
+            checksum: '123123123',
         };
         ipcRenderer.send('run-tnc-command', Data);
         
