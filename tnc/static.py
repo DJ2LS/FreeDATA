@@ -80,6 +80,7 @@ FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = 0
 
 BER = 0
 SNR = 0
+SCATTER = []
 # ---------------------------------
 
 # Audio Defaults
@@ -95,6 +96,7 @@ AUDIO_FRAMES_PER_BUFFER = 8192  # 256 # 512 # 1024 #2048   --> nicht 880        
 AUDIO_CHANNELS = 1
 AUDIO_RMS = 0
 FFT = []
+
 # ---------------------------------
 
 # ARQ DEFAULTS

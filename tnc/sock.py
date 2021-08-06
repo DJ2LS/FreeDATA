@@ -199,13 +199,15 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "COMMAND": "STATION_INFO",
                         "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
                         "DX_CALLSIGN": str(static.DXCALLSIGN, encoding),
-                        "DX_GRID": str(static.DXGRID, encoding)  
+                        "DX_GRID": str(static.DXGRID, encoding),
+                        "EOF" : "EOF",  
                     }
                     
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
+                    print(static.SCATTER)
                     output = {
                         "COMMAND": "TNC_STATE",
                         "PTT_STATE": str(static.PTT_STATE),
@@ -219,6 +221,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "MODE" : str(static.HAMLIB_MODE),
                         "BANDWITH" : str(static.HAMLIB_BANDWITH),
                         "FFT" : str(static.FFT),
+                        "SCATTER" : static.SCATTER,
                         #"RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
                         #"TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
                         #"ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
@@ -228,7 +231,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         #"ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                         #"ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
                         #"ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
-                    }
+                        "EOF" : "EOF",
+                    }  
+                    
                     
                     jsondata = json.dumps(output)
                     #print(len(jsondata))
@@ -242,6 +247,17 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
                 
+                #if received_json["type"] == 'GET' and received_json["command"] == 'SCATTER':
+#
+#                    print(static.SCATTER)
+#                    output = {
+#                        "COMMAND" : "SCATTER",
+#                        "DATA" : static.SCATTER
+#                    }
+#                   print(output)
+#                   jsondata = json.dumps(output)
+#                   self.request.sendall(bytes(jsondata, encoding))   
+                                 
                 if received_json["type"] == 'GET' and received_json["command"] == 'DATA_STATE':
                     output = {
                         "COMMAND": "DATA_STATE",
@@ -253,7 +269,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
                         "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                         "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
-                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
+                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME),
+                        "EOF" : "EOF",
                     }
                     
                     jsondata = json.dumps(output)
@@ -267,6 +284,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     for i in range(0, len(static.HEARD_STATIONS)):
                         data["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
                     # print(static.HEARD_STATIONS[i][1])
+                    
+                    
+                    #data.append({"EOF" : "EOF"})
                     jsondata = json.dumps(data)
                     self.request.sendall(bytes(jsondata, encoding))
 

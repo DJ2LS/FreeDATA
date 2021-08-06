@@ -682,7 +682,7 @@ def received_ping_ack(data_in):
     static.DXGRID = bytes(data_in[3:9]).rstrip(b'\x00')
     
     
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK')
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR)
     
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]["+ str(static.DXGRID, 'utf-8') +"] [SNR:" + str(static.SNR) + "]")
     static.TNC_STATE = 'IDLE'
@@ -723,7 +723,7 @@ def received_cq(data_in):
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     
     logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
-    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ')
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR)
 
 
 
@@ -748,4 +748,4 @@ def received_beacon():
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     
     logging.info("BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
-    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON')
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR)

@@ -31,6 +31,32 @@ import numpy as np
 from scipy.fft import fft, ifft
 from scipy import signal
 
+
+
+
+MODEM_STATS_NR_MAX = 320
+MODEM_STATS_NC_MAX = 51
+
+class MODEMSTATS(ctypes.Structure):
+            _fields_ = [
+                ("Nc", ctypes.c_int),
+                ("snr_est", ctypes.c_float),
+                ("rx_symbols", (ctypes.c_float * MODEM_STATS_NR_MAX)*MODEM_STATS_NC_MAX),
+                ("nr", ctypes.c_int),
+                ("sync", ctypes.c_int),
+                ("foff", ctypes.c_float),
+                ("rx_timing", ctypes.c_float),
+                ("clock_offset", ctypes.c_float),                
+                ("sync_metric", ctypes.c_float),
+                ("pre", ctypes.c_int),                
+                ("post", ctypes.c_int),
+                ("uw_fails", ctypes.c_int),
+
+            ]
+
+
+
+
 class RF():
 
     def __init__(self):       
@@ -437,13 +463,18 @@ class RF():
                 #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
                 self.calculate_snr(freedv)
+                self.get_scatter(freedv)
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
+
+        
+
+
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
-
+                    static.SCATTER = []
 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -553,7 +584,40 @@ class RF():
                     # for debugging purposes to receive all data
                     pass
                     # print(bytes_out[:-2])
+    def get_scatter(self, freedv):
+        modemStats = MODEMSTATS()
+        self.c_lib.freedv_get_modem_extended_stats.restype = None
+        #c_lib.freedv_get_modem_extended_stats.argtypes = c_void_p, [MODEMSTATS]
+        #c_lib.freedv_get_modem_extended_stats(freedv, modemStats)
+        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        print("Nc: " + str(modemStats.Nc))
+        #print("snr_est: " + str(modemStats.snr_est))
+        print("nr: " + str(modemStats.nr))
+        #data = []
+#MODEM_STATS_NR_MAX = 320
+#MODEM_STATS_NC_MAX = 51
+        
+        scatterdata = []
+        for i in range(MODEM_STATS_NC_MAX):
+            for j in range(MODEM_STATS_NR_MAX):
 
+                #xsymbols = modemStats.rx_symbols[i][j]
+                #xsymbols = modemStats.rx_symbols[i][::2]
+                #ysymbols = modemStats.rx_symbols[i][j+1]
+                
+                #check if odd or not to get every 2nd item for x
+                if (j % 2) == 0: 
+                    xsymbols = modemStats.rx_symbols[i][j]
+                    ysymbols = modemStats.rx_symbols[i][j+1]   
+                     
+                    if xsymbols != 0.0 and ysymbols != 0.0:
+                        scatterdata.append({"x" : xsymbols, "y" : ysymbols })
+        
+        # only append scatter data if new data arrived 
+        if scatterdata != static.SCATTER:
+            static.SCATTER = scatterdata
+            
+        
     def calculate_ber(self, freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
@@ -593,11 +657,11 @@ class RF():
                 #static.FFT = fft_raw.tolist()
         #fft_raw = fft_raw.tobytes()
         
-        rate = 48000
-        M = 1024
-        freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, window='hanning', nperseg=1024, noverlap=M - 100, detrend=False, scaling='spectrum', return_onesided=True) 
+        #rate = 48000
+        #M = 1024
+        #freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, window='hanning', nperseg=1024, noverlap=M - 100, detrend=False, scaling='spectrum', return_onesided=True) 
         
-        freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, return_onesided=True, axis=-1) 
+        #freqs, times, Sx = signal.spectrogram(data_in_array, fs=rate, return_onesided=True, axis=-1) 
         
         
         
@@ -608,8 +672,8 @@ class RF():
         #print(fft_raw)
         #static.FFT = fft_raw.hex()
         #static.FFT = fft_raw
-        data_in = np.frombuffer(data_in, dtype=np.int16)
-        data = fft(data_in)
+        #data_in = np.frombuffer(data_in, dtype=np.int16)
+        #data = fft(data_in)
         #print(data)
         #data = getFFT(data_in, 48000, 2048)
         #print(data)
@@ -620,13 +684,13 @@ class RF():
 
         
         #data = np.frombuffer(data_in, dtype=np.int16)
-        data.resize((1,2048))
+        #data.resize((1,2048))
         #data = np.delete(data,0)
         
         
         #data = data.tobytes()
         #print(data)
-        static.FFT = data.tolist()
+        #static.FFT = data.tolist()
         #static.FFT = data.hex()
         
 def getFFT(data, rate, chunk_size, log_scale=False):
