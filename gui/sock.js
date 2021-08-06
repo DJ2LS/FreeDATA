@@ -92,9 +92,9 @@ client.on('data', function(data) {
 
     data = data.toString('utf8'); // convert data to string
     msg += data.toString('utf8'); // append data to buffer so we can stick long data together
-
+    //console.log(data)
     // check if we reached an EOF, if true, clear buffer and parse JSON data
-    if (data.endsWith('}')) {
+    if (data.endsWith('"EOF": "EOF"}')) {
         //console.log(msg)
         try {
             //console.log(msg)
@@ -116,6 +116,7 @@ client.on('data', function(data) {
                 mode: data['MODE'],
                 bandwith: data['BANDWITH'],
                 rms_level: (data['AUDIO_RMS'] / 1000) * 100,
+                scatter: data['SCATTER'],
             };
             console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
@@ -146,7 +147,14 @@ client.on('data', function(data) {
             ipcRenderer.send('request-update-heard-stations', Data);
         }
 
-
+        if (data['COMMAND'] == 'SCATTER') {
+            console.log(data['SCATTER'])
+            let Data = {
+                stations: data['STATIONS'],
+            };
+            //console.log(Data)
+            //ipcRenderer.send('request-update-heard-stations', Data);
+        }
         // check if EOF	...
     }
 
@@ -159,8 +167,6 @@ function hexToBytes(hex) {
         bytes.push(parseInt(hex.substr(c, 2), 16));
     return bytes;
 }
-
-
 
 
 //Save myCall 

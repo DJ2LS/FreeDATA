@@ -16,7 +16,7 @@ setInterval(sock.getHeardStations, 1000)
 
 
 // UPDATE FFT DEMO 
-
+/*
 updateFFT = function(fft) {
     var fft = Array.from({
         length: 2048
@@ -24,6 +24,8 @@ updateFFT = function(fft) {
     spectrum.addData(fft);
 }
 setInterval(updateFFT, 250)
+*/
+
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
@@ -40,12 +42,58 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-
+/*
     // Create spectrum object on canvas with ID "waterfall"
     global.spectrum = new Spectrum(
         "waterfall", {
             spectrumPercent: 20
         });
+*/
+
+// SETUP OF SCATTER DIAGRAM
+
+var data = {
+  datasets: [{
+    label: 'Scatter Dataset',
+    data: [{
+      x: 0,
+      y: 0
+    }],
+    backgroundColor: 'rgb(255, 99, 132)'
+  }],
+};
+
+
+var ctx = document.getElementById('myChart').getContext('2d');
+global.myChart = new Chart(ctx, {
+    type: 'scatter',
+  data: data,
+  options: {
+            animation: false,
+            legend: {
+            display: false
+         },
+
+    scales: {
+        display: false,
+        grid: {
+            display: false   
+        },
+      x: {
+        type: 'linear',
+        position: 'bottom',
+        display: false
+      },
+      y: {
+        display: false
+      }
+ 
+    }
+  }
+  });
+
+
+
 
 
     // on change port and host
@@ -135,6 +183,52 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
+
+
+// SCATTER DIAGRAM PLOTTING
+global.myChart.destroy();
+
+var data = arg.scatter
+var data = {
+  datasets: [{
+    //label: false,
+    data: data,
+    backgroundColor: 'rgb(255, 99, 132)'
+  }],
+};
+
+
+var ctx = document.getElementById('myChart').getContext('2d');
+global.myChart = new Chart(ctx, {
+    type: 'scatter',
+  data: data,
+  options: {
+            animation: false,
+            legend: {
+            display: false,
+            tooltips: {
+      enabled: false,
+    },
+         },
+
+    scales: {
+        display: false,
+        grid: {
+            display: false   
+        },
+      x: {
+        type: 'linear',
+        position: 'bottom',
+        display: false
+      },
+      y: {
+        display: false
+      }
+ 
+    }
+  },
+ 
+  });
 
     // PTT STATE
     if (arg.ptt_state == 'True') {
