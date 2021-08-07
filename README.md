@@ -11,7 +11,7 @@ wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-
 chmod +x install-codec2-FreeDATA.sh
 ./install-codec2-FreeDATA.sh
 sudo apt install npm
-npm install electron --save
+cd gui
 npm i
 sudo apt install python3
 pip3 install psutil
