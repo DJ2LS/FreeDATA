@@ -237,7 +237,9 @@ class RF():
         
         converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
-                       
+        print(len(self.streambuffer))
+        self.streambuffer += bytes(converted_audio[0])
+        print(len(self.streambuffer))                       
         # -------------- transmit audio
         #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
