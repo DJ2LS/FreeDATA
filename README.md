@@ -7,7 +7,7 @@ The project is still a prototype and not usable at this time.
 
 ## Installation Ubuntu
 ```
-wget https://github.com/DJ2LS/codec2-FreeDATA/blob/main/tools/install-codec2-FreeDATA.sh
+wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
 chmod +x install-codec2-FreeDATA.sh
 ./install-codec2-FreeDATA.sh
 sudo apt install npm
