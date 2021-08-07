@@ -473,11 +473,12 @@ class RF():
 
         
 
-
+                # lets get scatter data
+                self.get_scatter(freedv)
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
-                    static.SCATTER = []
+                    #static.SCATTER = []
 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -592,6 +593,7 @@ class RF():
         self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         
+
         scatterdata = []
         for i in range(MODEM_STATS_NC_MAX):
             for j in range(MODEM_STATS_NR_MAX):    
@@ -604,9 +606,8 @@ class RF():
                         scatterdata.append({"x" : xsymbols, "y" : ysymbols })
         
         # only append scatter data if new data arrived
-        if scatterdata != static.SCATTER:
-            static.SCATTER = scatterdata
-            
+        if len(scatterdata) > 0:
+            static.SCATTER = scatterdata   
         
     def calculate_ber(self, freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
