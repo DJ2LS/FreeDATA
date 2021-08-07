@@ -92,7 +92,7 @@ client.on('data', function(data) {
 
     data = data.toString('utf8'); // convert data to string
     msg += data.toString('utf8'); // append data to buffer so we can stick long data together
-    //console.log(data)
+    console.log(data)
     // check if we reached an EOF, if true, clear buffer and parse JSON data
     if (data.endsWith('"EOF": "EOF"}')) {
         //console.log(msg)
@@ -117,11 +117,21 @@ client.on('data', function(data) {
                 bandwith: data['BANDWITH'],
                 rms_level: (data['AUDIO_RMS'] / 1000) * 100,
                 scatter: data['SCATTER'],
+                rx_buffer_length: data['RX_BUFFER_LENGTH'],
+                tx_n_max_retries: data['TX_N_MAX_RETRIES'],
+                arq_tx_n_frames_per_burst: data['ARQ_TX_N_FRAMES_PER_BURST'],
+                arq_tx_n_bursts: data['ARQ_TX_N_BURSTS'],
+                arq_tx_n_current_arq_frame: data['ARQ_TX_N_CURRENT_ARQ_FRAME'],
+                arq_tx_n_total_arq_frames: data['ARQ_TX_N_TOTAL_ARQ_FRAMES'],
+                arq_rx_frame_n_bursts: data['ARQ_RX_FRAME_N_BURSTS'],
+                arq_rx_n_current_arq_frame: data['ARQ_RX_N_CURRENT_ARQ_FRAME'],
+                arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
+                stations: data['STATIONS'],
             };
             console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
         }
-
+/*
         if (data['COMMAND'] == 'DATA_STATE') {
             let Data = {
                 rx_buffer_length: data['RX_BUFFER_LENGTH'],
@@ -137,7 +147,8 @@ client.on('data', function(data) {
             console.log(Data)
             ipcRenderer.send('request-update-data-state', Data);
         }
-
+*/
+/*
         if (data['COMMAND'] == 'HEARD_STATIONS') {
             //console.log(data['STATIONS'])
             let Data = {
@@ -146,7 +157,9 @@ client.on('data', function(data) {
             //console.log(Data)
             ipcRenderer.send('request-update-heard-stations', Data);
         }
+*/
 
+/*
         if (data['COMMAND'] == 'SCATTER') {
             console.log(data['SCATTER'])
             let Data = {
@@ -154,7 +167,11 @@ client.on('data', function(data) {
             };
             //console.log(Data)
             //ipcRenderer.send('request-update-heard-stations', Data);
+
+
         }
+*/
+
         // check if EOF	...
     }
 

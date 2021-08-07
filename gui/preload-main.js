@@ -11,8 +11,8 @@ const fs = require('fs');
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 250)
-setInterval(sock.getDataState, 500)
-setInterval(sock.getHeardStations, 1000)
+//setInterval(sock.getDataState, 500)
+//setInterval(sock.getHeardStations, 1000)
 
 
 // UPDATE FFT DEMO 
