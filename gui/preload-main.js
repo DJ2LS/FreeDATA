@@ -34,70 +34,99 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("tnc_port").value = config.tnc_port
     document.getElementById("myCall").value = config.mycall
     document.getElementById("myGrid").value = config.mygrid
-    document.getElementById('hamlib_deviceid').value = config.deviceid 
+    document.getElementById('hamlib_deviceid').value = config.deviceid
     document.getElementById('hamlib_deviceport').value = config.deviceport
     document.getElementById('hamlib_serialspeed').value = config.serialspeed
     document.getElementById('hamlib_ptt').value = config.ptt
 
+    if (config.spectrum == 'waterfall') {
+        document.getElementById("waterfall-scatter-switch1").checked = true
+        document.getElementById("waterfall-scatter-switch2").checked = false
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.visibility = 'visible';
+        document.getElementById("waterfall").style.height = '350px';
+    } else {
+
+        document.getElementById("waterfall-scatter-switch1").checked = false
+        document.getElementById("waterfall-scatter-switch2").checked = true
+        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+    }
 
 
 
-/*
-    // Create spectrum object on canvas with ID "waterfall"
-    global.spectrum = new Spectrum(
-        "waterfall", {
-            spectrumPercent: 20
-        });
-*/
 
-// SETUP OF SCATTER DIAGRAM
+    /*
+        // Create spectrum object on canvas with ID "waterfall"
+        global.spectrum = new Spectrum(
+            "waterfall", {
+                spectrumPercent: 20
+            });
+    */
 
-var data = {
-  datasets: [{
-    label: 'Scatter Dataset',
-    data: [{
-      x: 0,
-      y: 0
-    }],
-    backgroundColor: 'rgb(255, 99, 132)'
-  }],
-};
+    // SETUP OF SCATTER DIAGRAM
+
+    var data = {
+        datasets: [{
+            label: 'Scatter Dataset',
+            data: [{
+                x: 0,
+                y: 0
+            }],
+            backgroundColor: 'rgb(255, 99, 132)'
+        }],
+    };
 
 
-var ctx = document.getElementById('myChart').getContext('2d');
-global.myChart = new Chart(ctx, {
-    type: 'scatter',
-  data: data,
-  options: {
+    var ctx = document.getElementById('scatter').getContext('2d');
+    global.myChart = new Chart(ctx, {
+        type: 'scatter',
+        data: data,
+        options: {
             animation: false,
             legend: {
-            display: false
-         },
+                display: false
+            },
 
-    scales: {
-        display: false,
-        grid: {
-            display: false   
-        },
-      x: {
-        type: 'linear',
-        position: 'bottom',
-        display: false
-      },
-      y: {
-        display: false
-      }
- 
-    }
-  }
-  });
+            scales: {
+                display: false,
+                grid: {
+                    display: false
+                },
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    display: false
+                },
+                y: {
+                    display: false
+                }
 
+            }
+        }
+    });
 
-
+    // on click waterfall scatter toggle view
+    // waterfall
+    document.getElementById("waterfall-scatter-switch1").addEventListener("click", () => {
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.visibility = 'visible';
+        document.getElementById("waterfall").style.height = '350px';
+        config.spectrum = 'waterfall'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+    // scatter
+    document.getElementById("waterfall-scatter-switch2").addEventListener("click", () => {
+        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+        config.spectrum = 'scatter'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
 
     // on change port and host
-
     document.getElementById("tnc_adress").addEventListener("change", () => {
         console.log(document.getElementById("tnc_adress").value)
         config.tnc_host = document.getElementById("tnc_adress").value
@@ -185,50 +214,50 @@ global.myChart = new Chart(ctx, {
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
-// SCATTER DIAGRAM PLOTTING
-global.myChart.destroy();
+    // SCATTER DIAGRAM PLOTTING
+    global.myChart.destroy();
 
-var data = arg.scatter
-var data = {
-  datasets: [{
-    //label: false,
-    data: data,
-    backgroundColor: 'rgb(255, 99, 132)'
-  }],
-};
+    var data = arg.scatter
+    var data = {
+        datasets: [{
+            //label: false,
+            data: data,
+            backgroundColor: 'rgb(255, 99, 132)'
+        }],
+    };
 
 
-var ctx = document.getElementById('myChart').getContext('2d');
-global.myChart = new Chart(ctx, {
-    type: 'scatter',
-  data: data,
-  options: {
+    var ctx = document.getElementById('scatter').getContext('2d');
+    global.myChart = new Chart(ctx, {
+        type: 'scatter',
+        data: data,
+        options: {
             animation: false,
             legend: {
-            display: false,
-            tooltips: {
-      enabled: false,
-    },
-         },
+                display: false,
+                tooltips: {
+                    enabled: false,
+                },
+            },
 
-    scales: {
-        display: false,
-        grid: {
-            display: false   
+            scales: {
+                display: false,
+                grid: {
+                    display: false
+                },
+                x: {
+                    type: 'linear',
+                    position: 'bottom',
+                    display: false
+                },
+                y: {
+                    display: false
+                }
+
+            }
         },
-      x: {
-        type: 'linear',
-        position: 'bottom',
-        display: false
-      },
-      y: {
-        display: false
-      }
- 
-    }
-  },
- 
-  });
+
+    });
 
     // PTT STATE
     if (arg.ptt_state == 'True') {
@@ -261,7 +290,7 @@ global.myChart = new Chart(ctx, {
     // RMS
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
-    
+
     // CHANNEL STATE
     if (arg.channel_state == 'RECEIVING_SIGNALLING') {
         document.getElementById("signalling_state").className = "btn btn-success";
@@ -304,15 +333,15 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_ram").setAttribute("aria-valuenow", arg.ram_usage)
     document.getElementById("progressbar_ram").setAttribute("style", "width:" + arg.ram_usage + "%;")
     document.getElementById("progressbar_ram_value").innerHTML = arg.ram_usage + "%"
-    
+
     // CPU
     document.getElementById("progressbar_cpu").setAttribute("aria-valuenow", arg.cpu_usage)
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
-    
+
     // VERSION
     document.getElementById("tncversion").innerHTML = arg.version
-   
+
     // UPDATE AUDIO INPUT
 
     if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
@@ -352,7 +381,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = false
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
-       document.getElementById("hamlib_serialspeed").disabled = true
+        document.getElementById("hamlib_serialspeed").disabled = true
 
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
@@ -367,7 +396,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('saveMyCall').disabled = true
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
-       document.getElementById("hamlib_serialspeed").disabled = false
+        document.getElementById("hamlib_serialspeed").disabled = false
 
     }
 
@@ -389,76 +418,70 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 });
 
 ipcRenderer.on('action-update-heard-stations', (event, arg) => {
-//console.log(arg.stations)
-//console.log(arg.stations[0]['DXGRID'])
+    //console.log(arg.stations)
+    //console.log(arg.stations[0]['DXGRID'])
 
-   var tbl = document.getElementById("heardstations");           
-document.getElementById("heardstations").innerHTML = ''     
- 
-for (i = 0; i < arg.stations.length; i++) {
+    var tbl = document.getElementById("heardstations");
+    document.getElementById("heardstations").innerHTML = ''
 
-
-// first we update the PING window
-console.log(document.getElementById("dxCall").value)
-if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value){
-document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
-document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
-
-}
+    for (i = 0; i < arg.stations.length; i++) {
 
 
+        // first we update the PING window
+        console.log(document.getElementById("dxCall").value)
+        if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
+            document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
 
-// now we update the heard stations list
-
-            var row = document.createElement("tr");
-//https://stackoverflow.com/q/51421470 
- 
-//https://stackoverflow.com/a/847196 
- timestampRaw = arg.stations[i]['TIMESTAMP']
- var date = new Date(timestampRaw * 1000);
-var hours = date.getHours();
-var minutes = "0" + date.getMinutes();
-var seconds = "0" + date.getSeconds();
-var datetime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-             var timestamp = document.createElement("td");
- var timestampText = document.createElement('span');
- timestampText.innerText = datetime
-  timestamp.appendChild(timestampText);
-
-var dxCall = document.createElement("td");
- var dxCallText = document.createElement('span'); 
- dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
- dxCall.appendChild(dxCallText); 
-
-var dxGrid = document.createElement("td");
- var dxGridText = document.createElement('span'); 
- dxGridText.innerText = arg.stations[i]['DXGRID']
- dxGrid.appendChild(dxGridText); 
- 
- 
- var dataType = document.createElement("td");
- var dataTypeText = document.createElement('span'); 
- dataTypeText.innerText = arg.stations[i]['DATATYPE']
- dataType.appendChild(dataTypeText); 
- 
- 
-   
-row.appendChild(timestamp);
-row.appendChild(dxCall);  
-row.appendChild(dxGrid);  
-row.appendChild(dataType);  
-
-tbl.appendChild(row);  
         }
 
+
+
+        // now we update the heard stations list
+
+        var row = document.createElement("tr");
+        //https://stackoverflow.com/q/51421470 
+
+        //https://stackoverflow.com/a/847196 
+        timestampRaw = arg.stations[i]['TIMESTAMP']
+        var date = new Date(timestampRaw * 1000);
+        var hours = date.getHours();
+        var minutes = "0" + date.getMinutes();
+        var seconds = "0" + date.getSeconds();
+        var datetime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+        var timestamp = document.createElement("td");
+        var timestampText = document.createElement('span');
+        timestampText.innerText = datetime
+        timestamp.appendChild(timestampText);
+
+        var dxCall = document.createElement("td");
+        var dxCallText = document.createElement('span');
+        dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
+        dxCall.appendChild(dxCallText);
+
+        var dxGrid = document.createElement("td");
+        var dxGridText = document.createElement('span');
+        dxGridText.innerText = arg.stations[i]['DXGRID']
+        dxGrid.appendChild(dxGridText);
+
+
+        var dataType = document.createElement("td");
+        var dataTypeText = document.createElement('span');
+        dataTypeText.innerText = arg.stations[i]['DATATYPE']
+        dataType.appendChild(dataTypeText);
+
+
+
+        row.appendChild(timestamp);
+        row.appendChild(dxCall);
+        row.appendChild(dxGrid);
+        row.appendChild(dataType);
+
+        tbl.appendChild(row);
+    }
+
 });
-
-
-
-
-
-
 
 
 
@@ -473,11 +496,11 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'ping') {
         sock.sendPing(arg.dxcallsign)
     }
-    
-     if (arg.command == 'sendFile') {
+
+    if (arg.command == 'sendFile') {
         sock.sendFile(arg.dxcallsign, arg.mode, arg.frames, arg.filename, arg.filetype, arg.data, arg.checksum)
     }
-     if (arg.command == 'sendMessage') {
+    if (arg.command == 'sendMessage') {
         sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum)
-    }    
+    }
 });
