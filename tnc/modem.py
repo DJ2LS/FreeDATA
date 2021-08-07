@@ -635,7 +635,7 @@ class RF():
             static.SNR = 0
             
     def get_radio_stats(self):
-        static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
+        static.HAMLIB_FREQUENCY = float(self.my_rig.get_freq()/1000) 
         (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
         static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
             
