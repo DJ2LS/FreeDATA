@@ -6,13 +6,16 @@ The TNC itself will be completely controllable via network.
 The project is still a prototype and not usable at this time.
 
 ## Installation Ubuntu
+```
+wget https://github.com/DJ2LS/codec2-FreeDATA/blob/main/tools/install-codec2-FreeDATA.sh
+chmod +x install-codec2-FreeDATA.sh
+./install-codec2-FreeDATA.sh
 sudo apt install npm
 npm install electron --save
 npm i
 sudo apt install python3
-
 pip3 install psutil
-
+```
 ## GUI Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
 
