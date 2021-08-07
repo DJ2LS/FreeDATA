@@ -98,6 +98,7 @@ ipcMain.on('request-update-tnc-state', (event, arg) => {
     //data.webContents.send('action-update-tnc-state', arg);
 });
 
+/*
 ipcMain.on('request-update-data-state', (event, arg) => {
     //win.webContents.send('action-update-data-state', arg);
     //data.webContents.send('action-update-data-state', arg);
@@ -106,7 +107,7 @@ ipcMain.on('request-update-data-state', (event, arg) => {
 ipcMain.on('request-update-heard-stations', (event, arg) => {
     win.webContents.send('action-update-heard-stations', arg);
 });
-
+*/
 ipcMain.on('request-update-daemon-state', (event, arg) => {
     win.webContents.send('action-update-daemon-state', arg);
 });

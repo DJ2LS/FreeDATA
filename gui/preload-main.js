@@ -342,6 +342,98 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // SET BANDWITH
     document.getElementById("bandwith").innerHTML = arg.bandwith
+    
+    
+    
+    // UPDATE HEARD STATIONS
+    //console.log(arg.stations)
+    //console.log(arg.stations[0]['DXGRID'])    
+  var tbl = document.getElementById("heardstations");
+    document.getElementById("heardstations").innerHTML = ''
+
+    for (i = 0; i < arg.stations.length; i++) {
+
+
+        // first we update the PING window
+        console.log(document.getElementById("dxCall").value)
+        if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
+            document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
+
+        }
+
+
+
+        // now we update the heard stations list
+
+        var row = document.createElement("tr");
+        //https://stackoverflow.com/q/51421470 
+
+        //https://stackoverflow.com/a/847196 
+        timestampRaw = arg.stations[i]['TIMESTAMP']
+        var date = new Date(timestampRaw * 1000);
+        var hours = date.getHours();
+        var minutes = "0" + date.getMinutes();
+        var seconds = "0" + date.getSeconds();
+        var datetime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+
+        var timestamp = document.createElement("td");
+        var timestampText = document.createElement('span');
+        timestampText.innerText = datetime
+        timestamp.appendChild(timestampText);
+
+        var dxCall = document.createElement("td");
+        var dxCallText = document.createElement('span');
+        dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
+        dxCall.appendChild(dxCallText);
+
+        var dxGrid = document.createElement("td");
+        var dxGridText = document.createElement('span');
+        dxGridText.innerText = arg.stations[i]['DXGRID']
+        dxGrid.appendChild(dxGridText);
+
+
+        var dataType = document.createElement("td");
+        var dataTypeText = document.createElement('span');
+        dataTypeText.innerText = arg.stations[i]['DATATYPE']
+        dataType.appendChild(dataTypeText);
+        
+        if(dataTypeText.innerText == 'CQ CQ CQ'){
+            row.classList.add("table-success");
+        }
+        
+        if(dataTypeText.innerText == 'DATA-CHANNEL'){
+            row.classList.add("table-warning");
+        }
+                
+        if(dataTypeText.innerText == 'BEACON'){
+            row.classList.add("table-light");
+        }
+ 
+         if(dataTypeText.innerText == 'PING'){
+            row.classList.add("table-info");
+        }
+        
+        if(dataTypeText.innerText == 'PING-ACK'){
+            row.classList.add("table-primary");
+        }               
+
+
+        var snr = document.createElement("td");
+        var snrText = document.createElement('span');
+        snrText.innerText = arg.stations[i]['SNR']
+        snr.appendChild(snrText);
+
+        row.appendChild(timestamp);
+        row.appendChild(dxCall);
+        row.appendChild(dxGrid);
+        row.appendChild(dataType);
+        row.appendChild(snr);
+
+        tbl.appendChild(row);
+    }
+    
+    
 });
 
 
@@ -438,6 +530,9 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
+
+
+/*
 ipcRenderer.on('action-update-heard-stations', (event, arg) => {
     //console.log(arg.stations)
     //console.log(arg.stations[0]['DXGRID'])
@@ -503,7 +598,7 @@ ipcRenderer.on('action-update-heard-stations', (event, arg) => {
     }
 
 });
-
+*/
 
 
 
