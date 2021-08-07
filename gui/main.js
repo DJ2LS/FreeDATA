@@ -23,6 +23,7 @@ function createWindow() {
         activate: true,
     })
     win.loadFile('src/index.html')
+    /*
     data = new BrowserWindow({
         height: 900,
         width: 600,
@@ -40,7 +41,7 @@ function createWindow() {
     })
     data.loadFile('src/data-module.html')
     data.hide()
-
+*/
 
     // Emitted when the window is closed.
     win.on('closed', function() {
@@ -87,18 +88,19 @@ app.on('window-all-closed', () => {
 
 
 // IPC HANDLER
-ipcMain.on('show-data-window', (event, arg) => {
+ /*
+ ipcMain.on('show-data-window', (event, arg) => {
     data.show()
-});
-
+ });
+*/
 ipcMain.on('request-update-tnc-state', (event, arg) => {
     win.webContents.send('action-update-tnc-state', arg);
-    data.webContents.send('action-update-tnc-state', arg);
+    //data.webContents.send('action-update-tnc-state', arg);
 });
 
 ipcMain.on('request-update-data-state', (event, arg) => {
     //win.webContents.send('action-update-data-state', arg);
-    data.webContents.send('action-update-data-state', arg);
+    //data.webContents.send('action-update-data-state', arg);
 });
 
 ipcMain.on('request-update-heard-stations', (event, arg) => {

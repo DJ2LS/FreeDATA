@@ -16,7 +16,7 @@ setInterval(sock.getHeardStations, 1000)
 
 
 // UPDATE FFT DEMO 
-/*
+
 updateFFT = function(fft) {
     var fft = Array.from({
         length: 2048
@@ -24,7 +24,7 @@ updateFFT = function(fft) {
     spectrum.addData(fft);
 }
 setInterval(updateFFT, 250)
-*/
+
 
 
 // WINDOW LISTENER
@@ -57,17 +57,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-    /*
+    
         // Create spectrum object on canvas with ID "waterfall"
         global.spectrum = new Spectrum(
             "waterfall", {
                 spectrumPercent: 20
             });
-    */
+    
 
     // SETUP OF SCATTER DIAGRAM
 
-    var data = {
+    global.data = {
         datasets: [{
             label: 'Scatter Dataset',
             data: [{
@@ -203,34 +203,57 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // openDataModule button clicked 
     document.getElementById("openDataModule").addEventListener("click", () => {
-        //data.show()
-        let Data = {
-            message: "Hello World !"
-        };
-        ipcRenderer.send('show-data-window', Data);
-    })
+               if(document.getElementById("mySidebar").style.width == "40%"){
+     document.getElementById("mySidebar").style.width = "0px";       
+    } else {
+        document.getElementById("mySidebar").style.width = "40%";
+      }
+      })
+
+  
+
 })
+
+
+
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
     // SCATTER DIAGRAM PLOTTING
-    global.myChart.destroy();
+    //global.myChart.destroy();
+    
+    //console.log(arg.scatter.length)
 
     var data = arg.scatter
-    var data = {
+    var newdata = {
         datasets: [{
-            //label: false,
+            label: 'constellation diagram',
             data: data,
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
-
-
+    
+    if (typeof(arg.scatter) == 'undefined'){
+    var scatterSize = 0
+    } else {
+     var scatterSize = arg.scatter.length
+    }
+    if (global.data != newdata && scatterSize > 0){
+            try {
+                global.myChart.destroy();
+            } catch (e) {
+                // myChart not yet created
+            }
+            
+            global.data = newdata    
+        
+    
+     
     var ctx = document.getElementById('scatter').getContext('2d');
     global.myChart = new Chart(ctx, {
         type: 'scatter',
-        data: data,
+        data: global.data,
         options: {
             animation: false,
             legend: {
@@ -239,7 +262,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     enabled: false,
                 },
             },
-
             scales: {
                 display: false,
                 grid: {
@@ -253,11 +275,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 y: {
                     display: false
                 }
-
             }
         },
-
     });
+    }
 
     // PTT STATE
     if (arg.ptt_state == 'True') {
@@ -314,13 +335,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
 
     // SET FREQUENCY
-    document.getElementById("frequency").value = arg.frequency
+    document.getElementById("frequency").innerHTML = arg.frequency
 
     // SET MODE
-    document.getElementById("mode").value = arg.mode
+    document.getElementById("mode").innerHTML = arg.mode
 
     // SET BANDWITH
-    document.getElementById("bandwith").value = arg.bandwith
+    document.getElementById("bandwith").innerHTML = arg.bandwith
 });
 
 
