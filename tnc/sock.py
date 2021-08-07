@@ -42,7 +42,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
-            print(data)
+            #print(data)
             
             if len(data) > 0:
                 socketTimeout = time.time() + static.SOCKET_TIMEOUT
@@ -207,7 +207,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
-                    print(static.SCATTER)
+                    #print(static.SCATTER)
                     output = {
                         "COMMAND": "TNC_STATE",
                         "PTT_STATE": str(static.PTT_STATE),

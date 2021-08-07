@@ -438,6 +438,9 @@ class RF():
             # lets get the frequency, mode and bandwith
             self.get_radio_stats()
             
+            # lets get scatter data
+            self.get_scatter(freedv)
+            
             # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
@@ -452,7 +455,7 @@ class RF():
                 
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
                 
-                self.calculate_fft(data_in)
+                #self.calculate_fft(data_in)
                 
                 
                 data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
@@ -463,7 +466,7 @@ class RF():
                 #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
                 self.calculate_snr(freedv)
-                self.get_scatter(freedv)
+                
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
@@ -587,33 +590,20 @@ class RF():
     def get_scatter(self, freedv):
         modemStats = MODEMSTATS()
         self.c_lib.freedv_get_modem_extended_stats.restype = None
-        #c_lib.freedv_get_modem_extended_stats.argtypes = c_void_p, [MODEMSTATS]
-        #c_lib.freedv_get_modem_extended_stats(freedv, modemStats)
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
-        print("Nc: " + str(modemStats.Nc))
-        #print("snr_est: " + str(modemStats.snr_est))
-        print("nr: " + str(modemStats.nr))
-        #data = []
-#MODEM_STATS_NR_MAX = 320
-#MODEM_STATS_NC_MAX = 51
         
         scatterdata = []
         for i in range(MODEM_STATS_NC_MAX):
-            for j in range(MODEM_STATS_NR_MAX):
-
-                #xsymbols = modemStats.rx_symbols[i][j]
-                #xsymbols = modemStats.rx_symbols[i][::2]
-                #ysymbols = modemStats.rx_symbols[i][j+1]
-                
+            for j in range(MODEM_STATS_NR_MAX):    
                 #check if odd or not to get every 2nd item for x
                 if (j % 2) == 0: 
                     xsymbols = modemStats.rx_symbols[i][j]
                     ysymbols = modemStats.rx_symbols[i][j+1]   
-                     
+                    # check if value 0.0 or has real data
                     if xsymbols != 0.0 and ysymbols != 0.0:
                         scatterdata.append({"x" : xsymbols, "y" : ysymbols })
         
-        # only append scatter data if new data arrived 
+        # only append scatter data if new data arrived
         if scatterdata != static.SCATTER:
             static.SCATTER = scatterdata
             

@@ -78,7 +78,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             try:
                 received_json = json.loads(data)
-                print(received_json)
+                #print(received_json)
 
             except:
                 received_json = ''
@@ -102,7 +102,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #print(received_json["type"])
             #print(received_json["command"]) 
             try:
-                print(static.TNCSTARTED)
+                #print(static.TNCSTARTED)
 
 
 
