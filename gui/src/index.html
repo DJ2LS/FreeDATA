@@ -9,28 +9,9 @@
       <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
       <!-- Waterfall CSS -->
       <link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
-      <style>
-         /**  
-         * disable scrolling in main window
-         */ 
-         body { 
-         padding-right: 0px !important;
-         overflow-y: hidden !important;
-         }
-         /**
-         * Progress bars with centered text
-         */
-         .progress {
-         position: relative;
-         }
-         .progress span {
-         position: absolute;
-         display: block;
-         width: 100%;
-         color: black;
-         }
-      </style>
-      <title>codec2 | FreeDATA</title>
+      <link rel="stylesheet" type="text/css" href="styles.css" />
+
+          <title>codec2 | FreeDATA</title>
    </head>
    <body>
       <!-- MAIN NAVBAR -->
@@ -63,6 +44,11 @@
             </div>
          </div>
       </nav>
+      
+      
+      
+      
+      
       <!---------------------------------------------------------------------- MAIN AREA ------------------------------------------------------------>
       <!---------------------------------------------------------------------------------------------------------------------------------------------------->
       <div class="container mt-3">
@@ -566,18 +552,7 @@
                                 <td>Otto</td>
                                 <td>@mdo</td>
                               </tr>
-                              <tr>
-                                <th scope="row">2</th>
-                                <td>Jacob</td>
-                                <td>Thornton</td>
-                                <td>@fat</td>
-                              </tr>
-                              <tr>
-                                <th scope="row">3</th>
-                                <td colspan="2">Larry the Bird</td>
-                                <td>@twitter</td>
-                              </tr>
-                              -->
+                                  -->
                         </tbody>
                      </table>
                      <!-- END OF HEARD STATIONS TABLE -->  
@@ -586,26 +561,131 @@
             </div>
          </div>
       </div>
-      <!--
-         <div class="container mt-2">
-             <div class="row">
-                 <div class="col-md-autio">
-                     <div class="card text-dark bg-light mb-3">
-                         <div class="card-header">Spectrum</div>
-                         <canvas id="waterfall"></canvas>
-                     </div>
-                 </div>
-             </div>
-         </div>
+           </div>
+            
+      <!---------------------------------------------------------------------- DATA SIDEBAR ------------------------------------------------------------>
+         
+         <div id="mySidebar" class="sidebar shadow-lg rounded">
+  <div class="container-fluid">
+            <div class="container mt-1">
+                <div class="row mb-1">
+                    <div class="col">
+                        <div class="card text-dark bg-light mb-0 " >
+                            <div class="card-header">DX Station </div>
+                            <div class="card-body">
+                                                           <div class="input-group input-group-sm mb-0">
+                              <span class="input-group-text">Ping</span>
+                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" id="dxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
+                              <button class="btn btn-success" id="sendPing" type="button">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                                 </svg>
+                              </button>
+                              <span class="input-group-text text-secondary" id="pingACK">ACK</span>
+                              <span class="input-group-text" id="pingDistance">0000 km</span>
+                              <span class="input-group-text" id="pingDB">0 dB</span>
+                           </div>
+                           
+                           
+                                                       </div>
+                        </div>
+                    </div>
+                    <!--col-->
+                </div>
+                <!--row-->
+                <div class="row mb-1">
+                    <div class="col">
+                        <div class="card text-dark bg-light mb-0 " >
+                            <div class="card-header">Select data </div>
+                            <div class="card-body">
+                                <div class="input-group input-group-sm mb-0">
+                                    <input type="file" class="form-control" id="inputGroupFile02">
+                                    <label class="input-group-text" for="inputGroupFile02">kB</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!--col-->
+                </div>
+                <!--row-->
+                <div class="row mb-2">
+                    <div class="col">
+                        <div class="card text-dark bg-light mb-0" >
+                            <div class="card-header">Transmission </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text" id="basic-addon1">Mode</span>
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="datamode">
+                                                <option selected value="10">DATAC1</option>
+                                                <option value="1">DATAC3</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="input-group input-group-sm">
+                                            <span class="input-group-text" id="basic-addon1">Frames</span>
+                                            <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="framesperburst">
+                                                <option selected value="1">1</option>
+                                                <option value="2">2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <!--col-->
+                    </div>
+                    <!--row-->
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col">
+                    
+                    
+                                                <button type="button" id="startTransmission" class="btn btn-success" style="width:100%">START TRANSMISSION</button>
+
+                    
+                    
+                    
+                    
+                    
+                        
+                    </div>
+
+                    <div class="col-md-auto">
+                        <button type="button" id="stopTNC" class="btn btn-danger" style="width:100%" disabled>STOP</button>
+                    </div>
+                    
+                </div>
+
+                <div class="row">
+                    <div class="col">
+                        <div class="card text-dark bg-light mb-0" >
+                            <div class="card-header">Info </div>
+                            <div class="card-body">
+                                123
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <hr>
+                    </div>
+                </div>
+                <!--row-->
+            </div>
+            <!--container-->
+        </div>
+
+</div>
          
          
-         -->
-      </div>
-      <!--
-         <div class="container-fluid">
-             <canvas id="waterfall"></canvas>
-         </div>
-         -->
+         
+         
       <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
       <nav class="navbar fixed-bottom navbar-light bg-light">
          <div class="container-fluid">
@@ -651,11 +731,11 @@
             <div class="container-fluid" style="width:30rem">
                <div class="input-group input-group-sm">
                   <span class="input-group-text" id="basic-addon1">Freq</span>
-                  <input type="text" class="form-control" id="frequency" placeholder="--" aria-label="Username" aria-describedby="basic-addon1" disabled>
+                  <span class="input-group-text" id="frequency">---</span>
                   <span class="input-group-text" id="basic-addon1">Mode</span>
-                  <input type="text" class="form-control" id="mode" placeholder="--" aria-label="Username" aria-describedby="basic-addon1" disabled>
+                  <span class="input-group-text" id="mode">---</span>
                   <span class="input-group-text" id="basic-addon1">BW</span>
-                  <input type="text" class="form-control" id="bandwith" placeholder="--" aria-label="Username" aria-describedby="basic-addon1" disabled>
+                  <span class="input-group-text" id="bandwith">---</span>
                </div>
             </div>
          </div>
