@@ -222,17 +222,21 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "BANDWITH" : str(static.HAMLIB_BANDWITH),
                         "FFT" : str(static.FFT),
                         "SCATTER" : static.SCATTER,
-                        #"RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
-                        #"TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
-                        #"ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
-                        #"ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
-                        #"ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
-                        #"ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
-                        #"ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
-                        #"ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
-                        #"ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
+                        "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
+                        "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
+                        "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
+                        "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
+                        "ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
+                        "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
+                        "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
+                        "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
+                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME),
+                        "STATIONS" : [],
                         "EOF" : "EOF",
-                    }  
+                    }
+                    
+                    for i in range(0, len(static.HEARD_STATIONS)):
+                        output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})  
                     
                     
                     jsondata = json.dumps(output)
