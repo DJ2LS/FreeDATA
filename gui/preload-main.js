@@ -10,10 +10,10 @@ const fs = require('fs');
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
-setInterval(sock.getTncState, 350)
+setInterval(sock.getTncState, 250)
 //setInterval(sock.getDataState, 500)
 //setInterval(sock.getHeardStations, 1000)
-
+console.log("jojojo der preloader hier")
 
 // UPDATE FFT DEMO 
 
@@ -220,6 +220,16 @@ window.addEventListener('DOMContentLoaded', () => {
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
+    // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
+    if (typeof(arg.toe) == 'undefined'){
+    var toe = 0
+    } else {
+     var toe = arg.toe
+    }    
+    document.getElementById("toe").innerHTML = toe + ' ms'
+    
+    
+
     // SCATTER DIAGRAM PLOTTING
     //global.myChart.destroy();
     
@@ -311,6 +321,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // RMS
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
+
 
     // CHANNEL STATE
     if (arg.channel_state == 'RECEIVING_SIGNALLING') {
@@ -460,8 +471,6 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
 
-    // VERSION
-    document.getElementById("tncversion").innerHTML = arg.version
 
     // UPDATE AUDIO INPUT
 

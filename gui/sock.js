@@ -107,7 +107,9 @@ client.on('data', function(data) {
 
 
         if (data['COMMAND'] == 'TNC_STATE') {
+
             let Data = {
+                toe: Date.now() - data['TIMESTAMP'], // time of execution
                 ptt_state: data['PTT_STATE'],
                 busy_state: data['TNC_STATE'],
                 arq_state: data['ARQ_STATE'],
@@ -188,55 +190,55 @@ function hexToBytes(hex) {
 
 //Save myCall 
 exports.saveMyCall = function(callsign) {
-    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '" }'
+    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
 
 // Save myGrid
 exports.saveMyGrid = function(grid) {
-    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '" }'
+    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
 
 //Get TNC State
 exports.getTncState = function() {
-    command = '{"type" : "GET", "command" : "TNC_STATE"}';
+    command = '{"type" : "GET", "command" : "TNC_STATE", "timestamp" : '+Date.now()+'}';
     writeTncCommand(command)
 }
 
 //Get DATA State
 exports.getDataState = function() {
-    command = '{"type" : "GET", "command" : "DATA_STATE"}';
+    command = '{"type" : "GET", "command" : "DATA_STATE", "timestamp" : '+Date.now()+'}';
     //writeTncCommand(command)
 }
 
 //Get Heard Stations
 exports.getHeardStations = function() {
-    command = '{"type" : "GET", "command" : "HEARD_STATIONS"}';
+    command = '{"type" : "GET", "command" : "HEARD_STATIONS", "timestamp" : '+Date.now()+'}';
     writeTncCommand(command)
 }
  
 
 // Send Ping
 exports.sendPing = function(dxcallsign) {
-    command = '{"type" : "PING", "command" : "PING", "dxcallsign" : "' + dxcallsign + '"}'
+    command = '{"type" : "PING", "command" : "PING", "dxcallsign" : "' + dxcallsign + '", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
 
 // Send CQ
 exports.sendCQ = function() {
-    command = '{"type" : "CQ", "command" : "CQCQCQ"}'
+    command = '{"type" : "CQ", "command" : "CQCQCQ", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
 
 // Send File
 exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, checksum) {
-    command = '{"type" : "ARQ", "command" : "sendFile",  "dxcallsign" : "'+dxcallsign+'", "mode" : "'+mode+'", "n_frames" : "'+frames+'", "filename" : "'+filename+'", "filetype" : "'+filetype+'", "data" : "'+data+'", "checksum" : "'+checksum+'"}'
+    command = '{"type" : "ARQ", "command" : "sendFile",  "dxcallsign" : "'+dxcallsign+'", "mode" : "'+mode+'", "n_frames" : "'+frames+'", "filename" : "'+filename+'", "filetype" : "'+filetype+'", "data" : "'+data+'", "checksum" : "'+checksum+'", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
-    command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : " '+dxcallsign+' ", "mode" : " '+mode+' ", "n_frames" : " '+frames+' ", "data" : " '+data+' ", "checksum" : " '+checksum+' "}'
+    command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : " '+dxcallsign+' ", "mode" : " '+mode+' ", "n_frames" : " '+frames+' ", "data" : " '+data+' ", "checksum" : " '+checksum+' ", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }

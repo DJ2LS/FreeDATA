@@ -62,10 +62,12 @@ function createWindow() {
 
 
     // https://stackoverflow.com/questions/44258831/only-hide-the-window-when-closing-it-electron
+    /*
     data.on('close', function(evt) {
         evt.preventDefault();
         data.hide()
     });
+    */
 }
 
 
