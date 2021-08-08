@@ -1,15 +1,34 @@
 {
-  "name": "freedv-jate-gui",
+  "name": "codec2-FreeDATA",
   "version": "0.0.1",
-  "description": "GUI for FreeDV JATE ",
+  "description": "codec2-FreeDATA ",
   "main": "main.js",
+  "build": {
+    "appId": "com.DJ2LS.codec2-FreeDATA",
+    "productName": "codec2-FreeDATA",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "icon": false
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Science"
+    }
+  },
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "electron-builder install-app-deps",
+    "build": "electron-builder --mac --linux",
+    "release": "electron-builder --mac --linux --publish always"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DJ2LS/FreeDV-JATE-GUI.git"
+    "url": "git+https://github.com/DJ2LS/codec2-FreeDATA.git"
   },
   "keywords": [
     "TNC",
@@ -20,13 +39,15 @@
   "author": "DJ2LS",
   "license": "LGPL-2.1",
   "bugs": {
-    "url": "https://github.com/DJ2LS/FreeDV-JATE-GUI/issues"
+    "url": "https://github.com/DJ2LS/codec2-FreeDATA/issues"
   },
-  "homepage": "https://github.com/DJ2LS/FreeDV-JATE-GUI#readme",
+  "homepage": "https://github.com/DJ2LS/codec2-FreeDATA#readme",
   "dependencies": {
-    "@electron/remote": "^1.2.0",
     "bootstrap": "^5.0.1",
-    "chart.js": "^3.5.0",
-    "electron-builder": "^22.9.1"
+    "chart.js": "^3.5.0"
+      },
+  "devDependencies": {
+    "electron-builder": "^22.11.7",
+    "electron": "12.0.7"
   }
 }
