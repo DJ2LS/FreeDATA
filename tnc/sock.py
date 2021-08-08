@@ -4,6 +4,21 @@
 Created on Fri Dec 25 21:25:14 2020
 
 @author: DJ2LS
+
+# GET COMMANDS
+            # "command" : "..."
+            
+            # SET COMMANDS
+            # "command" : "..."
+            # "parameter" : " ..."
+            
+            # DATA COMMANDS
+            # "command" : "..."
+            # "type" : "..."
+            # "dxcallsign" : "..."
+            # "data" : "..."
+
+
 """
 
 import socketserver
@@ -51,45 +66,20 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # we need to do some error handling in case of socket timeout
 
             try:
+                
                 received_json = json.loads(data)
-                #print(received_json)
-            #except:
-            #    received_json = ''
-            #    print(data)
-            #except Exception as e:
-            #    #print("Wrong command: " + data)
-            #    #print(e)
-            #    exc_type, exc_obj, exc_tb = sys.exc_info()
-            #    fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-            #    print(exc_type, fname, exc_tb.tb_lineno)
+
             except json.decoder.JSONDecodeError as e:
+                print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
                 print(e)
-                print("#################################")
+                print("-----------------------------------")
                 print(data)
-            # GET COMMANDS
-            # "command" : "..."
-            
-            # SET COMMANDS
-            # "command" : "..."
-            # "parameter" : " ..."
-            
-            # DATA COMMANDS
-            # "command" : "..."
-            # "type" : "..."
-            # "dxcallsign" : "..."
-            # "data" : "..."
+                print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
             
             
             try:
-                # SOCKETTEST ---------------------------------------------------
-                #if data == 'SOCKETTEST':
-                #if received_json["command"] == "SOCKETTEST":
-                #    #cur_thread = threading.current_thread()
-                #    response = bytes("WELL DONE! YOU ARE ABLE TO COMMUNICATE WITH THE TNC", encoding)
-                #    self.request.sendall(response)
 
                 # CQ CQ CQ -----------------------------------------------------
-                #if data == 'CQCQCQ':
                 if received_json["command"] == "CQCQCQ":
                     socketTimeout = 0
                     #asyncio.run(data_handler.transmit_cq())
@@ -97,7 +87,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     CQ_THREAD.start()
 
                 # PING ----------------------------------------------------------
-                #if data.startswith('PING:'):
                 if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
                     print(received_json)
@@ -105,29 +94,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     #asyncio.run(data_handler.transmit_ping(dxcallsign))
                     PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
                     PING_THREAD.start()
-                    
-                # ARQ CONNECT TO CALLSIGN ----------------------------------------
-                #if data.startswith('ARQ:CONNECT:'):
-                #if received_json["command"] == "ARQ:CONNECT":
-                # 
-                #    dxcallsign = received_json["dxcallsign"]
-                #    static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                #    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
 
-                #    if static.ARQ_STATE == 'CONNECTED':
-                #        # here we could disconnect
-                #        pass
-
-                #    if static.TNC_STATE == 'IDLE':
-
-                #        asyncio.run(data_handler.arq_connect())
-
-                # ARQ DISCONNECT FROM CALLSIGN ----------------------------------------
-                #if received_json["command"] == "ARQ:DISCONNECT":
-                #    asyncio.run(data_handler.arq_disconnect())
-
-
-                if received_json["type"] == 'ARQ' and received_json["command"] == "OPEN_DATA_CHANNEL": # and static.ARQ_STATE == 'CONNECTED':
+                if received_json["type"] == 'ARQ' and received_json["command"] == "OPEN_DATA_CHANNEL":
                     static.ARQ_READY_FOR_DATA = False
                     static.TNC_STATE = 'BUSY'
                     
@@ -137,14 +105,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                     asyncio.run(data_handler.arq_open_data_channel())
                     
-
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
                     static.TNC_STATE = 'BUSY'
                     
                     #on a new transmission we reset the timer
                     static.ARQ_START_OF_TRANSMISSION = int(time.time())
                     
-     
                     dxcallsign = received_json["dxcallsign"]
                     mode = int(received_json["mode"])
                     n_frames = int(received_json["n_frames"])
@@ -152,11 +118,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     filetype = received_json["filetype"]
                     data = received_json["data"]
                     checksum = received_json["checksum"]
-                    
-                    print(mode)
-                    print(n_frames)
-                    
-                    
+                 
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
                     
@@ -311,11 +273,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             #exception, if JSON cant be decoded
             except Exception as e:
-                #print("Wrong command: " + data)
-                #print(e)
+                print("############ START OF ERROR #####################")
+                print("SOCKET COMMAND ERROR: " + data)
+                print(e)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)                        
+                print(exc_type, fname, exc_tb.tb_lineno)
+                print("############ END OF ERROR #######################")                        
         print("Client disconnected...")
 
 def start_cmd_socket():

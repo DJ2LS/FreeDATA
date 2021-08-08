@@ -161,8 +161,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             #exception, if JSON cant be decoded
             except Exception as e:
-                print('PROGRAM ERROR: %s' %str(e))
-                print("Wrong command") 
+                print("############ START OF ERROR #####################")
+                print('DAEMON PROGRAM ERROR: %s' %str(e))
+                print("Wrong command")
+                print(data)
+                print("############ END OF ERROR #######################")
 
         print("Client disconnected...")
 
