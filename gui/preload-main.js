@@ -7,6 +7,8 @@ const {
 } = require('electron');
 const fs = require('fs');
 
+const { locatorToLatLng, distance, bearingDistance, latLngToLocator } = require('qth-locator');
+
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
@@ -375,8 +377,20 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         // first we update the PING window
         console.log(document.getElementById("dxCall").value)
         if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
-            document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
+            var dxGrid = arg.stations[i]['DXGRID']
+            var myGrid = document.getElementById("myGrid").value 
+try {   
+    var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
+    document.getElementById("pingDistance").innerHTML = dist
+
+        } catch {
+         document.getElementById("pingDistance").innerHTML = '---'
+        }            
+                        document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
+
+
+
+
 
         }
 
@@ -410,11 +424,24 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         dxGridText.innerText = arg.stations[i]['DXGRID']
         dxGrid.appendChild(dxGridText);
 
+        var gridDistance = document.createElement("td");
+        var gridDistanceText = document.createElement('span');
+        
+        try{
+            gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['DXGRID'])) + ' km';
+        } catch {
+         gridDistanceText.innerText = '---'
+        }
+        gridDistance.appendChild(gridDistanceText);    
 
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['DATATYPE']
         dataType.appendChild(dataTypeText);
+
+    
+        
+        
         
         if(dataTypeText.innerText == 'CQ CQ CQ'){
             row.classList.add("table-success");
@@ -441,10 +468,11 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['SNR']
         snr.appendChild(snrText);
-
+        
         row.appendChild(timestamp);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
+        row.appendChild(gridDistance);
         row.appendChild(dataType);
         row.appendChild(snr);
 
