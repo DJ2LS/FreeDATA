@@ -13,7 +13,6 @@ setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 250)
 //setInterval(sock.getDataState, 500)
 //setInterval(sock.getHeardStations, 1000)
-console.log("jojojo der preloader hier")
 
 // UPDATE FFT DEMO 
 
@@ -193,7 +192,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 5000);
         setTimeout(function() {
             sock.saveMyGrid(config.mygrid);
-        }, 5000);
+        }, 6000);
     })
 
     // stopTNC button clicked 
