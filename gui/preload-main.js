@@ -10,7 +10,7 @@ const fs = require('fs');
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
-setInterval(sock.getTncState, 250)
+setInterval(sock.getTncState, 350)
 //setInterval(sock.getDataState, 500)
 //setInterval(sock.getHeardStations, 1000)
 
@@ -351,7 +351,15 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
   var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = ''
 
-    for (i = 0; i < arg.stations.length; i++) {
+
+
+    if (typeof(arg.stations) == 'undefined'){
+    var heardStationsLength = 0
+    } else {
+     var heardStationsLength = arg.stations.length
+    }
+    
+    for (i = 0; i < heardStationsLength; i++) {
 
 
         // first we update the PING window
