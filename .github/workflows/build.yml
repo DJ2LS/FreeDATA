@@ -4,11 +4,14 @@ on: push
 
 
 jobs:
+
   
   release:
     runs-on: ${{ matrix.os }}
-    env:
-        working-directory: './gui/'
+    defaults:
+      run:
+        working-directory: ./gui
+
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
