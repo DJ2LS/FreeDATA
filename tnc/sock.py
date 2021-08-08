@@ -40,7 +40,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         print("Client connected...")    
         
         # loop through socket buffer until timeout is reached. then close buffer
-        socketTimeout = time.time() + 10
+        socketTimeout = time.time() + 3
         while socketTimeout > time.time():
 
             time.sleep(0.01)
@@ -75,7 +75,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("-----------------------------------")
                 print(data)
                 print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
-            
+                received_json = {}
             
             try:
 
@@ -159,6 +159,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["type"] == 'GET' and received_json["command"] == 'STATION_INFO':
                     output = {
                         "COMMAND": "STATION_INFO",
+                        "TIMESTAMP" : received_json["timestamp"],
                         "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
                         "DX_CALLSIGN": str(static.DXCALLSIGN, encoding),
                         "DX_GRID": str(static.DXGRID, encoding),
@@ -172,6 +173,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     #print(static.SCATTER)
                     output = {
                         "COMMAND": "TNC_STATE",
+                        "TIMESTAMP" : received_json["timestamp"],
                         "PTT_STATE": str(static.PTT_STATE),
                         "CHANNEL_STATE": str(static.CHANNEL_STATE),
                         "TNC_STATE": str(static.TNC_STATE),
@@ -227,6 +229,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["type"] == 'GET' and received_json["command"] == 'DATA_STATE':
                     output = {
                         "COMMAND": "DATA_STATE",
+                        "TIMESTAMP" : received_json["timestamp"],
                         "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
                         "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
                         "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
