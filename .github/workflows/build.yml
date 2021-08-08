@@ -2,15 +2,15 @@ name: Build/release
 
 on: push
 
-
+defaults:
+      run:
+        working-directory: ./gui
 jobs:
 
   
   release:
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: ./gui
+
 
     strategy:
       matrix:
