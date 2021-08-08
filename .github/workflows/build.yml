@@ -2,13 +2,13 @@ name: Build/release
 
 on: push
 
-directories:
-    app: './gui/'
-    
+
 jobs:
+  
   release:
     runs-on: ${{ matrix.os }}
-
+    env:
+        working-directory: ./gui
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
