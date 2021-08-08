@@ -53,7 +53,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             while True and socketTimeout > time.time():
                 chunk = self.request.recv(1024)  # .strip()
                 data += chunk
-                if chunk.endswith(b'\n'):
+                if chunk.endswith(b'}\n') or chunk.endswith(b'}') or chunk.endswith(b'\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
