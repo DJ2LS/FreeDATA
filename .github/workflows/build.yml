@@ -11,8 +11,8 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
-        package_manager: [npm, yarn]
+        os: [ubuntu-latest, windows-latest]
+        package_manager: [npm]
         package_root: ["./gui/"]
         
     steps:
