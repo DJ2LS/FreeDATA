@@ -12,7 +12,9 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, ubuntu-latest, windows-latest]
-
+        package_manager: [npm, yarn]
+        package_root: ["./gui/"]
+        
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
@@ -22,6 +24,12 @@ jobs:
         with:
           node-version: 14
 
+      - name: Install test app dependencies
+        run: |
+          cd ${{ matrix.package_root }}
+          ${{ matrix.package_manager }} install
+          
+          
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
