@@ -2,9 +2,6 @@ name: Build/release
 
 on: push
 
-defaults:
-      run:
-        working-directory: ./gui
 jobs:
 
   
