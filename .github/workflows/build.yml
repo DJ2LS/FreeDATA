@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         package_manager: [npm]
-        package_root: ["test/"]
+        package_root: ["./test/"]
         
     steps:
       - name: Check out Git repository
@@ -33,6 +33,7 @@ jobs:
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
+          package_root: "./test/"
           # GitHub token, automatically provided to the action
           # (No need to define this secret in the repo settings)
           github_token: ${{ secrets.github_token }}
