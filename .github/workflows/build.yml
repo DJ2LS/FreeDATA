@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         package_manager: [npm]
-        package_root: ["./test/"]
+        package_root: ["test/"]
         
     steps:
       - name: Check out Git repository
