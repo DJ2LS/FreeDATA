@@ -138,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById("tnc_port").addEventListener("change", () => {
         config.tnc_port = document.getElementById("tnc_port").value
-        config.daemon_port = document.getElementById("tnc_port").value + 1
+        config.daemon_port = parseInt(document.getElementById("tnc_port").value) + 1
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     });
