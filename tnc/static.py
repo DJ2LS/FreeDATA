@@ -67,6 +67,8 @@ HAMLIB_SERIAL_SPEED = '9600'
 HAMLIB_FREQUENCY = 0
 HAMLIB_MODE = ''
 HAMLIB_BANDWITH = 0
+
+TIME_BETWEEN_RX_TX = 1 # time between TX and RX in seconds
 # -------------------------
 # FreeDV Defaults
 FREEDV_RECEIVE = True

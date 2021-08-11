@@ -598,7 +598,11 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
-
+    # wait before sending so we can sure, other station is ready for TX
+    wait_until_transmit = time.time() + static.TIME_BETWEEN_RX_TX
+    while time.time() < wait_until_transmit:
+        pass
+        
     modem.transmit_signalling(connection_frame)
     #modem.transmit_signalling(connection_frame)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
@@ -668,7 +672,12 @@ def received_ping(data_in):
     ping_frame[1:2] = static.DXCALLSIGN_CRC8
     ping_frame[2:3] = static.MYCALLSIGN_CRC8
     ping_frame[3:9] = static.MYGRID
-
+    
+    # wait before sending so we can sure, other station is ready for TX
+    wait_until_transmit = time.time() + static.TIME_BETWEEN_RX_TX
+    while time.time() < wait_until_transmit:
+        pass
+        
     # wait while sending....
     modem.transmit_signalling(ping_frame)
     #modem.transmit_signalling(ping_frame)
