@@ -210,6 +210,24 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("mySidebar").style.width = "40%";
       }
       })
+      
+      
+  // START TRANSMISSION    
+          document.getElementById("startTransmission").addEventListener("click", () => {
+        let Data = {
+            command: "sendFile",
+            dxcallsign: document.getElementById("dxCall").value,
+            mode: document.getElementById("datamode").value,
+            frames: document.getElementById("framesperburst").value,
+            filetype: 'txt',
+            filename: 'testfile',
+            data: '1234567',
+            checksum: '123123123',
+        };
+        ipcRenderer.send('run-tnc-command', Data);
+        
+        
+    })
 
   
 
