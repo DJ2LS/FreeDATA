@@ -5,17 +5,38 @@ The TNC itself will be completely controllable via network.
 ## Under development
 The project is still a prototype and not usable at this time.
 
-## Installation Ubuntu
+## Manual Installation Ubuntu
 ```
 wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
 chmod +x install-codec2-FreeDATA.sh
 ./install-codec2-FreeDATA.sh
-sudo apt install npm
+sudo apt install npm+
 cd gui
 npm i
 sudo apt install python3
 pip3 install psutil
 ```
+## Manual Installation macOS
+### Install brew and python3
+#### https://docs.python-guide.org/starting/install3/osx/
+
+```
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+brew install python
+```
+### Install dependencies
+```
+xcode-select --install
+brew remove portaudio
+brew install portaudio
+pip3 install pyaudio
+```
+
+
+
+
+
+
 ## GUI Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
 
