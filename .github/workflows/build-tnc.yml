@@ -1,4 +1,4 @@
-name: Build TNC
+name: Build/TNC
 #https://data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
 
 on:
