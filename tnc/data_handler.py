@@ -111,8 +111,8 @@ def arq_data_received(data_in):
 
 
         # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
-        modem.transmit_signalling(ack_frame)
-        #modem.transmit_signalling(ack_frame)
+        modem.transmit_signalling(ack_frame, 1)
+
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
         static.CHANNEL_STATE = 'RECEIVING_DATA'
@@ -146,7 +146,7 @@ def arq_data_received(data_in):
         rpt_frame[3:9] = missing_frames
 
         # TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
-        modem.transmit_signalling(rpt_frame)
+        modem.transmit_signalling(rpt_frame, 1)
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
         static.CHANNEL_STATE = 'RECEIVING_DATA'
@@ -209,8 +209,8 @@ def arq_data_received(data_in):
             #time.sleep(0.5)  # 0.5
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [SNR:" + str(static.SNR) + "]")
 
-            modem.transmit_signalling(ack_frame)
-            #modem.transmit_signalling(ack_frame)
+            modem.transmit_signalling(ack_frame, 1)
+
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
             
@@ -234,7 +234,7 @@ def arq_data_received(data_in):
             #time.sleep(0.5)  # 0.5
             logging.info("ARQ | TX | NAK")
 
-            modem.transmit_signalling(nak_frame)
+            modem.transmit_signalling(nak_frame, 1)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
 
@@ -561,7 +561,7 @@ async def arq_open_data_channel(mode):
     while not static.ARQ_READY_FOR_DATA:
         for attempt in range(0,static.ARQ_OPEN_DATA_CHANNEL_RETRIES):
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt + 1) + "/" + str(static.ARQ_OPEN_DATA_CHANNEL_RETRIES) + "]")
-            modem.transmit_signalling(connection_frame)
+            modem.transmit_signalling(connection_frame, 1)
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
                 time.sleep(0.01)
         
@@ -600,8 +600,8 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
 
-    modem.transmit_signalling(connection_frame)
-    #modem.transmit_signalling(connection_frame)
+    modem.transmit_signalling(connection_frame, 2)
+
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
@@ -652,7 +652,7 @@ def transmit_ping(callsign):
     ping_frame[3:9] = static.MYCALLSIGN
 
     # wait while sending....
-    modem.transmit_signalling(ping_frame)
+    modem.transmit_signalling(ping_frame, 1)
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
@@ -671,8 +671,8 @@ def received_ping(data_in):
     ping_frame[3:9] = static.MYGRID
 
     # wait while sending....
-    modem.transmit_signalling(ping_frame)
-    #modem.transmit_signalling(ping_frame)
+    modem.transmit_signalling(ping_frame, 1)
+
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
@@ -706,16 +706,16 @@ def transmit_cq():
     cq_frame[8:14] = static.MYGRID
     #print(cq_frame)
     
-    
-    for i in range(0, 3):
-        
-        modem.transmit_signalling(cq_frame)
-        while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-            time.sleep(0.01)
-        
-        time_between_cq = time.time() + 1    
-        while time.time() < time_between_cq:
-            pass
+    modem.transmit_signalling(cq_frame, 3)
+    #for i in range(0, 3):
+    #    
+    #    modem.transmit_signalling(cq_frame, 1)
+    #    while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+    #        time.sleep(0.01)
+    #    
+    #    time_between_cq = time.time() + 1    
+    #    while time.time() < time_between_cq:
+    #        pass
             
 
 def received_cq(data_in):
@@ -738,7 +738,7 @@ async def transmit_beacon():
 
     while static.TNC_STATE == 'BEACON':
         await asyncio.sleep(60)
-        modem.transmit_signalling(beacon_frame)
+        modem.transmit_signalling(beacon_frame,1)
         while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
             time.sleep(0.01)
 

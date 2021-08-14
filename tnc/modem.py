@@ -198,7 +198,7 @@ class RF():
             self.audio_writing_to_stream = False
 # --------------------------------------------------------------------------------------------------------
 
-    def transmit_signalling(self, data_out):
+    def transmit_signalling(self, data_out, count):
         
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
@@ -237,9 +237,13 @@ class RF():
         
         converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
-        print(len(self.streambuffer))
-        self.streambuffer += bytes(converted_audio[0])
-        print(len(self.streambuffer))                       
+        # append frame again with as much as in count defined
+        for i in range(1, count):
+            self.streambuffer += bytes(converted_audio[0])
+            print(len(self.streambuffer))
+        #self.streambuffer += bytes(converted_audio[0])
+        #print(len(self.streambuffer))                       
+        
         # -------------- transmit audio
         #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
@@ -389,6 +393,7 @@ class RF():
         
         converted_audio = audioop.ratecv(self.streambuffer,2,1,static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
+        
 
         # -------------- transmit audio
         
