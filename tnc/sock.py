@@ -195,6 +195,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                         "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
                         "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME),
+                        "ARQ_BYTES_PER_MINUTE" : str(static.ARQ_BYTES_PER_MINUTE),
+                        "ARQ_TRANSMISSION_PERCENT" : str(static.ARQ_TRANSMISSION_PERCENT),
+                        "TOTAL_BYTES" : str(static.TOTAL_BYTES),
+                        
                         "STATIONS" : [],
                         "EOF" : "EOF",
                     }

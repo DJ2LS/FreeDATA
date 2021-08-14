@@ -15,6 +15,13 @@ import crcengine
 import static
 import data_handler
 
+def timeout(seconds):
+    timeout = time.time() + seconds
+    
+    while time.time() < timeout:
+        time.sleep(0.01)
+        
+        
 
 def get_crc_8(data):
     """
@@ -124,26 +131,37 @@ def arq_reset_frame_machine():
 
 def calculate_transfer_rate():
    
-   if static.ARQ_TX_N_TOTAL_ARQ_FRAMES == 0:
-       total_n_frames = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
-   elif static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME == 0:
-       total_n_frames = int.from_bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES, "big")
+    if static.ARQ_TX_N_TOTAL_ARQ_FRAMES == 0:
+        total_n_frames = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
+    elif static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME == 0:
+        total_n_frames = int.from_bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES, "big")
 
 
-   total_bytes = (total_n_frames * static.ARQ_PAYLOAD_PER_FRAME)
-   total_transmission_time = time.time() - static.ARQ_START_OF_TRANSMISSION
+    static.TOTAL_BYTES = (total_n_frames * static.ARQ_PAYLOAD_PER_FRAME)
+    total_transmission_time = time.time() - static.ARQ_START_OF_TRANSMISSION
    
-   burst_bytes = static.ARQ_PAYLOAD_PER_FRAME
-   burst_transmission_time = time.time() - static.ARQ_START_OF_BURST
+   
+    burst_bytes = static.ARQ_PAYLOAD_PER_FRAME
+    burst_transmission_time = time.time() - static.ARQ_START_OF_BURST
 
-   static.ARQ_BITS_PER_SECOND_TRANSMISSION = int((total_bytes * 8) / total_transmission_time)
-   static.ARQ_BYTES_PER_MINUTE_TRANSMISSION = int(((total_bytes) / total_transmission_time) * 60)
+    static.ARQ_BITS_PER_SECOND = int((static.TOTAL_BYTES * 8) / total_transmission_time)
+    static.ARQ_BYTES_PER_MINUTE = int(((static.TOTAL_BYTES) / total_transmission_time) * 60)
   
-   static.ARQ_BITS_PER_SECOND_BURST = int((burst_bytes * 8) / burst_transmission_time)
-   static.ARQ_BYTES_PER_MINUTE_BURST = int(((burst_bytes) / burst_transmission_time) * 60)
+    static.ARQ_BITS_PER_SECOND_BURST = int((burst_bytes * 8) / burst_transmission_time)
+    static.ARQ_BYTES_PER_MINUTE_BURST = int(((burst_bytes) / burst_transmission_time) * 60)
    
-     
-   return [static.ARQ_BITS_PER_SECOND_TRANSMISSION, static.ARQ_BYTES_PER_MINUTE_TRANSMISSION, static.ARQ_BITS_PER_SECOND_BURST, static.ARQ_BYTES_PER_MINUTE_BURST]
+   
+    # calculate transmission percentage
+    if int(static.ARQ_TX_N_TOTAL_ARQ_FRAMES) > 0:
+        static.ARQ_TRANSMISSION_PERCENT = int(static.ARQ_TX_N_CURRENT_ARQ_FRAME) / int(static.ARQ_TX_N_TOTAL_ARQ_FRAMES)
+  
+    elif int(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) > 0:
+        static.ARQ_TRANSMISSION_PERCENT = int(static.ARQ_RX_N_CURRENT_ARQ_FRAME) / int(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
+    else:
+        static.ARQ_TRANSMISSION_PERCENT = 0.0   
+   
+      
+    return [static.ARQ_BITS_PER_SECOND, static.ARQ_BYTES_PER_MINUTE, static.ARQ_BITS_PER_SECOND_BURST, static.ARQ_BYTES_PER_MINUTE_BURST]
 
 
 
