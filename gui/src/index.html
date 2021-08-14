@@ -4,6 +4,7 @@
       <!-- Required meta tags -->
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
       <!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self';">-->
       <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
@@ -574,24 +575,30 @@
                 <div class="row mb-1">
                     <div class="col">
                         <div class="card text-dark bg-light mb-0 " >
-                            <div class="card-header">DX Station </div>
+                        <div class="card-header">DX Station </div>
                             <div class="card-body">
-                                                           <div class="input-group input-group-sm mb-0">
-                              <span class="input-group-text">Ping</span>
-                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" id="dxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
-                              <button class="btn btn-success" id="sendPing" type="button">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
-                                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                                 </svg>
-                              </button>
-                              <span class="input-group-text text-secondary" id="pingACK">ACK</span>
-                              <span class="input-group-text" id="pingDistance">0000 km</span>
-                              <span class="input-group-text" id="pingDB">0 dB</span>
-                           </div>
-                           
-                           
-                                                       </div>
+                                <div class="row">
+                                    <div class="col-auto">    
+                                         <div class="input-group input-group-sm mb-0">
+                                                                  <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
+                                         </div>
+                                 </div>
+                                
+                                <div class="col-auto">
+                          
+                                    <div class="input-group input-group-sm mb-0"> 
+                                        <button class="btn btn-success" id="dataModalSendPing" type="button">Ping</button>
+                                        <span class="input-group-text text-secondary" id="dataModalPingACK">ACK</span>
+                                         <span class="input-group-text" id="dataModalPingDistance">0000 km</span>
+                                        <span class="input-group-text" id="dataModalPingDB">0 dB</span>
+                                    </div>
+            
+                             </div>   
+                            </div>
+                            
+                       
                         </div>
+                    </div>
                     </div>
                     <!--col-->
                 </div>
@@ -692,7 +699,7 @@
       <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
       <nav class="navbar fixed-bottom navbar-light bg-light">
          <div class="container-fluid">
-            <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-toolbar"  style="width:20%" role="toolbar" aria-label="Toolbar with button groups">
                <div class="btn-group btn-group-sm me-2" role="group" aria-label="First group">
                   <button class="btn btn-secondary" id="ptt_state" type="button">
                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-broadcast-pin" viewBox="0 0 16 16">
@@ -731,7 +738,7 @@
                   </button>
                </div>
             </div>
-            <div class="container-fluid" style="width:30rem">
+            <div class="container-fluid" style="width:30%">
                <div class="input-group input-group-sm">
                   <span class="input-group-text" id="basic-addon1">Freq</span>
                   <span class="input-group-text" id="frequency">---</span>
@@ -741,6 +748,28 @@
                   <span class="input-group-text" id="bandwith">---</span>
                </div>
             </div>
+
+
+ <div class="container-fluid" style="width:30%">
+               <div class="input-group input-group-sm">
+                  <span class="input-group-text" id="basic-addon1">Bytes/min</span>
+                  <span class="input-group-text" id="bytes_per_min">---</span>
+                  <span class="input-group-text" id="basic-addon1">Total Bytes</span>
+                  <span class="input-group-text" id="total_bytes">---</span>
+
+               </div>
+  
+  
+            </div>
+
+ <div class="container-fluid" style="width:20%">
+                     <div class="progress" style="height: 30px;" >
+                        <div class="progress-bar progress-bar-striped bg-primary" id="transmission_progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                        <!--<p class="justify-content-center d-flex position-absolute w-100">PROGRESS</p>-->
+                     </div>
+                     </div>
+
+
          </div>
       </nav>
       <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
