@@ -169,7 +169,7 @@ class RF():
 
         else:
         
-            ptt_togle_timeout = time.time() + 0.2
+            ptt_togle_timeout = time.time() + 0.5
             while time.time() < ptt_togle_timeout:
                 pass
                 
@@ -199,7 +199,10 @@ class RF():
 # --------------------------------------------------------------------------------------------------------
 
     def transmit_signalling(self, data_out, count):
-        
+        state_before_transmit = static.CHANNEL_STATE
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        print(static.CHANNEL_STATE)
+                
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -242,13 +245,13 @@ class RF():
             self.streambuffer += bytes(converted_audio[0])
             print(len(self.streambuffer))
         #self.streambuffer += bytes(converted_audio[0])
-        #print(len(self.streambuffer))                       
+        print(len(self.streambuffer))                       
         
         # -------------- transmit audio
         #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
 
-        state_before_transmit = static.CHANNEL_STATE
-        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        ##state_before_transmit = static.CHANNEL_STATE
+        ##static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         
         self.ptt_and_wait(True)
         self.audio_writing_to_stream = True
