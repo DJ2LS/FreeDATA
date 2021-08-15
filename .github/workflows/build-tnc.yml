@@ -1,13 +1,10 @@
 
 name: Build/TNC
 on: push
+
 jobs:
-  release:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
-        package_manager: [npm]        
+  job1:
+    runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v2
@@ -17,6 +14,7 @@ jobs:
           python-version: 3.8
       - name: Install dependencies
         run: |
+          sudo apt install portaudio19-dev
           python -m pip install --upgrade pip
           pip3 install pyaudio
           pip3 install psutil
