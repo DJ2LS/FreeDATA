@@ -609,7 +609,7 @@
                             <div class="card-header">Select data </div>
                             <div class="card-body">
                                 <div class="input-group input-group-sm mb-0">
-                                    <input type="file" class="form-control" id="inputGroupFile02">
+                                    <input type="file" class="form-control" id="dataModalFile">
                                     <label class="input-group-text" for="inputGroupFile02">kB</label>
                                 </div>
                             </div>
@@ -629,7 +629,7 @@
                                             <span class="input-group-text" id="basic-addon1">Mode</span>
                                             <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="datamode">
                                                 <option selected value="10">DATAC1</option>
-                                                <option value="1">DATAC3</option>
+                                                <option value="12">DATAC3</option>
                                             </select>
                                         </div>
                                     </div>
@@ -684,6 +684,11 @@
                 <div class="row">
                     <div class="col">
                         <hr>
+                        
+                        
+                         <button type="button" id="getRxBuffer" class="btn btn-danger" style="width:100%">GET RX BUFFER</button>
+                         
+                         
                     </div>
                 </div>
                 <!--row-->
@@ -740,11 +745,11 @@
             </div>
             <div class="container-fluid" style="width:30%">
                <div class="input-group input-group-sm">
-                  <span class="input-group-text" id="basic-addon1">Freq</span>
+                  <span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>
                   <span class="input-group-text" id="frequency">---</span>
-                  <span class="input-group-text" id="basic-addon1">Mode</span>
+                  <span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>
                   <span class="input-group-text" id="mode">---</span>
-                  <span class="input-group-text" id="basic-addon1">BW</span>
+                  <span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>
                   <span class="input-group-text" id="bandwith">---</span>
                </div>
             </div>
@@ -752,9 +757,9 @@
 
  <div class="container-fluid" style="width:30%">
                <div class="input-group input-group-sm">
-                  <span class="input-group-text" id="basic-addon1">Bytes/min</span>
+                  <span class="input-group-text" id="basic-addon1"><strong>Bytes/min</strong></span>
                   <span class="input-group-text" id="bytes_per_min">---</span>
-                  <span class="input-group-text" id="basic-addon1">Total Bytes</span>
+                  <span class="input-group-text" id="basic-addon1"><strong>Total Bytes</strong></span>
                   <span class="input-group-text" id="total_bytes">---</span>
 
                </div>
