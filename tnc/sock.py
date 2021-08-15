@@ -208,72 +208,27 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                     
                     jsondata = json.dumps(output)
-                    #print(len(jsondata))
-                    self.request.sendall(bytes(jsondata, encoding))
-                
-                if received_json["type"] == 'GET' and received_json["command"] == 'FFT':
-                    output = {
-                        "FFT" : str(static.FFT)
-                    }
-                    
-                    jsondata = json.dumps(output)
-                    self.request.sendall(bytes(jsondata, encoding))
-                
-                #if received_json["type"] == 'GET' and received_json["command"] == 'SCATTER':
-#
-#                    print(static.SCATTER)
-#                    output = {
-#                        "COMMAND" : "SCATTER",
-#                        "DATA" : static.SCATTER
-#                    }
-#                   print(output)
-#                   jsondata = json.dumps(output)
-#                   self.request.sendall(bytes(jsondata, encoding))   
-                                 
-                if received_json["type"] == 'GET' and received_json["command"] == 'DATA_STATE':
-                    output = {
-                        "COMMAND": "DATA_STATE",
-                        "TIMESTAMP" : received_json["timestamp"],
-                        "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
-                        "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
-                        "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
-                        "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
-                        "ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
-                        "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
-                        "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
-                        "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
-                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME),
-                        "EOF" : "EOF",
-                    }
-                    
-                    jsondata = json.dumps(output)
-                    self.request.sendall(bytes(jsondata, encoding))
-
-
-                if received_json["type"] == 'GET' and received_json["command"] == 'HEARD_STATIONS':
-                    # print("HEARD STATIONS COMMAND!")
-
-                    data = {"COMMAND": "HEARD_STATIONS", "STATIONS" : []}
-                    for i in range(0, len(static.HEARD_STATIONS)):
-                        data["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
-                    # print(static.HEARD_STATIONS[i][1])
-                    
-                    
-                    #data.append({"EOF" : "EOF"})
-                    jsondata = json.dumps(data)
                     self.request.sendall(bytes(jsondata, encoding))
 
 
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
-                    data = data.split('GET:RX_BUFFER:')
-                    bufferposition = int(data[1]) - 1
+                    #data = data.split('GET:RX_BUFFER:')
+                    #bufferposition = int(data[1]) - 1
+                    print("BUFFER-LENGTH:" + str(len(static.RX_BUFFER)))
+                    bufferposition = 1
                     if bufferposition == -1:
                         if len(static.RX_BUFFER) > 0:
                             self.request.sendall(static.RX_BUFFER[-1])
 
                     if bufferposition <= len(static.RX_BUFFER) > 0:
+                        print(static.RX_BUFFER[bufferposition])
                         self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
+                        
+                        
+
+
+
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                     static.RX_BUFFER = []
