@@ -209,6 +209,7 @@ def arq_data_received(data_in):
             #time.sleep(0.5)  # 0.5
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(static.FRAME_CRC.hex()) + "] [SNR:" + str(static.SNR) + "]")
 
+            helpers.wait(1)
             modem.transmit_signalling(ack_frame, 1)
 
             while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
