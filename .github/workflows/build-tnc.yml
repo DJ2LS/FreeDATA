@@ -29,8 +29,16 @@ jobs:
           cd dist
           ls
       - name: Save daemon to repository
-        uses: actions/upload-artifact@v2
+        uses: actions/download-artifact@v2
         with:
           name: daemon
           path: dist
-          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
+      
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: tnc
+        #uses: actions/upload-artifact@v2
+        #with:
+        #  name: daemon
+        #  path: dist
+        #  if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
