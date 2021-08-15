@@ -128,6 +128,9 @@ client.on('data', function(data) {
                 arq_rx_frame_n_bursts: data['ARQ_RX_FRAME_N_BURSTS'],
                 arq_rx_n_current_arq_frame: data['ARQ_RX_N_CURRENT_ARQ_FRAME'],
                 arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
+                arq_bytes_per_minute: data['ARQ_BYTES_PER_MINUTE'],
+                total_bytes: data['TOTAL_BYTES'],
+                arq_transmission_percentage: data['ARQ_TRANSMISSION_PERCENTAGE'],
                 stations: data['STATIONS'],
             };
             console.log(Data)
@@ -240,5 +243,11 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
     command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : " '+dxcallsign+' ", "mode" : " '+mode+' ", "n_frames" : " '+frames+' ", "data" : " '+data+' ", "checksum" : " '+checksum+' ", "timestamp" : '+Date.now()+'}'
+    writeTncCommand(command)
+}
+
+// Get RX BUffer
+exports.getRxBuffer = function() {
+    command = '{"type" : "GET", "command" : "RX_BUFFER", "timestamp" : '+Date.now()+'}'
     writeTncCommand(command)
 }
