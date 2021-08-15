@@ -122,9 +122,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
                     
-                    #dataframe = '{"filename": "'+ filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}'
+                    ##dataframe = '{"filename": "'+ filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}'
                     dataframe = {"filename" : filename , "filetype" :filetype, "data" : data, "checksum" :checksum}
+
                     #data_out = bytes(received_json["data"], 'utf-8')
+                    dataframe = json.dumps(dataframe)
                     data_out = bytes(dataframe, 'utf-8')
 
                    
