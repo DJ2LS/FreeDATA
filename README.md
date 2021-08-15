@@ -10,11 +10,12 @@ The project is still a prototype and not usable at this time.
 wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
 chmod +x install-codec2-FreeDATA.sh
 ./install-codec2-FreeDATA.sh
-sudo apt install npm+
+sudo apt install npm
 cd gui
 npm i
 sudo apt install python3
 pip3 install psutil
+pip3 install crcengine
 ```
 ## Manual Installation macOS
 ### Install brew and python3
