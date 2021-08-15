@@ -31,7 +31,7 @@ jobs:
       - name: Save build artifacts to Action
         uses: actions/upload-artifact@v2
         with:
-          name: build result
+          name: ubuntu-latest
           path: ./tnc/dist/
           if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
      
@@ -39,4 +39,4 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: daemon
-          path: ~/download/
+          path: ./tnc/dist/
