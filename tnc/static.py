@@ -118,7 +118,7 @@ ARQ_TX_N_TOTAL_ARQ_FRAMES = 0
 ##
 
 # RX
-ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = 0  # total number of arq frames per data frame
+ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = b'\x00\x00'  # total number of arq frames per data frame
 ARQ_RX_N_CURRENT_ARQ_FRAME = 0
 ##
 

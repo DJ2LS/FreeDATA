@@ -15,7 +15,7 @@ import crcengine
 import static
 import data_handler
 
-def timeout(seconds):
+def wait(seconds):
     timeout = time.time() + seconds
     
     while time.time() < timeout:
@@ -130,12 +130,18 @@ def arq_reset_frame_machine():
     static.ARQ_START_OF_TRANSMISSION = 0
 
 def calculate_transfer_rate():
-   
-    if static.ARQ_TX_N_TOTAL_ARQ_FRAMES == 0:
-        total_n_frames = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
-    elif static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME == 0:
-        total_n_frames = int.from_bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES, "big")
 
+    arq_tx_n_total_arq_frames = int.from_bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES, "big")
+    arq_n_arq_frames_per_data_frame = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
+    arq_rx_n_current_arq_frame = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME
+
+   
+    if arq_tx_n_total_arq_frames == 0:
+        total_n_frames = arq_n_arq_frames_per_data_frame
+    elif arq_n_arq_frames_per_data_frame == 0:
+        total_n_frames = arq_tx_n_total_arq_frames
+    else:
+        total_n_frames = 0
 
     static.TOTAL_BYTES = (total_n_frames * static.ARQ_PAYLOAD_PER_FRAME)
     total_transmission_time = time.time() - static.ARQ_START_OF_TRANSMISSION
@@ -152,11 +158,14 @@ def calculate_transfer_rate():
    
    
     # calculate transmission percentage
-    if int(static.ARQ_TX_N_TOTAL_ARQ_FRAMES) > 0:
-        static.ARQ_TRANSMISSION_PERCENT = int(static.ARQ_TX_N_CURRENT_ARQ_FRAME) / int(static.ARQ_TX_N_TOTAL_ARQ_FRAMES)
-  
-    elif int(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) > 0:
-        static.ARQ_TRANSMISSION_PERCENT = int(static.ARQ_RX_N_CURRENT_ARQ_FRAME) / int(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME)
+
+    
+    if arq_tx_n_total_arq_frames > 0:
+        static.ARQ_TRANSMISSION_PERCENT = arq_rx_n_current_arq_frame / arq_tx_n_total_arq_frames
+
+
+    elif arq_n_arq_frames_per_data_frame > 0:
+        static.ARQ_TRANSMISSION_PERCENT = arq_rx_n_current_arq_frame / arq_n_arq_frames_per_data_frame
     else:
         static.ARQ_TRANSMISSION_PERCENT = 0.0   
    

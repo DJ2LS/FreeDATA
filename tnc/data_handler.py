@@ -575,6 +575,7 @@ async def arq_open_data_channel(mode):
             
             if not static.ARQ_READY_FOR_DATA and attempt + 1 == static.ARQ_OPEN_DATA_CHANNEL_RETRIES:
                 logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                helpers.arq_reset_frame_machine()
                 sys.exit()
 
 
@@ -628,6 +629,9 @@ def arq_received_channel_is_open(data_in):
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
         logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
         
+        
+        helpers.wait(1)
+        
         static.ARQ_STATE = 'DATA'
         static.ARQ_READY_FOR_DATA = True
         static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
@@ -653,7 +657,9 @@ def transmit_ping(callsign):
 
     # wait while sending....
     modem.transmit_signalling(ping_frame, 1)
+    print("ping=?")
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+        print("PING....")
         time.sleep(0.01)
 
 
