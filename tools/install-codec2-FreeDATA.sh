@@ -24,3 +24,7 @@ make
 cd ~/codec2-FreeDATA/codec2/build_linux && rm -Rf *
 cmake -DLPCNET_BUILD_DIR=~/codec2-FreeDATA/tnc/LPCNet/build_linux ..
 make
+
+
+cd ~/codec2-FreeDATA/gui
+npm i
