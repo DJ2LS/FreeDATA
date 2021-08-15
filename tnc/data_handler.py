@@ -447,8 +447,8 @@ def arq_transmit(data_out):
             logging.debug("NO MATCHING RULE AT THE END")
 
     # IF TX BUFFER IS EMPTY / ALL FRAMES HAVE BEEN SENT --> HERE WE COULD ADD AN static.VAR for IDLE STATE
-    transfer_rates = helpers.calculate_transfer_rate()
-    logging.info("RATE (DATA/ACK) :[" + str(transfer_rates[0]) + " bit/s | " + str(transfer_rates[1]) + " B/min]")
+    #transfer_rates = helpers.calculate_transfer_rate()
+    #logging.info("RATE (DATA/ACK) :[" + str(transfer_rates[0]) + " bit/s | " + str(transfer_rates[1]) + " B/min]")
 
     logging.info("ARQ | TX | BUFFER EMPTY")
     helpers.arq_reset_frame_machine()
