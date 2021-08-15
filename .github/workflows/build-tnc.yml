@@ -3,7 +3,7 @@ name: Build/TNC
 on: push
 
 jobs:
-  job1:
+  ubuntu-latest:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -25,9 +25,10 @@ jobs:
         run: |      
           pyinstaller -F daemon.py -n daemon
           pyinstaller -F main.py -n tnc
+          ls
       - name: Save daemon to repository
         uses: actions/upload-artifact@v2
         with:
           name: daemon
-          path: dist/daemon
+          path: daemon
           if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
