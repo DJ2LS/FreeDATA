@@ -162,7 +162,13 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // startPing button clicked 
     document.getElementById("sendPing").addEventListener("click", () => {
-        dxcallsign = document.getElementById("dxCall").value
+        var dxcallsign = document.getElementById("dxCall").value
+        sock.sendPing(dxcallsign)
+    });
+    
+    // dataModalstartPing button clicked 
+    document.getElementById("dataModalSendPing").addEventListener("click", () => {
+        var dxcallsign = document.getElementById("dataModalDxCall").value
         sock.sendPing(dxcallsign)
     });
 
@@ -213,23 +219,54 @@ window.addEventListener('DOMContentLoaded', () => {
       
       
   // START TRANSMISSION    
-          document.getElementById("startTransmission").addEventListener("click", () => {
+        document.getElementById("startTransmission").addEventListener("click", () => {
+              
+        var fileList = document.getElementById("dataModalFile").files;         
+
+
+        
+        var reader = new FileReader();
+        	reader.readAsBinaryString(fileList[0]);
+
+	    reader.onload = function(e) {
+		// binary data
+		//console.log(e.target.result);
+	    
+	    console.log(fileList[0])
+        console.log(fileList[0].name)
+        console.log(fileList[0].type)
+        console.log(fileList[0].size)
+        console.log(fileList[0].path)
+	                  
         let Data = {
             command: "sendFile",
-            dxcallsign: document.getElementById("dxCall").value,
+            dxcallsign: document.getElementById("dataModalDxCall").value,
             mode: document.getElementById("datamode").value,
             frames: document.getElementById("framesperburst").value,
-            filetype: 'txt',
-            filename: 'testfile',
-            data: '1234567',
+            filetype: fileList[0].type,
+            filename: fileList[0].name,
+            data: e.target.result,
             checksum: '123123123',
         };
         ipcRenderer.send('run-tnc-command', Data);
-        
-        
+	    	     
+	};
+	reader.onerror = function(e) {
+		// error occurred
+		console.log('Error : ' + e.type);
+	};
+            
     })
-
-  
+    
+    
+    
+    // stopTNC button clicked 
+    document.getElementById("getRxBuffer").addEventListener("click", () => {
+     sock.getRxBuffer()   
+    })
+    
+    
+    
 
 })
 
@@ -373,15 +410,29 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // SET BANDWITH
     document.getElementById("bandwith").innerHTML = arg.bandwith
     
+      // SET BYTES PER MINUTE
+      if (typeof(arg.arq_bytes_per_minute) == 'undefined'){
+    var arq_bytes_per_minute = 0
+    } else {
+     var arq_bytes_per_minute = arg.arq_bytes_per_minute
+    }    
+    document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute
+    
+      // SET TOTAL BYTES
+      if (typeof(arg.total_bytes) == 'undefined'){
+    var total_bytes = 0
+    } else {
+     var total_bytes = arg.total_bytes
+    }    
+    document.getElementById("total_bytes").innerHTML = total_bytes
+        
+        document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percentage)
+    document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percentage + "%;")
     
     
-    // UPDATE HEARD STATIONS
-    //console.log(arg.stations)
-    //console.log(arg.stations[0]['DXGRID'])    
+    // UPDATE HEARD STATIONS  
   var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = ''
-
-
 
     if (typeof(arg.stations) == 'undefined'){
     var heardStationsLength = 0
@@ -399,17 +450,14 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             var myGrid = document.getElementById("myGrid").value 
 try {   
     var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-    document.getElementById("pingDistance").innerHTML = dist
-
+        document.getElementById("pingDistance").innerHTML = dist
+        document.getElementById("dataModalPingDistance").innerHTML = dist
         } catch {
          document.getElementById("pingDistance").innerHTML = '---'
+         document.getElementById("dataModalPingDistance").innerHTML = '---'
         }            
                         document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
-
-
-
-
-
+                        document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']   
         }
 
 
