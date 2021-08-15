@@ -22,3 +22,4 @@ jobs:
           pip3 install psutil
           pip3 install crcengine
           pip3 install threading
+          pip3 install subprocess
