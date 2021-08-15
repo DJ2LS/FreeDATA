@@ -19,6 +19,7 @@ jobs:
           pip3 install pyaudio
           pip3 install psutil
           pip3 install crcengine
+          pip3 install pyinstaller
       - name: Build with Pyinstaller
         run: |
           pyinstaller -F daemon.py -n daemon
