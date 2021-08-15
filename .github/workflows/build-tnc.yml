@@ -21,6 +21,7 @@ jobs:
           pip3 install crcengine
           pip3 install pyinstaller
       - name: Build with Pyinstaller
-        run: |
+        working-directory: tnc
+        run: |      
           pyinstaller -F daemon.py -n daemon
           pyinstaller -F main.py -n tnc
