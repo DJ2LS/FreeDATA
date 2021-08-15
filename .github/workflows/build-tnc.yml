@@ -25,20 +25,15 @@ jobs:
         run: |      
           pyinstaller -F daemon.py -n daemon
           pyinstaller -F main.py -n tnc
-          ls
           cd dist
-          ls
+          ls -R
+      
+      - run: echo hello > world.txt
+
       - name: Save daemon to repository
-        uses: actions/download-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
           name: daemon
-          path: dist
-      
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: tnc
-        #uses: actions/upload-artifact@v2
-        #with:
-        #  name: daemon
-        #  path: dist
-        #  if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
+          #path: ./tnc/dist
+          path: world.txt
+          if-no-files-found: error # 'warn' or 'ignore' are also available, defaults to `warn` 
