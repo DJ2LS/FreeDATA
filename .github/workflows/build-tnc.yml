@@ -1,6 +1,9 @@
 
 name: Build/TNC
-on: push
+on: 
+  push:
+    tags:
+    - '*'
 
 jobs:
   ubuntu-latest:
