@@ -121,4 +121,7 @@ ipcMain.on('request-update-daemon-connection', (event, arg) => {
 ipcMain.on('run-tnc-command', (event, arg) => {
             win.webContents.send('run-tnc-command', arg);
 });
-            
+
+ipcMain.on('request-update-rx-buffer', (event, arg) => {
+            win.webContents.send('action-update-rx-buffer', arg);
+});            

@@ -550,6 +550,11 @@ try {
 });
 
 
+ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
+
+var daten = arg.["DATA"][0]
+console.log(daten)
+});
 
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
