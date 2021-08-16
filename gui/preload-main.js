@@ -226,7 +226,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
         
         var reader = new FileReader();
-        	reader.readAsBinaryString(fileList[0]);
+        	//reader.readAsBinaryString(fileList[0]);
+        	reader.readAsDataURL(fileList[0]);
+
 
 	    reader.onload = function(e) {
 		// binary data
@@ -237,6 +239,9 @@ window.addEventListener('DOMContentLoaded', () => {
         console.log(fileList[0].type)
         console.log(fileList[0].size)
         console.log(fileList[0].path)
+        
+        var data = e.target.result        
+        console.log(data)
 	                  
         let Data = {
             command: "sendFile",
@@ -245,7 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
             frames: document.getElementById("framesperburst").value,
             filetype: fileList[0].type,
             filename: fileList[0].name,
-            data: e.target.result,
+            data: data,
             checksum: '123123123',
         };
         ipcRenderer.send('run-tnc-command', Data);
@@ -504,11 +509,7 @@ try {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['DATATYPE']
         dataType.appendChild(dataTypeText);
-
-    
-        
-        
-        
+         
         if(dataTypeText.innerText == 'CQ CQ CQ'){
             row.classList.add("table-success");
         }
