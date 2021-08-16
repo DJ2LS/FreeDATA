@@ -197,7 +197,11 @@ def arq_data_received(data_in):
 
             
             # append received frame to RX_BUFFER
-            static.RX_BUFFER.append({"DXCALL" : static.DXCALLSIGN ,"DATA" : complete_data_frame.decode("utf-8")})
+            ###static.RX_BUFFER.append({"DXCALL" : static.DXCALLSIGN ,"DATA" : complete_data_frame.decode("utf-8")})
+            ###static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame.decode("utf-8")])
+            static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame.decode("utf-8")])
+
+
 
             # BUILDING ACK FRAME FOR DATA FRAME -----------------------------------------------
             ack_frame = bytearray(14)
