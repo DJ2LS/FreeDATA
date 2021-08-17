@@ -552,7 +552,7 @@ try {
 
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
-var daten = arg.data["DATA"][0]
+var daten = arg.data
 console.log(daten)
 });
 
