@@ -217,22 +217,17 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
                     output = {
                         "COMMAND": "RX_BUFFER",
-                        "DATA" : [],
+                        "DATAARAY" : [],
                         "EOF" : "EOF",
                     }
                     for i in range(0, len(static.RX_BUFFER)):
-                        #print(static.RX_BUFFER[i])
-                        
-                        
-                        output["DATA"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'),"DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "DATA": [static.RX_BUFFER[i][3]]})  
-                        
-                        print(output)
-                        jsondata = json.dumps(output)
-                        
-                        print(jsondata)
-                        self.request.sendall(bytes(jsondata, encoding))
                     
-                    
+                        rawdata = json.loads(static.RX_BUFFER[i][3])
+                        
+                        output["DATAARAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'),"DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})  
+                        
+                    jsondata = json.dumps(output)
+                    self.request.sendall(bytes(jsondata, encoding))
                     
                     
                     
