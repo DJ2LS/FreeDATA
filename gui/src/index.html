@@ -461,7 +461,7 @@
                      <div class="row">
                         <div class="col-md-auto">
                            <div class="input-group input-group-sm mb-0">
-                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="callsign" id="myCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
+                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="callsign" pattern="[A-Z]*" id="myCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
                               <button class="btn btn-success" id="saveMyCall" type="button">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
                                     <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
@@ -492,7 +492,7 @@
                         <div class="col-md-auto">
                            <div class="input-group input-group-sm mb-0">
                               <span class="input-group-text">Ping</span>
-                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" id="dxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
+                              <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" pattern="[A-Z]*" id="dxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
                               <button class="btn btn-success" id="sendPing" type="button">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
                                     <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
@@ -580,7 +580,7 @@
                                 <div class="row">
                                     <div class="col-auto">    
                                          <div class="input-group input-group-sm mb-0">
-                                                                  <input type="text" class="form-control" style="max-width: 6rem" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
+                                                                  <input type="text" class="form-control" style="max-width: 6rem" pattern="[A-Z]*" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
                                          </div>
                                  </div>
                                 
@@ -667,6 +667,8 @@
 
                     <div class="col-md-auto">
                         <button type="button" id="stopTNC" class="btn btn-danger" style="width:100%" disabled>STOP</button>
+                        
+
                     </div>
                     
                 </div>
@@ -687,7 +689,32 @@
                         
                         
                          <button type="button" id="getRxBuffer" class="btn btn-danger" style="width:100%">GET RX BUFFER</button>
-                         
+
+                     <!-- START OF TABLE FOR RECEIVED FILES-->
+                     <table class="table">
+                        <thead>
+                           <tr>
+                              <th scope="col">Time</th>
+                              <th scope="col">DXCall</th>
+                              <th scope="col">DXGrid</th>
+                              <th scope="col">Distance</th>
+                              <th scope="col">Filename</th>
+                              <th scope="col">SNR</th>
+
+                           </tr>
+                        </thead>
+                        <tbody id="heardstations">
+                           <!--
+                              <tr>
+                                <th scope="row">1</th>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                              </tr>
+                                  -->
+                        </tbody>
+                     </table>
+                     <!-- END OF HEARD RECEIVED FILES-->                          
                          
                     </div>
                 </div>
