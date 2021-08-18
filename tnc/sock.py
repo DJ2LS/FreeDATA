@@ -123,11 +123,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
                     
                     #dataframe = '{"filename": "'+ filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}'
-                    dataframe = {"filename" : filename , "filetype" :filetype, "data" : data, "checksum" :checksum}
+                    rawdata = {"filename" : filename , "filetype" :filetype, "data" : data, "checksum" : checksum}
                     #dataframe = {filename: filename}
                     #data_out = bytes(received_json["data"], 'utf-8')
+                    dataframe = json.dumps(rawdata)
+                    print(dataframe)
                     data_out = bytes(dataframe, 'utf-8')
-
+                    print(data_out)
                    
                     
                     #ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
