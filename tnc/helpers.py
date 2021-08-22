@@ -161,8 +161,8 @@ def calculate_transfer_rate():
 
     
     if arq_tx_n_total_arq_frames > 0:
-        static.ARQ_TRANSMISSION_PERCENT = arq_rx_n_current_arq_frame / arq_tx_n_total_arq_frames
 
+        static.ARQ_TRANSMISSION_PERCENT = int.from_bytes(bytes(arq_rx_n_current_arq_frame), "big") / arq_tx_n_total_arq_frames
 
     elif arq_n_arq_frames_per_data_frame > 0:
         static.ARQ_TRANSMISSION_PERCENT = arq_rx_n_current_arq_frame / arq_n_arq_frames_per_data_frame
@@ -171,10 +171,7 @@ def calculate_transfer_rate():
    
       
     return [static.ARQ_BITS_PER_SECOND, static.ARQ_BYTES_PER_MINUTE, static.ARQ_BITS_PER_SECOND_BURST, static.ARQ_BYTES_PER_MINUTE_BURST]
-
-
-
-                
+               
 
 def add_to_heard_stations(dxcallsign,dxgrid, datatype, snr):
     # check if buffer empty
