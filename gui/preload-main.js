@@ -649,13 +649,16 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 var data = arg.data["DATA"]
 
 
-    //console.log(arg.stations)
-    //console.log(arg.stations[0]['DXGRID'])
 
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
 
     for (i = 0; i < arg.data.length; i++) {
+
+//    console.log(arg.data)
+//    console.log(arg.data[i]['RXDATA'])
+//    console.log(arg.data[i]['RXDATA'][0])
+
 
         // first we update the PING window
         if (arg.data[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
@@ -698,7 +701,7 @@ var data = arg.data["DATA"]
 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        fileNameText.innerText = arg.stations[i]['RXDATA']['filename']
+        fileNameText.innerText = arg.data[i]['RXDATA'][0]['filename']
         fileName.appendChild(fileNameText);
 
 
@@ -713,7 +716,7 @@ var data = arg.data["DATA"]
         
         // write file to local folder
 
-require("fs").writeFile(arg.stations[i]['RXDATA']['filename'], arg.stations[i]['RXDATA']['data'], 'base64', function(err) {
+require("fs").writeFile(arg.data[i]['RXDATA'][0]['filename'], arg.data[i]['RXDATA'][0]['data'], 'base64', function(err) {
   console.log(err);
 });
 
