@@ -648,8 +648,6 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
 var data = arg.data["DATA"]
 
-console.log(data)
-console.log(arg.data.length)
 
     //console.log(arg.stations)
     //console.log(arg.stations[0]['DXGRID'])
@@ -691,25 +689,37 @@ console.log(arg.data.length)
         dxCallText.innerText = arg.data[i]['DXCALLSIGN']
         dxCall.appendChild(dxCallText);
 
+/*
         var dxGrid = document.createElement("td");
         var dxGridText = document.createElement('span');
         dxGridText.innerText = arg.data[i]['DXGRID']
         dxGrid.appendChild(dxGridText);
-
-/*
-        var dataType = document.createElement("td");
-        var dataTypeText = document.createElement('span');
-        dataTypeText.innerText = arg.stations[i]['DATATYPE']
-        dataType.appendChild(dataTypeText);
 */
+
+        var fileName = document.createElement("td");
+        var fileNameText = document.createElement('span');
+        fileNameText.innerText = arg.stations[i]['RXDATA']['filename']
+        fileName.appendChild(fileNameText);
+
 
 
         row.appendChild(timestamp);
         row.appendChild(dxCall);
-        row.appendChild(dxGrid);
-  //      row.appendChild(dataType);
-
+  //      row.appendChild(dxGrid);
+        row.appendChild(fileName);
+        
         tbl.appendChild(row);
+        
+        
+        // write file to local folder
+
+require("fs").writeFile(arg.stations[i]['RXDATA']['filename'], arg.stations[i]['RXDATA']['data'], 'base64', function(err) {
+  console.log(err);
+});
+
+
+        
+        
     }
 
 });
