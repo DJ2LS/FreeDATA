@@ -713,13 +713,20 @@ var data = arg.data["DATA"]
         
         tbl.appendChild(row);
         
+ 
+ 
+        // Creates rxdata folder if not exists
+        fs.mkdir('rxdata', { recursive: true }, (err) => {
+            if (err) throw err;
+        });
+ 
         
         // write file to local folder
         var base64String = arg.data[i]['RXDATA'][0]['data']
         //remove header from base64 String
         var base64Data = base64String.split(';base64,').pop()
         //write data to file
-        require("fs").writeFile(arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
+        require("fs").writeFile('rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
             console.log(err);
         });
 
