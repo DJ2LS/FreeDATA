@@ -550,11 +550,6 @@ try {
 });
 
 
-ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
-
-var daten = arg.data
-console.log(daten)
-});
 
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
@@ -648,20 +643,24 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 
 
-/*
-ipcRenderer.on('action-update-heard-stations', (event, arg) => {
+
+ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
+
+var data = arg.data["DATA"]
+
+console.log(data)
+console.log(arg.data.length)
+
     //console.log(arg.stations)
     //console.log(arg.stations[0]['DXGRID'])
 
-    var tbl = document.getElementById("heardstations");
-    document.getElementById("heardstations").innerHTML = ''
+    var tbl = document.getElementById("rx-data");
+    document.getElementById("rx-data").innerHTML = ''
 
-    for (i = 0; i < arg.stations.length; i++) {
-
+    for (i = 0; i < arg.data.length; i++) {
 
         // first we update the PING window
-        console.log(document.getElementById("dxCall").value)
-        if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
+        if (arg.data[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
             document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
             document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
 
@@ -675,7 +674,7 @@ ipcRenderer.on('action-update-heard-stations', (event, arg) => {
         //https://stackoverflow.com/q/51421470 
 
         //https://stackoverflow.com/a/847196 
-        timestampRaw = arg.stations[i]['TIMESTAMP']
+        timestampRaw = arg.data[i]['TIMESTAMP']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
         var minutes = "0" + date.getMinutes();
@@ -689,32 +688,32 @@ ipcRenderer.on('action-update-heard-stations', (event, arg) => {
 
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
-        dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
+        dxCallText.innerText = arg.data[i]['DXCALLSIGN']
         dxCall.appendChild(dxCallText);
 
         var dxGrid = document.createElement("td");
         var dxGridText = document.createElement('span');
-        dxGridText.innerText = arg.stations[i]['DXGRID']
+        dxGridText.innerText = arg.data[i]['DXGRID']
         dxGrid.appendChild(dxGridText);
 
-
+/*
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['DATATYPE']
         dataType.appendChild(dataTypeText);
-
+*/
 
 
         row.appendChild(timestamp);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
-        row.appendChild(dataType);
+  //      row.appendChild(dataType);
 
         tbl.appendChild(row);
     }
 
 });
-*/
+
 
 
 
