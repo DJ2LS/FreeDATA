@@ -13,15 +13,7 @@ const { locatorToLatLng, distance, bearingDistance, latLngToLocator } = require(
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 250)
-//setInterval(sock.getDataState, 500)
-//setInterval(sock.getHeardStations, 1000)
-
-console.log(global.rxBufferLengthGui)
-console.log(global.rxBufferLengthTnc)
-
-if(global.rxBufferLengthTnc !== global.rxBufferLengthGui){
-    setInterval(sock.getRxBuffer, 500)
-}
+setInterval(sock.getRxBuffer, 1000)
 
 
 
@@ -233,9 +225,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("startTransmission").addEventListener("click", () => {
               
         var fileList = document.getElementById("dataModalFile").files;         
-
-
-        
+      
         var reader = new FileReader();
         	//reader.readAsBinaryString(fileList[0]);
         	reader.readAsDataURL(fileList[0]);
@@ -243,14 +233,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 	    reader.onload = function(e) {
 		// binary data
-		//console.log(e.target.result);
-	    
-	    console.log(fileList[0])
-        console.log(fileList[0].name)
-        console.log(fileList[0].type)
-        console.log(fileList[0].size)
-        console.log(fileList[0].path)
-        
+
         var data = e.target.result        
         console.log(data)
 	                  
@@ -274,11 +257,7 @@ window.addEventListener('DOMContentLoaded', () => {
             
     })
     
-        
-    // stopTNC button clicked 
-    document.getElementById("getRxBuffer").addEventListener("click", () => {
-     sock.getRxBuffer()   
-    })
+       
     
 })
 
@@ -653,15 +632,8 @@ var data = arg.data["DATA"]
 
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
-    
-    global.rxBufferLengthGui = arg.data.length
 
-    for (i = 0; i < global.rxBufferLengthGui; i++) {
-
-//    console.log(arg.data)
-//    console.log(arg.data[i]['RXDATA'])
-//    console.log(arg.data[i]['RXDATA'][0])
-
+    for (i = 0; i < arg.data.length; i++) {
 
         // first we update the PING window
         if (arg.data[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {

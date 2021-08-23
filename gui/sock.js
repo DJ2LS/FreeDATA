@@ -7,6 +7,12 @@ const {
 var client = new net.Socket();
 var msg = ''; // Current message, per connection.
 
+// globals for getting new data only if available
+var rxBufferLengthTnc = 0
+var rxBufferLengthGui = 0
+
+
+// network connection Timeout
 setTimeout(connectTNC, 3000)
 
 function connectTNC() {
@@ -108,6 +114,8 @@ client.on('data', function(data) {
 
         if (data['COMMAND'] == 'TNC_STATE') {
 
+            rxBufferLengthTnc = data['RX_BUFFER_LENGTH']
+            
             let Data = {
                 toe: Date.now() - data['TIMESTAMP'], // time of execution
                 ptt_state: data['PTT_STATE'],
@@ -138,6 +146,9 @@ client.on('data', function(data) {
         }
         
         if (data['COMMAND'] == 'RX_BUFFER') {
+        
+            rxBufferLengthGui = data['DATA-ARRAY'].length
+            console.log(rxBufferLengthGui)
             let Data = {
                 data : data['DATA-ARRAY'],
             };
@@ -260,5 +271,9 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
 // Get RX BUffer
 exports.getRxBuffer = function() {
     command = '{"type" : "GET", "command" : "RX_BUFFER", "timestamp" : '+Date.now()+'}'
-    writeTncCommand(command)
+
+    // call command only if new data arrived
+    if(rxBufferLengthGui != rxBufferLengthTnc){
+        writeTncCommand(command)
+    }
 }
