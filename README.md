@@ -16,6 +16,7 @@ npm i
 sudo apt install python3
 pip3 install psutil
 pip3 install crcengine
+pip3 install ujson
 ```
 ## Manual Installation macOS
 ### Install brew and python3
