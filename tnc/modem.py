@@ -330,7 +330,7 @@ class RF():
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
                     static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
-                    static.n_total_arq_frame.to_bytes(2, byteorder='big') + \
+                    n_total_arq_frame.to_bytes(2, byteorder='big') + \
                     static.DXCALLSIGN_CRC8 + \
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
@@ -373,7 +373,7 @@ class RF():
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
                     static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
-                    static.n_total_arq_frame.to_bytes(2, byteorder='big') + \
+                    n_total_arq_frame.to_bytes(2, byteorder='big') + \
                     static.DXCALLSIGN_CRC8 + \
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
