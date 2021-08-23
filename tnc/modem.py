@@ -325,12 +325,12 @@ class RF():
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
 
                 n_total_arq_frame = len(static.TX_BUFFER)
-                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame.to_bytes(2, byteorder='big')
+                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
 
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
                     static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
-                    static.ARQ_TX_N_TOTAL_ARQ_FRAMES + \
+                    static.n_total_arq_frame.to_bytes(2, byteorder='big') + \
                     static.DXCALLSIGN_CRC8 + \
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
@@ -368,12 +368,12 @@ class RF():
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
 
                 n_total_arq_frame = len(static.TX_BUFFER)
-                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame.to_bytes(2, byteorder='big')
+                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
 
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
                     static.ARQ_TX_N_CURRENT_ARQ_FRAME + \
-                    static.ARQ_TX_N_TOTAL_ARQ_FRAMES + \
+                    static.n_total_arq_frame.to_bytes(2, byteorder='big') + \
                     static.DXCALLSIGN_CRC8 + \
                     static.MYCALLSIGN_CRC8 + \
                     payload_data
