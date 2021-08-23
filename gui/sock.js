@@ -139,7 +139,7 @@ client.on('data', function(data) {
         
         if (data['COMMAND'] == 'RX_BUFFER') {
             let Data = {
-                data : data['DATAARAY'],
+                data : data['DATAARRAY'],
             };
             console.log(Data)
             ipcRenderer.send('request-update-rx-buffer', Data);

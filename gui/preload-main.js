@@ -16,6 +16,17 @@ setInterval(sock.getTncState, 250)
 //setInterval(sock.getDataState, 500)
 //setInterval(sock.getHeardStations, 1000)
 
+console.log(global.rxBufferLengthGui)
+console.log(global.rxBufferLengthTnc)
+
+if(global.rxBufferLengthTnc !== global.rxBufferLengthGui){
+    setInterval(sock.getRxBuffer, 500)
+}
+
+
+
+
+
 // UPDATE FFT DEMO 
 
 updateFFT = function(fft) {
@@ -263,23 +274,18 @@ window.addEventListener('DOMContentLoaded', () => {
             
     })
     
-    
-    
+        
     // stopTNC button clicked 
     document.getElementById("getRxBuffer").addEventListener("click", () => {
      sock.getRxBuffer()   
     })
     
-    
-    
-
 })
 
 
 
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
-
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
     if (typeof(arg.toe) == 'undefined'){
@@ -288,7 +294,9 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
      var toe = arg.toe
     }    
     document.getElementById("toe").innerHTML = toe + ' ms'
-    
+   
+   // DATA STATE
+   global.rxBufferLengthTnc = arg.rx_buffer_length 
     
 
     // SCATTER DIAGRAM PLOTTING
@@ -430,8 +438,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
      var total_bytes = arg.total_bytes
     }    
     document.getElementById("total_bytes").innerHTML = total_bytes
-        
-        document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percentage)
+    document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percentage)
     document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percentage + "%;")
     
     
@@ -453,18 +460,17 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
             var dxGrid = arg.stations[i]['DXGRID']
             var myGrid = document.getElementById("myGrid").value 
-try {   
-    var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-        document.getElementById("pingDistance").innerHTML = dist
-        document.getElementById("dataModalPingDistance").innerHTML = dist
+        try {   
+            var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
+                document.getElementById("pingDistance").innerHTML = dist
+                document.getElementById("dataModalPingDistance").innerHTML = dist
         } catch {
-         document.getElementById("pingDistance").innerHTML = '---'
-         document.getElementById("dataModalPingDistance").innerHTML = '---'
+            document.getElementById("pingDistance").innerHTML = '---'
+            document.getElementById("dataModalPingDistance").innerHTML = '---'
         }            
-                        document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
-                        document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']   
+            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
+            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']   
         }
-
 
 
         // now we update the heard stations list
@@ -501,7 +507,7 @@ try {
         try{
             gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['DXGRID'])) + ' km';
         } catch {
-         gridDistanceText.innerText = '---'
+            gridDistanceText.innerText = '---'
         }
         gridDistance.appendChild(gridDistanceText);    
 
@@ -545,8 +551,7 @@ try {
 
         tbl.appendChild(row);
     }
-    
-    
+     
 });
 
 
@@ -642,18 +647,16 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 });
 
 
-
-
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
 var data = arg.data["DATA"]
 
-
-
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
+    
+    global.rxBufferLengthGui = arg.data.length
 
-    for (i = 0; i < arg.data.length; i++) {
+    for (i = 0; i < global.rxBufferLengthGui; i++) {
 
 //    console.log(arg.data)
 //    console.log(arg.data[i]['RXDATA'])
@@ -666,8 +669,6 @@ var data = arg.data["DATA"]
             document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
 
         }
-
-
 
         // now we update the heard stations list
 
@@ -716,23 +717,20 @@ var data = arg.data["DATA"]
  
  
         // Creates rxdata folder if not exists
-        fs.mkdir('rxdata', { recursive: true }, (err) => {
-            if (err) throw err;
+        // https://stackoverflow.com/a/13544465
+        fs.mkdir('rxdata', { recursive: true },  function(err) {
+            console.log(err);
         });
  
-        
-        // write file to local folder
+        // write file to rxdata folder
         var base64String = arg.data[i]['RXDATA'][0]['data']
-        //remove header from base64 String
+        // remove header from base64 String
+        // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
         //write data to file
         require("fs").writeFile('rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
             console.log(err);
-        });
-
-
-        
-        
+        });        
     }
 
 });
