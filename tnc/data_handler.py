@@ -57,6 +57,8 @@ def arq_data_received(data_in):
     logging.debug("ARQ_N_ARQ_FRAMES_PER_DATA_FRAME: " + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME))
     logging.debug("----------------------------------------------------------------")
 
+
+    helpers.calculate_transfer_rate()    
     arq_percent_burst = int((static.ARQ_N_FRAME / static.ARQ_N_RX_FRAMES_PER_BURSTS) * 100)
     arq_percent_frame = int(((static.ARQ_RX_N_CURRENT_ARQ_FRAME) / static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) * 100)
 
@@ -309,6 +311,7 @@ def arq_transmit(data_out):
         for static.TX_N_RETRIES in range(static.TX_N_MAX_RETRIES):
 
             if static.ARQ_N_SENT_FRAMES + 1 <= static.TX_BUFFER_SIZE:
+                helpers.calculate_transfer_rate() 
                 logging.log(24, "ARQ | TX | M:" + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_SENT_FRAMES + 1) + "-" + str(static.ARQ_N_SENT_FRAMES + static.ARQ_TX_N_FRAMES_PER_BURST) + "] | T:[" + str(static.ARQ_N_SENT_FRAMES) + "/" + str(static.TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_N_SENT_FRAMES / (static.TX_BUFFER_SIZE) * 100)).zfill(3) + "%] | A:[" + str(static.TX_N_RETRIES + 1) + "/" + str(static.TX_N_MAX_RETRIES) + "]")
 
             # lets refresh all timers and ack states before sending a new frame
