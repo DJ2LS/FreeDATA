@@ -226,7 +226,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                         rawdata = json.loads(static.RX_BUFFER[i][3])
                         
-                        output["DATAARAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'),"DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})  
+                        output["DATAARRAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'),"DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})  
                         
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
