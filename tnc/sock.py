@@ -24,7 +24,8 @@ Created on Fri Dec 25 21:25:14 2020
 import socketserver
 import threading
 import logging
-import json
+import ujson as json
+#import json
 import asyncio
 import time
 
@@ -69,13 +70,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 
                 received_json = json.loads(data)
 
-            except json.decoder.JSONDecodeError as e:
+            except ValueError as e:
                 print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
                 print(e)
                 print("-----------------------------------")
                 print(data)
                 print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
                 received_json = {}
+                
             
             try:
 
@@ -175,6 +177,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
                     #print(static.SCATTER)
+
                     output = {
                         "COMMAND": "TNC_STATE",
                         "TIMESTAMP" : received_json["timestamp"],
@@ -198,7 +201,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.ARQ_TX_N_TOTAL_ARQ_FRAMES), "big")),
                         "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                         "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
-                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME),
+                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(int.from_bytes(bytes(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME), "big")),
                         "ARQ_BYTES_PER_MINUTE" : str(static.ARQ_BYTES_PER_MINUTE),
                         "ARQ_TRANSMISSION_PERCENT" : str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES" : str(static.TOTAL_BYTES),
@@ -211,9 +214,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})  
                     
                     
-                    jsondata = json.dumps(output)
-                    self.request.sendall(bytes(jsondata, encoding))
 
+                    try: 
+                        jsondata = json.dumps(output)
+                    except ValueError as e:
+                        print(e)
+                        
+                    try:
+                        self.request.sendall(bytes(jsondata, encoding))
+                    except Exception as e:
+                        print(e)
 
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
@@ -257,7 +267,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.RX_BUFFER = []
             
             #exception, if JSON cant be decoded
-            except Exception as e:
+            #except Exception as e:
+            except ValueError as e:
                 print("############ START OF ERROR #####################")
                 print("SOCKET COMMAND ERROR: " + data)
                 print(e)

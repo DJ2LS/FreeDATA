@@ -13,11 +13,12 @@ import threading
 import socketserver
 import pyaudio
 import time
-import json
+import ujson as json
 import subprocess
 import os
 import static
 import psutil
+import sys
 #PORT = 3001
 #TNCPROCESS = 0
 #TNCSTARTED = False
@@ -77,11 +78,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # we need to do some error handling in case of socket timeout
             
             try:
+                
                 received_json = json.loads(data)
-                #print(received_json)
 
-            except:
-                received_json = ''
+            except ValueError as e:
+                print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
+                print(e)
+                print("-----------------------------------")
+                print(data)
+                print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
+                received_json = {}
 
             
 
@@ -147,9 +153,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         name = p.get_device_info_by_host_api_device_index(0,i).get('name')  
                         
                         if maxInputChannels > 0:                        
-                            data["INPUT_DEVICES"].append({"ID": i, "NAME" : name})  
+                            data["INPUT_DEVICES"].append({"ID": i, "NAME" : str(name)})  
                         if maxOutputChannels > 0:                        
-                            data["OUTPUT_DEVICES"].append({"ID": i, "NAME" : name})  
+                            data["OUTPUT_DEVICES"].append({"ID": i, "NAME" : str(name)})  
                           
           
 
@@ -160,11 +166,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
               
             
             #exception, if JSON cant be decoded
-            except Exception as e:
+            #except Exception as e:
+            except ValueError as e:
                 print("############ START OF ERROR #####################")
                 print('DAEMON PROGRAM ERROR: %s' %str(e))
                 print("Wrong command")
                 print(data)
+                print(e)
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+                print(exc_type, fname, exc_tb.tb_lineno)
                 print("############ END OF ERROR #######################")
 
         print("Client disconnected...")
