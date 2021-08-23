@@ -24,6 +24,9 @@ pip3 install crcengine
 ```
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew install python
+pip3 install psutil
+pip3 install crcengine
+pip3 install ujson
 ```
 ### Install dependencies
 ```
@@ -31,6 +34,7 @@ xcode-select --install
 brew remove portaudio
 brew install portaudio
 pip3 install pyaudio
+pip3 install ujson
 ```
 
 
