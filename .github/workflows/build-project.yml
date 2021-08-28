@@ -2,18 +2,16 @@ name: Build/PROJECT
 on:
   push:
     tags:
-      - "v*"
+     - '*'
 jobs:
   create_release:
     name: Create release
-    runs-on: ubuntu-latest
-    # Note this. We are going to use that in further jobs.
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -21,6 +19,7 @@ jobs:
           release_name: ${{ github.ref }}
           draft: false
           prerelease: false
+
 
 
 
@@ -45,19 +44,11 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-        
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14
           
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8  
-          
-          
-          
+          python-version: 3.8           
           
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -68,9 +59,7 @@ jobs:
           pip3 install psutil
           pip3 install crcengine
           pip3 install pyinstaller
-          
-
-          
+                    
       - name: Build with Pyinstaller Linux
         if: matrix.os == 'ubuntu-latest'
         working-directory: tnc
@@ -84,15 +73,34 @@ jobs:
         shell: bash
         run: |
           cd ./tnc/dist
-          mkdir ../artifact
-          zip -r ../artifact/${{ matrix.zip_name }}.zip *
+          mkdir ../compressed
+          zip -r ../compressed/${{ matrix.zip_name }}.zip *
 
-      - name: Upload
-        uses: actions/upload-release-asset@v1
+      - name: Release Linux
+        uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ needs.create_release.outputs.upload_url }}
-          asset_path: ./tnc/artifact/${{ matrix.zip_name }}.zip
-          asset_name: ${{ matrix.zip_name }}.zip
-          asset_content_type: application/zip
+          #upload_url: ${{ needs.create_release.outputs.upload_url }}
+          #asset_path: ./tnc/compressed/${{ matrix.zip_name }}.zip
+          #asset_name: ${{ matrix.zip_name }}.zip
+          #asset_content_type: application/zip
+          files: |
+            ./tnc/compressed/${{ matrix.zip_name }}.zip
+            LICENSE
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14  
+  
+  
+  #- name: Upload Linux
+  #      uses: actions/upload-release-asset@v1
+  #      env:
+  #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #      with:
+  #        upload_url: ${{ needs.create_release.outputs.upload_url }}
+  #        asset_path: ./tnc/artifact/${{ matrix.zip_name }}.zip
+  #        asset_name: ${{ matrix.zip_name }}.zip
+  #        asset_content_type: application/zip
