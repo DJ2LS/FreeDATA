@@ -72,22 +72,12 @@ jobs:
           mkdir ../artifact
           zip -r ../artifact/${{ matrix.zip_name }}.zip *
 
-
-
-      - name: Release Linux
-        uses: softprops/action-gh-release@v1
-        # if: startsWith(github.ref, 'refs/tags/')
+      - name: Upload
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          name: Test-Release-Ubuntu
-          tag_name: v0.1-alpha
-          prerelease: true
           upload_url: ${{ needs.create_release.outputs.upload_url }}
           asset_path: ./tnc/dist/artifact/${{ matrix.zip_name }}.zip
           asset_name: ${{ matrix.zip_name }}.zip
           asset_content_type: application/zip
-          files: |
-            ./tnc/dist/artifact/${{ matrix.zip_name }}.zip
-          #  ./tnc/dist/tnc
-          #  LICENSE
-            
-       
