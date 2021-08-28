@@ -1,7 +1,10 @@
-const sock = require('./sock.js')
-const daemon = require('./daemon.js')
-const configPath = './config.json'
+const path = require('path')
+const configPath =  path.join(__dirname, 'config.json');
 const config = require(configPath);
+
+const sock = require('./sock.js');
+const daemon = require('./daemon.js');
+
 const {
     ipcRenderer
 } = require('electron');
@@ -341,7 +344,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // PTT STATE
     if (arg.ptt_state == 'True') {
         document.getElementById("ptt_state").className = "btn btn-danger";
-
     } else if (arg.ptt_state == 'False') {
         document.getElementById("ptt_state").className = "btn btn-success";
     } else {
@@ -351,10 +353,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // BUSY STATE
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
+        document.getElementById("startTransmission").disabled = true        
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-success";
+        document.getElementById("startTransmission").disabled = false
     } else {
         document.getElementById("busy_state").className = "btn btn-secondary"
+        document.getElementById("startTransmission").disabled = true
     }
 
     // ARQ STATE
@@ -417,8 +422,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
      var total_bytes = arg.total_bytes
     }    
     document.getElementById("total_bytes").innerHTML = total_bytes
-    document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percentage)
-    document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percentage + "%;")
+    document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent)
+    document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;")
     
     
     // UPDATE HEARD STATIONS  
@@ -453,7 +458,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
         // now we update the heard stations list
-
         var row = document.createElement("tr");
         //https://stackoverflow.com/q/51421470 
 
@@ -590,6 +594,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
         document.getElementById("hamlib_serialspeed").disabled = true
+        document.getElementById("startTransmission").disabled = false
+
 
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
@@ -605,6 +611,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
         document.getElementById("hamlib_serialspeed").disabled = false
+        document.getElementById("startTransmission").disabled = true
 
     }
 
@@ -615,12 +622,17 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
     if (arg.daemon_connection == 'open') {
         document.getElementById("daemon_connection_state").className = "btn btn-success";
+                document.getElementById("blurdiv").style.webkitFilter = "blur(0px)";
+
     }
     if (arg.daemon_connection == 'opening') {
         document.getElementById("daemon_connection_state").className = "btn btn-warning";
+                document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
+
     }
     if (arg.daemon_connection == 'closed') {
         document.getElementById("daemon_connection_state").className = "btn btn-danger";
+        document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
     }
 
 });
@@ -706,8 +718,6 @@ var data = arg.data["DATA"]
     }
 
 });
-
-
 
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
