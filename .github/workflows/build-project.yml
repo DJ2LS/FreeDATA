@@ -1,1 +1,84 @@
+name: Build/PROJECT
+on: push
+
+jobs:
+  create_release:
+    name: Create release
+    runs-on: ubuntu-latest
+    # Note this. We are going to use that in further jobs.
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # tag_name: ${{ github.ref }}
+          tag_name: v0.1-alpha
+          # release_name: Release ${{ github.ref }}
+          release_name: v0.1-alpha
+          draft: false
+          prerelease: true
+
+
+
+  build_release:
+    name: Build release
+    needs: create_release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            zip_name: plugin-linux
+            generator: Unix Makefiles
+          - os: macos-latest
+            zip_name: plugin-mac
+            generator: Xcode
+          - os: windows-latest
+            zip_name: plugin-win
+            generator: Visual Studio 16 2019
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt install portaudio19-dev
+          python -m pip install --upgrade pip
+          pip3 install pyaudio
+          pip3 install psutil
+          pip3 install crcengine
+          pip3 install pyinstaller
+
+      - name: Build with Pyinstaller Linux
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: tnc
+        run: |      
+          pyinstaller -F daemon.py -n daemon
+          pyinstaller -F main.py -n tnc
+          # cd dist
+          # ls -R
+
+      - name: Compress Linux
+        shell: bash
+        run: |
+          cd ./tnc/dist
+          mkdir ../artifact
+          zip -r ../artifact/${{ matrix.zip_name }}.zip *
+
+      - name: Upload Linux
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./tnc/dist/artifact/${{ matrix.zip_name }}.zip
+          asset_name: ${{ matrix.zip_name }}.zip
+          asset_content_type: application/zip
 
