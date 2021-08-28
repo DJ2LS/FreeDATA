@@ -65,7 +65,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             while True and socketTimeout > time.time():
                 chunk = self.request.recv(1024)  # .strip()
                 data += chunk
-                if chunk.endswith(b'\n'):
+                if chunk.startswith(b'{') and chunk.endswith(b'}\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
@@ -123,7 +123,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     print("STARTING TNC !!!!!")
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
-                    p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                    print(DEBUG)
+                    if DEBUG:
+                        p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                    else:
+                        p = subprocess.Popen("exec tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     static.TNCPROCESS = p#.pid
                     #print(parameter)
                     # print(static.TNCPROCESS)
@@ -187,10 +191,12 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port", default=3001, help="Socket port", type=int)
-
+    PARSER.add_argument('--debug', dest="debug", action='store_true')
+    
+    
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
-
+    DEBUG = ARGS.debug
     # --------------------------------------------START CMD SERVER
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
