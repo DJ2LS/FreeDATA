@@ -25,23 +25,19 @@ jobs:
         run: |      
           pyinstaller -F daemon.py -n daemon
           pyinstaller -F main.py -n tnc
-          cd dist
-          ls -R
-
-
+          # cd dist
+          # ls -R
 
       - name: Release
         uses: softprops/action-gh-release@v1
         # if: startsWith(github.ref, 'refs/tags/')
         with:
-          run: |
-            ls
-          name: Test-Release
+          name: Test-Release-Ubuntu
           tag_name: v0.1-alpha
           prerelease: true
           files: |
-            dist/daemon
-            dist/tnc
+            ./tnc/dist/daemon
+            ./tnc/dist/tnc
             LICENSE
 
 
