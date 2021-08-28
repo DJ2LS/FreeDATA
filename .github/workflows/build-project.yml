@@ -131,7 +131,16 @@ jobs:
       - name: chmod +x
         shell: bash
         run: |
-          chmod +x ./gui/dist/*.AppImage            
+          chmod +x ./gui/dist/*.AppImage    
+          
+          
+      - name: Create app bundle
+        shell: bash
+        run: |
+          mkdir gui-bundle
+          cp ./gui/dist/*.AppImage gui-bundle
+          cp -R ./tnc/dist gui-bundle
+          zip -r codec2-FreeDATA_ubuntu.zip gui-bundle 
           
       - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
