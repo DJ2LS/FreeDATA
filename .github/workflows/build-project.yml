@@ -81,7 +81,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         # working-directory: tnc
         run: |          
-          cp ~/codec2 ./tnc/dist
+          cp -R ~/codec2 ./tnc/dist
           ls -R
           
       - name: Compress Linux
