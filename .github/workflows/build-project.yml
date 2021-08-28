@@ -4,7 +4,8 @@ on:
     #tags:
     # - '*'
 jobs:
-  create_release:
+    runs-on: ubuntu-latest  
+    create_release:
     name: Create release
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -60,15 +61,14 @@ jobs:
           pip3 install crcengine
           pip3 install pyinstaller
                     
-      - name: Build with Pyinstaller Linux
+      - name: Build and compress Linux
         if: matrix.os == 'ubuntu-latest'
         working-directory: tnc
         run: |      
           pyinstaller -F daemon.py -n daemon
           pyinstaller -F main.py -n tnc
-          # cd dist
-          # ls -R
-
+          
+          
       - name: Compress Linux
         shell: bash
         run: |
@@ -88,19 +88,3 @@ jobs:
           files: |
             ./tnc/compressed/${{ matrix.zip_name }}.zip
             LICENSE
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
-        with:
-          node-version: 14  
-  
-  
-  #- name: Upload Linux
-  #      uses: actions/upload-release-asset@v1
-  #      env:
-  #        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #      with:
-  #        upload_url: ${{ needs.create_release.outputs.upload_url }}
-  #        asset_path: ./tnc/artifact/${{ matrix.zip_name }}.zip
-  #        asset_name: ${{ matrix.zip_name }}.zip
-  #        asset_content_type: application/zip
