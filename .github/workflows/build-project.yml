@@ -3,30 +3,11 @@ on:
   push:
     #tags:
     # - '*'
+    
 jobs:
-    runs-on: ubuntu-latest  
-    create_release:
-    name: Create release
-    outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
-    steps:
-      - name: Create release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-
-
 
   build_release:
     name: Build release
-    needs: create_release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -76,7 +57,16 @@ jobs:
           mkdir ../compressed
           zip -r ../compressed/${{ matrix.zip_name }}.zip *
 
-      - name: Release Linux
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+      
+          
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R      
+      
+      - name: Release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
