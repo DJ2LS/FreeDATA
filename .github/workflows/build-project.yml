@@ -85,8 +85,8 @@ jobs:
           asset_path: ./tnc/dist/artifact/${{ matrix.zip_name }}.zip
           asset_name: ${{ matrix.zip_name }}.zip
           asset_content_type: application/zip
-          #files: |
-          #  ./tnc/dist/daemon
+          files: |
+            ./tnc/dist/artifact/${{ matrix.zip_name }}.zip
           #  ./tnc/dist/tnc
           #  LICENSE
             
