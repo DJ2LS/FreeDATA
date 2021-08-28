@@ -181,5 +181,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            ./tnc/compressed/${{ matrix.zip_name }}.zip
+            ./gui-bundle-ubuntu-artifact/codec2-FreeDATA_ubuntu.zip
+            ./tnc-artifact/ubuntu_tnc.zip
             LICENSE
