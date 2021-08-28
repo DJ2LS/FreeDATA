@@ -142,6 +142,7 @@ jobs:
           cp -R ./tnc/dist gui-bundle
           cd ./gui-bundle
           zip -r codec2-FreeDATA_ubuntu.zip .
+          ls -R  
           
       - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
@@ -149,7 +150,7 @@ jobs:
           name: gui-bundle-ubuntu-artifact
           #path: ./gui/dist/*.AppImage
           #path: ./gui/dist/*
-          path: ./gui/dist/codec2-FreeDATA_ubuntu.zip
+          path: ./gui-bundle/codec2-FreeDATA_ubuntu.zip
 
 
 
