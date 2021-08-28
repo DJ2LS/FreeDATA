@@ -35,8 +35,8 @@ jobs:
         # if: startsWith(github.ref, 'refs/tags/')
         with:
           name: Test-Release
-          tag_name: Test
-          prerelease: false
+          tag_name: v0.1-alpha
+          prerelease: true
           files: |
             dist/daemon
             dist/tnc
