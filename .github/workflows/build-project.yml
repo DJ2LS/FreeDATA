@@ -16,9 +16,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           # tag_name: ${{ github.ref }}
-          tag_name: v0.1-alpha-test
+          tag_name: v0.1-alpha
           # release_name: Release ${{ github.ref }}
-          release_name: v0.1-alpha-test
+          release_name: v0.1-alpha
           draft: false
           prerelease: true
 
