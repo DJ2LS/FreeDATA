@@ -140,14 +140,16 @@ jobs:
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
           cp -R ./tnc/dist gui-bundle
-          zip -r codec2-FreeDATA_ubuntu.zip gui-bundle 
+          cd ./gui-bundle
+          zip -r codec2-FreeDATA_ubuntu.zip .
           
       - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: gui-bundle-artifact
+          name: gui-bundle-ubuntu-artifact
           #path: ./gui/dist/*.AppImage
-          path: ./gui/dist/*
+          #path: ./gui/dist/*
+          path: ./gui/dist/codec2-FreeDATA_ubuntu.zip
 
 
 
