@@ -41,6 +41,7 @@ jobs:
           pip3 install psutil
           pip3 install crcengine
           pip3 install pyinstaller
+          pip3 install ujson
                     
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
