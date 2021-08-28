@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest]
         include:
           - os: ubuntu-latest
-            zip_name: ubuntu_tnc_$(date +'%Y-%m-%dT%H:%M:%S')
+            zip_name: ubuntu_tnc # _$(date +'%Y-%m-%dT%H:%M:%S')
             generator: Unix Makefiles
           #- os: macos-latest
           #  zip_name: plugin-mac
@@ -61,7 +61,6 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v2
         with:
-          working-directory: tnc
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
 
