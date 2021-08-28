@@ -64,9 +64,33 @@ jobs:
           path: ./tnc/dist/compressed/*
 
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14
 
+      - name: Install test app dependencies
+        run: |
+          cd ${{ matrix.package_root }}
+          ${{ matrix.package_manager }} install
+          
+          
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          package_root: "./gui/"
 
-
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R    
+          
+          
+      - name: Upload Ubuntu GUI artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: gui-artifact
+          path: ./gui/*
 
 
 
