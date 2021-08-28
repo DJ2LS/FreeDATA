@@ -92,6 +92,7 @@ jobs:
 
   release:
     name: Upload Release
+    needs: build_release
     runs-on: ubuntu-latest
     steps:
     
