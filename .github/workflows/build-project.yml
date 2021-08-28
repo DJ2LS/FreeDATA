@@ -109,6 +109,13 @@ jobs:
         with:
           node-version: 14
           
+      - name: Copy TNC to GUI Linux
+        if: matrix.os == 'ubuntu-latest'
+        # working-directory: tnc
+        run: |          
+          cp -R ./tnc/dist ./gui/tnc
+          ls -R        
+          
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -125,10 +132,10 @@ jobs:
         run: |
           chmod +x ./gui/dist/*.AppImage            
           
-      - name: Upload Ubuntu GUI artifacts
+      - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: gui-artifact
+          name: gui-bundle-artifact
           path: ./gui/dist/*.AppImage
 
 
