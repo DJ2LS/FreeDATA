@@ -137,8 +137,8 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gui-bundle-artifact
-          path: ./gui/dist/*.AppImage
-
+          #path: ./gui/dist/*.AppImage
+          path: ./gui/dist/*
 
 
 
