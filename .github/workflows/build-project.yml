@@ -73,6 +73,7 @@ jobs:
         uses: samuelmeuli/action-electron-builder@v1
         with:
           package_root: "./gui/"
+          github_token: ${{ secrets.github_token }}
 
       - name: LIST ALL FILES
         shell: bash
