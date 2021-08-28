@@ -42,7 +42,7 @@ jobs:
           pip3 install crcengine
           pip3 install pyinstaller
                     
-      - name: Build and compress Linux
+      - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
         working-directory: tnc
         run: |      
@@ -61,8 +61,9 @@ jobs:
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.config.artifact }}
-          path: tnc/compressed/*
+          working-directory: tnc
+          name: tnc-artifact
+          path: ./tnc/dist/compressed/*
 
 
 
