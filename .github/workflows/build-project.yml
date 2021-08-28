@@ -18,7 +18,7 @@ jobs:
           # tag_name: ${{ github.ref }}
           tag_name: v0.1-alpha
           # release_name: Release ${{ github.ref }}
-          release_name: v0.1-alpha
+          release_name: v0.1-alpha_$(date +'%Y-%m-%dT%H:%M:%S')
           draft: false
           prerelease: true
 
@@ -33,7 +33,7 @@ jobs:
         os: [ubuntu-latest]
         include:
           - os: ubuntu-latest
-            zip_name: plugin-linux
+            zip_name: ubuntu_tnc_$(date +'%Y-%m-%dT%H:%M:%S')
             generator: Unix Makefiles
           #- os: macos-latest
           #  zip_name: plugin-mac
