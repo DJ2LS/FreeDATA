@@ -54,8 +54,19 @@ jobs:
         shell: bash
         run: |
           cd ./tnc/dist
-          mkdir ../compressed
-          zip -r ../compressed/${{ matrix.zip_name }}.zip *
+          # mkdir ../compressed
+          mkdir compressed
+          zip -r ./compressed/${{ matrix.zip_name }}.zip *
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.config.artifact }}
+          path: tnc/compressed/*
+
+
+
+
 
       - name: Download artifact
         uses: actions/download-artifact@v2
