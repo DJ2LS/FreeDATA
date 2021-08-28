@@ -74,7 +74,7 @@ jobs:
 
   release:
     name: Upload Release
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     
     
