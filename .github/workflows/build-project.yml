@@ -68,12 +68,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14
-
-      - name: Install test app dependencies
-        run: |
-          cd ${{ matrix.package_root }}
-          ${{ matrix.package_manager }} install
-          
           
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
