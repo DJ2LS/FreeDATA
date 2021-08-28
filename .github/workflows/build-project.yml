@@ -77,6 +77,12 @@ jobs:
           cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
           make
 
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R   
+
+
       - name: Copy codec2 to TNC Linux
         if: matrix.os == 'ubuntu-latest'
         # working-directory: tnc
