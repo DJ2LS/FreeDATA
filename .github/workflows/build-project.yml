@@ -78,14 +78,18 @@ jobs:
       - name: LIST ALL FILES
         shell: bash
         run: |
-          ls -R    
+          ls -R   
           
+      - name: chmod +x
+        shell: bash
+        run: |
+          chmod +x ./gui/dist/*.AppImage            
           
       - name: Upload Ubuntu GUI artifacts
         uses: actions/upload-artifact@v2
         with:
           name: gui-artifact
-          path: ./gui/*
+          path: ./gui/dist/*.AppImage
 
 
 
