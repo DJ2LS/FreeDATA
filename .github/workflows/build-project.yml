@@ -14,7 +14,7 @@ jobs:
         os: [ubuntu-latest]
         include:
           - os: ubuntu-latest
-            zip_name: ubuntu_tnc # _$(date +'%Y-%m-%dT%H:%M:%S')
+            zip_name: ubuntu_tnc
             generator: Unix Makefiles
           #- os: macos-latest
           #  zip_name: plugin-mac
@@ -54,11 +54,10 @@ jobs:
         shell: bash
         run: |
           cd ./tnc/dist
-          # mkdir ../compressed
           mkdir compressed
           zip -r ./compressed/${{ matrix.zip_name }}.zip *
 
-      - name: Upload Linux artifacts
+      - name: Upload Ubuntu TNC artifacts
         uses: actions/upload-artifact@v2
         with:
           name: tnc-artifact
@@ -68,6 +67,17 @@ jobs:
 
 
 
+
+
+
+
+
+  release:
+    name: Upload Release
+    runs-on: ${{ matrix.os }}
+    steps:
+    
+    
       - name: Download artifact
         uses: actions/download-artifact@v2
       
@@ -76,7 +86,8 @@ jobs:
         shell: bash
         run: |
           ls -R      
-      
+
+    
       - name: Release
         uses: softprops/action-gh-release@v1
         env:
