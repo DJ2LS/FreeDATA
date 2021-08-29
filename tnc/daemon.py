@@ -127,7 +127,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     if DEBUG:
                         p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     else:
-                        p = subprocess.Popen("exec tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                        p = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     static.TNCPROCESS = p#.pid
                     #print(parameter)
                     # print(static.TNCPROCESS)
