@@ -48,13 +48,13 @@ jobs:
         working-directory: tnc
         run: |      
           sudo apt install wig libtool
+          cd ~
           git clone https://github.com/Hamlib/Hamlib.git
           cd Hamlib
           ./bootstrap
           ./configure --with-python-binding PYTHON_VERSION='3.9' --prefix=$HOME/local
           make
           make install
-          cp -R ../Hamlib ./tnc/dist
           
 
 
@@ -98,7 +98,14 @@ jobs:
         run: |
           ls -R   
 
+      - name: Copy hamlib to TNC Linux
+        if: matrix.os == 'ubuntu-latest'
+        # working-directory: tnc
+        run: |          
+          cp -R ~/Hamlib ./tnc/dist
 
+          
+          
       - name: Copy codec2 to TNC Linux
         if: matrix.os == 'ubuntu-latest'
         # working-directory: tnc
