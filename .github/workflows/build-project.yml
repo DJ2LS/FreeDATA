@@ -35,7 +35,7 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt install portaudio19-dev python3-hamlib build-essential cmake
+          sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake
           python -m pip install --upgrade pip
           pip3 install pyaudio
           pip3 install psutil
