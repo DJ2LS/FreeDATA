@@ -27,10 +27,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
           
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8           
+          python-version: 3.9           
           
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
@@ -42,7 +42,22 @@ jobs:
           pip3 install crcengine
           pip3 install pyinstaller
           pip3 install ujson
-                    
+
+      - name: Build Hamlib Python Binding
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: tnc
+        run: |      
+          sudo apt install wig libtool
+          git clone https://github.com/Hamlib/Hamlib.git
+          cd Hamlib
+          ./bootstrap
+          ./configure --with-python-binding PYTHON_VERSION='3.9' --prefix=$HOME/local
+          make
+          make install
+          cp -R ../Hamlib ./tnc/dist
+          
+
+
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
         working-directory: tnc
@@ -139,6 +154,7 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
+          cp -R ./tnc/dist/Hamlib gui-bundle
           cp -R ./tnc/dist/codec2 gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
