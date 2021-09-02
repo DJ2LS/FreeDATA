@@ -43,18 +43,18 @@ jobs:
           pip3 install pyinstaller
           pip3 install ujson
 
-      - name: Build Hamlib Python Binding
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: tnc
-        run: |      
-          sudo apt install wig libtool
-          cd ~
-          git clone https://github.com/Hamlib/Hamlib.git
-          cd Hamlib
-          ./bootstrap
-          ./configure --with-python-binding PYTHON_VERSION='3.9' --prefix=$HOME/local
-          make
-          make install
+      #- name: Build Hamlib Python Binding
+      #  if: matrix.os == 'ubuntu-latest'
+      #  working-directory: tnc
+      #  run: |      
+      #    sudo apt install wig libtool
+      #    cd ~
+      #    git clone https://github.com/Hamlib/Hamlib.git
+      #    cd Hamlib
+      #    ./bootstrap
+      #    ./configure --with-python-binding PYTHON_VERSION='3.9' --prefix=$HOME/local
+      #    make
+      #    make install
           
 
 
@@ -100,11 +100,10 @@ jobs:
 
       - name: Copy hamlib to TNC Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |          
-          cp -R ~/Hamlib ./tnc/dist
+          cp -R ~/hamlib ./tnc/dist
 
-          
           
       - name: Copy codec2 to TNC Linux
         if: matrix.os == 'ubuntu-latest'
