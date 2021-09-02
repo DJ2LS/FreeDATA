@@ -646,19 +646,12 @@ class RF():
             static.SNR = 0
             
     def get_radio_stats(self):
-        #static.HAMLIB_FREQUENCY = float(self.my_rig.get_freq()/1000) 
-        #(hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
-        #static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
-        
+
         static.HAMLIB_FREQUENCY = rigctld.get_frequency()
         static.HAMLIB_MODE = rigctld.get_mode()[0]
         static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
-        print(static.HAMLIB_MODE)        
-        print(static.HAMLIB_FREQUENCY)
-        print(static.HAMLIB_BANDWITH)
-            
-            
-      
+
+                            
     def calculate_fft(self, data_in):
         data_in_array = np.frombuffer(data_in, dtype=np.int16)
                 #print(fft_raw)

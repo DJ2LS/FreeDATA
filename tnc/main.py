@@ -12,7 +12,7 @@ import argparse
 import threading
 import static
 import subprocess
-
+import sys
 
 if __name__ == '__main__':
 
@@ -63,13 +63,26 @@ if __name__ == '__main__':
     else:
         dtr_state = "NONE"
     
-    command = "exec ./hamlib/linux/rigctld -r " + str(static.HAMLIB_DEVICE_PORT) + \
+    if sys.platform == "linux":
+        command = "exec ./hamlib/linux/rigctld -r " + str(static.HAMLIB_DEVICE_PORT) + \
         " -s "+ str(static.HAMLIB_SERIAL_SPEED) + \
         " -P "+ str(static.HAMLIB_PTT_TYPE) + \
         " -m "+ str(static.HAMLIB_DEVICE_ID) + \
         " --set-conf=dtr_state=" + dtr_state
-    p = subprocess.Popen(command, shell=True)
-
-    
-    
-    
+        try:        
+            p = subprocess.Popen(command, shell=True)
+        except:
+            print("hamlib not started")
+            sys.exit()
+            
+    elif sys.platform == "darwin":
+        print("platform not yet supported")
+        sys.exit()
+        
+    elif sys.platform == "win32":
+        print("platform not yet supported")
+        sys.exit()
+        
+    else:
+        print("platform not supported!")
+        sys.exit()

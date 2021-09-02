@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import socket
 import logging
+import static
 
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 # https://github.com/xssfox/freedv-tnc/blob/master/freedvtnc/rigctl.py
@@ -64,9 +65,9 @@ class Rigctld():
         if data is not None:
             data = data.split(b'\n')
             try:
-                freq = int(data[0])
+                freq = int(data[0])/1000
             except:
-                freq = 0
+                freq = static.HAMLIB_FREQUENCY
                 print(data)
             return freq
          
@@ -79,7 +80,7 @@ class Rigctld():
                 bandwith = int(data[1])
             except:
                 print(data)
-                mode = '0'
-                bandwith = 0
+                mode = static.HAMLIB_MODE
+                bandwith = static.HAMLIB_BANDWITH
             return [mode, bandwith]
             
