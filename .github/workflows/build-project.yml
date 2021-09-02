@@ -160,7 +160,7 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
-          cp -R ./tnc/dist/Hamlib gui-bundle
+          cp -R ./tnc/dist/hamlib gui-bundle
           cp -R ./tnc/dist/codec2 gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
