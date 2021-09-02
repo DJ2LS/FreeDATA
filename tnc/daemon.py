@@ -123,7 +123,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     print("STARTING TNC !!!!!")
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
-                    print(DEBUG)
+
                     if DEBUG:
                         p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     else:

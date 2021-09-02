@@ -21,9 +21,11 @@ import helpers
 import static
 import data_handler
 
-import Hamlib
+#import Hamlib
 
+import rigctld
 
+rigctld = rigctld.Rigctld()
 
 
 # test
@@ -103,7 +105,7 @@ class RF():
 
         # --------------------------------------------CONFIGURE HAMLIB
 
-
+    '''
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
@@ -156,13 +158,14 @@ class RF():
         except:
             print("can't open rig")
             
-
+    '''
 # --------------------------------------------------------------------------------------------------------
     def ptt_and_wait(self, state):
                
         if state:
             static.PTT_STATE = True
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+            #self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+            rigctld.ptt_enable()
             ptt_togle_timeout = time.time() + 0.1
             while time.time() < ptt_togle_timeout:
                 pass
@@ -174,8 +177,8 @@ class RF():
                 pass
                 
             static.PTT_STATE = False
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
-
+            #self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+            rigctld.ptt_disable()
 
 
 
@@ -643,9 +646,17 @@ class RF():
             static.SNR = 0
             
     def get_radio_stats(self):
-        static.HAMLIB_FREQUENCY = float(self.my_rig.get_freq()/1000) 
-        (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
-        static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
+        #static.HAMLIB_FREQUENCY = float(self.my_rig.get_freq()/1000) 
+        #(hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
+        #static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
+        
+        static.HAMLIB_FREQUENCY = rigctld.get_frequency()
+        static.HAMLIB_MODE = rigctld.get_mode()[0]
+        static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
+        print(static.HAMLIB_MODE)        
+        print(static.HAMLIB_FREQUENCY)
+        print(static.HAMLIB_BANDWITH)
+            
             
       
     def calculate_fft(self, data_in):
