@@ -102,7 +102,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         working-directory: tnc
         run: |          
-          cp -R ~/hamlib ./tnc/dist
+          cp -R ./hamlib ./dist
 
           
       - name: Copy codec2 to TNC Linux
