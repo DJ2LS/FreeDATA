@@ -136,6 +136,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         " --set-conf=dtr_state=" + dtr_state
                         try:        
                             p = subprocess.Popen(command, shell=True)
+                            time.sleep(0.3)
                         except:
                             print("hamlib not started")
                             sys.exit()
