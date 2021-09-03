@@ -103,6 +103,7 @@ jobs:
         working-directory: tnc
         run: |          
           cp -R ./hamlib ./dist
+          chmod +x ./dist/hamlib/linux/rigctld
 
           
       - name: Copy codec2 to TNC Linux
