@@ -108,10 +108,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #print(received_json["type"])
             #print(received_json["command"]) 
             try:
-                #print(static.TNCSTARTED)
-
-
-
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
                     rx_audio = received_json["parameter"][0]["rx_audio"]
@@ -120,17 +116,51 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     deviceport = received_json["parameter"][0]["deviceport"]
                     serialspeed = received_json["parameter"][0]["serialspeed"]
                     ptt = received_json["parameter"][0]["ptt"]
-                    print("STARTING TNC !!!!!")
+                    print("---- STARTING TNC !")
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
+
+
+                    # Start RIGCTLD
+                    
+                    if ptt == "RTS":
+                        dtr_state = "OFF"
+                    else:
+                        dtr_state = "NONE"
+                    
+                    if sys.platform == "linux":
+                        command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
+                        " -s "+ str(serialspeed) + \
+                        " -P "+ str(ptt) + \
+                        " -m "+ str(deviceid) + \
+                        " --set-conf=dtr_state=" + dtr_state
+                        try:        
+                            p = subprocess.Popen(command, shell=True)
+                        except:
+                            print("hamlib not started")
+                            sys.exit()
+                            
+                    elif sys.platform == "darwin":
+                        print("platform not yet supported")
+                        sys.exit()
+                        
+                    elif sys.platform == "win32":
+                        print("platform not yet supported")
+                        sys.exit()
+                        
+                    else:
+                        print("platform not supported!")
+                        sys.exit()
+
+
+
+
 
                     if DEBUG:
                         p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     else:
                         p = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                     static.TNCPROCESS = p#.pid
-                    #print(parameter)
-                    # print(static.TNCPROCESS)
                     static.TNCSTARTED = True
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':

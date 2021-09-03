@@ -55,7 +55,7 @@ if __name__ == '__main__':
     WATCHDOG_SERVER_THREAD = threading.Thread(target=helpers.watchdog, name="watchdog")
     WATCHDOG_SERVER_THREAD.start()    
     
-    
+    '''    
     # Start RIGCTLD
     
     if static.HAMLIB_PTT_TYPE == "RTS":
@@ -86,3 +86,4 @@ if __name__ == '__main__':
     else:
         print("platform not supported!")
         sys.exit()
+    '''
