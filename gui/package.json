@@ -25,11 +25,11 @@
   "homepage": "https://github.com/DJ2LS/codec2-FreeDATA#readme",
   "dependencies": {
     "bootstrap": "^5.1.0",
-    "chart.js": "^3.5.0",
+    "chart.js": "^3.5.1",
     "qth-locator": "^2.1.0"
   },
   "devDependencies": {
-    "electron": "13.1.8",
+    "electron": "14.0.0",
     "electron-builder": "^22.11.7"
   }
 }
