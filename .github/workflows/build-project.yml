@@ -168,7 +168,7 @@ jobs:
           cp ./tnc/dist/tnc gui-bundle
           cd ./gui-bundle
           #zip -r codec2-FreeDATA_linux.zip .
-          tar -zcvf codec2-FreeDATA_linux.tar.gz .
+          tar -zcvf codec2-FreeDATA_linux.tar.gz *
           ls -R  
           
       - name: Upload Ubuntu GUI Bundle artifacts
