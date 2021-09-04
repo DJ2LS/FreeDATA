@@ -1,9 +1,16 @@
 const {app,BrowserWindow,ipcMain} = require('electron')
 const path = require('path')
-var config = require('./config.json');
+const configPath =  path.join(__dirname, 'config.json');
+const config = require(configPath);
+const exec = require('child_process').exec;
+
+console.log(configPath)
+
 
 let win = null;
 let data = null;
+
+var daemonProcess = null;
 
 function createWindow() {
     win = new BrowserWindow({
@@ -78,6 +85,16 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow()
+    
+    
+    // start daemon
+    // https://stackoverflow.com/a/5775120
+    daemonProcess = exec('./daemon', function callback(error, stdout, stderr) {
+            // result
+            console.log(error)
+        });
+    
+    
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -87,6 +104,8 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+    // kill daemon process
+    daemonProcess.kill('SIGINT');
 
     if (process.platform !== 'darwin') {
         app.quit()

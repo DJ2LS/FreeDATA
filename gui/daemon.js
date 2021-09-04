@@ -19,6 +19,15 @@ function connectDAEMON() {
     //clear message buffer after reconnecting or inital connection
     msg = '';
     daemon.connect(config.daemon_port, config.daemon_host)
+    
+        if (config.tnclocation == 'localhost'){
+        daemon.connect(3001, '127.0.0.1')    
+    } else {
+        daemon.connect(config.daemon_port, config.daemon_host)
+
+    }
+    
+    
     //client.setTimeout(5000);
 }
 
@@ -120,7 +129,7 @@ function hexToBytes(hex) {
 
 exports.getDaemonState = function() {
     //function getDaemonState(){
-    command = '{"type" : "GET", "command": "DAEMON_STATE"}'
+    command = '{"type" : "GET", "command" : "DAEMON_STATE"}'
     writeDaemonCommand(command)
 }
 

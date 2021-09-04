@@ -2,6 +2,8 @@ const path = require('path')
 const configPath =  path.join(__dirname, 'config.json');
 const config = require(configPath);
 
+
+
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
 
@@ -61,8 +63,16 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("waterfall").style.height = '0px';
     }
 
-
-
+// remote tnc 
+    if (config.tnclocation == 'remote') {
+        document.getElementById("local-remote-switch1").checked = false
+        document.getElementById("local-remote-switch2").checked = true
+        document.getElementById("remote-tnc-field").style.visibility = 'visible';
+    } else {
+        document.getElementById("local-remote-switch1").checked = true
+        document.getElementById("local-remote-switch2").checked = false
+        document.getElementById("remote-tnc-field").style.visibility = 'hidden';        
+    }
 
     
         // Create spectrum object on canvas with ID "waterfall"
@@ -132,7 +142,24 @@ window.addEventListener('DOMContentLoaded', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-
+    // on click remote tnc toggle view
+    document.getElementById("local-remote-switch1").addEventListener("click", () => {
+        document.getElementById("local-remote-switch1").checked = true
+        document.getElementById("local-remote-switch2").checked = false
+        document.getElementById("remote-tnc-field").style.visibility = 'hidden';
+        config.tnclocation = 'localhost'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); 
+      });
+   document.getElementById("local-remote-switch2").addEventListener("click", () => {
+        document.getElementById("local-remote-switch1").checked = false
+        document.getElementById("local-remote-switch2").checked = true
+        document.getElementById("remote-tnc-field").style.visibility = 'visible';
+                config.tnclocation = 'remote'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); 
+        });
+    
+    
+    
     // on change port and host
     document.getElementById("tnc_adress").addEventListener("change", () => {
         console.log(document.getElementById("tnc_adress").value)

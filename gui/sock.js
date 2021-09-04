@@ -17,11 +17,16 @@ setTimeout(connectTNC, 3000)
 
 function connectTNC() {
     //exports.connectTNC = function(){
-    console.log('connecting to TNC...')
+    //console.log('connecting to TNC...')
 
     //clear message buffer after reconnecting or inital connection
     msg = '';
-    client.connect(config.tnc_port, config.tnc_host)
+    
+    if (config.tnclocation == 'localhost'){
+        client.connect(3000, '127.0.0.1')    
+    } else {
+        client.connect(config.tnc_port, config.tnc_host)
+    }
 }
 
 client.on('connect', function(data) {
@@ -69,7 +74,7 @@ client.on('end', function(data) {
 //exports.writeTncCommand = function(command){    
 writeTncCommand = function(command) {
 
-    console.log(command)
+    //console.log(command)
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
     if (client.readyState == 'open') {
@@ -79,12 +84,13 @@ writeTncCommand = function(command) {
 
     if (client.readyState == 'closed') {
         //uiMain.setTNCconnection('closed')
-        console.log("CLOSED!!!!!")
+        //console.log("CLOSED!!!!!")
     }
 
     if (client.readyState == 'opening') {
         //uiMain.setTNCconnection('opening')
-        console.log("OPENING!!!!!")
+        //console.log("OPENING!!!!!")
+        console.log('connecting to TNC...')
     }
 }
 
@@ -114,7 +120,7 @@ client.on('data', function(data) {
         //console.log(data)
 
         if (data['COMMAND'] == 'TNC_STATE') {
-            console.log(data)
+            //console.log(data)
             rxBufferLengthTnc = data['RX_BUFFER_LENGTH']
             
             let Data = {
@@ -139,21 +145,21 @@ client.on('data', function(data) {
                 arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
                 arq_bytes_per_minute: data['ARQ_BYTES_PER_MINUTE'],
                 total_bytes: data['TOTAL_BYTES'],
-                arq_transmission_percentage: data['ARQ_TRANSMISSION_PERCENTAGE'],
+                arq_transmission_percent: data['ARQ_TRANSMISSION_PERCENT'],
                 stations: data['STATIONS'],
             };
-            console.log(Data)
+            //console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
         }
         
         if (data['COMMAND'] == 'RX_BUFFER') {
         
             rxBufferLengthGui = data['DATA-ARRAY'].length
-            console.log(rxBufferLengthGui)
+            //console.log(rxBufferLengthGui)
             let Data = {
                 data : data['DATA-ARRAY'],
             };
-            console.log(Data)
+            //console.log(Data)
             ipcRenderer.send('request-update-rx-buffer', Data);
         }
 
