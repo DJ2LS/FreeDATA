@@ -22,18 +22,8 @@ import static
 import data_handler
 
 #import Hamlib
-
 import rigctld
-
 rigctld = rigctld.Rigctld()
-
-
-# test
-import numpy as np
-from scipy.fft import fft, ifft
-from scipy import signal
-
-
 
 
 MODEM_STATS_NR_MAX = 320
