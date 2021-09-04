@@ -1,5 +1,9 @@
 const {app,BrowserWindow,ipcMain} = require('electron')
 const path = require('path')
+
+var testpath = path.join(app.getPath ("appData"), "codec2-FreeDATA");
+console.log(testpath)
+
 const configPath =  path.join(__dirname, 'config.json');
 const config = require(configPath);
 const exec = require('child_process').exec;
