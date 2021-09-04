@@ -100,6 +100,7 @@ daemon.on('data', function(data) {
             let Data = {
                 input_devices: data['INPUT_DEVICES'],
                 output_devices: data['OUTPUT_DEVICES'],
+                serial_devices: data['SERIAL_DEVICES'],
                 tnc_running_state: data['DAEMON_STATE'][0]['STATUS'],
                 ram_usage: data['RAM'],
                 cpu_usage: data['CPU'],
