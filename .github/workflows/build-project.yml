@@ -119,6 +119,7 @@ jobs:
           cd ./tnc/dist
           mkdir compressed
           zip -r ./compressed/${{ matrix.zip_name }}.zip *
+          #tar -zcvf ./compressed/${{ matrix.zip_name }}.tar.gz *
 
       - name: Upload Ubuntu TNC artifacts
         uses: actions/upload-artifact@v2
@@ -166,7 +167,8 @@ jobs:
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
           cd ./gui-bundle
-          zip -r codec2-FreeDATA_linux.zip .
+          #zip -r codec2-FreeDATA_linux.zip .
+          tar -zcvf codec2-FreeDATA_linux.tar.gz .
           ls -R  
           
       - name: Upload Ubuntu GUI Bundle artifacts
@@ -175,7 +177,8 @@ jobs:
           name: gui-bundle-ubuntu-artifact
           #path: ./gui/dist/*.AppImage
           #path: ./gui/dist/*
-          path: ./gui-bundle/codec2-FreeDATA_linux.zip
+          #path: ./gui-bundle/codec2-FreeDATA_linux.zip
+          path: ./gui-bundle/codec2-FreeDATA_linux.tar.gz
 
 
 
