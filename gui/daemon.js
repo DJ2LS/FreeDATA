@@ -5,7 +5,7 @@ const {
 } = require('electron')
 
 // https://stackoverflow.com/a/26227660
-var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.local/share")
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
@@ -21,8 +21,7 @@ function connectDAEMON() {
 
     //clear message buffer after reconnecting or inital connection
     msg = '';
-    daemon.connect(config.daemon_port, config.daemon_host)
-
+    
     if (config.tnclocation == 'localhost') {
         daemon.connect(3001, '127.0.0.1')
     } else {
