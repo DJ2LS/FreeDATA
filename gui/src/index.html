@@ -31,17 +31,33 @@
       <nav class="navbar bg-light navbar-underline  mt-5 shadow">
          <div class="container-fluid mt-1">
             <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-               <div class="input-group input-group-sm">
-                  <span class="input-group-text" id="basic-addon1">TNC</span>
+            
+                                 <div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group">
+                        <input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch1" autocomplete="off" checked>
+                        <label class="btn btn-outline-secondary" for="local-remote-switch1">local TNC</label>
+                        <input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch2" autocomplete="off">
+                        <label class="btn btn-outline-secondary" for="local-remote-switch2">remote TNC</label>
+                     </div>
+                     
+                     
+                     
+               <div class="input-group input-group-sm" id="remote-tnc-field">
+                  <span class="input-group-text" id="basic-addon1">IP</span>
                   <input type="text" class="form-control" placeholder="ip adress" id="tnc_adress" value="192.168.178.163" maxlength="17" style="width: 8rem" aria-label="Username" aria-describedby="basic-addon1" >
                   <span class="input-group-text" id="basic-addon1">:</span>
                   <input type="text" class="form-control" placeholder="port" value="3000" id="tnc_port" maxlength="5" style="width: 4rem" aria-label="Username" aria-describedby="basic-addon1" >
-                  <button class="btn btn-danger" id="daemon_connection_state" type="button" disabled>
+               <button class="btn btn-danger" id="daemon_connection_state" type="button" disabled>
                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-3" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
                      </svg>
-                  </button>
+                  </button>                  
                </div>
+               
+               
+
+               
+               
+               
             </div>
          </div>
       </nav>
