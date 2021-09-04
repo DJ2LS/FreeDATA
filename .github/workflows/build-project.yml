@@ -42,6 +42,7 @@ jobs:
           pip3 install crcengine
           pip3 install pyinstaller
           pip3 install ujson
+          pip3 install pyserial
 
       #- name: Build Hamlib Python Binding
       #  if: matrix.os == 'ubuntu-latest'
