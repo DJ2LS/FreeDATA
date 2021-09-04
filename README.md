@@ -17,6 +17,7 @@ sudo apt install python3
 pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
+pip3 install pyserial
 ```
 ## Manual Installation macOS
 ### Install brew and python3
@@ -28,6 +29,8 @@ brew install python
 pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
+pip3 install pyserial
+
 ```
 ### Install dependencies
 ```
