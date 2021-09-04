@@ -48,6 +48,11 @@ pip3 install pyaudio
 ## TNC Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_TNC_Preview.png "TNC Preview")
 
+##
+npm outdated --> list outdated npm packages
+npx npm-check-updates -u --> updated all packages
+npm install --> install all updated packages
+
 ## Credits
 David Rowe and the FreeDV team for developing the modem and libraries
 FreeDV Codec 2 : https://github.com/drowe67/codec2
