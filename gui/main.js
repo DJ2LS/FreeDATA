@@ -1,15 +1,29 @@
-const {app,BrowserWindow,ipcMain} = require('electron')
+const {
+    app,
+    BrowserWindow,
+    ipcMain
+} = require('electron')
 const path = require('path')
+const fs = require('fs')
 
-var testpath = path.join(app.getPath ("appData"), "codec2-FreeDATA");
-console.log(testpath)
+app.setName("codec2-FreeDATA");
 
-const configPath =  path.join(__dirname, 'config.json');
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.local/share")
+var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configPath = path.join(configFolder, 'config.json')
+
+// create folder if not exists
+if (!fs.existsSync(configFolder)) {
+    fs.mkdirSync(configFolder);
+}
+
+// create config file if not exists
+if (!fs.existsSync(configPath)) {
+    fs.writeFileSync(configPath, '{}')
+}
+
 const config = require(configPath);
 const exec = require('child_process').exec;
-
-console.log(configPath)
-
 
 let win = null;
 let data = null;
@@ -32,7 +46,7 @@ function createWindow() {
     })
     // hide menu bar
     win.setMenuBarVisibility(false)
-    
+
     //open dev tools
     win.webContents.openDevTools({
         mode: 'undocked',
@@ -76,7 +90,6 @@ function createWindow() {
         })
     */
 
-
     // https://stackoverflow.com/questions/44258831/only-hide-the-window-when-closing-it-electron
     /*
     data.on('close', function(evt) {
@@ -86,19 +99,15 @@ function createWindow() {
     */
 }
 
-
 app.whenReady().then(() => {
     createWindow()
-    
-    
+
     // start daemon
     // https://stackoverflow.com/a/5775120
     daemonProcess = exec('./daemon', function callback(error, stdout, stderr) {
-            // result
-            console.log(error)
-        });
-    
-    
+        // result
+        console.log(error)
+    });
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
@@ -116,9 +125,8 @@ app.on('window-all-closed', () => {
     }
 })
 
-
 // IPC HANDLER
- /*
+/*
  ipcMain.on('show-data-window', (event, arg) => {
     data.show()
  });
@@ -147,9 +155,9 @@ ipcMain.on('request-update-daemon-connection', (event, arg) => {
 });
 
 ipcMain.on('run-tnc-command', (event, arg) => {
-            win.webContents.send('run-tnc-command', arg);
+    win.webContents.send('run-tnc-command', arg);
 });
 
 ipcMain.on('request-update-rx-buffer', (event, arg) => {
-            win.webContents.send('action-update-rx-buffer', arg);
-});            
+    win.webContents.send('action-update-rx-buffer', arg);
+});

@@ -1,28 +1,27 @@
 const path = require('path')
-const configPath =  path.join(__dirname, 'config.json');
-const config = require(configPath);
-
-
-
-const sock = require('./sock.js');
-const daemon = require('./daemon.js');
-
 const {
     ipcRenderer
-} = require('electron');
+} = require('electron')
+const sock = require('./sock.js');
+const daemon = require('./daemon.js');
 const fs = require('fs');
+const {
+    locatorToLatLng,
+    distance,
+    bearingDistance,
+    latLngToLocator
+} = require('qth-locator');
 
-const { locatorToLatLng, distance, bearingDistance, latLngToLocator } = require('qth-locator');
-
+// https://stackoverflow.com/a/26227660
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.local/share")
+var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configPath = path.join(configFolder, 'config.json')
+const config = require(configPath);
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 250)
 setInterval(sock.getRxBuffer, 1000)
-
-
-
-
 
 // UPDATE FFT DEMO 
 
@@ -33,8 +32,6 @@ updateFFT = function(fft) {
     spectrum.addData(fft);
 }
 setInterval(updateFFT, 250)
-
-
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
@@ -63,7 +60,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("waterfall").style.height = '0px';
     }
 
-// remote tnc 
+    // remote tnc 
     if (config.tnclocation == 'remote') {
         document.getElementById("local-remote-switch1").checked = false
         document.getElementById("local-remote-switch2").checked = true
@@ -71,16 +68,14 @@ window.addEventListener('DOMContentLoaded', () => {
     } else {
         document.getElementById("local-remote-switch1").checked = true
         document.getElementById("local-remote-switch2").checked = false
-        document.getElementById("remote-tnc-field").style.visibility = 'hidden';        
+        document.getElementById("remote-tnc-field").style.visibility = 'hidden';
     }
 
-    
-        // Create spectrum object on canvas with ID "waterfall"
-        global.spectrum = new Spectrum(
-            "waterfall", {
-                spectrumPercent: 20
-            });
-    
+    // Create spectrum object on canvas with ID "waterfall"
+    global.spectrum = new Spectrum(
+        "waterfall", {
+            spectrumPercent: 20
+        });
 
     // SETUP OF SCATTER DIAGRAM
 
@@ -94,7 +89,6 @@ window.addEventListener('DOMContentLoaded', () => {
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
-
 
     var ctx = document.getElementById('scatter').getContext('2d');
     global.myChart = new Chart(ctx, {
@@ -148,18 +142,16 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("local-remote-switch2").checked = false
         document.getElementById("remote-tnc-field").style.visibility = 'hidden';
         config.tnclocation = 'localhost'
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); 
-      });
-   document.getElementById("local-remote-switch2").addEventListener("click", () => {
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+    document.getElementById("local-remote-switch2").addEventListener("click", () => {
         document.getElementById("local-remote-switch1").checked = false
         document.getElementById("local-remote-switch2").checked = true
         document.getElementById("remote-tnc-field").style.visibility = 'visible';
-                config.tnclocation = 'remote'
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2)); 
-        });
-    
-    
-    
+        config.tnclocation = 'remote'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
     // on change port and host
     document.getElementById("tnc_adress").addEventListener("change", () => {
         console.log(document.getElementById("tnc_adress").value)
@@ -198,7 +190,7 @@ window.addEventListener('DOMContentLoaded', () => {
         var dxcallsign = document.getElementById("dxCall").value
         sock.sendPing(dxcallsign)
     });
-    
+
     // dataModalstartPing button clicked 
     document.getElementById("dataModalSendPing").addEventListener("click", () => {
         var dxcallsign = document.getElementById("dataModalDxCall").value
@@ -219,13 +211,11 @@ window.addEventListener('DOMContentLoaded', () => {
         var serialspeed = document.getElementById("hamlib_serialspeed").value
         var ptt = document.getElementById("hamlib_ptt").value
 
-
         config.deviceid = deviceid
         config.deviceport = deviceport
         config.serialspeed = serialspeed
         config.ptt = ptt
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
 
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed)
         setTimeout(function() {
@@ -243,74 +233,66 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // openDataModule button clicked 
     document.getElementById("openDataModule").addEventListener("click", () => {
-               if(document.getElementById("mySidebar").style.width == "40%"){
-     document.getElementById("mySidebar").style.width = "0px";       
-    } else {
-        document.getElementById("mySidebar").style.width = "40%";
-      }
-      })
-      
-      
-  // START TRANSMISSION    
-        document.getElementById("startTransmission").addEventListener("click", () => {
-              
-        var fileList = document.getElementById("dataModalFile").files;         
-      
-        var reader = new FileReader();
-        	//reader.readAsBinaryString(fileList[0]);
-        	reader.readAsDataURL(fileList[0]);
-
-
-	    reader.onload = function(e) {
-		// binary data
-
-        var data = e.target.result        
-        console.log(data)
-	                  
-        let Data = {
-            command: "sendFile",
-            dxcallsign: document.getElementById("dataModalDxCall").value,
-            mode: document.getElementById("datamode").value,
-            frames: document.getElementById("framesperburst").value,
-            filetype: fileList[0].type,
-            filename: fileList[0].name,
-            data: data,
-            checksum: '123123123',
-        };
-        ipcRenderer.send('run-tnc-command', Data);
-	    	     
-	};
-	reader.onerror = function(e) {
-		// error occurred
-		console.log('Error : ' + e.type);
-	};
-            
+        if (document.getElementById("mySidebar").style.width == "40%") {
+            document.getElementById("mySidebar").style.width = "0px";
+        } else {
+            document.getElementById("mySidebar").style.width = "40%";
+        }
     })
-    
-       
-    
+
+    // START TRANSMISSION    
+    document.getElementById("startTransmission").addEventListener("click", () => {
+
+        var fileList = document.getElementById("dataModalFile").files;
+
+        var reader = new FileReader();
+        //reader.readAsBinaryString(fileList[0]);
+        reader.readAsDataURL(fileList[0]);
+
+        reader.onload = function(e) {
+            // binary data
+
+            var data = e.target.result
+            console.log(data)
+
+            let Data = {
+                command: "sendFile",
+                dxcallsign: document.getElementById("dataModalDxCall").value,
+                mode: document.getElementById("datamode").value,
+                frames: document.getElementById("framesperburst").value,
+                filetype: fileList[0].type,
+                filename: fileList[0].name,
+                data: data,
+                checksum: '123123123',
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+
+        };
+        reader.onerror = function(e) {
+            // error occurred
+            console.log('Error : ' + e.type);
+        };
+
+    })
+
 })
-
-
-
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
-    if (typeof(arg.toe) == 'undefined'){
-    var toe = 0
+    if (typeof(arg.toe) == 'undefined') {
+        var toe = 0
     } else {
-     var toe = arg.toe
-    }    
+        var toe = arg.toe
+    }
     document.getElementById("toe").innerHTML = toe + ' ms'
-   
-   // DATA STATE
-   global.rxBufferLengthTnc = arg.rx_buffer_length 
-    
+
+    // DATA STATE
+    global.rxBufferLengthTnc = arg.rx_buffer_length
 
     // SCATTER DIAGRAM PLOTTING
     //global.myChart.destroy();
-    
+
     //console.log(arg.scatter.length)
 
     var data = arg.scatter
@@ -321,51 +303,49 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
-    
-    if (typeof(arg.scatter) == 'undefined'){
-    var scatterSize = 0
+
+    if (typeof(arg.scatter) == 'undefined') {
+        var scatterSize = 0
     } else {
-     var scatterSize = arg.scatter.length
+        var scatterSize = arg.scatter.length
     }
-    if (global.data != newdata && scatterSize > 0){
-            try {
-                global.myChart.destroy();
-            } catch (e) {
-                // myChart not yet created
-            }
-            
-            global.data = newdata    
-        
-    
-     
-    var ctx = document.getElementById('scatter').getContext('2d');
-    global.myChart = new Chart(ctx, {
-        type: 'scatter',
-        data: global.data,
-        options: {
-            animation: false,
-            legend: {
-                display: false,
-                tooltips: {
-                    enabled: false,
+    if (global.data != newdata && scatterSize > 0) {
+        try {
+            global.myChart.destroy();
+        } catch (e) {
+            // myChart not yet created
+        }
+
+        global.data = newdata
+
+        var ctx = document.getElementById('scatter').getContext('2d');
+        global.myChart = new Chart(ctx, {
+            type: 'scatter',
+            data: global.data,
+            options: {
+                animation: false,
+                legend: {
+                    display: false,
+                    tooltips: {
+                        enabled: false,
+                    },
                 },
-            },
-            scales: {
-                display: false,
-                grid: {
-                    display: false
-                },
-                x: {
-                    type: 'linear',
-                    position: 'bottom',
-                    display: false
-                },
-                y: {
-                    display: false
+                scales: {
+                    display: false,
+                    grid: {
+                        display: false
+                    },
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
                 }
-            }
-        },
-    });
+            },
+        });
     }
 
     // PTT STATE
@@ -380,7 +360,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // BUSY STATE
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
-        document.getElementById("startTransmission").disabled = true        
+        document.getElementById("startTransmission").disabled = true
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-success";
         document.getElementById("startTransmission").disabled = false
@@ -401,7 +381,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // RMS
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
-
 
     // CHANNEL STATE
     if (arg.channel_state == 'RECEIVING_SIGNALLING') {
@@ -433,56 +412,53 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // SET BANDWITH
     document.getElementById("bandwith").innerHTML = arg.bandwith
-    
-      // SET BYTES PER MINUTE
-      if (typeof(arg.arq_bytes_per_minute) == 'undefined'){
-    var arq_bytes_per_minute = 0
+
+    // SET BYTES PER MINUTE
+    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
+        var arq_bytes_per_minute = 0
     } else {
-     var arq_bytes_per_minute = arg.arq_bytes_per_minute
-    }    
+        var arq_bytes_per_minute = arg.arq_bytes_per_minute
+    }
     document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute
-    
-      // SET TOTAL BYTES
-      if (typeof(arg.total_bytes) == 'undefined'){
-    var total_bytes = 0
+
+    // SET TOTAL BYTES
+    if (typeof(arg.total_bytes) == 'undefined') {
+        var total_bytes = 0
     } else {
-     var total_bytes = arg.total_bytes
-    }    
+        var total_bytes = arg.total_bytes
+    }
     document.getElementById("total_bytes").innerHTML = total_bytes
     document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent)
     document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;")
-    
-    
+
     // UPDATE HEARD STATIONS  
-  var tbl = document.getElementById("heardstations");
+    var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = ''
 
-    if (typeof(arg.stations) == 'undefined'){
-    var heardStationsLength = 0
+    if (typeof(arg.stations) == 'undefined') {
+        var heardStationsLength = 0
     } else {
-     var heardStationsLength = arg.stations.length
+        var heardStationsLength = arg.stations.length
     }
-    
-    for (i = 0; i < heardStationsLength; i++) {
 
+    for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
         console.log(document.getElementById("dxCall").value)
         if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
             var dxGrid = arg.stations[i]['DXGRID']
-            var myGrid = document.getElementById("myGrid").value 
-        try {   
-            var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
+            var myGrid = document.getElementById("myGrid").value
+            try {
+                var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
                 document.getElementById("pingDistance").innerHTML = dist
                 document.getElementById("dataModalPingDistance").innerHTML = dist
-        } catch {
-            document.getElementById("pingDistance").innerHTML = '---'
-            document.getElementById("dataModalPingDistance").innerHTML = '---'
-        }            
+            } catch {
+                document.getElementById("pingDistance").innerHTML = '---'
+                document.getElementById("dataModalPingDistance").innerHTML = '---'
+            }
             document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
-            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']   
+            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']
         }
-
 
         // now we update the heard stations list
         var row = document.createElement("tr");
@@ -513,45 +489,44 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var gridDistance = document.createElement("td");
         var gridDistanceText = document.createElement('span');
-        
-        try{
+
+        try {
             gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['DXGRID'])) + ' km';
         } catch {
             gridDistanceText.innerText = '---'
         }
-        gridDistance.appendChild(gridDistanceText);    
+        gridDistance.appendChild(gridDistanceText);
 
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['DATATYPE']
         dataType.appendChild(dataTypeText);
-         
-        if(dataTypeText.innerText == 'CQ CQ CQ'){
+
+        if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
         }
-        
-        if(dataTypeText.innerText == 'DATA-CHANNEL'){
+
+        if (dataTypeText.innerText == 'DATA-CHANNEL') {
             row.classList.add("table-warning");
         }
-                
-        if(dataTypeText.innerText == 'BEACON'){
+
+        if (dataTypeText.innerText == 'BEACON') {
             row.classList.add("table-light");
         }
- 
-         if(dataTypeText.innerText == 'PING'){
+
+        if (dataTypeText.innerText == 'PING') {
             row.classList.add("table-info");
         }
-        
-        if(dataTypeText.innerText == 'PING-ACK'){
-            row.classList.add("table-primary");
-        }               
 
+        if (dataTypeText.innerText == 'PING-ACK') {
+            row.classList.add("table-primary");
+        }
 
         var snr = document.createElement("td");
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['SNR']
         snr.appendChild(snrText);
-        
+
         row.appendChild(timestamp);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
@@ -561,14 +536,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         tbl.appendChild(row);
     }
-     
+
 });
 
-
-
-
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
-
 
     // RAM
     document.getElementById("progressbar_ram").setAttribute("aria-valuenow", arg.ram_usage)
@@ -579,7 +550,6 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu").setAttribute("aria-valuenow", arg.cpu_usage)
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
-
 
     // UPDATE AUDIO INPUT
 
@@ -623,7 +593,6 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById("hamlib_serialspeed").disabled = true
         document.getElementById("startTransmission").disabled = false
 
-
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
         document.getElementById('hamlib_deviceport').disabled = false
@@ -644,17 +613,16 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
 
 });
 
-
 ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
     if (arg.daemon_connection == 'open') {
         document.getElementById("daemon_connection_state").className = "btn btn-success";
-                document.getElementById("blurdiv").style.webkitFilter = "blur(0px)";
+        document.getElementById("blurdiv").style.webkitFilter = "blur(0px)";
 
     }
     if (arg.daemon_connection == 'opening') {
         document.getElementById("daemon_connection_state").className = "btn btn-warning";
-                document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
+        document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
 
     }
     if (arg.daemon_connection == 'closed') {
@@ -664,10 +632,9 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
-
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
-var data = arg.data["DATA"]
+    var data = arg.data["DATA"]
 
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
@@ -704,35 +671,33 @@ var data = arg.data["DATA"]
         dxCallText.innerText = arg.data[i]['DXCALLSIGN']
         dxCall.appendChild(dxCallText);
 
-/*
-        var dxGrid = document.createElement("td");
-        var dxGridText = document.createElement('span');
-        dxGridText.innerText = arg.data[i]['DXGRID']
-        dxGrid.appendChild(dxGridText);
-*/
+        /*
+                var dxGrid = document.createElement("td");
+                var dxGridText = document.createElement('span');
+                dxGridText.innerText = arg.data[i]['DXGRID']
+                dxGrid.appendChild(dxGridText);
+        */
 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
         fileNameText.innerText = arg.data[i]['RXDATA'][0]['filename']
         fileName.appendChild(fileNameText);
 
-
-
         row.appendChild(timestamp);
         row.appendChild(dxCall);
-  //      row.appendChild(dxGrid);
+        //      row.appendChild(dxGrid);
         row.appendChild(fileName);
-        
+
         tbl.appendChild(row);
-        
- 
- 
+
         // Creates rxdata folder if not exists
         // https://stackoverflow.com/a/13544465
-        fs.mkdir('rxdata', { recursive: true },  function(err) {
+        fs.mkdir('rxdata', {
+            recursive: true
+        }, function(err) {
             console.log(err);
         });
- 
+
         // write file to rxdata folder
         var base64String = arg.data[i]['RXDATA'][0]['data']
         // remove header from base64 String
@@ -741,11 +706,10 @@ var data = arg.data["DATA"]
         //write data to file
         require("fs").writeFile('rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
             console.log(err);
-        });        
+        });
     }
 
 });
-
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'saveMyCall') {

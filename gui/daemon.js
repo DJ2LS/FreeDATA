@@ -1,14 +1,17 @@
 var net = require('net');
-var config = require('./config.json');
+const path = require('path')
+const {
+    ipcRenderer
+} = require('electron')
 
+// https://stackoverflow.com/a/26227660
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.local/share")
+var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configPath = path.join(configFolder, 'config.json')
+const config = require(configPath);
 
 var daemon = new net.Socket();
 var msg = ''; // Current message, per connection.
-
-const {
-    ipcRenderer
-} = require('electron');
-
 
 setTimeout(connectDAEMON, 500)
 
@@ -19,15 +22,14 @@ function connectDAEMON() {
     //clear message buffer after reconnecting or inital connection
     msg = '';
     daemon.connect(config.daemon_port, config.daemon_host)
-    
-        if (config.tnclocation == 'localhost'){
-        daemon.connect(3001, '127.0.0.1')    
+
+    if (config.tnclocation == 'localhost') {
+        daemon.connect(3001, '127.0.0.1')
     } else {
         daemon.connect(config.daemon_port, config.daemon_host)
 
     }
-    
-    
+
     //client.setTimeout(5000);
 }
 
@@ -52,10 +54,8 @@ daemon.on('end', function(data) {
     setTimeout(connectDAEMON, 2000)
 });
 
-
 //exports.writeCommand = function(command){    
 writeDaemonCommand = function(command) {
-
 
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
@@ -72,7 +72,6 @@ writeDaemonCommand = function(command) {
         //uiMain.setDAEMONconnection('opening')
     }
 
-
     let Data = {
         daemon_connection: daemon.readyState,
     };
@@ -81,13 +80,10 @@ writeDaemonCommand = function(command) {
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
 
-
 daemon.on('data', function(data) {
 
     data = data.toString('utf8'); /* convert data to string */
     msg += data.toString('utf8'); /*append data to buffer so we can stick long data together */
-
-
 
     /* check if we reached an EOF, if true, clear buffer and parse JSON data */
     if (data.endsWith('}')) {
@@ -117,8 +113,6 @@ daemon.on('data', function(data) {
         ////// check if EOF	...
     }
 
-
-
 });
 
 function hexToBytes(hex) {
@@ -133,12 +127,8 @@ exports.getDaemonState = function() {
     writeDaemonCommand(command)
 }
 
-
-
-
 // START TNC
 // ` `== multi line string
-
 
 exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed) {
     var json_command = JSON.stringify({
@@ -152,14 +142,11 @@ exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, ptt, seria
             ptt: ptt,
             serialspeed: serialspeed
 
-            }]
+        }]
     })
-
-
 
     //console.log(json_command)
     writeDaemonCommand(json_command)
-
 
 }
 
