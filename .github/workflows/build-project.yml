@@ -212,7 +212,7 @@ jobs:
           asset_path: ./gui-bundle-ubuntu-artifact/codec2-FreeDATA_linux.tar.gz # path to archive to upload
           asset_name: codec2-FreeDATA_linux-nightly-$$.tar.gz # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
           asset_content_type: application/zip # required by GitHub API
-          max_releases: 7 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
+          max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
           #files: |
           #  ./gui-bundle-ubuntu-artifact/codec2-FreeDATA_ubuntu.zip
           #  ./tnc-artifact/ubuntu_tnc.zip
