@@ -8,7 +8,7 @@ const fs = require('fs')
 
 app.setName("codec2-FreeDATA");
 
-var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.local/share")
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 
@@ -18,8 +18,24 @@ if (!fs.existsSync(configFolder)) {
 }
 
 // create config file if not exists
+var configContent = `
+{
+  "tnc_host": "192.168.178.163",
+  "tnc_port": "3000",
+  "daemon_host": "192.168.178.163",
+  "daemon_port": "3001",
+  "mycall": "AA0AA",
+  "mygrid": "JN40aa",
+  "deviceid": "2028",
+  "deviceport": "/dev/ttyUSB0",
+  "serialspeed": "9600",
+  "ptt": "RTS",
+  "spectrum": "scatter",
+  "tnclocation": "localhost"
+}
+`;
 if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, '{}')
+    fs.writeFileSync(configPath, configContent)
 }
 
 const config = require(configPath);
@@ -27,7 +43,6 @@ const exec = require('child_process').exec;
 
 let win = null;
 let data = null;
-
 var daemonProcess = null;
 
 function createWindow() {
@@ -104,9 +119,12 @@ app.whenReady().then(() => {
 
     // start daemon
     // https://stackoverflow.com/a/5775120
+    console.log("Starting Daemon")
     daemonProcess = exec('./daemon', function callback(error, stdout, stderr) {
         // result
+         console.log(stdout)
         console.log(error)
+        console.log(stderr)
     });
 
     app.on('activate', () => {
