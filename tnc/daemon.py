@@ -19,6 +19,7 @@ import os
 import static
 import psutil
 import sys
+import serial.tools.list_ports
 #PORT = 3001
 #TNCPROCESS = 0
 #TNCSTARTED = False
@@ -173,13 +174,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                 if received_json["type"] == 'GET' and received_json["command"] == 'DAEMON_STATE':
 
-                    data = {'COMMAND' : 'DAEMON_STATE', 'DAEMON_STATE' : [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': [],"CPU": str(psutil.cpu_percent()),"RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
+                    data = {'COMMAND' : 'DAEMON_STATE', 'DAEMON_STATE' : [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': [], 'SERIAL_DEVICES': [], "CPU": str(psutil.cpu_percent()),"RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
 
                     if static.TNCSTARTED:
                         data["DAEMON_STATE"].append({"STATUS": "running"})
                     else:
                         data["DAEMON_STATE"].append({"STATUS": "stopped"})
 
+                    # UPDATE LIST OF AUDIO DEVICES
                     p = pyaudio.PyAudio()
                     for i in range(0, p.get_device_count()):
                         
@@ -192,7 +194,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         if maxOutputChannels > 0:                        
                             data["OUTPUT_DEVICES"].append({"ID": i, "NAME" : str(name)})  
                           
-          
+                    # UPDATE LIST OF SERIAL DEVICES
+                    ports = serial.tools.list_ports.comports()
+                    for port, desc, hwid in ports:
+                        data["SERIAL_DEVICES"].append({"PORT": str(port), "DESCRIPTION" : str(desc)}) 
 
                     #print(data)
                     jsondata = json.dumps(data)
