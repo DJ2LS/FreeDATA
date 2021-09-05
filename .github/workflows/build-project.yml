@@ -85,7 +85,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         #working-directory: tnc
         run: |          
-          cd ./codec2/build_linux && rm -Rf *
+          cd ~/codec2/build_linux && rm -Rf *
           cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
           make
           
