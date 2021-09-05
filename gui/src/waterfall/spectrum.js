@@ -395,13 +395,13 @@ function Spectrum(id, options) {
     // Setup state
     this.paused = false;
     this.fullscreen = false;
-    this.min_db = -30;
-    this.max_db = 50;
+    this.min_db = 20;
+    this.max_db = 80;
     this.spectrumHeight = 0;
 
     // Colors
     this.colorindex = 0;
-this.colormap = colormaps[2];
+    this.colormap = colormaps[2];
 
     // Create main canvas and adjust dimensions to match actual
     this.canvas = document.getElementById(id);
