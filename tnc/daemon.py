@@ -130,6 +130,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         dtr_state = "NONE"
                     
                     if sys.platform == "linux":
+                        # we need to make sure we have execution privileges
+                        p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
+                        #run hamlib rigctld network service
                         command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
                         " -s "+ str(serialspeed) + \
                         " -P "+ str(ptt) + \
