@@ -115,6 +115,14 @@ jobs:
           cp -R ~/codec2 ./tnc/dist
           ls -R
           
+      - name: Copy LPCNet to TNC Linux
+        if: matrix.os == 'ubuntu-latest'
+        # working-directory: tnc
+        run: |          
+          cp -R ~/LPCNet ./tnc/dist
+          ls -R
+          
+          
       - name: Compress Linux
         shell: bash
         run: |
