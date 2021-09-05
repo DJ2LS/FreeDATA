@@ -48,14 +48,13 @@ var daemonProcess = null;
 function createWindow() {
     win = new BrowserWindow({
         width: 1220,
-        height: 830,
+        height: 920,
         autoHideMenuBar: true,
         icon: __dirname + '/src/app-icon.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
             preload: require.resolve('./preload-main.js'),
             nodeIntegration: true,
-            nativeWindowOpen: true,
             contextIsolation: false,
             enableRemoteModule: false, //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 https://github.com/electron/remote
         }

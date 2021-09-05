@@ -24,14 +24,17 @@ setInterval(sock.getTncState, 250)
 setInterval(sock.getRxBuffer, 1000)
 
 // UPDATE FFT DEMO 
-
+/*
 updateFFT = function(fft) {
     var fft = Array.from({
         length: 2048
     }, () => Math.floor(Math.random() * 10));
     spectrum.addData(fft);
+    console.log(fft)
 }
+
 setInterval(updateFFT, 250)
+*/
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
@@ -278,6 +281,26 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
+
+/*
+    var fft = Array.from({
+        length: 2048
+    }, () => Math.floor(Math.random() * 10));
+    spectrum.addData(fft);
+  */  
+    
+    
+    // update FFT
+    if (typeof(arg.fft) !== 'undefined') {
+        //console.log(arg.fft)
+        console.log(typeof(arg.fft))
+        var array = JSON.parse("[" + arg.fft + "]");
+        console.log(typeof(array))
+        console.log(array[0])
+        spectrum.addData(array[0]);
+
+    } 
+
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
     if (typeof(arg.toe) == 'undefined') {

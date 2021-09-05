@@ -134,6 +134,7 @@ client.on('data', function(data) {
                 mode: data['MODE'],
                 bandwith: data['BANDWITH'],
                 rms_level: (data['AUDIO_RMS'] / 1000) * 100,
+                fft: data['FFT'],
                 scatter: data['SCATTER'],
                 rx_buffer_length: data['RX_BUFFER_LENGTH'],
                 tx_n_max_retries: data['TX_N_MAX_RETRIES'],
