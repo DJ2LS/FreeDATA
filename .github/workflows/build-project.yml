@@ -104,7 +104,7 @@ jobs:
         working-directory: tnc
         run: |          
           cp -R ./hamlib ./dist
-          chmod +x ./dist/hamlib/linux/rigctld
+          #chmod +x ./dist/hamlib/linux/rigctld
 
           
       - name: Copy codec2 to TNC Linux
@@ -167,6 +167,9 @@ jobs:
           cp -R ./tnc/dist/codec2 gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
+          chmod +x ./tnc/dist/hamlib/linux/rigctld
+          chmod +x ./tnc/dist/tnc
+          chmod +x ./tnc/dist/daemon
           cd ./gui-bundle
           #zip -r codec2-FreeDATA_linux.zip .
           tar -zcvf codec2-FreeDATA_linux.tar.gz *
