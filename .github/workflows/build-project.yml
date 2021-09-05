@@ -60,18 +60,12 @@ jobs:
           
 
 
-      - name: Build Linux
-        if: matrix.os == 'ubuntu-latest'
-        working-directory: tnc
-        run: |      
-          pyinstaller -F daemon.py -n daemon
-          pyinstaller -F main.py -n tnc
- 
+
       - name: Build codec2 Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |
-          cd ~
+          #cd ~
           git clone https://github.com/drowe67/codec2.git
           cd codec2 && mkdir build_linux && cd build_linux
           cmake ../
@@ -79,22 +73,30 @@ jobs:
           
       - name: Build LPCNet Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |          
-          cd ~
+          #cd ~
           git clone https://github.com/drowe67/LPCNet
           cd LPCNet && mkdir build_linux && cd build_linux
-          cmake -DCODEC2_BUILD_DIR=~/codec2/build_linux ../ 
+          cmake -DCODEC2_BUILD_DIR=~/tnc/codec2/build_linux ../ 
           make
           
       - name: ReBuild codec2 with LPCNet Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |          
-          cd ~/codec2/build_linux && rm -Rf *
-          cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
+          cd ./codec2/build_linux && rm -Rf *
+          cmake -DLPCNET_BUILD_DIR=~/tnc/LPCNet/build_linux ..
           make
-
+          
+      - name: Build Linux
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: tnc
+        run: |      
+          pyinstaller -F daemon.py -n daemon
+          pyinstaller -F main.py -n tnc
+ 
+ 
       - name: LIST ALL FILES
         shell: bash
         run: |
@@ -110,16 +112,16 @@ jobs:
           
       - name: Copy codec2 to TNC Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |          
-          cp -R ~/codec2 ./tnc/dist
+          cp -R ./codec2 ./tnc/dist
           ls -R
           
       - name: Copy LPCNet to TNC Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
+        working-directory: tnc
         run: |          
-          cp -R ~/LPCNet ./tnc/dist
+          cp -R ./LPCNet ./tnc/dist
           ls -R
           
           
