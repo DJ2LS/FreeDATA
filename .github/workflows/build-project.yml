@@ -71,23 +71,23 @@ jobs:
           cmake ../
           make
           
-      - name: Build LPCNet Linux
-        #if: matrix.os == 'ubuntu-latest'
-        working-directory: tnc
-        run: |          
-          cd ~
-          git clone https://github.com/drowe67/LPCNet
-          cd LPCNet && mkdir build_linux && cd build_linux
-          cmake -DCODEC2_BUILD_DIR=~/codec2/build_linux ../ 
-          make
+      #- name: Build LPCNet Linux
+      #  #if: matrix.os == 'ubuntu-latest'
+      #  working-directory: tnc
+      #  run: |          
+      #    cd ~
+      #    git clone https://github.com/drowe67/LPCNet
+      #    cd LPCNet && mkdir build_linux && cd build_linux
+      #    cmake -DCODEC2_BUILD_DIR=~/codec2/build_linux ../ 
+      #    make
           
-      - name: ReBuild codec2 with LPCNet Linux
-        if: matrix.os == 'ubuntu-latest'
-        #working-directory: tnc
-        run: |          
-          cd ~/codec2/build_linux && rm -Rf *
-          cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
-          make
+      #- name: ReBuild codec2 with LPCNet Linux
+      #  if: matrix.os == 'ubuntu-latest'
+      #  #working-directory: tnc
+      #  run: |          
+      #    cd ~/codec2/build_linux && rm -Rf *
+      #    cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
+      #    make
           
       - name: Copy codec2 to TNC Linux
         if: matrix.os == 'ubuntu-latest'
@@ -97,13 +97,13 @@ jobs:
           cp -R ~/codec2 ./tnc/
           ls -R
           
-      - name: Copy LPCNet to TNC Linux
-        if: matrix.os == 'ubuntu-latest'
-        #working-directory: tnc
-        run: |          
-          #cp -R ~/LPCNet ./tnc/dist
-          cp -R ~/LPCNet ./tnc/
-          ls -R          
+      #- name: Copy LPCNet to TNC Linux
+      #  if: matrix.os == 'ubuntu-latest'
+      #  #working-directory: tnc
+      #  run: |          
+      #    #cp -R ~/LPCNet ./tnc/dist
+      #    cp -R ~/LPCNet ./tnc/
+      #    ls -R          
           
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
@@ -178,7 +178,7 @@ jobs:
           cp -R ./tnc/dist/hamlib gui-bundle
           #cp -R ./tnc/dist/codec2 gui-bundle
           cp -R ./tnc/codec2 gui-bundle
-          cp -R ./tnc/LPCNet gui-bundle
+          #cp -R ./tnc/LPCNet gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
           chmod +x ./gui-bundle/hamlib/linux/rigctld
