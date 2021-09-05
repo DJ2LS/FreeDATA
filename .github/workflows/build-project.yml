@@ -176,12 +176,14 @@ jobs:
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
           cp -R ./tnc/dist/hamlib gui-bundle
-          cp -R ./tnc/dist/codec2 gui-bundle
+          #cp -R ./tnc/dist/codec2 gui-bundle
+          cp -R ./tnc/codec2 gui-bundle
+          cp -R ./tnc/LPCNet gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
-          chmod +x ./tnc/dist/hamlib/linux/rigctld
-          chmod +x ./tnc/dist/tnc
-          chmod +x ./tnc/dist/daemon
+          chmod +x ./gui-bundle/hamlib/linux/rigctld
+          chmod +x ./gui-bundle/tnc
+          chmod +x ./gui-bundle/daemon
           cd ./gui-bundle
           zip -r codec2-FreeDATA_linux.zip .
           #tar -zcvf codec2-FreeDATA_linux.tar.gz *
