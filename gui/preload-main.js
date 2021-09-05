@@ -295,11 +295,41 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     //console.log(arg.scatter.length)
 
+        const config = {
+                plugins: {
+                    legend: {
+                        display: false,     
+                    },     
+                },
+                animations: false,
+                tooltips: {
+                    enabled: false,
+                },
+                scales: {
+                    display: false,
+                    grid: {
+                        display: false
+                    },
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+        }
+
+
+
+
     var data = arg.scatter
     var newdata = {
         datasets: [{
             label: 'constellation diagram',
             data: data,
+            options: config,
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
@@ -318,33 +348,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         global.data = newdata
 
+
         var ctx = document.getElementById('scatter').getContext('2d');
         global.myChart = new Chart(ctx, {
             type: 'scatter',
             data: global.data,
-            options: {
-                animation: false,
-                legend: {
-                    display: false,
-                    tooltips: {
-                        enabled: false,
-                    },
-                },
-                scales: {
-                    display: false,
-                    grid: {
-                        display: false
-                    },
-                    x: {
-                        type: 'linear',
-                        position: 'bottom',
-                        display: false
-                    },
-                    y: {
-                        display: false
-                    }
-                }
-            },
+            options: config
         });
     }
 
