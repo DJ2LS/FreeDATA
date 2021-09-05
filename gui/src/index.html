@@ -69,27 +69,27 @@
       
       <!---------------------------------------------------------------------- MAIN AREA ------------------------------------------------------------>
       <!---------------------------------------------------------------------------------------------------------------------------------------------------->
-      <div class="container mt-3">
+      <div class="container mt-3 p-0">
          <div class="row">
             <div class="col">
                <div class="card text-dark bg-light mb-0" >
-                  <div class="card-header">
+                  <div class="card-header p-2 p-1">
                      1. AUDIO
                   </div>
-                  <div class="card-body">
-                     <div class="input-group  input-group-sm mb-2">
+                  <div class="card-body p-2">
+                     <div class="input-group  input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">RX</span>
                         <select class="form-select form-select-sm" id="audio_input_selectbox" aria-label=".form-select-sm example">
                            <!-- 					 					<option selected value="3011">USB Interface</option>-->
                         </select>
                      </div>
-                     <div class="input-group  input-group-sm mb-2">
+                     <div class="input-group  input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">TX</span>
                         <select class="form-select form-select-sm" id="audio_output_selectbox"  aria-label=".form-select-sm example">
                            <!--<option selected value="RTS">USB Interface</option>-->
                         </select>
                      </div>
-                     <div class="progress mb-2" style="height: 20px;" >
+                     <div class="progress mb-1" style="height: 20px;" >
                         <div class="progress-bar progress-bar-striped bg-primary" id="rms_level" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                         <p class="justify-content-center d-flex position-absolute w-100">RX AUDIO LEVEL</p>
                      </div>
@@ -101,11 +101,11 @@
             </div>
             <div class="col">
                <div class="card text-dark bg-light mb-0">
-                  <div class="card-header">
+                  <div class="card-header p-2">
                      2. RADIO
                   </div>
-                  <div class="card-body">
-                     <div class="input-group  input-group-sm mb-2">
+                  <div class="card-body p-2">
+                     <div class="input-group  input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">RIG</span>
                         <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_deviceid">
                            <option selected value="2028">Kenwood TS480</option>
@@ -372,7 +372,7 @@
                            <option value="33001">	ELAD                   FDM-DUO                </option>
                         </select>
                      </div>
-                     <div class="input-group  input-group-sm mb-2">
+                     <div class="input-group  input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">PTT</span>
                         <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_ptt">
                            <option selected value="RTS">RTS</option>
@@ -412,10 +412,10 @@
             </div>
             <div class="col">
                <div class="card text-dark bg-light mb-0" >
-                  <div class="card-header">3. TNC</div>
-                  <div class="card-body">
+                  <div class="card-header p-2">3. TNC</div>
+                  <div class="card-body p-2">
                      <!--
-                        <div class="input-group input-group-sm mb-2">
+                        <div class="input-group input-group-sm mb-1">
                             <button type="button" id="startTNC"class="btn btn-success">Start</button>
                             <span class="input-group-text" id="tnc_running_state">---</span>
                             <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
@@ -427,7 +427,7 @@
                               TNC
                            </div>
                            <div class="col">
-                              <div class="input-group input-group-sm mb-2">
+                              <div class="input-group input-group-sm mb-1">
                                  <button type="button" id="startTNC"class="btn btn-success">Start</button>
                                  <span class="input-group-text" id="tnc_running_state" style="width: 7rem">---</span>
                                  <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
@@ -473,13 +473,13 @@
             </div>
          </div>
       </div>
-      <hr>
-      <div class="container mt-2">
+      <hr class="m-1">
+      <div class="container mt-2 p-0">
          <div class="row">
             <div class="col">
                <div class="card text-dark bg-light mb-1">
-                  <div class="card-header">MY STATION</div>
-                  <div class="card-body">
+                  <div class="card-header p-2">MY STATION</div>
+                  <div class="card-body p-2">
                      <div class="row">
                         <div class="col-md-auto">
                            <div class="input-group input-group-sm mb-0">
@@ -508,8 +508,8 @@
             </div>
             <div class="col">
                <div class="card text-dark bg-light mb-1">
-                  <div class="card-header">PING & CQ</div>
-                  <div class="card-body">
+                  <div class="card-header p-2">PING & CQ</div>
+                  <div class="card-body p-2">
                      <div class="row">
                         <div class="col-md-auto">
                            <div class="input-group input-group-sm mb-0">
@@ -538,8 +538,8 @@
          </div>
          <div class="row">
             <div class="col">
-               <div class="card text-dark bg-light mb-1" style="height: 360px">
-                  <div class="card-header">
+               <div class="card text-dark bg-light mb-1" >
+                  <div class="card-header p-2">
                      <div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
                         <input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch1" autocomplete="off" checked>
                         <label class="btn btn-outline-secondary" for="waterfall-scatter-switch1">WATERFALL</label>
@@ -547,18 +547,18 @@
                         <label class="btn btn-outline-secondary" for="waterfall-scatter-switch2">SCATTER</label>
                      </div>
                   </div>
-                  <!--<div class="card-body">-->
+                  <!--<div class="card-body p-2">-->
                   <canvas id="waterfall" style="position: relative; z-index: 2;"></canvas>
                   <canvas id="scatter" style="position: relative; z-index: 1;"></canvas>
                   <!-- </div>-->
                </div>
             </div>
             <div class="col">
-               <div class="card text-dark bg-light mb-1" style="height: 360px">
-                  <div class="card-header">HEARD STATIONS</div>
-                  <div class="card-body">
+               <div class="card text-dark bg-light mb-1" style="height: 325px">
+                  <div class="card-header p-2">HEARD STATIONS</div>
+                  <div class="card-body p-2">
                      <!-- START OF TABLE FOR HEARD STATIONS -->
-                     <table class="table">
+                     <table class="table table-sm">
                         <thead>
                            <tr>
                               <th scope="col">Time</th>
@@ -597,8 +597,8 @@
                 <div class="row mb-1">
                     <div class="col">
                         <div class="card text-dark bg-light mb-0 " >
-                        <div class="card-header">DX Station </div>
-                            <div class="card-body">
+                        <div class="card-header p-2">DX Station </div>
+                            <div class="card-body p-2">
                                 <div class="row">
                                     <div class="col-auto">    
                                          <div class="input-group input-group-sm mb-0">
@@ -628,8 +628,8 @@
                 <div class="row mb-1">
                     <div class="col">
                         <div class="card text-dark bg-light mb-0 " >
-                            <div class="card-header">Select data </div>
-                            <div class="card-body">
+                            <div class="card-header p-2">Select data </div>
+                            <div class="card-body p-2">
                                 <div class="input-group input-group-sm mb-0">
                                     <input type="file" class="form-control" id="dataModalFile">
                                     <label class="input-group-text" for="inputGroupFile02">kB</label>
@@ -640,11 +640,11 @@
                     <!--col-->
                 </div>
                 <!--row-->
-                <div class="row mb-2">
+                <div class="row mb-1">
                     <div class="col">
                         <div class="card text-dark bg-light mb-0" >
-                            <div class="card-header">Transmission </div>
-                            <div class="card-body">
+                            <div class="card-header p-2">Transmission </div>
+                            <div class="card-body p-2">
                                 <div class="row">
                                     <div class="col-auto">
                                         <div class="input-group input-group-sm">
@@ -673,7 +673,7 @@
                     <!--row-->
                 </div>
 
-                <div class="row mb-2">
+                <div class="row mb-1">
                     <div class="col">
                     
                     
@@ -698,8 +698,8 @@
                 <div class="row">
                     <div class="col">
                         <div class="card text-dark bg-light mb-0" >
-                            <div class="card-header">Info </div>
-                            <div class="card-body">
+                            <div class="card-header p-2">Info </div>
+                            <div class="card-body p-2">
                                 123
                             </div>
                         </div>
