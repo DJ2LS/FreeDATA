@@ -43,6 +43,7 @@ jobs:
           pip3 install pyinstaller
           pip3 install ujson
           pip3 install pyserial
+          pip3 install numpy
 
       #- name: Build Hamlib Python Binding
       #  if: matrix.os == 'ubuntu-latest'
