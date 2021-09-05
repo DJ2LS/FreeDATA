@@ -54,7 +54,7 @@ class RF():
     def __init__(self):       
     
         # -------------------------------------------- LOAD FREEDV
-        libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
+        libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
         self.c_lib = ctypes.CDLL(libname)
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         self.p = pyaudio.PyAudio()
