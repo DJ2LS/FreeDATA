@@ -110,11 +110,6 @@ class RF():
 
         # try to init hamlib
         try:
-            print(static.HAMLIB_DEVICE_ID)
-            print(static.HAMLIB_DEVICE_PORT)
-            print(static.HAMLIB_SERIAL_SPEED)
-            print(static.HAMLIB_PTT_TYPE)
-            
             
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
             
@@ -213,7 +208,7 @@ class RF():
     def transmit_signalling(self, data_out, count):
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-        print(static.CHANNEL_STATE)
+        #print(static.CHANNEL_STATE)
                 
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
@@ -255,9 +250,9 @@ class RF():
         # append frame again with as much as in count defined
         for i in range(1, count):
             self.streambuffer += bytes(converted_audio[0])
-            print(len(self.streambuffer))
+            #print(len(self.streambuffer))
         #self.streambuffer += bytes(converted_audio[0])
-        print(len(self.streambuffer))                       
+        #print(len(self.streambuffer))                       
         
         # -------------- transmit audio
         #logging.debug("SENDING SIGNALLING FRAME " + str(data_out))
@@ -335,7 +330,7 @@ class RF():
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
 
                 n_total_arq_frame = len(static.TX_BUFFER)
-                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
+                #static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
 
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
@@ -378,7 +373,7 @@ class RF():
                 static.ARQ_TX_N_CURRENT_ARQ_FRAME = n_current_arq_frame.to_bytes(2, byteorder='big')
 
                 n_total_arq_frame = len(static.TX_BUFFER)
-                static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
+                #static.ARQ_TX_N_TOTAL_ARQ_FRAMES = n_total_arq_frame
 
                 arqframe = frame_type + \
                     bytes([static.ARQ_TX_N_FRAMES_PER_BURST]) + \
@@ -674,6 +669,10 @@ class RF():
             dfft = [0]
         dfftlist = dfft.tolist()
         
-        static.FFT = dfftlist[:400]
-
-        return dfft
+        # send fft only if receiving
+        if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
+            static.FFT = dfftlist[:400]
+        # else send 0
+        else:
+            static.FFT = [0] * 400
+        

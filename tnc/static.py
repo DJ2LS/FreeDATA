@@ -114,7 +114,7 @@ ARQ_RX_FRAME_N_BURSTS = 0
 
 # TX
 ARQ_TX_N_CURRENT_ARQ_FRAME = 0
-ARQ_TX_N_TOTAL_ARQ_FRAMES = 0
+#ARQ_TX_N_TOTAL_ARQ_FRAMES = 0   --> len(static.TX_BUFFER) does this as well or we use TX_BUFFER_SIZE which is the same :-/
 ##
 
 # RX
