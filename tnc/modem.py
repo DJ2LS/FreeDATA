@@ -21,10 +21,13 @@ import helpers
 import static
 import data_handler
 
-#import Hamlib
+import sys
+sys.path.append("hamlib/linux")
+import Hamlib
+
 import numpy as np
-import rigctld
-rigctld = rigctld.Rigctld()
+#import rigctld
+#rigctld = rigctld.Rigctld()
 
 
 MODEM_STATS_NR_MAX = 320
@@ -55,8 +58,16 @@ class RF():
     def __init__(self):       
     
         # -------------------------------------------- LOAD FREEDV
-        libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
-        self.c_lib = ctypes.CDLL(libname)
+        try:
+            # we check at first for libcodec2 in root - necessary if we want to run it inside a pyinstaller binary
+            libname = pathlib.Path("libcodec2.so.1.0")
+            self.c_lib = ctypes.CDLL(libname)
+        except:
+            # if we cant load libcodec from root, we check for subdirectory
+            # this is, if we want to run it without beeing build in a dev environment
+            print("running libcodec from source bild")
+            libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
+            self.c_lib = ctypes.CDLL(libname)
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         self.p = pyaudio.PyAudio()
         # --------------------------------------------OPEN AUDIO CHANNEL RX
@@ -96,9 +107,15 @@ class RF():
 
         # --------------------------------------------CONFIGURE HAMLIB
 
-    '''
+
         # try to init hamlib
         try:
+            print(static.HAMLIB_DEVICE_ID)
+            print(static.HAMLIB_DEVICE_PORT)
+            print(static.HAMLIB_SERIAL_SPEED)
+            print(static.HAMLIB_PTT_TYPE)
+            
+            
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
             
             self.my_rig = Hamlib.Rig(static.HAMLIB_DEVICE_ID)
@@ -147,16 +164,17 @@ class RF():
             self.my_rig.open()
 
         except:
+            print("Unexpected error:", sys.exc_info()[0])
             print("can't open rig")
-            
-    '''
+
+    
 # --------------------------------------------------------------------------------------------------------
     def ptt_and_wait(self, state):
                
         if state:
             static.PTT_STATE = True
-            #self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-            rigctld.ptt_enable()
+            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+            #rigctld.ptt_enable()
             ptt_togle_timeout = time.time() + 0.1
             while time.time() < ptt_togle_timeout:
                 pass
@@ -168,8 +186,8 @@ class RF():
                 pass
                 
             static.PTT_STATE = False
-            #self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
-            rigctld.ptt_disable()
+            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+            #rigctld.ptt_disable()
 
 
 
@@ -274,9 +292,7 @@ class RF():
         # lets see if this is a good idea..
         static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
         static.ARQ_START_OF_BURST = int(time.time()) # we need to update our timeout timestamp
-    
-        self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-
+        
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_DATA'
 
@@ -637,11 +653,13 @@ class RF():
             static.SNR = 0
             
     def get_radio_stats(self):
-
-        static.HAMLIB_FREQUENCY = rigctld.get_frequency()
-        static.HAMLIB_MODE = rigctld.get_mode()[0]
-        static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
-
+        static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
+        (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
+        static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
+        #static.HAMLIB_FREQUENCY = rigctld.get_frequency()
+        #static.HAMLIB_MODE = rigctld.get_mode()[0]
+        #static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
+        
                             
     def calculate_fft(self, data_in):
     
@@ -649,11 +667,13 @@ class RF():
         audio_data = np.fromstring(data_in, np.int16)
         # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
         # and make sure it's not imaginary
-        dfft = 10.*np.log10(abs(np.fft.rfft(audio_data)))
-
-        print(dfft.tolist())
+        # we need to try this in case of division by zero
+        try:
+            dfft = 10.*np.log10(abs(np.fft.rfft(audio_data)))
+        except:
+            dfft = [0]
         dfftlist = dfft.tolist()
         
+        static.FFT = dfftlist[:400]
 
-        static.FFT = dfftlist[:512]
         return dfft

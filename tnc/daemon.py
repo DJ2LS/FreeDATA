@@ -131,20 +131,23 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                     if sys.platform == "linux":
                         # we need to make sure we have execution privileges
-                        p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
-                        #run hamlib rigctld network service
-                        command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
-                        " -s "+ str(serialspeed) + \
-                        " -P "+ str(ptt) + \
-                        " -m "+ str(deviceid) + \
-                        " --set-conf=dtr_state=" + dtr_state
-                        try:        
-                            p = subprocess.Popen(command, shell=True)
-                            time.sleep(0.3)
-                        except:
-                            print("hamlib not started")
-                            sys.exit()
-                            
+                        #try:
+                        #    p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
+                        #except:
+                        #    print("rigctld not started...")
+                        ##run hamlib rigctld network service
+                        #command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
+                        #" -s "+ str(serialspeed) + \
+                        #" -P "+ str(ptt) + \
+                        #" -m "+ str(deviceid) + \
+                        #" --set-conf=dtr_state=" + dtr_state
+                        #try:        
+                        #    p = subprocess.Popen(command, shell=True)
+                        #    time.sleep(0.3)
+                        #except:
+                        #    print("hamlib not started")
+                        #    sys.exit()
+                        pass    
                     elif sys.platform == "darwin":
                         print("platform not yet supported")
                         sys.exit()
