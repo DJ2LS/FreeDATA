@@ -89,14 +89,16 @@ jobs:
       #    cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
       #    make
           
-      - name: Copy codec2 to TNC Linux
-        if: matrix.os == 'ubuntu-latest'
-        #working-directory: tnc
-        run: |          
-          #cp -R ~/codec2 ./tnc/dist
-          cp -R ~/codec2 ./tnc/
-          ls -R
-          
+      #- name: Copy codec2 to TNC Linux
+      #  if: matrix.os == 'ubuntu-latest'
+      #  #working-directory: tnc
+      #  run: |          
+      #    #cp -R ~/codec2 ./tnc/dist
+      #    cp -R ~/codec2 ./tnc/
+      #    ls -R
+
+
+
       #- name: Copy LPCNet to TNC Linux
       #  if: matrix.os == 'ubuntu-latest'
       #  #working-directory: tnc
@@ -110,7 +112,7 @@ jobs:
         working-directory: tnc
         run: |      
           pyinstaller -F daemon.py -n daemon
-          pyinstaller -F main.py -n tnc
+          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. main.py -n tnc
  
       - name: LIST ALL FILES
         shell: bash
@@ -177,7 +179,7 @@ jobs:
           cp ./gui/dist/*.AppImage gui-bundle
           cp -R ./tnc/dist/hamlib gui-bundle
           #cp -R ./tnc/dist/codec2 gui-bundle
-          cp -R ./tnc/codec2 gui-bundle
+          #cp -R ./tnc/codec2 gui-bundle
           #cp -R ./tnc/LPCNet gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
