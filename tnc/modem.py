@@ -659,23 +659,26 @@ class RF():
         
                             
     def calculate_fft(self, data_in):
-    
+        # WE NEED TO OPTIMIZE THIS!
+        
+        
         # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
         audio_data = np.fromstring(data_in, np.int16)
         # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
         # and make sure it's not imaginary
-        # we need to try this in case of division by zero
+
         try:
-            dfft = 10.*np.log10(abs(np.fft.rfft(audio_data)))
+            fftarray = np.fft.rfft(audio_data)
+            # set value 0 to 1 to avoid division by zero 
+            fftarray[fftarray == 0] = 1
+            dfft = 10.*np.log10(abs(fftarray))
+            dfftlist = dfft.tolist()
+                
+            # send fft only if receiving
+            if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
+                static.FFT = dfftlist[20:380]
         except:
-            dfft = 0
-            
-        dfftlist = dfft.tolist()
-        
-        # send fft only if receiving
-        if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-            static.FFT = dfftlist[20:380]
-        # else send 0
-        else:
+            print("setting fft = 0")
+            # else 0
             static.FFT = [0] * 400
         
