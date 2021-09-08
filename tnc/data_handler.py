@@ -515,14 +515,13 @@ def frame_nack_received():
 
 def open_dc_and_transmit(data_out, mode, n_frames):
     if not static.ARQ_READY_FOR_DATA:
-
-
+        
+        # we open the datachannel with the mode, selected from GUI
         if n_frames != 0:
-            static.ARQ_TX_N_FRAMES_PER_BURST = int(n_frames)
-
+            static.ARQ_TX_N_FRAMES_PER_BURST = n_frames
+        # else we do an auto selection --> future feature: path calculation
         else:
             static.ARQ_TX_N_FRAMES_PER_BURST = get_n_frames_per_burst()
-
 
         asyncio.run(arq_open_data_channel(mode))
     # wait until data channel is open
@@ -608,16 +607,13 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([static.ARQ_DATA_CHANNEL_MODE])
 
-
     modem.transmit_signalling(connection_frame, 2)
 
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
         time.sleep(0.01)
 
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
-    
-    #time.sleep(1)
-    
+
     wait_until_receive_data = time.time() + 1
     while time.time() < wait_until_receive_data:
         pass
@@ -633,10 +629,8 @@ def arq_received_channel_is_open(data_in):
     
     static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
-
     if static.ARQ_DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
         logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
-        
         
         helpers.wait(1)
         
@@ -665,9 +659,7 @@ def transmit_ping(callsign):
 
     # wait while sending....
     modem.transmit_signalling(ping_frame, 1)
-    print("ping=?")
     while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-        print("PING....")
         time.sleep(0.01)
 
 

@@ -403,25 +403,28 @@ class RF():
         # -------------- transmit audio
         
         self.ptt_and_wait(True)
+        # this triggers writing buffer to audio stream
+        # this way we are able to run this non blocking
+        # this needs to be optimized!
         self.audio_writing_to_stream = True
-
 
         # wait until audio has been processed
         while self.audio_writing_to_stream:
             time.sleep(0.01)
             static.CHANNEL_STATE = 'SENDING_DATA'
 
-
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
         self.ptt_and_wait(False)
 
+        # close codec2 instance
         self.c_lib.freedv_close(freedv)
 # --------------------------------------------------------------------------------------------------------
 
     def receive(self, mode):
         force = False
 
+        # create new codec2 instance
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(mode)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -466,27 +469,25 @@ class RF():
                 nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
                 
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
+                                              
+                data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
+                data_in = data_in[0]
                 
                 self.calculate_fft(data_in)
                 
-                
-                data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
-                data_in = data_in[0]
                                 
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
                 #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
+                
+                # get scatter data and snr data
+                self.get_scatter(freedv)
                 self.calculate_snr(freedv)
                 
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
-
-        
-
-                # lets get scatter data
-                self.get_scatter(freedv)
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
@@ -663,7 +664,8 @@ class RF():
         try:
             dfft = 10.*np.log10(abs(np.fft.rfft(audio_data)))
         except:
-            dfft = [0]
+            dfft = 0
+            
         dfftlist = dfft.tolist()
         
         # send fft only if receiving

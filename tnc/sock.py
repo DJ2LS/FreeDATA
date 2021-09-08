@@ -91,22 +91,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 # PING ----------------------------------------------------------
                 if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
-                    print(received_json)
                     dxcallsign = received_json["dxcallsign"]
                     #asyncio.run(data_handler.transmit_ping(dxcallsign))
                     PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
                     PING_THREAD.start()
 
-                if received_json["type"] == 'ARQ' and received_json["command"] == "OPEN_DATA_CHANNEL":
-                    static.ARQ_READY_FOR_DATA = False
-                    static.TNC_STATE = 'BUSY'
-                    
-                    dxcallsign = received_json["dxcallsign"]
-                    static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
-                    
-                    asyncio.run(data_handler.arq_open_data_channel())
-                    
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
                     static.TNC_STATE = 'BUSY'
                     
@@ -132,11 +121,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     print(dataframe)
                     data_out = bytes(dataframe, 'utf-8')
                     print(data_out)
-                   
-                    
-                    #ARQ_DATA_THREAD = threading.Thread(target=data_handler.arq_transmit, args=[data_out], name="ARQ_DATA")
-                    #ARQ_DATA_THREAD.start()
-                    
+
                     ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
                     ARQ_DATA_THREAD.start()
                     # asyncio.run(data_handler.arq_transmit(data_out))
@@ -213,8 +198,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     for i in range(0, len(static.HEARD_STATIONS)):
                         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})  
                     
-                    
-
+             
                     try: 
                         jsondata = json.dumps(output)
                     except ValueError as e:
