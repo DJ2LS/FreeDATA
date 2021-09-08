@@ -670,7 +670,7 @@ class RF():
         
         # send fft only if receiving
         if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-            static.FFT = dfftlist[:400]
+            static.FFT = dfftlist[20:380]
         # else send 0
         else:
             static.FFT = [0] * 400

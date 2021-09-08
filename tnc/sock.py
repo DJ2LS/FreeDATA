@@ -64,26 +64,24 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 socketTimeout = time.time() + static.SOCKET_TIMEOUT
             
             # convert data to json object
-            # we need to do some error handling in case of socket timeout
-
+            # we need to do some error handling in case of socket timeout or decoding issue
             try:
                 
                 received_json = json.loads(data)
 
-            except ValueError as e:
-                print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
-                print(e)
-                print("-----------------------------------")
-                print(data)
-                print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
-                received_json = {}
-                
-            
-            try:
+            #except ValueError as e:
+            #    print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
+            #    print(e)
+            #    print("-----------------------------------")
+            #    print(data)
+            #    print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
+            #    received_json = {}
+            #    break
+            #try:
 
                 # CQ CQ CQ -----------------------------------------------------
                 if received_json["command"] == "CQCQCQ":
-                    socketTimeout = 0
+                    #socketTimeout = 0
                     #asyncio.run(data_handler.transmit_cq())
                     CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
                     CQ_THREAD.start()
@@ -241,15 +239,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     #if bufferposition <= len(static.RX_BUFFER) > 0:
                     #    print(static.RX_BUFFER[bufferposition])
                     #    self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
-                        
-                        
-
-
 
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                     static.RX_BUFFER = []
-            
+
+                     
             #exception, if JSON cant be decoded
             #except Exception as e:
             except ValueError as e:
@@ -259,7 +254,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
-                print("############ END OF ERROR #######################")                        
+                print("############ END OF ERROR #######################")
+                print("reset of connection...")
+                socketTimeout = 0                        
         print("Client disconnected...")
 
 def start_cmd_socket():
