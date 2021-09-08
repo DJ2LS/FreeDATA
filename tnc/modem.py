@@ -166,25 +166,27 @@ class RF():
     
 # --------------------------------------------------------------------------------------------------------
     def ptt_and_wait(self, state):
-               
+        static.PTT_STATE = state
+                       
         if state:
-            static.PTT_STATE = True
+
             self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
             #rigctld.ptt_enable()
-            ptt_togle_timeout = time.time() + 0.1
-            while time.time() < ptt_togle_timeout:
+            ptt_toggle_timeout = time.time() + 0.5
+            while time.time() < ptt_toggle_timeout:
                 pass
+                      
 
         else:
         
-            ptt_togle_timeout = time.time() + 0.5
-            while time.time() < ptt_togle_timeout:
+            ptt_toggle_timeout = time.time() + 0.5
+            while time.time() < ptt_toggle_timeout:
                 pass
                 
-            static.PTT_STATE = False
             self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
             #rigctld.ptt_disable()
-
+                        
+        return False
 
 
     def play_audio(self):
@@ -192,16 +194,16 @@ class RF():
         while True:
             time.sleep(0.01)
 
-            while len(self.streambuffer) > 0:
-                time.sleep(0.01)
-                if len(self.streambuffer) > 0:
-                    self.audio_writing_to_stream = True
-                    self.streambuffer = bytes(self.streambuffer)
+            #while len(self.streambuffer) > 0:
+            #    time.sleep(0.01)
+            if len(self.streambuffer) > 0 and self.audio_writing_to_stream:
+                self.streambuffer = bytes(self.streambuffer)
                     
-                    # we need t wait a little bit until the buffer is filled. If we are not waiting, we are sending empty data
-                    time.sleep(0.1)
-                    self.stream_tx.write(self.streambuffer)
-                    self.streambuffer = bytes()
+                # we need t wait a little bit until the buffer is filled. If we are not waiting, we are sending empty data
+                time.sleep(0.1)
+                self.stream_tx.write(self.streambuffer)
+                # clear stream buffer after sending
+                self.streambuffer = bytes()
                     
             self.audio_writing_to_stream = False
 # --------------------------------------------------------------------------------------------------------
@@ -261,9 +263,10 @@ class RF():
         ##state_before_transmit = static.CHANNEL_STATE
         ##static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         
-        self.ptt_and_wait(True)
+        while self.ptt_and_wait(True):
+            pass
         self.audio_writing_to_stream = True
-
+        
         # wait until audio has been processed
         while self.audio_writing_to_stream:
             time.sleep(0.01)
@@ -402,7 +405,8 @@ class RF():
 
         # -------------- transmit audio
         
-        self.ptt_and_wait(True)
+        while self.ptt_and_wait(True):
+            pass
         # this triggers writing buffer to audio stream
         # this way we are able to run this non blocking
         # this needs to be optimized!
