@@ -62,12 +62,13 @@ class RF():
             # we check at first for libcodec2 in root - necessary if we want to run it inside a pyinstaller binary
             libname = pathlib.Path("libcodec2.so.1.0")
             self.c_lib = ctypes.CDLL(libname)
+            print("running libcodec from INTERNAL library")
         except:
             # if we cant load libcodec from root, we check for subdirectory
             # this is, if we want to run it without beeing build in a dev environment
-            print("running libcodec from source bild")
             libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
             self.c_lib = ctypes.CDLL(libname)
+            print("running libcodec from EXTERNAL library")
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         self.p = pyaudio.PyAudio()
         # --------------------------------------------OPEN AUDIO CHANNEL RX
@@ -311,9 +312,7 @@ class RF():
         mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples  # *2 #1760 for mode 10,11,12 #4000 for mode 9
         mod_out_postamble = mod_out_postamble()
         
-
         self.streambuffer = bytearray()
-
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
         self.streambuffer += bytes(mod_out_preamble)
         
@@ -356,12 +355,10 @@ class RF():
         elif static.ARQ_RPT_RECEIVED:
 
             for n in range(0, len(static.ARQ_RPT_FRAMES)):
-
                 missing_frame = int.from_bytes(static.ARQ_RPT_FRAMES[n], "big")
 
             # ---------------------------BUILD ARQ BURST ---------------------------------------------------------------------
                 frame_type = 10 + missing_frame  # static.ARQ_TX_N_FRAMES_PER_BURST
-
                 frame_type = bytes([frame_type])
 
                 try:

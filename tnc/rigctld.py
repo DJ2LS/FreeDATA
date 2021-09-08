@@ -68,7 +68,10 @@ class Rigctld():
                 freq = int(data[0])/1000
             except:
                 freq = static.HAMLIB_FREQUENCY
-                print(data)
+                #print("freq-err: " + str(data))
+                #for i in range(len(data)):
+                #    print(data[i])
+                    
             return freq
          
     def get_mode(self):
@@ -79,8 +82,8 @@ class Rigctld():
                 mode = str(data[0], "utf-8")
                 bandwith = int(data[1])
             except:
-                print(data)
+                #print("mode-err: " + str(data))
                 mode = static.HAMLIB_MODE
                 bandwith = static.HAMLIB_BANDWITH
             return [mode, bandwith]
-            
+
