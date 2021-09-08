@@ -223,10 +223,10 @@ window.addEventListener('DOMContentLoaded', () => {
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed)
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
-        }, 5000);
+        }, 3000);
         setTimeout(function() {
             sock.saveMyGrid(config.mygrid);
-        }, 6000);
+        }, 4000);
     })
 
     // stopTNC button clicked 
@@ -293,10 +293,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
         //console.log(arg.fft)
-        console.log(typeof(arg.fft))
+        //console.log(typeof(arg.fft))
         var array = JSON.parse("[" + arg.fft + "]");
-        console.log(typeof(array))
-        console.log(array[0])
+        //console.log(typeof(array))
+        //console.log(array[0])
         spectrum.addData(array[0]);
 
     } 
