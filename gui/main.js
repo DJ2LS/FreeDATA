@@ -38,6 +38,26 @@ if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, configContent)
 }
 
+
+
+/*
+// Creates receivedFiles folder if not exists
+// https://stackoverflow.com/a/26227660
+var appDataFolder = process.env.HOME
+var applicationFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
+
+// https://stackoverflow.com/a/13544465
+fs.mkdir(receivedFilesFolder, {
+    recursive: true
+}, function(err) {
+    console.log(err);
+});
+
+*/
+
+
+
 const config = require(configPath);
 const exec = require('child_process').exec;
 

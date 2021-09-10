@@ -725,7 +725,8 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        fileNameText.innerText = arg.data[i]['RXDATA'][0]['filename']
+        var fileNameString = arg.data[i]['RXDATA'][0]['filename']
+        fileNameText.innerText = fileNameString
         fileName.appendChild(fileNameText);
 
         row.appendChild(timestamp);
@@ -737,15 +738,19 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         // https://stackoverflow.com/a/26227660
         var appDataFolder = process.env.HOME
+        console.log("appDataFolder:" + appDataFolder)
         var applicationFolder = path.join(appDataFolder, "codec2-FreeDATA");
-
-        // Creates rxdata folder if not exists
+        console.log(applicationFolder)
+        var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
+        console.log("receivedFilesFolder: " + receivedFilesFolder)
+        // Creates receivedFiles folder if not exists
         // https://stackoverflow.com/a/13544465
-        fs.mkdir(appDataFolder + 'rxdata', {
+        fs.mkdir(receivedFilesFolder, {
             recursive: true
         }, function(err) {
             console.log(err);
         });
+
 
         // write file to rxdata folder
         var base64String = arg.data[i]['RXDATA'][0]['data']
@@ -753,7 +758,12 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
         //write data to file
-        require("fs").writeFile(applicationFolder + 'rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
+
+
+        var receivedFile = path.join(receivedFilesFolder, fileNameString);
+        console.log(receivedFile)
+
+        require("fs").writeFile(receivedFile, base64Data, 'base64', function(err) {
             console.log(err);
         });
     }
