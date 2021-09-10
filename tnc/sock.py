@@ -247,9 +247,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                      
             #exception, if JSON cant be decoded
             #except Exception as e:
-            except ValueError as e:
+            except:
                 print("############ START OF ERROR #####################")
                 print("SOCKET COMMAND ERROR: " + data)
+                e = sys.exc_info()[0]
                 print(e)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]

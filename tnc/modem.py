@@ -158,7 +158,9 @@ class RF():
 
 
             self.my_rig.open()
-
+            
+            # set rig mode to USB
+            self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print("can't open rig")

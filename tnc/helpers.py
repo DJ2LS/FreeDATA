@@ -221,7 +221,12 @@ def setup_logging():
     
     """
 
-    logging.basicConfig(format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s', datefmt='%H:%M:%S', level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, \
+        encoding='utf-8', \
+        format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s', \
+        datefmt='%H:%M:%S', \
+        handlers=[logging.FileHandler("codec2-FreeDATA-TNC.log"),logging.StreamHandler()]
+        )
 
     logging.addLevelName(logging.DEBUG, "\033[1;36m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
     logging.addLevelName(logging.INFO, "\033[1;37m%s\033[1;0m" % logging.getLevelName(logging.INFO))
