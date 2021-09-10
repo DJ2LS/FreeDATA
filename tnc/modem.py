@@ -459,9 +459,6 @@ class RF():
             # lets get the frequency, mode and bandwith
             self.get_radio_stats()
             
-            # lets get scatter data
-            self.get_scatter(freedv)
-            
             # demod loop         
             while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
                 time.sleep(0.01)
@@ -477,27 +474,24 @@ class RF():
                 data_in = self.stream_rx.read(nin, exception_on_overflow=False)
                                               
                 data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
-                data_in = data_in[0]
-                
-                self.calculate_fft(data_in)
-                
+                data_in = data_in[0]                
                                 
                 static.AUDIO_RMS = audioop.rms(data_in, 2)
                 nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
                 #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
 
                 
-                # get scatter data and snr data
+                # get scatter data, fft and snr data
                 self.get_scatter(freedv)
                 self.calculate_snr(freedv)
-                
+                self.calculate_fft(data_in)
+                                
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
-                    #static.SCATTER = []
 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -607,12 +601,12 @@ class RF():
                     # for debugging purposes to receive all data
                     pass
                     # print(bytes_out[:-2])
+                    
     def get_scatter(self, freedv):
         modemStats = MODEMSTATS()
         self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         
-
         scatterdata = []
         for i in range(MODEM_STATS_NC_MAX):
             for j in range(MODEM_STATS_NR_MAX):    
