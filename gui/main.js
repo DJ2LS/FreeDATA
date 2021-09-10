@@ -48,7 +48,7 @@ var daemonProcess = null;
 function createWindow() {
     win = new BrowserWindow({
         width: 1220,
-        height: 920,
+        height: 810,
         autoHideMenuBar: true,
         icon: __dirname + '/src/app-icon.png',
         webPreferences: {

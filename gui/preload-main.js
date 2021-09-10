@@ -20,7 +20,7 @@ const config = require(configPath);
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 setInterval(daemon.getDaemonState, 1000)
-setInterval(sock.getTncState, 250)
+setInterval(sock.getTncState, 150)
 setInterval(sock.getRxBuffer, 1000)
 
 // UPDATE FFT DEMO 
@@ -48,12 +48,13 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hamlib_serialspeed').value = config.serialspeed
     document.getElementById('hamlib_ptt').value = config.ptt
 
+
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true
         document.getElementById("waterfall-scatter-switch2").checked = false
         document.getElementById("scatter").style.visibility = 'hidden';
         document.getElementById("waterfall").style.visibility = 'visible';
-        document.getElementById("waterfall").style.height = '350px';
+        document.getElementById("waterfall").style.height = '100%';
     } else {
 
         document.getElementById("waterfall-scatter-switch1").checked = false
@@ -77,7 +78,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Create spectrum object on canvas with ID "waterfall"
     global.spectrum = new Spectrum(
         "waterfall", {
-            spectrumPercent: 20
+            spectrumPercent: 0
         });
 
     // SETUP OF SCATTER DIAGRAM
@@ -126,7 +127,7 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("waterfall-scatter-switch1").addEventListener("click", () => {
         document.getElementById("scatter").style.visibility = 'hidden';
         document.getElementById("waterfall").style.visibility = 'visible';
-        document.getElementById("waterfall").style.height = '350px';
+        document.getElementById("waterfall").style.height = '100%';
         config.spectrum = 'waterfall'
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -734,9 +735,13 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         tbl.appendChild(row);
 
+        // https://stackoverflow.com/a/26227660
+        var appDataFolder = process.env.HOME
+        var applicationFolder = path.join(appDataFolder, "codec2-FreeDATA");
+
         // Creates rxdata folder if not exists
         // https://stackoverflow.com/a/13544465
-        fs.mkdir('rxdata', {
+        fs.mkdir(appDataFolder + 'rxdata', {
             recursive: true
         }, function(err) {
             console.log(err);
@@ -748,7 +753,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
         //write data to file
-        require("fs").writeFile('rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
+        require("fs").writeFile(applicationFolder + 'rxdata/' + arg.data[i]['RXDATA'][0]['filename'], base64Data, 'base64', function(err) {
             console.log(err);
         });
     }
