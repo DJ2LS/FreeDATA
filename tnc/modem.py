@@ -16,6 +16,7 @@ import asyncio
 import logging
 import time
 import threading
+import atexit
 
 import helpers
 import static
@@ -71,6 +72,7 @@ class RF():
             print("running libcodec from EXTERNAL library")
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         self.p = pyaudio.PyAudio()
+        atexit.register(self.p.terminate)
         # --------------------------------------------OPEN AUDIO CHANNEL RX
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                      channels=static.AUDIO_CHANNELS,
@@ -158,6 +160,8 @@ class RF():
 
 
             self.my_rig.open()
+            atexit.register(self.my_rig.close)
+
             
             # set rig mode to USB
             self.my_rig.set_mode(Hamlib.RIG_MODE_USB)

@@ -20,6 +20,8 @@ import static
 import psutil
 import sys
 import serial.tools.list_ports
+import atexit
+
 #PORT = 3001
 #TNCPROCESS = 0
 #TNCSTARTED = False
@@ -43,8 +45,12 @@ def start_daemon():
         daemon = socketserver.TCPServer(('0.0.0.0', PORT), CMDTCPRequestHandler)
         daemon.serve_forever()
 
+
     finally:
         daemon.server_close()
+        
+        
+        
         
         
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -165,10 +171,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
                     if DEBUG:
-                        p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                        process = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                        atexit.register(process.terminate)
                     else:
-                        p = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
-                    static.TNCPROCESS = p#.pid
+                        process = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
+                        atexit.register(process.terminate)
+                        
+                    static.TNCPROCESS = process#.pid
                     static.TNCSTARTED = True
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':
@@ -189,6 +198,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     # UPDATE LIST OF AUDIO DEVICES
                     p = pyaudio.PyAudio()
+                    atexit.register(p.terminate)
                     for i in range(0, p.get_device_count()):
                         
                         maxInputChannels = p.get_device_info_by_host_api_device_index(0,i).get('maxInputChannels')
@@ -229,8 +239,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
-
-
+    
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port", default=3001, help="Socket port", type=int)
@@ -244,6 +253,7 @@ if __name__ == '__main__':
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
     DAEMON_THREAD.start()
+
     
     
     
