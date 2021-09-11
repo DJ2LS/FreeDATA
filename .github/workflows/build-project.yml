@@ -37,18 +37,26 @@ jobs:
           pip install numpy
           curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          
 
       - name: Build DAEMON and TNC Windows
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |      
           pyinstaller -F daemon.py -n daemon  
-          
+          pyinstaller -F --add-binary libcodec2.dll:. --add-binary hamlib/windows/hamlib4.dll:. --add-binary hamlib/linux/Hamlib.py:. -n tnc main.py
+
       - name: LIST ALL FILES
         shell: bash
         run: |
-          ls -R      
+          ls -R  
           
+      - name: Build codec2
+        shell: bash
+        run: |
+          choco install ninja cmake
+          ninja --version
+          cmake --version      
           
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
