@@ -40,10 +40,28 @@ brew install portaudio
 pip3 install pyaudio
 ```
 
+## Manual Installation Windows
+### Install python3
+```
+Download Python from https://www.python.org/downloads/
+Add Python to systempath https://www.educative.io/edpresso/how-to-add-python-to-path-variable-in-windows
+Download and install pyaudio from https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
+eg.: pip install PyAudio-0.2.11-cp37-cp37m-win_amd64.whl
+pip install psutil
+pip install crcengine
+pip install ujson
+pip install pyserial
+python daemon.py
+```
 
-
-
-
+### Install nodejs
+```
+https://nodejs.org/en/download/
+cd codec2-FreeDATA/gui
+npm i
+npm i electron
+npx electron main.js
+```
 
 ## GUI Preview
 ![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
