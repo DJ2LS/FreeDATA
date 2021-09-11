@@ -6,22 +6,16 @@ on:
     
 jobs:
 
-  build_release:
-    name: Build release
+  build_windows_release:
+    name: Build Windows release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [windows-latest]
         include:
-          - os: ubuntu-latest
-            zip_name: ubuntu_tnc
-            generator: Unix Makefiles
-          #- os: macos-latest
-          #  zip_name: plugin-mac
-          #  generator: Xcode
-          #- os: windows-latest
-          #  zip_name: plugin-win
-          #  generator: Visual Studio 16 2019
+          - os: windows-latest
+            zip_name: windows_tnc
+            generator: Visual Studio 16 2019
 
     steps:
       - name: Checkout code
@@ -30,7 +24,48 @@ jobs:
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9           
+          python-version: 3.9  
+
+
+  build_linux_release:
+    name: Build Linux release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        include:
+          - os: ubuntu-latest
+            zip_name: ubuntu_tnc
+            generator: Unix Makefiles
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+          
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9     
+          
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip
+          pip install psutil
+          pip install crcengine
+          pip install pyinstaller
+          pip install ujson
+          pip install pyserial
+          pip install numpy
+          curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+
+      - name: Build DAEMON and TNC Windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc
+        run: |      
+          pyinstaller -F daemon.py -n daemon        
+        
           
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-latest'
