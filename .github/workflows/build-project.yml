@@ -44,7 +44,7 @@ jobs:
         working-directory: tnc
         run: |      
           pyinstaller -F daemon.py -n daemon  
-          pyinstaller -F --add-binary libcodec2.dll:. --add-binary hamlib/windows/hamlib-4.dll:. --add-binary hamlib/linux/Hamlib.py:. -n tnc main.py
+          pyinstaller -F --add-binary libcodec2.dll;. --add-binary hamlib/windows/hamlib-4.dll;. --add-binary hamlib/linux/Hamlib.py:. -n tnc main.py
 
       - name: LIST ALL FILES
         shell: bash
