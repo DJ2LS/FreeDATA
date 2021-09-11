@@ -170,7 +170,8 @@ def calculate_transfer_rate():
   
     # PERCENTAGE FOR TRANSMITTING
     if static.TX_BUFFER_SIZE > 0:
-        static.ARQ_TRANSMISSION_PERCENT = int(arq_rx_n_current_arq_frame / static.TX_BUFFER_SIZE) * 100
+        print("static.ARQ_N_SENT_FRAMES: " + str(static.ARQ_N_SENT_FRAMES))
+        static.ARQ_TRANSMISSION_PERCENT = int((static.ARQ_N_SENT_FRAMES / static.TX_BUFFER_SIZE) * 100)
 
     # PERCENTAGE FOR RECEIVING
     elif arq_n_arq_frames_per_data_frame > 0:
