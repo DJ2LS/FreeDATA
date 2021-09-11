@@ -496,7 +496,7 @@ class RF():
                 if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
                     
                     self.calculate_snr(freedv)
-
+                    helpers.calculate_transfer_rate() 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
                     frame = frametype - 10

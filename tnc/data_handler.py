@@ -48,8 +48,10 @@ def arq_data_received(data_in):
     static.ARQ_N_FRAME = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
     static.ARQ_N_RX_FRAMES_PER_BURSTS = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
     static.ARQ_RX_N_CURRENT_ARQ_FRAME = int.from_bytes(bytes(data_in[2:4]), "big")  # get current number of total frames
-    static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = int.from_bytes(bytes(data_in[4:6]), "big")  # get get total number of frames
-
+    static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME = int.from_bytes(bytes(data_in[4:6]), "big")  # get total number of frames
+    static.TOTAL_BYTES = static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME * static.ARQ_PAYLOAD_PER_FRAME # calculate total bytes
+    
+    
     logging.debug("----------------------------------------------------------------")
     logging.debug("ARQ_N_FRAME: " + str(static.ARQ_N_FRAME))
     logging.debug("ARQ_N_RX_FRAMES_PER_BURSTS: " + str(static.ARQ_N_RX_FRAMES_PER_BURSTS))
@@ -64,22 +66,28 @@ def arq_data_received(data_in):
 
     logging.log(24, "ARQ | RX | " + str(static.ARQ_DATA_CHANNEL_MODE) + " | F:[" + str(static.ARQ_N_FRAME) + "/" + str(static.ARQ_N_RX_FRAMES_PER_BURSTS) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(static.ARQ_RX_N_CURRENT_ARQ_FRAME) + "/" + str(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME) + "] [" + str(arq_percent_frame).zfill(3) + "%] [SNR:" + str(static.SNR) + "]")
 
+
+
+
     # allocate ARQ_RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
     # here we will save the N frame of a data frame to N list position so we can explicit search for it
     # delete frame buffer if first frame to make sure the buffer is cleared and no junks of a old frame is remaining
     if static.ARQ_RX_N_CURRENT_ARQ_FRAME == 1:
         static.ARQ_RX_FRAME_BUFFER = []
-
+        
+        # we set the start of transmission - 6 seconds, which is more or less the transfer time for the first frame
+        static.ARQ_START_OF_TRANSMISSION = time.time() - 6
+        helpers.calculate_transfer_rate()
+    
+    #try appending data to frame buffer    
     try:
         static.ARQ_RX_FRAME_BUFFER[static.ARQ_RX_N_CURRENT_ARQ_FRAME] = bytes(data_in)
 
+        
     except IndexError:
 
         static.ARQ_RX_FRAME_BUFFER = []
-        
-        #on a new transmission we reset the timer
-        static.ARQ_START_OF_TRANSMISSION = int(time.time()) + 4
-        
+              
         for i in range(0, static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME + 1):
             static.ARQ_RX_FRAME_BUFFER.insert(i, None)
 
@@ -87,9 +95,15 @@ def arq_data_received(data_in):
         static.ARQ_FRAME_BOF_RECEIVED = False
         static.ARQ_FRAME_EOF_RECEIVED = False
 
+
+    if static.ARQ_N_FRAME == 1:
+        static.ARQ_START_OF_BURST = time.time() - 6
+        helpers.calculate_transfer_rate()
+        
+    # try appending data to burst buffer
     try:
         static.ARQ_RX_BURST_BUFFER[static.ARQ_N_FRAME] = bytes(data_in)
-
+        
     except IndexError:
 
         static.ARQ_RX_BURST_BUFFER = []
@@ -277,7 +291,8 @@ def arq_transmit(data_out):
     # This is the total frame with frame header, which will be send
     data_out = frame_payload_crc + static.FRAME_BOF + data_out + static.FRAME_EOF
     #                     2                 2              N           2
-
+    # save len of data_out to TOTAL_BYTES for our statistics
+    static.TOTAL_BYTES = len(data_out)
     # --------------------------------------------- LETS CREATE A BUFFER BY SPLITTING THE FILES INTO PEACES
     static.TX_BUFFER = [data_out[i:i + static.ARQ_PAYLOAD_PER_FRAME] for i in range(0, len(data_out), static.ARQ_PAYLOAD_PER_FRAME)]
     static.TX_BUFFER_SIZE = len(static.TX_BUFFER)
@@ -529,7 +544,7 @@ def open_dc_and_transmit(data_out, mode, n_frames):
         time.sleep(0.01)
         
     #on a new transmission we reset the timer
-    static.ARQ_START_OF_TRANSMISSION = int(time.time())
+    #static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
     # lets wait a little bit so RX station is ready for receiving
     wait_before_data_timer = time.time() + 0.5
@@ -598,7 +613,8 @@ def arq_received_data_channel_opener(data_in):
     static.TNC_STATE = 'BUSY'
 
     static.ARQ_DATA_CHANNEL_MODE = int.from_bytes(bytes(data_in[12:13]), "big")
-    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())    
+    static.ARQ_DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+    #static.ARQ_START_OF_TRANSMISSION = time.time() + 4    
 
     connection_frame = bytearray(14)
     connection_frame[:1] = bytes([226])

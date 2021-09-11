@@ -127,7 +127,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
 
-
                     # Start RIGCTLD
                     
                     if ptt == "RTS":
@@ -171,6 +170,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
                     if DEBUG:
+                            
                         process = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
                         atexit.register(process.terminate)
                     else:
@@ -229,7 +229,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("Wrong command")
                 print(data)
                 e = sys.exc_info()[0]
-                print(e)        
+                print(e)    
+                
+                    
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)

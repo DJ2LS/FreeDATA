@@ -186,6 +186,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
                         "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(int.from_bytes(bytes(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME), "big")),
                         "ARQ_BYTES_PER_MINUTE" : str(static.ARQ_BYTES_PER_MINUTE),
+                        "ARQ_BYTES_PER_MINUTE_BURST" : str(static.ARQ_BYTES_PER_MINUTE_BURST),
                         "ARQ_TRANSMISSION_PERCENT" : str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES" : str(static.TOTAL_BYTES),
                         
