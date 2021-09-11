@@ -25,7 +25,33 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9  
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-latest'
+        run: |
+          python -m pip install --upgrade pip
+          pip install psutil
+          pip install crcengine
+          pip install pyinstaller
+          pip install ujson
+          pip install pyserial
+          pip install numpy
+          curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
 
+      - name: Build DAEMON and TNC Windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc
+        run: |      
+          pyinstaller -F daemon.py -n daemon  
+          
+          
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14         
+          
+          
+          
 
   build_linux_release:
     name: Build Linux release
@@ -46,25 +72,7 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9     
-          
-      - name: Install Windows dependencies
-        if: matrix.os == 'windows-latest'
-        run: |
-          python -m pip install --upgrade pip
-          pip install psutil
-          pip install crcengine
-          pip install pyinstaller
-          pip install ujson
-          pip install pyserial
-          pip install numpy
-          curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-
-      - name: Build DAEMON and TNC Windows
-        if: matrix.os == 'windows-latest'
-        working-directory: tnc
-        run: |      
-          pyinstaller -F daemon.py -n daemon        
+                
         
           
       - name: Install Linux dependencies
@@ -79,6 +87,7 @@ jobs:
           pip3 install ujson
           pip3 install pyserial
           pip3 install numpy
+
 
       #- name: Build Hamlib Python Binding
       #  if: matrix.os == 'ubuntu-latest'
@@ -106,41 +115,6 @@ jobs:
           cmake ../
           make
           
-      #- name: Build LPCNet Linux
-      #  #if: matrix.os == 'ubuntu-latest'
-      #  working-directory: tnc
-      #  run: |          
-      #    cd ~
-      #    git clone https://github.com/drowe67/LPCNet
-      #    cd LPCNet && mkdir build_linux && cd build_linux
-      #    cmake -DCODEC2_BUILD_DIR=~/codec2/build_linux ../ 
-      #    make
-          
-      #- name: ReBuild codec2 with LPCNet Linux
-      #  if: matrix.os == 'ubuntu-latest'
-      #  #working-directory: tnc
-      #  run: |          
-      #    cd ~/codec2/build_linux && rm -Rf *
-      #    cmake -DLPCNET_BUILD_DIR=~/LPCNet/build_linux ..
-      #    make
-          
-      #- name: Copy codec2 to TNC Linux
-      #  if: matrix.os == 'ubuntu-latest'
-      #  #working-directory: tnc
-      #  run: |          
-      #    #cp -R ~/codec2 ./tnc/dist
-      #    cp -R ~/codec2 ./tnc/
-      #    ls -R
-
-
-
-      #- name: Copy LPCNet to TNC Linux
-      #  if: matrix.os == 'ubuntu-latest'
-      #  #working-directory: tnc
-      #  run: |          
-      #    #cp -R ~/LPCNet ./tnc/dist
-      #    cp -R ~/LPCNet ./tnc/
-      #    ls -R          
           
       - name: Build Linux
         if: matrix.os == 'ubuntu-latest'
@@ -154,14 +128,6 @@ jobs:
         run: |
           ls -R   
 
-      #- name: Copy hamlib to TNC Linux
-      #  if: matrix.os == 'ubuntu-latest'
-      #  working-directory: tnc
-      #  run: |          
-      #    cp -R ./hamlib ./dist
-      #    chmod +x ./dist/hamlib/linux/rigctld
-
-          
           
       - name: Compress Linux
         shell: bash
@@ -169,14 +135,12 @@ jobs:
           cd ./tnc/dist
           mkdir compressed
           zip -r ./compressed/${{ matrix.zip_name }}.zip *
-          #tar -zcvf ./compressed/${{ matrix.zip_name }}.tar.gz *
 
       - name: Upload Ubuntu TNC artifacts
         uses: actions/upload-artifact@v2
         with:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
-
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
@@ -185,7 +149,6 @@ jobs:
           
       - name: Copy TNC to GUI Linux
         if: matrix.os == 'ubuntu-latest'
-        # working-directory: tnc
         run: |          
           cp -R ./tnc/dist ./gui/tnc
           ls -R        
@@ -212,18 +175,12 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
-          #cp -R ./tnc/dist/hamlib gui-bundle
-          #cp -R ./tnc/dist/codec2 gui-bundle
-          #cp -R ./tnc/codec2 gui-bundle
-          #cp -R ./tnc/LPCNet gui-bundle
           cp ./tnc/dist/daemon gui-bundle
           cp ./tnc/dist/tnc gui-bundle
-          #chmod +x ./gui-bundle/hamlib/linux/rigctld
           chmod +x ./gui-bundle/tnc
           chmod +x ./gui-bundle/daemon
           cd ./gui-bundle
           zip -r codec2-FreeDATA_linux.zip .
-          #tar -zcvf codec2-FreeDATA_linux.tar.gz *
           ls -R  
           
       - name: Upload Ubuntu GUI Bundle artifacts
@@ -231,7 +188,6 @@ jobs:
         with:
           name: gui-bundle-ubuntu-artifact
           path: ./gui-bundle/codec2-FreeDATA_linux.zip
-          #path: ./gui-bundle/codec2-FreeDATA_linux.tar.gz
 
 
 
