@@ -44,6 +44,11 @@ jobs:
         run: |      
           pyinstaller -F daemon.py -n daemon  
           
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R      
+          
           
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
