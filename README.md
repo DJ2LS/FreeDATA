@@ -18,6 +18,7 @@ pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
 pip3 install pyserial
+pip3 install numpy
 ```
 ## Manual Installation macOS
 ### Install brew and python3
@@ -30,6 +31,7 @@ pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
 pip3 install pyserial
+pip3 install numpy
 
 ```
 ### Install dependencies
@@ -51,7 +53,9 @@ pip install psutil
 pip install crcengine
 pip install ujson
 pip install pyserial
+pip install numpy
 python daemon.py
+
 ```
 
 ### Install nodejs
