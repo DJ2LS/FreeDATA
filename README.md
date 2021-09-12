@@ -1,19 +1,33 @@
 # codec2 | FreeDATA
 My attempt to create a free and opensource TNC with a GUI for [codec2](https://github.com/drowe67/codec2) to send data over HF channels. 
-The TNC itself will be completely controllable via network.
 
 ## Under development
 The project is still a prototype and not usable at this time.
-Build steps for other OS than Ubuntu are provided, but the bundle is only running on Ubuntu
+Build steps for other OS than Ubuntu are provided, but not running
+
+## Credits
+* David Rowe and the FreeDV team for developing the modem and libraries -
+FreeDV Codec 2 : https://github.com/drowe67/codec2
+* xssfox, his repository helped me a lot in an early stage of development -
+xssfox : https://github.com/xssfox/freedv-tnc
+* Wolfgang, for lending me his radio so I'm able to do real hf tests
 
 ## Manual Installation Ubuntu
+### 0. add user to dialout group to access serial devices without root
+```
+sudo adduser $USER dialout
+logout / login
+```
+
 ### 1. Install dependencies and codec2-FreeDATA
-A folder "codec2-FreeDATA" will be created in /home/[user]
-codec2-FreeDATA needs codec2 to be installed within codec2-FreeDATA/tnc folder.
+A folder "codec2-FreeDATA" will be created in /home/[user].
+codec2 will be installed within codec2-FreeDATA/tnc folder.
 ```
 sudo apt install git build-essential cmake
 sudo apt install npm
 sudo apt install python3
+sudo apt-get install portaudio19-dev
+sudo apt install python3-pyaudio
 pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
@@ -31,6 +45,20 @@ You need to set the "--debug" option. Otherwise daemon.py is looking for precomp
 cd /home/[user]/codec2-FreeDATA/tnc
 python3 daemon.py --debug
 ```
+A successfull start looks like this. 
+```
+SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: 3001
+```
+As soon as you're connected the gui, it could look like below. If you're getting a bunch of errors from ALSA lib like below - this should't affect usability 
+```
+SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: 3001
+Client connected...
+ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.rear
+ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.center_lfe
+ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
+...<snip>...
+```
+
 
 ### 3. starting gui
 There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source
@@ -40,13 +68,15 @@ The gui is creating a directory "codec2-FreeDATA" for saving settings in /home/[
 cd /home/[user]/codec2-FreeDATA/gui
 npx electron main.js
 ```
+If you start the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. If you want to connect to a daemon which is running on another host, just select it via "remote TNC" and enter the ip address.
+![gui disconnected](https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/documentation/codec2-FreeDATA-start-disconnected.png "TNC disconnected")
+
+As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III for example.
+![gui connected](https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/documentation/codec2-FreeDATA-start-connected.png "TNC connected")
 
 
 
-
-
-
-
+# ----------------------------------------------------------------
 ## Manual Installation macOS
 ### Install brew and python3
 #### https://docs.python-guide.org/starting/install3/osx/
@@ -93,18 +123,8 @@ npm i
 npm i electron
 npx electron main.js
 ```
-
-## GUI Preview
-![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_GUI_Preview.png "GUI Preview")
-
-## TNC Preview
-![alt text](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_TNC_Preview.png "TNC Preview")
-
 ##
 npm outdated --> list outdated npm packages
 npx npm-check-updates -u --> updated all packages
 npm install --> install all updated packages
 
-## Credits
-David Rowe and the FreeDV team for developing the modem and libraries
-FreeDV Codec 2 : https://github.com/drowe67/codec2
