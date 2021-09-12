@@ -29,7 +29,7 @@ codec2 will be installed within codec2-FreeDATA/tnc folder.
 sudo apt install git build-essential cmake
 sudo apt install npm
 sudo apt install python3
-sudo apt-get install portaudio19-dev
+sudo apt install portaudio19-dev
 sudo apt install python3-pyaudio
 pip3 install psutil
 pip3 install crcengine
