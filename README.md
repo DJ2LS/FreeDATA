@@ -12,6 +12,9 @@ FreeDV Codec 2 : https://github.com/drowe67/codec2
 xssfox : https://github.com/xssfox/freedv-tnc
 * Wolfgang, for lending me his radio so I'm able to do real hf tests
 
+## Running the app bundle
+Just download the latest developer release from the releases section, unpack it and just start the ".AppImage file". No more dependencies
+
 ## Manual Installation Ubuntu
 ### 0. add user to dialout group to access serial devices without root
 ```
