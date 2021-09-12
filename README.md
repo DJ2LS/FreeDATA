@@ -4,22 +4,49 @@ The TNC itself will be completely controllable via network.
 
 ## Under development
 The project is still a prototype and not usable at this time.
+Build steps for other OS than Ubuntu are provided, but the bundle is only running on Ubuntu
 
 ## Manual Installation Ubuntu
+### 1. Install dependencies and codec2-FreeDATA
+A folder "codec2-FreeDATA" will be created in /home/[user]
+codec2-FreeDATA needs codec2 to be installed within codec2-FreeDATA/tnc folder.
 ```
-wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
-chmod +x install-codec2-FreeDATA.sh
-./install-codec2-FreeDATA.sh
+sudo apt install git build-essential cmake
 sudo apt install npm
-cd gui
-npm i
 sudo apt install python3
 pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
 pip3 install pyserial
 pip3 install numpy
+
+wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
+chmod +x install-codec2-FreeDATA.sh
+./install-codec2-FreeDATA.sh
 ```
+
+### 2. starting tnc
+You need to set the "--debug" option. Otherwise daemon.py is looking for precompiled binaries which causes an error
+```
+cd /home/[user]/codec2-FreeDATA/tnc
+python3 daemon.py --debug
+```
+
+### 3. starting gui
+There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source
+
+The gui is creating a directory "codec2-FreeDATA" for saving settings in /home/[user]/.config/
+```
+cd /home/[user]/codec2-FreeDATA/gui
+npx electron main.js
+```
+
+
+
+
+
+
+
 ## Manual Installation macOS
 ### Install brew and python3
 #### https://docs.python-guide.org/starting/install3/osx/
