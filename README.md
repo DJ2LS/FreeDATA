@@ -1,4 +1,4 @@
-# codec2 | FreeDATA
+# FreeDATA
 My attempt to create a free and opensource TNC with a GUI for [codec2](https://github.com/drowe67/codec2) to send data over HF channels. 
 
 ## Under development
@@ -22,7 +22,7 @@ sudo adduser $USER dialout
 logout / login
 ```
 
-### 1. Install dependencies, codec2 and codec2-FreeDATA
+### 1. Install dependencies, codec2 and FreeDATA
 ```
 sudo apt install git build-essential cmake
 sudo apt install npm
@@ -36,8 +36,8 @@ pip3 install ujson
 pip3 install pyserial
 pip3 install numpy
 
-git clone https://github.com/DJ2LS/codec2-FreeDATA.git
-cd codec2-FreeDATA/gui
+git clone https://github.com/DJ2LS/FreeDATA.git
+cd FreeDATA/gui
 npm i
 cd ..
 cd tnc
@@ -54,7 +54,7 @@ make
 ### 2. starting tnc
 You need to set the "--debug" option. Otherwise daemon.py is looking for precompiled binaries which causes an error
 ```
-cd /home/[user]/codec2-FreeDATA/tnc
+cd /home/[user]/FreeDATA/tnc
 python3 daemon.py --debug
 ```
 A successfull start looks like this. 
@@ -75,16 +75,16 @@ ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
 ### 3. starting gui
 There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source
 
-The gui is creating a directory "codec2-FreeDATA" for saving settings in /home/[user]/.config/
+The gui is creating a directory "FreeDATA" for saving settings in /home/[user]/.config/
 ```
-cd /home/[user]/codec2-FreeDATA/gui
+cd /home/[user]/FreeDATA/gui
 npx electron main.js
 ```
 If you start the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. If you want to connect to a daemon which is running on another host, just select it via "remote TNC" and enter the ip address.
-![gui disconnected](https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/documentation/codec2-FreeDATA-start-disconnected.png "TNC disconnected")
+![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-start-disconnected.png "TNC disconnected")
 
 As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III for example.
-![gui connected](https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/documentation/codec2-FreeDATA-start-connected.png "TNC connected")
+![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-start-connected.png "TNC connected")
 
 
 
@@ -130,7 +130,7 @@ python daemon.py
 ### Install nodejs
 ```
 https://nodejs.org/en/download/
-cd codec2-FreeDATA/gui
+cd FreeDATA/gui
 npm i
 npm i electron
 npx electron main.js
