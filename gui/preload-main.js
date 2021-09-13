@@ -14,7 +14,7 @@ const {
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
-var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
@@ -23,7 +23,7 @@ setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 150)
 setInterval(sock.getRxBuffer, 1000)
 
-// UPDATE FFT DEMO 
+// UPDATE FFT DEMO
 /*
 updateFFT = function(fft) {
     var fft = Array.from({
@@ -64,7 +64,7 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("waterfall").style.height = '0px';
     }
 
-    // remote tnc 
+    // remote tnc
     if (config.tnclocation == 'remote') {
         document.getElementById("local-remote-switch1").checked = false
         document.getElementById("local-remote-switch2").checked = true
@@ -172,7 +172,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    // saveMyCall button clicked 
+    // saveMyCall button clicked
     document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value
         config.mycall = callsign
@@ -180,7 +180,7 @@ window.addEventListener('DOMContentLoaded', () => {
         sock.saveMyCall(callsign)
     });
 
-    // saveMyGrid button clicked 
+    // saveMyGrid button clicked
     document.getElementById("saveMyGrid").addEventListener("click", () => {
         grid = document.getElementById("myGrid").value
         config.mygrid = grid
@@ -189,24 +189,24 @@ window.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    // startPing button clicked 
+    // startPing button clicked
     document.getElementById("sendPing").addEventListener("click", () => {
         var dxcallsign = document.getElementById("dxCall").value
         sock.sendPing(dxcallsign)
     });
 
-    // dataModalstartPing button clicked 
+    // dataModalstartPing button clicked
     document.getElementById("dataModalSendPing").addEventListener("click", () => {
         var dxcallsign = document.getElementById("dataModalDxCall").value
         sock.sendPing(dxcallsign)
     });
 
-    // sendCQ button clicked 
+    // sendCQ button clicked
     document.getElementById("sendCQ").addEventListener("click", () => {
         sock.sendCQ()
     });
 
-    // startTNC button clicked 
+    // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
         var rx_audio = document.getElementById("audio_input_selectbox").value
         var tx_audio = document.getElementById("audio_output_selectbox").value
@@ -230,12 +230,12 @@ window.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     })
 
-    // stopTNC button clicked 
+    // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
         daemon.stopTNC()
     })
 
-    // openDataModule button clicked 
+    // openDataModule button clicked
     document.getElementById("openDataModule").addEventListener("click", () => {
         if (document.getElementById("mySidebar").style.width == "40%") {
             document.getElementById("mySidebar").style.width = "0px";
@@ -244,7 +244,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     })
 
-    // START TRANSMISSION    
+    // START TRANSMISSION
     document.getElementById("startTransmission").addEventListener("click", () => {
 
         var fileList = document.getElementById("dataModalFile").files;
@@ -288,7 +288,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         length: 2048
     }, () => Math.floor(Math.random() * 10));
     spectrum.addData(fft);
-  */  
+  */
     
     
     // update FFT
@@ -300,7 +300,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         //console.log(array[0])
         spectrum.addData(array[0]);
 
-    } 
+    }
 
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
@@ -322,8 +322,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         const config = {
                 plugins: {
                     legend: {
-                        display: false,     
-                    },     
+                        display: false,
+                    },
                 },
                 animations: false,
                 tooltips: {
@@ -464,7 +464,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent)
     document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;")
 
-    // UPDATE HEARD STATIONS  
+    // UPDATE HEARD STATIONS
     var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = ''
 
@@ -495,9 +495,9 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         // now we update the heard stations list
         var row = document.createElement("tr");
-        //https://stackoverflow.com/q/51421470 
+        //https://stackoverflow.com/q/51421470
 
-        //https://stackoverflow.com/a/847196 
+        //https://stackoverflow.com/a/847196
         timestampRaw = arg.stations[i]['TIMESTAMP']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
@@ -696,9 +696,9 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         // now we update the heard stations list
 
         var row = document.createElement("tr");
-        //https://stackoverflow.com/q/51421470 
+        //https://stackoverflow.com/q/51421470
 
-        //https://stackoverflow.com/a/847196 
+        //https://stackoverflow.com/a/847196
         timestampRaw = arg.data[i]['TIMESTAMP']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
@@ -739,7 +739,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         // https://stackoverflow.com/a/26227660
         var appDataFolder = process.env.HOME
         console.log("appDataFolder:" + appDataFolder)
-        var applicationFolder = path.join(appDataFolder, "codec2-FreeDATA");
+        var applicationFolder = path.join(appDataFolder, "FreeDATA");
         console.log(applicationFolder)
         var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
         console.log("receivedFilesFolder: " + receivedFilesFolder)

@@ -6,7 +6,7 @@ const {
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
-var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
@@ -61,20 +61,20 @@ client.on('error', function(data) {
 /*
 client.on('close', function(data) {
 	console.log(' TNC connection closed');
-    setTimeout(connectTNC, 2000) 
+    setTimeout(connectTNC, 2000)
 });
 */
 
 client.on('end', function(data) {
     console.log('TNC connection ended');
-    //setTimeout(connectTNC, 2000)  
+    //setTimeout(connectTNC, 2000)
     setTimeout(connectTNC, 0)
 
     //      setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
 
 });
 
-//exports.writeTncCommand = function(command){    
+//exports.writeTncCommand = function(command){
 writeTncCommand = function(command) {
 
     //console.log(command)
@@ -99,7 +99,7 @@ writeTncCommand = function(command) {
 
 client.on('data', function(data) {
 
-    /* 
+    /*
     stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
     */
 
@@ -176,7 +176,7 @@ function hexToBytes(hex) {
     return bytes;
 }
 
-//Save myCall 
+//Save myCall
 exports.saveMyCall = function(callsign) {
     command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : ' + Date.now() + '}'
     writeTncCommand(command)

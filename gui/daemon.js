@@ -6,7 +6,7 @@ const {
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
-var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
@@ -44,7 +44,7 @@ daemon.on('error', function(data) {
 /*
 client.on('close', function(data) {
 	console.log(' TNC connection closed');
-    setTimeout(connectTNC, 2000) 
+    setTimeout(connectTNC, 2000)
 });
 */
 
@@ -53,13 +53,13 @@ daemon.on('end', function(data) {
     setTimeout(connectDAEMON, 2000)
 });
 
-//exports.writeCommand = function(command){    
+//exports.writeCommand = function(command){
 writeDaemonCommand = function(command) {
 
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
     if (daemon.readyState == 'open') {
-        //uiMain.setDAEMONconnection('open')	 
+        //uiMain.setDAEMONconnection('open')
         daemon.write(command + '\n');
     }
 

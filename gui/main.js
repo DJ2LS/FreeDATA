@@ -6,10 +6,10 @@ const {
 const path = require('path')
 const fs = require('fs')
 
-app.setName("codec2-FreeDATA");
+app.setName("FreeDATA");
 
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
-var configFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 
 // create folder if not exists
@@ -44,7 +44,7 @@ if (!fs.existsSync(configPath)) {
 // Creates receivedFiles folder if not exists
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.HOME
-var applicationFolder = path.join(appDataFolder, "codec2-FreeDATA");
+var applicationFolder = path.join(appDataFolder, "FreeDATA");
 var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
 
 // https://stackoverflow.com/a/13544465
