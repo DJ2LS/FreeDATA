@@ -46,7 +46,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hamlib_deviceid').value = config.deviceid
     document.getElementById('hamlib_deviceport').value = config.deviceport
     document.getElementById('hamlib_serialspeed').value = config.serialspeed
-    document.getElementById('hamlib_ptt').value = config.ptt
+    document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol
+    document.getElementById('hamlib_ptt_port').value = config.pttport
 
 
     if (config.spectrum == 'waterfall') {
@@ -213,15 +214,18 @@ window.addEventListener('DOMContentLoaded', () => {
         var deviceid = document.getElementById("hamlib_deviceid").value
         var deviceport = document.getElementById("hamlib_deviceport").value
         var serialspeed = document.getElementById("hamlib_serialspeed").value
-        var ptt = document.getElementById("hamlib_ptt").value
+        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
+        var pttport = document.getElementById("hamlib_ptt_port").value
 
         config.deviceid = deviceid
         config.deviceport = deviceport
         config.serialspeed = serialspeed
-        config.ptt = ptt
+        config.pttprotocol = pttprotocol
+        config.pttport = pttport
+        
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, ptt, serialspeed)
+        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed)
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
         }, 3000);
@@ -620,12 +624,24 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         }
     }
 
+    if (document.getElementById("hamlib_ptt_port").length != arg.serial_devices.length) {
+        document.getElementById("hamlib_ptt_port").innerHTML = ""
+        for (i = 0; i < arg.serial_devices.length; i++) {
+            var option = document.createElement("option");
+            option.text = arg.serial_devices[i]['DESCRIPTION'];
+            option.value = arg.serial_devices[i]['PORT'];
+            document.getElementById("hamlib_ptt_port").add(option);
+        }
+    }
+    
+    
     // TNC RUNNING STATE
     document.getElementById("tnc_running_state").innerHTML = arg.tnc_running_state;
     if (arg.tnc_running_state == "running") {
         document.getElementById('hamlib_deviceid').disabled = true
         document.getElementById('hamlib_deviceport').disabled = true
-        document.getElementById('hamlib_ptt').disabled = true
+        document.getElementById('hamlib_ptt_port').disabled = true
+        document.getElementById('hamlib_ptt_protocol').disabled = true
         document.getElementById('audio_input_selectbox').disabled = true
         document.getElementById('audio_output_selectbox').disabled = true
         document.getElementById('stopTNC').disabled = false
@@ -641,7 +657,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
         document.getElementById('hamlib_deviceport').disabled = false
-        document.getElementById('hamlib_ptt').disabled = false
+        document.getElementById('hamlib_ptt_port').disabled = false
+        document.getElementById('hamlib_ptt_protocol').disabled = false
         document.getElementById('audio_input_selectbox').disabled = false
         document.getElementById('audio_output_selectbox').disabled = false
         document.getElementById('stopTNC').disabled = true
