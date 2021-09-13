@@ -22,24 +22,33 @@ sudo adduser $USER dialout
 logout / login
 ```
 
-### 1. Install dependencies and codec2-FreeDATA
-A folder "codec2-FreeDATA" will be created in /home/[user].
-codec2 will be installed within codec2-FreeDATA/tnc folder.
+### 1. Install dependencies, codec2 and codec2-FreeDATA
 ```
 sudo apt install git build-essential cmake
 sudo apt install npm
 sudo apt install python3
 sudo apt install portaudio19-dev
 sudo apt install python3-pyaudio
+sudo apt install python3-pip
 pip3 install psutil
 pip3 install crcengine
 pip3 install ujson
 pip3 install pyserial
 pip3 install numpy
 
-wget https://raw.githubusercontent.com/DJ2LS/codec2-FreeDATA/main/tools/install-codec2-FreeDATA.sh
-chmod +x install-codec2-FreeDATA.sh
-./install-codec2-FreeDATA.sh
+git clone https://github.com/DJ2LS/codec2-FreeDATA.git
+cd codec2-FreeDATA/gui
+npm i
+cd ..
+cd tnc
+
+git clone https://github.com/drowe67/codec2.git
+cd codec2
+mkdir build_linux
+cd build_linux
+cmake ..
+make
+
 ```
 
 ### 2. starting tnc
