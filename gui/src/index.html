@@ -18,7 +18,7 @@
       <!-- MAIN NAVBAR -->
       <nav class="navbar fixed-top bg-dark navbar-dark">
          <div class="container-fluid">
-            <a class="navbar-brand"><b>codec2</b> | FreeDATA</a>
+            <a class="navbar-brand"><b>FreeDATA</b></a>
             <button class="btn btn-primary" id="openDataModule" type="button">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-folder-symlink" viewBox="0 0 16 16">
                   <path d="m11.798 8.271-3.182 1.97c-.27.166-.616-.036-.616-.372V9.1s-2.571-.3-4 2.4c.571-4.8 3.143-4.8 4-4.8v-.769c0-.336.346-.538.616-.371l3.182 1.969c.27.166.27.576 0 .742z"/>
@@ -31,16 +31,16 @@
       <nav class="navbar bg-light navbar-underline  mt-5 shadow">
          <div class="container-fluid mt-1">
             <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-            
+
                                  <div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group">
                         <input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch1" autocomplete="off" checked>
                         <label class="btn btn-outline-secondary" for="local-remote-switch1">local TNC</label>
                         <input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch2" autocomplete="off">
                         <label class="btn btn-outline-secondary" for="local-remote-switch2">remote TNC</label>
                      </div>
-                     
-                     
-                     
+
+
+
                <div class="input-group input-group-sm" id="remote-tnc-field">
                   <span class="input-group-text" id="basic-addon1">IP</span>
                   <input type="text" class="form-control" placeholder="ip adress" id="tnc_adress" value="192.168.178.163" maxlength="17" style="width: 8rem" aria-label="Username" aria-describedby="basic-addon1" >
@@ -50,23 +50,23 @@
                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-diagram-3" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M6 3.5A1.5 1.5 0 0 1 7.5 2h1A1.5 1.5 0 0 1 10 3.5v1A1.5 1.5 0 0 1 8.5 6v1H14a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0V8h-5v.5a.5.5 0 0 1-1 0v-1A.5.5 0 0 1 2 7h5.5V6A1.5 1.5 0 0 1 6 4.5v-1zM8.5 5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1zM0 11.5A1.5 1.5 0 0 1 1.5 10h1A1.5 1.5 0 0 1 4 11.5v1A1.5 1.5 0 0 1 2.5 14h-1A1.5 1.5 0 0 1 0 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5A1.5 1.5 0 0 1 7.5 10h1a1.5 1.5 0 0 1 1.5 1.5v1A1.5 1.5 0 0 1 8.5 14h-1A1.5 1.5 0 0 1 6 12.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1zm4.5.5a1.5 1.5 0 0 1 1.5-1.5h1a1.5 1.5 0 0 1 1.5 1.5v1a1.5 1.5 0 0 1-1.5 1.5h-1a1.5 1.5 0 0 1-1.5-1.5v-1zm1.5-.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-1z"/>
                      </svg>
-                  </button>                  
+                  </button>
                </div>
-               
-               
 
-               
-               
-               
+
+
+
+
+
             </div>
          </div>
       </nav>
-      
-      
-      <div id="blurdiv" style="-webkit-Filter: blur(10px)"> <!--beginn of blur div -->        
- 
-      
-      
+
+
+      <div id="blurdiv" style="-webkit-Filter: blur(10px)"> <!--beginn of blur div -->
+
+
+
       <!---------------------------------------------------------------------- MAIN AREA ------------------------------------------------------------>
       <!---------------------------------------------------------------------------------------------------------------------------------------------------->
       <div class="container mt-3 p-0">
@@ -74,7 +74,7 @@
             <div class="col">
                <div class="card text-dark bg-light mb-0" >
                   <div class="card-header p-1">
-                     <strong>Step 1: AUDIO</strong>
+                     <strong>Step 1: AUDIO SETTINGS</strong>
                   </div>
                   <div class="card-body p-2">
                      <div class="input-group  input-group-sm mb-1">
@@ -94,20 +94,22 @@
                         <p class="justify-content-center d-flex position-absolute w-100">RX AUDIO LEVEL</p>
                      </div>
                   </div>
+                  <!--
                   <div class="card-footer text-muted small">
                      Select audio device for RX and TX
                   </div>
+                  -->
                </div>
             </div>
             <div class="col">
                <div class="card text-dark bg-light mb-0">
                   <div class="card-header p-1">
-                     <strong>Step 2: RADIO</strong>
+                     <strong>Step 2: RADIO SETTINGS</strong>
                   </div>
                   <div class="card-body p-2">
                      <div class="input-group  input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">RIG</span>
-                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_deviceid">
+                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_deviceid"  style="width:7rem">
                            <option selected value="2028">Kenwood TS480</option>
                            <option value="1">Hamlib                 Dummy</option>
                            <option value="2">Hamlib                 NET rigctl            </option>
@@ -371,32 +373,25 @@
                            <option value="32002">	Barrett                950                    </option>
                            <option value="33001">	ELAD                   FDM-DUO                </option>
                         </select>
-                     </div>
-                     <div class="input-group  input-group-sm mb-1">
-                        <span class="input-group-text" id="basic-addon1">PTT</span>
-                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_ptt">
-                           <option selected value="RTS">RTS</option>
-                           <option value="2">DTR</option>
-                        </select>
-                         <span class="input-group-text" id="basic-addon1">Speed</span>
-                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_serialspeed">
-                           <option value="1200">1200</option>
-                           <option value="2400">2400</option>
-                           <option value="4800">4800</option>
-                           <option selected value="9600">9600</option>
-                           <option value="14400">14400</option>
-                           <option value="19200">19200</option>
-                           <option value="28800">28800</option>
-                           <option value="38400">38400</option>
-                           <option value="57600">57600</option>
-                           <option value="115200">115200</option>
-                        </select>
-                     </div>
-                     
 
-                     
-                     
-                     <div class="input-group input-group-sm">
+ <span class="input-group-text" id="basic-addon1">Speed</span>
+                       <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_serialspeed">
+                          <option value="1200">1200</option>
+                          <option value="2400">2400</option>
+                          <option value="4800">4800</option>
+                          <option selected value="9600">9600</option>
+                          <option value="14400">14400</option>
+                          <option value="19200">19200</option>
+                          <option value="28800">28800</option>
+                          <option value="38400">38400</option>
+                          <option value="57600">57600</option>
+                          <option value="115200">115200</option>
+                       </select>
+
+                                            </div>
+
+
+                     <div class="input-group input-group-sm mb-1">
                         <span class="input-group-text" id="basic-addon1">Port</span>
                         <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_deviceport">
                            <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
@@ -404,15 +399,39 @@
                         </select>
 
                      </div>
+                     
+                      <hr class="m-1">
+
+                     <div class="input-group  input-group-sm mb-1">
+                        <span class="input-group-text" id="basic-addon1">PTT</span>
+                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_ptt_protocol" style="width: 0.5rem">
+                          <option value="None"></option>
+                          <option value="RTS">RTS</option>
+                          <option value="DTR">DTR</option>
+
+                        </select>
+                        <span class="input-group-text" id="basic-addon1">Port</span>
+                        <select class="form-select form-select-sm" aria-label=".form-select-sm example" id="hamlib_ptt_port">
+                          <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+                          <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
+                        </select>
+                     </div>
+
+
+
+
+
                   </div>
+                  <!--
                   <div class="card-footer text-muted small">
                      Select radio model and PTT type
                   </div>
+                    -->
                </div>
             </div>
             <div class="col">
                <div class="card text-dark bg-light mb-0" >
-                  <div class="card-header p-1"><strong>Step 3: TNC</strong></div>
+                  <div class="card-header p-1"><strong>Step 3: TNC STATUS</strong></div>
                   <div class="card-body p-2">
                      <!--
                         <div class="input-group input-group-sm mb-1">
@@ -466,9 +485,11 @@
                         </div>
                      </div>
                   </div>
+                  <!--
                   <div class="card-footer text-muted small">
-                     TNC settings
+                     TNC STATUS
                   </div>
+                  -->
                </div>
             </div>
          </div>
@@ -581,16 +602,16 @@
                                   -->
                         </tbody>
                      </table>
-                     <!-- END OF HEARD STATIONS TABLE -->  
+                     <!-- END OF HEARD STATIONS TABLE -->
                   </div>
                </div>
             </div>
          </div>
       </div>
            </div>
-            
+
       <!---------------------------------------------------------------------- DATA SIDEBAR ------------------------------------------------------------>
-         
+
          <div id="mySidebar" class="sidebar shadow-lg rounded">
   <div class="container-fluid">
             <div class="container mt-1">
@@ -600,25 +621,25 @@
                         <div class="card-header p-2">DX Station </div>
                             <div class="card-body p-2">
                                 <div class="row">
-                                    <div class="col-auto">    
+                                    <div class="col-auto">
                                          <div class="input-group input-group-sm mb-0">
                                                                   <input type="text" class="form-control" style="max-width: 6rem" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group example" aria-describedby="btnGroupAddon">
                                          </div>
                                  </div>
-                                
+
                                 <div class="col-auto">
-                          
-                                    <div class="input-group input-group-sm mb-0"> 
+
+                                    <div class="input-group input-group-sm mb-0">
                                         <button class="btn btn-success" id="dataModalSendPing" type="button">Ping</button>
                                         <span class="input-group-text text-secondary" id="dataModalPingACK">ACK</span>
                                          <span class="input-group-text" id="dataModalPingDistance">0000 km</span>
                                         <span class="input-group-text" id="dataModalPingDB">0 dB</span>
                                     </div>
-            
-                             </div>   
+
+                             </div>
                             </div>
-                            
-                       
+
+
                         </div>
                     </div>
                     </div>
@@ -664,7 +685,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                    
+
                                 </div>
                             </div>
                         </div>
@@ -675,24 +696,24 @@
 
                 <div class="row mb-1">
                     <div class="col">
-                    
-                    
+
+
                                                 <button type="button" id="startTransmission" class="btn btn-success" style="width:100%">START TRANSMISSION</button>
 
-                    
-                    
-                    
-                    
-                    
-                        
+
+
+
+
+
+
                     </div>
 
                     <div class="col-md-auto">
                         <button type="button" id="stopTNC" class="btn btn-danger" style="width:100%" disabled>STOP</button>
-                        
+
 
                     </div>
-                    
+
                 </div>
                 <!--
                 <div class="row">
@@ -709,7 +730,7 @@
                 <div class="row">
                     <div class="col">
                         <hr>
-                        
+
 
                      <!-- START OF TABLE FOR RECEIVED FILES-->
                      <table class="table">
@@ -734,8 +755,8 @@
                                   -->
                         </tbody>
                      </table>
-                     <!-- END OF  RECEIVED FILES-->                          
-                         
+                     <!-- END OF  RECEIVED FILES-->
+
                     </div>
                 </div>
                 <!--row-->
@@ -744,10 +765,10 @@
         </div>
 
 </div>
-         
- </div> <!--end of blur div -->        
-         
-         
+
+ </div> <!--end of blur div -->
+
+
       <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
       <nav class="navbar fixed-bottom navbar-light bg-light">
          <div class="container-fluid">
@@ -810,8 +831,8 @@
                   <span class="input-group-text" id="total_bytes">---</span>
 
                </div>
-  
-  
+
+
             </div>
 
  <div class="container-fluid" style="width:20%">
