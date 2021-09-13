@@ -81,10 +81,10 @@ cd /home/[user]/FreeDATA/gui
 npx electron main.js
 ```
 If you start the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. If you want to connect to a daemon which is running on another host, just select it via "remote TNC" and enter the ip address.
-![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-start-disconnected.png "TNC disconnected")
+![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/codec2-FreeDATA-start-disconnected.png "TNC disconnected")
 
 As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III for example.
-![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-start-connected.png "TNC connected")
+![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/codec2-FreeDATA-start-connected.png "TNC connected")
 
 
 
