@@ -23,8 +23,9 @@ import static
 import data_handler
 
 import sys
-sys.path.append("hamlib/linux")
-import Hamlib
+#sys.path.append("hamlib/linux")
+#import Hamlib
+from hamlib.linux import Hamlib
 
 import numpy as np
 #import rigctld
@@ -110,15 +111,14 @@ class RF():
 
         # --------------------------------------------CONFIGURE HAMLIB
 
-
+        print(static.HAMLIB_PTT_TYPE)
+        print(static.HAMLIB_DEVICE_ID)
+        print(static.HAMLIB_DEVICE_PORT)
         # try to init hamlib
         try:
-            
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
-            
-            self.my_rig = Hamlib.Rig(static.HAMLIB_DEVICE_ID)
+            self.my_rig = Hamlib.Rig(int(static.HAMLIB_DEVICE_ID))
             self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
-
             self.my_rig.set_conf("retry", "5")
             self.my_rig.set_conf("serial_speed", static.HAMLIB_SERIAL_SPEED)
 
@@ -126,7 +126,7 @@ class RF():
         #my_rig.set_conf("rts_state", "OFF")
         #self.my_rig.set_conf("ptt_type", "RTS")
         #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
-    
+
             self.my_rig.set_conf("serial_handshake", "None")
             self.my_rig.set_conf("stop_bits", "1")
             self.my_rig.set_conf("data_bits", "8")

@@ -20,8 +20,6 @@ import static
 import psutil
 import sys
 import serial.tools.list_ports
-import atexit
-
 #PORT = 3001
 #TNCPROCESS = 0
 #TNCSTARTED = False
@@ -45,12 +43,8 @@ def start_daemon():
         daemon = socketserver.TCPServer(('0.0.0.0', PORT), CMDTCPRequestHandler)
         daemon.serve_forever()
 
-
     finally:
         daemon.server_close()
-        
-        
-        
         
         
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
@@ -122,37 +116,39 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     deviceid = received_json["parameter"][0]["deviceid"]
                     deviceport = received_json["parameter"][0]["deviceport"]
                     serialspeed = received_json["parameter"][0]["serialspeed"]
-                    ptt = received_json["parameter"][0]["ptt"]
+                    pttprotocol = received_json["parameter"][0]["pttprotocol"]
+                    pttport = received_json["parameter"][0]["pttport"]
                     print("---- STARTING TNC !")
                     print(received_json["parameter"][0])
                     #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
 
+
                     # Start RIGCTLD
                     
-                    if ptt == "RTS":
+                    if pttprotocol == "RTS":
+                        dtr_state = "OFF"
+                    elif pttprotocol == "DTR":
                         dtr_state = "OFF"
                     else:
-                        dtr_state = "NONE"
+                        dtr_state = "OFF"
+                    
                     
                     if sys.platform == "linux":
                         # we need to make sure we have execution privileges
-                        #try:
-                        #    p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
-                        #except:
-                        #    print("rigctld not started...")
-                        ##run hamlib rigctld network service
-                        #command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
-                        #" -s "+ str(serialspeed) + \
-                        #" -P "+ str(ptt) + \
-                        #" -m "+ str(deviceid) + \
-                        #" --set-conf=dtr_state=" + dtr_state
-                        #try:        
-                        #    p = subprocess.Popen(command, shell=True)
-                        #    time.sleep(0.3)
-                        #except:
-                        #    print("hamlib not started")
-                        #    sys.exit()
-                        pass    
+                        p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
+                        #run hamlib rigctld network service
+                        command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
+                        " -s "+ str(serialspeed) + \
+                        " -P "+ str(pttprotocol) + \
+                        " -m "+ str(deviceid) + \
+                        " --set-conf=dtr_state=" + dtr_state
+                        try:        
+                            p = subprocess.Popen(command, shell=True)
+                            time.sleep(0.3)
+                        except:
+                            print("hamlib not started")
+                            sys.exit()
+                            
                     elif sys.platform == "darwin":
                         print("platform not yet supported")
                         sys.exit()
@@ -170,14 +166,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
                     if DEBUG:
-                            
-                        process = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
-                        atexit.register(process.terminate)
+                        p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --pttprotocol "+ str(pttprotocol) + " --pttport "+ str(pttport), shell=True)
                     else:
-                        process = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --ptt "+ str(ptt), shell=True)
-                        atexit.register(process.terminate)
-                        
-                    static.TNCPROCESS = process#.pid
+                        p = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --pttprotocol "+ str(pttprotocol) + " --pttport "+ str(pttport), shell=True)
+                    static.TNCPROCESS = p#.pid
                     static.TNCSTARTED = True
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':
@@ -198,7 +190,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     # UPDATE LIST OF AUDIO DEVICES
                     p = pyaudio.PyAudio()
-                    atexit.register(p.terminate)
                     for i in range(0, p.get_device_count()):
                         
                         maxInputChannels = p.get_device_info_by_host_api_device_index(0,i).get('maxInputChannels')
@@ -223,15 +214,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             #exception, if JSON cant be decoded
             #except Exception as e:
-            except:
+            except ValueError as e:
                 print("############ START OF ERROR #####################")
                 print('DAEMON PROGRAM ERROR: %s' %str(e))
                 print("Wrong command")
                 print(data)
-                e = sys.exc_info()[0]
-                print(e)    
-                
-                    
+                print(e)
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
                 print(exc_type, fname, exc_tb.tb_lineno)
@@ -241,7 +229,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
 if __name__ == '__main__':
-    
+
+
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port", default=3001, help="Socket port", type=int)
@@ -255,7 +244,6 @@ if __name__ == '__main__':
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
     DAEMON_THREAD.start()
-
     
     
     
