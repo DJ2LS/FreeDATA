@@ -163,12 +163,24 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
 
 
+                    command = "--rx "+ str(rx_audio) +" \
+                        --tx "+ str(tx_audio) +" \
+                        --deviceport "+ str(deviceport) +" \
+                        --deviceid "+ str(deviceid) + " \
+                        --serialspeed "+ str(serialspeed) + " \
+                        --pttprotocol "+ str(pttprotocol) + " \
+                        --pttport "+ str(pttport)
 
-
-                    if DEBUG:
-                        p = subprocess.Popen("exec python3 main.py --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --pttprotocol "+ str(pttprotocol) + " --pttport "+ str(pttport), shell=True)
-                    else:
-                        p = subprocess.Popen("exec ./tnc --rx "+ str(rx_audio) +" --tx "+ str(tx_audio) +" --deviceport "+ str(deviceport) +" --deviceid "+ str(deviceid) + " --serialspeed "+ str(serialspeed) + " --pttprotocol "+ str(pttprotocol) + " --pttport "+ str(pttport), shell=True)
+                    # try running tnc from binary, else run from source
+                    # this helps running the tnc in a developer environment
+                    try:
+                        subprocess.check_call("exec ./tnc " + command)
+                        p = subprocess.Popen("exec ./tnc " + command, shell=True)
+                        print("running TNC from binary...")
+                    except:
+                        p = subprocess.Popen("exec python3 main.py " + command, shell=True)
+                        print("running TNC from source...")
+                                               
                     static.TNCPROCESS = p#.pid
                     static.TNCSTARTED = True
 
@@ -234,12 +246,12 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port", default=3001, help="Socket port", type=int)
-    PARSER.add_argument('--debug', dest="debug", action='store_true')
+
     
     
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
-    DEBUG = ARGS.debug
+
     # --------------------------------------------START CMD SERVER
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")

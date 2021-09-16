@@ -24,8 +24,15 @@ import data_handler
 
 import sys
 #sys.path.append("hamlib/linux")
-#import Hamlib
-from hamlib.linux import Hamlib
+try:
+    import Hamlib
+    print("running Hamlib from Sys Path")
+except ImportError:
+    from hamlib.linux import Hamlib
+    print("running Hamlib from precompiled bundle")
+else:
+    # place for rigctld
+    pass
 
 import numpy as np
 #import rigctld
@@ -49,10 +56,7 @@ class MODEMSTATS(ctypes.Structure):
                 ("pre", ctypes.c_int),                
                 ("post", ctypes.c_int),
                 ("uw_fails", ctypes.c_int),
-
             ]
-
-
 
 
 class RF():
@@ -138,8 +142,9 @@ class RF():
             if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
             
-            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_SERIAL_DTR':
+            elif static.HAMLIB_PTT_TYPE == 'DTR':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
+                self.my_rig.set_conf("ptt_type", "RTS")
             
             elif static.HAMLIB_PTT_TYPE == 'RTS':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
