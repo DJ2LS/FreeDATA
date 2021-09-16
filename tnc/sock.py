@@ -159,8 +159,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
-                    #print(static.SCATTER)
-
                     output = {
                         "COMMAND": "TNC_STATE",
                         "TIMESTAMP" : received_json["timestamp"],
@@ -223,24 +221,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
-                    
-                    
-                    
-                    
-                    
-                    
-                
-                    #data = data.split('GET:RX_BUFFER:')
-                    #bufferposition = int(data[1]) - 1
-                    # print("BUFFER-LENGTH:" + str(len(static.RX_BUFFER)))
-                    # bufferposition = 1
-                    # if bufferposition == -1:
-                    #     if len(static.RX_BUFFER) > 0:
-                    #         self.request.sendall(static.RX_BUFFER[-1])
-                    #if bufferposition <= len(static.RX_BUFFER) > 0:
-                    #    print(static.RX_BUFFER[bufferposition])
-                    #    self.request.sendall(bytes(static.RX_BUFFER[bufferposition]))
-
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                     static.RX_BUFFER = []
