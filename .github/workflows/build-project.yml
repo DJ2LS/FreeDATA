@@ -193,14 +193,14 @@ jobs:
           chmod +x ./gui-bundle/tnc
           chmod +x ./gui-bundle/daemon
           cd ./gui-bundle
-          zip -r codec2-FreeDATA_linux.zip .
+          zip -r FreeDATA_linux.zip .
           ls -R  
           
       - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
         with:
           name: gui-bundle-ubuntu-artifact
-          path: ./gui-bundle/codec2-FreeDATA_linux.zip
+          path: ./gui-bundle/FreeDATA_linux.zip
 
 
 
@@ -229,10 +229,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: https://uploads.github.com/repos/DJ2LS/codec2-FreeDATA/releases/48616289/assets{?name,label} # find out this value by opening https://api.github.com/repos/<owner>/<repo>/releases in your browser and copy the full "upload_url" value including the {?name,label} part
+          upload_url: https://uploads.github.com/repos/DJ2LS/FreeDATA/releases/48616289/assets{?name,label} # find out this value by opening https://api.github.com/repos/<owner>/<repo>/releases in your browser and copy the full "upload_url" value including the {?name,label} part
           release_id: 48616289 # same as above (id can just be taken out the upload_url, it's used to find old releases)
-          asset_path: ./gui-bundle-ubuntu-artifact/codec2-FreeDATA_linux.zip # path to archive to upload
-          asset_name: codec2-FreeDATA_linux-nightly-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
+          asset_path: ./gui-bundle-ubuntu-artifact/FreeDATA_linux.zip # path to archive to upload
+          asset_name: FreeDATA_linux-nightly-$$.zip # name to upload the release as, use $$ to insert date (YYYYMMDD) and 6 letter commit hash
           asset_content_type: application/zip # required by GitHub API
           max_releases: 1 # optional, if there are more releases than this matching the asset_name, the oldest ones are going to be deleted
           #files: |
