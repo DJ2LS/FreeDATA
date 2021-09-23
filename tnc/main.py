@@ -16,14 +16,13 @@ import sys
 
 if __name__ == '__main__':
 
-
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
     PARSER.add_argument('--port', dest="socket_port", default=3000, help="Socket port", type=int)
     PARSER.add_argument('--deviceport', dest="hamlib_device_port", default="/dev/ttyUSB0", help="Socket port", type=str)
-    PARSER.add_argument('--deviceid', dest="hamlib_device_id", default=3011, help="Socket port", type=str)    
+    PARSER.add_argument('--deviceid', dest="hamlib_device_id", default=2028, help="Socket port", type=str)    
     PARSER.add_argument('--serialspeed', dest="hamlib_serialspeed", default=9600, help="Serialspeed", type=str)    
     PARSER.add_argument('--pttprotocol', dest="hamlib_ptt_type", default='RTS', help="PTT Type", type=str)    
     PARSER.add_argument('--pttport', dest="hamlib_ptt_port", default="/dev/ttyUSB0", help="PTT Port", type=str)        

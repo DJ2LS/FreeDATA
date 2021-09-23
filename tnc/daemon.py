@@ -120,48 +120,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     pttport = received_json["parameter"][0]["pttport"]
                     print("---- STARTING TNC !")
                     print(received_json["parameter"][0])
-                    #os.system("python3 main.py --rx 3 --tx 3 --deviceport /dev/ttyUSB0 --deviceid 2028")
-
-
-                    # Start RIGCTLD
-                    
-                    if pttprotocol == "RTS":
-                        dtr_state = "OFF"
-                    elif pttprotocol == "DTR":
-                        dtr_state = "OFF"
-                    else:
-                        dtr_state = "OFF"
-                    
-                    
-                    if sys.platform == "linux":
-                        # we need to make sure we have execution privileges
-                        p = subprocess.Popen("chmod +x ./hamlib/linux/rigctld", shell=True)
-                        #run hamlib rigctld network service
-                        command = "exec ./hamlib/linux/rigctld -r " + str(deviceport) + \
-                        " -s "+ str(serialspeed) + \
-                        " -P "+ str(pttprotocol) + \
-                        " -m "+ str(deviceid) + \
-                        " --set-conf=dtr_state=" + dtr_state
-                        try:        
-                            p = subprocess.Popen(command, shell=True)
-                            time.sleep(0.3)
-                        except:
-                            print("hamlib not started")
-                            sys.exit()
-                            
-                    elif sys.platform == "darwin":
-                        print("platform not yet supported")
-                        sys.exit()
-                        
-                    elif sys.platform == "win32":
-                        print("platform not yet supported")
-                        sys.exit()
-                        
-                    else:
-                        print("platform not supported!")
-                        sys.exit()
-
-
 
                     command = "--rx "+ str(rx_audio) +" \
                         --tx "+ str(tx_audio) +" \

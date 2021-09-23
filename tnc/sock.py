@@ -35,7 +35,11 @@ import helpers
 
 import sys, os
 
-class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
+
+class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    pass
+      
+class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
         print("Client connected...")    
@@ -52,6 +56,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while True and socketTimeout > time.time():
+
                 chunk = self.request.recv(1024)  # .strip()
                 data += chunk
                 if chunk.endswith(b'}\n'):# or chunk.endswith(b'}') or chunk.endswith(b'\n'):
@@ -246,8 +251,16 @@ def start_cmd_socket():
     try:
         logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
         socketserver.TCPServer.allow_reuse_address = True  # https://stackoverflow.com/a/16641793
-        cmdserver = socketserver.TCPServer((static.HOST, static.PORT), CMDTCPRequestHandler)
-        cmdserver.serve_forever()
+        cmdserver = ThreadedTCPServer((static.HOST, static.PORT), ThreadedTCPRequestHandler)
+        server_thread = threading.Thread(target=cmdserver.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()        
 
-    finally:
-        cmdserver.server_close()
+
+    except:
+        print("Socket error...")
+        e = sys.exc_info()[0]
+        print(e)
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+        print(exc_type, fname, exc_tb.tb_lineno)

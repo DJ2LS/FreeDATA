@@ -98,21 +98,16 @@ class RF():
         self.streambuffer = bytes(0)
         self.audio_writing_to_stream = False
         # --------------------------------------------START DECODER THREAD
-        FREEDV_DECODER_THREAD_10 = threading.Thread(target=self.receive, args=[10], name="FREEDV_DECODER_THREAD_10")
-        FREEDV_DECODER_THREAD_10.start()
 
-        #FREEDV_DECODER_THREAD_11 = threading.Thread(target=self.receive, args=[11], name="FREEDV_DECODER_THREAD_11")
-        #FREEDV_DECODER_THREAD_11.start()
+        DECODER_THREAD = threading.Thread(target=self.receive, name="DECODER_THREAD")
+        DECODER_THREAD.start()
 
-        FREEDV_DECODER_THREAD_12 = threading.Thread(target=self.receive, args=[12], name="FREEDV_DECODER_THREAD_12")
-        FREEDV_DECODER_THREAD_12.start()
+        PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="PLAYBACK_THREAD")
+        PLAYBACK_THREAD.start()
 
-        FREEDV_DECODER_THREAD_14 = threading.Thread(target=self.receive, args=[static.FREEDV_SIGNALLING_MODE], name="FREEDV_DECODER_THREAD_14")
-        FREEDV_DECODER_THREAD_14.start()
-
-        FREEDV_PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="FREEDV_DECODER_THREAD_14")
-        FREEDV_PLAYBACK_THREAD.start()
-
+        #self.fft_data = bytes()
+        #FFT_THREAD = threading.Thread(target=self.calculate_fft, args=[self.fft_data], name="FFT_THREAD")
+        #FFT_THREAD.start()
         # --------------------------------------------CONFIGURE HAMLIB
 
         print(static.HAMLIB_PTT_TYPE)
@@ -166,10 +161,14 @@ class RF():
 
             self.my_rig.open()
             atexit.register(self.my_rig.close)
-
-            
+           
             # set rig mode to USB
             self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
+            
+            # start thread for getting hamlib data
+            HAMLIB_THREAD = threading.Thread(target=self.get_radio_stats, name="HAMLIB_THREAD")
+            HAMLIB_THREAD.start()
+        
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print("can't open rig")
@@ -436,21 +435,52 @@ class RF():
         self.c_lib.freedv_close(freedv)
 # --------------------------------------------------------------------------------------------------------
 
-    def receive(self, mode):
-        force = False
-
-        # create new codec2 instance
+    def receive(self):
+        
+        # DATAC0
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        freedv = self.c_lib.freedv_open(mode)
-        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
+        datac0_freedv = self.c_lib.freedv_open(14)
+        self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)
+        datac0_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
+        datac0_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac0_freedv)     
+        
+        datac0_bytes_out = (ctypes.c_ubyte * datac0_bytes_per_frame) #bytes_per_frame
+        datac0_bytes_out = datac0_bytes_out() #get pointer from bytes_out
+        
+        self.c_lib.freedv_set_frames_per_burst(datac0_freedv,1)        
+        datac0_modem_stats_snr = c_float()
+        datac0_modem_stats_sync = c_int()
+        datac0_buffer = bytes()
+        
+        static.FREEDV_SIGNALLING_BYTES_PER_FRAME = datac0_bytes_per_frame
+        static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = datac0_bytes_per_frame - 2
 
-        if mode == static.FREEDV_SIGNALLING_MODE:
-            static.FREEDV_SIGNALLING_BYTES_PER_FRAME = bytes_per_frame
-            static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = bytes_per_frame - 2
+        # DATAC1
+        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
+        datac1_freedv = self.c_lib.freedv_open(10)
+        datac1_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
+        datac1_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac1_freedv)     
+        datac1_bytes_out = (ctypes.c_ubyte * datac1_bytes_per_frame) #bytes_per_frame
+        datac1_bytes_out = datac1_bytes_out() #get pointer from bytes_out
+        self.c_lib.freedv_set_frames_per_burst(datac1_freedv,1)        
+        datac1_modem_stats_snr = c_float()
+        datac1_modem_stats_sync = c_int()
+        datac1_buffer = bytes()
 
-            self.c_lib.freedv_set_frames_per_burst(freedv, 1)
+        # DATAC3
+        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
+        datac3_freedv = self.c_lib.freedv_open(12)
+        datac3_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
+        datac3_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac3_freedv)     
+        datac3_bytes_out = (ctypes.c_ubyte * datac3_bytes_per_frame) #bytes_per_frame
+        datac3_bytes_out = datac3_bytes_out() #get pointer from bytes_out
+        self.c_lib.freedv_set_frames_per_burst(datac3_freedv,1)        
+        datac3_modem_stats_snr = c_float()
+        datac3_modem_stats_sync = c_int()
+        datac3_buffer = bytes()
 
-        elif mode == static.ARQ_DATA_CHANNEL_MODE:
+        '''
+        if mode == static.ARQ_DATA_CHANNEL_MODE:
             static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
             static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
 
@@ -458,49 +488,112 @@ class RF():
         else:
             #pass
             self.c_lib.freedv_set_frames_per_burst(freedv, 0)
-
-        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
-        bytes_out = bytes_out()  # get pointer to bytes_out
+        '''
 
         while static.FREEDV_RECEIVE == True:
-            time.sleep(0.01)
+
+            '''
+            # refresh vars, so the correct parameters of the used mode are set
+            if mode == static.ARQ_DATA_CHANNEL_MODE:
+                static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
+                static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
+            '''
+
+            data_in = bytes()
+            data_in = self.stream_rx.read(1024,  exception_on_overflow = False)  
+            data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
+            data_in = data_in[0]#.rstrip(b'\x00') 
+            self.fft_data = data_in[0]
             
-            # lets get the frequency, mode and bandwith
-            self.get_radio_stats()
+            # we need to set nin * 2 beause of byte size in array handling
+            datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
+            datac1_nin = self.c_lib.freedv_nin(datac1_freedv) * 2
+            datac3_nin = self.c_lib.freedv_nin(datac3_freedv) * 2
             
-            # demod loop         
-            while (static.CHANNEL_STATE == 'RECEIVING_DATA' and static.ARQ_DATA_CHANNEL_MODE == mode) or (static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' and static.FREEDV_SIGNALLING_MODE == mode):
-                time.sleep(0.01)
-
-                # refresh vars, so the correct parameters of the used mode are set
-                if mode == static.ARQ_DATA_CHANNEL_MODE:
-                    static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
-                    static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
-
-                nin = self.c_lib.freedv_nin(freedv)
-                nin = int(nin*(static.AUDIO_SAMPLE_RATE_RX/static.MODEM_SAMPLE_RATE))
+            # refill buffer only if every mode has worked with its data
+            if (len(datac0_buffer) < (datac0_nin*2)) and (len(datac1_buffer) < (datac1_nin*2)) and (len(datac3_buffer) < (datac3_nin*2)):
+                datac0_buffer += data_in
+                datac1_buffer += data_in
+                datac3_buffer += data_in
                 
-                data_in = self.stream_rx.read(nin, exception_on_overflow=False)
-                                              
-                data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
-                data_in = data_in[0]                
-                                
-                static.AUDIO_RMS = audioop.rms(data_in, 2)
-                nbytes = self.c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
-                #print("listening-" + str(mode) + " - " + "nin: " + str(nin) + " - " + str(self.c_lib.freedv_get_rx_status(freedv)))
-
                 
+                                       
+            # DECODING DATAC0           
+            if len(datac0_buffer) >= (datac0_nin):
+           
+                datac0_audio = datac0_buffer[:datac0_nin]
+                datac0_buffer = datac0_buffer[datac0_nin:]    
+                #print(len(datac0_audio))   
+                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac0_bytes_out, datac0_audio]
+                nbytes = self.c_lib.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_audio) # demodulate audio
+                sync = self.c_lib.freedv_get_rx_status(datac0_freedv)
+                if sync != 0 and  nbytes != 0:
+                    
+                    #calculate snr and scatter
+                    self.get_scatter(datac0_freedv)
+                    self.calculate_snr(datac0_freedv)
+
+                    datac0_task = threading.Thread(target=self.process_data, args=[datac0_bytes_out, datac0_freedv])
+                    datac0_task.start()
+
+                    
+                    
+            # DECODING DATAC1       
+            if len(datac1_buffer) >= (datac1_nin):
+                datac1_audio = datac1_buffer[:datac1_nin]
+                datac1_buffer = datac1_buffer[datac1_nin:]    
+                #print(len(datac1_audio))   
+                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac1_bytes_out, datac1_audio]
+                nbytes = self.c_lib.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_audio) # demodulate audio
+                
+                sync = self.c_lib.freedv_get_rx_status(datac1_freedv)
+                if sync != 0 and nbytes != 0:
+                    
+                    #calculate snr and scatter
+                    self.get_scatter(datac1_freedv)
+                    self.calculate_snr(datac1_freedv)
+
+                    datac1_task = threading.Thread(target=self.process_data, args=[datac1_bytes_out, datac1_freedv])
+                    datac1_task.start()                    
+                    
+            # DECODING DATAC3    
+            if len(datac3_buffer) >= (datac3_nin):
+                datac3_audio = datac3_buffer[:datac3_nin]
+                datac3_buffer = datac3_buffer[datac3_nin:]    
+                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac3_bytes_out, datac3_audio]
+                nbytes = self.c_lib.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_audio) # demodulate audio
+                
+                sync = self.c_lib.freedv_get_rx_status(datac3_freedv)
+                if sync != 0 and nbytes != 0:
+                    
+                    #calculate snr and scatter
+                    self.get_scatter(datac3_freedv)
+                    self.calculate_snr(datac3_freedv)
+
+                    datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac3_freedv])
+                    datac3_task.start()
+                    
+                    
+                ###### THIS FUNCTIONS NEED TO MOVE TO AN OWN FUNCTION WITHIN AN OWN THREAD!
                 # get scatter data, fft and snr data
-                self.get_scatter(freedv)
-                self.calculate_snr(freedv)
+                #self.get_scatter(datac0_freedv)
+                #self.calculate_snr(datac0_freedv)
+                #self.get_scatter(datac1_freedv)
+                #self.calculate_snr(datac1_freedv)
+                #self.get_scatter(datac3_freedv)
+                #self.calculate_snr(datac3_freedv)
+                
                 self.calculate_fft(data_in)
                                 
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
                 # we could also create an own function, which returns True. In this case we could add callsign blacklists and so on
-                if nbytes == bytes_per_frame and bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
-                    
-                    self.calculate_snr(freedv)
+                
+    def process_data(self, bytes_out, freedv):
+        force = True
+        print(bytes(bytes_out))
+        if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
+        
                     helpers.calculate_transfer_rate() 
                     # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
                     frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -592,25 +685,24 @@ class RF():
                         logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
                         print(frametype)
 
-                    # DO UNSYNC AFTER LAST BURST by checking the frame nums agains the total frames per burst
+                    # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
                     if frame == n_frames_per_burst:
+                    
                         logging.debug("LAST FRAME ---> UNSYNC")
-     
-                        bytes_out = (ctypes.c_ubyte * bytes_per_frame)
-                        bytes_out = bytes_out()  # get pointer to bytes_out
-
+                    
                         self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
  
                     # clear bytes_out buffer to be ready for next frames after successfull decoding
 
-                    bytes_out = (ctypes.c_ubyte * bytes_per_frame)
-                    bytes_out = bytes_out()  # get pointer to bytes_out
+                    #bytes_out = (ctypes.c_ubyte * bytes_per_frame)
+                    #bytes_out = bytes_out()  # get pointer to bytes_out
 
-                else:
-                    # for debugging purposes to receive all data
-                    pass
-                    # print(bytes_out[:-2])
+        else:
+        # for debugging purposes to receive all data
+            pass
+            # print(bytes_out[:-2])   
                     
+        
     def get_scatter(self, freedv):
         modemStats = MODEMSTATS()
         self.c_lib.freedv_get_modem_extended_stats.restype = None
@@ -664,6 +756,7 @@ class RF():
         
                             
     def calculate_fft(self, data_in):
+
         # WE NEED TO OPTIMIZE THIS!
         
         
