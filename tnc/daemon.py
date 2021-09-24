@@ -64,12 +64,15 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while True and socketTimeout > time.time():
-                chunk = self.request.recv(1024)  # .strip()
+                chunk = self.request.recv(64)  # we keep amount of bytes short
                 data += chunk
-                if chunk.startswith(b'{') and chunk.endswith(b'}\n'):
+                if chunk.endswith(b'}\n') or chunk.endswith(b'}'): # or chunk.endswith(b'\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
+            # only read first line of string. multiple lines will cause an json error
+            # this occurs possibly, if we are getting data too fast
+            data = data.splitlines()[0] 
             #print(data)
             
             if len(data) > 0:
