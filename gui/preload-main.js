@@ -163,8 +163,18 @@ window.addEventListener('DOMContentLoaded', () => {
         config.tnc_host = document.getElementById("tnc_adress").value
         config.daemon_host = document.getElementById("tnc_adress").value
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
     });
+
+    // on change ping callsign
+        document.getElementById("dxCall").addEventListener("change", () => {
+        document.getElementById("dataModalDxCall").value = document.getElementById("dxCall").value
+            });
+    // on change ping callsign
+        document.getElementById("dataModalDxCall").addEventListener("change", () => {
+        document.getElementById("dxCall").value = document.getElementById("dataModalDxCall").value
+            });
+        
+    
 
     document.getElementById("tnc_port").addEventListener("change", () => {
         config.tnc_port = document.getElementById("tnc_port").value
@@ -274,7 +284,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 checksum: '123123123',
             };
             ipcRenderer.send('run-tnc-command', Data);
-
         };
         reader.onerror = function(e) {
             // error occurred
@@ -286,14 +295,13 @@ window.addEventListener('DOMContentLoaded', () => {
 })
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
-
+    //console.log(arg)
 /*
     var fft = Array.from({
         length: 2048
     }, () => Math.floor(Math.random() * 10));
     spectrum.addData(fft);
   */
-    
     
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
@@ -398,21 +406,26 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
         document.getElementById("startTransmission").disabled = true
+
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-success";
-        document.getElementById("startTransmission").disabled = false
+
     } else {
         document.getElementById("busy_state").className = "btn btn-secondary"
         document.getElementById("startTransmission").disabled = true
+
     }
 
     // ARQ STATE
     if (arg.arq_state == 'DATA') {
         document.getElementById("arq_state").className = "btn btn-warning";
+        document.getElementById("startTransmission").disabled = true
     } else if (arg.arq_state == 'IDLE') {
         document.getElementById("arq_state").className = "btn btn-secondary";
+        document.getElementById("startTransmission").disabled = false
     } else {
         document.getElementById("arq_state").className = "btn btn-secondary"
+        document.getElementById("startTransmission").disabled = true
     }
 
     // RMS
@@ -481,7 +494,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
-        console.log(document.getElementById("dxCall").value)
         if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
             var dxGrid = arg.stations[i]['DXGRID']
             var myGrid = document.getElementById("myGrid").value
@@ -652,7 +664,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('myGrid').disabled = false
         document.getElementById('saveMyGrid').disabled = false
         document.getElementById("hamlib_serialspeed").disabled = true
-        document.getElementById("startTransmission").disabled = false
+        //document.getElementById("startTransmission").disabled = false
 
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
@@ -669,7 +681,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById('myGrid').disabled = true
         document.getElementById('saveMyGrid').disabled = true
         document.getElementById("hamlib_serialspeed").disabled = false
-        document.getElementById("startTransmission").disabled = true
+        //document.getElementById("startTransmission").disabled = true
 
     }
 
@@ -705,12 +717,17 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         // first we update the PING window
         if (arg.data[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
-            document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+            /*
+            // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
+            if(arg.data[i]['DXGRID'] != ''){
+                document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+            }
+            */
             document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
 
         }
 
-        // now we update the heard stations list
+        // now we update the received files list
 
         var row = document.createElement("tr");
         //https://stackoverflow.com/q/51421470
@@ -775,8 +792,6 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
         //write data to file
-
-
         var receivedFile = path.join(receivedFilesFolder, fileNameString);
         console.log(receivedFile)
 
