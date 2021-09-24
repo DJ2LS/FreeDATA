@@ -57,16 +57,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while True and socketTimeout > time.time():
 
-                chunk = self.request.recv(64)  # we keep amount of bytes short
+                chunk = self.request.recv(71)  # we keep amount of bytes short
                 data += chunk
                 if chunk.endswith(b'}\n') or chunk.endswith(b'}'): # or chunk.endswith(b'\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
-            # only read first line of string. multiple lines will cause an json error
-            # this occurs possibly, if we are getting data too fast
-            data = data.splitlines()[0] 
-            #print(data)
+
             
             if len(data) > 0:
                 socketTimeout = time.time() + static.SOCKET_TIMEOUT
@@ -74,7 +71,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             # convert data to json object
             # we need to do some error handling in case of socket timeout or decoding issue
             try:
-                
+                # only read first line of string. multiple lines will cause an json error
+                # this occurs possibly, if we are getting data too fast
+                #    data = data.splitlines()[0]
+                #    IndexError: list index out of range
+                data = data.splitlines()[0]
                 received_json = json.loads(data)
 
             #except ValueError as e:
@@ -247,7 +248,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("############ END OF ERROR #######################")
 
                 print("reset of connection...")
-                socketTimeout = 0                        
+                #socketTimeout = 0                        
         print("Client disconnected...")
 
 def start_cmd_socket():

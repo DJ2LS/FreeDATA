@@ -105,9 +105,10 @@ class RF():
         PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="PLAYBACK_THREAD")
         PLAYBACK_THREAD.start()
 
-        #self.fft_data = bytes()
-        #FFT_THREAD = threading.Thread(target=self.calculate_fft, args=[self.fft_data], name="FFT_THREAD")
-        #FFT_THREAD.start()
+        self.fft_data = bytes()
+        FFT_THREAD = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
+        FFT_THREAD.start()
+
         # --------------------------------------------CONFIGURE HAMLIB
 
         print(static.HAMLIB_PTT_TYPE)
@@ -500,10 +501,11 @@ class RF():
             '''
 
             data_in = bytes()
-            data_in = self.stream_rx.read(1024,  exception_on_overflow = False)  
+            data_in = self.stream_rx.read(1024,  exception_on_overflow = False)
+            #self.fft_data = data_in
             data_in = audioop.ratecv(data_in,2,1,static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None) 
             data_in = data_in[0]#.rstrip(b'\x00') 
-            self.fft_data = data_in[0]
+            self.fft_data = data_in
             
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
@@ -573,17 +575,6 @@ class RF():
                     datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac3_freedv])
                     datac3_task.start()
                     
-                    
-                ###### THIS FUNCTIONS NEED TO MOVE TO AN OWN FUNCTION WITHIN AN OWN THREAD!
-                # get scatter data, fft and snr data
-                #self.get_scatter(datac0_freedv)
-                #self.calculate_snr(datac0_freedv)
-                #self.get_scatter(datac1_freedv)
-                #self.calculate_snr(datac1_freedv)
-                #self.get_scatter(datac3_freedv)
-                #self.calculate_snr(datac3_freedv)
-                
-                self.calculate_fft(data_in)
                                 
                 # forward data only if broadcast or we are the receiver
                 # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
@@ -747,36 +738,40 @@ class RF():
             static.SNR = 0
             
     def get_radio_stats(self):
-        static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
-        (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
-        static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
+        while True:
+            time.sleep(0.1)
+            static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
+            (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
+            static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
         #static.HAMLIB_FREQUENCY = rigctld.get_frequency()
         #static.HAMLIB_MODE = rigctld.get_mode()[0]
         #static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
         
                             
-    def calculate_fft(self, data_in):
+    def calculate_fft(self):
+        while True:
+            time.sleep(0.01)
+            # WE NEED TO OPTIMIZE THIS!
+            data_in = self.fft_data
+            
+            # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
+            audio_data = np.fromstring(data_in, np.int16)
+            # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
+            # and make sure it's not imaginary
 
-        # WE NEED TO OPTIMIZE THIS!
-        
-        
-        # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-        audio_data = np.fromstring(data_in, np.int16)
-        # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
-        # and make sure it's not imaginary
-
-        try:
-            fftarray = np.fft.rfft(audio_data)
-            # set value 0 to 1 to avoid division by zero 
-            fftarray[fftarray == 0] = 1
-            dfft = 10.*np.log10(abs(fftarray))
-            dfftlist = dfft.tolist()
-                
-            # send fft only if receiving
-            if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-                static.FFT = dfftlist[20:380]
-        except:
-            print("setting fft = 0")
-            # else 0
-            static.FFT = [0] * 400
-        
+            try:
+                fftarray = np.fft.rfft(audio_data)
+                # set value 0 to 1 to avoid division by zero 
+                fftarray[fftarray == 0] = 1
+                dfft = 10.*np.log10(abs(fftarray))
+                dfftlist = dfft.tolist()
+                    
+                # send fft only if receiving
+                if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
+                    #static.FFT = dfftlist[20:100]
+                    static.FFT = dfftlist
+            except:
+                print("setting fft = 0")
+                # else 0
+                static.FFT = [0] * 400
+            
