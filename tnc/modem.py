@@ -110,10 +110,14 @@ class RF():
         FFT_THREAD.start()
 
         # --------------------------------------------CONFIGURE HAMLIB
+        #my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
+        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
+        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)    
+        #self.my_rig.set_conf("dtr_state", "OFF")
+        #my_rig.set_conf("rts_state", "OFF")
+        #self.my_rig.set_conf("ptt_type", "RTS")
+        #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
 
-        print(static.HAMLIB_PTT_TYPE)
-        print(static.HAMLIB_DEVICE_ID)
-        print(static.HAMLIB_DEVICE_PORT)
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
@@ -121,39 +125,36 @@ class RF():
             self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
             self.my_rig.set_conf("retry", "5")
             self.my_rig.set_conf("serial_speed", static.HAMLIB_SERIAL_SPEED)
-
-        #self.my_rig.set_conf("dtr_state", "OFF")
-        #my_rig.set_conf("rts_state", "OFF")
-        #self.my_rig.set_conf("ptt_type", "RTS")
-        #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
-
             self.my_rig.set_conf("serial_handshake", "None")
             self.my_rig.set_conf("stop_bits", "1")
             self.my_rig.set_conf("data_bits", "8")
            
-        #my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
-        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
-        #my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)    
 
-            if static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG':
+            if static.HAMLIB_PTT_TYPE == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
             
-            elif static.HAMLIB_PTT_TYPE == 'DTR':
+            elif static.HAMLIB_PTT_TYPE == 'DTR-H':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
-                self.my_rig.set_conf("ptt_type", "RTS")
+                self.my_rig.set_conf("dtr_state", "HIGH")
+                self.my_rig.set_conf("ptt_type", "DTR")
             
+            elif static.HAMLIB_PTT_TYPE == 'DTR-L':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
+                self.my_rig.set_conf("dtr_state", "LOW")
+                self.my_rig.set_conf("ptt_type", "DTR")
+                            
             elif static.HAMLIB_PTT_TYPE == 'RTS':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
                 self.my_rig.set_conf("dtr_state", "OFF")
                 self.my_rig.set_conf("ptt_type", "RTS")      
                   
-            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_PARALLEL':
+            elif static.HAMLIB_PTT_TYPE == 'PARALLEL':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
             
-            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_RIG_MICDATA':
+            elif static.HAMLIB_PTT_TYPE == 'MICDATA':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG_MICDATA
             
-            elif static.HAMLIB_PTT_TYPE == 'RIG_PTT_CM108':
+            elif static.HAMLIB_PTT_TYPE == 'CM108':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_CM108
             
             else:  # static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
@@ -173,6 +174,7 @@ class RF():
         except:
             print("Unexpected error:", sys.exc_info()[0])
             print("can't open rig")
+            sys.exit("hamlib error")
 
     
 # --------------------------------------------------------------------------------------------------------

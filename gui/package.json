@@ -1,15 +1,19 @@
 {
-  "name": "codec2-FreeDATA",
+  "name": "FreeDATA",
   "version": "0.0.1",
-  "description": "codec2-FreeDATA ",
+  "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "engines": {
+    "node": ">=12.0.0",
+    "npm": ">=6.0.0"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DJ2LS/codec2-FreeDATA.git"
+    "url": "git+https://github.com/DJ2LS/FeeDATA.git"
   },
   "keywords": [
     "TNC",
@@ -20,16 +24,16 @@
   "author": "DJ2LS",
   "license": "LGPL-2.1",
   "bugs": {
-    "url": "https://github.com/DJ2LS/codec2-FreeDATA/issues"
+    "url": "https://github.com/DJ2LS/FreeDATA/issues"
   },
-  "homepage": "https://github.com/DJ2LS/codec2-FreeDATA#readme",
+  "homepage": "https://github.com/DJ2LS/FreeDATA#readme",
   "dependencies": {
     "bootstrap": "^5.1.0",
     "chart.js": "^3.5.1",
     "qth-locator": "^2.1.0"
   },
   "devDependencies": {
-    "electron": "14.0.0",
+    "electron": "^15.0.0",
     "electron-builder": "^22.11.7"
   }
 }
