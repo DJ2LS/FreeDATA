@@ -33,17 +33,19 @@ import static
 import data_handler
 import helpers
 
-import sys, os
+import sys
+import os
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
-      
+
+
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        print("Client connected...")    
-        
+        print("Client connected...")
+
         # loop through socket buffer until timeout is reached. then close buffer
         socketTimeout = time.time() + 3
         while socketTimeout > time.time():
@@ -53,21 +55,21 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             #data = str(self.request.recv(1024), 'utf-8')
 
             data = bytes()
-            
+
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while True and socketTimeout > time.time():
 
                 chunk = self.request.recv(71)  # we keep amount of bytes short
                 data += chunk
-                if chunk.endswith(b'}\n') or chunk.endswith(b'}'): # or chunk.endswith(b'\n'):
+                # or chunk.endswith(b'\n'):
+                if chunk.endswith(b'}\n') or chunk.endswith(b'}'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, 'utf-8')
 
-            
             if len(data) > 0:
                 socketTimeout = time.time() + static.SOCKET_TIMEOUT
-            
+
             # convert data to json object
             # we need to do some error handling in case of socket timeout or decoding issue
             try:
@@ -78,7 +80,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 data = data.splitlines()[0]
                 received_json = json.loads(data)
 
-            #except ValueError as e:
+            # except ValueError as e:
             #    print("++++++++++++ START OF JSON ERROR +++++++++++++++++++++++")
             #    print(e)
             #    print("-----------------------------------")
@@ -86,29 +88,32 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
             #    print("++++++++++++ END OF JSON ERROR +++++++++++++++++++++++++")
             #    received_json = {}
             #    break
-            #try:
+            # try:
 
                 # CQ CQ CQ -----------------------------------------------------
                 if received_json["command"] == "CQCQCQ":
                     #socketTimeout = 0
-                    #asyncio.run(data_handler.transmit_cq())
-                    CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
+                    # asyncio.run(data_handler.transmit_cq())
+                    CQ_THREAD = threading.Thread(
+                        target=data_handler.transmit_cq, args=[], name="CQ")
                     CQ_THREAD.start()
 
                 # PING ----------------------------------------------------------
                 if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
                     dxcallsign = received_json["dxcallsign"]
-                    #asyncio.run(data_handler.transmit_ping(dxcallsign))
-                    PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
+                    # asyncio.run(data_handler.transmit_ping(dxcallsign))
+                    PING_THREAD = threading.Thread(
+                        target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
                     PING_THREAD.start()
 
-                if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":# and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+                # and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+                if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":
                     static.TNC_STATE = 'BUSY'
-                    
-                    #on a new transmission we reset the timer
+
+                    # on a new transmission we reset the timer
                     static.ARQ_START_OF_TRANSMISSION = int(time.time())
-                    
+
                     dxcallsign = received_json["dxcallsign"]
                     mode = int(received_json["mode"])
                     n_frames = int(received_json["n_frames"])
@@ -116,12 +121,13 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     filetype = received_json["filetype"]
                     data = received_json["data"]
                     checksum = received_json["checksum"]
-                 
+
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
-                    
+                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
+                        static.DXCALLSIGN)
+
                     #dataframe = '{"filename": "'+ filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}'
-                    rawdata = {"filename" : filename , "filetype" :filetype, "data" : data, "checksum" : checksum}
+                    rawdata = {"filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
                     #dataframe = {filename: filename}
                     #data_out = bytes(received_json["data"], 'utf-8')
                     dataframe = json.dumps(rawdata)
@@ -141,9 +147,11 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(b'INVALID CALLSIGN')
                     else:
                         static.MYCALLSIGN = bytes(callsign, encoding)
-                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-                        logging.info("CMD | MYCALLSIGN: " + str(static.MYCALLSIGN))
-          
+                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(
+                            static.MYCALLSIGN)
+                        logging.info("CMD | MYCALLSIGN: " +
+                                     str(static.MYCALLSIGN))
+
                 if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
                     mygrid = received_json["parameter"]
 
@@ -152,25 +160,24 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     else:
                         static.MYGRID = bytes(mygrid, encoding)
                         logging.info("CMD | MYGRID: " + str(static.MYGRID))
-                        
-                                    
+
                 if received_json["type"] == 'GET' and received_json["command"] == 'STATION_INFO':
                     output = {
                         "COMMAND": "STATION_INFO",
-                        "TIMESTAMP" : received_json["timestamp"],
+                        "TIMESTAMP": received_json["timestamp"],
                         "MY_CALLSIGN": str(static.MYCALLSIGN, encoding),
                         "DX_CALLSIGN": str(static.DXCALLSIGN, encoding),
                         "DX_GRID": str(static.DXGRID, encoding),
-                        "EOF" : "EOF",  
+                        "EOF": "EOF",
                     }
-                    
+
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
                     output = {
                         "COMMAND": "TNC_STATE",
-                        "TIMESTAMP" : received_json["timestamp"],
+                        "TIMESTAMP": received_json["timestamp"],
                         "PTT_STATE": str(static.PTT_STATE),
                         "CHANNEL_STATE": str(static.CHANNEL_STATE),
                         "TNC_STATE": str(static.TNC_STATE),
@@ -178,65 +185,63 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "AUDIO_RMS": str(static.AUDIO_RMS),
                         "BER": str(static.BER),
                         "SNR": str(static.SNR),
-                        "FREQUENCY" : str(static.HAMLIB_FREQUENCY),
-                        "MODE" : str(static.HAMLIB_MODE),
-                        "BANDWITH" : str(static.HAMLIB_BANDWITH),
-                        "FFT" : str(static.FFT),
-                        "SCATTER" : static.SCATTER,
+                        "FREQUENCY": str(static.HAMLIB_FREQUENCY),
+                        "MODE": str(static.HAMLIB_MODE),
+                        "BANDWITH": str(static.HAMLIB_BANDWITH),
+                        "FFT": str(static.FFT),
+                        "SCATTER": static.SCATTER,
                         "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
                         "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
                         "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
                         "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
                         "ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
-                        "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.TX_BUFFER_SIZE), "big")),   # WE NEED TO CHANGE THE JSON TO TX_BUFFER_SIZE?!
+                        # WE NEED TO CHANGE THE JSON TO TX_BUFFER_SIZE?!
+                        "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.TX_BUFFER_SIZE), "big")),
                         "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
                         "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
                         "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(int.from_bytes(bytes(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME), "big")),
-                        "ARQ_BYTES_PER_MINUTE" : str(static.ARQ_BYTES_PER_MINUTE),
-                        "ARQ_BYTES_PER_MINUTE_BURST" : str(static.ARQ_BYTES_PER_MINUTE_BURST),
-                        "ARQ_TRANSMISSION_PERCENT" : str(static.ARQ_TRANSMISSION_PERCENT),
-                        "TOTAL_BYTES" : str(static.TOTAL_BYTES),
-                        
-                        "STATIONS" : [],
-                        "EOF" : "EOF",
+                        "ARQ_BYTES_PER_MINUTE": str(static.ARQ_BYTES_PER_MINUTE),
+                        "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+                        "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
+                        "TOTAL_BYTES": str(static.TOTAL_BYTES),
+
+                        "STATIONS": [],
+                        "EOF": "EOF",
                     }
-                    
+
                     for i in range(0, len(static.HEARD_STATIONS)):
-                        output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'),"DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'), "TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})  
-                    
-             
-                    try: 
+                        output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'),"TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
+
+                    try:
                         jsondata = json.dumps(output)
                     except ValueError as e:
                         print(e)
-                        
+
                     try:
                         self.request.sendall(bytes(jsondata, encoding))
                     except Exception as e:
                         print(e)
 
-
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
                     output = {
                         "COMMAND": "RX_BUFFER",
-                        "DATA-ARRAY" : [],
-                        "EOF" : "EOF",
+                        "DATA-ARRAY": [],
+                        "EOF": "EOF",
                     }
                     for i in range(0, len(static.RX_BUFFER)):
-                    
+
                         rawdata = json.loads(static.RX_BUFFER[i][3])
-                        
-                        output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'),"DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})  
-                        
+
+                        output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'), "DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})
+
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
                     static.RX_BUFFER = []
 
-                     
-            #exception, if JSON cant be decoded
-            #except Exception as e:
+            # exception, if JSON cant be decoded
+            # except Exception as e:
             except:
                 print("############ START OF ERROR #####################")
                 print("SOCKET COMMAND ERROR: " + data)
@@ -248,19 +253,22 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("############ END OF ERROR #######################")
 
                 print("reset of connection...")
-                #socketTimeout = 0                        
+                #socketTimeout = 0
         print("Client disconnected...")
+
 
 def start_cmd_socket():
 
     try:
-        logging.info("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
-        socketserver.TCPServer.allow_reuse_address = True  # https://stackoverflow.com/a/16641793
-        cmdserver = ThreadedTCPServer((static.HOST, static.PORT), ThreadedTCPRequestHandler)
+        logging.info(
+            "SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+        # https://stackoverflow.com/a/16641793
+        socketserver.TCPServer.allow_reuse_address = True
+        cmdserver = ThreadedTCPServer(
+            (static.HOST, static.PORT), ThreadedTCPRequestHandler)
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
-        server_thread.start()        
-
+        server_thread.start()
 
     except:
         print("Socket error...")
