@@ -20,20 +20,6 @@ import static
 import psutil
 import sys
 import serial.tools.list_ports
-#PORT = 3001
-#TNCPROCESS = 0
-#TNCSTARTED = False
-
-#p = pyaudio.PyAudio()
-#info = p.get_host_api_info_by_index(0)
-#numdevices = info.get('deviceCount')
-#for each audio device, determine if is an input or an output and add it to the appropriate list and dictionary
-#for i in range (0,numdevices):
-#        if p.get_device_info_by_host_api_device_index(0,i).get('maxInputChannels')>0:
-#                print("Input Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0,i).get('name'))#
-#
-#        if p.get_device_info_by_host_api_device_index(0,i).get('maxOutputChannels')>0:
-#                print("Output Device id ", i, " - ", p.get_device_info_by_host_api_device_index(0,i).get('name'))
 
 def start_daemon():
 
@@ -103,32 +89,57 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             #try:
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
-                    rx_audio = received_json["parameter"][0]["rx_audio"]
-                    tx_audio = received_json["parameter"][0]["tx_audio"]
-                    deviceid = received_json["parameter"][0]["deviceid"]
-                    deviceport = received_json["parameter"][0]["deviceport"]
-                    serialspeed = received_json["parameter"][0]["serialspeed"]
-                    pttprotocol = received_json["parameter"][0]["pttprotocol"]
-                    pttport = received_json["parameter"][0]["pttport"]
+                    rx_audio = str(received_json["parameter"][0]["rx_audio"])
+                    tx_audio = str(received_json["parameter"][0]["tx_audio"])
+                    deviceid = str(received_json["parameter"][0]["deviceid"])
+                    deviceport = str(received_json["parameter"][0]["deviceport"])
+                    serialspeed = str(received_json["parameter"][0]["serialspeed"])
+                    pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
+                    pttport = str(received_json["parameter"][0]["pttport"])
                     print("---- STARTING TNC !")
                     print(received_json["parameter"][0])
 
-                    command = "--rx "+ str(rx_audio) +" \
-                        --tx "+ str(tx_audio) +" \
-                        --deviceport "+ str(deviceport) +" \
-                        --deviceid "+ str(deviceid) + " \
-                        --serialspeed "+ str(serialspeed) + " \
-                        --pttprotocol "+ str(pttprotocol) + " \
-                        --pttport "+ str(pttport)
-
+                    #command = "--rx "+ rx_audio +" \
+                    #    --tx "+ tx_audio +" \
+                    #    --deviceport "+ deviceport +" \
+                    #    --deviceid "+ deviceid + " \
+                    #    --serialspeed "+ serialspeed + " \
+                    #    --pttprotocol "+ pttprotocol + " \
+                    #    --pttport "+ pttport
+                   
+                    # list of parameters, necessary for running subprocess command as a list
+                    options = []
+                    options.append('--rx')
+                    options.append(rx_audio)
+                    options.append('--tx')
+                    options.append(tx_audio)
+                    options.append('--deviceport')
+                    options.append(deviceport)
+                    options.append('--deviceid')
+                    options.append(deviceid)
+                    options.append('--serialspeed')
+                    options.append(serialspeed)
+                    options.append('--pttprotocol')
+                    options.append(pttprotocol)
+                    options.append('--pttport')
+                    options.append(pttport)
+                    
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
                     try:
-                        subprocess.check_call("exec ./tnc " + command)
-                        p = subprocess.Popen("exec ./tnc " + command, shell=True)
+                        # subprocess.check_call("exec ./tnc " + command)
+                        subprocess.check_call("exec ./tnc ")
+                        command = []
+                        command.append('tnc')
+                        command += options
+                        p = subprocess.Popen(command)
                         print("running TNC from binary...")
                     except:
-                        p = subprocess.Popen("exec python3 main.py " + command, shell=True)
+                        command = []
+                        command.append('python3')
+                        command.append('main.py')
+                        command += options
+                        p = subprocess.Popen(command)
                         print("running TNC from source...")
                                                
                     static.TNCPROCESS = p#.pid
