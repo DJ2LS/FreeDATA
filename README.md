@@ -26,6 +26,9 @@ logout / login
 ```
 sudo apt install git build-essential cmake
 sudo apt install npm
+npm cache clean -f
+sudo npm install -g n
+sudo n stable
 sudo apt install python3
 sudo apt install portaudio19-dev
 sudo apt install python3-pyaudio
