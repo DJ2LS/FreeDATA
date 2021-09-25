@@ -2,8 +2,8 @@
 My attempt to create a free and opensource TNC with a GUI for [codec2](https://github.com/drowe67/codec2) to send data over HF channels. 
 
 ## Under development
-The project is still a prototype and not usable at this time.
-Build steps for other OS than Ubuntu are provided, but not running
+This project is still a prototype and not usable at this time.
+Build steps for other OS than Ubuntu are provided, but not working, yet.
 
 ## Credits
 * David Rowe and the FreeDV team for developing the modem and libraries -
@@ -138,8 +138,11 @@ npm i
 npm i electron
 npx electron main.js
 ```
-##
-npm outdated --> list outdated npm packages
-npx npm-check-updates -u --> updated all packages
-npm install --> install all updated packages
+### npm updating
+* npm outdated --> list outdated npm packages
+* npx npm-check-updates -u --> updated all packages
+* npm install --> install all updated packages
 
+* npm cache clean -f
+* sudo npm install -g n
+* sudo n stable --> upgrade node to latest version
