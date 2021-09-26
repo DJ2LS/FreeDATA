@@ -42,8 +42,8 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
-
     def handle(self):
+    
         print("Client connected...")
 
         # loop through socket buffer until timeout is reached. then close buffer
@@ -121,6 +121,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     filetype = received_json["filetype"]
                     data = received_json["data"]
                     checksum = received_json["checksum"]
+                   
 
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
@@ -175,6 +176,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     self.request.sendall(bytes(jsondata, encoding))
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TNC_STATE':
+
                     output = {
                         "COMMAND": "TNC_STATE",
                         "TIMESTAMP": received_json["timestamp"],
@@ -191,15 +193,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "FFT": str(static.FFT),
                         "SCATTER": static.SCATTER,
                         "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
-                        "TX_N_MAX_RETRIES": str(static.TX_N_MAX_RETRIES),
-                        "ARQ_TX_N_FRAMES_PER_BURST": str(static.ARQ_TX_N_FRAMES_PER_BURST),
-                        "ARQ_TX_N_BURSTS": str(static.ARQ_TX_N_BURSTS),
-                        "ARQ_TX_N_CURRENT_ARQ_FRAME": str(int.from_bytes(bytes(static.ARQ_TX_N_CURRENT_ARQ_FRAME), "big")),
-                        # WE NEED TO CHANGE THE JSON TO TX_BUFFER_SIZE?!
-                        "ARQ_TX_N_TOTAL_ARQ_FRAMES": str(int.from_bytes(bytes(static.TX_BUFFER_SIZE), "big")),
-                        "ARQ_RX_FRAME_N_BURSTS": str(static.ARQ_RX_FRAME_N_BURSTS),
-                        "ARQ_RX_N_CURRENT_ARQ_FRAME": str(static.ARQ_RX_N_CURRENT_ARQ_FRAME),
-                        "ARQ_N_ARQ_FRAMES_PER_DATA_FRAME": str(int.from_bytes(bytes(static.ARQ_N_ARQ_FRAMES_PER_DATA_FRAME), "big")),
                         "ARQ_BYTES_PER_MINUTE": str(static.ARQ_BYTES_PER_MINUTE),
                         "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
