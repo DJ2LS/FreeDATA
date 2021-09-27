@@ -4,6 +4,8 @@
 Created on Wed Dec 23 11:13:57 2020
 
 @author: DJ2LS
+Here we are saving application wide variables and stats, which have to be accessed everywhere.
+Not nice, tipps are appreciated :-) 
 """
 
 # DAEMON
@@ -44,14 +46,6 @@ HAMLIB_MODE = ''
 HAMLIB_BANDWITH = 0
 # -------------------------
 # FreeDV Defaults
-FREEDV_RECEIVE = True
-
-FREEDV_SIGNALLING_MODE = 14
-
-#FREEDV_DATA_BYTES_PER_FRAME = 0
-#FREEDV_DATA_PAYLOAD_PER_FRAME = 0
-#FREEDV_SIGNALLING_BYTES_PER_FRAME = 0
-#FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = 0
 
 BER = 0
 SNR = 0
@@ -80,10 +74,11 @@ ARQ_BITS_PER_SECOND = 0
 ARQ_TRANSMISSION_PERCENT = 0
 TOTAL_BYTES = 0
 
+CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+TNC_STATE = 'IDLE'
+ARQ_STATE = 'IDLE'
 
-# ------- TX BUFFER
-#TX_BUFFER_SIZE = 0
-TX_BUFFER = []
+
 # ------- RX BUFFER
 RX_BUFFER = []
 RX_BURST_BUFFER = []

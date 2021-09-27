@@ -224,9 +224,10 @@ class RF():
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         # print(static.CHANNEL_STATE)
-
+        freedv_signalling_mode = 14
+        
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        freedv = self.c_lib.freedv_open(static.FREEDV_SIGNALLING_MODE)
+        freedv = self.c_lib.freedv_open(freedv_signalling_mode)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_per_frame = bytes_per_frame - 2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
@@ -286,7 +287,8 @@ class RF():
             static.CHANNEL_STATE = state_before_transmit
 
         self.c_lib.freedv_close(freedv)
-
+        
+        return True
 # --------------------------------------------------------------------------------------------------------
    # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT
 
@@ -369,13 +371,19 @@ class RF():
 
         # close codec2 instance
         self.c_lib.freedv_close(freedv)
+        
+        return True
 # --------------------------------------------------------------------------------------------------------
 
     def receive(self):
-
+        
+        freedv_mode_datac0 = 14
+        freedv_mode_datac1 = 10
+        freedv_mode_datac3 = 12
+        
         # DATAC0
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac0_freedv = self.c_lib.freedv_open(14)
+        datac0_freedv = self.c_lib.freedv_open(freedv_mode_datac0)
         self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)
         datac0_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
         datac0_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac0_freedv)
@@ -394,7 +402,7 @@ class RF():
 
         # DATAC1
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac1_freedv = self.c_lib.freedv_open(10)
+        datac1_freedv = self.c_lib.freedv_open(freedv_mode_datac1)
         datac1_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
         datac1_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac1_freedv)
         # bytes_per_frame
@@ -407,7 +415,7 @@ class RF():
 
         # DATAC3
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac3_freedv = self.c_lib.freedv_open(12)
+        datac3_freedv = self.c_lib.freedv_open(freedv_mode_datac3)
         datac3_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
         datac3_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac3_freedv)
         # bytes_per_frame
@@ -429,7 +437,7 @@ class RF():
             self.c_lib.freedv_set_frames_per_burst(freedv, 0)
         '''
 
-        while static.FREEDV_RECEIVE == True:
+        while True:
 
             '''
             # refresh vars, so the correct parameters of the used mode are set
@@ -687,3 +695,4 @@ class RF():
                 print("setting fft = 0")
                 # else 0
                 static.FFT = [0] * 400
+
