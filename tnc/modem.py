@@ -476,7 +476,7 @@ class RF():
                 if sync != 0 and nbytes != 0:
 
                     # calculate snr and scatter
-                    #self.get_scatter(datac0_freedv)
+                    self.get_scatter(datac0_freedv)
                     self.calculate_snr(datac0_freedv)
 
                     datac0_task = threading.Thread(target=self.process_data, args=[datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame])
@@ -495,7 +495,7 @@ class RF():
                 if sync != 0 and nbytes != 0:
 
                     # calculate snr and scatter
-                    #self.get_scatter(datac1_freedv)
+                    self.get_scatter(datac1_freedv)
                     self.calculate_snr(datac1_freedv)
 
                     datac1_task = threading.Thread(target=self.process_data, args=[datac1_bytes_out, datac1_freedv, datac1_bytes_per_frame])
@@ -514,7 +514,7 @@ class RF():
                 if sync != 0 and nbytes != 0:
 
                     # calculate snr and scatter
-                    self.get_scatter(datac3_freedv)
+                    #self.get_scatter(datac3_freedv)
                     self.calculate_snr(datac3_freedv)
 
                     datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac3_freedv, datac3_bytes_per_frame])
@@ -621,19 +621,24 @@ class RF():
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
 
         scatterdata = []
+        scatterdata_small = []
         for i in range(MODEM_STATS_NC_MAX):
             for j in range(MODEM_STATS_NR_MAX):
                 # check if odd or not to get every 2nd item for x
                 if (j % 2) == 0:
-                    xsymbols = modemStats.rx_symbols[i][j]
-                    ysymbols = modemStats.rx_symbols[i][j+1]
+                    xsymbols = round(modemStats.rx_symbols[i][j])
+                    ysymbols = round(modemStats.rx_symbols[i][j+1])
                     # check if value 0.0 or has real data
                     if xsymbols != 0.0 and ysymbols != 0.0:
                         scatterdata.append({"x": xsymbols, "y": ysymbols})
 
         # only append scatter data if new data arrived
-        if len(scatterdata) > 0:
+        
+        if 150 > len(scatterdata) > 0:
             static.SCATTER = scatterdata
+        else:
+            scatterdata_small = scatterdata[::10]
+            static.SCATTER = scatterdata_small
 
     def calculate_ber(self, freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)

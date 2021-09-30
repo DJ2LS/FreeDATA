@@ -234,11 +234,12 @@ def arq_data_received(data_in, bytes_per_frame):
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(data_frame_crc.hex()) + "] [SNR:" + str(static.SNR) + "]")
 
-            helpers.wait(1)
-            modem.transmit_signalling(ack_frame, 1)
-
-            while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
+            #helpers.wait(1)
+            # since simultaneous decoding it seems, we don't have to wait anymore
+            
+            while not modem.transmit_signalling(ack_frame, 1):
                 time.sleep(0.01)
+            
             
             #arq_reset_frame_machine()
             static.TNC_STATE = 'IDLE'
