@@ -27,8 +27,6 @@ Because of the fact, that we need to use it from both directions,
 socket.py and modem.py ( TX and RX ), I was not able, to move it to a class system, yet.
 A lot of global vars are needed, because we have several functions which need to access 
 all variables, for exmaple a cleanup function after transmission.
-A benefit of the global variables is, that we can use functions like "calculate_transfer_rate"
-easily without any additional parameters.
 A problem is, that if we want to use global varialbes within a multithreaded environment,
 we need to declare every needed variable in every function, so the threading module can 
 detect and use them.
@@ -653,8 +651,6 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([mode])
-
-    modem.transmit_signalling(connection_frame, 2)
 
     while not modem.transmit_signalling(connection_frame, 2):
         time.sleep(0.01)
