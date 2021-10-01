@@ -8,7 +8,7 @@ Build steps for other OS than Ubuntu are provided, but not working, yet.
 ## Credits
 * David Rowe and the FreeDV team for developing the modem and libraries -
 FreeDV Codec 2 : https://github.com/drowe67/codec2
-* xssfox, his repository helped me a lot in an early stage of development -
+* xssfox, her repository helped me a lot in an early stage of development -
 xssfox : https://github.com/xssfox/freedv-tnc
 * Wolfgang, for lending me his radio so I'm able to do real hf tests
 
