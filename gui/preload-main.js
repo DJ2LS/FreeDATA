@@ -83,7 +83,7 @@ window.addEventListener('DOMContentLoaded', () => {
         });
 
     // SETUP OF SCATTER DIAGRAM
-
+/*
     global.data = {
         datasets: [{
             label: 'Scatter Dataset',
@@ -113,15 +113,20 @@ window.addEventListener('DOMContentLoaded', () => {
                 x: {
                     type: 'linear',
                     position: 'bottom',
-                    display: false
+                    display: false,
+                    min: -50,
+                    max: 50
                 },
                 y: {
-                    display: false
+                    display: false,
+                    min: -50,
+                    max: 50
                 }
 
             }
         }
     });
+*/
 
     // on click waterfall scatter toggle view
     // waterfall
@@ -335,24 +340,30 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 plugins: {
                     legend: {
                         display: false,
+                        },
+                    tooltip: {
+                        enabled: false
                     },
                 },
                 animations: false,
-                tooltips: {
-                    enabled: false,
-                },
                 scales: {
-                    display: false,
-                    grid: {
-                        display: false
-                    },
                     x: {
                         type: 'linear',
                         position: 'bottom',
-                        display: false
+                        display: true,
+                        min: -50,
+                        max: 50,
+                        ticks: {
+                            display: false
+                        }            
                     },
                     y: {
-                        display: false
+                        display: true,
+                        min: -50,
+                        max: 50,
+                        ticks: {
+                            display: false
+                        }
                     }
                 }
         }
@@ -363,7 +374,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     var data = arg.scatter
     var newdata = {
         datasets: [{
-            label: 'constellation diagram',
+            //label: 'constellation diagram',
             data: data,
             options: config,
             backgroundColor: 'rgb(255, 99, 132)'

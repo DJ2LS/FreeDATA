@@ -626,20 +626,21 @@ class RF():
             for j in range(MODEM_STATS_NR_MAX):
                 # check if odd or not to get every 2nd item for x
                 if (j % 2) == 0:
-                    xsymbols = round(modemStats.rx_symbols[i][j])
-                    ysymbols = round(modemStats.rx_symbols[i][j+1])
+                    xsymbols = round(modemStats.rx_symbols[i][j]/1000)
+                    ysymbols = round(modemStats.rx_symbols[i][j+1]/1000)
                     # check if value 0.0 or has real data
                     if xsymbols != 0.0 and ysymbols != 0.0:
                         scatterdata.append({"x": xsymbols, "y": ysymbols})
 
         # only append scatter data if new data arrived
-        
         if 150 > len(scatterdata) > 0:
             static.SCATTER = scatterdata
         else:
+            # only take every tenth data point
             scatterdata_small = scatterdata[::10]
             static.SCATTER = scatterdata_small
-
+            
+            
     def calculate_ber(self, freedv):
         Tbits = self.c_lib.freedv_get_total_bits(freedv)
         Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
