@@ -59,6 +59,10 @@ def arq_data_received(data_in, bytes_per_frame):
     global DATA_CHANNEL_LAST_RECEIVED
     global DATA_CHANNEL_READY_FOR_DATA
     
+    # only process data if we are in ARQ and BUSY state else return to quit
+    if static.ARQ_STATE != 'DATA' and static.TNC_STATE != 'BUSY':
+        return
+    
     # these vars will be overwritten during processing data
     RX_FRAME_BOF_RECEIVED = False       # here we save, if we received a "beginn of (data)frame"
     RX_FRAME_EOF_RECEIVED = False       # here we save, if we received a "end of (data)frame"
