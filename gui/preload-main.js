@@ -191,7 +191,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // saveMyCall button clicked
     document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value
-        config.mycall = callsign
+        config.mycall = callsign.toUpperCase()
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         sock.saveMyCall(callsign)
     });
@@ -208,12 +208,14 @@ window.addEventListener('DOMContentLoaded', () => {
     // startPing button clicked
     document.getElementById("sendPing").addEventListener("click", () => {
         var dxcallsign = document.getElementById("dxCall").value
+        dxcallsign = dxcallsign.toUpperCase()
         sock.sendPing(dxcallsign)
     });
 
     // dataModalstartPing button clicked
     document.getElementById("dataModalSendPing").addEventListener("click", () => {
         var dxcallsign = document.getElementById("dataModalDxCall").value
+        dxcallsign = dxcallsign.toUpperCase()
         sock.sendPing(dxcallsign)
     });
 
@@ -344,6 +346,28 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     tooltip: {
                         enabled: false
                     },
+                    
+                    annotation: {
+                        annotations: {
+                            line1: {
+                              type: 'line',
+                              yMin: 0,
+                              yMax: 0,
+                              borderColor: 'rgb(255, 99, 132)',
+                              borderWidth: 2,
+                            },
+                            line2: {
+                              type: 'line',
+                              xMin: 0,
+                              xMax: 0,
+                              borderColor: 'rgb(255, 99, 132)',
+                              borderWidth: 2,
+                            }
+                         }   
+                     },   
+        
+        
+        
                 },
                 animations: false,
                 scales: {
@@ -358,6 +382,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                         }            
                     },
                     y: {
+                    
                         display: true,
                         min: -50,
                         max: 50,

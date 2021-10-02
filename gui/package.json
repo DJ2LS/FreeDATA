@@ -30,6 +30,7 @@
   "dependencies": {
     "bootstrap": "^5.1.0",
     "chart.js": "^3.5.1",
+    "chartjs-plugin-annotation": "^1.0.2",
     "qth-locator": "^2.1.0"
   },
   "devDependencies": {
