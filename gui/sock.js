@@ -230,6 +230,13 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
     writeTncCommand(command)
 }
 
+
+//STOP TRANSMISSION
+exports.stopTransmission = function() {
+    command = '{"type" : "ARQ", "command": "stopTransmission", "timestamp" : ' + Date.now() + '}'
+    writeTncCommand(command)
+}
+
 // Get RX BUffer
 exports.getRxBuffer = function() {
     command = '{"type" : "GET", "command" : "RX_BUFFER", "timestamp" : ' + Date.now() + '}'

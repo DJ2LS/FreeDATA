@@ -271,6 +271,8 @@ class RF():
 
         while self.ptt_and_wait(True):
             pass
+            
+        # start writing audio data to audio stream    
         self.audio_writing_to_stream = True
 
         # wait until audio has been processed
@@ -279,6 +281,7 @@ class RF():
             static.CHANNEL_STATE = 'SENDING_SIGNALLING'
 
         self.ptt_and_wait(False)
+        
         # we have a problem with the receiving state
         ##static.CHANNEL_STATE = state_before_transmit
         if state_before_transmit != 'RECEIVING_DATA':

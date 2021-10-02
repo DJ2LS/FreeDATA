@@ -25,11 +25,14 @@ Description:
 data_handler is a module like file, which handles all the ARQ related parts.
 Because of the fact, that we need to use it from both directions,
 socket.py and modem.py ( TX and RX ), I was not able, to move it to a class system, yet.
-A lot of global vars are needed, because we have several functions which need to access 
-all variables, for exmaple a cleanup function after transmission.
-A problem is, that if we want to use global varialbes within a multithreaded environment,
+Global variables are needed, because we need to save our ack state for example, which needs to 
+be accessable by several functions.
+If we want to use global varialbes within a multithreaded environment,
 we need to declare every needed variable in every function, so the threading module can 
 detect and use them.
+
+From time to time I try to reduce the amount of application wide variables within static. module
+and moving them to module wide globals
 
 '''
 
@@ -85,9 +88,12 @@ def arq_data_received(data_in, bytes_per_frame):
     
     # allocate ARQ_static.RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
     # here we will save the N frame of a data frame to N list position so we can explicit search for it
+    
     # delete frame buffer if first frame to make sure the buffer is cleared and no junks of a old frame is remaining
-    #if RX_N_FRAME_OF_DATA_FRAME == 1:
-    #    static.RX_FRAME_BUFFER = []
+    # normally this shouldn't appear, since we are doing a buffer cleanup after every frame processing
+    # but better doing this, to avoid problems caused by old chunks in data
+    if RX_N_FRAME_OF_DATA_FRAME == 1:
+        static.RX_FRAME_BUFFER = []
     #    
     #    # we set the start of transmission - 7 seconds, which is more or less the transfer time for the first frame
     #    RX_START_OF_TRANSMISSION = time.time() - 7
@@ -234,8 +240,11 @@ def arq_data_received(data_in, bytes_per_frame):
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
             logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(data_frame_crc.hex()) + "] [SNR:" + str(static.SNR) + "]")
 
-            #helpers.wait(1)
             # since simultaneous decoding it seems, we don't have to wait anymore
+            # however, we will wait a little bit for easier ptt debugging
+            # possibly we can remove this later
+            helpers.wait(0.5)
+
             
             while not modem.transmit_signalling(ack_frame, 1):
                 time.sleep(0.01)
@@ -244,6 +253,10 @@ def arq_data_received(data_in, bytes_per_frame):
             #arq_reset_frame_machine()
             static.TNC_STATE = 'IDLE'
             static.ARQ_STATE = 'IDLE'
+            DATA_CHANNEL_READY_FOR_DATA = False
+            static.RX_BURST_BUFFER = []
+            static.RX_FRAME_BUFFER = []
+            
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
             
         else:
@@ -259,6 +272,8 @@ def arq_data_received(data_in, bytes_per_frame):
             static.TNC_STATE = 'IDLE'
             static.ARQ_STATE = 'IDLE'
             DATA_CHANNEL_READY_FOR_DATA = False
+            static.RX_BURST_BUFFER = []
+            static.RX_FRAME_BUFFER = []
             
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
@@ -323,7 +338,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
     # ----------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
     TX_N_SENT_FRAMES = 0  # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
-    while TX_N_SENT_FRAMES <= TX_BUFFER_SIZE:
+    while TX_N_SENT_FRAMES <= TX_BUFFER_SIZE and static.ARQ_STATE == 'DATA':
 
         # ----------- CREATE FRAME TOTAL PAYLOAD TO BE ABLE TO CREATE CRC FOR IT
         try:  # DETECT IF LAST BURST TO PREVENT INDEX ERROR OF BUFFER
@@ -357,6 +372,8 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             # ---------------------------BUILD ARQ BURST ---------------------------------------------------------------------
             tempbuffer = []
 
+            # we need to optimize this and doing frame building like the other frames with explicit possition
+            # instead of just appending byte data
             for n in range(0, TX_N_FRAMES_PER_BURST):
                 frame_type = 10 + n + 1
                 frame_type = bytes([frame_type])
@@ -389,18 +406,22 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
-            # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED --> LISTEN
-            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout:
+            # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED AND IN ARQ STATE--> LISTEN
+            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout  and static.ARQ_STATE == 'DATA':
                 time.sleep(0.01)  # lets reduce CPU load a little bit
                 logging.debug(static.CHANNEL_STATE)
 
-            if RPT_REQUEST_RECEIVED:
+            # HERE WE PROCESS DATA IF WE RECEIVED ACK/RPT FRAMES OR NOT WHILE WE ARE IN ARQ STATE
+            # IF WE ARE NOT IN ARQ STATE, WE STOPPED THE TRANSMISSION 
+            if RPT_REQUEST_RECEIVED and static.ARQ_STATE == 'DATA':
                 logging.warning("ARQ | RX | REQUEST FOR REPEATING FRAMES: " + str(RPT_REQUEST_BUFFER))
                 logging.warning("ARQ | TX | SENDING REQUESTED FRAMES: " + str(RPT_REQUEST_BUFFER))
 
                 # --------- BUILD RPT FRAME --------------
                 tempbuffer = []
                 for n in range(0, len(RPT_REQUEST_BUFFER)):
+                    # we need to optimize this and doing frame building like the other frames with explicit possition
+                    # instead of just appending byte data
                     missing_frame = int.from_bytes(RPT_REQUEST_BUFFER[n], "big")
 
                     frame_type = 10 + missing_frame  # static.ARQ_TX_N_FRAMES_PER_BURST
@@ -439,7 +460,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
                 rpttimeout = time.time() + RPT_ACK_TIMEOUT_SECONDS
 
-                while not BURST_ACK_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < rpttimeout:
+                while not BURST_ACK_RECEIVED and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE == 'DATA' and time.time() < rpttimeout:
                     time.sleep(0.01)  # lets reduce CPU load a little bit
 
                     if BURST_ACK_RECEIVED:
@@ -456,20 +477,20 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             # the order of ACK check is important! speciall the FRAME ACK after RPT needs to be checked really early!
 
             # --------------- BREAK LOOP IF FRAME ACK HAS BEEN RECEIVED EARLIER AS EXPECTED
-            elif DATA_FRAME_ACK_RECEIVED:
+            elif DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE == 'DATA':
                 logging.info("ARQ | RX | EARLY FRAME ACK RECEIVED #2")
 
                 TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
                 break
 
            # --------------------------------------------------------------------------------------------------------------
-            elif not BURST_ACK_RECEIVED:
+            elif not BURST_ACK_RECEIVED and static.ARQ_STATE == 'DATA':
                 logging.warning("ARQ | RX | ACK TIMEOUT!")
                 pass  # no break here so we can continue with the next try of repeating the burst
 
 
             # --------------- BREAK LOOP IF ACK HAS BEEN RECEIVED
-            elif BURST_ACK_RECEIVED:                
+            elif BURST_ACK_RECEIVED and static.ARQ_STATE == 'DATA':                
                 # -----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                 TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
 
@@ -480,7 +501,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
                 break
 
             else:
-                logging.info("------------------------------->NO RULE MATCHED!")
+                logging.info("--->NO RULE MATCHED OR TRANSMISSION STOPPED!")
                 print("ARQ_ACK_RECEIVED " + str(BURST_ACK_RECEIVED))
                 break
                            
@@ -537,33 +558,42 @@ def burst_ack_received():
     global BURST_ACK_RECEIVED
     global DATA_CHANNEL_LAST_RECEIVED
     
-    BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
-    DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+    # only process data if we are in ARQ and BUSY state
+    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY':
+        BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
+        DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
 
 
 def frame_ack_received():
     global DATA_FRAME_ACK_RECEIVED
     global DATA_CHANNEL_LAST_RECEIVED
-    
-    DATA_FRAME_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
-    DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+
+    # only process data if we are in ARQ and BUSY state
+    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY':
+        
+        DATA_FRAME_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
+        DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
 
 
 def burst_rpt_received(data_in):
     global RPT_REQUEST_RECEIVED
     global RPT_REQUEST_BUFFER
     global DATA_CHANNEL_LAST_RECEIVED
-    
-    RPT_REQUEST_RECEIVED = True
-    DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
-    RPT_REQUEST_BUFFER = []
+ 
+ 
+    # only process data if we are in ARQ and BUSY state
+    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY':
+           
+        RPT_REQUEST_RECEIVED = True
+        DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+        RPT_REQUEST_BUFFER = []
 
-    missing_area = bytes(data_in[3:12])  # 1:9
+        missing_area = bytes(data_in[3:12])  # 1:9
 
-    for i in range(0, 6, 2):
-        if not missing_area[i:i + 2].endswith(b'\x00\x00'):
-            missing = missing_area[i:i + 2]
-            RPT_REQUEST_BUFFER.insert(0, missing)
+        for i in range(0, 6, 2):
+            if not missing_area[i:i + 2].endswith(b'\x00\x00'):
+                missing = missing_area[i:i + 2]
+                RPT_REQUEST_BUFFER.insert(0, missing)
 
 # ############################################################################################################
 # ARQ DATA CHANNEL HANDLER
@@ -677,16 +707,23 @@ def arq_received_channel_is_open(data_in):
     
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
+    # we are doing a mode check here, but this doesn't seem to be necessary since we have simultaneous decoding
+    # we are forcing doing a transmission at the moment --> see else statement
     if DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
         logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
         
-        helpers.wait(1)
-        
+        # wait a little bit so other station is ready ( PTT toggle )
+        print("wait.....")
+        helpers.wait(0.5)
+        # as soon as we set ARQ_STATE to DATA, transmission starts   
         static.ARQ_STATE = 'DATA'
         DATA_CHANNEL_READY_FOR_DATA = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time())
     else:
         print("wrong mode received...")
+        print("wait.....")
+        helpers.wait(0.5)
+        # as soon as we set ARQ_STATE to DATA, transmission starts
         static.ARQ_STATE = 'DATA'
         DATA_CHANNEL_READY_FOR_DATA = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time())

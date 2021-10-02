@@ -282,7 +282,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
             let Data = {
                 command: "sendFile",
-                dxcallsign: document.getElementById("dataModalDxCall").value,
+                dxcallsign: document.getElementById("dataModalDxCall").value.toUpperCase(),
                 mode: document.getElementById("datamode").value,
                 frames: document.getElementById("framesperburst").value,
                 filetype: fileList[0].type,
@@ -298,8 +298,18 @@ window.addEventListener('DOMContentLoaded', () => {
         };
 
     })
-
+    // START TRANSMISSION
+    document.getElementById("stopTransmission").addEventListener("click", () => {
+            let Data = {
+                command: "stopTransmission"
+            };
+            ipcRenderer.send('run-tnc-command', Data);    
+    })
+  
 })
+
+  
+
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     //console.log(arg)
@@ -375,8 +385,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                         type: 'linear',
                         position: 'bottom',
                         display: true,
-                        min: -50,
-                        max: 50,
+                        min: -40,
+                        max: 40,
                         ticks: {
                             display: false
                         }            
@@ -384,10 +394,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     y: {
                     
                         display: true,
-                        min: -50,
-                        max: 50,
+                        min: -40,
+                        max: 40,
                         ticks: {
-                            display: false
+                            display: false,
                         }
                     }
                 }
@@ -442,6 +452,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
         document.getElementById("startTransmission").disabled = true
+        document.getElementById("stopTransmission").disabled = false
 
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-success";
@@ -449,19 +460,22 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         document.getElementById("busy_state").className = "btn btn-secondary"
         document.getElementById("startTransmission").disabled = true
-
+        document.getElementById("stopTransmission").disabled = false
     }
 
     // ARQ STATE
     if (arg.arq_state == 'DATA') {
         document.getElementById("arq_state").className = "btn btn-warning";
         document.getElementById("startTransmission").disabled = true
+        document.getElementById("stopTransmission").disabled = false
     } else if (arg.arq_state == 'IDLE') {
         document.getElementById("arq_state").className = "btn btn-secondary";
         document.getElementById("startTransmission").disabled = false
+        document.getElementById("stopTransmission").disabled = true
     } else {
         document.getElementById("arq_state").className = "btn btn-secondary"
         document.getElementById("startTransmission").disabled = true
+        document.getElementById("stopTransmission").disabled = false
     }
 
     // RMS
@@ -854,5 +868,8 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
     if (arg.command == 'sendMessage') {
         sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum)
+    }
+    if (arg.command == 'stopTransmission') {
+        sock.stopTransmission()
     }
 });

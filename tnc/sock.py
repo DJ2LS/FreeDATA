@@ -127,19 +127,20 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
                         static.DXCALLSIGN)
 
-                    #dataframe = '{"filename": "'+ filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}'
                     rawdata = {"filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
-                    #dataframe = {filename: filename}
-                    #data_out = bytes(received_json["data"], 'utf-8')
                     dataframe = json.dumps(rawdata)
-                    print(dataframe)
                     data_out = bytes(dataframe, 'utf-8')
-                    print(data_out)
 
                     ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
                     ARQ_DATA_THREAD.start()
                     # asyncio.run(data_handler.arq_transmit(data_out))
 
+                if received_json["type"] == 'ARQ' and received_json["command"] == "stopTransmission":
+                    print(" >>> STOPPING TRANSMISSION <<<")
+                    static.TNC_STATE = 'IDLE'
+                    static.ARQ_STATE = 'IDLE'
+
+                    
                 # SETTINGS AND STATUS ---------------------------------------------
                 if received_json["type"] == 'SET' and received_json["command"] == 'MYCALLSIGN':
                     callsign = received_json["parameter"]
