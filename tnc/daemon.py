@@ -131,14 +131,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
                     try:
-                        # subprocess.check_call("exec ./tnc " + command)
-                        subprocess.check_call("exec ./tnc ")
                         command = []
-                        command.append('tnc')
+                        command.append('./tnc')
                         command += options
                         p = subprocess.Popen(command)
                         print("running TNC from binary...")
-                    except:
+                    except Exception as e:
+                        print(e)
                         command = []
                         command.append('python3')
                         command.append('main.py')
