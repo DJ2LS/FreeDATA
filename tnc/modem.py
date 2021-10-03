@@ -63,7 +63,14 @@ class MODEMSTATS(ctypes.Structure):
 class RF():
 
     def __init__(self):
-
+        self.AUDIO_SAMPLE_RATE_RX = 48000
+        self.AUDIO_SAMPLE_RATE_TX = 48000
+        self.MODEM_SAMPLE_RATE = 8000
+        self.AUDIO_FRAMES_PER_BUFFER = 8192
+        self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
+        self.AUDIO_CHANNELS = 1
+        
+        
         # -------------------------------------------- LOAD FREEDV
         try:
             # we check at first for libcodec2 in root - necessary if we want to run it inside a pyinstaller binary
@@ -81,17 +88,17 @@ class RF():
         atexit.register(self.p.terminate)
         # --------------------------------------------OPEN AUDIO CHANNEL RX
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
-                                     channels=static.AUDIO_CHANNELS,
-                                     rate=static.AUDIO_SAMPLE_RATE_RX,
-                                     frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER,
+                                     channels=self.AUDIO_CHANNELS,
+                                     rate=self.AUDIO_SAMPLE_RATE_RX,
+                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,
                                      input=True,
                                      input_device_index=static.AUDIO_INPUT_DEVICE
                                      )
         # --------------------------------------------OPEN AUDIO CHANNEL TX
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
                                      channels=1,
-                                     rate=static.AUDIO_SAMPLE_RATE_TX,
-                                     frames_per_buffer=static.AUDIO_FRAMES_PER_BUFFER,  # n_nom_modem_samples
+                                     rate=self.AUDIO_SAMPLE_RATE_TX,
+                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,  # n_nom_modem_samples
                                      output=True,
                                      output_device_index=static.AUDIO_OUTPUT_DEVICE,  # static.AUDIO_OUTPUT_DEVICE
                                      )
@@ -262,7 +269,7 @@ class RF():
         self.streambuffer += bytes(mod_out)
         self.streambuffer += bytes(mod_out_postamble)
 
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
+        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
         # append frame again with as much as in count defined
         for i in range(1, count):
@@ -351,7 +358,7 @@ class RF():
         self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
         self.streambuffer += bytes(mod_out_postamble)
 
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, static.MODEM_SAMPLE_RATE, static.AUDIO_SAMPLE_RATE_TX, None)
+        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
 
         # -------------- transmit audio
@@ -439,7 +446,7 @@ class RF():
             #pass
             self.c_lib.freedv_set_frames_per_burst(freedv, 0)
         '''
-
+        fft_buffer = bytes()
         while True:
 
             '''
@@ -450,11 +457,11 @@ class RF():
             '''
 
             data_in = bytes()
-            data_in = self.stream_rx.read(1024,  exception_on_overflow=False)
+            data_in = self.stream_rx.read(self.AUDIO_CHUNKS,  exception_on_overflow=False)
             #self.fft_data = data_in
-            data_in = audioop.ratecv(data_in, 2, 1, static.AUDIO_SAMPLE_RATE_RX, static.MODEM_SAMPLE_RATE, None)
+            data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
             data_in = data_in[0]  # .rstrip(b'\x00')
-            self.fft_data = data_in
+            #self.fft_data = data_in
 
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
@@ -466,6 +473,11 @@ class RF():
                 datac0_buffer += data_in
                 datac1_buffer += data_in
                 datac3_buffer += data_in
+                
+            # refill fft_data buffer so we can plot a fft
+            if len(self.fft_data) < 1024:
+                self.fft_data += data_in
+
 
             # DECODING DATAC0
             if len(datac0_buffer) >= (datac0_nin):
@@ -682,26 +694,30 @@ class RF():
         while True:
             time.sleep(0.01)
             # WE NEED TO OPTIMIZE THIS!
-            data_in = self.fft_data
+            if len(self.fft_data) >= 1024:
+                data_in = self.fft_data
+                self.fft_data = bytes()
+                
+                # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
+                audio_data = np.fromstring(data_in, np.int16)
+                # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
+                # and make sure it's not imaginary
 
-            # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-            audio_data = np.fromstring(data_in, np.int16)
-            # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
-            # and make sure it's not imaginary
+                try:
+                    fftarray = np.fft.rfft(audio_data)
+                    # set value 0 to 1 to avoid division by zero
+                    fftarray[fftarray == 0] = 1
+                    dfft = 10.*np.log10(abs(fftarray))
+                    dfftlist = dfft.tolist()
 
-            try:
-                fftarray = np.fft.rfft(audio_data)
-                # set value 0 to 1 to avoid division by zero
-                fftarray[fftarray == 0] = 1
-                dfft = 10.*np.log10(abs(fftarray))
-                dfftlist = dfft.tolist()
-
-                # send fft only if receiving
-                if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-                    #static.FFT = dfftlist[20:100]
-                    static.FFT = dfftlist
-            except:
-                print("setting fft = 0")
-                # else 0
-                static.FFT = [0] * 400
-
+                    # send fft only if receiving
+                    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
+                        #static.FFT = dfftlist[20:100]
+                        static.FFT = dfftlist
+                    
+                except:
+                    print("setting fft = 0")
+                    # else 0
+                    static.FFT = [0] * 400
+            else:
+                pass
