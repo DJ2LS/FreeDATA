@@ -705,10 +705,16 @@ class RF():
 
                 try:
                     fftarray = np.fft.rfft(audio_data)
+                    
+
+                    
                     # set value 0 to 1 to avoid division by zero
                     fftarray[fftarray == 0] = 1
                     dfft = 10.*np.log10(abs(fftarray))
+                    # round data to decrease size
+                    dfft = np.around(dfft, 1)
                     dfftlist = dfft.tolist()
+
 
                     # send fft only if receiving
                     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':

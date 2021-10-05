@@ -203,11 +203,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "EOF": "EOF",
                     }
 
+                    # we want to transmit scatter data only once to reduce network traffic
+                    static.SCATTER = []
+
                     for i in range(0, len(static.HEARD_STATIONS)):
                         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'),"TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
 
                     try:
                         jsondata = json.dumps(output)
+
                     except ValueError as e:
                         print(e)
 

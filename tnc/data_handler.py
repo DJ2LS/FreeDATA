@@ -113,7 +113,7 @@ def arq_data_received(data_in, bytes_per_frame):
 
         # set the start of transmission - 7 seconds,
         # which is more or less the transfer time for the first frame
-        RX_START_OF_TRANSMISSION = time.time() - 7
+        RX_START_OF_TRANSMISSION = time.time() - 6
                               
         for i in range(0, RX_N_FRAMES_PER_DATA_FRAME + 1):
             static.RX_FRAME_BUFFER.insert(i, None)
@@ -501,7 +501,6 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             elif BURST_ACK_RECEIVED and static.ARQ_STATE == 'DATA':                
                 # -----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                 TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
-
                 calculate_transfer_rate_tx(TX_N_SENT_FRAMES, TX_PAYLOAD_PER_ARQ_FRAME, TX_START_OF_TRANSMISSION, TX_BUFFER_SIZE)
                 logging.info("ARQ | RX | ACK [" + str(static.ARQ_BITS_PER_SECOND) + " bit/s | " + str(static.ARQ_BYTES_PER_MINUTE) + " B/min]")
                 # lets wait a little bit before we are processing the next frame
@@ -532,6 +531,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
         # -------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
         elif TX_N_SENT_FRAMES == TX_BUFFER_SIZE and DATA_FRAME_ACK_RECEIVED:
+            print(TX_N_SENT_FRAMES)
             calculate_transfer_rate_tx(TX_N_SENT_FRAMES, TX_PAYLOAD_PER_ARQ_FRAME, TX_START_OF_TRANSMISSION, TX_BUFFER_SIZE)
             logging.log(25, "ARQ | RX | FRAME ACK! - DATA TRANSMITTED! [" + str(static.ARQ_BITS_PER_SECOND) + " bit/s | " + str(static.ARQ_BYTES_PER_MINUTE) + " B/min]")
             break
@@ -832,7 +832,7 @@ def calculate_transfer_rate_rx(rx_n_frames_per_data_frame, rx_n_frame_of_data_fr
         static.ARQ_TRANSMISSION_PERCENT = int((rx_n_frame_of_data_frame / rx_n_frames_per_data_frame) * 100)
         
         transmissiontime = time.time() - rx_start_of_transmission
-        receivedbytes = rx_n_frame_of_data_frame * rx_payload_per_arq_frame
+        receivedbytes = rx_n_frame_of_data_frame * (rx_payload_per_arq_frame-6) # 6 = length of ARQ header
         
         static.ARQ_BITS_PER_SECOND = int((receivedbytes*8) / transmissiontime)
         static.ARQ_BYTES_PER_MINUTE = int((receivedbytes) / (transmissiontime/60))
@@ -855,7 +855,7 @@ def calculate_transfer_rate_tx(tx_n_sent_frames, tx_payload_per_arq_frame, tx_st
         
         transmissiontime = time.time() - tx_start_of_transmission
         if tx_n_sent_frames > 0:
-            sendbytes = tx_n_sent_frames * tx_payload_per_arq_frame
+            sendbytes = tx_n_sent_frames * (tx_payload_per_arq_frame-6) #6 = length of ARQ header
             
             static.ARQ_BITS_PER_SECOND = int((sendbytes*8) / transmissiontime)
             static.ARQ_BYTES_PER_MINUTE = int((sendbytes) / (transmissiontime/60))

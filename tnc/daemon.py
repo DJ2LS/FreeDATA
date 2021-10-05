@@ -164,31 +164,32 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     else:
                         data["DAEMON_STATE"].append({"STATUS": "stopped"})
 
-                    # UPDATE LIST OF AUDIO DEVICES
-                    p = pyaudio.PyAudio()
-                    for i in range(0, p.get_device_count()):
+                        # UPDATE LIST OF AUDIO DEVICES
+                        p = pyaudio.PyAudio()
+                        for i in range(0, p.get_device_count()):
 
-                        maxInputChannels = p.get_device_info_by_host_api_device_index(
-                            0, i).get('maxInputChannels')
-                        maxOutputChannels = p.get_device_info_by_host_api_device_index(
-                            0, i).get('maxOutputChannels')
-                        name = p.get_device_info_by_host_api_device_index(
-                            0, i).get('name')
+                            maxInputChannels = p.get_device_info_by_host_api_device_index(
+                                0, i).get('maxInputChannels')
+                            maxOutputChannels = p.get_device_info_by_host_api_device_index(
+                                0, i).get('maxOutputChannels')
+                            name = p.get_device_info_by_host_api_device_index(
+                                0, i).get('name')
 
-                        if maxInputChannels > 0:
-                            data["INPUT_DEVICES"].append(
-                                {"ID": i, "NAME": str(name)})
-                        if maxOutputChannels > 0:
-                            data["OUTPUT_DEVICES"].append(
-                                {"ID": i, "NAME": str(name)})
+                            if maxInputChannels > 0:
+                                data["INPUT_DEVICES"].append(
+                                    {"ID": i, "NAME": str(name)})
+                            if maxOutputChannels > 0:
+                                data["OUTPUT_DEVICES"].append(
+                                    {"ID": i, "NAME": str(name)})
+                        p.terminate()
+                        
+                        # UPDATE LIST OF SERIAL DEVICES
+                        ports = serial.tools.list_ports.comports()
+                        for port, desc, hwid in ports:
+                            data["SERIAL_DEVICES"].append(
+                                {"PORT": str(port), "DESCRIPTION": str(desc)})
 
-                    # UPDATE LIST OF SERIAL DEVICES
-                    ports = serial.tools.list_ports.comports()
-                    for port, desc, hwid in ports:
-                        data["SERIAL_DEVICES"].append(
-                            {"PORT": str(port), "DESCRIPTION": str(desc)})
-
-                    # print(data)
+                    
                     jsondata = json.dumps(data)
                     self.request.sendall(bytes(jsondata, encoding))
 
