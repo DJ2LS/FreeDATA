@@ -19,7 +19,9 @@ def wait(seconds):
 
     while time.time() < timeout:
         time.sleep(0.01)
-
+    return True
+    
+    
 
 def get_crc_8(data):
     """
