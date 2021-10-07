@@ -86,6 +86,7 @@ def arq_data_received(data_in, bytes_per_frame):
     arq_percent_burst = int((RX_N_FRAME_OF_BURST / RX_N_FRAMES_PER_BURST) * 100)
     #arq_percent_frame = int(((RX_N_FRAME_OF_DATA_FRAME) / RX_N_FRAMES_PER_DATA_FRAME) * 100)
     calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
+    static.INFO.append("ARQ;RECEIVING")
     
     logging.log(24, "ARQ | RX | " + str(DATA_CHANNEL_MODE) + " | F:[" + str(RX_N_FRAME_OF_BURST) + "/" + str(RX_N_FRAMES_PER_BURST) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(RX_N_FRAME_OF_DATA_FRAME) + "/" + str(RX_N_FRAMES_PER_DATA_FRAME) + "] [" + str(int(static.ARQ_TRANSMISSION_PERCENT)).zfill(3) + "%] [SNR:" + str(static.SNR) + "]")
 
@@ -233,6 +234,7 @@ def arq_data_received(data_in, bytes_per_frame):
 
         # IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS
         if frame_payload_crc == data_frame_crc:
+            static.INFO.append("ARQ;RECEIVING;SUCCESS")
             logging.log(25, "ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
             # append received frame to RX_BUFFER
@@ -272,6 +274,7 @@ def arq_data_received(data_in, bytes_per_frame):
             print("ARQ_FRAME_EOF_RECEIVED " + str(RX_FRAME_EOF_RECEIVED))
             print(static.RX_FRAME_BUFFER)
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
+            static.INFO.append("ARQ;RECEIVING;FAILED")
             logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
             
             
@@ -341,7 +344,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     # --------------------------------------------- LETS CREATE A BUFFER BY SPLITTING THE FILES INTO PEACES
     TX_BUFFER = [data_out[i:i + TX_PAYLOAD_PER_ARQ_FRAME] for i in range(0, len(data_out), TX_PAYLOAD_PER_ARQ_FRAME)]
     TX_BUFFER_SIZE = len(TX_BUFFER)
-
+    static.INFO.append("ARQ;TRANSMITTING")
     logging.info("ARQ | TX | M:" + str(DATA_CHANNEL_MODE) + " | DATA FRAME --- BYTES: " + str(len(data_out)) + " ARQ FRAMES: " + str(TX_BUFFER_SIZE))
 
     # ----------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
@@ -527,12 +530,14 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
         # ----------- if no ACK received and out of retries.....stop frame sending
         if not BURST_ACK_RECEIVED and not DATA_FRAME_ACK_RECEIVED:
             logging.error("ARQ | TX | NO ACK RECEIVED | DATA SHOULD BE RESEND!")
+            static.INFO.append("ARQ;TRANSMITTING;FAILED")
             break
 
         # -------------------------BREAK TX BUFFER LOOP IF ALL PACKETS HAVE BEEN SENT AND WE GOT A FRAME ACK
         elif TX_N_SENT_FRAMES == TX_BUFFER_SIZE and DATA_FRAME_ACK_RECEIVED:
             print(TX_N_SENT_FRAMES)
             calculate_transfer_rate_tx(TX_N_SENT_FRAMES, TX_PAYLOAD_PER_ARQ_FRAME, TX_START_OF_TRANSMISSION, TX_BUFFER_SIZE)
+            static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
             logging.log(25, "ARQ | RX | FRAME ACK! - DATA TRANSMITTED! [" + str(static.ARQ_BITS_PER_SECOND) + " bit/s | " + str(static.ARQ_BYTES_PER_MINUTE) + " B/min]")
             break
             
@@ -635,7 +640,7 @@ async def arq_open_data_channel(mode):
     global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_LAST_RECEIVED
     
-    DATA_CHANNEL_MAX_RETRIES        =   3           # N attempts for connecting to another station
+    DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
     
     DATA_CHANNEL_MODE = int(mode)    
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
@@ -650,6 +655,8 @@ async def arq_open_data_channel(mode):
     while not DATA_CHANNEL_READY_FOR_DATA:
         time.sleep(0.01)
         for attempt in range(1,DATA_CHANNEL_MAX_RETRIES+1):
+            static.INFO.append("DATACHANNEL;OPENING")
+            
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES) + "]")
             while not modem.transmit_signalling(connection_frame, 1):
                 time.sleep(0.01)
@@ -665,6 +672,7 @@ async def arq_open_data_channel(mode):
             print("attempt:" + str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
             
             if not DATA_CHANNEL_READY_FOR_DATA and attempt == DATA_CHANNEL_MAX_RETRIES:
+                static.INFO.append("DATACHANNEL;FAILED")
                 logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                 static.TNC_STATE = 'IDLE'
                 static.ARQ_STATE = 'IDLE'
@@ -676,6 +684,7 @@ def arq_received_data_channel_opener(data_in):
     #global DATA_CHANNEL_MODE
     global DATA_CHANNEL_LAST_RECEIVED
     
+    static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR)
@@ -710,6 +719,7 @@ def arq_received_channel_is_open(data_in):
     global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_MODE
     
+    static.INFO.append("DATACHANNEL;OPEN")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR)
@@ -745,6 +755,9 @@ def arq_received_channel_is_open(data_in):
 def transmit_ping(callsign):
     static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+    
+    static.INFO.append("PING;SENDING")
+    
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame      = bytearray(14)
@@ -763,6 +776,8 @@ def received_ping(data_in):
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR)
+    
+    static.INFO.append("PING;RECEIVING")
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
 
     ping_frame      = bytearray(14)
@@ -783,6 +798,7 @@ def received_ping_ack(data_in):
        
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR)
     
+    static.INFO.append("PING;RECEIVEDACK")
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]["+ str(static.DXGRID, 'utf-8') +"] [SNR:" + str(static.SNR) + "]")
     static.TNC_STATE = 'IDLE'
 
@@ -792,7 +808,8 @@ def received_ping_ack(data_in):
 
 def transmit_cq():
     logging.info("CQ CQ CQ")
-
+    static.INFO.append("CQ;SENDING")
+    
     cq_frame       = bytearray(14)
     cq_frame[:1]   = bytes([200])
     cq_frame[1:2]  = b'\x01'
@@ -809,7 +826,7 @@ def received_cq(data_in):
     # here we add the received station to the heard stations buffer
     dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
-    
+    static.INFO.append("CQ;RECEIVING")
     logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
     helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR)
 

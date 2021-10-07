@@ -26,7 +26,7 @@
   height: 100%; /* 100% Full-height */
   width: 0; /* 0 width - change this with JavaScript */
   position: fixed; /* Stay in place */
-  z-index: 1000; /* Stay on top */
+  z-index: 100; /* Stay on top */
   top: 0;
   /*left: 1220px;*/
   right: 0;

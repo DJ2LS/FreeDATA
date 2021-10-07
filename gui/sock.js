@@ -136,6 +136,7 @@ client.on('data', function(data) {
                 rms_level: (data['AUDIO_RMS'] / 1000) * 100,
                 fft: data['FFT'],
                 scatter: data['SCATTER'],
+                info: data['INFO'],
                 rx_buffer_length: data['RX_BUFFER_LENGTH'],
                 tx_n_max_retries: data['TX_N_MAX_RETRIES'],
                 arq_tx_n_frames_per_burst: data['ARQ_TX_N_FRAMES_PER_BURST'],

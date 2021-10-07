@@ -267,7 +267,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // START TRANSMISSION
     document.getElementById("startTransmission").addEventListener("click", () => {
-
+        document.getElementById("mySidebar").style.width = "0px";
         var fileList = document.getElementById("dataModalFile").files;
 
         var reader = new FileReader();
@@ -635,7 +635,120 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         tbl.appendChild(row);
     }
+    
+    
+    // DISPLAY INFO TOASTS
+        if (typeof(arg.info) == 'undefined') {
+        var infoLength = 0
+    } else {
+        var infoLength = arg.info.length
+    }
 
+    for (i = 0; i < infoLength; i++) {
+        
+        // SENDING CQ TOAST
+        if (arg.info[i] == "CQ;SENDING"){
+            var toastCQsending = document.getElementById('toastCQsending')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastCQsending) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+    
+        // RECEIVING CQ TOAST
+        if (arg.info[i] == "CQ;RECEIVING"){
+            var toastCQreceiving = document.getElementById('toastCQreceiving')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastCQreceiving) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+        
+        // SENDING PING TOAST
+        if (arg.info[i] == "PING;SENDING"){
+            var toastPINGsending = document.getElementById('toastPINGsending')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastPINGsending) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+        // RECEIVING PING TOAST
+        if (arg.info[i] == "PING;RECEIVING"){
+            var toastPINGreceiving = document.getElementById('toastPINGreceiving')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastPINGreceiving) // Returns a Bootstrap toast instance
+            toast.show()
+        }    
+        // RECEIVING PING ACK TOAST
+        if (arg.info[i] == "PING;RECEIVEDACK"){
+            var toastPINGreceivedACK = document.getElementById('toastPINGreceivedACK')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastPINGreceivedACK) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+        // DATACHANNEL OPENING TOAST
+        if (arg.info[i] == "DATACHANNEL;OPENING"){
+            var toastDATACHANNELopening = document.getElementById('toastDATACHANNELopening')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELopening) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+        
+        // DATACHANNEL OPEN TOAST
+        if (arg.info[i] == "DATACHANNEL;OPEN"){
+            var toastDATACHANNELopen = document.getElementById('toastDATACHANNELopen')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELopen) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+         // DATACHANNEL RECEIVEDOPENER TOAST
+        if (arg.info[i] == "DATACHANNEL;RECEIVEDOPENER"){
+            var toastDATACHANNELreceivedopener = document.getElementById('toastDATACHANNELreceivedopener')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener) // Returns a Bootstrap toast instance
+            toast.show()
+        }                       
+         // DATACHANNEL FAILED TOAST
+        if (arg.info[i] == "DATACHANNEL;FAILED"){
+            var toastDATACHANNELfailed = document.getElementById('toastDATACHANNELfailed')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELfailed) // Returns a Bootstrap toast instance
+            toast.show()
+        }  
+         // ARQ RECEIVING TOAST
+        if (arg.info[i] == "ARQ;RECEIVING"){
+            var toastARQreceiving = document.getElementById('toastARQreceiving')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving) // Returns a Bootstrap toast instance
+            toast.show()
+        }        
+         // ARQ RECEIVING SUCCESS TOAST
+        if (arg.info[i] == "ARQ;RECEIVING;SUCCESS"){
+            var toastARQreceivingsuccess = document.getElementById('toastARQreceivingsuccess')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingsuccess) // Returns a Bootstrap toast instance
+            toast.show()
+        }
+         // ARQ RECEIVING FAILED TOAST
+        if (arg.info[i] == "ARQ;RECEIVING;FAILED"){
+            var toastARQreceivingfailed = document.getElementById('toastARQreceivingfailed')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingfailed) // Returns a Bootstrap toast instance
+            toast.show()
+        }        
+         // ARQ TRANSMITTING TOAST
+        if (arg.info[i] == "ARQ;TRANSMITTING"){
+            var toastARQtransmitting = document.getElementById('toastARQtransmitting')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting) // Returns a Bootstrap toast instance
+            toast.show()
+        }        
+         // ARQ TRANSMITTING SUCCESS TOAST
+        if (arg.info[i] == "ARQ;TRANSMITTING;SUCCESS"){
+            var toastARQtransmittingsuccess = document.getElementById('toastARQtransmittingsuccess')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingsuccess) // Returns a Bootstrap toast instance
+            toast.show()
+        }               
+         // ARQ TRANSMITTING FAILED TOAST
+        if (arg.info[i] == "ARQ;TRANSMITTING;FAILED"){
+            var toastARQtransmittingfailed = document.getElementById('toastARQtransmittingfailed')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed) // Returns a Bootstrap toast instance
+            toast.show()
+        }        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+    }
 });
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
@@ -651,48 +764,52 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
 
     // UPDATE AUDIO INPUT
+    if (arg.tnc_running_state == "stopped") {
+        if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
+            document.getElementById("audio_input_selectbox").innerHTML = ""
+            for (i = 0; i < arg.input_devices.length; i++) {
+                var option = document.createElement("option");
+                option.text = arg.input_devices[i]['NAME'];
+                option.value = arg.input_devices[i]['ID'];
 
-    if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
-        document.getElementById("audio_input_selectbox").innerHTML = ""
-        for (i = 0; i < arg.input_devices.length; i++) {
-            var option = document.createElement("option");
-            option.text = arg.input_devices[i]['NAME'];
-            option.value = arg.input_devices[i]['ID'];
-
-            document.getElementById("audio_input_selectbox").add(option);
+                document.getElementById("audio_input_selectbox").add(option);
+            }
         }
     }
     // UPDATE AUDIO OUTPUT
-
-    if (document.getElementById("audio_output_selectbox").length != arg.output_devices.length) {
-        document.getElementById("audio_output_selectbox").innerHTML = ""
-        for (i = 0; i < arg.output_devices.length; i++) {
-            var option = document.createElement("option");
-            option.text = arg.output_devices[i]['NAME'];
-            option.value = arg.output_devices[i]['ID'];
-            document.getElementById("audio_output_selectbox").add(option);
+    if (arg.tnc_running_state == "stopped") {
+        if (document.getElementById("audio_output_selectbox").length != arg.output_devices.length) {
+            document.getElementById("audio_output_selectbox").innerHTML = ""
+            for (i = 0; i < arg.output_devices.length; i++) {
+                var option = document.createElement("option");
+                option.text = arg.output_devices[i]['NAME'];
+                option.value = arg.output_devices[i]['ID'];
+                document.getElementById("audio_output_selectbox").add(option);
+            }
         }
     }
 
     // UPDATE SERIAL DEVICES
-
-    if (document.getElementById("hamlib_deviceport").length != arg.serial_devices.length) {
-        document.getElementById("hamlib_deviceport").innerHTML = ""
-        for (i = 0; i < arg.serial_devices.length; i++) {
-            var option = document.createElement("option");
-            option.text = arg.serial_devices[i]['DESCRIPTION'];
-            option.value = arg.serial_devices[i]['PORT'];
-            document.getElementById("hamlib_deviceport").add(option);
+    if (arg.tnc_running_state == "stopped") {
+        if (document.getElementById("hamlib_deviceport").length != arg.serial_devices.length) {
+            document.getElementById("hamlib_deviceport").innerHTML = ""
+            for (i = 0; i < arg.serial_devices.length; i++) {
+                var option = document.createElement("option");
+                option.text = arg.serial_devices[i]['DESCRIPTION'];
+                option.value = arg.serial_devices[i]['PORT'];
+                document.getElementById("hamlib_deviceport").add(option);
+            }
         }
     }
-
-    if (document.getElementById("hamlib_ptt_port").length != arg.serial_devices.length) {
-        document.getElementById("hamlib_ptt_port").innerHTML = ""
-        for (i = 0; i < arg.serial_devices.length; i++) {
-            var option = document.createElement("option");
-            option.text = arg.serial_devices[i]['DESCRIPTION'];
-            option.value = arg.serial_devices[i]['PORT'];
-            document.getElementById("hamlib_ptt_port").add(option);
+    if (arg.tnc_running_state == "stopped") {
+        if (document.getElementById("hamlib_ptt_port").length != arg.serial_devices.length) {
+            document.getElementById("hamlib_ptt_port").innerHTML = ""
+            for (i = 0; i < arg.serial_devices.length; i++) {
+                var option = document.createElement("option");
+                option.text = arg.serial_devices[i]['DESCRIPTION'];
+                option.value = arg.serial_devices[i]['PORT'];
+                document.getElementById("hamlib_ptt_port").add(option);
+            }
         }
     }
     

@@ -198,13 +198,16 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES": str(static.TOTAL_BYTES),
-
+                        "INFO" : static.INFO,
                         "STATIONS": [],
                         "EOF": "EOF",
                     }
 
                     # we want to transmit scatter data only once to reduce network traffic
                     static.SCATTER = []
+                    
+                    # we want to display INFO messages only once
+                    static.INFO = []
 
                     for i in range(0, len(static.HEARD_STATIONS)):
                         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'),"TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
