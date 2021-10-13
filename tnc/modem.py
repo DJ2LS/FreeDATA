@@ -611,7 +611,7 @@ class RF():
             elif frametype == 211:
                 logging.debug("PING ACK RECEIVED....")
                 # early detection of frequency offset
-                frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True) * (-1)
+                frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
                 print("Freq-Offset: " + str(frequency_offset))
                 current_frequency = self.my_rig.get_freq()
                 corrected_frequency = current_frequency + frequency_offset
