@@ -615,8 +615,11 @@ class RF():
                 print("Freq-Offset: " + str(frequency_offset))
                 current_frequency = self.my_rig.get_freq()
                 corrected_frequency = current_frequency + frequency_offset
-                self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
-                self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
+                # temporarely disabled this feature, beacuse it may cause some confusion.
+                # we also have problems if we are operating at band bordes like 7.000Mhz
+                # If we get a corrected frequency less 7.000 Mhz, Ham Radio devices will not transmit...
+                #self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
+                #self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
                 
                 data_handler.received_ping_ack(bytes_out[:-2])
 
@@ -657,7 +660,8 @@ class RF():
         self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
-        return offset        
+        return offset
+        
         
     def get_scatter(self, freedv):
         modemStats = MODEMSTATS()
