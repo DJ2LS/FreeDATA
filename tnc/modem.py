@@ -271,6 +271,7 @@ class RF():
 
         converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
         self.streambuffer = bytes(converted_audio[0])
+
         # append frame again with as much as in count defined
         for i in range(1, count):
             self.streambuffer += bytes(converted_audio[0])
@@ -398,6 +399,12 @@ class RF():
         datac0_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
         datac0_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac0_freedv)
 
+        self.c_lib.freedv_set_clip(datac0_freedv, 1);
+        self.c_lib.freedv_set_tx_bpf(datac0_freedv, 1);
+        #freedv_set_tx_amp(datac0_freedv, amp);
+
+
+
         # bytes_per_frame
         datac0_bytes_out = (ctypes.c_ubyte * datac0_bytes_per_frame)
         datac0_bytes_out = datac0_bytes_out()  # get pointer from bytes_out
@@ -448,7 +455,7 @@ class RF():
         '''
         fft_buffer = bytes()
         while True:
-
+            #time.sleep(0.0005)
             '''
             # refresh vars, so the correct parameters of the used mode are set
             if mode == static.ARQ_DATA_CHANNEL_MODE:
@@ -462,6 +469,7 @@ class RF():
             data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
             data_in = data_in[0]  # .rstrip(b'\x00')
             #self.fft_data = data_in
+
 
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
@@ -488,12 +496,14 @@ class RF():
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac0_bytes_out, datac0_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_audio)  # demodulate audio
                 sync = self.c_lib.freedv_get_rx_status(datac0_freedv)
+                self.get_scatter(datac0_freedv)
+                
                 if sync != 0 and nbytes != 0:
 
                     # calculate snr and scatter
                     self.get_scatter(datac0_freedv)
                     self.calculate_snr(datac0_freedv)
-
+                    
                     datac0_task = threading.Thread(target=self.process_data, args=[datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame])
                     #datac0_task.start()
                     self.process_data(datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame)
@@ -592,11 +602,22 @@ class RF():
             # PING FRAME
             elif frametype == 210:
                 logging.debug("PING RECEIVED....")
-                data_handler.received_ping(bytes_out[:-2])
+                frequency_offset = self.get_frequency_offset(freedv)
+                print("Freq-Offset: " + str(frequency_offset))
+                data_handler.received_ping(bytes_out[:-2], frequency_offset)
+                
 
             # PING ACK
             elif frametype == 211:
                 logging.debug("PING ACK RECEIVED....")
+                # early detection of frequency offset
+                frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True) * (-1)
+                print("Freq-Offset: " + str(frequency_offset))
+                current_frequency = self.my_rig.get_freq()
+                corrected_frequency = current_frequency + frequency_offset
+                self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
+                self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
+                
                 data_handler.received_ping_ack(bytes_out[:-2])
 
             # ARQ FILE TRANSFER RECEIVED!
@@ -630,6 +651,14 @@ class RF():
             pass
             # print(bytes_out[:-2])
 
+
+    def get_frequency_offset(self, freedv):
+        modemStats = MODEMSTATS()
+        self.c_lib.freedv_get_modem_extended_stats.restype = None
+        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        offset = round(modemStats.foff) * (-1)
+        return offset        
+        
     def get_scatter(self, freedv):
         modemStats = MODEMSTATS()
         self.c_lib.freedv_get_modem_extended_stats.restype = None
@@ -715,12 +744,14 @@ class RF():
                     dfft = np.around(dfft, 1)
                     dfftlist = dfft.tolist()
 
-
                     # send fft only if receiving
                     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-                        #static.FFT = dfftlist[20:100]
+                        #static.FFT = dfftlist[10:200]
                         static.FFT = dfftlist
-                    
+                        
+                        
+
+
                 except:
                     print("setting fft = 0")
                     # else 0

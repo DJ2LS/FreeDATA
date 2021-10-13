@@ -504,8 +504,13 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             elif BURST_ACK_RECEIVED and static.ARQ_STATE == 'DATA':                
                 # -----------IF ACK RECEIVED, INCREMENT ITERATOR FOR MAIN LOOP TO PROCEED WITH NEXT FRAMES/BURST
                 TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
+                
+                # SET TX ATTEMPTS BACK TO 0
+                TX_N_RETRIES_PER_BURST = 0
+                
                 calculate_transfer_rate_tx(TX_N_SENT_FRAMES, TX_PAYLOAD_PER_ARQ_FRAME, TX_START_OF_TRANSMISSION, TX_BUFFER_SIZE)
                 logging.info("ARQ | RX | ACK [" + str(static.ARQ_BITS_PER_SECOND) + " bit/s | " + str(static.ARQ_BYTES_PER_MINUTE) + " B/min]")
+                
                 # lets wait a little bit before we are processing the next frame
                 helpers.wait(0.3)
                 
@@ -771,7 +776,7 @@ def transmit_ping(callsign):
         time.sleep(0.01)
 
 
-def received_ping(data_in):
+def received_ping(data_in, frequency_offset):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
@@ -785,7 +790,12 @@ def received_ping(data_in):
     ping_frame[1:2] = static.DXCALLSIGN_CRC8
     ping_frame[2:3] = static.MYCALLSIGN_CRC8
     ping_frame[3:9] = static.MYGRID
-
+    ping_frame[9:11] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
+    
+    #print(len(frequency_offset.to_bytes(2, byteorder='big', signed=True)))
+    #print(ping_frame)
+    #print(ping_frame[9:11])
+    #print(int.from_bytes(bytes(ping_frame[9:11]), "big", signed=True))
     # wait while sending....
     while not modem.transmit_signalling(ping_frame, 1):
         time.sleep(0.01)
