@@ -19,6 +19,9 @@ import psutil
 import serial.tools.list_ports
 import pyaudio
 import static
+import crcengine
+crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
+
 
 def start_daemon():
 
@@ -186,8 +189,15 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         # UPDATE LIST OF SERIAL DEVICES
                         ports = serial.tools.list_ports.comports()
                         for port, desc, hwid in ports:
+                        
+                            # calculate hex of hwid if we have unique names
+                            crc_hwid = crc_algorithm(bytes(hwid, encoding='utf-8'))
+                            crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
+                            crc_hwid = crc_hwid.hex()
+                            description = desc + ' [' + crc_hwid + ']'
+                            
                             data["SERIAL_DEVICES"].append(
-                                {"PORT": str(port), "DESCRIPTION": str(desc)})
+                                {"PORT": str(port), "DESCRIPTION": str(description) })
 
                     
                     jsondata = json.dumps(data)
