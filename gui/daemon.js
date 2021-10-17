@@ -107,9 +107,17 @@ daemon.on('data', function(data) {
                 version: data['VERSION'],
             };
             ipcRenderer.send('request-update-daemon-state', Data);
-
         }
 
+        if (data['COMMAND'] == 'TEST_HAMLIB') {
+            let Data = {
+                hamlib_result: data['RESULT'],
+                
+            };
+            ipcRenderer.send('request-update-hamlib-test', Data);
+        }
+        
+        
         ////// check if EOF	...
     }
 
@@ -130,7 +138,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed) {
+exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake) {
     var json_command = JSON.stringify({
         type: 'SET',
         command: 'STARTTNC',
@@ -141,7 +149,11 @@ exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, pttprotoco
             deviceport: deviceport,
             pttprotocol: pttprotocol,
             pttport: pttport,
-            serialspeed: serialspeed
+            serialspeed: serialspeed,
+            pttspeed: pttspeed,
+            data_bits: data_bits,
+            stop_bits: stop_bits,
+            handshake: handshake
 
         }]
     })
@@ -156,3 +168,28 @@ exports.stopTNC = function() {
     command = '{"type" : "SET", "command": "STOPTNC" , "parameter": "---" }'
     writeDaemonCommand(command)
 }
+
+// TEST HAMLIB
+exports.testHamlib = function(deviceid, deviceport, serialspeed, pttprotocol, pttport, pttspeed, data_bits, stop_bits, handshake) {
+
+    var json_command = JSON.stringify({
+        type: 'GET',
+        command: 'TEST_HAMLIB',
+        parameter: [{
+            deviceid: deviceid,
+            deviceport: deviceport,
+            pttprotocol: pttprotocol,
+            pttport: pttport,
+            serialspeed: serialspeed,
+            pttspeed: pttspeed,
+            data_bits: data_bits,
+            stop_bits: stop_bits,
+            handshake: handshake
+
+        }]
+    })
+    console.log(json_command)
+    writeDaemonCommand(json_command)
+}
+
+
