@@ -127,7 +127,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
                         static.DXCALLSIGN)
 
-                    rawdata = {"filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
+                    rawdata = {"datatype": "file", "filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
@@ -194,6 +194,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "FFT": str(static.FFT),
                         "SCATTER": static.SCATTER,
                         "RX_BUFFER_LENGTH": str(len(static.RX_BUFFER)),
+                        "RX_MSG_BUFFER_LENGTH": str(len(static.RX_MSG_BUFFER)),
                         "ARQ_BYTES_PER_MINUTE": str(static.ARQ_BYTES_PER_MINUTE),
                         "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
@@ -209,6 +210,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     # we want to display INFO messages only once
                     static.INFO = []
 
+                    # add heard stations to heard stations object
                     for i in range(0, len(static.HEARD_STATIONS)):
                         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'),"TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4]})
 
@@ -232,14 +234,30 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     for i in range(0, len(static.RX_BUFFER)):
 
                         rawdata = json.loads(static.RX_BUFFER[i][3])
-
                         output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'), "DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})
 
                     jsondata = json.dumps(output)
                     self.request.sendall(bytes(jsondata, encoding))
 
+                if received_json["type"] == 'GET' and received_json["command"] == 'RX_MSG_BUFFER':
+                    output = {
+                        "COMMAND": "RX_MSG_BUFFER",
+                        "DATA-ARRAY": [],
+                        "EOF": "EOF",
+                    }
+                    for i in range(0, len(static.RX_MSG_BUFFER)):
+
+                        rawdata = json.loads(static.RX_MSG_BUFFER[i][3])
+                        output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_MSG_BUFFER[i][0], 'utf-8'), "DXGRID": str(static.RX_MSG_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_MSG_BUFFER[i][2], "RXDATA": [rawdata]})
+
+                    jsondata = json.dumps(output)
+                    self.request.sendall(bytes(jsondata, encoding))
+                    
                 if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
-                    static.RX_BUFFER = []
+                    static.RX_BUFFER = []                    
+                    
+                if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_MSG_BUFFER':
+                    static.RX_MSG_BUFFER = []
 
             # exception, if JSON cant be decoded
             # except Exception as e:

@@ -13,9 +13,11 @@ const config = require(configPath);
 var client = new net.Socket();
 var msg = ''; // Current message, per connection.
 
-// globals for getting new data only if available
+// globals for getting new data only if available so we are saving bandwith
 var rxBufferLengthTnc = 0
 var rxBufferLengthGui = 0
+var rxMsgBufferLengthTnc = 0
+var rxMsgBufferLengthGui = 0
 
 // network connection Timeout
 setTimeout(connectTNC, 3000)
@@ -122,8 +124,10 @@ client.on('data', function(data) {
 
         if (data['COMMAND'] == 'TNC_STATE') {
             //console.log(data)
+            // set length of RX Buffer to global variable
             rxBufferLengthTnc = data['RX_BUFFER_LENGTH']
-
+            rxMsgBufferLengthTnc = data['RX_MSG_BUFFER_LENGTH']
+            
             let Data = {
                 toe: Date.now() - data['TIMESTAMP'], // time of execution
                 ptt_state: data['PTT_STATE'],
@@ -138,6 +142,7 @@ client.on('data', function(data) {
                 scatter: data['SCATTER'],
                 info: data['INFO'],
                 rx_buffer_length: data['RX_BUFFER_LENGTH'],
+                rx_msg_buffer_length: data['RX_MSG_BUFFER_LENGTH'],
                 tx_n_max_retries: data['TX_N_MAX_RETRIES'],
                 arq_tx_n_frames_per_burst: data['ARQ_TX_N_FRAMES_PER_BURST'],
                 arq_tx_n_bursts: data['ARQ_TX_N_BURSTS'],
@@ -158,7 +163,6 @@ client.on('data', function(data) {
         if (data['COMMAND'] == 'RX_BUFFER') {
 
             rxBufferLengthGui = data['DATA-ARRAY'].length
-            //console.log(rxBufferLengthGui)
             let Data = {
                 data: data['DATA-ARRAY'],
             };
@@ -166,6 +170,15 @@ client.on('data', function(data) {
             ipcRenderer.send('request-update-rx-buffer', Data);
         }
 
+        if (data['COMMAND'] == 'RX_MSG_BUFFER') {
+
+            rxMsgBufferLengthGui = data['DATA-ARRAY'].length
+            let Data = {
+                data: data['DATA-ARRAY'],
+            };
+            //console.log(Data)
+            ipcRenderer.send('request-update-rx-msg-buffer', Data);
+        }
         // check if EOF	...
     }
 
@@ -244,6 +257,16 @@ exports.getRxBuffer = function() {
 
     // call command only if new data arrived
     if (rxBufferLengthGui != rxBufferLengthTnc) {
+        writeTncCommand(command)
+    }
+}
+
+// Get RX MSG BUffer
+exports.getRxBuffer = function() {
+    command = '{"type" : "GET", "command" : "RX_MSG_BUFFER", "timestamp" : ' + Date.now() + '}'
+
+    // call command only if new data arrived
+    if (rxMsgBufferLengthGui != rxMsgBufferLengthTnc) {
         writeTncCommand(command)
     }
 }

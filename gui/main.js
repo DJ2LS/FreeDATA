@@ -208,3 +208,10 @@ ipcMain.on('run-tnc-command', (event, arg) => {
 ipcMain.on('request-update-rx-buffer', (event, arg) => {
     win.webContents.send('action-update-rx-buffer', arg);
 });
+
+ipcMain.on('request-update-rx-,sg-buffer', (event, arg) => {
+    //win.webContents.send('action-update-rx-buffer', arg);
+    console.log("NEW MESSAGE ARRIVED!")
+    console.log("WE WILL HANDLE THIS AS SOON AS WE HAVE A CHAT MODULE...")
+    console.log(arg)
+});

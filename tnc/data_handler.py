@@ -13,6 +13,7 @@ import time
 from random import randrange
 import asyncio
 import sys
+import ujson as json
 
 import static
 import modem
@@ -237,9 +238,22 @@ def arq_data_received(data_in, bytes_per_frame):
             static.INFO.append("ARQ;RECEIVING;SUCCESS")
             logging.log(25, "ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
-            # append received frame to RX_BUFFER
-            static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame.decode("utf-8")])
+            
+            # decode to utf-8 string
+            complete_data_frame = complete_data_frame.decode("utf-8")
+            
+            # decode json objects from data frame to inspect if we received a file or message
+            rawdata = json.loads(complete_data_frame)
 
+            # if datatype is a file, we append to RX_BUFFER, which contains files only            
+            if rawdata["datatype"] == "file":
+                logging.info("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
+                static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
+            
+            # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
+            if rawdata["datatype"] == "message":
+                static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
+                logging.info("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
             # BUILDING ACK FRAME FOR DATA FRAME -----------------------------------------------
             ack_frame       = bytearray(14)
             ack_frame[:1]   = bytes([61])
@@ -791,11 +805,7 @@ def received_ping(data_in, frequency_offset):
     ping_frame[2:3] = static.MYCALLSIGN_CRC8
     ping_frame[3:9] = static.MYGRID
     ping_frame[9:11] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
-    
-    #print(len(frequency_offset.to_bytes(2, byteorder='big', signed=True)))
-    #print(ping_frame)
-    #print(ping_frame[9:11])
-    #print(int.from_bytes(bytes(ping_frame[9:11]), "big", signed=True))
+
     # wait while sending....
     while not modem.transmit_signalling(ping_frame, 1):
         time.sleep(0.01)
