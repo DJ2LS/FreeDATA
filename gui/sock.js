@@ -166,7 +166,7 @@ client.on('data', function(data) {
             let Data = {
                 data: data['DATA-ARRAY'],
             };
-            //console.log(Data)
+            console.log(Data)
             ipcRenderer.send('request-update-rx-buffer', Data);
         }
 
@@ -262,7 +262,7 @@ exports.getRxBuffer = function() {
 }
 
 // Get RX MSG BUffer
-exports.getRxBuffer = function() {
+exports.getMsgRxBuffer = function() {
     command = '{"type" : "GET", "command" : "RX_MSG_BUFFER", "timestamp" : ' + Date.now() + '}'
 
     // call command only if new data arrived

@@ -216,7 +216,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     try:
                         jsondata = json.dumps(output)
-
                     except ValueError as e:
                         print(e)
 
