@@ -190,6 +190,13 @@ ipcMain.on('request-update-daemon-state', (event, arg) => {
     win.webContents.send('action-update-daemon-state', arg);
 });
 
+ipcMain.on('request-update-hamlib-test', (event, arg) => {
+    win.webContents.send('action-update-hamlib-test', arg);
+});
+
+
+
+
 ipcMain.on('request-update-daemon-connection', (event, arg) => {
     win.webContents.send('action-update-daemon-connection', arg);
 });
