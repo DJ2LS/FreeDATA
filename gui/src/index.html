@@ -41,11 +41,12 @@
             </div>
             <div class="btn-toolbar" role="toolbar">
                <button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button" disabled>
-                  <strong>RF Chat </strong>
+                  <strong>RF Chat</strong>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16">
                      <path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z"/>
                   </svg>
                </button>
+               
                <button class="btn btn-sm btn-primary me-2" id="openReceivedFiles" type="button">
                   <strong>Received Files </strong>
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill" viewBox="0 0 16 16">
@@ -207,7 +208,7 @@
          <!------------------------------------------------------------------------------------------>
          <div class="container mt-5 p-0">
             <div class="row">
-               <div class="col">
+               <div class="col-4">
                   <div class="card text-dark bg-light mb-0" >
                      <div class="card-header p-1">
                         <strong>Step 1: AUDIO SETTINGS</strong>
@@ -236,7 +237,7 @@
                         -->
                   </div>
                </div>
-               <div class="col">
+               <div class="col-5">
                   <div class="card text-dark bg-light mb-0">
                      <div class="card-header p-1">
                         <strong>Step 2: RADIO SETTINGS</strong>
@@ -554,7 +555,7 @@
                           -->
                   </div>
                </div>
-               <div class="col">
+               <div class="col-3">
                   <div class="card text-dark bg-light mb-0" >
                      <div class="card-header p-1"><strong>Step 3: TNC STATUS</strong></div>
                      <div class="card-body p-1 mb-1">
@@ -565,24 +566,20 @@
                                <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
                            </div>
                            -->
-                        <div class="container">
-                           <div class="row">
-                              <div class="col-md-auto">
-                                 TNC
-                              </div>
-                              <div class="col">
+                        <div class="container p-1">
+
                                  <div class="input-group input-group-sm mb-1">
                                     <button type="button" id="startTNC"class="btn btn-success">Start</button>
-                                    <span class="input-group-text" id="tnc_running_state" style="width: 7rem">---</span>
+                                    <span class="input-group-text" id="tnc_running_state" style="width: 5rem">---</span>
                                     <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
                                  </div>
-                              </div>
-                           </div>
+
+               
                            <div class="row">
                               <div class="col-md-auto">
                                  CPU
                               </div>
-                              <div class="col">
+                              <div class="col-8">
                                  <div class="progress" style="height: 20px;" >
                                     <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_cpu" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                     <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_cpu_value"></p>
@@ -593,7 +590,7 @@
                               <div class="col-md-auto">
                                  RAM
                               </div>
-                              <div class="col">
+                              <div class="col-8">
                                  <div class="progress" style="height: 20px;" >
                                     <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_ram" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                                     <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_ram_value"></p>
@@ -619,10 +616,10 @@
                </div>
             </div>
          </div>
-         <hr class="m-1">
+         <!--<hr class="m-1">-->
          <div class="container mt-2 p-0">
             <div class="row">
-               <div class="col">
+               <div class="col-5">
                   <div class="card text-dark bg-light mb-1">
                      <div class="card-header p-1"><strong>MY STATION</strong></div>
                      <div class="card-body p-2">
@@ -683,7 +680,7 @@
                </div>
             </div>
             <div class="row">
-               <div class="col">
+               <div class="col-5">
                   <div class="card text-dark bg-light mb-1" >
                      <div class="card-header p-1">
                         <div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
@@ -693,14 +690,14 @@
                            <label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong>SCATTER</strong></label>
                         </div>
                      </div>
-                     <div class="card-body p-1" style="height: 278px">
+                     <div class="card-body p-1" style="height: 200px"> <!--278px-->
                         <canvas id="waterfall" style="position: relative; z-index: 2;"></canvas>
                         <canvas id="scatter" style="position: relative; z-index: 1;"></canvas>
                      </div>
                   </div>
                </div>
                <div class="col">
-                  <div class="card text-dark bg-light mb-1" style="height: 325px">
+                  <div class="card text-dark bg-light mb-1" style="height: 240px"> <!--325px-->
                      <div class="card-header p-1"><strong>HEARD STATIONS</strong></div>
                      <div class="card-body p-2">
                         <!-- START OF TABLE FOR HEARD STATIONS -->
@@ -762,7 +759,7 @@
          <!-- END OF  RECEIVED FILES-->
       </div>
       <!------------------------------- DATA SIDEBAR ----------------------->
-      <div id="mySidebar" class="sidebar shadow-lg rounded">
+      <div id="transmitFileSidebar" class="sidebar shadow-lg rounded">
          <div class="container-fluid">
             <div class="container mt-1">
                <div class="row mb-1">
@@ -818,13 +815,13 @@
                         </div>
                         <div class="card-body p-2">
                            <div class="row">
-                              <div class="col-auto">
+                              <div class="col">
                                  <div class="input-group input-group-sm">
                                     <span class="input-group-text" id="basic-addon1">Mode</span>
                                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="datamode">
-                                       <option value="14">DATAC0 - Bad path</option>
-                                       <option selected value="10">DATAC1 - Good path</option>
-                                       <option value="12">DATAC3 - Medium path</option>
+                                       <option value="14">low SNR (DC0)</option>
+                                       <option selected value="10">high SNR (DC1)</option>
+                                       <option value="12">med SNR (DC3)</option>
                                     </select>
                                  </div>
                               </div>
@@ -918,19 +915,19 @@
             </div>
             <div class="container-fluid" style="width:30%">
                <div class="input-group input-group-sm">
-                  <span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>
+                  <!--<span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>-->
                   <span class="input-group-text" id="frequency">---</span>
-                  <span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>
+                  <!--<span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>-->
                   <span class="input-group-text" id="mode">---</span>
-                  <span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>
+                  <!--<span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>-->
                   <span class="input-group-text" id="bandwith">---</span>
                </div>
             </div>
             <div class="container-fluid" style="width:30%">
                <div class="input-group input-group-sm">
-                  <span class="input-group-text" id="basic-addon1"><strong>Bytes/min</strong></span>
+                  <span class="input-group-text" id="basic-addon1"><strong>B/min</strong></span>
                   <span class="input-group-text" id="bytes_per_min">---</span>
-                  <span class="input-group-text" id="basic-addon1"><strong>Total Bytes</strong></span>
+                  <span class="input-group-text" id="basic-addon1"><strong>Total</strong></span>
                   <span class="input-group-text" id="total_bytes">---</span>
                </div>
             </div>

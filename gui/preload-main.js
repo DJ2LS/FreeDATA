@@ -286,10 +286,10 @@ advancedHamlibSettingsModal
 
     // openDataModule button clicked
     document.getElementById("openDataModule").addEventListener("click", () => {
-        if (document.getElementById("mySidebar").style.width == "40%") {
-            document.getElementById("mySidebar").style.width = "0px";
+        if (document.getElementById("transmitFileSidebar").style.width == "40%") {
+            document.getElementById("transmitFileSidebar").style.width = "0px";
         } else {
-            document.getElementById("mySidebar").style.width = "40%";
+            document.getElementById("transmitFileSidebar").style.width = "40%";
         }
     })
 
@@ -349,7 +349,7 @@ advancedHamlibSettingsModal
 
     // START TRANSMISSION
     document.getElementById("startTransmission").addEventListener("click", () => {
-        document.getElementById("mySidebar").style.width = "0px";
+        document.getElementById("transmitFileSidebar").style.width = "0px";
         var fileList = document.getElementById("dataModalFile").files;
 
         var reader = new FileReader();
