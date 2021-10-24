@@ -249,11 +249,12 @@ def arq_data_received(data_in, bytes_per_frame):
             if rawdata["datatype"] == "file":
                 logging.info("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
                 static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
-            
+                
             # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
             if rawdata["datatype"] == "message":
                 static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
                 logging.info("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
+            
             # BUILDING ACK FRAME FOR DATA FRAME -----------------------------------------------
             ack_frame       = bytearray(14)
             ack_frame[:1]   = bytes([61])
@@ -706,7 +707,7 @@ def arq_received_data_channel_opener(data_in):
     static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR)
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
     logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
     
@@ -741,7 +742,7 @@ def arq_received_channel_is_open(data_in):
     static.INFO.append("DATACHANNEL;OPEN")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR)
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
     
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
@@ -794,7 +795,7 @@ def received_ping(data_in, frequency_offset):
 
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR)
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
     
     static.INFO.append("PING;RECEIVING")
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
@@ -816,7 +817,7 @@ def received_ping_ack(data_in):
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXGRID = bytes(data_in[3:9]).rstrip(b'\x00')
        
-    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR)
+    helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
     
     static.INFO.append("PING;RECEIVEDACK")
     logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]["+ str(static.DXGRID, 'utf-8') +"] [SNR:" + str(static.SNR) + "]")
@@ -848,7 +849,7 @@ def received_cq(data_in):
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     static.INFO.append("CQ;RECEIVING")
     logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
-    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR)
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
 
 def arq_reset_ack(state):

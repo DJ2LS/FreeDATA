@@ -235,6 +235,11 @@ class RF():
         
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(freedv_signalling_mode)
+        
+        self.c_lib.freedv_set_clip(freedv, 1)
+        self.c_lib.freedv_set_tx_bpf(freedv, 1)
+        
+        
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_per_frame = bytes_per_frame - 2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
@@ -276,9 +281,9 @@ class RF():
         for i in range(1, count):
             self.streambuffer += bytes(converted_audio[0])
 
-
         while self.ptt_and_wait(True):
             pass
+               
             
         # start writing audio data to audio stream    
         self.audio_writing_to_stream = True
@@ -315,6 +320,9 @@ class RF():
         self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
         freedv = self.c_lib.freedv_open(mode)
 
+        self.c_lib.freedv_set_clip(freedv, 1)
+        self.c_lib.freedv_set_tx_bpf(freedv, 1)
+                
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
         #get n_tx_modem_samples which defines the size of the modulation object
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)
@@ -322,8 +330,7 @@ class RF():
         n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_per_frame = bytes_per_frame - 2
-        
-        
+                
         mod_out = ctypes.c_short * n_tx_modem_samples
         mod_out = mod_out()
 
@@ -399,12 +406,6 @@ class RF():
         datac0_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
         datac0_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac0_freedv)
 
-        self.c_lib.freedv_set_clip(datac0_freedv, 1);
-        self.c_lib.freedv_set_tx_bpf(datac0_freedv, 1);
-        #freedv_set_tx_amp(datac0_freedv, amp);
-
-
-
         # bytes_per_frame
         datac0_bytes_out = (ctypes.c_ubyte * datac0_bytes_per_frame)
         datac0_bytes_out = datac0_bytes_out()  # get pointer from bytes_out
@@ -477,7 +478,7 @@ class RF():
             datac3_nin = self.c_lib.freedv_nin(datac3_freedv) * 2
 
             # refill buffer only if every mode has worked with its data
-            if (len(datac0_buffer) < (datac0_nin*2)) and (len(datac1_buffer) < (datac1_nin*2)) and (len(datac3_buffer) < (datac3_nin*2)):
+            if (len(datac0_buffer) < (datac0_nin)) and (len(datac1_buffer) < (datac1_nin)) and (len(datac3_buffer) < (datac3_nin)):
                 datac0_buffer += data_in
                 datac1_buffer += data_in
                 datac3_buffer += data_in
@@ -561,6 +562,9 @@ class RF():
 
             #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
 
+            #frequency_offset = self.get_frequency_offset(freedv)
+            #print("Freq-Offset: " + str(frequency_offset))
+            
             if 50 >= frametype >= 10:
                 # force, if we don't simulate a loss of the third frame
                 force = True
@@ -603,7 +607,7 @@ class RF():
             elif frametype == 210:
                 logging.debug("PING RECEIVED....")
                 frequency_offset = self.get_frequency_offset(freedv)
-                print("Freq-Offset: " + str(frequency_offset))
+                #print("Freq-Offset: " + str(frequency_offset))
                 data_handler.received_ping(bytes_out[:-2], frequency_offset)
                 
 
@@ -611,10 +615,10 @@ class RF():
             elif frametype == 211:
                 logging.debug("PING ACK RECEIVED....")
                 # early detection of frequency offset
-                frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
-                print("Freq-Offset: " + str(frequency_offset))
-                current_frequency = self.my_rig.get_freq()
-                corrected_frequency = current_frequency + frequency_offset
+                #frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
+                #print("Freq-Offset: " + str(frequency_offset))
+                #current_frequency = self.my_rig.get_freq()
+                #corrected_frequency = current_frequency + frequency_offset
                 # temporarely disabled this feature, beacuse it may cause some confusion.
                 # we also have problems if we are operating at band bordes like 7.000Mhz
                 # If we get a corrected frequency less 7.000 Mhz, Ham Radio devices will not transmit...
@@ -660,6 +664,7 @@ class RF():
         self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
+        static.FREQ_OFFSET = offset
         return offset
         
         

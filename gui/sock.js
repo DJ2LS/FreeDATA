@@ -215,10 +215,10 @@ exports.getDataState = function() {
 }
 
 //Get Heard Stations
-exports.getHeardStations = function() {
-    command = '{"type" : "GET", "command" : "HEARD_STATIONS", "timestamp" : ' + Date.now() + '}';
-    writeTncCommand(command)
-}
+//exports.getHeardStations = function() {
+//    command = '{"type" : "GET", "command" : "HEARD_STATIONS", "timestamp" : ' + Date.now() + '}';
+//    writeTncCommand(command)
+//}
 
 // Send Ping
 exports.sendPing = function(dxcallsign) {

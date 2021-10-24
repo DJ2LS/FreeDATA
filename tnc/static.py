@@ -49,6 +49,7 @@ HAMLIB_BANDWITH = 0
 
 BER = 0
 SNR = 0
+FREQ_OFFSET = 0
 SCATTER = []
 # ---------------------------------
 

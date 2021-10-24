@@ -53,20 +53,20 @@ def get_crc_16(data):
 
 
 
-def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr):
+def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr])
+        static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
     # if not, we search and update
     else:
         for i in range(0, len(static.HEARD_STATIONS)):
             # update callsign with new timestamp
             if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [dxcallsign, dxgrid, int(time.time()), datatype, snr]
+                static.HEARD_STATIONS[i] = [dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency]
                 break
             # insert if nothing found
             if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr])
+                static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
                 break
 
 

@@ -646,6 +646,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         timestampText.innerText = datetime
         timestamp.appendChild(timestampText);
 
+        var frequency = document.createElement("td");
+        var frequencyText = document.createElement('span');
+        frequencyText.innerText = arg.stations[i]['FREQUENCY']
+        frequency.appendChild(frequencyText);
+        
+        
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
@@ -696,12 +702,19 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         snrText.innerText = arg.stations[i]['SNR']
         snr.appendChild(snrText);
 
+        var offset = document.createElement("td");
+        var offsetText = document.createElement('span');
+        offsetText.innerText = arg.stations[i]['OFFSET']
+        offset.appendChild(offsetText);
+
         row.appendChild(timestamp);
+        row.appendChild(frequency);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
         row.appendChild(gridDistance);
         row.appendChild(dataType);
         row.appendChild(snr);
+        row.appendChild(offset);
 
         tbl.appendChild(row);
     }
