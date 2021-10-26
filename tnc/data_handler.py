@@ -495,7 +495,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
                         RPT_REQUEST_BUFFER = []
                         TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
 
-                if static.ARQ_RX_RPT_TIMEOUT and not BURST_ACK_RECEIVED:
+                if time.time() > rpttimeout and not BURST_ACK_RECEIVED:
                     logging.error("ARQ | Burst lost....")
                     arq_reset_ack(False)
                     RPT_REQUEST_BUFFER = []
