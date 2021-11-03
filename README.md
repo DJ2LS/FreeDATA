@@ -12,7 +12,7 @@ FreeDV Codec 2 : https://github.com/drowe67/codec2
 xssfox : https://github.com/xssfox/freedv-tnc
 * Wolfgang, for lending me his radio so I'm able to do real hf tests
 
-## Running the app bundle
+## Running the Ubuntu app bundle
 Just download the latest developer release from the releases section, unpack it and just start the ".AppImage file". No more dependencies
 
 ## Manual Installation Ubuntu
@@ -30,6 +30,7 @@ npm cache clean -f
 sudo npm install -g n
 sudo n stable
 sudo apt install python3
+sudo apt install python3-hamlib 
 sudo apt install portaudio19-dev
 sudo apt install python3-pyaudio
 sudo apt install python3-pip
@@ -55,10 +56,9 @@ make
 ```
 
 ### 2. starting tnc
-You need to set the "--debug" option. Otherwise daemon.py is looking for precompiled binaries which causes an error
 ```
 cd /home/[user]/FreeDATA/tnc
-python3 daemon.py --debug
+python3 daemon.py
 ```
 A successfull start looks like this. 
 ```
