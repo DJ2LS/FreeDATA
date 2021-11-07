@@ -21,24 +21,14 @@ Just download the latest developer release from the releases section, unpack it 
 sudo adduser $USER dialout
 logout / login
 ```
-
 ### 1. Install dependencies, codec2 and FreeDATA
 ```
-sudo apt install git build-essential cmake
-sudo apt install npm
+sudo apt install git build-essential cmake npm
 npm cache clean -f
 sudo npm install -g n
 sudo n stable
-sudo apt install python3
-sudo apt install python3-hamlib 
-sudo apt install portaudio19-dev
-sudo apt install python3-pyaudio
-sudo apt install python3-pip
-pip3 install psutil
-pip3 install crcengine
-pip3 install ujson
-pip3 install pyserial
-pip3 install numpy
+sudo apt install python3 python3-hamlib portaudio19-dev python3-pyaudio python3-pip
+pip3 install psutil crcengine ujson pyserial numpy
 
 git clone https://github.com/DJ2LS/FreeDATA.git
 cd FreeDATA/gui
@@ -57,41 +47,45 @@ make
 
 ### 2. starting tnc
 ```
-cd /home/[user]/FreeDATA/tnc
+cd /home/$USER/FreeDATA/tnc
 python3 daemon.py
 ```
 A successfull start looks like this. 
 ```
-SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: 3001
-```
-As soon as you're connected the gui, it could look like below. If you're getting a bunch of errors from ALSA lib like below - this should't affect usability 
-```
+running Hamlib from internal library
+running Hamlib Version - Hamlib 4.4~git - from precompiled bundle
 SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: 3001
 Client connected...
-ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.rear
-ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.center_lfe
-ALSA lib pcm.c:2660:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
-...<snip>...
+
 ```
 
 
 ### 3. starting gui
-There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source
+There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source and should occur if you're using the app bundle.
 
-The gui is creating a directory "FreeDATA" for saving settings in /home/[user]/.config/
+The gui is creating a directory "FreeDATA" for saving settings in /home/$USER/.config/
 ```
-cd /home/[user]/FreeDATA/gui
+cd /home/$USER/FreeDATA/gui
 npx electron main.js
 ```
-If you start the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. If you want to connect to a daemon which is running on another host, just select it via "remote TNC" and enter the ip address.
-![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/codec2-FreeDATA-start-disconnected.png "TNC disconnected")
-
-As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III for example.
-![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/codec2-FreeDATA-start-connected.png "TNC connected")
+If you're starting the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. 
+![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-no-daemon-connection.png "TNC disconnected")
 
 
 
-# ----------------------------------------------------------------
+If you want to connect to a daemon which is running on another host, just select it via the ethernet icon and enter the ip address.
+![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-connect-to-remote-daemon.png "TNC disconnected")
+
+
+As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III or the radio itself.
+You can also set advanced hamlib settings or test them. Your settings will be saved, as soon as you start the tnc.
+![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-settings.png "TNC connected")
+
+If you set your radio settings correctly, you can start the TNC. The settings dialog will be hidden and you can control the TNC now.
+![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-tnc-running.png "TNC connected")
+
+
+# --------------------------
 ## Manual Installation macOS
 ### Install brew and python3
 #### https://docs.python-guide.org/starting/install3/osx/
@@ -99,14 +93,10 @@ As soon as the gui is able to connect to the daemon, the main window will be get
 ```
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 brew install python
-pip3 install psutil
-pip3 install crcengine
-pip3 install ujson
-pip3 install pyserial
-pip3 install numpy
+pip3 install psutil crcengine ujson pyserial numpy
 
 ```
-### Install dependencies
+### Install protaudio dependencies
 ```
 xcode-select --install
 brew remove portaudio
@@ -121,11 +111,7 @@ Download Python from https://www.python.org/downloads/
 Add Python to systempath https://www.educative.io/edpresso/how-to-add-python-to-path-variable-in-windows
 Download and install pyaudio from https://www.lfd.uci.edu/~gohlke/pythonlibs/#pyaudio
 eg.: pip install PyAudio-0.2.11-cp37-cp37m-win_amd64.whl
-pip install psutil
-pip install crcengine
-pip install ujson
-pip install pyserial
-pip install numpy
+pip3 install psutil crcengine ujson pyserial numpy
 python daemon.py
 
 ```
