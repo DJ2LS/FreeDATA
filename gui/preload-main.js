@@ -36,8 +36,22 @@ updateFFT = function(fft) {
 setInterval(updateFFT, 250)
 */
 
+
+
+
+
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
+
+/*
+    // ENABLE BOOTSTRAP POPOVERS EVERYWHERE
+    // https://getbootstrap.com/docs/5.0/components/popovers/#example-enable-popovers-everywhere
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+    var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl)
+    })
+*/
+
     // LOAD SETTINGS
     document.getElementById("tnc_adress").value = config.tnc_host
     document.getElementById("tnc_port").value = config.tnc_port
@@ -90,6 +104,10 @@ window.addEventListener('DOMContentLoaded', () => {
         "waterfall", {
             spectrumPercent: 0
         });
+
+
+
+
 
     // SETUP OF SCATTER DIAGRAM
 /*
@@ -270,7 +288,23 @@ advancedHamlibSettingsModal
         
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
+
+        // collapse settings screen
+        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
+        collapseFirstRow.hide()
+        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
+        collapseSecondRow.show()
+        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
+        collapseThirdRow.show() 
+        
+        
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake)
+        
+                
+
+
+
+
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
         }, 3000);
@@ -282,25 +316,34 @@ advancedHamlibSettingsModal
     // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
         daemon.stopTNC()
+        
+                
+        // collapse settings screen
+        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
+        collapseFirstRow.show()
+        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
+        collapseSecondRow.hide()
+        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
+        collapseThirdRow.hide() 
+        
     })
-
+    
+    
     // openDataModule button clicked
-    document.getElementById("openDataModule").addEventListener("click", () => {
-        if (document.getElementById("transmitFileSidebar").style.width == "40%") {
-            document.getElementById("transmitFileSidebar").style.width = "0px";
-        } else {
-            document.getElementById("transmitFileSidebar").style.width = "40%";
-        }
-    })
+    // not necessesary at this time beacuse bootstrap handles this 
+    // document.getElementById("openDataModule").addEventListener("click", () => {
+    //   var transmitFileSidebar = document.getElementById('transmitFileSidebar')
+    //   var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
+    //   bstransmitFileSidebar.show()    
+    //})
 
     // openReceivedFiles button clicked
-    document.getElementById("openReceivedFiles").addEventListener("click", () => {
-        if (document.getElementById("receivedFilesSidebar").style.width == "40%") {
-            document.getElementById("receivedFilesSidebar").style.width = "0px";
-        } else {
-            document.getElementById("receivedFilesSidebar").style.width = "40%";
-        }
-    })
+    // not necessesary at this time beacuse bootstrap handles this 
+    //document.getElementById("openReceivedFiles").addEventListener("click", () => {
+    //   var transmitFileSidebar = document.getElementById('transmitFileSidebar')
+    //   var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
+    //   bstransmitFileSidebar.show()    
+    //})
 
 
     // TEST HAMLIB
@@ -349,7 +392,13 @@ advancedHamlibSettingsModal
 
     // START TRANSMISSION
     document.getElementById("startTransmission").addEventListener("click", () => {
-        document.getElementById("transmitFileSidebar").style.width = "0px";
+        //document.getElementById("transmitFileSidebar").style.width = "0px";
+        /* not neccessary at this time because handled by bootstap inside html
+            var transmitFileSidebar = document.getElementById('transmitFileSidebar')
+            var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
+            bstransmitFileSidebar.show()   
+        */
+    
         var fileList = document.getElementById("dataModalFile").files;
 
         var reader = new FileReader();
@@ -403,13 +452,17 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
+    // deactivated this feature, beacuse its useless at this time. maybe it is getting more interesting, if we are working via network
+    // but for this we need to find a nice place for this on the screen
+    /*
     if (typeof(arg.toe) == 'undefined') {
         var toe = 0
     } else {
         var toe = arg.toe
     }
     document.getElementById("toe").innerHTML = toe + ' ms'
-
+    */
+    
     // DATA STATE
     global.rxBufferLengthTnc = arg.rx_buffer_length
 
@@ -835,7 +888,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 });
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
-
+    /*
+    // deactivetd RAM und CPU view so we dont get errors. We need to find a new place for this feature
     // RAM
     document.getElementById("progressbar_ram").setAttribute("aria-valuenow", arg.ram_usage)
     document.getElementById("progressbar_ram").setAttribute("style", "width:" + arg.ram_usage + "%;")
@@ -845,7 +899,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu").setAttribute("aria-valuenow", arg.cpu_usage)
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
-
+    */
     // UPDATE AUDIO INPUT
     if (arg.tnc_running_state == "stopped") {
         if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
@@ -909,7 +963,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     
     
     // TNC RUNNING STATE
-    document.getElementById("tnc_running_state").innerHTML = arg.tnc_running_state;
+    //document.getElementById("tnc_running_state").innerHTML = arg.tnc_running_state;
     if (arg.tnc_running_state == "running") {
         document.getElementById('hamlib_deviceid').disabled = true
         document.getElementById('hamlib_deviceport').disabled = true
@@ -928,8 +982,15 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById("hamlib_serialspeed").disabled = true
         //document.getElementById("startTransmission").disabled = false
         document.getElementById("openDataModule").disabled = false
-        
 
+        // collapse settings screen
+        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
+        collapseFirstRow.hide()
+        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
+        collapseSecondRow.show()
+        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
+        collapseThirdRow.show()     
+        
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
         document.getElementById('hamlib_deviceport').disabled = false
@@ -948,6 +1009,15 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         document.getElementById("hamlib_serialspeed").disabled = false
         //document.getElementById("startTransmission").disabled = true
         document.getElementById("openDataModule").disabled = true
+        
+        // collapse settings screen
+        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
+        collapseFirstRow.show()
+        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
+        collapseSecondRow.hide()
+        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
+        collapseThirdRow.hide()      
+
     }
 
 });

@@ -1,37 +1,17 @@
-         /**  
-         * disable scrolling in main window
-         */ 
-         body { 
-         padding-right: 0px !important;
-         overflow-y: hidden !important;
-         }
-         /**
-         * Progress bars with centered text
-         */
-         .progress {
-         position: relative;
-         }
-         .progress span {
-         position: absolute;
-         display: block;
-         width: 100%;
-         color: black;
-         }
+/* disable scrolling in main window */ 
+body { 
+    padding-right: 0px !important;
+    overflow-y: hidden !important;
+}
 
+/*Progress bars with centered text*/
+.progress {
+    position: relative;
+}
 
-
-/* The sidebar menu */
-/* https://www.w3schools.com/howto/howto_js_collapse_sidebar.asp*/
-.sidebar {
-  height: 100%; /* 100% Full-height */
-  width: 0; /* 0 width - change this with JavaScript */
-  position: fixed; /* Stay in place */
-  z-index: 100; /* Stay on top */
-  top: 0;
-  /*left: 1220px;*/
-  right: 0;
-  background-color: #fff; /* White*/
-  overflow-x: hidden; /* Disable horizontal scroll */
-  padding-top: 60px; /* Place content 60px from the top */
-  transition: 0.5s; /* 0.5 second transition effect to slide in the sidebar */
+.progress span {
+    position: absolute;
+    display: block;
+    width: 100%;
+    color: black;
 }

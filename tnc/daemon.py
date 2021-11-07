@@ -17,24 +17,53 @@ import subprocess
 import ujson as json
 import psutil
 import serial.tools.list_ports
-import pyaudio
 import static
 import crcengine
 
+
+
+####################################################
+# https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
+# https://github.com/DJ2LS/FreeDATA/issues/22
+# we need to have a look at this if we want to run this on Windows and MacOS !
+# Currently it seems, this is a Linux-only problem
+
+from ctypes import *
+from contextlib import contextmanager
+import pyaudio
+
+ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+
+def py_error_handler(filename, line, function, err, fmt):
+    pass
+
+c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+
+@contextmanager
+def noalsaerr():
+    asound = cdll.LoadLibrary('libasound.so')
+    asound.snd_lib_error_set_handler(c_error_handler)
+    yield
+    asound.snd_lib_error_set_handler(None)
+    
+# with noalsaerr():
+#   p = pyaudio.PyAudio()
+######################################################    
+    
+    
 # sys.path.append("hamlib/linux")
 try:
-    import Hamlib
-    print("running Hamlib {0} from Sys Path".format(Hamlib.cvar.hamlib_version))
+    from hamlib.linux import Hamlib
+    print("running Hamlib Version - {0} - from precompiled bundle".format(Hamlib.cvar.hamlib_version))
 
 except ImportError:
-    from hamlib.linux import Hamlib
-    print("running Hamlib {0} from precompiled bundle".format(Hamlib.cvar.hamlib_version))
+    import Hamlib
+    print("running Hamlib Version - {0} - from Sys Path".format(Hamlib.cvar.hamlib_version))
 
 else:
     # place for rigctld
     pass
-    
-    
+        
     
 crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
 
@@ -153,7 +182,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         p = subprocess.Popen(command)
                         print("running TNC from binary...")
                     except Exception as e:
-                        print(e)
                         command = []
                         command.append('python3')
                         command.append('main.py')
@@ -180,8 +208,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     else:
                         data["DAEMON_STATE"].append({"STATUS": "stopped"})
 
-                        # UPDATE LIST OF AUDIO DEVICES
-                        p = pyaudio.PyAudio()
+                        # UPDATE LIST OF AUDIO DEVICES                        
+                        with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+                            p = pyaudio.PyAudio()
                         for i in range(0, p.get_device_count()):
 
                             maxInputChannels = p.get_device_info_by_host_api_device_index(
@@ -231,17 +260,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     data_bits = str(received_json["parameter"][0]["data_bits"])
                     stop_bits = str(received_json["parameter"][0]["stop_bits"])
                     handshake = str(received_json["parameter"][0]["handshake"])
-                  
-                    
-                    print(deviceid)
-                    print(deviceport)
-                    print(serialspeed)
-                    print(pttprotocol)
-                    print(pttport)
-                    print(pttspeed)
-                    print(data_bits)
-                    print(stop_bits)
-                    print(handshake)
                     
                     # try to init hamlib
                     try:
@@ -310,10 +328,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         print("can't open rig")
                         #sys.exit("hamlib error")
 
-
-
-
-
             # exception, if JSON cant be decoded
             # except Exception as e:
             except ValueError as e:
@@ -327,6 +341,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 print(exc_type, fname, exc_tb.tb_lineno)
                 print("############ END OF ERROR #######################")
 
+            # exception for any other errors
+            # in case of index error for example which is caused by a hard network interruption
+            except:
+                print("other network error...")
+                
         print("Client disconnected...")
 
 

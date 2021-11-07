@@ -16,20 +16,47 @@ import time
 import threading
 import atexit
 import numpy as np
-import pyaudio
 import helpers
 import static
 import data_handler
 
+####################################################
+# https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
+# https://github.com/DJ2LS/FreeDATA/issues/22
+# we need to have a look at this if we want to run this on Windows and MacOS !
+# Currently it seems, this is a Linux-only problem
 
+from ctypes import *
+from contextlib import contextmanager
+import pyaudio
+
+ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+
+def py_error_handler(filename, line, function, err, fmt):
+    pass
+
+c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+
+@contextmanager
+def noalsaerr():
+    asound = cdll.LoadLibrary('libasound.so')
+    asound.snd_lib_error_set_handler(c_error_handler)
+    yield
+    asound.snd_lib_error_set_handler(None)
+    
+# with noalsaerr():
+#   p = pyaudio.PyAudio()
+######################################################
 
 # sys.path.append("hamlib/linux")
 try:
-    import Hamlib
-    print("running Hamlib from Sys Path")
-except ImportError:
     from hamlib.linux import Hamlib
-    print("running Hamlib from precompiled bundle")
+    print("running Hamlib Version - {0} - from precompiled bundle".format(Hamlib.cvar.hamlib_version))
+
+except ImportError:
+    import Hamlib
+    print("running Hamlib Version - {0} - from Sys Path".format(Hamlib.cvar.hamlib_version))
+    
 else:
     # place for rigctld
     pass
@@ -79,12 +106,14 @@ class RF():
             print("running libcodec from INTERNAL library")
         except:
             # if we cant load libcodec from root, we check for subdirectory
-            # this is, if we want to run it without beeing build in a dev environment
+            # this happens, if we want to run it beeing build in a dev environment
             libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
             self.c_lib = ctypes.CDLL(libname)
             print("running libcodec from EXTERNAL library")
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
-        self.p = pyaudio.PyAudio()
+        
+        with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+            self.p = pyaudio.PyAudio()
         atexit.register(self.p.terminate)
         # --------------------------------------------OPEN AUDIO CHANNEL RX
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
@@ -174,8 +203,7 @@ class RF():
             self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
 
             # start thread for getting hamlib data
-            HAMLIB_THREAD = threading.Thread(
-                target=self.get_radio_stats, name="HAMLIB_THREAD")
+            HAMLIB_THREAD = threading.Thread(target=self.get_radio_stats, name="HAMLIB_THREAD")
             HAMLIB_THREAD.start()
 
         except:
@@ -487,7 +515,6 @@ class RF():
             if len(self.fft_data) < 1024:
                 self.fft_data += data_in
 
-
             # DECODING DATAC0
             if len(datac0_buffer) >= (datac0_nin):
 
@@ -755,8 +782,8 @@ class RF():
 
                     # send fft only if receiving
                     if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-                        #static.FFT = dfftlist[10:200]
-                        static.FFT = dfftlist
+                        static.FFT = dfftlist[10:180] #200 --> bandwith 3000
+                        #static.FFT = dfftlist
                         
                         
 
