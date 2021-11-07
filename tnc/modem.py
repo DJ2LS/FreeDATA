@@ -144,8 +144,8 @@ class RF():
         DECODER_THREAD = threading.Thread(target=self.receive, name="DECODER_THREAD")
         DECODER_THREAD.start()
 
-        PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="PLAYBACK_THREAD")
-        PLAYBACK_THREAD.start()
+        #PLAYBACK_THREAD = threading.Thread(target=self.play_audio, name="PLAYBACK_THREAD")
+        #PLAYBACK_THREAD.start()
 
         self.fft_data = bytes()
         FFT_THREAD = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
@@ -241,24 +241,7 @@ class RF():
 
         return False
 
-    def play_audio(self):
-
-        while True:
-            time.sleep(0.01)
-
-            # while len(self.streambuffer) > 0:
-            #    time.sleep(0.01)
-            if len(self.streambuffer) > 0 and self.audio_writing_to_stream:
-                self.streambuffer = bytes(self.streambuffer)
-
-                # we need t wait a little bit until the buffer is filled. If we are not waiting, we are sending empty data
-                time.sleep(0.1)
-                self.stream_tx.write(self.streambuffer)
-                # clear stream buffer after sending
-                self.streambuffer = bytes()
-
-            self.audio_writing_to_stream = False
-# --------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------------------------------------
 
     def transmit_signalling(self, data_out, count):
         state_before_transmit = static.CHANNEL_STATE
@@ -316,17 +299,16 @@ class RF():
 
         while self.ptt_and_wait(True):
             pass
-               
+        
+        # set channel state   
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
             
-        # start writing audio data to audio stream    
-        self.audio_writing_to_stream = True
-
-        # wait until audio has been processed
-        while self.audio_writing_to_stream:
-            time.sleep(0.01)
-            static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-
+        # start writing audio data to audio stream  
+        self.stream_tx.write(self.streambuffer)
+        
+        # set ptt back to false
         self.ptt_and_wait(False)
+        
         
         # we have a problem with the receiving state
         ##static.CHANNEL_STATE = state_before_transmit
@@ -406,16 +388,13 @@ class RF():
 
         while self.ptt_and_wait(True):
             pass
-        # this triggers writing buffer to audio stream
-        # this way we are able to run this non blocking
-        # this needs to be optimized!
-        self.audio_writing_to_stream = True
 
-        # wait until audio has been processed
-        while self.audio_writing_to_stream:
-            time.sleep(0.01)
-            static.CHANNEL_STATE = 'SENDING_DATA'
-
+        # set channel state
+        static.CHANNEL_STATE = 'SENDING_DATA'
+        
+        # write audio to stream
+        self.stream_tx.write(self.streambuffer)
+        
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
         self.ptt_and_wait(False)
@@ -499,11 +478,9 @@ class RF():
 
             data_in = bytes()
             data_in = self.stream_rx.read(self.AUDIO_CHUNKS,  exception_on_overflow=False)
-            #self.fft_data = data_in
+
             data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
             data_in = data_in[0]  # .rstrip(b'\x00')
-            #self.fft_data = data_in
-
 
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
@@ -512,6 +489,7 @@ class RF():
 
             # refill buffer only if every mode has worked with its data
             if (len(datac0_buffer) < (datac0_nin)) and (len(datac1_buffer) < (datac1_nin)) and (len(datac3_buffer) < (datac3_nin)):
+                
                 datac0_buffer += data_in
                 datac1_buffer += data_in
                 datac3_buffer += data_in
@@ -525,32 +503,40 @@ class RF():
 
                 datac0_audio = datac0_buffer[:datac0_nin]
                 datac0_buffer = datac0_buffer[datac0_nin:]
-                # print(len(datac0_audio))
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac0_bytes_out, datac0_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_audio)  # demodulate audio
                 sync = self.c_lib.freedv_get_rx_status(datac0_freedv)
                 self.get_scatter(datac0_freedv)
                 
                 if sync != 0 and nbytes != 0:
-
+                    # clear all buffers for be ready with clean audio data
+                    # we need to be carefull and only cleaning buffer if we reached the last frame of a burst
+                    datac0_buffer = bytes()
+                    datac1_buffer = bytes()
+                    datac3_buffer = bytes()
+                                            
                     # calculate snr and scatter
                     self.get_scatter(datac0_freedv)
                     self.calculate_snr(datac0_freedv)
                     
                     datac0_task = threading.Thread(target=self.process_data, args=[datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame])
-                    #datac0_task.start()
-                    self.process_data(datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame)
+                    datac0_task.start()
+
 
             # DECODING DATAC1
             if len(datac1_buffer) >= (datac1_nin):
                 datac1_audio = datac1_buffer[:datac1_nin]
                 datac1_buffer = datac1_buffer[datac1_nin:]
-                # print(len(datac1_audio))
                 self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac1_bytes_out, datac1_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_audio)  # demodulate audio
 
                 sync = self.c_lib.freedv_get_rx_status(datac1_freedv)
                 if sync != 0 and nbytes != 0:
+                    
+                    frame = int.from_bytes(bytes(datac1_bytes_out[:1]), "big") - 10
+                    n_frames_per_burst = int.from_bytes(bytes(datac1_bytes_out[1:2]), "big")
+                    print("frame: {0}, N_frames_per_burst: {1}".format(frame, n_frames_per_burst))
+
 
                     # calculate snr and scatter
                     self.get_scatter(datac1_freedv)
@@ -558,8 +544,7 @@ class RF():
 
                     datac1_task = threading.Thread(target=self.process_data, args=[datac1_bytes_out, datac1_freedv, datac1_bytes_per_frame])
                     datac1_task.start()
-                    #print(bytes(datac1_bytes_out))
-                    #self.process_data(datac1_bytes_out, datac1_freedv, datac1_bytes_per_frame)
+
 
             # DECODING DATAC3
             if len(datac3_buffer) >= (datac3_nin):
@@ -572,20 +557,20 @@ class RF():
                 if sync != 0 and nbytes != 0:
 
                     # calculate snr and scatter
-                    #self.get_scatter(datac3_freedv)
+                    self.get_scatter(datac3_freedv)
                     self.calculate_snr(datac3_freedv)
 
                     datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac3_freedv, datac3_bytes_per_frame])
                     datac3_task.start()
 
-                # forward data only if broadcast or we are the receiver
-                # bytes_out[1:2] == callsign check for signalling frames, bytes_out[6:7] == callsign check for data frames, bytes_out[1:2] == b'\x01' --> broadcasts like CQ
-                # we could also create an own function, which returns True. In this case we could add callsign blacklists, whitelists and so on
-
+    # forward data only if broadcast or we are the receiver
+    # bytes_out[1:2] == callsign check for signalling frames, 
+    # bytes_out[6:7] == callsign check for data frames, 
+    # bytes_out[1:2] == b'\x01' --> broadcasts like CQ
+    # we could also create an own function, which returns True. 
     def process_data(self, bytes_out, freedv, bytes_per_frame):
 
         if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
-
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -775,9 +760,7 @@ class RF():
 
                 try:
                     fftarray = np.fft.rfft(audio_data)
-                    
 
-                    
                     # set value 0 to 1 to avoid division by zero
                     fftarray[fftarray == 0] = 1
                     dfft = 10.*np.log10(abs(fftarray))
@@ -790,9 +773,6 @@ class RF():
                         static.FFT = dfftlist[10:180] #200 --> bandwith 3000
                         #static.FFT = dfftlist
                         
-                        
-
-
                 except:
                     print("setting fft = 0")
                     # else 0

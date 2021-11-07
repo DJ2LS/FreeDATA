@@ -78,6 +78,7 @@ def arq_data_received(data_in, bytes_per_frame):
     static.ARQ_STATE = 'DATA'
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
         
+    # get some important data from the frame
     RX_N_FRAME_OF_BURST         = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
     RX_N_FRAMES_PER_BURST       = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
     RX_N_FRAME_OF_DATA_FRAME    = int.from_bytes(bytes(data_in[2:4]), "big")  # get current number of total frames
@@ -324,7 +325,8 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     TX_N_FRAMES_PER_BURST           = n_frames_per_burst    # amount of n frames per burst    
     TX_BUFFER = []  # our buffer for appending new data
     
-    BURST_ACK_TIMEOUT_SECONDS       =   7.0         # timeout for burst  acknowledges
+    # TIMEOUTS
+    BURST_ACK_TIMEOUT_SECONDS       =   3.0         # timeout for burst  acknowledges
     DATA_FRAME_ACK_TIMEOUT_SECONDS  =   10.0        # timeout for data frame acknowledges
     RPT_ACK_TIMEOUT_SECONDS         =   10.0        # timeout for rpt frame acknowledges
 
