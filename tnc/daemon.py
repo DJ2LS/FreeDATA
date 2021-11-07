@@ -28,7 +28,7 @@ try:
 
 except ImportError:
     from hamlib.linux import Hamlib
-    print("running Hamlib {0} from precompiled bundle".format(Hamlib.cvar.hamlib_version)))
+    print("running Hamlib {0} from precompiled bundle".format(Hamlib.cvar.hamlib_version))
 
 else:
     # place for rigctld
