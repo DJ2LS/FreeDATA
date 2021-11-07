@@ -24,10 +24,12 @@ import crcengine
 # sys.path.append("hamlib/linux")
 try:
     import Hamlib
-    print("running Hamlib from Sys Path")
+    print("running Hamlib {0} from Sys Path".format(Hamlib.cvar.hamlib_version))
+
 except ImportError:
     from hamlib.linux import Hamlib
-    print("running Hamlib from precompiled bundle")
+    print("running Hamlib {0} from precompiled bundle".format(Hamlib.cvar.hamlib_version)))
+
 else:
     # place for rigctld
     pass
