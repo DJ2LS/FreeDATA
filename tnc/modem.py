@@ -111,8 +111,13 @@ class RF():
             self.c_lib = ctypes.CDLL(libname)
             print("running libcodec from EXTERNAL library")
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
-        
-        with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+        try:
+        # we need to "try" this, because sometimes libasound.so isn't in the default place                   
+            # try to supress error messages
+            with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+                self.p = pyaudio.PyAudio()
+        # else do it the default way
+        except:
             self.p = pyaudio.PyAudio()
         atexit.register(self.p.terminate)
         # --------------------------------------------OPEN AUDIO CHANNEL RX

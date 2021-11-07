@@ -208,9 +208,16 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     else:
                         data["DAEMON_STATE"].append({"STATUS": "stopped"})
 
-                        # UPDATE LIST OF AUDIO DEVICES                        
-                        with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
-                            p = pyaudio.PyAudio()
+                        # UPDATE LIST OF AUDIO DEVICES    
+                        try:
+                        # we need to "try" this, because sometimes libasound.so isn't in the default place                   
+                            # try to supress error messages
+                            with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+                                p = pyaudio.PyAudio()
+                        # else do it the default way
+                        except:
+                            p = pyaudio.Pyaudio()
+                                    
                         for i in range(0, p.get_device_count()):
 
                             maxInputChannels = p.get_device_info_by_host_api_device_index(
