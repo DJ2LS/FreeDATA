@@ -58,7 +58,7 @@ def noalsaerr():
     
 # sys.path.append("hamlib/linux")
 try:
-    from hamlib.linux import Hamlib
+    from lib.hamlib.linux import Hamlib
     # https://stackoverflow.com/a/4703409
     hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
     hamlib_version = float(hamlib_version[0])
