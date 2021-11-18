@@ -35,7 +35,10 @@ cd FreeDATA/gui
 npm i
 cd ..
 cd tnc
-
+```
+If you want to use the latest version of codec2, just download and compile it.
+The tnc will detect, if a self compiled version is used. Otherwise a precompiled binary will be used.
+```
 git clone https://github.com/drowe67/codec2.git
 cd codec2
 mkdir build_linux
