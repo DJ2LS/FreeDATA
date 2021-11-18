@@ -115,8 +115,8 @@ class RF():
         try:
             # we check at first for libcodec2 compiled from source
             # this happens, if we want to run it beeing build in a dev environment
-            libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
-            
+            # libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
+            libname = pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0")
             if libname.is_file():
                 self.c_lib = ctypes.CDLL(libname)
                 structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="source")
@@ -125,7 +125,8 @@ class RF():
 
         except:
             # this is the normal behavior. Run codec2 from lib folder
-            libname = pathlib.Path().absolute() / "lib/codec2/linux/libcodec2.so.1.0"
+            #libname = pathlib.Path().absolute() / "lib/codec2/linux/libcodec2.so.1.0"
+            libname = pathlib.Path("lib/codec2/linux/libcodec2.so.1.0")
             if libname.is_file():
                 self.c_lib = ctypes.CDLL(libname)
                 structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="precompiled")
