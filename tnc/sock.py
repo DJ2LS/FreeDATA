@@ -36,6 +36,9 @@ import helpers
 import sys
 import os
 
+import logging, structlog, log_handler
+
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
@@ -44,7 +47,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     def handle(self):
     
-        print("Client connected...")
+        structlog.get_logger("structlog").debug("[TNC] Client connected", ip=self.client_address[0])
 
         # loop through socket buffer until timeout is reached. then close buffer
         socketTimeout = time.time() + 3
@@ -137,6 +140,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 if received_json["type"] == 'ARQ' and received_json["command"] == "stopTransmission":
                     print(" >>> STOPPING TRANSMISSION <<<")
+                    structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
                     static.TNC_STATE = 'IDLE'
                     static.ARQ_STATE = 'IDLE'
 
@@ -149,11 +153,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(b'INVALID CALLSIGN')
                     else:
                         static.MYCALLSIGN = bytes(callsign, encoding)
-                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(
-                            static.MYCALLSIGN)
-                        logging.info("CMD | MYCALLSIGN: " +
-                                     str(static.MYCALLSIGN))
-
+                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+  
+                        structlog.get_logger("structlog").info("[TNC] SET MYCALL", grid=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
+                
                 if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
                     mygrid = received_json["parameter"]
 
@@ -161,7 +164,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(b'INVALID GRID')
                     else:
                         static.MYGRID = bytes(mygrid, encoding)
-                        logging.info("CMD | MYGRID: " + str(static.MYGRID))
+                        structlog.get_logger("structlog").info("[TNC] SET MYGRID", grid=static.MYGRID)
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'STATION_INFO':
                     output = {
@@ -217,12 +220,12 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     try:
                         jsondata = json.dumps(output)
                     except ValueError as e:
-                        print(e)
+                        structlog.get_logger("structlog").error(e, data=jsondata)
 
                     try:
                         self.request.sendall(bytes(jsondata, encoding))
                     except Exception as e:
-                        print(e)
+                        structlog.get_logger("structlog").error(e, data=jsondata)
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'RX_BUFFER':
                     output = {
@@ -271,15 +274,18 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print("############ END OF ERROR #######################")
 
                 print("reset of connection...")
+                structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
                 #socketTimeout = 0
-        print("Client disconnected...")
 
+                structlog.get_logger("structlog").error("[TNC] Network error", e = sys.exc_info()[0])
+        structlog.get_logger("structlog").warning("[TNC] Closing client socket") 
 
+        
+        
 def start_cmd_socket():
 
     try:
-        logging.info(
-            "SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(static.PORT))
+        structlog.get_logger("structlog").info("[TNC] Starting TCP/IP socket", port=static.PORT)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = ThreadedTCPServer(
@@ -289,7 +295,7 @@ def start_cmd_socket():
         server_thread.start()
 
     except:
-        print("Socket error...")
+        structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT)
         e = sys.exc_info()[0]
         print(e)
         exc_type, exc_obj, exc_tb = sys.exc_info()

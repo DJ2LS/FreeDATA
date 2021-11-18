@@ -14,6 +14,13 @@ import static
 import subprocess
 import sys
 
+import logging, structlog, log_handler
+
+
+
+
+
+
 if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
@@ -45,7 +52,8 @@ if __name__ == '__main__':
     
 
     # config logging
-    helpers.setup_logging()
+    #helpers.setup_logging()
+    log_handler.setup_logging("tnc")
 
     # --------------------------------------------START CMD SERVER
 

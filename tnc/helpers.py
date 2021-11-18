@@ -75,6 +75,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
 
+'''
 def setup_logging():
     """
     Author: DJ2LS
@@ -101,3 +102,4 @@ def setup_logging():
 
     logging.addLevelName(25, "\033[1;32m%s\033[1;0m" % "SUCCESS")
     logging.addLevelName(24, "\033[1;34m%s\033[1;0m" % "DATA")
+'''

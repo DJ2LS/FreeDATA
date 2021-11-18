@@ -19,7 +19,12 @@ import psutil
 import serial.tools.list_ports
 import static
 import crcengine
+import re
 
+import logging, structlog, log_handler
+
+log_handler.setup_logging("daemon")
+structlog.get_logger("structlog").info("[DMN] Starting...")
 
 
 ####################################################
@@ -54,12 +59,24 @@ def noalsaerr():
 # sys.path.append("hamlib/linux")
 try:
     from hamlib.linux import Hamlib
-    print("running Hamlib Version - {0} - from precompiled bundle".format(Hamlib.cvar.hamlib_version))
-
+    # https://stackoverflow.com/a/4703409
+    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+    hamlib_version = float(hamlib_version[0])
+    
+    hamlib_path = "lib/hamlib/" + sys.platform    
+    structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version, path=hamlib_path)
 except ImportError:
     import Hamlib
-    print("running Hamlib Version - {0} - from Sys Path".format(Hamlib.cvar.hamlib_version))
 
+    # https://stackoverflow.com/a/4703409
+    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+    hamlib_version = float(hamlib_version[0])
+    
+    min_hamlib_version = 4.1
+    if hamlib_version > min_hamlib_version:
+        structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version, path="system")
+    else:
+        structlog.get_logger("structlog").critical("[DMN] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
 else:
     # place for rigctld
     pass
@@ -71,21 +88,21 @@ crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
 def start_daemon():
 
     try:
-        print("SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: " + str(PORT))
+        structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=PORT)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
-        daemon = socketserver.TCPServer(
-            ('0.0.0.0', PORT), CMDTCPRequestHandler)
+        daemon = socketserver.TCPServer(('0.0.0.0', PORT), CMDTCPRequestHandler)
         daemon.serve_forever()
 
     finally:
+        structlog.get_logger("structlog").warning("[DMN] Closing socket", port=PORT)
         daemon.server_close()
 
 
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
     def handle(self):
-        print("Client connected...")
+        structlog.get_logger("structlog").debug("[DMN] Client connected", ip=self.client_address[0])
 
         # loop through socket buffer until timeout is reached. then close buffer
         socketTimeout = time.time() + 3
@@ -145,8 +162,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     serialspeed = str(received_json["parameter"][0]["serialspeed"])
                     pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
                     pttport = str(received_json["parameter"][0]["pttport"])
-                    print("---- STARTING TNC !")
-                    print(received_json["parameter"][0])
+                    
+                    structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=deviceid, port=deviceport)
+                    #print(received_json["parameter"][0])
 
                     # command = "--rx "+ rx_audio +" \
                     #    --tx "+ tx_audio +" \
@@ -180,21 +198,21 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         command.append('./tnc')
                         command += options
                         p = subprocess.Popen(command)
-                        print("running TNC from binary...")
-                    except Exception as e:
+                        structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
+                    except:
                         command = []
                         command.append('python3')
                         command.append('main.py')
                         command += options
                         p = subprocess.Popen(command)
-                        print("running TNC from source...")
+                        structlog.get_logger("structlog").info("[DMN] TNC started", path="source")
 
                     static.TNCPROCESS = p  # .pid
                     static.TNCSTARTED = True
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':
                     static.TNCPROCESS.kill()
-                    print("KILLING PROCESS ------------")
+                    structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
                     #os.kill(static.TNCPROCESS, signal.SIGKILL)
                     static.TNCSTARTED = False
 
@@ -331,9 +349,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(bytes(jsondata, encoding))
                         
                     except:
-                        print("Unexpected error:", sys.exc_info()[0])
-                        print("can't open rig")
-                        #sys.exit("hamlib error")
+                        structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig")
+                        structlog.get_logger("structlog").error("[DMN] Unexpected error", e = sys.exc_info()[0])
 
             # exception, if JSON cant be decoded
             # except Exception as e:
@@ -351,17 +368,15 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # exception for any other errors
             # in case of index error for example which is caused by a hard network interruption
             except:
-                print("other network error...")
-                
-        print("Client disconnected...")
-
+                structlog.get_logger("structlog").error("[DMN] Network error", e = sys.exc_info()[0])
+        structlog.get_logger("structlog").warning("[DMN] Closing client socket")                
+        
 
 if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
-    PARSER.add_argument('--port', dest="socket_port",
-                        default=3001, help="Socket port", type=int)
+    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)
 
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port

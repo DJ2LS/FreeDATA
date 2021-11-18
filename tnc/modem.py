@@ -11,7 +11,7 @@ from ctypes import *
 import pathlib
 import audioop
 #import asyncio
-import logging
+import logging, structlog, log_handler
 import time
 import threading
 import atexit
@@ -19,6 +19,7 @@ import numpy as np
 import helpers
 import static
 import data_handler
+import re
 
 ####################################################
 # https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
@@ -51,12 +52,24 @@ def noalsaerr():
 # sys.path.append("hamlib/linux")
 try:
     from hamlib.linux import Hamlib
-    print("running Hamlib Version - {0} - from precompiled bundle".format(Hamlib.cvar.hamlib_version))
-
+    # https://stackoverflow.com/a/4703409
+    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+    hamlib_version = float(hamlib_version[0])
+    
+    hamlib_path = "/lib/hamlib/" + sys.platform    
+    structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path=hamlib_path)
 except ImportError:
     import Hamlib
-    print("running Hamlib Version - {0} - from Sys Path".format(Hamlib.cvar.hamlib_version))
+
+    # https://stackoverflow.com/a/4703409
+    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+    hamlib_version = float(hamlib_version[0])
     
+    min_hamlib_version = 4.1
+    if hamlib_version > min_hamlib_version:
+        structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path="system")
+    else:
+        structlog.get_logger("structlog").critical("[TNC] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
 else:
     # place for rigctld
     pass
@@ -100,17 +113,26 @@ class RF():
         
         # -------------------------------------------- LOAD FREEDV
         try:
-            # we check at first for libcodec2 in root - necessary if we want to run it inside a pyinstaller binary
-            libname = pathlib.Path("libcodec2.so.1.0")
-            self.c_lib = ctypes.CDLL(libname)
-            print("running libcodec from INTERNAL library")
-        except:
-            # if we cant load libcodec from root, we check for subdirectory
+            # we check at first for libcodec2 compiled from source
             # this happens, if we want to run it beeing build in a dev environment
             libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so.1.0"
-            self.c_lib = ctypes.CDLL(libname)
-            print("running libcodec from EXTERNAL library")
-        # --------------------------------------------CREATE PYAUDIO  INSTANCE
+            
+            if libname.is_file():
+                self.c_lib = ctypes.CDLL(libname)
+                structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="source")
+            else:
+                raise UnboundLocalError
+
+        except:
+            # this is the normal behavior. Run codec2 from lib folder
+            libname = pathlib.Path().absolute() / "lib/codec2/linux/libcodec2.so.1.0"
+            if libname.is_file():
+                self.c_lib = ctypes.CDLL(libname)
+                structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="precompiled")
+            else:
+                structlog.get_logger("structlog").critical("[TNC] Codec2 not found")
+
+                    # --------------------------------------------CREATE PYAUDIO  INSTANCE
         try:
         # we need to "try" this, because sometimes libasound.so isn't in the default place                   
             # try to supress error messages
@@ -212,8 +234,8 @@ class RF():
             HAMLIB_THREAD.start()
 
         except:
-            print("Unexpected error:", sys.exc_info()[0])
-            print("can't open rig")
+            structlog.get_logger("structlog").error("[TNC] Network error", e=sys.exc_info()[0])
+            structlog.get_logger("structlog").error("[TNC] Hamlib - can't open rig", e=sys.exc_info()[0])
             sys.exit("hamlib error")
 
 
@@ -660,8 +682,7 @@ class RF():
                 data_handler.received_beacon(bytes_out[:-2])
 
             else:
-                logging.info("OTHER FRAME: " + str(bytes_out[:-2]))
-                print(frametype)
+                structlog.get_logger("structlog").warning("[TNC] ARQ - other frame type", frametype=frametype)
 
             # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
             if frame == n_frames_per_burst:
@@ -774,7 +795,8 @@ class RF():
                         #static.FFT = dfftlist
                         
                 except:
-                    print("setting fft = 0")
+                    
+                    structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
                     # else 0
                     static.FFT = [0] * 400
             else:

@@ -7,7 +7,7 @@ Created on Sun Dec 27 20:43:40 2020
 """
 
 
-import logging
+import logging, structlog, log_handler
 import threading
 import time
 from random import randrange
@@ -286,13 +286,12 @@ def arq_data_received(data_in, bytes_per_frame):
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
             
         else:
-            print("ARQ_FRAME_BOF_RECEIVED " + str(RX_FRAME_BOF_RECEIVED))
-            print("ARQ_FRAME_EOF_RECEIVED " + str(RX_FRAME_EOF_RECEIVED))
-            print(static.RX_FRAME_BUFFER)
+
+            structlog.get_logger("structlog").debug("[TNC] ARQ: ", ARQ_FRAME_BOF_RECEIVED=RX_FRAME_BOF_RECEIVED, ARQ_FRAME_EOF_RECEIVED=RX_FRAME_EOF_RECEIVED )
+
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
             static.INFO.append("ARQ;RECEIVING;FAILED")
-            logging.error("ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!")
-            
+            structlog.get_logger("structlog").warning("[TNC] ARQ: DATA FRAME NOT SUCESSFULLY RECEIVED!")
             
             # STATE CLEANUP
             #arq_reset_frame_machine()
@@ -302,7 +301,7 @@ def arq_data_received(data_in, bytes_per_frame):
             static.RX_BURST_BUFFER = []
             static.RX_FRAME_BUFFER = []
             
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+            structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
     
 
 def arq_transmit(data_out, mode, n_frames_per_burst):
@@ -364,6 +363,8 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     static.INFO.append("ARQ;TRANSMITTING")
     logging.info("ARQ | TX | M:" + str(DATA_CHANNEL_MODE) + " | DATA FRAME --- BYTES: " + str(len(data_out)) + " ARQ FRAMES: " + str(TX_BUFFER_SIZE))
 
+    
+    
     # ----------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
     TX_N_SENT_FRAMES = 0  # SET N SENT FRAMES TO 0 FOR A NEW SENDING CYCLE
     while TX_N_SENT_FRAMES <= TX_BUFFER_SIZE and static.ARQ_STATE == 'DATA':
@@ -429,7 +430,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
             # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
 
-            logging.debug("ARQ | RX | WAITING FOR BURST ACK")
+            structlog.get_logger("structlog").debug("[TNC] ARQ | RX | WAITING FOR BURST ACK")
             static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
@@ -441,9 +442,9 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             # HERE WE PROCESS DATA IF WE RECEIVED ACK/RPT FRAMES OR NOT WHILE WE ARE IN ARQ STATE
             # IF WE ARE NOT IN ARQ STATE, WE STOPPED THE TRANSMISSION 
             if RPT_REQUEST_RECEIVED and static.ARQ_STATE == 'DATA':
-                logging.warning("ARQ | RX | REQUEST FOR REPEATING FRAMES: " + str(RPT_REQUEST_BUFFER))
-                logging.warning("ARQ | TX | SENDING REQUESTED FRAMES: " + str(RPT_REQUEST_BUFFER))
 
+                structlog.get_logger("structlog").debug("[TNC] ARQ | RX | REQUEST FOR REPEATING FRAMES: ",buffer=RPT_REQUEST_BUFFER)
+                structlog.get_logger("structlog").debug("[TNC] ARQ | TX | SENDING REQUESTED FRAMES: ",buffer=RPT_REQUEST_BUFFER)
                 # --------- BUILD RPT FRAME --------------
                 tempbuffer = []
                 for n in range(0, len(RPT_REQUEST_BUFFER)):
@@ -457,8 +458,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
                     try:
                         payload_data = bytes(TX_BUFFER[TX_N_SENT_FRAMES + missing_frame - 1])
                     except:
-                        print("modem buffer selection problem with ARQ RPT frames")
-
+                        structlog.get_logger("structlog").warning("[TNC] ARQ :modem buffer selection problem with ARQ RPT frames")
                     n_current_arq_frame = TX_N_SENT_FRAMES + missing_frame
                     n_current_arq_frame = n_current_arq_frame.to_bytes(2, byteorder='big')
 
@@ -492,13 +492,13 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
                     if BURST_ACK_RECEIVED:
                         
-                        logging.info("ARQ | RX | ACK AFTER RPT")
+                        structlog.get_logger("structlog").info("[TNC] ARQ : ACK after repeat")
                         arq_reset_ack(True)
                         RPT_REQUEST_BUFFER = []
                         TX_N_SENT_FRAMES = TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST
 
                 if time.time() > rpttimeout and not BURST_ACK_RECEIVED:
-                    logging.error("ARQ | Burst lost....")
+                    structlog.get_logger("structlog").warning("[TNC] ARQ : Burst lost...")
                     arq_reset_ack(False)
                     RPT_REQUEST_BUFFER = []
  
