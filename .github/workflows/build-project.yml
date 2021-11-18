@@ -36,12 +36,13 @@ jobs:
           pip install ujson
           pip install pyserial
           pip install numpy
+          pip install structlog
           # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
       
       - name: Install Pyaudio
         if: matrix.os == 'windows-latest'
-        working-directory: tnc/pyaudio/windows
+        working-directory: tnc/lib/pyaudio/windows
         run: |
           pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
                  
@@ -107,6 +108,7 @@ jobs:
           pip3 install ujson
           pip3 install pyserial
           pip3 install numpy
+          pip3 install structlog
 
 
       #- name: Build Hamlib Python Binding
@@ -141,8 +143,8 @@ jobs:
         working-directory: tnc
         run: |      
           #pyinstaller -F daemon.py -n daemon
-          pyinstaller -F daemon.py --add-binary hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./hamlib/linux/ --add-binary hamlib/linux/Hamlib.py:./hamlib/linux/ -n daemon
-          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./hamlib/linux/ --add-binary hamlib/linux/Hamlib.py:./hamlib/linux/ -n tnc main.py
+          pyinstaller -F daemon.py --add-binary lib/hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./lib/hamlib/linux/ --add-binary lib/hamlib/linux/Hamlib.py:./lib/hamlib/linux/ -n daemon
+          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary lib/hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./lib/hamlib/linux/ --add-binary lib/hamlib/linux/Hamlib.py:./lib/hamlib/linux/ -n tnc main.py
  
       - name: LIST ALL FILES
         shell: bash
