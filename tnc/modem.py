@@ -21,6 +21,10 @@ import static
 import data_handler
 import re
 
+# option for testing miniaudio instead of audioop for sample rate conversion
+#import miniaudio
+
+
 ####################################################
 # https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
 # https://github.com/DJ2LS/FreeDATA/issues/22
@@ -314,7 +318,14 @@ class RF():
         self.streambuffer += bytes(mod_out_postamble)
 
         converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
+        #self.streambuffer = bytes(converted_audio[0])
+
+
+
+        #converted_audio_miniaudio = miniaudio.convert_frames(miniaudio.SampleFormat.SIGNED16, 1, 8000, bytes(self.streambuffer), miniaudio.SampleFormat.SIGNED16, 1, 48000)
         self.streambuffer = bytes(converted_audio[0])
+        #self.streambuffer += bytes(converted_audio_miniaudio)
+
 
         # append frame again with as much as in count defined
         for i in range(1, count):
@@ -505,6 +516,8 @@ class RF():
             data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
             data_in = data_in[0]  # .rstrip(b'\x00')
 
+            #data_in = miniaudio.convert_frames(miniaudio.SampleFormat.SIGNED16, 1, 48000, bytes(data_in), miniaudio.SampleFormat.SIGNED16, 1, 8000)
+            
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
             datac1_nin = self.c_lib.freedv_nin(datac1_freedv) * 2

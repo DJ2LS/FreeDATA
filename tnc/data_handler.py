@@ -147,6 +147,7 @@ def arq_data_received(data_in, bytes_per_frame):
     # improve transfer rate
     if static.RX_BURST_BUFFER.count(None) == 1 and RX_N_FRAMES_PER_DATA_FRAME != RX_N_FRAME_OF_DATA_FRAME :  # count nones
         logging.info("ARQ | TX | BURST ACK")
+        structlog.get_logger("structlog").info("[TNC] ARQ TX BURST ACK")
 
         # BUILDING ACK FRAME FOR BURST -----------------------------------------------
         ack_frame = bytearray(14)
@@ -180,8 +181,7 @@ def arq_data_received(data_in, bytes_per_frame):
                 frame_number = frame_number.to_bytes(2, byteorder='big')
                 missing_frames += frame_number
 
-        logging.warning("ARQ | TX | RPT ARQ FRAMES [" + str(missing_frames) + "] [SNR:" + str(static.SNR) + "]")
-
+        structlog.get_logger("structlog").warning("[TNC] ARQ RPT FRAMES", snr=static.SNR, frames=missing_frames)
         # BUILDING RPT FRAME FOR BURST -----------------------------------------------
         rpt_frame       = bytearray(14)
         rpt_frame[:1]   = bytes([62])
@@ -237,7 +237,7 @@ def arq_data_received(data_in, bytes_per_frame):
         # IF THE FRAME PAYLOAD CRC IS EQUAL TO THE FRAME CRC WHICH IS KNOWN FROM THE HEADER --> SUCCESS
         if frame_payload_crc == data_frame_crc:
             static.INFO.append("ARQ;RECEIVING;SUCCESS")
-            logging.log(25, "ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED! :-) ")
+            structlog.get_logger("structlog").info("[TNC] DATA FRAME SUCESSFULLY RECEIVED")
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
             
             # decode to utf-8 string
@@ -263,8 +263,7 @@ def arq_data_received(data_in, bytes_per_frame):
             ack_frame[2:3]  = static.MYCALLSIGN_CRC8
 
             # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
-            logging.info("ARQ | TX | ARQ DATA FRAME ACK [" + str(data_frame_crc.hex()) + "] [SNR:" + str(static.SNR) + "]")
-
+            structlog.get_logger("structlog").info("[TNC] ARQ DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
             # since simultaneous decoding it seems, we don't have to wait anymore
             # however, we will wait a little bit for easier ptt debugging
             # possibly we can remove this later
@@ -283,8 +282,7 @@ def arq_data_received(data_in, bytes_per_frame):
             static.RX_BURST_BUFFER = []
             static.RX_FRAME_BUFFER = []
             
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
-            
+            structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
         else:
 
             structlog.get_logger("structlog").debug("[TNC] ARQ: ", ARQ_FRAME_BOF_RECEIVED=RX_FRAME_BOF_RECEIVED, ARQ_FRAME_EOF_RECEIVED=RX_FRAME_EOF_RECEIVED )
@@ -361,8 +359,8 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     TX_BUFFER = [data_out[i:i + TX_PAYLOAD_PER_ARQ_FRAME] for i in range(0, len(data_out), TX_PAYLOAD_PER_ARQ_FRAME)]
     TX_BUFFER_SIZE = len(TX_BUFFER)
     static.INFO.append("ARQ;TRANSMITTING")
-    logging.info("ARQ | TX | M:" + str(DATA_CHANNEL_MODE) + " | DATA FRAME --- BYTES: " + str(len(data_out)) + " ARQ FRAMES: " + str(TX_BUFFER_SIZE))
 
+    structlog.get_logger("structlog").info("[TNC] ARQ TX DATA", mode=DATA_CHANNEL_MODE, bytes=len(data_out), frames=TX_BUFFER_SIZE)
     
     
     # ----------------------- THIS IS THE MAIN LOOP-----------------------------------------------------------------
@@ -391,7 +389,12 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
             if TX_N_SENT_FRAMES + 1 <= TX_BUFFER_SIZE:
                 calculate_transfer_rate_tx(TX_N_SENT_FRAMES, TX_PAYLOAD_PER_ARQ_FRAME, TX_START_OF_TRANSMISSION, TX_BUFFER_SIZE) 
-                logging.log(24, "ARQ | TX | M:" + str(DATA_CHANNEL_MODE) + " | F:[" + str(TX_N_SENT_FRAMES + 1) + "-" + str(TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST) + "] | T:[" + str(TX_N_SENT_FRAMES) + "/" + str(TX_BUFFER_SIZE) + "] [" + str(int(static.ARQ_TRANSMISSION_PERCENT)).zfill(3) + "%] | A:[" + str(TX_N_RETRIES_PER_BURST + 1) + "/" + str(TX_N_MAX_RETRIES_PER_BURST) + "]")
+                
+                frame_progress = str(TX_N_SENT_FRAMES + 1) + "-" + str(TX_N_SENT_FRAMES + TX_N_FRAMES_PER_BURST)
+                total_frame_progress = str(TX_N_SENT_FRAMES) + "/" + str(TX_BUFFER_SIZE)
+                transmission_percent = str(static.ARQ_TRANSMISSION_PERCENT).zfill(3)
+                transmission_attempts = str(TX_N_RETRIES_PER_BURST + 1) + "/" + str(TX_N_MAX_RETRIES_PER_BURST)
+                structlog.get_logger("structlog").info("[TNC] ARQ TX DATA", mode=DATA_CHANNEL_MODE, frames=frame_progress, percent=transmission_percent, frames_total=total_frame_progress, attempt=transmission_attempts)
 
             # lets refresh all timers and ack states before sending a new frame
             arq_reset_ack(False)
@@ -679,7 +682,9 @@ async def arq_open_data_channel(mode):
         for attempt in range(1,DATA_CHANNEL_MAX_RETRIES+1):
             static.INFO.append("DATACHANNEL;OPENING")
             
-            logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] A:[" + str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES) + "]")
+            attempt = str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES)
+            structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=attempt)
+            
             while not modem.transmit_signalling(connection_frame, 1):
                 time.sleep(0.01)
                    
@@ -691,11 +696,11 @@ async def arq_open_data_channel(mode):
                     break
             if DATA_CHANNEL_READY_FOR_DATA:
                 break
-            print("attempt:" + str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
             
             if not DATA_CHANNEL_READY_FOR_DATA and attempt == DATA_CHANNEL_MAX_RETRIES:
                 static.INFO.append("DATACHANNEL;FAILED")
-                logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                
+                structlog.get_logger("structlog").warning("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                 static.TNC_STATE = 'IDLE'
                 static.ARQ_STATE = 'IDLE'
                 sys.exit() # close thread and so connection attempts
@@ -711,7 +716,8 @@ def arq_received_data_channel_opener(data_in):
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+    structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+    
     
     static.ARQ_STATE = 'DATA'
     static.TNC_STATE = 'BUSY'
@@ -729,8 +735,8 @@ def arq_received_data_channel_opener(data_in):
     while not modem.transmit_signalling(connection_frame, 1):
         time.sleep(0.01)
 
-    logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [M:"+str(mode)+"] SNR:" + str(static.SNR) + "]")
-
+    structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, mode=mode)
+    
     static.CHANNEL_STATE = 'RECEIVING_DATA'
     # and now we are going to "RECEIVING_DATA" mode....
 
@@ -751,7 +757,7 @@ def arq_received_channel_is_open(data_in):
     # we are doing a mode check here, but this doesn't seem to be necessary since we have simultaneous decoding
     # we are forcing doing a transmission at the moment --> see else statement
     if DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
-        logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+        structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
         
         # wait a little bit so other station is ready ( PTT toggle )
         print("wait.....")
@@ -763,7 +769,7 @@ def arq_received_channel_is_open(data_in):
         DATA_CHANNEL_READY_FOR_DATA = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time())
     else:
-        print("wrong mode received...")
+        structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, info="wrong mode rcvd")
         helpers.wait(0.5)
         # as soon as we set ARQ_STATE to DATA, transmission starts
         static.ARQ_STATE = 'DATA'
@@ -779,8 +785,7 @@ def transmit_ping(callsign):
     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
     
     static.INFO.append("PING;SENDING")
-    
-    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+    structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]" )
 
     ping_frame      = bytearray(14)
     ping_frame[:1]  = bytes([210])
@@ -800,7 +805,8 @@ def received_ping(data_in, frequency_offset):
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
     
     static.INFO.append("PING;RECEIVING")
-    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "] [SNR:" + str(static.SNR) + "]")
+
+    structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
 
     ping_frame      = bytearray(14)
     ping_frame[:1]  = bytes([211])
@@ -822,7 +828,8 @@ def received_ping_ack(data_in):
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
     
     static.INFO.append("PING;RECEIVEDACK")
-    logging.info("PING [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]["+ str(static.DXGRID, 'utf-8') +"] [SNR:" + str(static.SNR) + "]")
+
+    structlog.get_logger("structlog").info("[TNC] PING ACK [" + str(static.MYCALLSIGN, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
     static.TNC_STATE = 'IDLE'
 
 # ############################################################################################################
@@ -850,7 +857,7 @@ def received_cq(data_in):
     dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
     dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
     static.INFO.append("CQ;RECEIVING")
-    logging.info("CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] [SNR" + str(static.SNR) + "]")
+    structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
     helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
 

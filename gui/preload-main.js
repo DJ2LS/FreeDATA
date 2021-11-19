@@ -508,8 +508,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                         type: 'linear',
                         position: 'bottom',
                         display: true,
-                        min: -40,
-                        max: 40,
+                        min: -80,
+                        max: 80,
                         ticks: {
                             display: false
                         }            
@@ -517,8 +517,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     y: {
                     
                         display: true,
-                        min: -40,
-                        max: 40,
+                        min: -80,
+                        max: 80,
                         ticks: {
                             display: false,
                         }
@@ -727,14 +727,17 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
-        dataTypeText.innerText = arg.stations[i]['DATATYPE']
-        dataType.appendChild(dataTypeText);
+        if(arg.stations[i]['DATATYPE'] == 'DATA-CHANNEL'){
+            dataTypeText.innerText = 'DATA-C'
+            dataType.appendChild(dataTypeText);
+        }
+        
 
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
         }
 
-        if (dataTypeText.innerText == 'DATA-CHANNEL') {
+        if (dataTypeText.innerText == 'DATA-C') {
             row.classList.add("table-warning");
         }
 
