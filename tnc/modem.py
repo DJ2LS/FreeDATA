@@ -545,6 +545,7 @@ class RF():
                 self.get_scatter(datac0_freedv)
                 
                 if sync != 0 and nbytes != 0:
+                    print("----------DECODE----------------")
                     # clear all buffers for be ready with clean audio data
                     # we need to be carefull and only cleaning buffer if we reached the last frame of a burst
                     datac0_buffer = bytes()
@@ -568,7 +569,7 @@ class RF():
 
                 sync = self.c_lib.freedv_get_rx_status(datac1_freedv)
                 if sync != 0 and nbytes != 0:
-                    
+                    print("----------DECODE----------------")
                     frame = int.from_bytes(bytes(datac1_bytes_out[:1]), "big") - 10
                     n_frames_per_burst = int.from_bytes(bytes(datac1_bytes_out[1:2]), "big")
                     print("frame: {0}, N_frames_per_burst: {1}".format(frame, n_frames_per_burst))
@@ -591,7 +592,7 @@ class RF():
 
                 sync = self.c_lib.freedv_get_rx_status(datac3_freedv)
                 if sync != 0 and nbytes != 0:
-
+                    print("----------DECODE----------------")
                     # calculate snr and scatter
                     self.get_scatter(datac3_freedv)
                     self.calculate_snr(datac3_freedv)

@@ -85,13 +85,15 @@ def arq_data_received(data_in, bytes_per_frame):
     RX_N_FRAMES_PER_DATA_FRAME  = int.from_bytes(bytes(data_in[4:6]), "big")  # get total number of frames
     static.TOTAL_BYTES = RX_N_FRAMES_PER_DATA_FRAME * RX_PAYLOAD_PER_ARQ_FRAME # calculate total bytes
    
-    arq_percent_burst = int((RX_N_FRAME_OF_BURST / RX_N_FRAMES_PER_BURST) * 100)
+    ##arq_percent_burst = int((RX_N_FRAME_OF_BURST / RX_N_FRAMES_PER_BURST) * 100)
     #arq_percent_frame = int(((RX_N_FRAME_OF_DATA_FRAME) / RX_N_FRAMES_PER_DATA_FRAME) * 100)
     calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)
     static.INFO.append("ARQ;RECEIVING")
     
-    logging.log(24, "ARQ | RX | " + str(DATA_CHANNEL_MODE) + " | F:[" + str(RX_N_FRAME_OF_BURST) + "/" + str(RX_N_FRAMES_PER_BURST) + "] [" + str(arq_percent_burst).zfill(3) + "%] T:[" + str(RX_N_FRAME_OF_DATA_FRAME) + "/" + str(RX_N_FRAMES_PER_DATA_FRAME) + "] [" + str(int(static.ARQ_TRANSMISSION_PERCENT)).zfill(3) + "%] [SNR:" + str(static.SNR) + "]")
-
+    frame_progress = str(RX_N_FRAME_OF_BURST) + "/" + str(RX_N_FRAMES_PER_BURST)
+    total_frame_progress = str(RX_N_FRAME_OF_DATA_FRAME) + "/" + str(RX_N_FRAMES_PER_DATA_FRAME)
+    transmission_percent = str(static.ARQ_TRANSMISSION_PERCENT).zfill(3)
+    structlog.get_logger("structlog").info("[TNC] ARQ RX DATA", mode=DATA_CHANNEL_MODE, frames=frame_progress, percent=transmission_percent, frames_total=total_frame_progress)
     
     # allocate ARQ_static.RX_FRAME_BUFFER as a list with "None" if not already done. This should be done only once per burst!
     # here we will save the N frame of a data frame to N list position so we can explicit search for it
@@ -270,7 +272,7 @@ def arq_data_received(data_in, bytes_per_frame):
             helpers.wait(0.5)
 
             
-            while not modem.transmit_signalling(ack_frame, 2):
+            while not modem.transmit_signalling(ack_frame, 3):
                 time.sleep(0.01)
 
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)            
@@ -732,7 +734,7 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([mode])
 
-    while not modem.transmit_signalling(connection_frame, 1):
+    while not modem.transmit_signalling(connection_frame, 2):
         time.sleep(0.01)
 
     structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, mode=mode)

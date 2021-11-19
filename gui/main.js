@@ -12,7 +12,7 @@ var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? proce
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 
-// create folder if not exists
+// create config folder if not exists
 if (!fs.existsSync(configFolder)) {
     fs.mkdirSync(configFolder);
 }
@@ -36,6 +36,25 @@ var configContent = `
 `;
 if (!fs.existsSync(configPath)) {
     fs.writeFileSync(configPath, configContent)
+}
+
+
+
+var chatDB = path.join(configFolder, 'chatDB.json')
+// create chat database file if not exists
+var configContent = `
+{ "chatDB" : [{
+    "id" : "00000000",
+    "timestamp" : 1234566,
+    "mycall" : "AA0AA",
+    "dxcall" : "AB0AB",
+    "dxgrid" : "JN1200",
+    "message" : "hallowelt"
+}]
+}
+`;
+if (!fs.existsSync(chatDB)) {
+    fs.writeFileSync(chatDB, configContent)
 }
 
 
@@ -89,26 +108,22 @@ function createWindow() {
     })
     */
     win.loadFile('src/index.html')
-    /*
-    data = new BrowserWindow({
+    
+    chat = new BrowserWindow({
         height: 900,
         width: 600,
+        show: false,
         parent: win,
         webPreferences: {
-            preload: require.resolve('./preload-data.js'),
+            preload: require.resolve('./preload-chat.js'),
             nodeIntegration: true,
 
         }
     })
-    //open dev tools
-    data.webContents.openDevTools({
-        mode: 'undocked',
-        activate: true,
-    })
-    
-    data.loadFile('src/data-module.html')
-    data.hide()
-*/
+
+    chat.loadFile('src/chat-module.html')
+
+
 
     // Emitted when the window is closed.
     win.on('closed', function() {
@@ -116,24 +131,23 @@ function createWindow() {
         // in an array if your app supports multi windows, this is the time
         // when you should delete the corresponding element.
         win = null;
-        data = null;
+        chat = null;
     })
 
-    /*
-        data.on('closed', function () {
+    
+    chat.on('closed', function () {
             // Dereference the window object, usually you would store windows
             // in an array if your app supports multi windows, this is the time
             // when you should delete the corresponding element.
         })
-    */
+    
 
     // https://stackoverflow.com/questions/44258831/only-hide-the-window-when-closing-it-electron
-    /*
-    data.on('close', function(evt) {
+    chat.on('close', function(evt) {
         evt.preventDefault();
-        data.hide()
+        chat.hide()
     });
-    */
+    
 }
 
 app.whenReady().then(() => {
@@ -144,7 +158,7 @@ app.whenReady().then(() => {
     console.log("Starting Daemon")
     daemonProcess = exec('./daemon', function callback(error, stdout, stderr) {
         // result
-         console.log(stdout)
+        console.log(stdout)
         console.log(error)
         console.log(stderr)
     });
@@ -166,11 +180,12 @@ app.on('window-all-closed', () => {
 })
 
 // IPC HANDLER
-/*
- ipcMain.on('show-data-window', (event, arg) => {
-    data.show()
+
+ipcMain.on('request-show-chat-window', (event, arg) => {
+    chat.show()
  });
-*/
+
+
 ipcMain.on('request-update-tnc-state', (event, arg) => {
     win.webContents.send('action-update-tnc-state', arg);
     //data.webContents.send('action-update-tnc-state', arg);
@@ -210,8 +225,5 @@ ipcMain.on('request-update-rx-buffer', (event, arg) => {
 });
 
 ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
-    //win.webContents.send('action-update-rx-buffer', arg);
-    console.log("NEW MESSAGE ARRIVED!")
-    console.log("WE WILL HANDLE THIS AS SOON AS WE HAVE A CHAT MODULE...")
-    console.log(arg)
+    chat.webContents.send('action-update-rx-msg-buffer', arg);
 });

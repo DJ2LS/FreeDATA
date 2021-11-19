@@ -436,6 +436,16 @@ advancedHamlibSettingsModal
             };
             ipcRenderer.send('run-tnc-command', Data);    
     })
+    
+    // OPEN CHAT MODULE
+    document.getElementById("openRFChat").addEventListener("click", () => {
+            let Data = {
+                command: "openRFChat"
+            };
+            ipcRenderer.send('request-show-chat-window', Data);    
+    })    
+    
+
   
 })
 

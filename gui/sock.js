@@ -240,7 +240,8 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
-    command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : " ' + dxcallsign + ' ", "mode" : " ' + mode + ' ", "n_frames" : " ' + frames + ' ", "data" :  ' + data + ' , "checksum" : " ' + checksum + ' ", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '", "timestamp" : ' + Date.now() + '}'
+    console.log(command)
     writeTncCommand(command)
 }
 

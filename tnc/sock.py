@@ -137,7 +137,32 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
                     ARQ_DATA_THREAD.start()
                     # asyncio.run(data_handler.arq_transmit(data_out))
+                # send message
+                if received_json["type"] == 'ARQ' and received_json["command"] == "sendMessage":
+                    static.TNC_STATE = 'BUSY'
+                    print(received_json)
+                    # on a new transmission we reset the timer
+                    static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
+                    dxcallsign = received_json["dxcallsign"]
+                    mode = int(received_json["mode"])
+                    n_frames = int(received_json["n_frames"])
+                    data = received_json["data"]
+                    checksum = received_json["checksum"]
+                   
+
+                    static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
+                        static.DXCALLSIGN)
+
+                    rawdata = {"datatype": "message","data": data, "checksum": checksum}
+                    dataframe = json.dumps(rawdata)
+                    data_out = bytes(dataframe, 'utf-8')
+
+                    ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
+                    ARQ_DATA_THREAD.start()
+                    
+                    
                 if received_json["type"] == 'ARQ' and received_json["command"] == "stopTransmission":
                     print(" >>> STOPPING TRANSMISSION <<<")
                     structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
