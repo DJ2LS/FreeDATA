@@ -127,7 +127,7 @@ client.on('data', function(data) {
             // set length of RX Buffer to global variable
             rxBufferLengthTnc = data['RX_BUFFER_LENGTH']
             rxMsgBufferLengthTnc = data['RX_MSG_BUFFER_LENGTH']
-            
+
             let Data = {
                 toe: Date.now() - data['TIMESTAMP'], // time of execution
                 ptt_state: data['PTT_STATE'],
@@ -166,7 +166,7 @@ client.on('data', function(data) {
             let Data = {
                 data: data['DATA-ARRAY'],
             };
-            console.log(Data)
+
             ipcRenderer.send('request-update-rx-buffer', Data);
         }
 
@@ -176,7 +176,7 @@ client.on('data', function(data) {
             let Data = {
                 data: data['DATA-ARRAY'],
             };
-            //console.log(Data)
+
             ipcRenderer.send('request-update-rx-msg-buffer', Data);
         }
         // check if EOF	...
@@ -271,3 +271,15 @@ exports.getMsgRxBuffer = function() {
         writeTncCommand(command)
     }
 }
+
+// DELETE RX MSG BUffer
+exports.delRxMsgBuffer = function() {
+    command = '{"type" : "SET", "command" : "DEL_RX_MSG_BUFFER", "timestamp" : ' + Date.now() + '}'
+
+    // call command only if new data arrived
+    if (rxMsgBufferLengthGui != rxMsgBufferLengthTnc) {
+        writeTncCommand(command)
+    }
+}
+
+

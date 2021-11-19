@@ -18,9 +18,36 @@
       <script src="../node_modules/chart.js/dist/chart.min.js"></script>
       <script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
 
-
-<input id="chatModuledxCall"></input>
+<div class="input-group m-1">
+<input class="form-control" maxlength="6" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
+<input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
 <button class="btn btn-sm btn-primary me-2" id="sendMessage" type="button">SEND MSG</button>
+</div>
 
+            <table class="table">
+               <thead>
+                  <tr>
+                     <th scope="col">Time</th>
+                     <th scope="col">DXCall</th>
+                     <!--<th scope="col">DXGrid</th>
+                        <th scope="col">Distance</th>-->
+                     <th scope="col">Message</th>
+                     <!--<th scope="col">SNR</th>-->
+                  </tr>
+               </thead>
+               <tbody id="rx-msg-data">
+                  <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+               </tbody>
+            </table>
+               
+               
+               
    </body>
 </html>

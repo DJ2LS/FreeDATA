@@ -122,7 +122,7 @@ function createWindow() {
     })
 
     chat.loadFile('src/chat-module.html')
-
+    chat.setMenuBarVisibility(false)
 
 
     // Emitted when the window is closed.

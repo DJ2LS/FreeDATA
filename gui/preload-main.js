@@ -22,7 +22,7 @@ const config = require(configPath);
 setInterval(daemon.getDaemonState, 1000)
 setInterval(sock.getTncState, 150)
 setInterval(sock.getRxBuffer, 1000)
-
+setInterval(sock.getMsgRxBuffer, 1000)
 // UPDATE FFT DEMO
 /*
 updateFFT = function(fft) {
@@ -1195,5 +1195,8 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
     if (arg.command == 'stopTransmission') {
         sock.stopTransmission()
+    }
+    if (arg.command == 'delRxMsgBuffer') {
+        sock.delRxMsgBuffer()
     }
 });
