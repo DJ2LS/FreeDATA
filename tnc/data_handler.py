@@ -678,14 +678,13 @@ async def arq_open_data_channel(mode):
     connection_frame[2:3]   = static.MYCALLSIGN_CRC8
     connection_frame[3:9]   = static.MYCALLSIGN
     connection_frame[12:13] = bytes([DATA_CHANNEL_MODE])
-
+    
     while not DATA_CHANNEL_READY_FOR_DATA:
         time.sleep(0.01)
         for attempt in range(1,DATA_CHANNEL_MAX_RETRIES+1):
             static.INFO.append("DATACHANNEL;OPENING")
             
-            attempt = str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES)
-            structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=attempt)
+            structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
             
             while not modem.transmit_signalling(connection_frame, 1):
                 time.sleep(0.01)
@@ -698,7 +697,7 @@ async def arq_open_data_channel(mode):
                     break
             if DATA_CHANNEL_READY_FOR_DATA:
                 break
-            
+
             if not DATA_CHANNEL_READY_FOR_DATA and attempt == DATA_CHANNEL_MAX_RETRIES:
                 static.INFO.append("DATACHANNEL;FAILED")
                 

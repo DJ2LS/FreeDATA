@@ -18,7 +18,7 @@ var chatDB = path.join(configFolder, 'chatDB.json')
 window.addEventListener('DOMContentLoaded', () => {
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
-            dxcallsign = 'DN2LS'
+            dxcallsign = document.getElementById('chatModuledxCall').value
             let Data = {
                 command: "sendMessage",
                 dxcallsign : dxcallsign.toUpperCase(), 
