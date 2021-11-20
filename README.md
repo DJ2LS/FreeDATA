@@ -28,7 +28,7 @@ npm cache clean -f
 sudo npm install -g n
 sudo n stable
 sudo apt install python3 python3-hamlib portaudio19-dev python3-pyaudio python3-pip
-pip3 install psutil crcengine ujson pyserial numpy
+pip3 install psutil crcengine ujson pyserial numpy structlog
 
 git clone https://github.com/DJ2LS/FreeDATA.git
 cd FreeDATA/gui

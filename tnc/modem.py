@@ -63,20 +63,20 @@ try:
     hamlib_path = "/lib/hamlib/" + sys.platform    
     structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path=hamlib_path)
 except ImportError:
-    import Hamlib
+    try:
+        import Hamlib
 
-    # https://stackoverflow.com/a/4703409
-    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
-    hamlib_version = float(hamlib_version[0])
-    
-    min_hamlib_version = 4.1
-    if hamlib_version > min_hamlib_version:
-        structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path="system")
-    else:
-        structlog.get_logger("structlog").critical("[TNC] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
-else:
-    # place for rigctld
-    pass
+        # https://stackoverflow.com/a/4703409
+        hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+        hamlib_version = float(hamlib_version[0])
+        
+        min_hamlib_version = 4.1
+        if hamlib_version > min_hamlib_version:
+            structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path="system")
+        else:
+            structlog.get_logger("structlog").critical("[TNC] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
+    except:
+        structlog.get_logger("structlog").critical("[TNC] Hamlib not found")
 
 
 #import rigctld
