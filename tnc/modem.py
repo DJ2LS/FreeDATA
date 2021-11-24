@@ -53,34 +53,28 @@ def noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################
 
-# sys.path.append("hamlib/linux")
+# try importing hamlib    
 try:
-    from lib.hamlib.linux import Hamlib
+    # get python version
+    python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+
+    # installation path for Ubuntu 20.04 LTS python modules
+    sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+    # installation path for Ubuntu 20.10 +
+    sys.path.append('/usr/local/lib/')
+    import Hamlib
+            
     # https://stackoverflow.com/a/4703409
     hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
     hamlib_version = float(hamlib_version[0])
-    
-    hamlib_path = "/lib/hamlib/" + sys.platform    
-    structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path=hamlib_path)
-except ImportError:
-    try:
-        import Hamlib
-
-        # https://stackoverflow.com/a/4703409
-        hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
-        hamlib_version = float(hamlib_version[0])
-        
-        min_hamlib_version = 4.1
-        if hamlib_version > min_hamlib_version:
-            structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version, path="system")
-        else:
-            structlog.get_logger("structlog").critical("[TNC] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
-    except:
-        structlog.get_logger("structlog").critical("[TNC] Hamlib not found")
-
-
-#import rigctld
-#rigctld = rigctld.Rigctld()
+            
+    min_hamlib_version = 4.1
+    if hamlib_version > min_hamlib_version:
+        structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version)
+    else:
+        structlog.get_logger("structlog").warning("[DMN] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
+except Exception as e:
+    structlog.get_logger("structlog").critical("[DMN] Hamlib not found", error=e)
 
 
 MODEM_STATS_NR_MAX = 320
@@ -125,6 +119,7 @@ class RF():
                 self.c_lib = ctypes.CDLL(libname)
                 structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="source")
             else:
+                structlog.get_logger("structlog").critical("[TNC] Codec2 not loaded")
                 raise UnboundLocalError
 
         except:

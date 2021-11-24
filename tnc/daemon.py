@@ -24,7 +24,9 @@ import re
 import logging, structlog, log_handler
 
 log_handler.setup_logging("daemon")
-structlog.get_logger("structlog").info("[DMN] Starting...")
+# get python version, which is needed later for determining installation path
+python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+structlog.get_logger("structlog").info("[DMN] Starting...", python=python_version)
 
 
 ####################################################
@@ -54,34 +56,28 @@ def noalsaerr():
 # with noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################    
-    
-    
-# sys.path.append("hamlib/linux")
+
+# try importing hamlib    
 try:
-    from lib.hamlib.linux import Hamlib2
+    # installation path for Ubuntu 20.04 LTS python modules
+    sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+    # installation path for Ubuntu 20.10 +
+    sys.path.append('/usr/local/lib/')
+    import Hamlib
+            
     # https://stackoverflow.com/a/4703409
     hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
     hamlib_version = float(hamlib_version[0])
-    
-    hamlib_path = "lib/hamlib/" + sys.platform    
-    structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version, path=hamlib_path)
+            
+    min_hamlib_version = 4.1
+    if hamlib_version > min_hamlib_version:
+        structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version)
+    else:
+        structlog.get_logger("structlog").warning("[DMN] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
+except Exception as e:
+    structlog.get_logger("structlog").critical("[DMN] Hamlib not found", error=e)
 
-except ImportError:
-    try:
-        import Hamlib
-
-        # https://stackoverflow.com/a/4703409
-        hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
-        hamlib_version = float(hamlib_version[0])
-        
-        min_hamlib_version = 4.1
-        if hamlib_version > min_hamlib_version:
-            structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version, path="system")
-        else:
-            structlog.get_logger("structlog").critical("[DMN] Hamlib outdated", found=hamlib_version, needed=min_hamlib_version, path="system")
-    except:
-        structlog.get_logger("structlog").critical("[DMN] Hamlib not found")
-    
+# load crc engine    
 crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
 
 

@@ -22,51 +22,66 @@ sudo adduser $USER dialout
 logout / login
 ```
 ### 1. Install dependencies, codec2 and FreeDATA
+#### 1.1 Dependencies
 ```
 sudo apt install git build-essential cmake npm
-npm cache clean -f
 sudo npm install -g n
 sudo n stable
-sudo apt install python3 python3-hamlib portaudio19-dev python3-pyaudio python3-pip
+sudo apt install python3-hamlib (if not found: python3-libhamlib2)
+sudo apt install python3 portaudio19-dev python3-pyaudio python3-pip
 pip3 install psutil crcengine ujson pyserial numpy structlog
-
+```
+#### 1.2 Install FreeDATA
+```
 git clone https://github.com/DJ2LS/FreeDATA.git
 cd FreeDATA/gui
 npm i
 cd ..
-cd tnc
 ```
+#### Optional: Install codec2
 If you want to use the latest version of codec2, just download and compile it.
 The tnc will detect, if a self compiled version is used. Otherwise a precompiled binary will be used.
 ```
+cd tnc (FreeDATA/tnc)
 git clone https://github.com/drowe67/codec2.git
 cd codec2
 mkdir build_linux
 cd build_linux
 cmake ..
 make
-
+```
+#### Optional: Install newer/latest Hamlib if needed
+Older versions of Ubuntu, like Ubuntu 20.04 LTS or Suse have sometimes outdated versions of Hamlib in their repositories. If you need a newer version, because of your radio for example, you can install the latest version from source.
+```
+sudo apt install libusb-1.0-0
+cd ~/Downloads
+wget https://github.com/Hamlib/Hamlib/releases/download/4.3.1/hamlib-4.3.1.tar.gz
+tar xvf hamlib-4.3.1.tar.gz
+cd hamlib-4.3.1
+./configure --with-python-binding PYTHON=$(which python3)
+make
+sudo make install
+sudo ldconfig
 ```
 
-### 2. starting tnc
+### 2. Starting FreeDATA
+#### 2.1 Starting the TNC daemon
 ```
 cd /home/$USER/FreeDATA/tnc
 python3 daemon.py
 ```
 A successfull start looks like this. 
 ```
-running Hamlib from internal library
-running Hamlib Version - Hamlib 4.4~git - from precompiled bundle
-SRV | STARTING TCP/IP SOCKET FOR CMD ON PORT: 3001
-Client connected...
-
+2021-11-24 17:45:40 [info     ] [DMN] Starting...              python=3.8
+2021-11-24 17:45:40 [info     ] [DMN] Hamlib found             version=4.3
+2021-11-24 17:45:40 [info     ] [DMN] Starting TCP/IP socket   port=3001
 ```
 
 
-### 3. starting gui
-There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source and should occur if you're using the app bundle.
+### 2.2 Starting the GUI
+* Note: There will be an error on startup, that "daemon" can't be found, This is because the gui is looking for precompiled tnc software. This error can be ignored, if you're running the tnc manually from source and should occur if you're using the app bundle.
 
-The gui is creating a directory "FreeDATA" for saving settings in /home/$USER/.config/
+* The gui is creating a directory "FreeDATA" for saving settings in /home/$USER/.config/
 ```
 cd /home/$USER/FreeDATA/gui
 npx electron main.js
@@ -74,11 +89,8 @@ npx electron main.js
 If you're starting the gui, it will have a look for the daemon, which is by default "localhost / 127.0.0.1". The main window will stay blured as long as it can't connect to the daemon. 
 ![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-no-daemon-connection.png "TNC disconnected")
 
-
-
 If you want to connect to a daemon which is running on another host, just select it via the ethernet icon and enter the ip address.
 ![gui disconnected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-connect-to-remote-daemon.png "TNC disconnected")
-
 
 As soon as the gui is able to connect to the daemon, the main window will be getting clear and you can see some settings like your audio devices and connected USB devices like a USB Interface III or the radio itself.
 You can also set advanced hamlib settings or test them. Your settings will be saved, as soon as you start the tnc.
@@ -88,7 +100,8 @@ If you set your radio settings correctly, you can start the TNC. The settings di
 ![gui connected](https://raw.githubusercontent.com/DJ2LS/FreeDATA/main/documentation/FreeDATA-tnc-running.png "TNC connected")
 
 
-# --------------------------
+# ------------------
+# TEST AREA....
 ## Manual Installation macOS
 ### Install brew and python3
 #### https://docs.python-guide.org/starting/install3/osx/
