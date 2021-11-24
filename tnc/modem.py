@@ -70,11 +70,11 @@ try:
             
     min_hamlib_version = 4.1
     if hamlib_version > min_hamlib_version:
-        structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version)
+        structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version)
     else:
-        structlog.get_logger("structlog").warning("[DMN] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
+        structlog.get_logger("structlog").warning("[TNC] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
 except Exception as e:
-    structlog.get_logger("structlog").critical("[DMN] Hamlib not found", error=e)
+    structlog.get_logger("structlog").critical("[TNC] Hamlib not found", error=e)
 
 
 MODEM_STATS_NR_MAX = 320
