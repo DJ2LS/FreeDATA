@@ -185,7 +185,15 @@ class RF():
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
-            self.my_rig = Hamlib.Rig(int(static.HAMLIB_DEVICE_ID))
+
+            # get devicenumber by looking for deviceobject in Hamlib module
+            try:
+                devicenumber = getattr(Hamlib, static.HAMLIB_DEVICE_ID)
+            except:
+                structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
+                devicenumber = 0
+                
+            self.my_rig = Hamlib.Rig(int(devicenumber))
             self.my_rig.set_conf("rig_pathname", static.HAMLIB_DEVICE_PORT)
             self.my_rig.set_conf("retry", "5")
             self.my_rig.set_conf("serial_speed", static.HAMLIB_SERIAL_SPEED)
@@ -234,9 +242,7 @@ class RF():
             HAMLIB_THREAD.start()
 
         except:
-            structlog.get_logger("structlog").error("[TNC] Network error", e=sys.exc_info()[0])
             structlog.get_logger("structlog").error("[TNC] Hamlib - can't open rig", e=sys.exc_info()[0])
-            sys.exit("hamlib error")
 
 
 # --------------------------------------------------------------------------------------------------------

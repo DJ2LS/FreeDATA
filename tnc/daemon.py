@@ -284,8 +284,17 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                     # try to init hamlib
                     try:
+                        
                         Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
-                        my_rig = Hamlib.Rig(int(deviceid))
+
+                        # get devicenumber by looking for deviceobject in Hamlib module
+                        try:
+                            devicenumber = getattr(Hamlib, deviceid)
+                        except:
+                            structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
+                            devicenumber = 0
+                        
+                        my_rig = Hamlib.Rig(int(devicenumber))
                         my_rig.set_conf("rig_pathname", deviceport)
                         my_rig.set_conf("retry", "1")
                         my_rig.set_conf("serial_speed", serialspeed)
@@ -345,8 +354,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(bytes(jsondata, encoding))
                         
                     except:
-                        structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig")
-                        structlog.get_logger("structlog").error("[DMN] Unexpected error", e = sys.exc_info()[0])
+                        structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0])
 
             # exception, if JSON cant be decoded
             # except Exception as e:
