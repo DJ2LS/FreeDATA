@@ -21,8 +21,8 @@
 	<nav class="navbar bg-light fixed-top navbar-underline  mt-0 mb-1 pb-1 pt-1 shadow">
 		<div class="container-fluid mt-0">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group">
-					<input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch1" autocomplete="off" checked>
+				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group"data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Select a local or a remote location of your tnc daemon. Normally local is the preferred option.">
+					<input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch1" autocomplete="off" checked >
 					<label class="btn btn-outline-secondary" for="local-remote-switch1">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pc-display-horizontal" viewBox="0 0 16 16">
 							<path fill-rule="evenodd" d="M1.5 0A1.5 1.5 0 0 0 0 1.5v7A1.5 1.5 0 0 0 1.5 10H6v1H1a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1h-5v-1h4.5A1.5 1.5 0 0 0 16 8.5v-7A1.5 1.5 0 0 0 14.5 0h-13Zm0 1a.5.5 0 0 0-.5.5v7a.5.5 0 0 0 .5.5h13a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.5-.5h-13ZM12 12.5a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0Zm2 0a.5.5 0 1 1 1 0 .5.5 0 0 1-1 0ZM1.5 12a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5ZM1 14.25a.25.25 0 0 1 .25-.25h5.5a.25.25 0 1 1 0 .5h-5.5a.25.25 0 0 1-.25-.25Z" />
@@ -44,7 +44,7 @@
 						</svg>
 					</button>
 				</div>
-				<div class="input-group input-group-sm">
+				<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Start or stop the tnc process. Please set your audio and radio settings first!">
 					<button type="button" id="startTNC" class="btn btn-success">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
 							<path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
@@ -61,21 +61,25 @@
 				</div>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button"> <strong>RF Chat</strong>
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16">
+				<button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF Chat</strong>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16" >
 						<path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z" />
 					</svg>
 				</button>
+				<span  data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View the received files. This is currently under development!">
 				<button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button"> <strong>Received Files </strong>
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-down-fill" viewBox="0 0 16 16">
 						<path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zm-1 4v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 0 1 .708-.708L7.5 11.293V7.5a.5.5 0 0 1 1 0z" />
 					</svg>
 				</button>
-				<button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button"> <strong>Transmit File </strong>
+				</span>
+				<span  data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
+				<button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" > <strong>Transmit File </strong>
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16">
 						<path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707L6.354 9.854z" />
 					</svg>
 				</button>
+				</span>
 			</div>
 		</div>
 	</nav>
@@ -505,7 +509,8 @@
 									<option value="RIG_MODEL_FTDX10">Yaesu FTDX-10</option>
 									<option value="RIG_MODEL_FT897D">Yaesu FT-897D</option>
 									<option value="RIG_MODEL_FTDX101MP">Yaesu FTDX-101MP</option>
-								</select> <span class="input-group-text" id="basic-addon1">PTT</span>
+								</select> 
+								<span class="input-group-text" id="basic-addon1">PTT</span>
 								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
 									<option value="RIG">RIG</option>
 									<option value="RTS">Serial RTS</option>
@@ -535,11 +540,11 @@
 									<option value="115200">115200</option>
 								</select>
 							</div>
-							<div class="btn-group" role="group">
+							<div class="btn-group" role="group"  data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a ptt device">
 								<button type="button" id="advancedHamlibSettingsButton" data-bs-toggle="modal" data-bs-target="#advancedHamlibSettingsModal" class="btn btn-sm btn-secondary">Advanced settings</button>
 							</div>
 							<div class="btn-group" role="group">
-								<button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary">Test settings</button>
+								<button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">Test settings</button>
 							</div>
 						</div>
 						<div class="card-footer text-muted small">Please select your radio settings. Starting the TNC saves them.</div>
@@ -872,27 +877,27 @@
 		<div class="container-fluid">
 			<div class="btn-toolbar" style="width:20%" role="toolbar">
 				<div class="btn-group btn-group-sm me-2" role="group">
-					<button class="btn btn-secondary" id="ptt_state" type="button">
+					<button class="btn btn-secondary" id="ptt_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-broadcast-pin" viewBox="0 0 16 16">
 							<path d="M3.05 3.05a7 7 0 0 0 0 9.9.5.5 0 0 1-.707.707 8 8 0 0 1 0-11.314.5.5 0 0 1 .707.707zm2.122 2.122a4 4 0 0 0 0 5.656.5.5 0 1 1-.708.708 5 5 0 0 1 0-7.072.5.5 0 0 1 .708.708zm5.656-.708a.5.5 0 0 1 .708 0 5 5 0 0 1 0 7.072.5.5 0 1 1-.708-.708 4 4 0 0 0 0-5.656.5.5 0 0 1 0-.708zm2.122-2.12a.5.5 0 0 1 .707 0 8 8 0 0 1 0 11.313.5.5 0 0 1-.707-.707 7 7 0 0 0 0-9.9.5.5 0 0 1 0-.707zM6 8a2 2 0 1 1 2.5 1.937V15.5a.5.5 0 0 1-1 0V9.937A2 2 0 0 1 6 8z" />
 						</svg>
 					</button>
 				</div>
 				<div class="btn-group btn-group-sm me-2" role="group">
-					<button class="btn btn-secondary" id="busy_state" type="button">
+					<button class="btn btn-secondary" id="busy_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu" viewBox="0 0 16 16">
 							<path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
 						</svg>
 					</button>
 				</div>
 				<div class="btn-group btn-group-sm me-2" role="group">
-					<button class="btn btn-secondary" id="arq_state" type="button">
+					<button class="btn btn-secondary" id="arq_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-left-right" viewBox="0 0 16 16">
 							<path fill-rule="evenodd" d="M1 11.5a.5.5 0 0 0 .5.5h11.793l-3.147 3.146a.5.5 0 0 0 .708.708l4-4a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 11H1.5a.5.5 0 0 0-.5.5zm14-7a.5.5 0 0 1-.5.5H2.707l3.147 3.146a.5.5 0 1 1-.708.708l-4-4a.5.5 0 0 1 0-.708l4-4a.5.5 0 1 1 .708.708L2.707 4H14.5a.5.5 0 0 1 .5.5z" />
 						</svg>
 					</button>
 				</div>
-				<div class="btn-group btn-group-sm" role="group">
+				<div class="btn-group btn-group-sm" role="group" style="visibility:hidden">
 					<button class="btn btn-secondary" id="signalling_state" type="button">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-journal-code" viewBox="0 0 16 16">
 							<path fill-rule="evenodd" d="M8.646 5.646a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1 0 .708l-2 2a.5.5 0 0 1-.708-.708L10.293 8 8.646 6.354a.5.5 0 0 1 0-.708zm-1.292 0a.5.5 0 0 0-.708 0l-2 2a.5.5 0 0 0 0 .708l2 2a.5.5 0 0 0 .708-.708L5.707 8l1.647-1.646a.5.5 0 0 0 0-.708z" />
