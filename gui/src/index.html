@@ -246,7 +246,9 @@
 						</div>
 						<div class="card-body p-2">
 							<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">RIG</span>
-								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceid" style="width:7rem">
+								<!--<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceid" style="width:7rem">-->
+								<input class="form-control" list="datalistOptions" id="hamlib_deviceid" placeholder="Search radio..." style="width:7rem">
+                                <datalist id="datalistOptions">
 									<option value="RIG_MODEL_ADT_200A">ADAT www.adat.ch ADT-200A</option>
 									<option value="RIG_MODEL_DX77">Alinco DX-77</option>
 									<option value="RIG_MODEL_DXSR8">Alinco DX-SR8</option>
@@ -509,7 +511,7 @@
 									<option value="RIG_MODEL_FTDX10">Yaesu FTDX-10</option>
 									<option value="RIG_MODEL_FT897D">Yaesu FT-897D</option>
 									<option value="RIG_MODEL_FTDX101MP">Yaesu FTDX-101MP</option>
-								</select> 
+								</datalist> 
 								<span class="input-group-text" id="basic-addon1">PTT</span>
 								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
 									<option value="RIG">RIG</option>
