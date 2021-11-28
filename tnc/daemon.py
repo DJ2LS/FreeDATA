@@ -281,10 +281,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     data_bits = str(received_json["parameter"][0]["data_bits"])
                     stop_bits = str(received_json["parameter"][0]["stop_bits"])
                     handshake = str(received_json["parameter"][0]["handshake"])
-                    
+
                     # try to init hamlib
                     try:
-                        
+
                         Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
 
                         # get devicenumber by looking for deviceobject in Hamlib module
@@ -293,7 +293,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         except:
                             structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
                             devicenumber = 0
-                        
+
+
                         my_rig = Hamlib.Rig(int(devicenumber))
                         my_rig.set_conf("rig_pathname", deviceport)
                         my_rig.set_conf("retry", "1")
@@ -334,17 +335,30 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         
                       
                         my_rig.open()
-
+                        
+                        try:
+                            # lets determine the error message when opening rig
+                            error = str(Hamlib.rigerror(my_rig.error_status)).splitlines()
+                            error = error[1].split('err=')
+                            error = error[1]
+                            
+                            if error == 'Permission denied':
+                                structlog.get_logger("structlog").error("[DMN] Hamlib has no permissions", e = error)
+                                help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
+                                structlog.get_logger("structlog").error("[DMN] HELP:", check = help_url)
+                        except:
+                            structlog.get_logger("structlog").info("[DMN] Hamlib device openend", status='SUCCESS')
+                                                    
                         my_rig.set_ptt(hamlib_ptt_type, 1)
                         pttstate = my_rig.get_ptt()
                         if pttstate == 1:
-                            print("PTT SUCCESS")
+                            structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'SUCCESS'}
                         elif pttstate == 0:
-                            print("PTT NO SUCCESS")
+                            structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'NOSUCCESS'}
                         else:
-                            print("HAMLIB FAILED")
+                            structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'FAILED'}
                         
                         my_rig.set_ptt(hamlib_ptt_type, 0)                        
@@ -353,7 +367,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         jsondata = json.dumps(data)
                         self.request.sendall(bytes(jsondata, encoding))
                         
-                    except:
+                    except Exception as e:
+                        print(e)
                         structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0])
 
             # exception, if JSON cant be decoded
