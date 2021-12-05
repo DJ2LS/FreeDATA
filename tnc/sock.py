@@ -97,8 +97,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["command"] == "CQCQCQ":
                     #socketTimeout = 0
                     # asyncio.run(data_handler.transmit_cq())
-                    CQ_THREAD = threading.Thread(
-                        target=data_handler.transmit_cq, args=[], name="CQ")
+                    CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
                     CQ_THREAD.start()
 
                 # PING ----------------------------------------------------------
@@ -106,8 +105,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     # send ping frame and wait for ACK
                     dxcallsign = received_json["dxcallsign"]
                     # asyncio.run(data_handler.transmit_ping(dxcallsign))
-                    PING_THREAD = threading.Thread(
-                        target=data_handler.transmit_ping, args=[dxcallsign], name="CQ")
+                    PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="PING")
                     PING_THREAD.start()
 
                 # and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :

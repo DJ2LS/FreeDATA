@@ -104,7 +104,8 @@ class RF():
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = 8000
-        self.AUDIO_FRAMES_PER_BUFFER = 8192
+        self.AUDIO_FRAMES_PER_BUFFER_RX = 8192  #8192
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 8     #8192 Lets to some tests with very small chunks for TX
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
@@ -132,7 +133,31 @@ class RF():
             else:
                 structlog.get_logger("structlog").critical("[TNC] Codec2 not found")
 
-                    # --------------------------------------------CREATE PYAUDIO  INSTANCE
+
+        # --------------------------------------------CTYPES FUNCTION INIT
+        # TODO: WE STILL HAVE SOME MISSING FUNCTIONS!
+        
+        self.c_lib.freedv_open.argype = [c_int]
+        self.c_lib.freedv_open.restype = c_void_p
+
+        self.c_lib.freedv_nin.argtype = [c_void_p]
+        self.c_lib.freedv_nin.restype = c_int
+
+        self.c_lib.freedv_rawdatarx.argtype = [c_void_p, c_char_p, c_char_p]
+        self.c_lib.freedv_rawdatarx.restype = c_int
+
+        self.c_lib.freedv_get_sync.argtype = [c_void_p]
+        self.c_lib.freedv_get_sync.restype = c_int
+
+        self.c_lib.freedv_get_bits_per_modem_frame.argtype = [c_void_p]
+        self.c_lib.freedv_get_bits_per_modem_frame.restype = c_int
+
+        self.c_lib.freedv_set_frames_per_burst.argtype = [c_void_p, c_int]
+        self.c_lib.freedv_set_frames_per_burst.restype = c_int
+
+
+
+        # --------------------------------------------CREATE PYAUDIO  INSTANCE
         try:
         # we need to "try" this, because sometimes libasound.so isn't in the default place                   
             # try to supress error messages
@@ -146,15 +171,15 @@ class RF():
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                      channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_RX,
-                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,
+                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
                                      input=True,
                                      input_device_index=static.AUDIO_INPUT_DEVICE
                                      )
         # --------------------------------------------OPEN AUDIO CHANNEL TX
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
-                                     channels=1,
+                                     channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_TX,
-                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,  # n_nom_modem_samples
+                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_TX,  # n_nom_modem_samples
                                      output=True,
                                      output_device_index=static.AUDIO_OUTPUT_DEVICE,  # static.AUDIO_OUTPUT_DEVICE
                                      )
@@ -274,16 +299,14 @@ class RF():
     def transmit_signalling(self, data_out, count):
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-        # print(static.CHANNEL_STATE)
+
         freedv_signalling_mode = 14
-        
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        freedv = self.c_lib.freedv_open(freedv_signalling_mode)
+
+        freedv = cast(self.c_lib.freedv_open(freedv_signalling_mode), c_void_p)
         
         self.c_lib.freedv_set_clip(freedv, 1)
         self.c_lib.freedv_set_tx_bpf(freedv, 1)
-        
-        
+              
         bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
         payload_per_frame = bytes_per_frame - 2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
@@ -291,12 +314,9 @@ class RF():
         n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
         n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
 
-        mod_out = ctypes.c_short * n_tx_modem_samples
-        mod_out = mod_out()
-        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples
-        mod_out_preamble = mod_out_preamble()
-        mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples
-        mod_out_postamble = mod_out_postamble()
+        mod_out = create_string_buffer(n_tx_modem_samples * 2)
+        mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
+        mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
 
         buffer = bytearray(payload_per_frame)
         # set buffersize to length of data which will be send
@@ -307,9 +327,9 @@ class RF():
         crc = crc.value.to_bytes(2, byteorder='big')
         buffer += crc        # append crc16 to buffer
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-
-        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+        
         # modulate DATA and safe it into mod_out pointer
+        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
         self.c_lib.freedv_rawdatatx(freedv, mod_out, data)
         self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
 
@@ -317,16 +337,9 @@ class RF():
         self.streambuffer += bytes(mod_out_preamble)
         self.streambuffer += bytes(mod_out)
         self.streambuffer += bytes(mod_out_postamble)
-
+        
         converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
-        #self.streambuffer = bytes(converted_audio[0])
-
-
-
-        #converted_audio_miniaudio = miniaudio.convert_frames(miniaudio.SampleFormat.SIGNED16, 1, 8000, bytes(self.streambuffer), miniaudio.SampleFormat.SIGNED16, 1, 48000)
         self.streambuffer = bytes(converted_audio[0])
-        #self.streambuffer += bytes(converted_audio_miniaudio)
-
 
         # append frame again with as much as in count defined
         for i in range(1, count):
@@ -367,28 +380,20 @@ class RF():
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_DATA'
 
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        freedv = self.c_lib.freedv_open(mode)
-
+        freedv = cast(self.c_lib.freedv_open(freedv_signalling_mode), c_void_p)
         self.c_lib.freedv_set_clip(freedv, 1)
         self.c_lib.freedv_set_tx_bpf(freedv, 1)
-                
+              
+        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
+        payload_per_frame = bytes_per_frame - 2
         n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
-        #get n_tx_modem_samples which defines the size of the modulation object
         n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)
         n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
         n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
-        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_per_frame = bytes_per_frame - 2
-                
-        mod_out = ctypes.c_short * n_tx_modem_samples
-        mod_out = mod_out()
 
-        mod_out_preamble = ctypes.c_short * n_tx_preamble_modem_samples
-        mod_out_preamble = mod_out_preamble()
-
-        mod_out_postamble = ctypes.c_short * n_tx_postamble_modem_samples
-        mod_out_postamble = mod_out_postamble()
+        mod_out = create_string_buffer(n_tx_modem_samples * 2)
+        mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
+        mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
 
         self.streambuffer = bytearray()
         self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
@@ -447,16 +452,12 @@ class RF():
         freedv_mode_datac3 = 12
         
         # DATAC0
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac0_freedv = self.c_lib.freedv_open(freedv_mode_datac0)
+
+        datac0_freedv = cast(self.c_lib.freedv_open(freedv_mode_datac0), c_void_p)
         self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)
         datac0_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
         datac0_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac0_freedv)
-
-        # bytes_per_frame
-        datac0_bytes_out = (ctypes.c_ubyte * datac0_bytes_per_frame)
-        datac0_bytes_out = datac0_bytes_out()  # get pointer from bytes_out
-
+        datac0_bytes_out = create_string_buffer(datac0_bytes_per_frame * 2)
         self.c_lib.freedv_set_frames_per_burst(datac0_freedv, 1)
         datac0_modem_stats_snr = c_float()
         datac0_modem_stats_sync = c_int()
@@ -466,27 +467,21 @@ class RF():
         static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = datac0_bytes_per_frame - 2
 
         # DATAC1
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac1_freedv = self.c_lib.freedv_open(freedv_mode_datac1)
+        datac1_freedv = cast(self.c_lib.freedv_open(freedv_mode_datac1), c_void_p)
         datac1_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
         datac1_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac1_freedv)
-        # bytes_per_frame
-        datac1_bytes_out = (ctypes.c_ubyte * datac1_bytes_per_frame)
-        datac1_bytes_out = datac1_bytes_out()  # get pointer from bytes_out
-        self.c_lib.freedv_set_frames_per_burst(datac1_freedv, 1)
+        datac1_bytes_out = create_string_buffer(datac1_bytes_per_frame * 2)
+        self.c_lib.freedv_set_frames_per_burst(datac1_freedv, 0)
         datac1_modem_stats_snr = c_float()
         datac1_modem_stats_sync = c_int()
         datac1_buffer = bytes()
 
         # DATAC3
-        self.c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
-        datac3_freedv = self.c_lib.freedv_open(freedv_mode_datac3)
+        datac3_freedv = cast(self.c_lib.freedv_open(freedv_mode_datac3), c_void_p)
         datac3_bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
         datac3_n_max_modem_samples = self.c_lib.freedv_get_n_max_modem_samples(datac3_freedv)
-        # bytes_per_frame
-        datac3_bytes_out = (ctypes.c_ubyte * datac3_bytes_per_frame)
-        datac3_bytes_out = datac3_bytes_out()  # get pointer from bytes_out
-        self.c_lib.freedv_set_frames_per_burst(datac3_freedv, 1)
+        datac3_bytes_out = create_string_buffer(datac3_bytes_per_frame * 2)
+        self.c_lib.freedv_set_frames_per_burst(datac3_freedv, 0)
         datac3_modem_stats_snr = c_float()
         datac3_modem_stats_sync = c_int()
         datac3_buffer = bytes()
@@ -503,27 +498,18 @@ class RF():
         '''
         fft_buffer = bytes()
         while True:
-            #time.sleep(0.0005)
-            '''
-            # refresh vars, so the correct parameters of the used mode are set
-            if mode == static.ARQ_DATA_CHANNEL_MODE:
-                static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
-                static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
-            '''
 
             data_in = bytes()
             data_in = self.stream_rx.read(self.AUDIO_CHUNKS,  exception_on_overflow=False)
-
             data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
-            data_in = data_in[0]  # .rstrip(b'\x00')
-
-            #data_in = miniaudio.convert_frames(miniaudio.SampleFormat.SIGNED16, 1, 48000, bytes(data_in), miniaudio.SampleFormat.SIGNED16, 1, 8000)
+            data_in = data_in[0]#.rstrip(b'\x00')
             
             # we need to set nin * 2 beause of byte size in array handling
             datac0_nin = self.c_lib.freedv_nin(datac0_freedv) * 2
             datac1_nin = self.c_lib.freedv_nin(datac1_freedv) * 2
             datac3_nin = self.c_lib.freedv_nin(datac3_freedv) * 2
 
+            '''
             # refill buffer only if every mode has worked with its data
             if (len(datac0_buffer) < (datac0_nin)) and (len(datac1_buffer) < (datac1_nin)) and (len(datac3_buffer) < (datac3_nin)):
                 
@@ -531,27 +517,26 @@ class RF():
                 datac1_buffer += data_in
                 datac3_buffer += data_in
                 
+            '''    
+            datac0_buffer += data_in
+            datac1_buffer += data_in
+            datac3_buffer += data_in
+            
             # refill fft_data buffer so we can plot a fft
             if len(self.fft_data) < 1024:
                 self.fft_data += data_in
 
             # DECODING DATAC0
             if len(datac0_buffer) >= (datac0_nin):
-
                 datac0_audio = datac0_buffer[:datac0_nin]
                 datac0_buffer = datac0_buffer[datac0_nin:]
-                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac0_bytes_out, datac0_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_audio)  # demodulate audio
                 sync = self.c_lib.freedv_get_rx_status(datac0_freedv)
+
                 self.get_scatter(datac0_freedv)
                 
                 if sync != 0 and nbytes != 0:
                     print("----------DECODE----------------")
-                    # clear all buffers for be ready with clean audio data
-                    # we need to be carefull and only cleaning buffer if we reached the last frame of a burst
-                    datac0_buffer = bytes()
-                    datac1_buffer = bytes()
-                    datac3_buffer = bytes()
                                             
                     # calculate snr and scatter
                     self.get_scatter(datac0_freedv)
@@ -565,7 +550,6 @@ class RF():
             if len(datac1_buffer) >= (datac1_nin):
                 datac1_audio = datac1_buffer[:datac1_nin]
                 datac1_buffer = datac1_buffer[datac1_nin:]
-                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac1_bytes_out, datac1_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_audio)  # demodulate audio
 
                 sync = self.c_lib.freedv_get_rx_status(datac1_freedv)
@@ -574,7 +558,6 @@ class RF():
                     frame = int.from_bytes(bytes(datac1_bytes_out[:1]), "big") - 10
                     n_frames_per_burst = int.from_bytes(bytes(datac1_bytes_out[1:2]), "big")
                     print("frame: {0}, N_frames_per_burst: {1}".format(frame, n_frames_per_burst))
-
 
                     # calculate snr and scatter
                     self.get_scatter(datac1_freedv)
@@ -588,7 +571,6 @@ class RF():
             if len(datac3_buffer) >= (datac3_nin):
                 datac3_audio = datac3_buffer[:datac3_nin]
                 datac3_buffer = datac3_buffer[datac3_nin:]
-                self.c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), datac3_bytes_out, datac3_audio]
                 nbytes = self.c_lib.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_audio)  # demodulate audio
 
                 sync = self.c_lib.freedv_get_rx_status(datac3_freedv)
@@ -614,16 +596,15 @@ class RF():
             frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
-
-            #self.c_lib.freedv_set_frames_per_burst(freedv_data, n_frames_per_burst);
+            #self.c_lib.freedv_set_frames_per_burst(freedv, n_frames_per_burst);
 
             #frequency_offset = self.get_frequency_offset(freedv)
             #print("Freq-Offset: " + str(frequency_offset))
             
             if 50 >= frametype >= 10:
-                # force, if we don't simulate a loss of the third frame
+                # force = True, if we don't simulate a loss of the third frame, else force = False
                 force = True
-                if frame != 3 or force == True:
+                if frame != 3 or force:
 
                     # send payload data to arq checker without CRC16
                     data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame)
@@ -634,8 +615,7 @@ class RF():
                         self.c_lib.freedv_set_sync(freedv, 0)
 
                 else:
-                    logging.critical(
-                        "---------------------------SIMULATED MISSING FRAME")
+                    logging.critical("-------------SIMULATED MISSING FRAME")
                     force = True
 
             # BURST ACK
@@ -679,7 +659,6 @@ class RF():
                 # If we get a corrected frequency less 7.000 Mhz, Ham Radio devices will not transmit...
                 #self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
                 #self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
-                
                 data_handler.received_ping_ack(bytes_out[:-2])
 
             # ARQ FILE TRANSFER RECEIVED!
@@ -702,15 +681,13 @@ class RF():
 
             # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
             if frame == n_frames_per_burst:
-
-                logging.debug("LAST FRAME ---> UNSYNC")
+                logging.info("LAST FRAME ---> UNSYNC")
                 self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
 
 
         else:
             # for debugging purposes to receive all data
-            pass
-            # print(bytes_out[:-2])
+            structlog.get_logger("structlog").debug("[TNC] Unknown frame received", frame=bytes_out[:-2])
 
 
     def get_frequency_offset(self, freedv):
@@ -778,9 +755,6 @@ class RF():
             static.HAMLIB_FREQUENCY = int(self.my_rig.get_freq())
             (hamlib_mode, static.HAMLIB_BANDWITH) = self.my_rig.get_mode()
             static.HAMLIB_MODE = Hamlib.rig_strrmode(hamlib_mode)
-        #static.HAMLIB_FREQUENCY = rigctld.get_frequency()
-        #static.HAMLIB_MODE = rigctld.get_mode()[0]
-        #static.HAMLIB_BANDWITH = rigctld.get_mode()[1]
 
     def calculate_fft(self):
         while True:
@@ -805,11 +779,7 @@ class RF():
                     dfft = np.around(dfft, 1)
                     dfftlist = dfft.tolist()
 
-                    # send fft only if receiving
-                    if static.CHANNEL_STATE == 'RECEIVING_SIGNALLING' or static.CHANNEL_STATE == 'RECEIVING_DATA':
-                        static.FFT = dfftlist[10:180] #200 --> bandwith 3000
-                        #static.FFT = dfftlist
-                        
+                    static.FFT = dfftlist[10:180] #200 --> bandwith 3000    
                 except:
                     
                     structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
@@ -817,3 +787,4 @@ class RF():
                     static.FFT = [0] * 400
             else:
                 pass
+

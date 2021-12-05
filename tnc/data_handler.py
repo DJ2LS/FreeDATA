@@ -850,7 +850,8 @@ def transmit_cq():
     cq_frame[8:14] = static.MYGRID
     
     while not modem.transmit_signalling(cq_frame, 3):
-        time.sleep(0.01)
+        #time.sleep(0.01)
+        pass
 
 
 def received_cq(data_in):
