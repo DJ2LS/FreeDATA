@@ -380,7 +380,7 @@ class RF():
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_DATA'
 
-        freedv = cast(self.c_lib.freedv_open(freedv_signalling_mode), c_void_p)
+        freedv = cast(self.c_lib.freedv_open(mode), c_void_p)
         self.c_lib.freedv_set_clip(freedv, 1)
         self.c_lib.freedv_set_tx_bpf(freedv, 1)
               
