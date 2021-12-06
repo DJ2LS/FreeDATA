@@ -155,6 +155,7 @@ client.on('data', function(data) {
                 total_bytes: data['TOTAL_BYTES'],
                 arq_transmission_percent: data['ARQ_TRANSMISSION_PERCENT'],
                 stations: data['STATIONS'],
+                beacon_state: data['BEACON_STATE'],
             };
             //console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
@@ -228,7 +229,7 @@ exports.sendPing = function(dxcallsign) {
 
 // Send CQ
 exports.sendCQ = function() {
-    command = '{"type" : "CQ", "command" : "CQCQCQ", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "BROADCAST", "command" : "CQCQCQ", "timestamp" : ' + Date.now() + '}'
     writeTncCommand(command)
 }
 
@@ -282,4 +283,15 @@ exports.delRxMsgBuffer = function() {
     }
 }
 
+// START BEACON
+exports.startBeacon = function(interval) {
+    command = '{"type" : "BROADCAST", "command" : "START_BEACON", "parameter": "' + interval + '","timestamp" : ' + Date.now() + '}'
+    writeTncCommand(command)
+}
+
+// STOP BEACON
+exports.stopBeacon = function() {
+    command = '{"type" : "BROADCAST", "command" : "STOP_BEACON", "timestamp" : ' + Date.now() + '}'
+    writeTncCommand(command)
+}
 

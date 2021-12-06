@@ -837,6 +837,40 @@ def received_ping_ack(data_in):
 # BROADCAST HANDLER
 # ############################################################################################################
 
+def run_beacon(interval):
+    try:
+        structlog.get_logger("structlog").warning("[TNC] Starting beacon!", interval=interval)
+        
+        while static.BEACON_STATE and static.ARQ_STATE == 'IDLE':
+
+            beacon_frame = bytearray(14)
+            beacon_frame[:1]   = bytes([230])
+            beacon_frame[1:2]  = b'\x01'
+            beacon_frame[2:8]  = static.MYCALLSIGN
+            beacon_frame[8:14] = static.MYGRID
+        
+            static.INFO.append("BEACON;SENDING")
+            structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
+            while not modem.transmit_signalling(beacon_frame, 2):
+                #time.sleep(0.01)
+                pass
+            time.sleep(interval)
+            
+                                            
+    except Exception as e:
+        print(e)
+
+def received_beacon(data_in):
+# here we add the received station to the heard stations buffer
+    dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
+    dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
+    static.INFO.append("BEACON;RECEIVING")
+    structlog.get_logger("structlog").info("[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
+    helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+
+    
+    
 def transmit_cq():
     logging.info("CQ CQ CQ")
     static.INFO.append("CQ;SENDING")
@@ -861,6 +895,8 @@ def received_cq(data_in):
     static.INFO.append("CQ;RECEIVING")
     structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
     helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+
 
 
 def arq_reset_ack(state):

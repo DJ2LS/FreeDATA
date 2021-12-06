@@ -81,6 +81,9 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits
     document.getElementById('hamlib_handshake_advanced').value = config.handshake
 
+    document.getElementById("beaconInterval").value = config.beacon_interval
+    
+    
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true
         document.getElementById("waterfall-scatter-switch2").checked = false
@@ -250,6 +253,7 @@ advancedHamlibSettingsModal
         sock.saveMyGrid(grid)
 
     });
+      
 
     // startPing button clicked
     document.getElementById("sendPing").addEventListener("click", () => {
@@ -265,9 +269,25 @@ advancedHamlibSettingsModal
         sock.sendPing(dxcallsign)
     });
 
+
+
     // sendCQ button clicked
     document.getElementById("sendCQ").addEventListener("click", () => {
         sock.sendCQ()
+    });
+
+
+    // Start beacon button clicked
+    document.getElementById("startBeacon").addEventListener("click", () => {
+        interval = document.getElementById("beaconInterval").value
+        config.beacon_interval = interval
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        sock.startBeacon(interval)
+    });  
+
+    // Stop beacon button clicked
+    document.getElementById("stopBeacon").addEventListener("click", () => {
+        sock.stopBeacon()
     });
 
     // startTNC button clicked
@@ -619,6 +639,24 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("stopTransmission").disabled = false
     }
 
+    // BEACON STATE
+    console.log(arg.beacon_state)
+    if (arg.beacon_state == 'True') {
+        document.getElementById("startBeacon").className = "btn btn-success spinner-grow"
+        document.getElementById("startBeacon").disabled = true
+        document.getElementById("beaconInterval").disabled = true
+        document.getElementById("stopBeacon").disabled = false
+    } else if (arg.beacon_state == 'False') {
+        document.getElementById("startBeacon").className = "btn btn-success"
+        document.getElementById("startBeacon").disabled = false
+        document.getElementById("beaconInterval").disabled = false
+        document.getElementById("stopBeacon").disabled = true
+    } else {
+        document.getElementById("startBeacon").className = "btn btn-success"
+        document.getElementById("startBeacon").disabled = false
+        document.getElementById("stopBeacon").disabled = true
+        document.getElementById("beaconInterval").disabled = false
+    }
     // RMS
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
@@ -816,7 +854,15 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             var toast = bootstrap.Toast.getOrCreateInstance(toastCQreceiving) // Returns a Bootstrap toast instance
             toast.show()
         }
+
+        // RECEIVING BEACON TOAST
+        if (arg.info[i] == "BEACON;RECEIVING"){
+            var toastBEACONreceiving = document.getElementById('toastBEACONreceiving')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastBEACONreceiving) // Returns a Bootstrap toast instance
+            toast.show()
+        }
         
+                
         // SENDING PING TOAST
         if (arg.info[i] == "PING;SENDING"){
             var toastPINGsending = document.getElementById('toastPINGsending')

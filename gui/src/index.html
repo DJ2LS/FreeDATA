@@ -103,6 +103,15 @@
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
+								<!-- RECEIVING BEACON -->
+				<div class="toast align-items-center text-white bg-primary border-0" id="toastBEACONreceiving" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">Receiving a beacons signal!</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+				
+				
 				<!-- SENDING PING -->
 				<div class="toast align-items-center text-white bg-primary border-0" id="toastPINGsending" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
@@ -639,7 +648,7 @@
 				</div>
 				<div class="col">
 					<div class="card text-dark bg-light mb-1">
-						<div class="card-header p-1"><strong>PING & CQ</strong>
+						<div class="card-header p-1"><strong>PING, CQ & BEACON</strong>
 						</div>
 						<div class="card-body p-2">
 							<div class="row">
@@ -650,9 +659,6 @@
 											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
 												<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
 											</svg>
-										</button> <span class="input-group-text text-secondary" id="pingACK">ACK</span>
-										<span class="input-group-text" id="pingDistance">0000 km</span>
-										<span class="input-group-text" id="pingDB">0 dB</span>
 									</div>
 								</div>
 								<div class="col-md-auto">
@@ -660,6 +666,47 @@
 										<button class="btn btn-success" id="sendCQ" type="button">CQ CQ CQ</button>
 									</div>
 								</div>
+								
+								
+								
+								<div class="col-md-auto">
+								
+								
+								
+																		<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Start or stop the Beacon mode">
+					<button type="button" id="startBeacon" class="btn btn-success">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+							<path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z" />
+							<path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z" />
+						</svg>
+					</button>
+					<div class="input-group-text">Beacon</div>
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="beaconInterval" style="width:5rem">
+							<option value="5">5s</option>
+							<option selected value="10">10s</option>
+							<option value="15">15s</option>
+							<option value="30">30s</option>
+							<option value="45">45s</option>
+							<option value="60">60s</option>
+							<option value="90">90s</option>
+
++
+						</select>
+					<button type="button" id="stopBeacon" class="btn btn-sm btn-danger">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-octagon-fill" viewBox="0 0 16 16">
+							<path d="M11.46.146A.5.5 0 0 0 11.107 0H4.893a.5.5 0 0 0-.353.146L.146 4.54A.5.5 0 0 0 0 4.893v6.214a.5.5 0 0 0 .146.353l4.394 4.394a.5.5 0 0 0 .353.146h6.214a.5.5 0 0 0 .353-.146l4.394-4.394a.5.5 0 0 0 .146-.353V4.893a.5.5 0 0 0-.146-.353L11.46.146zm-6.106 4.5L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 1 1 .708-.708z" />
+						</svg>
+					</button>
+				</div>
+				
+				
+				
+				
+				
+				
+								</div>
+								
+								
 							</div>
 							<!-- end of row-->
 						</div>
@@ -779,6 +826,7 @@
 										<div class="col-auto">
 											<div class="input-group input-group-sm mb-0">
 												<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
+												
 											</div>
 										</div>
 										<div class="col-auto">

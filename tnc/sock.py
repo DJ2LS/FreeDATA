@@ -100,6 +100,19 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
                     CQ_THREAD.start()
 
+                # CQ CQ CQ -----------------------------------------------------
+                if received_json["command"] == "START_BEACON":
+                    static.BEACON_STATE = True
+                    interval = int(received_json["parameter"])
+                    BEACON_THREAD = threading.Thread(target=data_handler.run_beacon, args=[interval], name="START BEACON")
+                    BEACON_THREAD.start()
+                    
+                # CQ CQ CQ -----------------------------------------------------
+                if received_json["command"] == "STOP_BEACON":
+                    static.BEACON_STATE = False
+                    structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
+                    
+                                        
                 # PING ----------------------------------------------------------
                 if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
@@ -226,6 +239,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES": str(static.TOTAL_BYTES),
                         "INFO" : static.INFO,
+                        "BEACON_STATE" : str(static.BEACON_STATE),
                         "STATIONS": [],
                         "EOF": "EOF",
                     }
