@@ -44,8 +44,8 @@ data_out = b'HELLO WORLD!'
 
 
 
-print(N_BURSTS)
-print(N_FRAMES_PER_BURST)
+print(N_BURSTS, file=sys.stderr)
+print(N_FRAMES_PER_BURST, file=sys.stderr)
 
 
 
@@ -80,38 +80,52 @@ if DATA_OUTPUT == "audio":
 c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
 freedv = c_lib.freedv_open(mode)
 bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
-payload_per_frame = bytes_per_frame -2
-n_nom_modem_samples = c_lib.freedv_get_n_nom_modem_samples(freedv)
-n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(freedv) #get n_tx_modem_samples which defines the size of the modulation object # --> *2
-    
-mod_out = ctypes.c_short * n_tx_modem_samples
+payload_bytes_per_frame = bytes_per_frame -2
+
+n_mod_out = int(c_lib.freedv_get_n_tx_modem_samples(freedv))
+mod_out = ctypes.c_short * n_mod_out
 mod_out = mod_out()
-mod_out_preamble = ctypes.c_short * (1760*2) #1760 for mode 10,11,12 #4000 for mode 9
+
+n_preamble = int(c_lib.freedv_get_n_tx_preamble_modem_samples(freedv))
+mod_out_preamble = ctypes.c_short * n_preamble
 mod_out_preamble = mod_out_preamble()
-        
-buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+
+n_postamble = int(c_lib.freedv_get_n_tx_postamble_modem_samples(freedv))
+mod_out_postamble = ctypes.c_short * n_postamble
+mod_out_postamble = mod_out_postamble()
+
+buffer = bytearray(payload_bytes_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
 buffer[:len(data_out)] = data_out # set buffersize to length of data which will be send
 
-crc = ctypes.c_ushort(c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
+crc = ctypes.c_ushort(c_lib.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))     # generate CRC16
 crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
 buffer += crc        # append crc16 to buffer    
 
 
-print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST) )
+print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST) , file=sys.stderr)
 
 for i in range(0,N_BURSTS):
 
-    c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
-
     txbuffer = bytearray()
+
+    c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
     txbuffer += bytes(mod_out_preamble)
 
     for n in range(0,N_FRAMES_PER_BURST):
 
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-        c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer 
+        c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
 
         txbuffer += bytes(mod_out)
+    
+    c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+    txbuffer += bytes(mod_out_postamble)
+
+    inter_burst_delay_ms = 200
+    samples_delay = int(MODEM_SAMPLE_RATE*inter_burst_delay_ms/1000)
+    mod_out_silence = ctypes.c_short * samples_delay
+    mod_out_silence = mod_out_silence()
+    txbuffer += bytes(mod_out_silence)
     
     if DATA_OUTPUT == "audio":          
         audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
@@ -121,8 +135,6 @@ for i in range(0,N_BURSTS):
         sys.stdout.buffer.write(txbuffer)    # print data to terminal for piping the output to other programs
         sys.stdout.flush()
         txbuffer = bytearray()
-
-    time.sleep(DELAY_BETWEEN_BURSTS)
 
 if DATA_OUTPUT == "audio":          
     stream_tx.close()
