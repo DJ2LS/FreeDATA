@@ -21,6 +21,7 @@ add_test(NAME 000_audio_tests
          COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/test/000_audio_tests;
                             python3 sinustest.py")
 add_test(NAME 001_highsnr_stdio_audio
-         COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                             python3 test_tx.py --mode 12 --delay 500 --frames 2 --bursts 1 > t.s16")
 
