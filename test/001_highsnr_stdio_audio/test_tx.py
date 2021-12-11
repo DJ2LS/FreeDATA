@@ -42,15 +42,6 @@ MODEM_SAMPLE_RATE = 8000
 mode = args.FREEDV_MODE
 data_out = b'HELLO WORLD!'
 
-
-
-print(N_BURSTS, file=sys.stderr)
-print(N_FRAMES_PER_BURST, file=sys.stderr)
-
-
-
-
-
         #-------------------------------------------- LOAD FREEDV
              
 libname = "libcodec2.so"
@@ -102,7 +93,7 @@ crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
 buffer += crc        # append crc16 to buffer    
 
 
-print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST) , file=sys.stderr)
+print("BURSTS: " + str(N_BURSTS) + " FRAMES_PER_BURST: " + str(N_FRAMES_PER_BURST) , file=sys.stderr)
 
 for i in range(0,N_BURSTS):
 
@@ -117,13 +108,14 @@ for i in range(0,N_BURSTS):
         c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
 
         txbuffer += bytes(mod_out)
-    
+        print("frame",n, file=sys.stderr)
+              
     c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
     txbuffer += bytes(mod_out_postamble)
 
-    inter_burst_delay_ms = 200
-    samples_delay = int(MODEM_SAMPLE_RATE*inter_burst_delay_ms/1000)
+    samples_delay = int(MODEM_SAMPLE_RATE*DELAY_BETWEEN_BURSTS)
     mod_out_silence = ctypes.c_short * samples_delay
+    print("samples_delay", samples_delay, "DELAY_BETWEEN_BURSTS", DELAY_BETWEEN_BURSTS, file=sys.stderr)
     mod_out_silence = mod_out_silence()
     txbuffer += bytes(mod_out_silence)
     
@@ -134,7 +126,6 @@ for i in range(0,N_BURSTS):
     else:
         sys.stdout.buffer.write(txbuffer)    # print data to terminal for piping the output to other programs
         sys.stdout.flush()
-        txbuffer = bytearray()
 
 if DATA_OUTPUT == "audio":          
     stream_tx.close()
