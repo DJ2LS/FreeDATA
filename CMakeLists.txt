@@ -25,6 +25,7 @@ add_test(NAME 001_highsnr_stdio
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_tx.py --mode 14 --delay 500 --frames 3 --bursts 1 |
-                        freedv_data_raw_rx datac0 - - --framesperburst 3 | hexdump -C")
+                        freedv_data_raw_rx datac0 - - --framesperburst 3 -v | hexdump -C")
         set_tests_properties(001_highsnr_stdio PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
+        set_tests_properties(001_highsnr_stdio PROPERTIES PASS_REGULAR_EXPRESSION "Frms.:     3")
 
