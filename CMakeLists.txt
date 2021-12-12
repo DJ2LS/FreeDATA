@@ -22,10 +22,6 @@ set(FRAMESPERBURST 3)
 set(BURSTS 1)
 set(TESTFRAMES 3)
 
-add_test(NAME 000_audio_tests
-         COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/test/000_audio_tests;
-                            python3 sinustest.py")
-
 add_test(NAME 001_highsnr_stdio_P_C
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
