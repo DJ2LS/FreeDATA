@@ -50,55 +50,31 @@ if AUDIO_OUTPUT_DEVICE != 0:
 # data binary string
 data_out = b'HELLO WORLD!'
 
-# LOAD FREEDV
-libname = "libcodec2.so"
-c_lib = ctypes.CDLL(libname)
 
-# ctypes function init        
-
-c_lib.freedv_open.argype = [c_int]
-c_lib.freedv_open.restype = c_void_p
-
-c_lib.freedv_get_bits_per_modem_frame.argtype = [c_void_p]
-c_lib.freedv_get_bits_per_modem_frame.restype = c_int
-
-c_lib.freedv_get_n_tx_preamble_modem_samples.argtype = [c_void_p]
-c_lib.freedv_get_n_tx_preamble_modem_samples.restype = c_int
-
-c_lib.freedv_get_n_tx_postamble_modem_samples.argtype = [c_void_p]
-c_lib.freedv_get_n_tx_postamble_modem_samples.restype = c_int
-
-c_lib.freedv_gen_crc16.argtype = [c_void_p, c_int]
-c_lib.freedv_gen_crc16.restype = c_void_p
-
-c_lib.freedv_nin.argtype = [c_void_p]
-c_lib.freedv_nin.restype = c_int
-
-c_lib.freedv_rawdatatx.argtype = [c_void_p, c_char_p, c_char_p]
-c_lib.freedv_rawdatatx.restype = c_int
-        
+sys.path.insert(0,'..')
+import codec2
         
 # ----------------------------------------------------------------
 
 
 
 # open codec2 instance        
-freedv = cast(c_lib.freedv_open(MODE), c_void_p)
+freedv = cast(codec2.api.freedv_open(MODE), c_void_p)
 
 # get number of bytes per frame for mode
-bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
 payload_bytes_per_frame = bytes_per_frame -2
 
 # init buffer for data
-n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(freedv)
+n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
 mod_out = create_string_buffer(n_tx_modem_samples * 2)
 
 # init buffer for preample
-n_tx_preamble_modem_samples = c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
+n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(freedv)
 mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
 
 # init buffer for postamble
-n_tx_postamble_modem_samples = c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
+n_tx_postamble_modem_samples = codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
 mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
 
 
@@ -108,7 +84,7 @@ buffer[:len(data_out)] = data_out # set buffersize to length of data which will 
 
 # create crc for data frame - we are using the crc function shipped with codec2 to avoid 
 # crc algorithm incompatibilities
-crc = ctypes.c_ushort(c_lib.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))     # generate CRC16
+crc = ctypes.c_ushort(codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))     # generate CRC16
 crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
 buffer += crc        # append crc16 to buffer    
 
@@ -118,21 +94,21 @@ print(f"TOTAL BURSTS: {N_BURSTS} TOTAL FRAMES_PER_BURST: {N_FRAMES_PER_BURST}", 
 for i in range(1,N_BURSTS+1):
 
     # write preamble to txbuffer
-    c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+    codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
     txbuffer = bytes(mod_out_preamble)
 
     # create modulaton for N = FRAMESPERBURST and append it to txbuffer
     for n in range(1,N_FRAMES_PER_BURST+1):
 
         data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-        c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
+        codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
 
         txbuffer += bytes(mod_out)
         
         print(f"BURST: {i}/{N_BURSTS} FRAME: {n}/{N_FRAMES_PER_BURST}", file=sys.stderr)
     
     # append postamble to txbuffer          
-    c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+    codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
     txbuffer += bytes(mod_out_postamble)
 
     # append a delay between bursts as audio silence

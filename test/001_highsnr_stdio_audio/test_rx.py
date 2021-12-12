@@ -51,33 +51,9 @@ if AUDIO_INPUT_DEVICE != 0:
                             input_device_index=AUDIO_INPUT_DEVICE,
                             ) 
 
-# LOAD FREEDV
-libname = "libcodec2.so"
-c_lib = ctypes.CDLL(libname)
 
-# ctypes function init        
-
-c_lib.freedv_open.argype = [c_int]
-c_lib.freedv_open.restype = c_void_p
-
-c_lib.freedv_get_bits_per_modem_frame.argtype = [c_void_p]
-c_lib.freedv_get_bits_per_modem_frame.restype = c_int
-
-c_lib.freedv_nin.argtype = [c_void_p]
-c_lib.freedv_nin.restype = c_int
-
-c_lib.freedv_rawdatarx.argtype = [c_void_p, c_char_p, c_char_p]
-c_lib.freedv_rawdatarx.restype = c_int
-
-c_lib.freedv_get_n_max_modem_samples.argtype = [c_void_p]
-c_lib.freedv_get_n_max_modem_samples.restype = c_int
-
-c_lib.freedv_set_frames_per_burst.argtype = [c_void_p, c_int]
-c_lib.freedv_set_frames_per_burst.restype = c_void_p
-      
-c_lib.freedv_get_rx_status.argtype = [c_void_p]
-c_lib.freedv_get_rx_status.restype = c_int      
-
+sys.path.insert(0,'..')
+import codec2
       
 # ----------------------------------------------------------------
               
@@ -85,18 +61,17 @@ c_lib.freedv_get_rx_status.restype = c_int
      # DATA CHANNEL INITIALISATION
 
 # open codec2 instance        
-freedv = cast(c_lib.freedv_open(MODE), c_void_p)
+freedv = cast(codec2.api.freedv_open(MODE), c_void_p)
 
 # get number of bytes per frame for mode
-bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
+bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
 payload_bytes_per_frame = bytes_per_frame -2
 
-n_max_modem_samples = c_lib.freedv_get_n_max_modem_samples(freedv)     
+n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(freedv)     
 bytes_out = create_string_buffer(bytes_per_frame * 2)
 
-c_lib.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
+codec2.api.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
 
-        
 total_n_bytes = 0
 rx_total_frames = 0
 rx_frames = 0
@@ -109,7 +84,7 @@ while receive and time.time() < timeout:
     data_in = b''
     if AUDIO_INPUT_DEVICE != 0: 
         
-        nin = c_lib.freedv_nin(freedv)
+        nin = codec2.api.freedv_nin(freedv)
         nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
         if DEBUGGING_MODE == True:
             print(f"NIN:  {nin} [{nin_converted}]", file=sys.stderr)
@@ -119,14 +94,14 @@ while receive and time.time() < timeout:
         data_in = data_in[0].rstrip(b'\x00') 
 
     else:
-        nin = c_lib.freedv_nin(freedv) * 2
+        nin = codec2.api.freedv_nin(freedv) * 2
         data_in = sys.stdin.buffer.read(nin)
 
-    nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
+    nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
     total_n_bytes = total_n_bytes + nbytes
     
     if DEBUGGING_MODE == True:
-        print(f"SYNC: {c_lib.freedv_get_rx_status(freedv)}", file=sys.stderr)
+        print(f"SYNC: {codec2.api.freedv_get_rx_status(freedv)}", file=sys.stderr)
         
     if nbytes == bytes_per_frame:
         rx_total_frames = rx_total_frames + 1
