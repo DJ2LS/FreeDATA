@@ -31,5 +31,6 @@ jobs:
       shell: bash
       working-directory: ${{github.workspace}}
       run: |
-           mkdir build && cd build && cmake ..
+           mkdir build && cd build
+           cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
            ctest
