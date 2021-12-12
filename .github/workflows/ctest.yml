@@ -18,7 +18,7 @@ jobs:
       run: |
            sudo apt-get update
            sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio
-           pip3 install psutil crcengine ujson pyserial numpy structlog
+           pip3 install psutil crcengine ujson pyserial numpy structlog miniaudio
 
     - name: Build codec2
       shell: bash
@@ -33,4 +33,4 @@ jobs:
       run: |
            mkdir build && cd build
            cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
-           ctest
+           ctest --output-on-failure
