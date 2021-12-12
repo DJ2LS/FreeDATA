@@ -17,8 +17,7 @@ parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
-parser.add_argument('--mode', dest="FREEDV_MODE", default=0, type=int)
-parser.add_argument('--output', dest="DATA_OUTPUT", type=str)  
+parser.add_argument('--mode', dest="FREEDV_MODE", default=14, type=int)
 parser.add_argument('--audiooutput', dest="AUDIO_OUTPUT", default=0, type=int) 
 
 args = parser.parse_args()
@@ -26,9 +25,9 @@ args = parser.parse_args()
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
-DATA_OUTPUT = args.DATA_OUTPUT
 AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT
 MODE = args.FREEDV_MODE
+
 
 # AUDIO PARAMETERS
 AUDIO_FRAMES_PER_BUFFER = 2048 
@@ -36,7 +35,7 @@ MODEM_SAMPLE_RATE = 8000
 AUDIO_SAMPLE_RATE_TX = 48000
 
 # check if we want to use an audio device then do an pyaudio init
-if DATA_OUTPUT == "audio": 
+if AUDIO_OUTPUT_DEVICE != 0: 
     # pyaudio init
     p = pyaudio.PyAudio()
     stream_tx = p.open(format=pyaudio.paInt16,
@@ -143,7 +142,7 @@ for i in range(1,N_BURSTS+1):
     print(f"samples_delay: {samples_delay} DELAY_BETWEEN_BURSTS: {DELAY_BETWEEN_BURSTS}", file=sys.stderr)
     
     # check if we want to use an audio device or stdout
-    if DATA_OUTPUT == "audio":  
+    if AUDIO_OUTPUT_DEVICE != 0: 
         
         # sample rate conversion from 8000Hz to 48000Hz
         audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
@@ -156,6 +155,6 @@ for i in range(1,N_BURSTS+1):
 
 
 # and at last check if we had an openend pyaudio instance and close it
-if DATA_OUTPUT == "audio":          
+if AUDIO_OUTPUT_DEVICE != 0: 
     stream_tx.close()
     p.terminate()
