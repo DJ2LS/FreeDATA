@@ -1,0 +1,6 @@
+# possible installation of codec2 within tnc
+tnc/codec2
+
+# temporary test artifacts
+**/build
+**/Testing
