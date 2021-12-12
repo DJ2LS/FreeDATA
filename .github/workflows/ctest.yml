@@ -1,4 +1,4 @@
-name: CMake
+name: CTest
 
 on: [push]
 
@@ -17,7 +17,7 @@ jobs:
       shell: bash
       run: |
            sudo apt-get update
-           sudo apt-get install octave octave-common octave-signal sox python3-numpy pip3 portaudio19-dev python3-pyaudio
+           sudo apt-get install octave octave-common octave-signal sox python3-numpy python pip3 portaudio19-dev python3-pyaudio
            pip3 install miniaudio crcengine threading
 
     - name: Build codec2
