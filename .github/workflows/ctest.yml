@@ -1,0 +1,35 @@
+name: CMake
+
+on: [push]
+
+jobs:
+  build:
+    # The CMake configure and build commands are platform agnostic and should work equally
+    # well on Windows or Mac.  You can convert this to a matrix build if you need
+    # cross-platform coverage.
+    # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install packages
+      shell: bash
+      run: |
+           sudo apt-get update
+           sudo apt-get install octave octave-common octave-signal sox python3-numpy pip3 portaudio19-dev python3-pyaudio
+           pip3 install miniaudio crcengine threading
+
+    - name: Build codec2
+      shell: bash
+      run: |
+           git clone https://github.com/drowe67/codec2.git
+           cd codec2 && git checkout dr-tnc && git pull
+           mkdir -p build_linux && cd build_linux && cmake .. && make
+
+    - name: run ctests
+      shell: bash
+      working-directory: ${{github.workspace}}
+      run: |
+           mkdir build && cd build && cmake ..
+           ctest
