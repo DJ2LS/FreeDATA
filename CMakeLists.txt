@@ -17,15 +17,35 @@ else()
     find_package(codec2 REQUIRED)
 endif()
 
+# test variables
+set(FRAMESPERBURST 3)
+set(BURSTS 1)
+set(TESTFRAMES 3)
+
 add_test(NAME 000_audio_tests
          COMMAND sh -c "cd ${CMAKE_CURRENT_SOURCE_DIR}/test/000_audio_tests;
                             python3 sinustest.py")
-add_test(NAME 001_highsnr_stdio
+
+add_test(NAME 001_highsnr_stdio_P<>C
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
-                        python3 test_tx.py --mode 14 --delay 500 --frames 3 --bursts 1 |
-                        freedv_data_raw_rx datac0 - - --framesperburst 3 -v | hexdump -C")
-        set_tests_properties(001_highsnr_stdio PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
-        set_tests_properties(001_highsnr_stdio PROPERTIES PASS_REGULAR_EXPRESSION "Frms.:     3")
+                        python3 test_tx.py --mode 14 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        freedv_data_raw_rx datac0 - - --framesperburst ${FRAMESPERBURST} | hexdump -C")
+        set_tests_properties(001_highsnr_stdio_P<>C PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
 
+add_test(NAME 001_highsnr_stdio_C<>P
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
+                        freedv_data_raw_tx --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} datac0 /dev/zero - |
+                        python3 test_rx.py --mode 14 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+        set_tests_properties(001_highsnr_stdio_C<>P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+
+add_test(NAME 001_highsnr_stdio_P<>P
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
+                        python3 test_tx.py --mode 14 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        python3 test_rx.py --mode 14 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+        set_tests_properties(001_highsnr_stdio_P<>P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
