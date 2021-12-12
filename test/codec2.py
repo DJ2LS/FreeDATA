@@ -54,3 +54,7 @@ api.freedv_get_n_tx_preamble_modem_samples.restype = c_int
 api.freedv_get_n_tx_modem_samples.argtype = [c_void_p]
 api.freedv_get_n_tx_modem_samples.restype = c_int 
 
+api.FREEDV_MODE_DATAC1 = 10
+api.FREEDV_MODE_DATAC3 = 12
+api.FREEDV_MODE_DATAC0 = 14
+api.FREEDV_FS_8000 = 8000

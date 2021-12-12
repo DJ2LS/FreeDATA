@@ -11,13 +11,16 @@ import threading
 import audioop
 import argparse
 import sys
+sys.path.insert(0,'..')
+import codec2
+        
 
 # GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
-parser.add_argument('--mode', dest="FREEDV_MODE", default=14, type=int)
+parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
 parser.add_argument('--audiooutput', dest="AUDIO_OUTPUT", default=0, type=int) 
 
 args = parser.parse_args()
@@ -26,12 +29,17 @@ N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
 AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT
-MODE = args.FREEDV_MODE
 
+if args.FREEDV_MODE == "datac0":
+    MODE = codec2.api.FREEDV_MODE_DATAC0
+if args.FREEDV_MODE == "datac1":
+    MODE = codec2.api.FREEDV_MODE_DATAC1
+if args.FREEDV_MODE == "datac1":
+    MODE = codec2.api.FREEDV_MODE_DATAC3
 
 # AUDIO PARAMETERS
 AUDIO_FRAMES_PER_BUFFER = 2048 
-MODEM_SAMPLE_RATE = 8000
+MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 AUDIO_SAMPLE_RATE_TX = 48000
 
 # check if we want to use an audio device then do an pyaudio init
@@ -51,9 +59,6 @@ if AUDIO_OUTPUT_DEVICE != 0:
 data_out = b'HELLO WORLD!'
 
 
-sys.path.insert(0,'..')
-import codec2
-        
 # ----------------------------------------------------------------
 
 
