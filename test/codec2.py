@@ -4,9 +4,18 @@
 import ctypes
 from ctypes import *
 import sys
-
+from enum import Enum
 
 print("loading codec2 module", file=sys.stderr)
+
+
+# Enum for codec2 modes
+class FREEDV_MODE(Enum):
+    datac0 = 14
+    datac1 = 10
+    datac3 = 12
+
+
 
 
 # LOAD FREEDV
@@ -54,7 +63,12 @@ api.freedv_get_n_tx_preamble_modem_samples.restype = c_int
 api.freedv_get_n_tx_modem_samples.argtype = [c_void_p]
 api.freedv_get_n_tx_modem_samples.restype = c_int 
 
-api.FREEDV_MODE_DATAC1 = 10
-api.FREEDV_MODE_DATAC3 = 12
-api.FREEDV_MODE_DATAC0 = 14
+
 api.FREEDV_FS_8000 = 8000
+
+
+
+
+    
+    
+

@@ -17,12 +17,14 @@ import time
 import threading
 import sys
 import argparse
+sys.path.insert(0,'..')
+import codec2
 
 #--------------------------------------------GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
-parser.add_argument('--mode', dest="FREEDV_MODE", default=14, type=int)
+parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
 parser.add_argument('--audioinput', dest="AUDIO_INPUT", default=0, type=int)  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
 
@@ -31,13 +33,13 @@ args = parser.parse_args()
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 AUDIO_INPUT_DEVICE = args.AUDIO_INPUT
-MODE = args.FREEDV_MODE
+MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
 DEBUGGING_MODE = args.DEBUGGING_MODE
 
 
 # AUDIO PARAMETERS
 AUDIO_FRAMES_PER_BUFFER = 2048 
-MODEM_SAMPLE_RATE = 8000
+MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 AUDIO_SAMPLE_RATE_TX = 48000
 
 # check if we want to use an audio device then do an pyaudio init
@@ -51,9 +53,6 @@ if AUDIO_INPUT_DEVICE != 0:
                             input_device_index=AUDIO_INPUT_DEVICE,
                             ) 
 
-
-sys.path.insert(0,'..')
-import codec2
       
 # ----------------------------------------------------------------
               

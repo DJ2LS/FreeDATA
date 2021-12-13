@@ -35,7 +35,7 @@ add_test(NAME 001_highsnr_stdio_C_P
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         freedv_data_raw_tx datac0 --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} /dev/zero - |
-                        python3 test_rx.py --mode 14 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+                        python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(001_highsnr_stdio_C_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
 add_test(NAME 001_highsnr_stdio_P_P
@@ -43,5 +43,5 @@ add_test(NAME 001_highsnr_stdio_P_P
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-                        python3 test_rx.py --mode 14 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+                        python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(001_highsnr_stdio_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
