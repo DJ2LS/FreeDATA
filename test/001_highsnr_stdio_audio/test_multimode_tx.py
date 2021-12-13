@@ -48,10 +48,10 @@ if AUDIO_OUTPUT_DEVICE != 0:
                             output_device_index=AUDIO_OUTPUT_DEVICE,  
                             )      
 
-
 modes = [14,10,12]
 for m in modes:
 
+    
     freedv = cast(codec2.api.freedv_open(m), c_void_p)        
             
     n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
@@ -102,7 +102,8 @@ for m in modes:
         samples_delay = int(MODEM_SAMPLE_RATE*DELAY_BETWEEN_BURSTS)
         mod_out_silence = create_string_buffer(samples_delay)    
         txbuffer += bytes(mod_out_silence)
-                    
+        
+
         # check if we want to use an audio device or stdout
         if AUDIO_OUTPUT_DEVICE != 0: 
                 
@@ -111,12 +112,22 @@ for m in modes:
             stream_tx.write(audio[0])
 
         else:
+            
+            # this test needs a lot of time, so we are having a look at times...
+            starttime = time.time()            
+ 
             # print data to terminal for piping the output to other programs
             sys.stdout.buffer.write(txbuffer)    
             sys.stdout.flush()
 
-
+            # and at least print the needed time to see which time we needed
+            timeneeded = time.time()-starttime
+            print(f"time: {timeneeded}", file=sys.stderr)  
+       
+            
 # and at last check if we had an openend pyaudio instance and close it
 if AUDIO_OUTPUT_DEVICE != 0: 
     stream_tx.close()
     p.terminate()
+    
+
