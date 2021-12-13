@@ -22,26 +22,34 @@ set(FRAMESPERBURST 3)
 set(BURSTS 1)
 set(TESTFRAMES 3)
 
-add_test(NAME 001_highsnr_stdio_P_C
+add_test(NAME 001_highsnr_stdio_P_C_SM
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         freedv_data_raw_rx datac0 - - --framesperburst ${FRAMESPERBURST} | hexdump -C")
-        set_tests_properties(001_highsnr_stdio_P_C PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
+        set_tests_properties(001_highsnr_stdio_P_C_SM PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
 
-add_test(NAME 001_highsnr_stdio_C_P
+add_test(NAME 001_highsnr_stdio_C_P_SM
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         freedv_data_raw_tx datac0 --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} /dev/zero - |
                         python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
-        set_tests_properties(001_highsnr_stdio_C_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+        set_tests_properties(001_highsnr_stdio_C_P_SM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
-add_test(NAME 001_highsnr_stdio_P_P
+add_test(NAME 001_highsnr_stdio_P_P_SM
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
-        set_tests_properties(001_highsnr_stdio_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+        set_tests_properties(001_highsnr_stdio_P_P_SM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+        
+add_test(NAME 001_highsnr_stdio_P_P_MM
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
+                        python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+        set_tests_properties(001_highsnr_stdio_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")

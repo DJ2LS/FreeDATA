@@ -4,6 +4,7 @@
 import ctypes
 from ctypes import *
 import sys
+import pathlib
 from enum import Enum
 
 print("loading codec2 module", file=sys.stderr)
@@ -14,13 +15,16 @@ class FREEDV_MODE(Enum):
     datac0 = 14
     datac1 = 10
     datac3 = 12
-
+    
+def FREEDV_GET_MODE(mode):
+    return FREEDV_MODE[mode].value
 
 
 
 # LOAD FREEDV
 libname = "libcodec2.so"
 api = ctypes.CDLL(libname)
+
 
 # ctypes function init        
 
@@ -53,6 +57,9 @@ api.freedv_set_frames_per_burst.restype = c_void_p
       
 api.freedv_get_rx_status.argtype = [c_void_p]
 api.freedv_get_rx_status.restype = c_int  
+
+api.freedv_get_modem_stats.argtype = [c_void_p, c_void_p, c_void_p]
+api.freedv_get_modem_stats.restype = c_int
 
 api.freedv_get_n_tx_postamble_modem_samples.argtype = [c_void_p]
 api.freedv_get_n_tx_postamble_modem_samples.restype = c_int 
