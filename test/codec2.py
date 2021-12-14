@@ -19,8 +19,6 @@ class FREEDV_MODE(Enum):
 def FREEDV_GET_MODE(mode):
     return FREEDV_MODE[mode].value
 
-
-
 # LOAD FREEDV
 libname = "libcodec2.so"
 api = ctypes.CDLL(libname)
@@ -76,6 +74,23 @@ api.FREEDV_MODE_DATAC1 = 10
 api.FREEDV_MODE_DATAC3 = 12
 api.FREEDV_MODE_DATAC0 = 14
 
+api.rx_sync_flags_to_text = [
+    "----",
+    "---T",
+    "--S-",
+    "--ST",
+    "-B--",
+    "-B-T",
+    "-BS-",
+    "-BST",
+    "E---",
+    "E--T",
+    "E-S-",
+    "E-ST",
+    "EB--",
+    "EB-T",
+    "EBS-",
+    "EBST"]
 
 
 

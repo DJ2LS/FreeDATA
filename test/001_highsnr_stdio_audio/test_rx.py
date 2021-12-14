@@ -93,7 +93,7 @@ while receive and time.time() < timeout:
         nin = codec2.api.freedv_nin(freedv)
         nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
         if DEBUGGING_MODE == True:
-            print(f"NIN:  {nin} [{nin_converted}]", file=sys.stderr)
+            print("nin: %5d nin_converted: %5d " % (nin,nin_converted), end='', file=sys.stderr)
         
         data_in = stream_rx.read(nin_converted,  exception_on_overflow = False)  
         data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
@@ -107,7 +107,9 @@ while receive and time.time() < timeout:
     total_n_bytes = total_n_bytes + nbytes
     
     if DEBUGGING_MODE == True:
-        print(f"SYNC: {codec2.api.freedv_get_rx_status(freedv)}", file=sys.stderr)
+        rx_status = codec2.api.freedv_get_rx_status(freedv)
+        rx_status_string = codec2.api.rx_sync_flags_to_text[rx_status]
+        print(f"rx_status: {rx_status_string}", file=sys.stderr)
         
     if nbytes == bytes_per_frame:
         rx_total_frames = rx_total_frames + 1
