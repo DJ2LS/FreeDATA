@@ -16,15 +16,29 @@ import codec2
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
-parser.add_argument('--audioinput', dest="AUDIO_INPUT", default=0, type=int)  
+parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true") 
+parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
+parser.add_argument('--timeout', dest="TIMEOUT", default=10, type=int, help="Timeout (seconds) before test ends")  
 
 args = parser.parse_args()
 
+if args.LIST:
+    p = pyaudio.PyAudio()
+    for dev in range(0,p.get_device_count()):
+        print("audiodev: ", dev, p.get_device_info_by_index(dev)["name"])
+    quit()
+
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
-AUDIO_INPUT_DEVICE = args.AUDIO_INPUT
+AUDIO_INPUT_DEVICE = args.AUDIO_INPUT_DEVICE
+TIMEOUT = args.TIMEOUT
 
+# AUDIO PARAMETERS
+AUDIO_FRAMES_PER_BUFFER = 2048 
+MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
+AUDIO_SAMPLE_RATE_RX = 48000
+assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
 
 # SET COUNTERS
 rx_total_frames_datac0 = 0
@@ -63,28 +77,31 @@ codec2.api.freedv_set_frames_per_burst(datac3_freedv,N_FRAMES_PER_BURST)
 datac3_buffer = bytes()
 
 # check if we want to use an audio device then do an pyaudio init
-if AUDIO_INPUT_DEVICE != 0: 
+if AUDIO_INPUT_DEVICE != -1: 
     p = pyaudio.PyAudio()
     # --------------------------------------------OPEN AUDIO CHANNEL RX
     stream_rx = p.open(format=pyaudio.paInt16,
                                      channels=1,
-                                     rate=48000,
-                                     frames_per_buffer=16,
+                                     rate=AUDIO_SAMPLE_RATE_RX,
+                                     frames_per_buffer=AUDIO_FRAMES_PER_BUFFER,
                                      input=True,
-                                     input_device_index=5
+                                     input_device_index=AUDIO_INPUT_DEVICE
                                      )
                                      
 
-timeout = time.time() + 10
+timeout = time.time() + TIMEOUT
 receive = True
 
+BUF_SIZE = 160
+
 while receive and time.time() < timeout:
-    if AUDIO_INPUT_DEVICE != 0: 
-        data_in = stream_rx.read(1024,  exception_on_overflow=True)
-        data_in = audioop.ratecv(data_in, 2, 1, 48000, 8000, None)
-        data_in = data_in[0]  # .rstrip(b'\x00')
+    if AUDIO_INPUT_DEVICE != -1: 
+        buf_size_converted = int(BUF_SIZE*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
+        data_in = stream_rx.read(buf_size_converted,  exception_on_overflow=False)
+        data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None)
+        data_in = data_in[0].rstrip(b'\x00')
     else:
-        data_in = sys.stdin.buffer.read(1024)
+        data_in = sys.stdin.buffer.read(BUF_SIZE)
         
                 
     datac0_buffer += data_in

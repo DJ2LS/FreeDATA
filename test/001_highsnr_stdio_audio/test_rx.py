@@ -58,7 +58,7 @@ if AUDIO_INPUT_DEVICE != -1:
                             rate=AUDIO_SAMPLE_RATE_RX,
                             frames_per_buffer=AUDIO_FRAMES_PER_BUFFER,
                             input=True,
-                            input_device_index=AUDIO_INPUT_DEVICE,
+                            input_device_index=AUDIO_INPUT_DEVICE
                             ) 
 
       
