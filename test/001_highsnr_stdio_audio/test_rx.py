@@ -25,14 +25,21 @@ parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audioinput', dest="AUDIO_INPUT", default=0, type=int)  
+parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=0, type=int, help="audio device number to use")  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
+parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 
 args = parser.parse_args()
 
+if args.LIST:
+    p = pyaudio.PyAudio()
+    for dev in range(0,p.get_device_count()):
+        print("audiodev: ", dev, p.get_device_info_by_index(dev)["name"])
+    quit()
+   
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
-AUDIO_INPUT_DEVICE = args.AUDIO_INPUT
+AUDIO_INPUT_DEVICE = args.AUDIO_INPUT_DEVICE
 MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
 DEBUGGING_MODE = args.DEBUGGING_MODE
 
@@ -40,7 +47,8 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 # AUDIO PARAMETERS
 AUDIO_FRAMES_PER_BUFFER = 2048 
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_TX = 48000
+AUDIO_SAMPLE_RATE_RX = 48000
+assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != 0: 
@@ -56,8 +64,7 @@ if AUDIO_INPUT_DEVICE != 0:
       
 # ----------------------------------------------------------------
               
-
-     # DATA CHANNEL INITIALISATION
+# DATA CHANNEL INITIALISATION
 
 # open codec2 instance        
 freedv = cast(codec2.api.freedv_open(MODE), c_void_p)
@@ -119,5 +126,5 @@ print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames}", file=s
 
 # and at last check if we had an openend pyaudio instance and close it
 if AUDIO_INPUT_DEVICE != 0: 
-    stream_tx.close()
+    stream_rx.close()
     p.terminate()

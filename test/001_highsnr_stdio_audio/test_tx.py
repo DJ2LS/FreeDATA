@@ -21,14 +21,21 @@ parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audiooutput', dest="AUDIO_OUTPUT", default=0, type=int) 
+parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=0, type=int, help="audio output device number to use") 
+parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 
 args = parser.parse_args()
+
+if args.LIST:
+    p = pyaudio.PyAudio()
+    for dev in range(0,p.get_device_count()):
+        print("audiodev: ", dev, p.get_device_info_by_index(dev)["name"])
+    quit()
 
 N_BURSTS = args.N_BURSTS
 N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
-AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT
+AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT_DEVICE
 
 
 MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
@@ -38,6 +45,7 @@ MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
 AUDIO_FRAMES_PER_BUFFER = 2048 
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 AUDIO_SAMPLE_RATE_TX = 48000
+assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_OUTPUT_DEVICE != 0: 
