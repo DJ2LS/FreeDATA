@@ -18,8 +18,12 @@ RX_LOG=$(mktemp)
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
 
-python3 test_rx.py --mode datac0 --frames 2 --bursts 5 --audiodev -2 --debug &
+python3 test_multimode_rx.py --timeout 30 --framesperburst 2 --bursts 1 --audiodev -2 --debug &
 rx_pid=$!
 sleep 1
-python3 test_tx.py --mode datac0 --frames 2 --bursts 5 --delay 500 --audiodev -2
+python3 test_multimode_tx.py --framesperburst 2 --bursts 1 --audiodev -2
+
+#tail -f ${RX_LOG} | sed '/RECEIVED BURSTS/ q'
+
+
 wait ${rx_pid}

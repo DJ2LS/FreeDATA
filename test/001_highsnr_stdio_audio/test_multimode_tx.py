@@ -46,8 +46,19 @@ assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 
 if AUDIO_OUTPUT_DEVICE != -1: 
-    # pyaudio init
     p = pyaudio.PyAudio()
+    # auto search for loopback devices
+    if AUDIO_OUTPUT_DEVICE == -2:
+        loopback_list = []
+        for dev in range(0,p.get_device_count()):
+            if 'Loopback: PCM' in p.get_device_info_by_index(dev)["name"]:
+                loopback_list.append(dev)
+        if len(loopback_list) >= 2:
+            AUDIO_OUTPUT_DEVICE = loopback_list[1] #0  = RX   1 = TX
+            print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
+        else:
+            quit()        
+    # pyaudio init
     stream_tx = p.open(format=pyaudio.paInt16,
                             channels=1,
                             rate=AUDIO_SAMPLE_RATE_TX,
@@ -116,7 +127,7 @@ for m in modes:
         if AUDIO_OUTPUT_DEVICE != -1: 
                 
             # sample rate conversion from 8000Hz to 48000Hz
-            audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
+            audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)             
             stream_tx.write(audio[0])
 
         else:
@@ -134,7 +145,7 @@ for m in modes:
        
             
 # and at last check if we had an openend pyaudio instance and close it
-if AUDIO_OUTPUT_DEVICE != 0: 
+if AUDIO_OUTPUT_DEVICE != -1: 
     stream_tx.close()
     p.terminate()
     

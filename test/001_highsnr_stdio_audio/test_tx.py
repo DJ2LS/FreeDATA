@@ -37,7 +37,6 @@ N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
 DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
 AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT_DEVICE
 
-
 MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
 
 
@@ -49,8 +48,19 @@ assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_OUTPUT_DEVICE != -1: 
-    # pyaudio init
     p = pyaudio.PyAudio()
+    # auto search for loopback devices
+    if AUDIO_OUTPUT_DEVICE == -2:
+        loopback_list = []
+        for dev in range(0,p.get_device_count()):
+            if 'Loopback: PCM' in p.get_device_info_by_index(dev)["name"]:
+                loopback_list.append(dev)
+        if len(loopback_list) >= 2:
+            AUDIO_OUTPUT_DEVICE = loopback_list[1] #0  = RX   1 = TX
+            print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
+        else:
+            quit()        
+    # pyaudio init
     stream_tx = p.open(format=pyaudio.paInt16,
                             channels=1,
                             rate=AUDIO_SAMPLE_RATE_TX,
@@ -115,7 +125,7 @@ for i in range(1,N_BURSTS+1):
 
         txbuffer += bytes(mod_out)
         
-        print(f"BURST: {i}/{N_BURSTS} FRAME: {n}/{N_FRAMES_PER_BURST}", file=sys.stderr)
+        print(f"TX BURST: {i}/{N_BURSTS} FRAME: {n}/{N_FRAMES_PER_BURST}", file=sys.stderr)
     
     # append postamble to txbuffer          
     codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
