@@ -102,6 +102,8 @@ while receive and time.time() < timeout:
 
     else:
         nin = codec2.api.freedv_nin(freedv) * 2
+        if DEBUGGING_MODE == True:
+            print("nin: %5d " % (nin), end='', file=sys.stderr)
         data_in = sys.stdin.buffer.read(nin)
 
     nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio

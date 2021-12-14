@@ -58,12 +58,21 @@ add_test(NAME 001_highsnr_stdio_P_P_MM
 # These tests can't run on GitHub actions
 if(NOT DEFINED ENV{GITHUB_RUN_ID})
 
-add_test(NAME 001_highsnr_virtual_P_P
+# uses aplay/arecord then pipe to Python
+add_test(NAME 001_highsnr_virtual1_P_P
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
-                        ./test_virtual.sh")
-       set_tests_properties(001_highsnr_virtual_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
+                        ./test_virtual1.sh")
+       set_tests_properties(001_highsnr_virtual1_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
+
+# lets Python do audio I/O
+add_test(NAME 001_highsnr_virtual2_P_P
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
+                        ./test_virtual2.sh")
+       set_tests_properties(001_highsnr_virtual2_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
 
 endif()
        
