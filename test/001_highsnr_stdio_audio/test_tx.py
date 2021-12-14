@@ -21,7 +21,7 @@ parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=0, type=int, help="audio output device number to use") 
+parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int, help="audio output device number to use") 
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 
 args = parser.parse_args()
@@ -48,7 +48,7 @@ AUDIO_SAMPLE_RATE_TX = 48000
 assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
-if AUDIO_OUTPUT_DEVICE != 0: 
+if AUDIO_OUTPUT_DEVICE != -1: 
     # pyaudio init
     p = pyaudio.PyAudio()
     stream_tx = p.open(format=pyaudio.paInt16,
@@ -128,7 +128,7 @@ for i in range(1,N_BURSTS+1):
     print(f"samples_delay: {samples_delay} DELAY_BETWEEN_BURSTS: {DELAY_BETWEEN_BURSTS}", file=sys.stderr)
     
     # check if we want to use an audio device or stdout
-    if AUDIO_OUTPUT_DEVICE != 0: 
+    if AUDIO_OUTPUT_DEVICE != -1: 
         
         # sample rate conversion from 8000Hz to 48000Hz
         audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
@@ -141,6 +141,6 @@ for i in range(1,N_BURSTS+1):
 
 
 # and at last check if we had an openend pyaudio instance and close it
-if AUDIO_OUTPUT_DEVICE != 0: 
+if AUDIO_OUTPUT_DEVICE != -1: 
     stream_tx.close()
     p.terminate()

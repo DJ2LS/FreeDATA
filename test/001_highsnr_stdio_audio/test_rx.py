@@ -25,7 +25,7 @@ parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=0, type=int, help="audio device number to use")  
+parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 
@@ -51,7 +51,7 @@ AUDIO_SAMPLE_RATE_RX = 48000
 assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
-if AUDIO_INPUT_DEVICE != 0: 
+if AUDIO_INPUT_DEVICE != -1: 
     p = pyaudio.PyAudio()
     stream_rx = p.open(format=pyaudio.paInt16, 
                             channels=1,
@@ -88,7 +88,7 @@ receive = True
 while receive and time.time() < timeout:
 
     data_in = b''
-    if AUDIO_INPUT_DEVICE != 0: 
+    if AUDIO_INPUT_DEVICE != -1: 
         
         nin = codec2.api.freedv_nin(freedv)
         nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
@@ -125,6 +125,6 @@ while receive and time.time() < timeout:
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames}", file=sys.stderr)
 
 # and at last check if we had an openend pyaudio instance and close it
-if AUDIO_INPUT_DEVICE != 0: 
+if AUDIO_INPUT_DEVICE != -1: 
     stream_rx.close()
     p.terminate()
