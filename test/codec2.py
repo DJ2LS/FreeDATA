@@ -74,6 +74,12 @@ api.FREEDV_MODE_DATAC1 = 10
 api.FREEDV_MODE_DATAC3 = 12
 api.FREEDV_MODE_DATAC0 = 14
 
+# Return code flags for freedv_get_rx_status() function
+api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
+api.FREEDV_RX_SYNC       = 0x2       # demodulator has sync
+api.FREEDV_RX_BITS       = 0x4       # data bits have been returned
+api.FREEDV_RX_BIT_ERRORS = 0x8       # FEC may not have corrected all bit errors (not all parity checks OK)
+
 api.rx_sync_flags_to_text = [
     "----",
     "---T",

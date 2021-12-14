@@ -63,7 +63,7 @@ add_test(NAME 001_highsnr_virtual_P_P
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         ./test_virtual.sh")
-       set_tests_properties(001_highsnr_virtual_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 1 RECEIVED FRAMES: 2")
+       set_tests_properties(001_highsnr_virtual_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
 
 endif()
        

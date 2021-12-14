@@ -82,6 +82,7 @@ total_n_bytes = 0
 rx_total_frames = 0
 rx_frames = 0
 rx_bursts = 0
+rx_errors = 0
 timeout = time.time() + 10
 receive = True
 
@@ -106,8 +107,8 @@ while receive and time.time() < timeout:
     nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
     total_n_bytes = total_n_bytes + nbytes
     
+    rx_status = codec2.api.freedv_get_rx_status(freedv)
     if DEBUGGING_MODE == True:
-        rx_status = codec2.api.freedv_get_rx_status(freedv)
         rx_status_string = codec2.api.rx_sync_flags_to_text[rx_status]
         print(f"rx_status: {rx_status_string}", file=sys.stderr)
         
@@ -119,12 +120,14 @@ while receive and time.time() < timeout:
             rx_frames = 0
             rx_bursts = rx_bursts + 1
             
+    if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
+        rx_errors = rx_errors + 1
         
     if rx_bursts == N_BURSTS:
         receive = False   
                    
 
-print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames}", file=sys.stderr)
+print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
 
 # and at last check if we had an openend pyaudio instance and close it
 if AUDIO_INPUT_DEVICE != -1: 
