@@ -21,7 +21,8 @@ parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int, help="audio output device number to use") 
+parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int,
+                    help="audio output device number to use, use -2 to automatically select a loopback device") 
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 
 args = parser.parse_args()
@@ -60,6 +61,9 @@ if AUDIO_OUTPUT_DEVICE != -1:
             print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
         else:
             quit()        
+    print(f"AUDIO OUTPUT DEVICE: {AUDIO_OUTPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_OUTPUT_DEVICE)['name']} \
+            AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_TX}", file=sys.stderr)
+
     # pyaudio init
     stream_tx = p.open(format=pyaudio.paInt16,
                             channels=1,

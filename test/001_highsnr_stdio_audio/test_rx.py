@@ -25,7 +25,8 @@ parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=0, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
-parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")  
+parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int,
+                    help="audio device number to use, use -2 to automatically select a loopback device")  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
 parser.add_argument('--timeout', dest="TIMEOUT", default=10, type=int, help="Timeout (seconds) before test ends")  
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
@@ -66,7 +67,8 @@ if AUDIO_INPUT_DEVICE != -1:
         else:
             quit()
             
-    print(f"AUDIO INPUT DEVICE: {AUDIO_INPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['name']} AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_RX}", file=sys.stderr)    
+    print(f"AUDIO INPUT DEVICE: {AUDIO_INPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['name']}  \
+            AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_RX}", file=sys.stderr)
     stream_rx = p.open(format=pyaudio.paInt16, 
                             channels=1,
                             rate=AUDIO_SAMPLE_RATE_RX,
