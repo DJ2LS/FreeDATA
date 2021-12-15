@@ -4,6 +4,14 @@
 # Unit test for FreeDV API resampler functions, from
 # codec2/unittest/t48_8_short.c - generate a sine wave at 8 KHz,
 # upsample to 48 kHz, add an interferer, then downsample back to 8 kHz
+#
+# You can listen to the output files with:
+#
+#   aplay -f S16_LE in8.raw
+#   aplay -r 48000 -f S16_LE out48.raw
+#   aplay -f S16_LE out8.raw
+#
+# They should sound like clean sine waves
 
 import ctypes
 from ctypes import *
@@ -44,8 +52,10 @@ for f in range(FRAMES):
     in8k[MEM8:] = AMP*np.cos(2*np.pi*np.arange(t,t+N8)*FTEST8/FS8)
     t += N8
     in8k[MEM8:].tofile(fin8)
-    
-    codec2.api.fdmdv_8_to_48_short(out48k.ctypes, in8k.ctypes + MEM8, N8);
+
+    pin8k,flag = in8k.__array_interface__['data']
+    pin8k += 2*MEM8
+    codec2.api.fdmdv_8_to_48_short(out48k.ctypes, pin8k, N8);
     out48k.tofile(f48)
 
 fin8.close()
