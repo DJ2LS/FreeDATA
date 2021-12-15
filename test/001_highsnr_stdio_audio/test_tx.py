@@ -1,4 +1,4 @@
- #!/usr/bin/env python3
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 
@@ -7,8 +7,6 @@ from ctypes import *
 import pathlib
 import pyaudio
 import time
-import threading
-import audioop
 import argparse
 import sys
 sys.path.insert(0,'..')
