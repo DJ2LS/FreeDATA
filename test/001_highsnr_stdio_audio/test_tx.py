@@ -155,7 +155,9 @@ for i in range(1,N_BURSTS+1):
         sys.stdout.flush()
 
 
-# and at last check if we had an openend pyaudio instance and close it
-if AUDIO_OUTPUT_DEVICE != -1: 
+# and at last check if we had an opened pyaudio instance and close it
+if AUDIO_OUTPUT_DEVICE != -1:
+    time.sleep(stream_tx.get_output_latency())
+    stream_tx.stop_stream()
     stream_tx.close()
     p.terminate()
