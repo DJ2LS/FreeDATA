@@ -22,13 +22,14 @@ def FREEDV_GET_MODE(mode):
 
 class audio_buffer:
     def __init__(self, size):
+        print("create audio_buffer: ", size)
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
     def push(self,samples):
+        assert self.nbuffer+len(samples) <= self.size
         self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
         self.nbuffer += len(samples)
-        assert self.nbuffer <= self.size
     def nbuffer(self):
         return self.nbuffer
     def pop(self,size):

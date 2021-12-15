@@ -122,7 +122,7 @@ while receive and time.time() < timeout:
     # when we have enough samples call FreeDV Rx
     while audio_buffer.nbuffer >= nin:
 
-         # demodulate audio
+        # demodulate audio
         nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.buffer.ctypes)        
         audio_buffer.pop(nin)
         

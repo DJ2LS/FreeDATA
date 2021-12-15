@@ -137,7 +137,7 @@ for m in modes:
 
             # and at least print the needed time to see which time we needed
             timeneeded = time.time()-starttime
-            print(f"time: {timeneeded} buffer: {len(txbuffer)}", file=sys.stderr)  
+            #print(f"time: {timeneeded} buffer: {len(txbuffer)}", file=sys.stderr)  
        
             
 # and at last check if we had an openend pyaudio instance and close it

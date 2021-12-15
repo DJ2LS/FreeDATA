@@ -11,6 +11,7 @@ from ctypes import *
 import pathlib
 sys.path.insert(0,'..')
 import codec2
+import numpy as np
 
 #--------------------------------------------GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
@@ -36,12 +37,10 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 TIMEOUT = args.TIMEOUT
 
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 4096
+AUDIO_FRAMES_PER_BUFFER = 2048
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_RX = 48000
+AUDIO_SAMPLE_RATE_RX = 8000
 assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
-
-BUF_SIZE = 160
 
 # SET COUNTERS
 rx_total_frames_datac0 = 0
@@ -58,26 +57,26 @@ rx_bursts_datac3 = 0
 
 
 # open codec2 instance        
-datac0_freedv = cast(codec2.api.freedv_open(14), c_void_p)
+datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
 datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
 datac0_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac0_freedv)
 datac0_bytes_out = create_string_buffer(datac0_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac0_freedv,N_FRAMES_PER_BURST)
-datac0_buffer = bytes()
+datac0_buffer = codec2.audio_buffer(datac0_n_max_modem_samples)
 
-datac1_freedv = cast(codec2.api.freedv_open(10), c_void_p)
+datac1_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), c_void_p)
 datac1_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
 datac1_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac1_freedv)
 datac1_bytes_out = create_string_buffer(datac1_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac1_freedv,N_FRAMES_PER_BURST)
-datac1_buffer = bytes()
+datac1_buffer = codec2.audio_buffer(datac1_n_max_modem_samples)
 
-datac3_freedv = cast(codec2.api.freedv_open(12), c_void_p)
+datac3_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), c_void_p)
 datac3_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
 datac3_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac3_freedv)
 datac3_bytes_out = create_string_buffer(datac3_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac3_freedv,N_FRAMES_PER_BURST)
-datac3_buffer = bytes()
+datac3_buffer = codec2.audio_buffer(datac3_n_max_modem_samples)
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
@@ -105,32 +104,32 @@ if AUDIO_INPUT_DEVICE != -1:
                                      
 
 timeout = time.time() + TIMEOUT
+print(time.time(),TIMEOUT, timeout)
 receive = True
 
+# initial nin values        
+datac0_nin = codec2.api.freedv_nin(datac0_freedv)               
+datac1_nin = codec2.api.freedv_nin(datac1_freedv)               
+datac3_nin = codec2.api.freedv_nin(datac3_freedv)               
 
 while receive and time.time() < timeout:
-    if AUDIO_INPUT_DEVICE != -1: 
-        
+    if AUDIO_INPUT_DEVICE != -1:         
         data_in = stream_rx.read(AUDIO_FRAMES_PER_BUFFER,  exception_on_overflow = False)  
-        data_in = audioop.ratecv(data_in,2,1,AUDIO_SAMPLE_RATE_RX, MODEM_SAMPLE_RATE, None) 
-
-        datac0_buffer += data_in[0]
-        datac1_buffer += data_in[0]
-        datac3_buffer += data_in[0]
-
-
     else:
-        data_in = sys.stdin.buffer.read(BUF_SIZE)
+        data_in = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
                     
-        datac0_buffer += data_in
-        datac1_buffer += data_in
-        datac3_buffer += data_in
+    x = np.frombuffer(data_in, dtype=np.int16)
+    if len(x) == 0:
+        receive = False
+    datac0_buffer.push(x)
+    datac1_buffer.push(x)
+    datac3_buffer.push(x)
                     
-        
-    datac0_nin = codec2.api.freedv_nin(datac0_freedv) * 2                   
-    if len(datac0_buffer) >= (datac0_nin):        
-        nbytes = codec2.api.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_buffer[:datac0_nin])  # demodulate audio
-        datac0_buffer = datac0_buffer[datac0_nin:]
+    while datac0_buffer.nbuffer >= datac0_nin:        
+        # demodulate audio
+        nbytes = codec2.api.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_buffer.buffer.ctypes)
+        datac0_buffer.pop(datac0_nin)
+        datac0_nin = codec2.api.freedv_nin(datac0_freedv)
         if nbytes == datac0_bytes_per_frame:
             rx_total_frames_datac0 = rx_total_frames_datac0 + 1
             rx_frames_datac0 = rx_frames_datac0 + 1
@@ -140,10 +139,11 @@ while receive and time.time() < timeout:
                 rx_bursts_datac0 = rx_bursts_datac0 + 1
                
        
-    datac1_nin = codec2.api.freedv_nin(datac1_freedv) * 2            
-    if len(datac1_buffer) >= (datac1_nin):        
-        nbytes = codec2.api.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_buffer[:datac1_nin])  # demodulate audio
-        datac1_buffer = datac1_buffer[datac1_nin:]
+    while datac1_buffer.nbuffer >= datac1_nin:
+        # demodulate audio
+        nbytes = codec2.api.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_buffer.buffer.ctypes)
+        datac1_buffer.pop(datac1_nin)
+        datac1_nin = codec2.api.freedv_nin(datac1_freedv)
         if nbytes == datac1_bytes_per_frame:
             rx_total_frames_datac1 = rx_total_frames_datac1 + 1
             rx_frames_datac1 = rx_frames_datac1 + 1
@@ -152,10 +152,11 @@ while receive and time.time() < timeout:
                 rx_frames_datac1 = 0
                 rx_bursts_datac1 = rx_bursts_datac1 + 1
                     
-    datac3_nin = codec2.api.freedv_nin(datac3_freedv) * 2            
-    if len(datac3_buffer) >= (datac3_nin):        
-        nbytes = codec2.api.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_buffer[:datac3_nin])  # demodulate audio    
-        datac3_buffer = datac3_buffer[datac3_nin:]
+    while datac3_buffer.nbuffer >= datac3_nin:
+        # demodulate audio    
+        nbytes = codec2.api.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_buffer.buffer.ctypes)
+        datac3_buffer.pop(datac3_nin)
+        datac3_nin = codec2.api.freedv_nin(datac3_freedv)
         if nbytes == datac3_bytes_per_frame:
             rx_total_frames_datac3 = rx_total_frames_datac3 + 1
             rx_frames_datac3 = rx_frames_datac3 + 1
@@ -164,22 +165,18 @@ while receive and time.time() < timeout:
                 rx_frames_datac3 = 0
                 rx_bursts_datac3 = rx_bursts_datac3 + 1   
 
-
     if DEBUGGING_MODE:
-        sync0 = codec2.api.freedv_get_rx_status(datac0_freedv)
-        sync1 = codec2.api.freedv_get_rx_status(datac1_freedv)
-        sync3 = codec2.api.freedv_get_rx_status(datac3_freedv)
-        
         datac0_rxstatus = codec2.api.freedv_get_rx_status(datac0_freedv)
-        datac0_state = codec2.api.rx_sync_flags_to_text[datac0_rxstatus]
+        datac0_rxstatus = codec2.api.rx_sync_flags_to_text[datac0_rxstatus]
 
         datac1_rxstatus = codec2.api.freedv_get_rx_status(datac1_freedv)
-        datac1_state = codec2.api.rx_sync_flags_to_text[datac1_rxstatus]
+        datac1_rxstatus = codec2.api.rx_sync_flags_to_text[datac1_rxstatus]
         
         datac3_rxstatus = codec2.api.freedv_get_rx_status(datac3_freedv)
-        datac3_state = codec2.api.rx_sync_flags_to_text[datac3_rxstatus]
+        datac3_rxstatus = codec2.api.rx_sync_flags_to_text[datac3_rxstatus]
 
-        print(f"NIN0: {datac0_nin} STATE0: {datac3_state} | NIN1: {datac1_nin} STATE1: {datac1_state} | NIN3: {datac3_nin} STATE3: {datac3_state}", file=sys.stderr)
+        print("NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s" % \
+              (datac0_nin, datac0_rxstatus, datac1_nin, datac1_rxstatus, datac3_nin, datac3_rxstatus))
 
 
     if rx_bursts_datac0 == N_BURSTS and rx_bursts_datac1 == N_BURSTS and rx_bursts_datac3 == N_BURSTS:
