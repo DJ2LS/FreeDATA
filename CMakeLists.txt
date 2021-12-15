@@ -51,7 +51,7 @@ add_test(NAME 001_highsnr_stdio_P_P_MM
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-                        python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+                        python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
         set_tests_properties(001_highsnr_stdio_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
 
 
