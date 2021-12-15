@@ -11,19 +11,22 @@ function check_alsa_loopback {
     fi  
 }
 
+myInterruptHandler()
+{
+    exit 1
+}
+
 check_alsa_loopback
 
 RX_LOG=$(mktemp)
 
+trap myInterruptHandler SIGINT
+
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
 
-python3 test_multimode_rx.py --timeout 30 --framesperburst 2 --bursts 1 --audiodev -2 --debug &
+python3 test_multimode_rx.py --timeout 60 --framesperburst 2 --bursts 2 --audiodev -2 &
 rx_pid=$!
 sleep 1
-python3 test_multimode_tx.py --framesperburst 2 --bursts 1 --audiodev -2
-
-#tail -f ${RX_LOG} | sed '/RECEIVED BURSTS/ q'
-
-
+python3 test_multimode_tx.py --framesperburst 2 --bursts 2 --audiodev -2 --delay 500
 wait ${rx_pid}

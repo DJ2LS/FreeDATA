@@ -80,6 +80,6 @@ add_test(NAME 001_highsnr_virtual3_P_P_MM
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         ./test_virtual_mm.sh")
-       set_tests_properties(001_highsnr_virtual3_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
+       set_tests_properties(001_highsnr_virtual3_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
 endif()
        
