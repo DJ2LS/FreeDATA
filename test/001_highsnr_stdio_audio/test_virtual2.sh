@@ -1,5 +1,5 @@
 #!/bin/bash -x
-# Run a test using the virtual sound cards
+# Run a test using the virtual sound cards, Python audio I/O
 
 function check_alsa_loopback {
     lsmod | grep snd_aloop >> /dev/null
