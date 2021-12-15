@@ -113,7 +113,6 @@ crc = ctypes.c_ushort(codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_p
 crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
 buffer += crc        # append crc16 to buffer    
 
-
 print(f"TOTAL BURSTS: {N_BURSTS} TOTAL FRAMES_PER_BURST: {N_FRAMES_PER_BURST}", file=sys.stderr)
 
 for i in range(1,N_BURSTS+1):

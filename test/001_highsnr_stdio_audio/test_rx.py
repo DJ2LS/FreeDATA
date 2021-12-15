@@ -144,6 +144,8 @@ while receive and time.time() < timeout:
         if rx_bursts == N_BURSTS:
             receive = False   
                    
+if time.time() >= timeout:
+    print("TIMEOUT REACHED")
 
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
 
