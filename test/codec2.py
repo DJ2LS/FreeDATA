@@ -21,18 +21,20 @@ def FREEDV_GET_MODE(mode):
     return FREEDV_MODE[mode].value
 
 class audio_buffer:
+    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
+    # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
         print("create audio_buffer: ", size)
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
     def push(self,samples):
+        # add samples at the end of the buffer
         assert self.nbuffer+len(samples) <= self.size
         self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
         self.nbuffer += len(samples)
-    def nbuffer(self):
-        return self.nbuffer
     def pop(self,size):
+        # remove samples from the start of the buffer
         self.nbuffer -= size;
         self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
         assert self.nbuffer >= 0
@@ -88,7 +90,7 @@ api.freedv_get_n_tx_modem_samples.restype = c_int
 
 api.freedv_get_n_max_modem_samples.argtype = [c_void_p]
 api.freedv_get_n_max_modem_samples.restype = c_int 
- 
+
 api.FREEDV_FS_8000 = 8000
 api.FREEDV_MODE_DATAC1 = 10
 api.FREEDV_MODE_DATAC3 = 12
@@ -119,7 +121,11 @@ api.rx_sync_flags_to_text = [
     "EBST"]
 
 
+# resampler ---------------------------------------------------------
 
-    
-    
+api.FDMDV_OS_48         = 6                                       # oversampling rate
+api.FDMDV_OS_TAPS_48K   = 48                                      # number of OS filter taps at 48kHz
+api.FDMDV_OS_TAPS_48_8K = (api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48) # number of OS filter taps at 8kHz
+api.fdmdv_8_to_48_short.argtype = [c_void_p, c_void_p, c_int]
+api.fdmdv_48_to_8_short.argtype = [c_void_p, c_void_p, c_int]
 
