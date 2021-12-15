@@ -6,6 +6,7 @@ from ctypes import *
 import sys
 import pathlib
 from enum import Enum
+import numpy as np
 
 print("loading codec2 module", file=sys.stderr)
 
@@ -19,6 +20,22 @@ class FREEDV_MODE(Enum):
 def FREEDV_GET_MODE(mode):
     return FREEDV_MODE[mode].value
 
+class audio_buffer:
+    def __init__(self, size):
+        self.size = size
+        self.buffer = np.zeros(size, dtype=np.int16)
+        self.nbuffer = 0
+    def push(self,samples):
+        self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
+        self.nbuffer += len(samples)
+        assert self.nbuffer <= self.size
+    def nbuffer(self):
+        return self.nbuffer
+    def pop(self,size):
+        self.nbuffer -= size;
+        self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
+        assert self.nbuffer >= 0
+               
 # LOAD FREEDV
 libname = "libcodec2.so"
 api = ctypes.CDLL(libname)

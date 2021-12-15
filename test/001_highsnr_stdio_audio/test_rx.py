@@ -101,9 +101,7 @@ rx_bursts = 0
 rx_errors = 0
 timeout = time.time() + TIMEOUT
 receive = True
-naudio_buffer_max = codec2.api.freedv_get_n_max_modem_samples(freedv)*2
-audio_buffer = np.zeros(naudio_buffer_max, dtype=np.int16)
-naudio_buffer = 0
+audio_buffer = codec2.audio_buffer(codec2.api.freedv_get_n_max_modem_samples(freedv))
 
 # initial number of samples we need
 nin = codec2.api.freedv_nin(freedv)
@@ -119,19 +117,15 @@ while receive and time.time() < timeout:
     x = np.frombuffer(data_in, dtype=np.int16)
     if len(x) == 0:
         receive = False
-    audio_buffer[naudio_buffer:naudio_buffer+len(x)] = x
-    naudio_buffer += len(x)
-    assert naudio_buffer <= naudio_buffer_max
+    audio_buffer.push(x)
     
     # when we have enough samples call FreeDV Rx
-    while naudio_buffer >= nin:
+    while audio_buffer.nbuffer >= nin:
 
-        nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.ctypes) # demodulate audio
-
-        # remove old samples from buffer
-        naudio_buffer -= nin;
-        audio_buffer[:naudio_buffer] = audio_buffer[nin:nin+naudio_buffer]
-
+         # demodulate audio
+        nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.buffer.ctypes)        
+        audio_buffer.pop(nin)
+        
         # call me on every loop!
         nin = codec2.api.freedv_nin(freedv)
        
@@ -140,8 +134,8 @@ while receive and time.time() < timeout:
             rx_errors = rx_errors + 1
         if DEBUGGING_MODE:        
           rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
-          print("nin: %5d rx_status: %4s naudio_buffer: %4d len(audio_buffer): %d)" % \
-                (nin,rx_status,naudio_buffer,len(audio_buffer)), file=sys.stderr)
+          print("nin: %5d rx_status: %4s naudio_buffer: %4d" % \
+                (nin,rx_status,audio_buffer.nbuffer), file=sys.stderr)
 
         if nbytes:
             total_n_bytes = total_n_bytes + nbytes
