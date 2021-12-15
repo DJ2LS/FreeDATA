@@ -109,7 +109,8 @@ for m in modes:
             codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
 
             txbuffer += bytes(mod_out)
-            
+            print(f"TX BURST: {i}/{N_BURSTS} FRAME: {n}/{N_FRAMES_PER_BURST}", file=sys.stderr)
+
         # append postamble to txbuffer          
         codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
         txbuffer += bytes(mod_out_postamble)
