@@ -123,9 +123,39 @@ api.rx_sync_flags_to_text = [
 
 # resampler ---------------------------------------------------------
 
-api.FDMDV_OS_48         = 6                                       # oversampling rate
-api.FDMDV_OS_TAPS_48K   = 48                                      # number of OS filter taps at 48kHz
-api.FDMDV_OS_TAPS_48_8K = (api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48) # number of OS filter taps at 8kHz
+api.FDMDV_OS_48         = int(6)                                       # oversampling rate
+api.FDMDV_OS_TAPS_48K   = int(48)                                      # number of OS filter taps at 48kHz
+api.FDMDV_OS_TAPS_48_8K = int(api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48)   # number of OS filter taps at 8kHz
 api.fdmdv_8_to_48_short.argtype = [c_void_p, c_void_p, c_int]
 api.fdmdv_48_to_8_short.argtype = [c_void_p, c_void_p, c_int]
 
+class resampler:
+    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
+    # self.nbuffer is the current number of samples in the buffer
+    MEM8 = api.FDMDV_OS_TAPS_48_8K
+    MEM48 = api.FDMDV_OS_TAPS_48K
+    def __init__(self, n48, n8):
+        print("create 48<->8 kHz resampler with buffers of %d at 48 kHz and %d at 8 kHz" % (n48, n8))
+        assert (n48 / n8) == api.FDMDV_OS_48
+        self.n8 = n8
+        self.n48 = n48
+        self.in8 = np.zeros(self.MEM8 + n8, dtype=np.int16)
+        self.out48 = np.zeros(n48, dtype=np.int16)
+        self.in48 = np.zeros(self.MEM48 + n48, dtype=np.int16)
+        self.out8 = np.zeros(n8, dtype=np.int16)
+    def resample48_to_8(self,in48):
+        assert in48.dtype == np.int16
+        assert len(in48) == self.n48
+        self.in48[self.MEM48:] = in48        
+        pin48,flag = self.in48.__array_interface__['data']
+        pin48 += 2*self.MEM48
+        api.fdmdv_48_to_8_short(self.out8.ctypes, pin48, self.n8);
+        return self.out8
+    def resample8_to_48(self,in8):
+        assert in8.dtype == np.int16
+        assert len(in8) == self.n8
+        self.in8[self.MEM8:] = in8
+        pin8,flag = self.in8.__array_interface__['data']
+        pin8 += 2*self.MEM8
+        api.fdmdv_8_to_48_short(self.out48.ctypes, pin8, self.n8);
+        return self.out48

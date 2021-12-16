@@ -49,8 +49,10 @@ TIMEOUT = args.TIMEOUT
 # AUDIO PARAMETERS
 AUDIO_FRAMES_PER_BUFFER = 2048 # seems to be best if >=1024
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_RX = 8000
-assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
+AUDIO_SAMPLE_RATE_RX = 48000
+
+# make sure our resampler will work
+assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == api.FDMDV_OS_48
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
@@ -109,12 +111,15 @@ nin = codec2.api.freedv_nin(freedv)
 while receive and time.time() < timeout:
 
     if AUDIO_INPUT_DEVICE != -1:         
-        data_in = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = False)  
+        data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = False)  
     else:
-        data_in = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
+        data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
 
+    # resample to 8 kHz
+    data_in8k = resampler.resample(data_in48k)
+    
     # insert samples in buffer
-    x = np.frombuffer(data_in, dtype=np.int16)
+    x = np.frombuffer(data_in8k, dtype=np.int16)
     if len(x) == 0:
         receive = False
     audio_buffer.push(x)

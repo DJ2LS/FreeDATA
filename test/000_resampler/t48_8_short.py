@@ -29,8 +29,8 @@ FDMDV_OS_TAPS_48_8K = codec2.api.FDMDV_OS_TAPS_48_8K
 
 N8       = int(180)                   # processing buffer size at 8 kHz
 N48      = int(N8*FDMDV_OS_48)        # processing buffer size at 48 kHz
-MEM8     = int(FDMDV_OS_TAPS_48_8K)   # 8kHz signal filter memory
-MEM48    = int(FDMDV_OS_TAPS_48K)     # 48kHz signal filter memory
+MEM8     = FDMDV_OS_TAPS_48_8K        # 8kHz signal filter memory
+MEM48    = FDMDV_OS_TAPS_48K          # 48kHz signal filter memory
 FRAMES   = int(50)                    # number of frames to test
 FS8      = 8000
 FS48     = 48000
@@ -42,42 +42,33 @@ FINTER48 = 10000                      # interferer frequency at FS=48kHz
 # must be an integer multiple of oversampling ratio
 assert N8 % FDMDV_OS_48 == 0
 
-in8k = np.zeros(MEM8 + N8, dtype=np.int16)
-out48k = np.zeros(N48, dtype=np.int16)
-in48k = np.zeros(MEM48 + N48, dtype=np.int16)
-out8k = np.zeros(N8, dtype=np.int16)
-
 # time indexes, we advance every frame
 t = 0
 t1 = 0
 
+# output files to listen to/evaluate result
 fin8 = open("in8.raw", mode='wb')
 f48 = open("out48.raw", mode='wb')
 fout8 = open("out8.raw", mode='wb')
 
+resampler = codec2.resampler(N48,N8)
+
 for f in range(FRAMES):
 
-    # input sine wave
-    in8k[MEM8:] = AMP*np.cos(2*np.pi*np.arange(t,t+N8)*FTEST8/FS8)
+    sine_in8k = (AMP*np.cos(2*np.pi*np.arange(t,t+N8)*FTEST8/FS8)).astype(np.int16)
     t += N8
-    in8k[MEM8:].tofile(fin8)
+    sine_in8k.tofile(fin8)
 
-    # upsample
-    pin8k,flag = in8k.__array_interface__['data']
-    pin8k += 2*MEM8
-    codec2.api.fdmdv_8_to_48_short(out48k.ctypes, pin8k, N8);
-    out48k.tofile(f48)
-
+    sine_out48k = resampler.resample8_to_48(sine_in8k)
+    sine_out48k.tofile(f48)
+    
     # add interfering sine wave (down sampling filter should remove)
-    in48k[MEM48:] = out48k + (AMP/2)*np.cos(2*np.pi*np.arange(t1,t1+N48)*FINTER48/FS48)
+    sine_in48k = (sine_out48k + (AMP/2)*np.cos(2*np.pi*np.arange(t1,t1+N48)*FINTER48/FS48)).astype(np.int16)
     t1 += N48
 
-    # downsample
-    pin48k,flag = in48k.__array_interface__['data']
-    pin48k += 2*MEM48
-    codec2.api.fdmdv_48_to_8_short(out8k.ctypes, pin48k, N8);
-    out8k.tofile(fout8)
-
+    sine_out8k = resampler.resample48_to_8(sine_in48k)
+    sine_out8k.tofile(fout8)
+      
 fin8.close()
 f48.close()
 fout8.close()
