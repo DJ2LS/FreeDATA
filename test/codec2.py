@@ -134,28 +134,43 @@ class resampler:
     # self.nbuffer is the current number of samples in the buffer
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K
-    def __init__(self, n48, n8):
-        print("create 48<->8 kHz resampler with buffers of %d at 48 kHz and %d at 8 kHz" % (n48, n8))
-        assert (n48 / n8) == api.FDMDV_OS_48
-        self.n8 = int(n8)
-        self.n48 = int(n48)
-        self.in8 = np.zeros(self.MEM8 + self.n8, dtype=np.int16)
-        self.out48 = np.zeros(self.n48, dtype=np.int16)
-        self.in48 = np.zeros(self.MEM48 + self.n48, dtype=np.int16)
-        self.out8 = np.zeros(self.n8, dtype=np.int16)
+
+    def __init__(self):
+        print("create 48<->8 kHz resampler")
+        self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
+        self.filter_mem48 = np.zeros(self.MEM48)
+
     def resample48_to_8(self,in48):
         assert in48.dtype == np.int16
-        assert len(in48) == self.n48
-        self.in48[self.MEM48:] = in48        
-        pin48,flag = self.in48.__array_interface__['data']
+        # length of input vector must be an interger multiple of api.FDMDV_OS_48
+        assert(len(in48) % api.FDMDV_OS_48 == 0)
+
+        # concat filter memory and input samples
+        in48_mem = np.zeros(self.MEM48+len(in48), dtype=np.int16)
+        in48_mem[:self.MEM48] = self.filter_mem48
+        in48_mem[self.MEM48:] = in48
+        
+        pin48,flag = in48_mem.__array_interface__['data']
         pin48 += 2*self.MEM48
-        api.fdmdv_48_to_8_short(self.out8.ctypes, pin48, self.n8);
-        return self.out8
+        n8 = int(len(in48) / api.FDMDV_OS_48)
+        out8 = np.zeros(n8, dtype=np.int16)
+        api.fdmdv_48_to_8_short(out8.ctypes, pin48, n8);
+        self.filter_mem48 = in48_mem[:self.MEM48]
+
+        return out8
+
     def resample8_to_48(self,in8):
         assert in8.dtype == np.int16
-        assert len(in8) == self.n8
-        self.in8[self.MEM8:] = in8
-        pin8,flag = self.in8.__array_interface__['data']
+
+        # concat filter memory and input samples
+        in8_mem = np.zeros(self.MEM8+len(in8), dtype=np.int16)
+        in8_mem[:self.MEM8] = self.filter_mem8
+        in8_mem[self.MEM8:] = in8
+
+        pin8,flag = in8_mem.__array_interface__['data']
         pin8 += 2*self.MEM8
-        api.fdmdv_8_to_48_short(self.out48.ctypes, pin8, self.n8);
-        return self.out48
+        out48 = np.zeros(api.FDMDV_OS_48*len(in8), dtype=np.int16)
+        api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8));
+        self.filter_mem8 = in8_mem[:self.MEM8]
+
+        return out48

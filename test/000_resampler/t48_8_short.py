@@ -51,7 +51,7 @@ fin8 = open("in8.raw", mode='wb')
 f48 = open("out48.raw", mode='wb')
 fout8 = open("out8.raw", mode='wb')
 
-resampler = codec2.resampler(N48,N8)
+resampler = codec2.resampler()
 
 for f in range(FRAMES):
 
