@@ -68,7 +68,7 @@ if AUDIO_OUTPUT_DEVICE != -1:
                             rate=AUDIO_SAMPLE_RATE_TX,
                             frames_per_buffer=AUDIO_FRAMES_PER_BUFFER, #n_nom_modem_samples
                             output=True,
-                            output_device_index=AUDIO_OUTPUT_DEVICE,  
+                            output_device_index=AUDIO_OUTPUT_DEVICE
                             )      
                                 
                                 
@@ -139,16 +139,16 @@ for i in range(1,N_BURSTS+1):
     samples_delay = int(MODEM_SAMPLE_RATE*DELAY_BETWEEN_BURSTS)
     mod_out_silence = create_string_buffer(samples_delay*2)
     txbuffer += bytes(mod_out_silence)
-    print(f"samples_delay: {samples_delay} DELAY_BETWEEN_BURSTS: {DELAY_BETWEEN_BURSTS}", file=sys.stderr)
+    #print(f"samples_delay: {samples_delay} DELAY_BETWEEN_BURSTS: {DELAY_BETWEEN_BURSTS}", file=sys.stderr)
 
-    # resample up to 48k
+    # resample up to 48k (resampler works on np.int16)
     x = np.frombuffer(txbuffer, dtype=np.int16)
     txbuffer_48k = resampler.resample8_to_48(x)
-    print(len(txbuffer), len(x), len(txbuffer_48k), file=sys.stderr)
     
     # check if we want to use an audio device or stdout
-    if AUDIO_OUTPUT_DEVICE != -1: 
-            stream_tx.write(txbuffer_48k)
+    if AUDIO_OUTPUT_DEVICE != -1:
+        # Gotcha: we have to convert from np.int16 to Python "bytes"
+        stream_tx.write(txbuffer_48k.tobytes())
     else:
         # print data to terminal for piping the output to other programs
         sys.stdout.buffer.write(txbuffer_48k)    
