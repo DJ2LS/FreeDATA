@@ -13,7 +13,7 @@ import argparse
 import sys
 sys.path.insert(0,'..')
 import codec2
-        
+import numpy as np        
 
 # GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='FreeDATA TEST')
@@ -38,9 +38,9 @@ AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT_DEVICE
 
 
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 2048 
+AUDIO_FRAMES_PER_BUFFER = 2400 
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_TX = 8000
+AUDIO_SAMPLE_RATE_TX = 48000
 assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 if AUDIO_OUTPUT_DEVICE != -1: 
@@ -65,6 +65,7 @@ if AUDIO_OUTPUT_DEVICE != -1:
                             output_device_index=AUDIO_OUTPUT_DEVICE,  
                             )      
 
+resampler = codec2.resampler()
 modes = [codec2.api.FREEDV_MODE_DATAC0, codec2.api.FREEDV_MODE_DATAC1, codec2.api.FREEDV_MODE_DATAC3]
 for m in modes:
     
@@ -120,20 +121,19 @@ for m in modes:
         mod_out_silence = create_string_buffer(samples_delay*2)    
         txbuffer += bytes(mod_out_silence)
 
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        txbuffer_48k = resampler.resample8_to_48(x)
+
         # check if we want to use an audio device or stdout
         if AUDIO_OUTPUT_DEVICE != -1: 
-                
-            # sample rate conversion from 8000Hz to 48000Hz
-            #audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)             
-            stream_tx.write(txbuffer)
-
+            stream_tx.write(txbuffer_48k.tobytes())
         else:
-            
             # this test needs a lot of time, so we are having a look at times...
             starttime = time.time()            
  
             # print data to terminal for piping the output to other programs
-            sys.stdout.buffer.write(txbuffer)    
+            sys.stdout.buffer.write(txbuffer_48k)    
             sys.stdout.flush()
 
             # and at least print the needed time to see which time we needed

@@ -15,7 +15,7 @@ import numpy as np
 
 #--------------------------------------------GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
-parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
+parser.add_argument('--bursts', dest="N_BURSTS", default=1, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=1, type=int)
 parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")  
 parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true") 
@@ -37,10 +37,11 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 TIMEOUT = args.TIMEOUT
 
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 2048
+AUDIO_FRAMES_PER_BUFFER = 2400*2
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_RX = 8000
-assert (AUDIO_SAMPLE_RATE_RX % MODEM_SAMPLE_RATE) == 0
+AUDIO_SAMPLE_RATE_RX = 48000
+# make sure our resampler will work
+assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
 # SET COUNTERS
 rx_total_frames_datac0 = 0
@@ -78,6 +79,8 @@ datac3_bytes_out = create_string_buffer(datac3_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac3_freedv,N_FRAMES_PER_BURST)
 datac3_buffer = codec2.audio_buffer(2*AUDIO_FRAMES_PER_BUFFER)
 
+resampler = codec2.resampler()
+
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
     p = pyaudio.PyAudio()
@@ -106,6 +109,7 @@ if AUDIO_INPUT_DEVICE != -1:
 timeout = time.time() + TIMEOUT
 print(time.time(),TIMEOUT, timeout)
 receive = True
+nread_exceptions = 0
 
 # initial nin values        
 datac0_nin = codec2.api.freedv_nin(datac0_freedv)               
@@ -129,13 +133,23 @@ def print_stats():
 
 while receive and time.time() < timeout:
     if AUDIO_INPUT_DEVICE != -1:         
-        data_in = stream_rx.read(AUDIO_FRAMES_PER_BUFFER,  exception_on_overflow = False)  
+        try:
+            data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+        except OSError as err:
+            print(err, file=sys.stderr)
+            if str(err).find("Input overflowed"):
+                nread_exceptions += 1
+            if str(err).find("Stream closed"):
+                receive = False
     else:
-        data_in = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
+        data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
                     
-    x = np.frombuffer(data_in, dtype=np.int16)
-    if len(x) == 0:
+    # insert samples in buffer
+    x = np.frombuffer(data_in48k, dtype=np.int16)    
+    if len(x) != AUDIO_FRAMES_PER_BUFFER:
         receive = False
+    x = resampler.resample48_to_8(x)
+        
     datac0_buffer.push(x)
     datac1_buffer.push(x)
     datac3_buffer.push(x)
@@ -186,6 +200,9 @@ while receive and time.time() < timeout:
     if rx_bursts_datac0 == N_BURSTS and rx_bursts_datac1 == N_BURSTS and rx_bursts_datac3 == N_BURSTS:
         receive = False 
 
+if nread_exceptions:
+    print("nread_exceptions %d - receive audio lost! Consider increasing Pyaudio frames_per_buffer..." %  \
+          nread_exceptions, file=sys.stderr)
 # INFO IF WE REACHED TIMEOUT
 if time.time() > timeout:
     print(f"TIMEOUT REACHED", file=sys.stderr)    

@@ -72,7 +72,6 @@ if AUDIO_OUTPUT_DEVICE != -1:
                             )      
                                 
                                 
-AUDIO_FRAMES_PER_BUFFER_8K = int(AUDIO_FRAMES_PER_BUFFER/codec2.api.FDMDV_OS_48)
 resampler = codec2.resampler()
 
 # data binary string

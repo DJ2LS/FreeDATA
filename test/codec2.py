@@ -20,25 +20,6 @@ class FREEDV_MODE(Enum):
 def FREEDV_GET_MODE(mode):
     return FREEDV_MODE[mode].value
 
-class audio_buffer:
-    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
-    # self.nbuffer is the current number of samples in the buffer
-    def __init__(self, size):
-        print("create audio_buffer: ", size)
-        self.size = size
-        self.buffer = np.zeros(size, dtype=np.int16)
-        self.nbuffer = 0
-    def push(self,samples):
-        # add samples at the end of the buffer
-        assert self.nbuffer+len(samples) <= self.size
-        self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
-        self.nbuffer += len(samples)
-    def pop(self,size):
-        # remove samples from the start of the buffer
-        self.nbuffer -= size;
-        self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
-        assert self.nbuffer >= 0
-               
 # LOAD FREEDV
 libname = "libcodec2.so"
 api = ctypes.CDLL(libname)
@@ -120,7 +101,27 @@ api.rx_sync_flags_to_text = [
     "EBS-",
     "EBST"]
 
+# audio buffer ---------------------------------------------------------
 
+class audio_buffer:
+    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
+    # self.nbuffer is the current number of samples in the buffer
+    def __init__(self, size):
+        print("create audio_buffer: ", size)
+        self.size = size
+        self.buffer = np.zeros(size, dtype=np.int16)
+        self.nbuffer = 0
+    def push(self,samples):
+        # add samples at the end of the buffer
+        assert self.nbuffer+len(samples) <= self.size
+        self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
+        self.nbuffer += len(samples)
+    def pop(self,size):
+        # remove samples from the start of the buffer
+        self.nbuffer -= size;
+        self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
+        assert self.nbuffer >= 0
+               
 # resampler ---------------------------------------------------------
 
 api.FDMDV_OS_48         = int(6)                                       # oversampling rate
@@ -130,8 +131,7 @@ api.fdmdv_8_to_48_short.argtype = [c_void_p, c_void_p, c_int]
 api.fdmdv_48_to_8_short.argtype = [c_void_p, c_void_p, c_int]
 
 class resampler:
-    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
-    # self.nbuffer is the current number of samples in the buffer
+    # resample an array of variable length, we just store the filter memories here
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K
 
@@ -142,19 +142,22 @@ class resampler:
 
     def resample48_to_8(self,in48):
         assert in48.dtype == np.int16
-        # length of input vector must be an interger multiple of api.FDMDV_OS_48
+        # length of input vector must be an integer multiple of api.FDMDV_OS_48
         assert(len(in48) % api.FDMDV_OS_48 == 0)
 
         # concat filter memory and input samples
         in48_mem = np.zeros(self.MEM48+len(in48), dtype=np.int16)
         in48_mem[:self.MEM48] = self.filter_mem48
         in48_mem[self.MEM48:] = in48
-        
+
+        # In C: pin48=&in48[MEM48]
         pin48,flag = in48_mem.__array_interface__['data']
         pin48 += 2*self.MEM48
         n8 = int(len(in48) / api.FDMDV_OS_48)
         out8 = np.zeros(n8, dtype=np.int16)
         api.fdmdv_48_to_8_short(out8.ctypes, pin48, n8);
+
+        # store memory for next time
         self.filter_mem48 = in48_mem[:self.MEM48]
 
         return out8
@@ -167,10 +170,13 @@ class resampler:
         in8_mem[:self.MEM8] = self.filter_mem8
         in8_mem[self.MEM8:] = in8
 
+        # In C: pin8=&in8[MEM8]
         pin8,flag = in8_mem.__array_interface__['data']
         pin8 += 2*self.MEM8
         out48 = np.zeros(api.FDMDV_OS_48*len(in8), dtype=np.int16)
         api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8));
+
+        # store memory for next time
         self.filter_mem8 = in8_mem[:self.MEM8]
 
         return out48

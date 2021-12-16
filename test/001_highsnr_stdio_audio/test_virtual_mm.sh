@@ -25,7 +25,7 @@ trap myInterruptHandler SIGINT
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
 
-python3 test_multimode_rx.py --timeout 60 --framesperburst 2 --bursts 2 --audiodev -2 &
+python3 test_multimode_rx.py --timeout 60 --framesperburst 2 --bursts 2 --audiodev -2 --debug &
 rx_pid=$!
 sleep 1
 python3 test_multimode_tx.py --framesperburst 2 --bursts 2 --audiodev -2 --delay 500

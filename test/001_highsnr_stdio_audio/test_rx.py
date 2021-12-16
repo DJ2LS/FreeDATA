@@ -120,14 +120,16 @@ while receive and time.time() < timeout:
             data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
         except OSError as err:
             print(err, file=sys.stderr)
-            nread_exceptions += 1
+            if str(err).find("Input overflowed"):
+                nread_exceptions += 1
+            if str(err).find("Stream closed"):
+                receive = False
     else:
         data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
     
     # insert samples in buffer
     x = np.frombuffer(data_in48k, dtype=np.int16)
-    x.tofile(frx)
-    
+    x.tofile(frx)    
     if len(x) != AUDIO_FRAMES_PER_BUFFER:
         receive = False
     x = resampler.resample48_to_8(x)
