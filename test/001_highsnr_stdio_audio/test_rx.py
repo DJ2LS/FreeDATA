@@ -47,12 +47,12 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 TIMEOUT = args.TIMEOUT
 
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 2048 # seems to be best if >=1024
+AUDIO_FRAMES_PER_BUFFER = 2400                 # seems to be best if >=1024
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 AUDIO_SAMPLE_RATE_RX = 48000
 
 # make sure our resampler will work
-assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == api.FDMDV_OS_48
+assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
@@ -104,6 +104,8 @@ rx_errors = 0
 timeout = time.time() + TIMEOUT
 receive = True
 audio_buffer = codec2.audio_buffer(codec2.api.freedv_get_n_max_modem_samples(freedv))
+AUDIO_FRAMES_PER_BUFFER_8K = int(AUDIO_FRAMES_PER_BUFFER/codec2.api.FDMDV_OS_48)
+resampler = codec2.resampler(AUDIO_FRAMES_PER_BUFFER,AUDIO_FRAMES_PER_BUFFER_8K)
 
 # initial number of samples we need
 nin = codec2.api.freedv_nin(freedv)
@@ -115,13 +117,11 @@ while receive and time.time() < timeout:
     else:
         data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
 
-    # resample to 8 kHz
-    data_in8k = resampler.resample(data_in48k)
-    
     # insert samples in buffer
-    x = np.frombuffer(data_in8k, dtype=np.int16)
-    if len(x) == 0:
-        receive = False
+    x = np.frombuffer(data_in48k, dtype=np.int16)
+    if len(x) != AUDIO_FRAMES_PER_BUFFER:
+        break
+    x = resampler.resample48_to_8(x)    
     audio_buffer.push(x)
     
     # when we have enough samples call FreeDV Rx

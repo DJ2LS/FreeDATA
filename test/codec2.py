@@ -137,12 +137,12 @@ class resampler:
     def __init__(self, n48, n8):
         print("create 48<->8 kHz resampler with buffers of %d at 48 kHz and %d at 8 kHz" % (n48, n8))
         assert (n48 / n8) == api.FDMDV_OS_48
-        self.n8 = n8
-        self.n48 = n48
-        self.in8 = np.zeros(self.MEM8 + n8, dtype=np.int16)
-        self.out48 = np.zeros(n48, dtype=np.int16)
-        self.in48 = np.zeros(self.MEM48 + n48, dtype=np.int16)
-        self.out8 = np.zeros(n8, dtype=np.int16)
+        self.n8 = int(n8)
+        self.n48 = int(n48)
+        self.in8 = np.zeros(self.MEM8 + self.n8, dtype=np.int16)
+        self.out48 = np.zeros(self.n48, dtype=np.int16)
+        self.in48 = np.zeros(self.MEM48 + self.n48, dtype=np.int16)
+        self.out8 = np.zeros(self.n8, dtype=np.int16)
     def resample48_to_8(self,in48):
         assert in48.dtype == np.int16
         assert len(in48) == self.n48
