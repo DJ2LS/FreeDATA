@@ -120,9 +120,10 @@ while receive and time.time() < timeout:
             data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
         except OSError as err:
             print(err, file=sys.stderr)
-            if str(err).find("Input overflowed"):
+            if str(err).find("Input overflowed") != -1:
                 nread_exceptions += 1
-            if str(err).find("Stream closed"):
+            if str(err).find("Stream closed") != -1:
+                print("Ending...")
                 receive = False
     else:
         data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
