@@ -47,7 +47,7 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 TIMEOUT = args.TIMEOUT
 
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 2400                 # seems to be best if >=1024
+AUDIO_FRAMES_PER_BUFFER = 2400*2  # <- consider increasing if you get nread_exceptions > 0
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
 AUDIO_SAMPLE_RATE_RX = 48000
 
@@ -101,24 +101,33 @@ rx_total_frames = 0
 rx_frames = 0
 rx_bursts = 0
 rx_errors = 0
+nread_exceptions = 0
 timeout = time.time() + TIMEOUT
 receive = True
-audio_buffer = codec2.audio_buffer(codec2.api.freedv_get_n_max_modem_samples(freedv))
-AUDIO_FRAMES_PER_BUFFER_8K = int(AUDIO_FRAMES_PER_BUFFER/codec2.api.FDMDV_OS_48)
+audio_buffer = codec2.audio_buffer(AUDIO_FRAMES_PER_BUFFER*2)
 resampler = codec2.resampler()
+
+# Copy received 48 kHz to a file.  Listen to this file with:
+#   aplay -r 48000 -f S16_LE rx48.raw
+# Corruption of this file is a good way to detect audio card issues
+frx = open("rx48.raw", mode='wb')    
 
 # initial number of samples we need
 nin = codec2.api.freedv_nin(freedv)
-    
 while receive and time.time() < timeout:
-
-    if AUDIO_INPUT_DEVICE != -1:         
-        data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = False)  
+    if AUDIO_INPUT_DEVICE != -1:
+        try:
+            data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+        except OSError as err:
+            print(err, file=sys.stderr)
+            nread_exceptions += 1
     else:
         data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
-
+    
     # insert samples in buffer
     x = np.frombuffer(data_in48k, dtype=np.int16)
+    x.tofile(frx)
+    
     if len(x) != AUDIO_FRAMES_PER_BUFFER:
         receive = False
     x = resampler.resample48_to_8(x)
@@ -154,12 +163,16 @@ while receive and time.time() < timeout:
                 rx_bursts = rx_bursts + 1
                           
             if rx_bursts == N_BURSTS:
-                receive = False   
-                   
+                receive = False
+                
     if time.time() >= timeout:
         print("TIMEOUT REACHED")
-
+     
+if nread_exceptions:
+    print("nread_exceptions %d - receive audio lost! Consider increasing Pyaudio frames_per_buffer..." %  \
+          nread_exceptions, file=sys.stderr)
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
+frx.close()
 
 # and at last check if we had an openend pyaudio instance and close it
 if AUDIO_INPUT_DEVICE != -1: 
