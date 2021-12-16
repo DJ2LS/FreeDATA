@@ -105,7 +105,7 @@ timeout = time.time() + TIMEOUT
 receive = True
 audio_buffer = codec2.audio_buffer(codec2.api.freedv_get_n_max_modem_samples(freedv))
 AUDIO_FRAMES_PER_BUFFER_8K = int(AUDIO_FRAMES_PER_BUFFER/codec2.api.FDMDV_OS_48)
-resampler = codec2.resampler(AUDIO_FRAMES_PER_BUFFER,AUDIO_FRAMES_PER_BUFFER_8K)
+resampler = codec2.resampler()
 
 # initial number of samples we need
 nin = codec2.api.freedv_nin(freedv)
@@ -120,8 +120,8 @@ while receive and time.time() < timeout:
     # insert samples in buffer
     x = np.frombuffer(data_in48k, dtype=np.int16)
     if len(x) != AUDIO_FRAMES_PER_BUFFER:
-        break
-    x = resampler.resample48_to_8(x)    
+        receive = False
+    x = resampler.resample48_to_8(x)
     audio_buffer.push(x)
     
     # when we have enough samples call FreeDV Rx

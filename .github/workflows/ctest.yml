@@ -17,7 +17,7 @@ jobs:
       shell: bash
       run: |
            sudo apt-get update
-           sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio alsa-utils
+           sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio
            pip3 install psutil crcengine ujson pyserial numpy structlog miniaudio
 
     - name: Build codec2

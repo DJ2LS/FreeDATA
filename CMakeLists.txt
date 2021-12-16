@@ -33,6 +33,7 @@ add_test(NAME 001_highsnr_stdio_P_C_SM
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        sox -t .s16 -r 48000 -c 1 - -t .s16 -r 8000 -c 1 - |
                         freedv_data_raw_rx datac0 - - --framesperburst ${FRAMESPERBURST} | hexdump -C")
         set_tests_properties(001_highsnr_stdio_P_C_SM PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
 
@@ -41,6 +42,7 @@ add_test(NAME 001_highsnr_stdio_C_P_SM
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test/001_highsnr_stdio_audio;
                         freedv_data_raw_tx datac0 --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} /dev/zero - |
+                        sox -t .s16 -r 8000 -c 1 - -t .s16 -r 48000 -c 1 - |
                         python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(001_highsnr_stdio_C_P_SM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 

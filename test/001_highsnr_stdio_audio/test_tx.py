@@ -11,7 +11,7 @@ import argparse
 import sys
 sys.path.insert(0,'..')
 import codec2
-        
+import numpy as np
 
 # GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
@@ -39,11 +39,10 @@ AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT_DEVICE
 
 MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
 
-
 # AUDIO PARAMETERS
-AUDIO_FRAMES_PER_BUFFER = 2048 
+AUDIO_FRAMES_PER_BUFFER = 2400
 MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
-AUDIO_SAMPLE_RATE_TX = 8000
+AUDIO_SAMPLE_RATE_TX = 48000
 assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
@@ -73,6 +72,9 @@ if AUDIO_OUTPUT_DEVICE != -1:
                             )      
                                 
                                 
+AUDIO_FRAMES_PER_BUFFER_8K = int(AUDIO_FRAMES_PER_BUFFER/codec2.api.FDMDV_OS_48)
+resampler = codec2.resampler()
+
 # data binary string
 data_out = b'HELLO WORLD!'
 
@@ -134,21 +136,22 @@ for i in range(1,N_BURSTS+1):
     txbuffer += bytes(mod_out_postamble)
 
     # append a delay between bursts as audio silence
-    samples_delay = int(MODEM_SAMPLE_RATE*DELAY_BETWEEN_BURSTS*2)
-    mod_out_silence = create_string_buffer(samples_delay)    
+    samples_delay = int(MODEM_SAMPLE_RATE*DELAY_BETWEEN_BURSTS)
+    mod_out_silence = create_string_buffer(samples_delay*2)
     txbuffer += bytes(mod_out_silence)
     print(f"samples_delay: {samples_delay} DELAY_BETWEEN_BURSTS: {DELAY_BETWEEN_BURSTS}", file=sys.stderr)
+
+    # resample up to 48k
+    x = np.frombuffer(txbuffer, dtype=np.int16)
+    txbuffer_48k = resampler.resample8_to_48(x)
+    print(len(txbuffer), len(x), len(txbuffer_48k), file=sys.stderr)
     
     # check if we want to use an audio device or stdout
     if AUDIO_OUTPUT_DEVICE != -1: 
-        
-        # sample rate conversion from 8000Hz to 48000Hz
-        #audio = audioop.ratecv(txbuffer,2,1,MODEM_SAMPLE_RATE, AUDIO_SAMPLE_RATE_TX, None)                                           
-        stream_tx.write(txbuffer)
-
+            stream_tx.write(txbuffer_48k)
     else:
         # print data to terminal for piping the output to other programs
-        sys.stdout.buffer.write(txbuffer)    
+        sys.stdout.buffer.write(txbuffer_48k)    
         sys.stdout.flush()
 
 
