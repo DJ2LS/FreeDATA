@@ -105,16 +105,19 @@ class RF():
     def __init__(self):
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
-        self.MODEM_SAMPLE_RATE = 8000
-        self.AUDIO_FRAMES_PER_BUFFER_RX = 8192  #8192
+        self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
+        self.AUDIO_FRAMES_PER_BUFFER_RX = 2400*2  #8192
         self.AUDIO_FRAMES_PER_BUFFER_TX = 8     #8192 Lets to some tests with very small chunks for TX
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
+        # make sure our resampler will work
+        assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
+        
         # small hack for initializing codec2 via codec2.py module
         # TODO: we need to change the entire modem module to integrate codec2 module
         self.c_lib = codec2.api
-        
+        self.resampler = codec2.resampler()
         '''        
         # -------------------------------------------- LOAD FREEDV
         try:
@@ -472,11 +475,45 @@ class RF():
 # --------------------------------------------------------------------------------------------------------
 
     def receive(self):
-        
+        '''
         freedv_mode_datac0 = 14
         freedv_mode_datac1 = 10
         freedv_mode_datac3 = 12
+        '''
         
+        
+        # open codec2 instance        
+        datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
+        datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
+        datac0_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac0_freedv)
+        datac0_bytes_out = create_string_buffer(datac0_bytes_per_frame * 2)
+        codec2.api.freedv_set_frames_per_burst(datac0_freedv,1)
+        datac0_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
+        datac0_modem_stats_snr = c_float()
+        datac0_modem_stats_sync = c_int()
+        static.FREEDV_SIGNALLING_BYTES_PER_FRAME = datac0_bytes_per_frame
+        static.FREEDV_SIGNALLING_PAYLOAD_PER_FRAME = datac0_bytes_per_frame - 2        
+        
+        datac1_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), c_void_p)
+        datac1_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
+        datac1_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac1_freedv)
+        datac1_bytes_out = create_string_buffer(datac1_bytes_per_frame * 2)
+        codec2.api.freedv_set_frames_per_burst(datac1_freedv,1)
+        datac1_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
+        datac1_modem_stats_snr = c_float()
+        datac1_modem_stats_sync = c_int()
+        
+        
+        datac3_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), c_void_p)
+        datac3_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
+        datac3_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac3_freedv)
+        datac3_bytes_out = create_string_buffer(datac3_bytes_per_frame * 2)
+        codec2.api.freedv_set_frames_per_burst(datac3_freedv,1)
+        datac3_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
+        datac3_modem_stats_snr = c_float()
+        datac3_modem_stats_sync = c_int()
+        
+        '''
         # DATAC0
 
         datac0_freedv = cast(self.c_lib.freedv_open(freedv_mode_datac0), c_void_p)
@@ -511,20 +548,66 @@ class RF():
         datac3_modem_stats_snr = c_float()
         datac3_modem_stats_sync = c_int()
         datac3_buffer = bytes()
-
         '''
-        if mode == static.ARQ_DATA_CHANNEL_MODE:
-            static.FREEDV_DATA_BYTES_PER_FRAME = bytes_per_frame
-            static.FREEDV_DATA_PAYLOAD_PER_FRAME = bytes_per_frame - 2
 
-            self.c_lib.freedv_set_frames_per_burst(freedv, 0)
-        else:
-            #pass
-            self.c_lib.freedv_set_frames_per_burst(freedv, 0)
-        '''
         fft_buffer = bytes()
-        while True:
+        receive = True
+        while receive:
 
+            try:
+                data_in48k = self.stream_rx.read(self.AUDIO_FRAMES_PER_BUFFER_RX, exception_on_overflow = True)
+            except OSError as err:
+                print(err, file=sys.stderr)
+                if str(err).find("Input overflowed") != -1:
+                    nread_exceptions += 1
+                if str(err).find("Stream closed") != -1:
+                    print("Ending...")
+                    receive = False
+
+
+
+            # insert samples in buffer
+            x = np.frombuffer(data_in48k, dtype=np.int16)
+            # x.tofile(frx)    
+            if len(x) != self.AUDIO_FRAMES_PER_BUFFER_RX:
+                receive = False
+            x = self.resampler.resample48_to_8(x)
+            
+            datac0_buffer.push(x)
+            datac1_buffer.push(x)
+            datac3_buffer.push(x)
+            
+            # when we have enough samples call FreeDV Rx
+            while datac0_buffer.nbuffer >= datac0_nin:        
+                # demodulate audio
+                nbytes = codec2.api.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_buffer.buffer.ctypes)
+                datac0_buffer.pop(datac0_nin)
+                datac0_nin = codec2.api.freedv_nin(datac0_freedv)
+                if nbytes == datac0_bytes_per_frame:
+                    datac0_task = threading.Thread(target=self.process_data, args=[datac0_bytes_out, datac0_freedv, datac0_bytes_per_frame])
+                    datac0_task.start()   
+               
+            while datac1_buffer.nbuffer >= datac1_nin:
+                # demodulate audio
+                nbytes = codec2.api.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_buffer.buffer.ctypes)
+                datac1_buffer.pop(datac1_nin)
+                datac1_nin = codec2.api.freedv_nin(datac1_freedv)
+                if nbytes == datac1_bytes_per_frame:
+                    datac1_task = threading.Thread(target=self.process_data, args=[datac1_bytes_out, datac1_freedv, datac1_bytes_per_frame])
+                    datac1_task.start()       
+                            
+            while datac3_buffer.nbuffer >= datac3_nin:
+                # demodulate audio    
+                nbytes = codec2.api.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_buffer.buffer.ctypes)
+                datac3_buffer.pop(datac3_nin)
+                datac3_nin = codec2.api.freedv_nin(datac3_freedv)
+                if nbytes == datac3_bytes_per_frame:
+                    datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac1_freedv, datac1_bytes_per_frame])
+                    datac3_task.start()   
+
+
+
+            '''
             data_in = bytes()
             data_in = self.stream_rx.read(self.AUDIO_CHUNKS,  exception_on_overflow=False)
             data_in = audioop.ratecv(data_in, 2, 1, self.AUDIO_SAMPLE_RATE_RX, self.MODEM_SAMPLE_RATE, None)
@@ -535,15 +618,7 @@ class RF():
             datac1_nin = self.c_lib.freedv_nin(datac1_freedv) * 2
             datac3_nin = self.c_lib.freedv_nin(datac3_freedv) * 2
 
-            '''
-            # refill buffer only if every mode has worked with its data
-            if (len(datac0_buffer) < (datac0_nin)) and (len(datac1_buffer) < (datac1_nin)) and (len(datac3_buffer) < (datac3_nin)):
-                
-                datac0_buffer += data_in
-                datac1_buffer += data_in
-                datac3_buffer += data_in
-                
-            '''    
+             
             datac0_buffer += data_in
             datac1_buffer += data_in
             datac3_buffer += data_in
@@ -608,7 +683,7 @@ class RF():
 
                     datac3_task = threading.Thread(target=self.process_data, args=[datac3_bytes_out, datac3_freedv, datac3_bytes_per_frame])
                     datac3_task.start()
-
+            '''
     # forward data only if broadcast or we are the receiver
     # bytes_out[1:2] == callsign check for signalling frames, 
     # bytes_out[6:7] == callsign check for data frames, 
