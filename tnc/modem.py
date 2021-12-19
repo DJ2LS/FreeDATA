@@ -21,6 +21,8 @@ import static
 import data_handler
 import re
 
+import codec2
+
 # option for testing miniaudio instead of audioop for sample rate conversion
 #import miniaudio
 
@@ -109,7 +111,11 @@ class RF():
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
+        # small hack for initializing codec2 via codec2.py module
+        # TODO: we need to change the entire modem module to integrate codec2 module
+        self.c_lib = codec2.api
         
+        '''        
         # -------------------------------------------- LOAD FREEDV
         try:
             # we check at first for libcodec2 compiled from source
@@ -132,11 +138,11 @@ class RF():
                 structlog.get_logger("structlog").info("[TNC] Codec2 found", path=libname, origin="precompiled")
             else:
                 structlog.get_logger("structlog").critical("[TNC] Codec2 not found")
-
-
+        '''
+        '''
         # --------------------------------------------CTYPES FUNCTION INIT
         # TODO: WE STILL HAVE SOME MISSING FUNCTIONS!
-        
+
         self.c_lib.freedv_open.argype = [c_int]
         self.c_lib.freedv_open.restype = c_void_p
 
@@ -154,8 +160,7 @@ class RF():
 
         self.c_lib.freedv_set_frames_per_burst.argtype = [c_void_p, c_int]
         self.c_lib.freedv_set_frames_per_burst.restype = c_int
-
-
+        '''
 
         # --------------------------------------------CREATE PYAUDIO  INSTANCE
         try:
@@ -168,6 +173,17 @@ class RF():
             self.p = pyaudio.PyAudio()
         atexit.register(self.p.terminate)
         # --------------------------------------------OPEN AUDIO CHANNEL RX
+        # optional auto selection of loopback device if using in testmode
+        if static.AUDIO_INPUT_DEVICE == -2:
+            loopback_list = []
+            for dev in range(0,self.p.get_device_count()):
+                if 'Loopback: PCM' in self.p.get_device_info_by_index(dev)["name"]:
+                    loopback_list.append(dev)
+            if len(loopback_list) >= 2:
+                AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX   1 = TX
+                print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
+        
+        
         self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                      channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_RX,
@@ -176,6 +192,16 @@ class RF():
                                      input_device_index=static.AUDIO_INPUT_DEVICE
                                      )
         # --------------------------------------------OPEN AUDIO CHANNEL TX
+        # optional auto selection of loopback device if using in testmode        
+        if static.AUDIO_OUTPUT_DEVICE == -2:
+            loopback_list = []
+            for dev in range(0,self.p.get_device_count()):
+                if 'Loopback: PCM' in self.p.get_device_info_by_index(dev)["name"]:
+                    loopback_list.append(dev)
+            if len(loopback_list) >= 2:
+                static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #0  = RX   1 = TX
+                print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
+        
         self.stream_tx = self.p.open(format=pyaudio.paInt16,
                                      channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_TX,

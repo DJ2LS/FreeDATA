@@ -7,8 +7,7 @@ import sys
 import pathlib
 from enum import Enum
 import numpy as np
-
-print("loading codec2 module", file=sys.stderr)
+#print("loading codec2 module", file=sys.stderr)
 
 
 # Enum for codec2 modes
@@ -17,14 +16,39 @@ class FREEDV_MODE(Enum):
     datac1 = 10
     datac3 = 12
     
-def FREEDV_GET_MODE(mode):
+def freedv_get_mode(mode):
     return FREEDV_MODE[mode].value
 
-# LOAD FREEDV
-libname = "libcodec2.so"
-api = ctypes.CDLL(libname)
+# -------------------------------------------- LOAD FREEDV
+# codec2 search pathes in descending order
+# libcodec2.so                                                          ctests
+# pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0")               manual build
+# pathlib.Path("lib/codec2/linux/libcodec2.so.1.0")                     precompiled
+# pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0")     external loading manual build
+# pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0")           external loading precompiled
+libname = ["libcodec2.so", \
+            pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0"), \
+            pathlib.Path("lib/codec2/linux/libcodec2.so.1.0"), \
+            pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
+            pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
+            ]
+# iterate through codec2 search pathes
+for i in libname:
+    try:
+        api = ctypes.CDLL(i)
+        print(f"[C2 ] Codec2 library found - {i}", file=sys.stderr)
+        break
+    except:
+        print(f"[C2 ] Codec2 library not found - {i}", file=sys.stderr)
+        pass
+# quit module if codec2 cant be loaded    
+if not 'api' in locals():
+    print(f"[C2 ] Loading Codec2 library failed", file=sys.stderr)
+    quit()
 
 
+
+    
 # ctypes function init        
 
 api.freedv_open.argype = [c_int]
