@@ -139,7 +139,8 @@ class resampler:
         print("create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
-
+        
+        
     def resample48_to_8(self,in48):
         assert in48.dtype == np.int16
         # length of input vector must be an integer multiple of api.FDMDV_OS_48

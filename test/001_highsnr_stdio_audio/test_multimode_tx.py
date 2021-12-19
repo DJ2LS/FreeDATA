@@ -11,8 +11,8 @@ import threading
 import audioop
 import argparse
 import sys
-sys.path.insert(0,'..')
-import codec2
+sys.path.insert(0,'../..')
+from tnc import codec2
 import numpy as np        
 
 # GET PARAMETER INPUTS  
