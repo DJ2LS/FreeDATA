@@ -175,9 +175,8 @@ class resampler:
         in48_mem[:self.MEM48] = self.filter_mem48
         in48_mem[self.MEM48:] = in48
 
-        # In C: pin48=&in48[MEM48]
-        pin48,flag = in48_mem.__array_interface__['data']
-        pin48 += 2*self.MEM48
+        # In C: pin48=&in48_mem[MEM48]
+        pin48 = byref(np.ctypeslib.as_ctypes(in48_mem), 2*self.MEM48)
         n8 = int(len(in48) / api.FDMDV_OS_48)
         out8 = np.zeros(n8, dtype=np.int16)
         api.fdmdv_48_to_8_short(out8.ctypes, pin48, n8);
@@ -195,9 +194,8 @@ class resampler:
         in8_mem[:self.MEM8] = self.filter_mem8
         in8_mem[self.MEM8:] = in8
 
-        # In C: pin8=&in8[MEM8]
-        pin8,flag = in8_mem.__array_interface__['data']
-        pin8 += 2*self.MEM8
+        # In C: pin8=&in8_mem[MEM8]
+        pin8 = byref(np.ctypeslib.as_ctypes(in8_mem), 2*self.MEM8)
         out48 = np.zeros(api.FDMDV_OS_48*len(in8), dtype=np.int16)
         api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8));
 

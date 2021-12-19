@@ -17,8 +17,8 @@ import threading
 import sys
 import argparse
 import numpy as np
-sys.path.insert(0,'..')
-import codec2
+sys.path.insert(0,'../..')
+from tnc import codec2
 
 #--------------------------------------------GET PARAMETER INPUTS  
 parser = argparse.ArgumentParser(description='FreeDATA audio test')
@@ -55,12 +55,82 @@ AUDIO_SAMPLE_RATE_RX = 48000
 assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
 
+              
+# DATA CHANNEL INITIALISATION
+
+# open codec2 instance        
+freedv = cast(codec2.api.freedv_open(MODE), c_void_p)
+
+# get number of bytes per frame for mode
+bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
+payload_bytes_per_frame = bytes_per_frame -2
+
+n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(freedv)     
+bytes_out = create_string_buffer(bytes_per_frame * 2)
+
+codec2.api.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
+
+total_n_bytes = 0
+rx_total_frames = 0
+rx_frames = 0
+rx_bursts = 0
+rx_errors = 0
+nread_exceptions = 0
+timeout = time.time() + TIMEOUT
+receive = True
+audio_buffer = codec2.audio_buffer(AUDIO_FRAMES_PER_BUFFER*2)
+resampler = codec2.resampler()
+
+# Copy received 48 kHz to a file.  Listen to this file with:
+#   aplay -r 48000 -f S16_LE rx48_callback.raw
+# Corruption of this file is a good way to detect audio card issues
+frx = open("rx48_callback.raw", mode='wb')    
+
 # ------------------------------------------------ PYAUDIO CALLBACK
 def callback(data_in48k, frame_count, time_info, status):
+    global total_n_bytes
+    global rx_total_frames
+    global rx_frames
+    global rx_bursts
+    global receive
     x = np.frombuffer(data_in48k, dtype=np.int16)
-    x.tofile(frx)    
-    x = resampler.resample48_to_8(x)
-    audio_buffer.push(x)    
+    x.tofile(frx)
+    x = resampler.resample48_to_8(x)    
+    audio_buffer.push(x)
+
+    # when we have enough samples call FreeDV Rx
+    nin = codec2.api.freedv_nin(freedv)
+    while audio_buffer.nbuffer >= nin:
+
+        # demodulate audio
+        nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.buffer.ctypes)        
+        audio_buffer.pop(nin)
+        
+        # call me on every loop!
+        nin = codec2.api.freedv_nin(freedv)
+       
+        rx_status = codec2.api.freedv_get_rx_status(freedv)       
+        if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
+            rx_errors = rx_errors + 1
+        if DEBUGGING_MODE:        
+          rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
+          print("nin: %5d rx_status: %4s naudio_buffer: %4d" % \
+                (nin,rx_status,audio_buffer.nbuffer), file=sys.stderr)
+
+        if nbytes:
+            total_n_bytes = total_n_bytes + nbytes
+            
+            if nbytes == bytes_per_frame:
+                rx_total_frames = rx_total_frames + 1
+                rx_frames = rx_frames + 1
+
+            if rx_frames == N_FRAMES_PER_BURST:
+                rx_frames = 0
+                rx_bursts = rx_bursts + 1
+                          
+            if rx_bursts == N_BURSTS:
+                receive = False
+    
     return (None, pyaudio.paContinue)
 
 
@@ -96,77 +166,15 @@ if AUDIO_INPUT_DEVICE != -1:
         stream_rx.start_stream()
     except Exception as e:
         print(f"pyAudio error: {e}", file=sys.stderr)  
+
 # ----------------------------------------------------------------
-              
-# DATA CHANNEL INITIALISATION
 
-# open codec2 instance        
-freedv = cast(codec2.api.freedv_open(MODE), c_void_p)
-
-# get number of bytes per frame for mode
-bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
-payload_bytes_per_frame = bytes_per_frame -2
-
-n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(freedv)     
-bytes_out = create_string_buffer(bytes_per_frame * 2)
-
-codec2.api.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
-
-total_n_bytes = 0
-rx_total_frames = 0
-rx_frames = 0
-rx_bursts = 0
-rx_errors = 0
-nread_exceptions = 0
-timeout = time.time() + TIMEOUT
-receive = True
-audio_buffer = codec2.audio_buffer(AUDIO_FRAMES_PER_BUFFER*2)
-resampler = codec2.resampler()
-
-# Copy received 48 kHz to a file.  Listen to this file with:
-#   aplay -r 48000 -f S16_LE rx48_callback.raw
-# Corruption of this file is a good way to detect audio card issues
-frx = open("rx48_callback.raw", mode='wb')    
-
-# initial number of samples we need
-nin = codec2.api.freedv_nin(freedv)
 while receive and time.time() < timeout:
+    time.sleep(1)
 
-    # when we have enough samples call FreeDV Rx
-    while audio_buffer.nbuffer >= nin:
-
-        # demodulate audio
-        nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.buffer.ctypes)        
-        audio_buffer.pop(nin)
+if time.time() >= timeout:
+    print("TIMEOUT REACHED")
         
-        # call me on every loop!
-        nin = codec2.api.freedv_nin(freedv)
-       
-        rx_status = codec2.api.freedv_get_rx_status(freedv)       
-        if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
-            rx_errors = rx_errors + 1
-        if DEBUGGING_MODE:        
-          rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
-          print("nin: %5d rx_status: %4s naudio_buffer: %4d" % \
-                (nin,rx_status,audio_buffer.nbuffer), file=sys.stderr)
-
-        if nbytes:
-            total_n_bytes = total_n_bytes + nbytes
-            
-            if nbytes == bytes_per_frame:
-                rx_total_frames = rx_total_frames + 1
-                rx_frames = rx_frames + 1
-
-            if rx_frames == N_FRAMES_PER_BURST:
-                rx_frames = 0
-                rx_bursts = rx_bursts + 1
-                          
-            if rx_bursts == N_BURSTS:
-                receive = False
-                
-    if time.time() >= timeout:
-        print("TIMEOUT REACHED")
-     
 if nread_exceptions:
     print("nread_exceptions %d - receive audio lost! Consider increasing Pyaudio frames_per_buffer..." %  \
           nread_exceptions, file=sys.stderr)
