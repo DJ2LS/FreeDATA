@@ -155,13 +155,19 @@ app.whenReady().then(() => {
 
     // start daemon
     // https://stackoverflow.com/a/5775120
-    console.log("Starting Daemon")
-    daemonProcess = exec('./daemon', function callback(error, stdout, stderr) {
-        // result
-        console.log(stdout)
-        console.log(error)
-        console.log(stderr)
+    console.log("Trying to start daemon binary")
+    daemonProcess = exec('./daemon', function callback(err, stdout, stderr) {
+        if (err) {
+            console.error("Can't start daemon binary");
+            console.error("--> this is only working with the app bundle and a precompiled binaries");
+        return;
+        }
+        console.log(stdout); 
     });
+
+
+
+
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
