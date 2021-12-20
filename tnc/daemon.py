@@ -214,7 +214,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'DAEMON_STATE':
 
-                    data = {'COMMAND': 'DAEMON_STATE', 'DAEMON_STATE': [], 'INPUT_DEVICES': [], 'OUTPUT_DEVICES': [], 'SERIAL_DEVICES': [
+                    data = {
+                        'COMMAND': 'DAEMON_STATE',
+                        'DAEMON_STATE': [],
+                        'PYTHON_VERSION': str(python_version),
+                        'HAMLIB_VERSION': str(hamlib_version),
+                        'INPUT_DEVICES': [],
+                        'OUTPUT_DEVICES': [],
+                        'SERIAL_DEVICES': [
                     ], "CPU": str(psutil.cpu_percent()), "RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
 
                     if static.TNCSTARTED:

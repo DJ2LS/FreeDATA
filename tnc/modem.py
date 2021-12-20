@@ -59,7 +59,6 @@ def noalsaerr():
 try:
     # get python version
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
-
     # installation path for Ubuntu 20.04 LTS python modules
     sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
     # installation path for Ubuntu 20.10 +
