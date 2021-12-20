@@ -106,5 +106,22 @@ add_test(NAME 001_highsnr_virtual4_P_P_SM_CB_OUTSIDE
                         ./test_virtual3b.sh")
        set_tests_properties(001_highsnr_virtual4_P_P_SM_CB_OUTSIDE PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
 
+# let Python do audio I/O via pyaudio callback mode with code outside of callback
+add_test(NAME 001_highsnr_virtual5_P_P_MM_CB
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        ./test_virtual4a.sh")
+       set_tests_properties(001_highsnr_virtual5_P_P_MM_CB PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
+
+# let Python do audio I/O via pyaudio callback mode with code outside of callback
+add_test(NAME 001_highsnr_virtual5_P_P_MM_CB_OUTSIDE
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        PATH=$PATH:${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        ./test_virtual4b.sh")
+       set_tests_properties(001_highsnr_virtual5_P_P_MM_CB_OUTSIDE PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
+       
+       
 endif()
        
