@@ -60,21 +60,18 @@ rx_bursts_datac3 = 0
 # open codec2 instance        
 datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
 datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac0_freedv)/8)
-datac0_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac0_freedv)
 datac0_bytes_out = create_string_buffer(datac0_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac0_freedv,N_FRAMES_PER_BURST)
 datac0_buffer = codec2.audio_buffer(2*AUDIO_FRAMES_PER_BUFFER)
 
 datac1_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), c_void_p)
 datac1_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac1_freedv)/8)
-datac1_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac1_freedv)
 datac1_bytes_out = create_string_buffer(datac1_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac1_freedv,N_FRAMES_PER_BURST)
 datac1_buffer = codec2.audio_buffer(2*AUDIO_FRAMES_PER_BUFFER)
 
 datac3_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), c_void_p)
 datac3_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(datac3_freedv)/8)
-datac3_n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(datac3_freedv)
 datac3_bytes_out = create_string_buffer(datac3_bytes_per_frame * 2)
 codec2.api.freedv_set_frames_per_burst(datac3_freedv,N_FRAMES_PER_BURST)
 datac3_buffer = codec2.audio_buffer(2*AUDIO_FRAMES_PER_BUFFER)
