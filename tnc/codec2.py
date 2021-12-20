@@ -8,7 +8,7 @@ import pathlib
 from enum import Enum
 import numpy as np
 #print("loading codec2 module", file=sys.stderr)
-
+from threading import Lock
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
@@ -135,17 +135,22 @@ class audio_buffer:
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
+        self.mutex = Lock()
     def push(self,samples):
+        self.mutex.acquire()
         # add samples at the end of the buffer
         assert self.nbuffer+len(samples) <= self.size
         self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
         self.nbuffer += len(samples)
+        self.mutex.release()
     def pop(self,size):
+        self.mutex.acquire()
         # remove samples from the start of the buffer
         self.nbuffer -= size;
         self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
         assert self.nbuffer >= 0
-               
+        self.mutex.release()
+        
 # resampler ---------------------------------------------------------
 
 api.FDMDV_OS_48         = int(6)                                       # oversampling rate
