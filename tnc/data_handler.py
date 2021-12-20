@@ -5,14 +5,13 @@ Created on Sun Dec 27 20:43:40 2020
 
 @author: DJ2LS
 """
-
-
+import sys
 import logging, structlog, log_handler
 import threading
 import time
 from random import randrange
 import asyncio
-import sys
+
 import ujson as json
 
 import static
