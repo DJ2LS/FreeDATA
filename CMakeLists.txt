@@ -22,6 +22,12 @@ set(FRAMESPERBURST 3)
 set(BURSTS 1)
 set(TESTFRAMES 3)
 
+add_test(NAME audio_buffer
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        python3 test_audiobuffer.py")
+         set_tests_properties(audio_buffer PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+       
 add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
