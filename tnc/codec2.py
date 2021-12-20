@@ -29,8 +29,8 @@ def freedv_get_mode(mode):
 libname = ["libcodec2.so", \
             pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0"), \
             pathlib.Path("lib/codec2/linux/libcodec2.so.1.0"), \
-            pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
-            pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
+            pathlib.Path("../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
+            pathlib.Path("../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
             ]
 # iterate through codec2 search pathes
 for i in libname:
