@@ -22,105 +22,105 @@ set(FRAMESPERBURST 3)
 set(BURSTS 1)
 set(TESTFRAMES 3)
 
-add_test(NAME 000_resampler
+add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 t48_8_short.py")
-        set_tests_properties(000_resampler PROPERTIES PASS_REGULAR_EXPRESSION "PASS")
+        set_tests_properties(resampler PROPERTIES PASS_REGULAR_EXPRESSION "PASS")
 
-add_test(NAME 001_highsnr_stdio_P_C_SM
+add_test(NAME highsnr_stdio_P_C_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         sox -t .s16 -r 48000 -c 1 - -t .s16 -r 8000 -c 1 - |
                         freedv_data_raw_rx datac0 - - --framesperburst ${FRAMESPERBURST} | hexdump -C")
-        set_tests_properties(001_highsnr_stdio_P_C_SM PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
+        set_tests_properties(highsnr_stdio_P_C_single PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
 
-add_test(NAME 001_highsnr_stdio_C_P_SM
+add_test(NAME highsnr_stdio_C_P_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         freedv_data_raw_tx datac0 --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} /dev/zero - |
                         sox -t .s16 -r 8000 -c 1 - -t .s16 -r 48000 -c 1 - |
                         python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
-        set_tests_properties(001_highsnr_stdio_C_P_SM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+        set_tests_properties(highsnr_stdio_C_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
-add_test(NAME 001_highsnr_stdio_P_P_SM
+add_test(NAME highsnr_stdio_P_P_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
-        set_tests_properties(001_highsnr_stdio_P_P_SM PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+        set_tests_properties(highsnr_stdio_P_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
         
-add_test(NAME 001_highsnr_stdio_P_P_MM
+add_test(NAME highsnr_stdio_P_P_multi
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
-        set_tests_properties(001_highsnr_stdio_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
+        set_tests_properties(highsnr_stdio_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
 
 
-# These tests can't run on GitHub actions
+# These tests can't run on GitHub actions as we don't have a virtual sound card
 if(NOT DEFINED ENV{GITHUB_RUN_ID})
 
 # uses aplay/arecord then pipe to Python
-add_test(NAME 001_highsnr_virtual1_P_P
+add_test(NAME highsnr_virtual1_P_P_single_alsa
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual1.sh")
-       set_tests_properties(001_highsnr_virtual1_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
+       set_tests_properties(highsnr_virtual1_P_P_single_alsa PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 5 RECEIVED FRAMES: 10 RX_ERRORS: 0")
 
 # let Python do audio I/O
-add_test(NAME 001_highsnr_virtual2_P_P
+add_test(NAME highsnr_virtual2_P_P_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual2.sh")
-       set_tests_properties(001_highsnr_virtual2_P_P PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
+       set_tests_properties(highsnr_virtual2_P_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
 
 # Multimode test with Python I/O
-add_test(NAME 001_highsnr_virtual3_P_P_MM
+add_test(NAME highsnr_virtual3_P_P_multi
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual_mm.sh")
-       set_tests_properties(001_highsnr_virtual3_P_P_MM PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
+       set_tests_properties(highsnr_virtual3_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
 
 # let Python do audio I/O via pyaudio callback mode
-add_test(NAME 001_highsnr_virtual4_P_P_SM_CB
+add_test(NAME highsnr_virtual4_P_P_single_callback
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual3a.sh")
-       set_tests_properties(001_highsnr_virtual4_P_P_SM_CB PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
+       set_tests_properties(highsnr_virtual4_P_P_single_callback PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
 
 # let Python do audio I/O via pyaudio callback mode with code outside of callback
-add_test(NAME 001_highsnr_virtual4_P_P_SM_CB_OUTSIDE
+add_test(NAME highsnr_virtual4_P_P_single_callback_outside
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual3b.sh")
-       set_tests_properties(001_highsnr_virtual4_P_P_SM_CB_OUTSIDE PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
+       set_tests_properties(highsnr_virtual4_P_P_single_callback_outside PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: 3 RECEIVED FRAMES: 6 RX_ERRORS: 0")
 
 # let Python do audio I/O via pyaudio callback mode with code outside of callback
-add_test(NAME 001_highsnr_virtual5_P_P_MM_CB
+add_test(NAME highsnr_virtual5_P_P_multi_callback
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual4a.sh")
-       set_tests_properties(001_highsnr_virtual5_P_P_MM_CB PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
+       set_tests_properties(highsnr_virtual5_P_P_multi_callback PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
 
 # let Python do audio I/O via pyaudio callback mode with code outside of callback
-add_test(NAME 001_highsnr_virtual5_P_P_MM_CB_OUTSIDE
+add_test(NAME highsnr_virtual5_P_P_multi_callback_outside
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual4b.sh")
-       set_tests_properties(001_highsnr_virtual5_P_P_MM_CB_OUTSIDE PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
+       set_tests_properties(highsnr_virtual5_P_P_multi_callback_outside PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
        
        
 endif()
