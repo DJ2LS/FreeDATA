@@ -9,7 +9,6 @@ import sys
 import ctypes
 from ctypes import *
 import pathlib
-import audioop
 #import asyncio
 import logging, structlog, log_handler
 import time
@@ -391,13 +390,15 @@ class RF():
         self.streambuffer += bytes(mod_out_preamble)
         self.streambuffer += bytes(mod_out)
         self.streambuffer += bytes(mod_out_postamble)
-        
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
-        self.streambuffer = bytes(converted_audio[0])
 
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(self.streambuffer, dtype=np.int16)
+        txbuffer_48k = self.resampler.resample8_to_48(x)
+        
+        
         # append frame again with as much as in count defined
-        for i in range(1, count):
-            self.streambuffer += bytes(converted_audio[0])
+        #for i in range(1, count):
+        #    self.streambuffer += bytes(txbuffer_48k.tobytes())
 
         while self.ptt_and_wait(True):
             pass
@@ -406,8 +407,10 @@ class RF():
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
             
         # start writing audio data to audio stream  
-        self.stream_tx.write(self.streambuffer)
-        
+        #self.stream_tx.write(self.streambuffer)
+        self.stream_tx.write(txbuffer_48k.tobytes())
+
+
         # set ptt back to false
         self.ptt_and_wait(False)
         
@@ -472,8 +475,9 @@ class RF():
         self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
         self.streambuffer += bytes(mod_out_postamble)
 
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
-        self.streambuffer = bytes(converted_audio[0])
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(self.streambuffer, dtype=np.int16)
+        txbuffer_48k = self.resampler.resample8_to_48(x)
 
         # -------------- transmit audio
 
@@ -484,7 +488,7 @@ class RF():
         static.CHANNEL_STATE = 'SENDING_DATA'
         
         # write audio to stream
-        self.stream_tx.write(self.streambuffer)
+        self.stream_tx.write(txbuffer_48k.tobytes())
         
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
