@@ -9,7 +9,7 @@ import pyaudio
 import time
 import argparse
 import sys
-sys.path.insert(0,'../..')
+sys.path.insert(0,'..')
 from tnc import codec2
 import numpy as np
 

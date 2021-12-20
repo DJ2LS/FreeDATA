@@ -9,7 +9,7 @@ import sys
 import ctypes
 from ctypes import *
 import pathlib
-sys.path.insert(0,'../..')
+sys.path.insert(0,'..')
 from tnc import codec2
 import numpy as np
 
