@@ -93,7 +93,7 @@ bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
 payload_bytes_per_frame = bytes_per_frame -2
 
 n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(freedv)     
-bytes_out = create_string_buffer(bytes_per_frame * 2)
+bytes_out = create_string_buffer(bytes_per_frame)
 
 codec2.api.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
 

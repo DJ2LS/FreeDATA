@@ -92,7 +92,7 @@ class Test():
         # get number of bytes per frame for mode
         self.bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.freedv)/8)
         
-        self.bytes_out = create_string_buffer(self.bytes_per_frame * 2)
+        self.bytes_out = create_string_buffer(self.bytes_per_frame)
         
         codec2.api.freedv_set_frames_per_burst(self.freedv,self.N_FRAMES_PER_BURST)
         
