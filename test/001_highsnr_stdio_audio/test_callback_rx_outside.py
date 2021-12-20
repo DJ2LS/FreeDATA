@@ -119,40 +119,6 @@ class Test():
         x = self.resampler.resample48_to_8(x)    
         self.audio_buffer.push(x)
 
-        '''
-        # when we have enough samples call FreeDV Rx
-        nin = codec2.api.freedv_nin(self.freedv)
-        while self.audio_buffer.nbuffer >= nin:
-
-            # demodulate audio
-            nbytes = codec2.api.freedv_rawdatarx(self.freedv, self.bytes_out, self.audio_buffer.buffer.ctypes)        
-            self.audio_buffer.pop(nin)
-            
-            # call me on every loop!
-            nin = codec2.api.freedv_nin(self.freedv)
-           
-            rx_status = codec2.api.freedv_get_rx_status(self.freedv)       
-            if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
-                self.rx_errors = self.rx_errors + 1
-            if self.DEBUGGING_MODE:        
-              rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
-              print("nin: %5d rx_status: %4s naudio_buffer: %4d" % \
-                    (nin,rx_status,self.audio_buffer.nbuffer), file=sys.stderr)
-
-            if nbytes:
-                self.total_n_bytes = self.total_n_bytes + nbytes
-                
-                if nbytes == self.bytes_per_frame:
-                    self.rx_total_frames = self.rx_total_frames + 1
-                    self.rx_frames = self.rx_frames + 1
-
-                if self.rx_frames == self.N_FRAMES_PER_BURST:
-                    self.rx_frames = 0
-                    self.rx_bursts = self.rx_bursts + 1
-                              
-                if self.rx_bursts == self.N_BURSTS:
-                    self.receive = False
-            '''
         return (None, pyaudio.paContinue)
 
     def run_audio(self):
