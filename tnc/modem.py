@@ -126,19 +126,24 @@ class RF():
         # open codec2 instance        
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)
-        self.datac0_bytes_out = create_string_buffer(self.datac0_bytes_per_frame * 2)
+        self.datac0_payload_per_frame = self.datac0_bytes_per_frame -2
+        self.datac0_n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(self.datac0_freedv)
+        self.datac0_n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(self.datac0_freedv)
+        self.datac0_n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(self.datac0_freedv)
+        self.datac0_n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(self.datac0_freedv)
+        self.datac0_bytes_out = create_string_buffer(self.datac0_bytes_per_frame)
         codec2.api.freedv_set_frames_per_burst(self.datac0_freedv,1)
         self.datac0_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
 
         self.datac1_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), c_void_p)
         self.datac1_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac1_freedv)/8)
-        self.datac1_bytes_out = create_string_buffer(self.datac1_bytes_per_frame * 2)
+        self.datac1_bytes_out = create_string_buffer(self.datac1_bytes_per_frame)
         codec2.api.freedv_set_frames_per_burst(self.datac1_freedv,1)
         self.datac1_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
 
         self.datac3_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), c_void_p)
         self.datac3_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac3_freedv)/8)
-        self.datac3_bytes_out = create_string_buffer(self.datac3_bytes_per_frame * 2)
+        self.datac3_bytes_out = create_string_buffer(self.datac3_bytes_per_frame)
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,1)
         self.datac3_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
 
@@ -304,6 +309,7 @@ class RF():
             self.datac0_buffer.pop(self.datac0_nin)
             self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
             if nbytes == self.datac0_bytes_per_frame:
+                print(len(self.datac0_bytes_out))
                 self.dataqueue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
                 self.get_scatter(self.datac0_freedv)
                 self.calculate_snr(self.datac0_freedv)
@@ -327,6 +333,8 @@ class RF():
                 self.dataqueue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
                 self.get_scatter(self.datac3_freedv)
                 self.calculate_snr(self.datac3_freedv)
+        
+        self.dataqueue.join()
                             
         return (None, pyaudio.paContinue)
         
@@ -360,38 +368,24 @@ class RF():
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
 
-        freedv_signalling_mode = 14
+        mod_out = create_string_buffer(self.datac0_n_tx_modem_samples * 2)
+        mod_out_preamble = create_string_buffer(self.datac0_n_tx_preamble_modem_samples * 2)
+        mod_out_postamble = create_string_buffer(self.datac0_n_tx_postamble_modem_samples * 2)
 
-        freedv = cast(self.c_lib.freedv_open(freedv_signalling_mode), c_void_p)
-        
-        self.c_lib.freedv_set_clip(freedv, 1)
-        self.c_lib.freedv_set_tx_bpf(freedv, 1)
-              
-        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_per_frame = bytes_per_frame - 2
-        n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
-        n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)
-        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
-        n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
-
-        mod_out = create_string_buffer(n_tx_modem_samples * 2)
-        mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
-        mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
-
-        buffer = bytearray(payload_per_frame)
+        buffer = bytearray(self.datac0_payload_per_frame)
         # set buffersize to length of data which will be send
         buffer[:len(data_out)] = data_out
 
-        crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
+        crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.datac0_payload_per_frame))     # generate CRC16
         # convert crc to 2 byte hex string
         crc = crc.value.to_bytes(2, byteorder='big')
         buffer += crc        # append crc16 to buffer
-        data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
+        data = (ctypes.c_ubyte * self.datac0_bytes_per_frame).from_buffer_copy(buffer)
         
         # modulate DATA and safe it into mod_out pointer
-        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-        self.c_lib.freedv_rawdatatx(freedv, mod_out, data)
-        self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+        self.c_lib.freedv_rawdatapreambletx(self.datac0_freedv, mod_out_preamble)
+        self.c_lib.freedv_rawdatatx(self.datac0_freedv, mod_out, data)
+        self.c_lib.freedv_rawdatapostambletx(self.datac0_freedv, mod_out_postamble)
 
         self.streambuffer = bytearray()
         self.streambuffer += bytes(mod_out_preamble)
@@ -423,8 +417,6 @@ class RF():
             static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
         else:
             static.CHANNEL_STATE = state_before_transmit
-
-        self.c_lib.freedv_close(freedv)
         
         return True
 # --------------------------------------------------------------------------------------------------------
