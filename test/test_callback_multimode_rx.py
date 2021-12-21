@@ -52,6 +52,8 @@ class Test():
         self.AUDIO_FRAMES_PER_BUFFER = 2400*2  # <- consider increasing if you get nread_exceptions > 0
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
         self.AUDIO_SAMPLE_RATE_RX = 48000
+        
+
 
         # make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
@@ -136,7 +138,11 @@ class Test():
         self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)               
         self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)               
         self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-           
+
+
+        self.LOGGER_THREAD = threading.Thread(target=self.print_stats, name="LOGGER_THREAD")
+        self.LOGGER_THREAD.start()
+                   
            
     def callback(self, data_in48k, frame_count, time_info, status):
         
@@ -161,7 +167,6 @@ class Test():
                 if self.rx_frames_datac0 == self.N_FRAMES_PER_BURST:
                     self.rx_frames_datac0 = 0
                     self.rx_bursts_datac0 = self.rx_bursts_datac0 + 1
-            self.print_stats()
 
            
         while self.datac1_buffer.nbuffer >= self.datac1_nin:
@@ -176,7 +181,7 @@ class Test():
                 if self.rx_frames_datac1 == self.N_FRAMES_PER_BURST:
                     self.rx_frames_datac1 = 0
                     self.rx_bursts_datac1 = self.rx_bursts_datac1 + 1
-            self.print_stats()
+
                         
         while self.datac3_buffer.nbuffer >= self.datac3_nin:
             # demodulate audio    
@@ -190,28 +195,29 @@ class Test():
                 if self.rx_frames_datac3 == self.N_FRAMES_PER_BURST:
                     self.rx_frames_datac3 = 0
                     self.rx_bursts_datac3 = self.rx_bursts_datac3 + 1   
-            self.print_stats()
 
-        if self.rx_bursts_datac0 == self.N_BURSTS and self.rx_bursts_datac1 == self.N_BURSTS and self.rx_bursts_datac3 == self.N_BURSTS:
-            self.receive = False 
 
-            
+        if (self.rx_bursts_datac0 and self.rx_bursts_datac1 and self.rx_bursts_datac3) == self.N_BURSTS:
+            self.receive = False
+             
         return (None, pyaudio.paContinue)
     
     def print_stats(self):
-        if self.DEBUGGING_MODE:
-            self.datac0_rxstatus = codec2.api.freedv_get_rx_status(self.datac0_freedv)
-            self.datac0_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac0_rxstatus]
+        while self.receive:
+            time.sleep(0.01)
+            if self.DEBUGGING_MODE:
+                self.datac0_rxstatus = codec2.api.freedv_get_rx_status(self.datac0_freedv)
+                self.datac0_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac0_rxstatus]
 
-            self.datac1_rxstatus = codec2.api.freedv_get_rx_status(self.datac1_freedv)
-            self.datac1_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac1_rxstatus]
-            
-            self.datac3_rxstatus = codec2.api.freedv_get_rx_status(self.datac3_freedv)
-            self.datac3_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac3_rxstatus]
+                self.datac1_rxstatus = codec2.api.freedv_get_rx_status(self.datac1_freedv)
+                self.datac1_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac1_rxstatus]
+                
+                self.datac3_rxstatus = codec2.api.freedv_get_rx_status(self.datac3_freedv)
+                self.datac3_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac3_rxstatus]
 
-            print("NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s" % \
-                  (self.datac0_nin, self.datac0_rxstatus, self.datac1_nin, self.datac1_rxstatus, self.datac3_nin, self.datac3_rxstatus),
-                  file=sys.stderr)
+                print("NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s" % \
+                      (self.datac0_nin, self.datac0_rxstatus, self.datac1_nin, self.datac1_rxstatus, self.datac3_nin, self.datac3_rxstatus),
+                      file=sys.stderr)
                   
               
     def run_audio(self):

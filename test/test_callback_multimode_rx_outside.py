@@ -221,7 +221,7 @@ class Test():
                         self.rx_bursts_datac3 = self.rx_bursts_datac3 + 1   
                 self.print_stats()
 
-            if self.rx_bursts_datac0 == self.N_BURSTS and self.rx_bursts_datac1 == self.N_BURSTS and self.rx_bursts_datac3 == self.N_BURSTS:
+            if (self.rx_bursts_datac0 and self.rx_bursts_datac1 and self.rx_bursts_datac3) == self.N_BURSTS:
                 self.receive = False 
 
 
