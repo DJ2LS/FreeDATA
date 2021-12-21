@@ -145,7 +145,6 @@ class Test():
                    
            
     def callback(self, data_in48k, frame_count, time_info, status):
-        
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x.tofile(self.frx)
         x = self.resampler.resample48_to_8(x)    
@@ -231,8 +230,9 @@ class Test():
         while self.receive and time.time() < self.timeout:
             time.sleep(1)
 
-        if time.time() >= self.timeout:
+        if time.time() >= self.timeout and self.stream_rx.is_active():
             print("TIMEOUT REACHED")
+            self.receive = False
                 
         if self.nread_exceptions:
             print("nread_exceptions %d - receive audio lost! Consider increasing Pyaudio frames_per_buffer..." %  \
