@@ -357,6 +357,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     # save len of data_out to TOTAL_BYTES for our statistics
     static.TOTAL_BYTES = len(data_out)
     # --------------------------------------------- LETS CREATE A BUFFER BY SPLITTING THE FILES INTO PEACES
+    # https://newbedev.com/how-to-split-a-byte-string-into-separate-bytes-in-python
     TX_BUFFER = [data_out[i:i + TX_PAYLOAD_PER_ARQ_FRAME] for i in range(0, len(data_out), TX_PAYLOAD_PER_ARQ_FRAME)]
     TX_BUFFER_SIZE = len(TX_BUFFER)
     static.INFO.append("ARQ;TRANSMITTING")
@@ -882,9 +883,10 @@ def transmit_cq():
     cq_frame[2:8]  = static.MYCALLSIGN
     cq_frame[8:14] = static.MYGRID
     
-    while not modem.transmit_signalling(cq_frame, 3):
-        #time.sleep(0.01)
-        pass
+    txbuffer = [cq_frame]
+    modem.transmit('datac0', 1, txbuffer)
+    #while not modem.transmit('datac0', 1, txbuffer):
+    #    pass
 
 
 def received_cq(data_in):
