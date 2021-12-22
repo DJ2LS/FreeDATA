@@ -29,8 +29,6 @@ parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=500, type=in
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
 parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int,
                     help="audio device number to use, use -2 to automatically select a loopback device")  
-parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")  
-parser.add_argument('--timeout', dest="TIMEOUT", default=10, type=int, help="Timeout (seconds) before test ends")  
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
 parser.add_argument('--testframes', dest="TESTFRAMES", action="store_true", default=False, help="generate testframes")  
 
@@ -52,8 +50,6 @@ class Test():
         self.N_FRAMES_PER_BURST = args.N_FRAMES_PER_BURST
         self.AUDIO_OUTPUT_DEVICE = args.AUDIO_OUTPUT_DEVICE
         self.MODE = codec2.FREEDV_MODE[args.FREEDV_MODE].value
-        self.DEBUGGING_MODE = args.DEBUGGING_MODE
-        self.TIMEOUT = args.TIMEOUT
         self.DELAY_BETWEEN_BURSTS = args.DELAY_BETWEEN_BURSTS/1000
 
         # AUDIO PARAMETERS
@@ -137,9 +133,12 @@ class Test():
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr) 
            
-
+        sheeps = 0
         while self.transmit:
-            time.sleep(0.1)
+            time.sleep(1)
+            sheeps = sheeps + 1
+            print(f"counting sheeps...{sheeps}")
+
 
         
         self.ftx.close()
@@ -195,7 +194,7 @@ class Test():
 
                 txbuffer += bytes(mod_out)
                 
-                print(f"TX BURST: {i}/{self.N_BURSTS} FRAME: {n}/{self.N_FRAMES_PER_BURST}", file=sys.stderr)
+                print(f" GENERATING TX BURST: {i}/{self.N_BURSTS} FRAME: {n}/{self.N_FRAMES_PER_BURST}", file=sys.stderr)
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
