@@ -11,6 +11,7 @@ const {
     bearingDistance,
     latLngToLocator
 } = require('qth-locator');
+const os = require('os');
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
@@ -321,10 +322,11 @@ advancedHamlibSettingsModal
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.hide()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.show()
+        collapseSecondRow.hide()
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.show() 
-        
+        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
+        collapseFourthRow.show() 
         
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake)
         
@@ -350,10 +352,17 @@ advancedHamlibSettingsModal
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.show()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.hide()
-        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
-        collapseThirdRow.hide() 
+        collapseSecondRow.show() 
         
+        
+        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
+        collapseThirdRow.hide()
+        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
+        collapseFourthRow.hide() 
+        
+
+        
+  
     })
     
     
@@ -967,6 +976,27 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
     */
+    document.getElementById("ram_load").innerHTML = "RAM " + arg.ram_usage + "%"    
+    document.getElementById("cpu_load").innerHTML = "CPU " + arg.cpu_usage + "%"
+    
+    // OPERATING SYSTEM
+
+    document.getElementById("operating_system").innerHTML = "OS " + os.type()
+
+    
+    // PYTHON VERSION
+    document.getElementById("python_version").innerHTML = "Python " + arg.python_version
+    document.getElementById("python_version").className = "btn btn-sm btn-success";    
+    
+    // HAMLIB VERSION
+    document.getElementById("hamlib_version").innerHTML = "Hamlib " + arg.hamlib_version
+    document.getElementById("hamlib_version").className = "btn btn-sm btn-success";
+    
+    // NODE VERSION
+    document.getElementById("node_version").innerHTML = "Node " + process.version
+    document.getElementById("node_version").className = "btn btn-sm btn-success";
+
+      
     // UPDATE AUDIO INPUT
     if (arg.tnc_running_state == "stopped") {
         if (document.getElementById("audio_input_selectbox").length != arg.input_devices.length) {
@@ -1054,10 +1084,11 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.hide()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.show()
+        collapseSecondRow.hide()
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.show()     
-        
+        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
+        collapseFourthRow.show()            
     } else {
         document.getElementById('hamlib_deviceid').disabled = false
         document.getElementById('hamlib_deviceport').disabled = false
@@ -1081,10 +1112,11 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.show()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.hide()
+        collapseSecondRow.show()
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.hide()      
-
+        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
+        collapseFourthRow.hide()
     }
 
 });
