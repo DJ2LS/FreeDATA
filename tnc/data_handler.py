@@ -159,10 +159,10 @@ def arq_data_received(data_in, bytes_per_frame):
 
         # TRANSMIT ACK FRAME FOR BURST-----------------------------------------------
         helpers.wait(0.3)
-        while not modem.transmit_signalling(ack_frame, 1):
-        #while static.CHANNEL_STATE == 'SENDING_SIGNALLING':
-            time.sleep(0.01)
-            
+
+        txbuffer = [ack_frame]
+        modem.transmit('datac0', 1, txbuffer)    
+        
         static.CHANNEL_STATE = 'RECEIVING_DATA'
         # clear burst buffer
         static.RX_BURST_BUFFER = []
@@ -191,8 +191,11 @@ def arq_data_received(data_in, bytes_per_frame):
         rpt_frame[3:9]  = missing_frames
 
         # TRANSMIT RPT FRAME FOR BURST-----------------------------------------------
-        while not modem.transmit_signalling(rpt_frame, 1):
-            time.sleep(0.01)
+        txbuffer = [rpt_frame]
+        modem.transmit('datac0', 1, txbuffer)
+        
+        #while not modem.transmit_signalling(rpt_frame, 1):
+        #    time.sleep(0.01)
         static.CHANNEL_STATE = 'RECEIVING_DATA'
 
 # ---------------------------- FRAME MACHINE
@@ -270,9 +273,11 @@ def arq_data_received(data_in, bytes_per_frame):
             # possibly we can remove this later
             helpers.wait(0.5)
 
+            txbuffer = [ack_frame]
+            modem.transmit('datac0', 1, txbuffer)
             
-            while not modem.transmit_signalling(ack_frame, 3):
-                time.sleep(0.01)
+            #while not modem.transmit_signalling(ack_frame, 3):
+            #    time.sleep(0.01)
 
             calculate_transfer_rate_rx(RX_N_FRAMES_PER_DATA_FRAME, RX_N_FRAME_OF_DATA_FRAME, RX_START_OF_TRANSMISSION, RX_PAYLOAD_PER_ARQ_FRAME)            
             
@@ -357,6 +362,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
     # save len of data_out to TOTAL_BYTES for our statistics
     static.TOTAL_BYTES = len(data_out)
     # --------------------------------------------- LETS CREATE A BUFFER BY SPLITTING THE FILES INTO PEACES
+    # https://newbedev.com/how-to-split-a-byte-string-into-separate-bytes-in-python
     TX_BUFFER = [data_out[i:i + TX_PAYLOAD_PER_ARQ_FRAME] for i in range(0, len(data_out), TX_PAYLOAD_PER_ARQ_FRAME)]
     TX_BUFFER_SIZE = len(TX_BUFFER)
     static.INFO.append("ARQ;TRANSMITTING")
@@ -685,9 +691,12 @@ async def arq_open_data_channel(mode):
             
             structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
             
-            while not modem.transmit_signalling(connection_frame, 1):
-                time.sleep(0.01)
-                   
+            
+                
+            txbuffer = [connection_frame]
+            modem.transmit('datac0', 1, txbuffer)
+            
+            
             timeout = time.time() + 3    
             while time.time() < timeout:    
                 time.sleep(0.01)
@@ -732,8 +741,8 @@ def arq_received_data_channel_opener(data_in):
     connection_frame[3:9] = static.MYCALLSIGN
     connection_frame[12:13] = bytes([mode])
 
-    while not modem.transmit_signalling(connection_frame, 2):
-        time.sleep(0.01)
+    txbuffer = [connection_frame]
+    modem.transmit('datac0', 1, txbuffer)
 
     structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, mode=mode)
     
@@ -793,10 +802,9 @@ def transmit_ping(callsign):
     ping_frame[2:3] = static.MYCALLSIGN_CRC8
     ping_frame[3:9] = static.MYCALLSIGN
 
-    # wait while sending....
-    while not modem.transmit_signalling(ping_frame, 1):
-        time.sleep(0.01)
-
+    txbuffer = [ping_frame]
+    modem.transmit('datac0', 1, txbuffer)
+    
 
 def received_ping(data_in, frequency_offset):
 
@@ -815,10 +823,8 @@ def received_ping(data_in, frequency_offset):
     ping_frame[3:9] = static.MYGRID
     ping_frame[9:11] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
 
-    # wait while sending....
-    while not modem.transmit_signalling(ping_frame, 1):
-        time.sleep(0.01)
-
+    txbuffer = [ping_frame]
+    modem.transmit('datac0', 1, txbuffer)
 
 def received_ping_ack(data_in):
 
@@ -850,9 +856,10 @@ def run_beacon(interval):
         
             static.INFO.append("BEACON;SENDING")
             structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
-            while not modem.transmit_signalling(beacon_frame, 2):
-                #time.sleep(0.01)
-                pass
+            
+            txbuffer = [beacon_frame]
+            modem.transmit('datac0', 1, txbuffer)
+            
             time.sleep(interval)
             
                                             
@@ -882,9 +889,10 @@ def transmit_cq():
     cq_frame[2:8]  = static.MYCALLSIGN
     cq_frame[8:14] = static.MYGRID
     
-    while not modem.transmit_signalling(cq_frame, 3):
-        #time.sleep(0.01)
-        pass
+    txbuffer = [cq_frame]
+    modem.transmit('datac0', 1, txbuffer)
+    #while not modem.transmit('datac0', 1, txbuffer):
+    #    pass
 
 
 def received_cq(data_in):
