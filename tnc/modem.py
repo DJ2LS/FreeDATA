@@ -811,4 +811,3 @@ class RF():
                     static.FFT = [0] * 400
             else:
                 pass
-
