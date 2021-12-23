@@ -7,8 +7,8 @@ Created on Wed Dec 23 07:04:24 2020
 """
 
 import sys
-sys.path.insert(0,'../..')
-sys.path.insert(0,'../../tnc')
+sys.path.insert(0,'..')
+sys.path.insert(0,'../tnc')
 import data_handler
 
 

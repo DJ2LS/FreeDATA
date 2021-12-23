@@ -9,7 +9,7 @@ import pyaudio
 import time
 import argparse
 import sys
-sys.path.insert(0,'../..')
+sys.path.insert(0,'..')
 from tnc import codec2
 import numpy as np
 
@@ -23,6 +23,8 @@ parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', '
 parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int,
                     help="audio output device number to use, use -2 to automatically select a loopback device") 
 parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
+parser.add_argument('--testframes', dest="TESTFRAMES", action="store_true", default=False, help="list audio devices by number and exit")  
+
 
 args = parser.parse_args()
 
@@ -75,7 +77,14 @@ if AUDIO_OUTPUT_DEVICE != -1:
 resampler = codec2.resampler()
 
 # data binary string
-data_out = b'HELLO WORLD!'
+if args.TESTFRAMES:
+    data_out = bytearray(14)
+    data_out[:1]   = bytes([255])
+    data_out[1:2]  = bytes([1])
+    data_out[2:]  = b'HELLO WORLD'
+    
+else:
+    data_out = b'HELLO WORLD!'
 
 
 # ----------------------------------------------------------------

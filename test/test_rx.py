@@ -18,10 +18,11 @@ import sys
 import argparse
 import numpy as np
 sys.path.insert(0,'..')
-import codec2
+from tnc import codec2
+
 
 #--------------------------------------------GET PARAMETER INPUTS  
-parser = argparse.ArgumentParser(description='FreeDATA audio test')
+parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=1, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=1, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
@@ -54,16 +55,6 @@ AUDIO_SAMPLE_RATE_RX = 48000
 # make sure our resampler will work
 assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
-
-# ------------------------------------------------ PYAUDIO CALLBACK
-def callback(data_in48k, frame_count, time_info, status):
-    x = np.frombuffer(data_in48k, dtype=np.int16)
-    x.tofile(frx)    
-    x = resampler.resample48_to_8(x)
-    audio_buffer.push(x)    
-    return (None, pyaudio.paContinue)
-
-
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
     p = pyaudio.PyAudio()
@@ -81,21 +72,15 @@ if AUDIO_INPUT_DEVICE != -1:
             
     print(f"AUDIO INPUT DEVICE: {AUDIO_INPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['name']}  \
             AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_RX}", file=sys.stderr)
-    
     stream_rx = p.open(format=pyaudio.paInt16, 
                             channels=1,
                             rate=AUDIO_SAMPLE_RATE_RX,
                             frames_per_buffer=AUDIO_FRAMES_PER_BUFFER,
                             input=True,
-                            output=False,
-                            input_device_index=AUDIO_INPUT_DEVICE,
-                            stream_callback=callback
+                            input_device_index=AUDIO_INPUT_DEVICE
                             ) 
-    try:                        
-        print(f"starting pyaudio callback", file=sys.stderr)
-        stream_rx.start_stream()
-    except Exception as e:
-        print(f"pyAudio error: {e}", file=sys.stderr)  
+
+      
 # ----------------------------------------------------------------
               
 # DATA CHANNEL INITIALISATION
@@ -108,7 +93,7 @@ bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
 payload_bytes_per_frame = bytes_per_frame -2
 
 n_max_modem_samples = codec2.api.freedv_get_n_max_modem_samples(freedv)     
-bytes_out = create_string_buffer(bytes_per_frame * 2)
+bytes_out = create_string_buffer(bytes_per_frame)
 
 codec2.api.freedv_set_frames_per_burst(freedv,N_FRAMES_PER_BURST)
 
@@ -124,14 +109,34 @@ audio_buffer = codec2.audio_buffer(AUDIO_FRAMES_PER_BUFFER*2)
 resampler = codec2.resampler()
 
 # Copy received 48 kHz to a file.  Listen to this file with:
-#   aplay -r 48000 -f S16_LE rx48_callback.raw
+#   aplay -r 48000 -f S16_LE rx48.raw
 # Corruption of this file is a good way to detect audio card issues
-frx = open("rx48_callback.raw", mode='wb')    
+frx = open("rx48.raw", mode='wb')    
 
 # initial number of samples we need
 nin = codec2.api.freedv_nin(freedv)
 while receive and time.time() < timeout:
-
+    if AUDIO_INPUT_DEVICE != -1:
+        try:
+            data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+        except OSError as err:
+            print(err, file=sys.stderr)
+            if str(err).find("Input overflowed") != -1:
+                nread_exceptions += 1
+            if str(err).find("Stream closed") != -1:
+                print("Ending...")
+                receive = False
+    else:
+        data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
+    
+    # insert samples in buffer
+    x = np.frombuffer(data_in48k, dtype=np.int16)
+    x.tofile(frx)    
+    if len(x) != AUDIO_FRAMES_PER_BUFFER:
+        receive = False
+    x = resampler.resample48_to_8(x)
+    audio_buffer.push(x)
+    
     # when we have enough samples call FreeDV Rx
     while audio_buffer.nbuffer >= nin:
 
@@ -173,6 +178,7 @@ if nread_exceptions:
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
 frx.close()
 
-# cloese pyaudio instance
-stream_rx.close()
-p.terminate()
+# and at last check if we had an openend pyaudio instance and close it
+if AUDIO_INPUT_DEVICE != -1: 
+    stream_rx.close()
+    p.terminate()

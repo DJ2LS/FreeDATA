@@ -9,7 +9,6 @@ import sys
 import ctypes
 from ctypes import *
 import pathlib
-import audioop
 #import asyncio
 import logging, structlog, log_handler
 import time
@@ -107,7 +106,7 @@ class RF():
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400*2  #8192
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 8     #8192 Lets to some tests with very small chunks for TX
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 2400     #8192 Lets to some tests with very small chunks for TX
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
@@ -122,7 +121,10 @@ class RF():
         # init FIFO queue to store received frames in
         self.dataqueue = queue.Queue()
 
-
+        # init FIFO queue to store modulation out in
+        self.modoutqueue = queue.Queue()
+        
+        
         # open codec2 instance        
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)
@@ -171,43 +173,28 @@ class RF():
                 if 'Loopback: PCM' in self.p.get_device_info_by_index(dev)["name"]:
                     loopback_list.append(dev)
             if len(loopback_list) >= 2:
-                AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX   1 = TX
+                static.AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX
+                static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #1 = TX
                 print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
                 
-        self.stream_rx = self.p.open(format=pyaudio.paInt16,
+        self.audio_stream = self.p.open(format=pyaudio.paInt16,
                                      channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_RX,
                                      frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
                                      input=True,
-                                     output=False,
+                                     output=True,
                                      input_device_index=static.AUDIO_INPUT_DEVICE,
+                                     output_device_index=static.AUDIO_OUTPUT_DEVICE,
                                      stream_callback=self.callback
                                      )
-        # --------------------------------------------OPEN TX AUDIO CHANNEL
-        # optional auto selection of loopback device if using in testmode        
-        if static.AUDIO_OUTPUT_DEVICE == -2:
-            loopback_list = []
-            for dev in range(0,self.p.get_device_count()):
-                if 'Loopback: PCM' in self.p.get_device_info_by_index(dev)["name"]:
-                    loopback_list.append(dev)
-            if len(loopback_list) >= 2:
-                static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #0  = RX   1 = TX
-                print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
-        
-        self.stream_tx = self.p.open(format=pyaudio.paInt16,
-                                     channels=self.AUDIO_CHANNELS,
-                                     rate=self.AUDIO_SAMPLE_RATE_TX,
-                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_TX,  # n_nom_modem_samples
-                                     output=True,
-                                     output_device_index=static.AUDIO_OUTPUT_DEVICE,  # static.AUDIO_OUTPUT_DEVICE
-                                     )
 
-        self.streambuffer = bytes(0)
-        self.audio_writing_to_stream = False
+        # not needed anymore.
+        #self.streambuffer = bytes(0)
+        
         # --------------------------------------------START DECODER THREAD
 
-        DECODER_THREAD = threading.Thread(target=self.receive, name="DECODER_THREAD")
-        DECODER_THREAD.start()
+        AUDIO_THREAD = threading.Thread(target=self.audio, name="AUDIO_THREAD")
+        AUDIO_THREAD.start()
 
         WORKER_THREAD = threading.Thread(target=self.worker, name="WORKER_THREAD")
         WORKER_THREAD.start()
@@ -217,14 +204,6 @@ class RF():
         FFT_THREAD.start()
 
         # --------------------------------------------CONFIGURE HAMLIB
-        # my_rig.set_ptt(Hamlib.RIG_PTT_RIG,0)
-        # my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_DTR,0)
-        # my_rig.set_ptt(Hamlib.RIG_PTT_SERIAL_RTS,1)
-        #self.my_rig.set_conf("dtr_state", "OFF")
-        #my_rig.set_conf("rts_state", "OFF")
-        #self.my_rig.set_conf("ptt_type", "RTS")
-        #my_rig.set_conf("ptt_type", "RIG_PTT_SERIAL_RTS")
-
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
@@ -301,42 +280,14 @@ class RF():
         # refill fft_data buffer so we can plot a fft
         if len(self.fft_data) < 1024:
             self.fft_data += bytes(x)
-            
-            
-        while self.datac0_buffer.nbuffer >= self.datac0_nin:        
-            # demodulate audio
-            nbytes = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
-            self.datac0_buffer.pop(self.datac0_nin)
-            self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
-            if nbytes == self.datac0_bytes_per_frame:
-                print(len(self.datac0_bytes_out))
-                self.dataqueue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
-                self.get_scatter(self.datac0_freedv)
-                self.calculate_snr(self.datac0_freedv)
-                    
-        while self.datac1_buffer.nbuffer >= self.datac1_nin:
-            # demodulate audio
-            nbytes = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
-            self.datac1_buffer.pop(self.datac1_nin)
-            self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
-            if nbytes == self.datac1_bytes_per_frame:
-                self.dataqueue.put([self.datac1_bytes_out, self.datac1_freedv ,self.datac1_bytes_per_frame])
-                self.get_scatter(self.datac1_freedv)
-                self.calculate_snr(self.datac1_freedv)
-                                        
-        while self.datac3_buffer.nbuffer >= self.datac3_nin:
-            # demodulate audio    
-            nbytes = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
-            self.datac3_buffer.pop(self.datac3_nin)
-            self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-            if nbytes == self.datac3_bytes_per_frame:
-                self.dataqueue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
-                self.get_scatter(self.datac3_freedv)
-                self.calculate_snr(self.datac3_freedv)
+
         
-        self.dataqueue.join()
-                            
-        return (None, pyaudio.paContinue)
+        if self.modoutqueue.empty():
+            data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2*2)
+        else:
+            data_out48k = self.modoutqueue.get()
+        
+        return (data_out48k, pyaudio.paContinue)
         
         
         
@@ -348,7 +299,8 @@ class RF():
             self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
             # rigctld.ptt_enable()
             ptt_toggle_timeout = time.time() + 0.5
-            while time.time() < ptt_toggle_timeout:
+
+            while time.time() < ptt_toggle_timeout and not self.modoutqueue.empty():
                 pass
 
         else:
@@ -364,6 +316,103 @@ class RF():
 
     # --------------------------------------------------------------------------------------------------------
 
+
+    def transmit(self, mode, count, frames):
+
+        state_before_transmit = static.CHANNEL_STATE
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
+        
+        # open codec2 instance       
+        self.MODE = codec2.FREEDV_MODE[mode].value 
+        freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
+
+        # get number of bytes per frame for mode
+        bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
+        payload_bytes_per_frame = bytes_per_frame -2
+
+        # init buffer for data
+        n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
+        mod_out = create_string_buffer(n_tx_modem_samples * 2)
+
+        # init buffer for preample
+        n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(freedv)
+        mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
+
+        # init buffer for postamble
+        n_tx_postamble_modem_samples = codec2.api.freedv_get_n_tx_postamble_modem_samples(freedv)
+        mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
+
+ 
+
+        for i in range(1,count+1):
+
+            # write preamble to txbuffer
+            codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+            txbuffer = bytes(mod_out_preamble)
+
+            # create modulaton for n frames in list
+            for n in range(0,len(frames)):
+
+                
+                # create buffer for data
+                buffer = bytearray(payload_bytes_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
+                buffer[:len(frames[n])] = frames[n] # set buffersize to length of data which will be send
+
+                # create crc for data frame - we are using the crc function shipped with codec2 to avoid 
+                # crc algorithm incompatibilities
+                crc = ctypes.c_ushort(codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))     # generate CRC16
+                crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
+                buffer += crc        # append crc16 to buffer   
+                
+                data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
+                codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
+
+                txbuffer += bytes(mod_out)
+                
+            
+            # append postamble to txbuffer          
+            codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+            txbuffer += bytes(mod_out_postamble)
+
+            # resample up to 48k (resampler works on np.int16)
+            x = np.frombuffer(txbuffer, dtype=np.int16)
+            txbuffer_48k = self.resampler.resample8_to_48(x)
+
+            # split modualted audio to chunks
+            #https://newbedev.com/how-to-split-a-byte-string-into-separate-bytes-in-python
+            txbuffer_48k = bytes(txbuffer_48k)
+            chunk = [txbuffer_48k[i:i+self.AUDIO_FRAMES_PER_BUFFER_RX*2] for i in range(0, len(txbuffer_48k), self.AUDIO_FRAMES_PER_BUFFER_RX*2)]
+            # add modulated chunks to fifo buffer
+            for c in chunk:
+                # if data is shorter than the expcected audio frames per buffer we need to append 0
+                # to prevent the callback from stucking/crashing
+                if len(c) < self.AUDIO_FRAMES_PER_BUFFER_RX*2:
+                    c += bytes(self.AUDIO_FRAMES_PER_BUFFER_RX*2 - len(c))
+                self.modoutqueue.put(c)
+                print(len(c))
+
+        while self.ptt_and_wait(True):
+            pass
+
+        # set channel state   
+        static.CHANNEL_STATE = 'SENDING_SIGNALLING' 
+
+        # set ptt back to false
+        self.ptt_and_wait(False)
+
+
+        # we have a problem with the receiving state
+        if state_before_transmit != 'RECEIVING_DATA':
+            static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+        else:
+            static.CHANNEL_STATE = state_before_transmit
+        
+        self.c_lib.freedv_close(freedv)        
+        return True
+
+
+
+    '''
     def transmit_signalling(self, data_out, count):
         state_before_transmit = static.CHANNEL_STATE
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'
@@ -391,13 +440,15 @@ class RF():
         self.streambuffer += bytes(mod_out_preamble)
         self.streambuffer += bytes(mod_out)
         self.streambuffer += bytes(mod_out_postamble)
-        
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
-        self.streambuffer = bytes(converted_audio[0])
 
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(self.streambuffer, dtype=np.int16)
+        txbuffer_48k = self.resampler.resample8_to_48(x)
+        
+        
         # append frame again with as much as in count defined
-        for i in range(1, count):
-            self.streambuffer += bytes(converted_audio[0])
+        #for i in range(1, count):
+        #    self.streambuffer += bytes(txbuffer_48k.tobytes())
 
         while self.ptt_and_wait(True):
             pass
@@ -406,8 +457,10 @@ class RF():
         static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
             
         # start writing audio data to audio stream  
-        self.stream_tx.write(self.streambuffer)
-        
+        #self.stream_tx.write(self.streambuffer)
+        self.stream_tx.write(txbuffer_48k.tobytes())
+
+
         # set ptt back to false
         self.ptt_and_wait(False)
         
@@ -472,8 +525,9 @@ class RF():
         self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
         self.streambuffer += bytes(mod_out_postamble)
 
-        converted_audio = audioop.ratecv(self.streambuffer, 2, 1, self.MODEM_SAMPLE_RATE, self.AUDIO_SAMPLE_RATE_TX, None)
-        self.streambuffer = bytes(converted_audio[0])
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(self.streambuffer, dtype=np.int16)
+        txbuffer_48k = self.resampler.resample8_to_48(x)
 
         # -------------- transmit audio
 
@@ -484,7 +538,7 @@ class RF():
         static.CHANNEL_STATE = 'SENDING_DATA'
         
         # write audio to stream
-        self.stream_tx.write(self.streambuffer)
+        self.stream_tx.write(txbuffer_48k.tobytes())
         
         static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
@@ -495,17 +549,50 @@ class RF():
         
         return True
 # --------------------------------------------------------------------------------------------------------
-
-    def receive(self):
+    '''
+    def audio(self):
         try:                        
             print(f"starting pyaudio callback", file=sys.stderr)
-            self.stream_rx.start_stream()
+            self.audio_stream.start_stream()
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr) 
            
 
-        while self.stream_rx.is_active():
-            time.sleep(1)            
+        while self.audio_stream.is_active():
+            while self.datac0_buffer.nbuffer >= self.datac0_nin:        
+                # demodulate audio
+                nbytes = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
+                self.datac0_buffer.pop(self.datac0_nin)
+                self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
+                if nbytes == self.datac0_bytes_per_frame:
+                    print(len(self.datac0_bytes_out))
+                    self.dataqueue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
+                    self.get_scatter(self.datac0_freedv)
+                    self.calculate_snr(self.datac0_freedv)
+                        
+            while self.datac1_buffer.nbuffer >= self.datac1_nin:
+                # demodulate audio
+                nbytes = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
+                self.datac1_buffer.pop(self.datac1_nin)
+                self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
+                if nbytes == self.datac1_bytes_per_frame:
+                    self.dataqueue.put([self.datac1_bytes_out, self.datac1_freedv ,self.datac1_bytes_per_frame])
+                    self.get_scatter(self.datac1_freedv)
+                    self.calculate_snr(self.datac1_freedv)
+                                            
+            while self.datac3_buffer.nbuffer >= self.datac3_nin:
+                # demodulate audio    
+                nbytes = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
+                self.datac3_buffer.pop(self.datac3_nin)
+                self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
+                if nbytes == self.datac3_bytes_per_frame:
+                    self.dataqueue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
+                    self.get_scatter(self.datac3_freedv)
+                    self.calculate_snr(self.datac3_freedv)            
+            
+            
+            
+                      
            
     # worker for FIFO queue for processing received frames           
     def worker(self):
@@ -724,4 +811,3 @@ class RF():
                     static.FFT = [0] * 400
             else:
                 pass
-
