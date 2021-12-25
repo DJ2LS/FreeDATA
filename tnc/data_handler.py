@@ -163,7 +163,7 @@ def arq_data_received(data_in, bytes_per_frame):
         txbuffer = [ack_frame]
         modem.transmit(mode='datac0', repeats=1, repeat_delay=0, frames=txbuffer)
         
-        static.CHANNEL_STATE = 'RECEIVING_DATA'
+        #static.CHANNEL_STATE = 'RECEIVING_DATA'
         # clear burst buffer
         static.RX_BURST_BUFFER = []
 
@@ -195,7 +195,7 @@ def arq_data_received(data_in, bytes_per_frame):
         modem.transmit(mode='datac0', repeats=1, repeat_delay=0, frames=txbuffer)
         #while not modem.transmit_signalling(rpt_frame, 1):
         #    time.sleep(0.01)
-        static.CHANNEL_STATE = 'RECEIVING_DATA'
+        #static.CHANNEL_STATE = 'RECEIVING_DATA'
 
 # ---------------------------- FRAME MACHINE
     # ---------------  IF LIST NOT CONTAINS "None" stick everything together
@@ -439,13 +439,13 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
             # --------------------------- START TIMER FOR WAITING FOR ACK ---> IF TIMEOUT REACHED, ACK_TIMEOUT = 1
 
             structlog.get_logger("structlog").debug("[TNC] ARQ | RX | WAITING FOR BURST ACK")
-            static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+            #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
             # --------------------------- WHILE TIMEOUT NOT REACHED AND NO ACK RECEIVED AND IN ARQ STATE--> LISTEN
             while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout  and static.ARQ_STATE == 'DATA':
                 time.sleep(0.01)  # lets reduce CPU load a little bit
-                logging.debug(static.CHANNEL_STATE)
+                #logging.debug(static.CHANNEL_STATE)
 
             # HERE WE PROCESS DATA IF WE RECEIVED ACK/RPT FRAMES OR NOT WHILE WE ARE IN ARQ STATE
             # IF WE ARE NOT IN ARQ STATE, WE STOPPED THE TRANSMISSION 
@@ -549,7 +549,7 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
                            
         # --------------------------------WAITING AREA FOR FRAME ACKs
 
-        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+        #static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 
         frameacktimeout = time.time() + DATA_FRAME_ACK_TIMEOUT_SECONDS
         # wait for frame ACK if we processed the last frame/burst
@@ -743,7 +743,7 @@ def arq_received_data_channel_opener(data_in):
     
     structlog.get_logger("structlog").info("[TNC] DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, mode=mode)
     
-    static.CHANNEL_STATE = 'RECEIVING_DATA'
+    #static.CHANNEL_STATE = 'RECEIVING_DATA'
     # and now we are going to "RECEIVING_DATA" mode....
 
 
