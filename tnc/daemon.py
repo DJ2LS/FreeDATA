@@ -20,7 +20,7 @@ import serial.tools.list_ports
 import static
 import crcengine
 import re
-
+import rig
 import logging, structlog, log_handler
 
 log_handler.setup_logging("daemon")
@@ -276,101 +276,38 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'TEST_HAMLIB':
 
-                    print(received_json["parameter"])
-
-                    devicename = str(received_json["parameter"][0]["devicename"])
-                    deviceport = str(received_json["parameter"][0]["deviceport"])
-                    serialspeed = str(received_json["parameter"][0]["serialspeed"])
-                    pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-                    pttport = str(received_json["parameter"][0]["pttport"])
-
-                    pttspeed = str(received_json["parameter"][0]["pttspeed"])
-                    data_bits = str(received_json["parameter"][0]["data_bits"])
-                    stop_bits = str(received_json["parameter"][0]["stop_bits"])
-                    handshake = str(received_json["parameter"][0]["handshake"])
-
-                    # try to init hamlib
                     try:
+                        print(received_json["parameter"])
 
-                        Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
+                        devicename = str(received_json["parameter"][0]["devicename"])
+                        deviceport = str(received_json["parameter"][0]["deviceport"])
+                        serialspeed = str(received_json["parameter"][0]["serialspeed"])
+                        pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
+                        pttport = str(received_json["parameter"][0]["pttport"])
 
-                        # get devicenumber by looking for deviceobject in Hamlib module
-                        try:
-                            devicenumber = getattr(Hamlib, devicename)
-                        except:
-                            structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
-                            devicenumber = 0
-
-
-                        my_rig = Hamlib.Rig(int(devicenumber))
-                        my_rig.set_conf("rig_pathname", deviceport)
-                        my_rig.set_conf("retry", "1")
-                        my_rig.set_conf("serial_speed", serialspeed)
-                        my_rig.set_conf("serial_handshake", handshake)
-                        my_rig.set_conf("stop_bits", stop_bits)
-                        my_rig.set_conf("data_bits", data_bits)
+                        pttspeed = str(received_json["parameter"][0]["pttspeed"])
+                        data_bits = str(received_json["parameter"][0]["data_bits"])
+                        stop_bits = str(received_json["parameter"][0]["stop_bits"])
+                        handshake = str(received_json["parameter"][0]["handshake"])
                         
-                        if pttprotocol == 'RIG':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_RIG
-
-                        elif pttprotocol == 'DTR-H':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
-                            my_rig.set_conf("dtr_state", "HIGH")
-                            my_rig.set_conf("ptt_type", "DTR")
-
-                        elif pttprotocol == 'DTR-L':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
-                            my_rig.set_conf("dtr_state", "LOW")
-                            my_rig.set_conf("ptt_type", "DTR")
-
-                        elif pttprotocol == 'RTS':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_RTS
-                            my_rig.set_conf("dtr_state", "OFF")
-                            my_rig.set_conf("ptt_type", "RTS")
-
-                        elif pttprotocol == 'PARALLEL':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_PARALLEL
-
-                        elif pttprotocol == 'MICDATA':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_RIG_MICDATA
-
-                        elif pttprotocol == 'CM108':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_CM108
-
-                        else:  # static.HAMLIB_PTT_TYPE == 'RIG_PTT_NONE':
-                            hamlib_ptt_type = Hamlib.RIG_PTT_NONE
+                        hamlib = rig.radio()
+                        hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed)
                         
-                      
-                        my_rig.open()
-                        
-                        try:
-                            # lets determine the error message when opening rig
-                            error = str(Hamlib.rigerror(my_rig.error_status)).splitlines()
-                            error = error[1].split('err=')
-                            error = error[1]
-                            
-                            if error == 'Permission denied':
-                                structlog.get_logger("structlog").error("[DMN] Hamlib has no permissions", e = error)
-                                help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
-                                structlog.get_logger("structlog").error("[DMN] HELP:", check = help_url)
-                        except:
-                            structlog.get_logger("structlog").info("[DMN] Hamlib device openend", status='SUCCESS')
-                                                    
-                        my_rig.set_ptt(hamlib_ptt_type, 1)
-                        pttstate = my_rig.get_ptt()
-                        if pttstate == 1:
+                        hamlib.set_ptt(True)      
+                        pttstate = hamlib.get_rig_data()[3]
+                        if pttstate:
                             structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'SUCCESS'}
-                        elif pttstate == 0:
+                        elif not pttstate:
                             structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'NOSUCCESS'}
                         else:
                             structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'FAILED'}
-                        
-                        my_rig.set_ptt(hamlib_ptt_type, 0)                        
-                        my_rig.close
-                        
+                            
+                        hamlib.set_ptt(False)                 
+                        hamlib.close_rig()
+                            
                         jsondata = json.dumps(data)
                         self.request.sendall(bytes(jsondata, encoding))
                         

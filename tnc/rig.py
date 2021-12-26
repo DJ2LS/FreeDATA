@@ -103,6 +103,22 @@ class radio:
             
             self.my_rig.open()
             atexit.register(self.my_rig.close)
+            
+            try:
+                # lets determine the error message when opening rig
+                error = str(Hamlib.rigerror(my_rig.error_status)).splitlines()
+                error = error[1].split('err=')
+                error = error[1]
+                            
+                if error == 'Permission denied':
+                    structlog.get_logger("structlog").error("[DMN] Hamlib has no permissions", e = error)
+                    help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
+                    structlog.get_logger("structlog").error("[DMN] HELP:", check = help_url)
+            except:
+                structlog.get_logger("structlog").info("[DMN] Hamlib device openend", status='SUCCESS')
+
+
+
 
             # set rig mode to USB
             self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
@@ -134,3 +150,6 @@ class radio:
         else:
             self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
         return state
+        
+    def close_rig(self):
+        self.my_rig.close()
