@@ -79,9 +79,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-20.04
             zip_name: ubuntu_tnc
             generator: Unix Makefiles
 
@@ -97,7 +97,7 @@ jobs:
         
           
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
           python -m pip install --upgrade pip
@@ -128,7 +128,7 @@ jobs:
 
 
       - name: Build codec2 Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         #working-directory: tnc
         run: |
           cd ~
@@ -139,7 +139,7 @@ jobs:
           
           
       - name: Build Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         working-directory: tnc
         run: |      
           #pyinstaller -F daemon.py -n daemon
@@ -171,7 +171,7 @@ jobs:
           node-version: 14
           
       - name: Copy TNC to GUI Linux
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         run: |          
           cp -R ./tnc/dist ./gui/tnc
           ls -R        
@@ -218,7 +218,7 @@ jobs:
   release:
     name: Upload Release
     needs: [build_linux_release, build_windows_release]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     
     

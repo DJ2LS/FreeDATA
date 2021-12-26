@@ -100,14 +100,14 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
                     CQ_THREAD.start()
 
-                # CQ CQ CQ -----------------------------------------------------
+                # START_BEACON -----------------------------------------------------
                 if received_json["command"] == "START_BEACON":
                     static.BEACON_STATE = True
                     interval = int(received_json["parameter"])
                     BEACON_THREAD = threading.Thread(target=data_handler.run_beacon, args=[interval], name="START BEACON")
                     BEACON_THREAD.start()
                     
-                # CQ CQ CQ -----------------------------------------------------
+                # STOP_BEACON -----------------------------------------------------
                 if received_json["command"] == "STOP_BEACON":
                     static.BEACON_STATE = False
                     structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
@@ -140,8 +140,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
                         static.DXCALLSIGN)
-
-                    rawdata = {"datatype": "file", "filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
+        
+                    # dt = datatype
+                    # --> f = file
+                    # --> m = message
+                    # fn = filename
+                    # ft = filetype
+                    # d = data                
+                    # crc = checksum
+                    rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
@@ -158,15 +165,21 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     dxcallsign = received_json["dxcallsign"]
                     mode = int(received_json["mode"])
                     n_frames = int(received_json["n_frames"])
-                    data = received_json["data"]
-                    checksum = received_json["checksum"]
+                    data = received_json["d"] # d = data
+                    checksum = received_json["crc"] # crc = checksum
                    
 
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
-                        static.DXCALLSIGN)
-
-                    rawdata = {"datatype": "message","data": data, "checksum": checksum}
+                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+                    
+                    # dt = datatype
+                    # --> f = file
+                    # --> m = message
+                    # fn = filename
+                    # ft = filetype
+                    # d = data                
+                    # crc = checksum
+                    rawdata = {"dt": "m","d": data, "crc": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
@@ -221,7 +234,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "COMMAND": "TNC_STATE",
                         "TIMESTAMP": received_json["timestamp"],
                         "PTT_STATE": str(static.PTT_STATE),
-                        "CHANNEL_STATE": str(static.CHANNEL_STATE),
+                        #"CHANNEL_STATE": str(static.CHANNEL_STATE),
                         "TNC_STATE": str(static.TNC_STATE),
                         "ARQ_STATE": str(static.ARQ_STATE),
                         "AUDIO_RMS": str(static.AUDIO_RMS),

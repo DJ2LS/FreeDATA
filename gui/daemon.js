@@ -140,14 +140,14 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake) {
+exports.startTNC = function(rx_audio, tx_audio, devicename, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake) {
     var json_command = JSON.stringify({
         type: 'SET',
         command: 'STARTTNC',
         parameter: [{
             rx_audio: rx_audio,
             tx_audio: tx_audio,
-            deviceid: deviceid,
+            devicename: devicename,
             deviceport: deviceport,
             pttprotocol: pttprotocol,
             pttport: pttport,
@@ -172,13 +172,13 @@ exports.stopTNC = function() {
 }
 
 // TEST HAMLIB
-exports.testHamlib = function(deviceid, deviceport, serialspeed, pttprotocol, pttport, pttspeed, data_bits, stop_bits, handshake) {
+exports.testHamlib = function(devicename, deviceport, serialspeed, pttprotocol, pttport, pttspeed, data_bits, stop_bits, handshake) {
 
     var json_command = JSON.stringify({
         type: 'GET',
         command: 'TEST_HAMLIB',
         parameter: [{
-            deviceid: deviceid,
+            devicename: devicename,
             deviceport: deviceport,
             pttprotocol: pttprotocol,
             pttport: pttport,
