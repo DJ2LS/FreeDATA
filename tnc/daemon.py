@@ -294,7 +294,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed)
                         
                         hamlib.set_ptt(True)      
-                        pttstate = hamlib.get_rig_data()[3]
+                        pttstate = hamlib.get_ptt()
                         if pttstate:
                             structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
                             data = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'SUCCESS'}

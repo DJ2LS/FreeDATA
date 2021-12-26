@@ -34,11 +34,11 @@ except Exception as e:
 class radio:
     def __init__(self):
     
-        self.deviceid = '2'
+        self.devicename = ''
         self.devicenumber = ''
-        self.deviceport = '/dev/ttyUSB0'
-        self.serialspeed = 9600
-        self.hamlib_ptt_type = 'RIG'
+        self.deviceport = ''
+        self.serialspeed = 0
+        self.hamlib_ptt_type = ''
         self.my_rig = ''
     
 
@@ -118,7 +118,8 @@ class radio:
                 structlog.get_logger("structlog").info("[DMN] Hamlib device openend", status='SUCCESS')
 
 
-
+            # set ptt to false if ptt is stuck for some reason
+            self.set_ptt(False)
 
             # set rig mode to USB
             self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
@@ -133,7 +134,7 @@ class radio:
         freq = int(self.my_rig.get_freq())
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
         mode = Hamlib.rig_strrmode(hamlib_mode)
-        ptt = self.my_rig.get_ptt()
+        ptt = self.get_ptt()
         if ptt:
             ptt = True
         else:
@@ -143,7 +144,10 @@ class radio:
     
     def set_mode(self, mode):
         return 0
-                
+      
+    def get_ptt(self):
+        return self.my_rig.get_ptt()
+                  
     def set_ptt(self, state):
         if state:
             self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
