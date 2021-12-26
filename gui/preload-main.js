@@ -666,27 +666,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level)
     document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;")
 
-    // CHANNEL STATE
-    if (arg.channel_state == 'RECEIVING_SIGNALLING') {
-        document.getElementById("signalling_state").className = "btn btn-success";
-        document.getElementById("data_state").className = "btn btn-secondary";
-
-    } else if (arg.channel_state == 'SENDING_SIGNALLING') {
-        document.getElementById("signalling_state").className = "btn btn-danger";
-        document.getElementById("data_state").className = "btn btn-secondary";
-
-    } else if (arg.channel_state == 'RECEIVING_DATA') {
-        document.getElementById("signalling_state").className = "btn btn-secondary";
-        document.getElementById("data_state").className = "btn btn-success";
-
-    } else if (arg.channel_state == 'SENDING_DATA') {
-        document.getElementById("signalling_state").className = "btn btn-secondary";
-        document.getElementById("data_state").className = "btn btn-danger";
-    } else {
-        document.getElementById("signalling_state").className = "btn btn-secondary"
-        document.getElementById("busy_state").className = "btn btn-secondary"
-
-    }
 
     // SET FREQUENCY
     document.getElementById("frequency").innerHTML = arg.frequency
@@ -1215,7 +1194,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        var fileNameString = arg.data[i]['RXDATA'][0]['filename']
+        var fileNameString = arg.data[i]['RXDATA'][0]['fn']
         fileNameText.innerText = fileNameString
         fileName.appendChild(fileNameText);
 
@@ -1243,7 +1222,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
 
         // write file to rxdata folder
-        var base64String = arg.data[i]['RXDATA'][0]['data']
+        var base64String = arg.data[i]['RXDATA'][0]['d']
         // remove header from base64 String
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
