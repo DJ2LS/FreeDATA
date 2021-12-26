@@ -68,10 +68,10 @@ class radio:
             self.my_rig.set_conf("serial_handshake", "None")
             self.my_rig.set_conf("stop_bits", "1")
             self.my_rig.set_conf("data_bits", "8")
-
             
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
+                self.my_rig.set_conf("ptt_type", 'RIG')
 
             elif self.hamlib_ptt_type == 'DTR-H':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
