@@ -197,11 +197,7 @@ class RF():
         self.datac0_buffer.push(x)
         self.datac1_buffer.push(x)
         self.datac3_buffer.push(x)
-    
-        # refill fft_data buffer so we can plot a fft
-        if len(self.fft_data) < 1024:
-            self.fft_data += bytes(x)
-
+        self.fft_data += bytes(x)
         
         if self.modoutqueue.empty():
             data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2*2)
@@ -213,15 +209,7 @@ class RF():
     # --------------------------------------------------------------------------------------------------------
 
 
-    def transmit(self, mode, repeats, repeat_delay, frames):
-        #print(mode)
-        #mode = codec2.freedv_get_mode_value_by_name(mode)
-        #print(mode)
-        
-        #state_before_transmit = static.CHANNEL_STATE
-        #static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-        
-        
+    def transmit(self, mode, repeats, repeat_delay, frames):     
         
         # open codec2 instance       
         #self.MODE = codec2.freedv_get_mode_value_by_name(mode)
@@ -311,146 +299,6 @@ class RF():
         self.c_lib.freedv_close(freedv)        
         return True
 
-
-
-    '''
-    def transmit_signalling(self, data_out, count):
-        state_before_transmit = static.CHANNEL_STATE
-        static.CHANNEL_STATE = 'SENDING_SIGNALLING'
-
-        mod_out = create_string_buffer(self.datac0_n_tx_modem_samples * 2)
-        mod_out_preamble = create_string_buffer(self.datac0_n_tx_preamble_modem_samples * 2)
-        mod_out_postamble = create_string_buffer(self.datac0_n_tx_postamble_modem_samples * 2)
-
-        buffer = bytearray(self.datac0_payload_per_frame)
-        # set buffersize to length of data which will be send
-        buffer[:len(data_out)] = data_out
-
-        crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), self.datac0_payload_per_frame))     # generate CRC16
-        # convert crc to 2 byte hex string
-        crc = crc.value.to_bytes(2, byteorder='big')
-        buffer += crc        # append crc16 to buffer
-        data = (ctypes.c_ubyte * self.datac0_bytes_per_frame).from_buffer_copy(buffer)
-        
-        # modulate DATA and safe it into mod_out pointer
-        self.c_lib.freedv_rawdatapreambletx(self.datac0_freedv, mod_out_preamble)
-        self.c_lib.freedv_rawdatatx(self.datac0_freedv, mod_out, data)
-        self.c_lib.freedv_rawdatapostambletx(self.datac0_freedv, mod_out_postamble)
-
-        self.streambuffer = bytearray()
-        self.streambuffer += bytes(mod_out_preamble)
-        self.streambuffer += bytes(mod_out)
-        self.streambuffer += bytes(mod_out_postamble)
-
-        # resample up to 48k (resampler works on np.int16)
-        x = np.frombuffer(self.streambuffer, dtype=np.int16)
-        txbuffer_48k = self.resampler.resample8_to_48(x)
-        
-        
-        # append frame again with as much as in count defined
-        #for i in range(1, count):
-        #    self.streambuffer += bytes(txbuffer_48k.tobytes())
-
-        while self.ptt_and_wait(True):
-            pass
-        
-        # set channel state   
-        static.CHANNEL_STATE = 'SENDING_SIGNALLING'       
-            
-        # start writing audio data to audio stream  
-        #self.stream_tx.write(self.streambuffer)
-        self.stream_tx.write(txbuffer_48k.tobytes())
-
-
-        # set ptt back to false
-        self.ptt_and_wait(False)
-        
-        
-        # we have a problem with the receiving state
-        if state_before_transmit != 'RECEIVING_DATA':
-            static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-        else:
-            static.CHANNEL_STATE = state_before_transmit
-        
-        return True
-# --------------------------------------------------------------------------------------------------------
-   # GET ARQ BURST FRAME VOM BUFFER AND MODULATE IT
-
-    def transmit_arq_burst(self, mode, frames):
-
-        # we could place this timing part inside the modem...
-        # lets see if this is a good idea..
-        # we need to update our timeout timestamp
-
-        state_before_transmit = static.CHANNEL_STATE
-        static.CHANNEL_STATE = 'SENDING_DATA'
-
-        freedv = cast(self.c_lib.freedv_open(mode), c_void_p)
-        self.c_lib.freedv_set_clip(freedv, 1)
-        self.c_lib.freedv_set_tx_bpf(freedv, 1)
-              
-        bytes_per_frame = int(self.c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_per_frame = bytes_per_frame - 2
-        n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(freedv)
-        n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(freedv)
-        n_tx_preamble_modem_samples = self.c_lib.freedv_get_n_tx_preamble_modem_samples(freedv)
-        n_tx_postamble_modem_samples = self.c_lib.freedv_get_n_tx_postamble_modem_samples(freedv)
-
-        mod_out = create_string_buffer(n_tx_modem_samples * 2)
-        mod_out_preamble = create_string_buffer(n_tx_preamble_modem_samples * 2)
-        mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
-
-        self.streambuffer = bytearray()
-        self.c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-        self.streambuffer += bytes(mod_out_preamble)
-
-
-        # loop through list of frames per burst
-        for n in range(0, len(frames)):
-
-            # create TX buffer
-                buffer = bytearray(payload_per_frame)
-                # set buffersize to length of data which will be send
-                buffer[:len(frames[n])] = frames[n]
-
-                crc = ctypes.c_ushort(self.c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
-                # convert crc to 2 byte hex string
-                crc = crc.value.to_bytes(2, byteorder='big')
-                buffer += crc        # append crc16 to buffer
-                data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-
-                # modulate DATA and safe it into mod_out pointer
-                self.c_lib.freedv_rawdatatx(freedv, mod_out, data)
-                self.streambuffer += bytes(mod_out)
-
-        self.c_lib.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-        self.streambuffer += bytes(mod_out_postamble)
-
-        # resample up to 48k (resampler works on np.int16)
-        x = np.frombuffer(self.streambuffer, dtype=np.int16)
-        txbuffer_48k = self.resampler.resample8_to_48(x)
-
-        # -------------- transmit audio
-
-        while self.ptt_and_wait(True):
-            pass
-
-        # set channel state
-        static.CHANNEL_STATE = 'SENDING_DATA'
-        
-        # write audio to stream
-        self.stream_tx.write(txbuffer_48k.tobytes())
-        
-        static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-
-        self.ptt_and_wait(False)
-
-        # close codec2 instance
-        self.c_lib.freedv_close(freedv)
-        
-        return True
-# --------------------------------------------------------------------------------------------------------
-    '''
     def audio(self):
         try:                        
             print(f"starting pyaudio callback", file=sys.stderr)
@@ -597,12 +445,12 @@ class RF():
             else:
                 structlog.get_logger("structlog").warning("[TNC] ARQ - other frame type", frametype=frametype)
 
-            '''
+            
             # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
             if frame == n_frames_per_burst:
                 logging.info("LAST FRAME ---> UNSYNC")
                 self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-            '''
+            
 
         else:
             # for debugging purposes to receive all data
@@ -688,12 +536,12 @@ class RF():
                     # round data to decrease size
                     dfft = np.around(dfft, 1)
                     dfftlist = dfft.tolist()
-
-                    static.FFT = dfftlist[10:180] #200 --> bandwith 3000    
+                    
+                    static.FFT = dfftlist[0:320] #200 --> bandwith 3000    
                 except:
                     
                     structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
                     # else 0
-                    static.FFT = [0] * 400
+                    static.FFT = [0] * 320
             else:
                 pass
