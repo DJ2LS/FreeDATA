@@ -46,7 +46,7 @@ class radio:
         
         self.devicename = devicename
         self.deviceport = deviceport
-        self.serialspeed = serialspeed
+        self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
         self.hamlib_ptt_type = hamlib_ptt_type
         
         # try to init hamlib
@@ -64,7 +64,7 @@ class radio:
             self.my_rig = Hamlib.Rig(self.devicenumber)
             self.my_rig.set_conf("rig_pathname", self.deviceport)
             self.my_rig.set_conf("retry", "5")
-            #self.my_rig.set_conf("serial_speed", self.serialspeed)
+            self.my_rig.set_conf("serial_speed", self.serialspeed)
             self.my_rig.set_conf("serial_handshake", "None")
             self.my_rig.set_conf("stop_bits", "1")
             self.my_rig.set_conf("data_bits", "8")
