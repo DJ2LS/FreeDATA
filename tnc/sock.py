@@ -140,8 +140,15 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
                     static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
                         static.DXCALLSIGN)
-
-                    rawdata = {"datatype": "file", "filename": filename, "filetype": filetype,"data": data, "checksum": checksum}
+        
+                    # dt = datatype
+                    # --> f = file
+                    # --> m = message
+                    # fn = filename
+                    # ft = filetype
+                    # d = data                
+                    # crc = checksum
+                    rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
@@ -158,15 +165,21 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     dxcallsign = received_json["dxcallsign"]
                     mode = int(received_json["mode"])
                     n_frames = int(received_json["n_frames"])
-                    data = received_json["data"]
-                    checksum = received_json["checksum"]
+                    data = received_json["d"] # d = data
+                    checksum = received_json["crc"] # crc = checksum
                    
 
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(
-                        static.DXCALLSIGN)
-
-                    rawdata = {"datatype": "message","data": data, "checksum": checksum}
+                    static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+                    
+                    # dt = datatype
+                    # --> f = file
+                    # --> m = message
+                    # fn = filename
+                    # ft = filetype
+                    # d = data                
+                    # crc = checksum
+                    rawdata = {"dt": "m","d": data, "crc": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
