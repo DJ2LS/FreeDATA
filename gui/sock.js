@@ -46,7 +46,7 @@ client.on('error', function(data) {
     let Data = {
         busy_state: "-",
         arq_state: "-",
-        channel_state: "-",
+        //channel_state: "-",
         frequency: "-",
         mode: "-",
         bandwith: "-",
@@ -133,7 +133,7 @@ client.on('data', function(data) {
                 ptt_state: data['PTT_STATE'],
                 busy_state: data['TNC_STATE'],
                 arq_state: data['ARQ_STATE'],
-                channel_state: data['CHANNEL_STATE'],
+                //channel_state: data['CHANNEL_STATE'],
                 frequency: data['FREQUENCY'],
                 mode: data['MODE'],
                 bandwith: data['BANDWITH'],
