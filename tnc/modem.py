@@ -242,8 +242,9 @@ class RF():
             
             # write preamble to txbuffer
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+            time.sleep(0.01)
             txbuffer += bytes(mod_out_preamble)
-
+            
             # create modulaton for n frames in list
             for n in range(0,len(frames)):
 
@@ -259,19 +260,19 @@ class RF():
                 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
-
+                time.sleep(0.01)
                 txbuffer += bytes(mod_out)
                 
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
             txbuffer += bytes(mod_out_postamble)
-
+            time.sleep(0.01)
             # add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE*(repeat_delay/1000))
             mod_out_silence = create_string_buffer(samples_delay*2)
             txbuffer += bytes(mod_out_silence)
-            
+            time.sleep(0.01)
             
             # resample up to 48k (resampler works on np.int16)
             x = np.frombuffer(txbuffer, dtype=np.int16)

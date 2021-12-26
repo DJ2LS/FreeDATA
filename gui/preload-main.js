@@ -646,7 +646,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
 
     // BEACON STATE
-    console.log(arg.beacon_state)
     if (arg.beacon_state == 'True') {
         document.getElementById("startBeacon").className = "btn btn-success spinner-grow"
         document.getElementById("startBeacon").disabled = true

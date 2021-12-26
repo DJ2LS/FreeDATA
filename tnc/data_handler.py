@@ -617,6 +617,8 @@ def burst_rpt_received(data_in):
 
 def open_dc_and_transmit(data_out, mode, n_frames_per_burst):
     global DATA_CHANNEL_READY_FOR_DATA
+    
+    static.TNC_STATE = 'BUSY'
        
     asyncio.run(arq_open_data_channel(mode))
     # wait until data channel is open
