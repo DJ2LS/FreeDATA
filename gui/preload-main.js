@@ -334,10 +334,10 @@ advancedHamlibSettingsModal
 
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
-        }, 1500);
+        }, 3000);
         setTimeout(function() {
             sock.saveMyGrid(config.mygrid);
-        }, 1500);
+        }, 3500);
     })
 
     // stopTNC button clicked
