@@ -129,19 +129,17 @@ class radio:
             structlog.get_logger("structlog").error("[TNC] Hamlib - can't open rig", error=e, e=sys.exc_info()[0])
             return False
             
-    def get_rig_data(self):
-    
-        freq = int(self.my_rig.get_freq())
+    def get_frequency(self):
+        return int(self.my_rig.get_freq())
+        
+    def get_mode(self):
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
-        mode = Hamlib.rig_strrmode(hamlib_mode)
-        ptt = self.get_ptt()
-        if ptt:
-            ptt = True
-        else:
-            ptt = False
-            
-        return [freq, mode, bandwith, ptt]
+        return Hamlib.rig_strrmode(hamlib_mode)
     
+    def get_bandwith(self):
+        (hamlib_mode, bandwith) = self.my_rig.get_mode()
+        return bandwith
+
     def set_mode(self, mode):
         return 0
       

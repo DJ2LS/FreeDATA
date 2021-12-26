@@ -42,7 +42,7 @@ if __name__ == '__main__':
     static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
     static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
     static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-    HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
+    static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
     static.HAMLIB_SERIAL_SPEED = ARGS.hamlib_serialspeed
     
     # we need to wait until we got all parameters from argparse first before we can load the other modules
