@@ -102,7 +102,9 @@ class RF():
         # init FIFO queue to store modulation out in
         self.modoutqueue = queue.Queue()
         
-        
+        # define fft_data buffer
+        self.fft_data = bytes()
+                
         # open codec2 instance        
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)
@@ -169,7 +171,7 @@ class RF():
 
         
         # --------------------------------------------START DECODER THREAD
-        self.fft_data = bytes()
+
         FFT_THREAD = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
         FFT_THREAD.start()
         
@@ -640,19 +642,7 @@ class RF():
             # only take every tenth data point
             scatterdata_small = scatterdata[::10]
             static.SCATTER = scatterdata_small
-            
-    '''        
-    def calculate_ber(self, freedv):
-        Tbits = self.c_lib.freedv_get_total_bits(freedv)
-        Terrs = self.c_lib.freedv_get_total_bit_errors(freedv)
 
-        if Tbits != 0:
-            ber = (Terrs / Tbits) * 100
-            static.BER = int(ber)
-
-        self.c_lib.freedv_set_total_bit_errors(freedv, 0)
-        self.c_lib.freedv_set_total_bits(freedv, 0)
-    '''
     
     def calculate_snr(self, freedv):
 
