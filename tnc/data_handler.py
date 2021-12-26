@@ -13,7 +13,7 @@ from random import randrange
 import asyncio
 
 import ujson as json
-
+import zlib
 import static
 import modem
 import helpers
@@ -54,6 +54,7 @@ RX_START_OF_TRANSMISSION        =   0           # time of transmission start
 # ################################################    
 
 def arq_data_received(data_in, bytes_per_frame):
+    data_in = zlib.decompress(data_in)
     # we neeed to declare our global variables, so the thread has access to them
     global RX_START_OF_TRANSMISSION
     global DATA_CHANNEL_LAST_RECEIVED
@@ -293,7 +294,7 @@ def arq_data_received(data_in, bytes_per_frame):
     
 
 def arq_transmit(data_out, mode, n_frames_per_burst):
-
+    data_out = zlib.compress(data_out)
     global RPT_REQUEST_BUFFER
     global DATA_FRAME_ACK_RECEIVED
     global RPT_REQUEST_RECEIVED
