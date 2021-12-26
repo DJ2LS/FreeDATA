@@ -153,13 +153,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                 if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
                     rx_audio = str(received_json["parameter"][0]["rx_audio"])
                     tx_audio = str(received_json["parameter"][0]["tx_audio"])
-                    deviceid = str(received_json["parameter"][0]["deviceid"])
+                    devicename = str(received_json["parameter"][0]["devicename"])
                     deviceport = str(received_json["parameter"][0]["deviceport"])
                     serialspeed = str(received_json["parameter"][0]["serialspeed"])
                     pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
                     pttport = str(received_json["parameter"][0]["pttport"])
                     
-                    structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=deviceid, port=deviceport)
+                    structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=devicename, port=deviceport)
                     #print(received_json["parameter"][0])
 
                     # command = "--rx "+ rx_audio +" \
@@ -178,8 +178,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     options.append(tx_audio)
                     options.append('--deviceport')
                     options.append(deviceport)
-                    options.append('--deviceid')
-                    options.append(deviceid)
+                    options.append('--devicename')
+                    options.append(devicename)
                     options.append('--serialspeed')
                     options.append(serialspeed)
                     options.append('--pttprotocol')
@@ -278,7 +278,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     print(received_json["parameter"])
 
-                    deviceid = str(received_json["parameter"][0]["deviceid"])
+                    devicename = str(received_json["parameter"][0]["devicename"])
                     deviceport = str(received_json["parameter"][0]["deviceport"])
                     serialspeed = str(received_json["parameter"][0]["serialspeed"])
                     pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
@@ -296,7 +296,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                         # get devicenumber by looking for deviceobject in Hamlib module
                         try:
-                            devicenumber = getattr(Hamlib, deviceid)
+                            devicenumber = getattr(Hamlib, devicename)
                         except:
                             structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
                             devicenumber = 0

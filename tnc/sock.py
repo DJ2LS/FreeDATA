@@ -221,7 +221,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "COMMAND": "TNC_STATE",
                         "TIMESTAMP": received_json["timestamp"],
                         "PTT_STATE": str(static.PTT_STATE),
-                        "CHANNEL_STATE": str(static.CHANNEL_STATE),
+                        #"CHANNEL_STATE": str(static.CHANNEL_STATE),
                         "TNC_STATE": str(static.TNC_STATE),
                         "ARQ_STATE": str(static.ARQ_STATE),
                         "AUDIO_RMS": str(static.AUDIO_RMS),
