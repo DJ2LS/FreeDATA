@@ -169,6 +169,9 @@ class RF():
                                      )
 
 
+        # --------------------------------------------INIT AND OPEN HAMLIB
+        self.hamlib = rig.radio()
+        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED)
         
         # --------------------------------------------START DECODER THREAD
 
@@ -184,9 +187,6 @@ class RF():
         WORKER_THREAD = threading.Thread(target=self.worker, name="WORKER_THREAD")
         WORKER_THREAD.start()
         
-        # --------------------------------------------INIT AND OPEN HAMLIB
-        self.hamlib = rig.radio()
-        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED)
 
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
@@ -497,7 +497,7 @@ class RF():
     # worker for FIFO queue for processing received frames           
     def worker(self):
         while True:
-            time.sleep(0.01)
+            time.sleep(0.1)
             data = self.dataqueue.get()
             self.process_data(data[0], data[1], data[2])
             self.dataqueue.task_done()
@@ -660,7 +660,7 @@ class RF():
 
     def update_rig_data(self):
         while True:
-            time.sleep(0.1)            
+            time.sleep(0.5)            
             #(static.HAMLIB_FREQUENCY, static.HAMLIB_MODE, static.HAMLIB_BANDWITH, static.PTT_STATE) = self.hamlib.get_rig_data()
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
