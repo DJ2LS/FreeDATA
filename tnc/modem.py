@@ -186,7 +186,7 @@ class RF():
         
         # --------------------------------------------INIT AND OPEN HAMLIB
         self.hamlib = rig.radio()
-        self.hamlib.open_rig(devicename='RIG_MODEL_DUMMY_NOVFO', deviceport='/dev/ttyUSB0', hamlib_ptt_type='RIG', serialspeed=9600)
+        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type='RIG', serialspeed=9600)
 
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
@@ -209,45 +209,23 @@ class RF():
             data_out48k = self.modoutqueue.get()
         
         return (data_out48k, pyaudio.paContinue)
-        
-        
-    '''    
-    def ptt_and_wait(self, state):
-        static.PTT_STATE = state
 
-        if state:
-
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
-            # rigctld.ptt_enable()
-            ptt_toggle_timeout = time.time() + 0.5
-
-            while time.time() < ptt_toggle_timeout and not self.modoutqueue.empty():
-                pass
-
-        else:
-
-            ptt_toggle_timeout = time.time() + 0.5
-            while time.time() < ptt_toggle_timeout:
-                pass
-
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
-            # rigctld.ptt_disable()
-
-        return False
-    '''
     # --------------------------------------------------------------------------------------------------------
 
 
     def transmit(self, mode, repeats, repeat_delay, frames):
-
-
+        #print(mode)
+        #mode = codec2.freedv_get_mode_value_by_name(mode)
+        #print(mode)
+        
         #state_before_transmit = static.CHANNEL_STATE
         #static.CHANNEL_STATE = 'SENDING_SIGNALLING'
         
         
         
         # open codec2 instance       
-        self.MODE = codec2.FREEDV_MODE[mode].value 
+        #self.MODE = codec2.freedv_get_mode_value_by_name(mode)
+        self.MODE = mode
         freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
 
         # get number of bytes per frame for mode
@@ -273,7 +251,7 @@ class RF():
         txbuffer = bytes(mod_out_silence) 
 
         for i in range(1,repeats+1):
-
+            
             # write preamble to txbuffer
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
             txbuffer += bytes(mod_out_preamble)
@@ -281,7 +259,6 @@ class RF():
             # create modulaton for n frames in list
             for n in range(0,len(frames)):
 
-                
                 # create buffer for data
                 buffer = bytearray(payload_bytes_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
                 buffer[:len(frames[n])] = frames[n] # set buffersize to length of data which will be send
@@ -323,30 +300,14 @@ class RF():
                 if len(c) < self.AUDIO_FRAMES_PER_BUFFER_RX*2:
                     c += bytes(self.AUDIO_FRAMES_PER_BUFFER_RX*2 - len(c))
                 self.modoutqueue.put(c)
-                #print(len(c))
 
+        # maybe we need to toggle PTT before craeting modulation because of queue processing
         static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
         
-
-        #while self.ptt_and_wait(True):
-        #    pass
-
-        # set channel state   
-        #static.CHANNEL_STATE = 'SENDING_SIGNALLING' 
-
-        # set ptt back to false
-        #self.ptt_and_wait(False)
-
-
-        # we have a problem with the receiving state
-        #if state_before_transmit != 'RECEIVING_DATA':
-        #    static.CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-        #else:
-        #    static.CHANNEL_STATE = state_before_transmit
-        
+      
         self.c_lib.freedv_close(freedv)        
         return True
 
@@ -505,7 +466,6 @@ class RF():
                 self.datac0_buffer.pop(self.datac0_nin)
                 self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
                 if nbytes == self.datac0_bytes_per_frame:
-                    print(len(self.datac0_bytes_out))
                     self.dataqueue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
                     self.get_scatter(self.datac0_freedv)
                     self.calculate_snr(self.datac0_freedv)
@@ -617,12 +577,12 @@ class RF():
 
             # ARQ FILE TRANSFER RECEIVED!
             elif frametype == 225:
-                logging.debug("ARQ arq_received_data_channel_opener RECEIVED")
+                logging.debug("ARQ arq_received_data_channel_opener")
                 data_handler.arq_received_data_channel_opener(bytes_out[:-2])
 
             # ARQ CHANNEL IS OPENED
             elif frametype == 226:
-                logging.debug("ARQ arq_received_channel_is_open RECEIVED")
+                logging.debug("ARQ arq_received_channel_is_open")
                 data_handler.arq_received_channel_is_open(bytes_out[:-2])
 
             # ARQ CONNECT ACK / KEEP ALIVE
