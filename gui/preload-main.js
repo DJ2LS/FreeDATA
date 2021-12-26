@@ -330,17 +330,14 @@ advancedHamlibSettingsModal
         
         daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake)
         
-                
-
-
 
 
         setTimeout(function() {
             sock.saveMyCall(config.mycall);
-        }, 3000);
+        }, 1500);
         setTimeout(function() {
             sock.saveMyGrid(config.mygrid);
-        }, 4000);
+        }, 1500);
     })
 
     // stopTNC button clicked
