@@ -171,7 +171,7 @@ class RF():
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         self.hamlib = rig.radio()
-        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED)
+        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE)
         
         # --------------------------------------------START DECODER THREAD
 
