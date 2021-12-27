@@ -238,7 +238,6 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "TNC_STATE": str(static.TNC_STATE),
                         "ARQ_STATE": str(static.ARQ_STATE),
                         "AUDIO_RMS": str(static.AUDIO_RMS),
-                        "BER": str(static.BER),
                         "SNR": str(static.SNR),
                         "FREQUENCY": str(static.HAMLIB_FREQUENCY),
                         "MODE": str(static.HAMLIB_MODE),
