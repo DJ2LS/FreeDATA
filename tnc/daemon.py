@@ -253,13 +253,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                                     
                         for i in range(0, p.get_device_count()):
 
-                            maxInputChannels = p.get_device_info_by_host_api_device_index(
-                                0, i).get('maxInputChannels')
-                            maxOutputChannels = p.get_device_info_by_host_api_device_index(
-                                0, i).get('maxOutputChannels')
-                            name = p.get_device_info_by_host_api_device_index(
-                                0, i).get('name')
-
+                            maxInputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
+                            maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
+                            name = p.get_device_info_by_host_api_device_index(0, i).get('name')
+                            crc_name = crc_algorithm(bytes(name, encoding='utf-8'))
+                            crc_name = crc_name.to_bytes(2, byteorder='big')
+                            crc_name = crc_name.hex()
+                            name = name + ' [' + crc_name + ']' 
+            
                             if maxInputChannels > 0:
                                 data["INPUT_DEVICES"].append(
                                     {"ID": i, "NAME": str(name)})
