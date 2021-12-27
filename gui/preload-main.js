@@ -305,8 +305,27 @@ advancedHamlibSettingsModal
         var stop_bits = document.getElementById('hamlib_stopbits_advanced').value
         var handshake = document.getElementById('hamlib_handshake_advanced').value
         
-        config.rx_audio = document.getElementById("audio_input_selectbox").options[rx_audio].text
-        config.tx_audio = document.getElementById("audio_output_selectbox").options[tx_audio].text
+       
+        // loop through audio device list and select
+        for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
+            device = document.getElementById("audio_input_selectbox")[i];
+      
+            if (device.value == rx_audio) {
+                console.log(device.text);
+                config.rx_audio = device.text
+            }
+        }
+
+        // loop through audio device list and select
+        for(i = 0; i < document.getElementById("audio_output_selectbox").length; i++) {
+            device = document.getElementById("audio_output_selectbox")[i];
+      
+            if (device.value == tx_audio) {
+                console.log(device.text);
+                config.tx_audio = device.text
+            }
+        }        
+                        
         config.deviceid = deviceid
         config.deviceport = deviceport
         config.serialspeed = serialspeed
@@ -981,6 +1000,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 option.text = arg.input_devices[i]['NAME'];
                 option.value = arg.input_devices[i]['ID'];
                 // set device from config if available
+                
                 if(config.rx_audio == option.text){
                     option.setAttribute('selected', true);
                 }
