@@ -33,6 +33,12 @@ if __name__ == '__main__':
     PARSER.add_argument('--serialspeed', dest="hamlib_serialspeed", default=9600, help="Serialspeed", type=str)    
     PARSER.add_argument('--pttprotocol', dest="hamlib_ptt_type", default='RTS', help="PTT Type", type=str)    
     PARSER.add_argument('--pttport', dest="hamlib_ptt_port", default="/dev/ttyUSB0", help="PTT Port", type=str)        
+    PARSER.add_argument('--data_bits', dest="hamlib_data_bits", default="8", help="Hamlib data bits", type=str)         
+    PARSER.add_argument('--stop_bits', dest="hamlib_stop_bits", default="1", help="Hamlib stop bits", type=str)          
+    PARSER.add_argument('--handshake', dest="hamlib_handshake", default="None", help="Hamlib handshake", type=str)          
+     
+            
+ 
     
     ARGS = PARSER.parse_args()
     
@@ -44,6 +50,9 @@ if __name__ == '__main__':
     static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
     static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
     static.HAMLIB_SERIAL_SPEED = ARGS.hamlib_serialspeed
+    static.HAMLIB_DATA_BITS = ARGS.hamlib_data_bits
+    static.HAMLIB_STOP_BITS = ARGS.hamlib_stop_bits
+    static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake        
     
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

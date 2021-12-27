@@ -33,13 +33,17 @@ SOCKET_TIMEOUT = 3 # seconds
 # ---------------------------------
 
 
-HAMLIB_PTT_TYPE = 'RTS'
+
 PTT_STATE = False
 
+HAMLIB_PTT_TYPE = 'RTS'
 HAMLIB_DEVICE_NAME = 'RIG_MODEL_DUMMY_NOVFO'
 HAMLIB_DEVICE_PORT = '/dev/ttyUSB0'
 HAMLIB_SERIAL_SPEED = '9600'
 HAMLIB_PTT_PORT = '/dev/ttyUSB0'
+HAMLIB_STOP_BITS = '1'
+HAMLIB_DATA_BITS = '8'
+HANLIB_HANDSHAKE = 'None'
 
 HAMLIB_FREQUENCY = 0
 HAMLIB_MODE = ''
@@ -47,7 +51,6 @@ HAMLIB_BANDWITH = 0
 # -------------------------
 # FreeDV Defaults
 
-BER = 0
 SNR = 0
 FREQ_OFFSET = 0
 SCATTER = []

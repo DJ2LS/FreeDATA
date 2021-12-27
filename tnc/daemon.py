@@ -158,6 +158,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     serialspeed = str(received_json["parameter"][0]["serialspeed"])
                     pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
                     pttport = str(received_json["parameter"][0]["pttport"])
+                    data_bits = str(received_json["parameter"][0]["data_bits"])
+                    stop_bits = str(received_json["parameter"][0]["stop_bits"])
+                    handshake = str(received_json["parameter"][0]["handshake"])
+                    
+
                     
                     structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=devicename, port=deviceport)
                     #print(received_json["parameter"][0])
@@ -186,6 +191,13 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     options.append(pttprotocol)
                     options.append('--pttport')
                     options.append(pttport)
+                    options.append('--data_bits')
+                    options.append(data_bits)
+                    options.append('--stop_bits')
+                    options.append(stop_bits)
+                    options.append('--handshake')
+                    options.append(handshake)
+
 
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
@@ -284,14 +296,12 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         serialspeed = str(received_json["parameter"][0]["serialspeed"])
                         pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
                         pttport = str(received_json["parameter"][0]["pttport"])
-
-                        pttspeed = str(received_json["parameter"][0]["pttspeed"])
                         data_bits = str(received_json["parameter"][0]["data_bits"])
                         stop_bits = str(received_json["parameter"][0]["stop_bits"])
                         handshake = str(received_json["parameter"][0]["handshake"])
                         
                         hamlib = rig.radio()
-                        hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed)
+                        hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake)
                         
                         hamlib.set_ptt(True)      
                         pttstate = hamlib.get_ptt()

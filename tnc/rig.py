@@ -37,18 +37,26 @@ class radio:
         self.devicename = ''
         self.devicenumber = ''
         self.deviceport = ''
-        self.serialspeed = 0
+        self.serialspeed = ''
         self.hamlib_ptt_type = ''
         self.my_rig = ''
-    
-
-    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed):    
+        self.pttport = ''
+        self.data_bits = ''
+        self.stop_bits = ''
+        self.handshake = ''
+ 
+    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake):    
         
         self.devicename = devicename
         self.deviceport = deviceport
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
         self.hamlib_ptt_type = hamlib_ptt_type
+        self.pttport = pttport
+        self.data_bits = data_bits
+        self.stop_bits = stop_bits
+        self.handshake = handshake
         
+                
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
@@ -65,13 +73,20 @@ class radio:
             self.my_rig.set_conf("rig_pathname", self.deviceport)
             self.my_rig.set_conf("retry", "5")
             self.my_rig.set_conf("serial_speed", self.serialspeed)
-            self.my_rig.set_conf("serial_handshake", "None")
-            self.my_rig.set_conf("stop_bits", "1")
-            self.my_rig.set_conf("data_bits", "8")
-            
+            self.my_rig.set_conf("serial_handshake", self.handshake)
+            self.my_rig.set_conf("stop_bits", self.stop_bits)
+            self.my_rig.set_conf("data_bits", self.data_bits)
+            self.my_rig.set_conf("ptt_pathname", self.pttport)
+                        
+                        
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
                 self.my_rig.set_conf("ptt_type", 'RIG')
+
+            elif self.hamlib_ptt_type == 'USB':
+                self.hamlib_ptt_type = Hamlib.RIG_PORT_USB
+                self.my_rig.set_conf("ptt_type", 'USB')
+
 
             elif self.hamlib_ptt_type == 'DTR-H':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR

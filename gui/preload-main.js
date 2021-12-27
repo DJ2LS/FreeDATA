@@ -76,7 +76,6 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hamlib_deviceport_advanced').value = config.deviceport
     document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed
     document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol     
-    document.getElementById('hamlib_pttspeed_advanced').value = config.pttspeed  
     document.getElementById('hamlib_ptt_port_advanced').value = config.pttport
     document.getElementById('hamlib_databits_advanced').value = config.data_bits
     document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits
@@ -300,7 +299,6 @@ advancedHamlibSettingsModal
         var serialspeed = document.getElementById("hamlib_serialspeed").value
         var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
         var pttport = document.getElementById("hamlib_ptt_port_advanced").value
-        var pttspeed = document.getElementById('hamlib_pttspeed_advanced').value
         var data_bits = document.getElementById('hamlib_databits_advanced').value
         var stop_bits = document.getElementById('hamlib_stopbits_advanced').value
         var handshake = document.getElementById('hamlib_handshake_advanced').value
@@ -310,7 +308,6 @@ advancedHamlibSettingsModal
         config.serialspeed = serialspeed
         config.pttprotocol = pttprotocol
         config.pttport = pttport
-        config.pttspeed = pttspeed
         config.data_bits = data_bits
         config.stop_bits = stop_bits
         config.handshake = handshake
@@ -328,7 +325,7 @@ advancedHamlibSettingsModal
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.show() 
         
-        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, pttspeed, data_bits, stop_bits, handshake)
+        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake)
         
 
 
@@ -389,14 +386,13 @@ advancedHamlibSettingsModal
         var pttprotocol = document.getElementById("hamlib_ptt_protocol").value        
 
         var pttport = deviceport
-        var pttspeed = serialspeed
         
         var data_bits = "8"
         var stop_bits = "1"
         var handshake = "None"
 
        
-        daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, pttspeed, data_bits, stop_bits, handshake)                 
+        daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake)                 
     })
     
     // TEST HAMLIB ADVANCED
@@ -414,12 +410,11 @@ advancedHamlibSettingsModal
                 
         var pttport = document.getElementById("hamlib_deviceport").value
         
-        var pttspeed = document.getElementById("hamlib_serialspeed_advanced").value
         var data_bits = document.getElementById("hamlib_databits_advanced").value
         var stop_bits = document.getElementById("hamlib_stopbits_advanced").value
         var handshake = document.getElementById("hamlib_handshake_advanced").value
        
-        daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, pttspeed, data_bits, stop_bits, handshake)                 
+        daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake)                 
     })    
     
 
