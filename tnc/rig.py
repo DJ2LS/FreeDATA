@@ -137,7 +137,9 @@ class radio:
             self.set_ptt(False)
 
             # set rig mode to USB
-            self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
+            # temporarly outcommented because of possible problems.
+            #self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
+            # self.my_rig.set_mode(Hamlib.RIG_MODE_PKTUSB)
             return True
 
         except Exception as e:
