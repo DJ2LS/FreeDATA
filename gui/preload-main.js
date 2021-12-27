@@ -407,14 +407,12 @@ advancedHamlibSettingsModal
         var deviceport = document.getElementById("hamlib_deviceport").value
         var serialspeed = document.getElementById("hamlib_serialspeed").value
         var pttprotocol = document.getElementById("hamlib_ptt_protocol").value        
+        var data_bits = document.getElementById("hamlib_databits_advanced").value
+        var stop_bits = document.getElementById("hamlib_stopbits_advanced").value
+        var handshake = document.getElementById("hamlib_handshake_advanced").value
 
-        var pttport = deviceport
-        
-        var data_bits = "8"
-        var stop_bits = "1"
-        var handshake = "None"
-
-       
+        var pttport = document.getElementById("hamlib_ptt_port_advanced").value
+          
         daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake)                 
     })
     
