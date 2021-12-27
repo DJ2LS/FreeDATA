@@ -67,16 +67,18 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("myCall").value = config.mycall
     document.getElementById("myGrid").value = config.mygrid
     
+    //document.getElementById("audio_output_selectbox").value = config.tx_audio
+    //document.getElementById("audio_input_selectbox").value = config.rx_audio
     
     document.getElementById('hamlib_deviceid').value = config.deviceid
-    document.getElementById('hamlib_deviceport').value = config.deviceport
+    //document.getElementById('hamlib_deviceport').value = config.deviceport
     document.getElementById('hamlib_serialspeed').value = config.serialspeed
     document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol 
 
-    document.getElementById('hamlib_deviceport_advanced').value = config.deviceport
+    //document.getElementById('hamlib_deviceport_advanced').value = config.deviceport
     document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed
     document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol     
-    document.getElementById('hamlib_ptt_port_advanced').value = config.pttport
+    //document.getElementById('hamlib_ptt_port_advanced').value = config.pttport
     document.getElementById('hamlib_databits_advanced').value = config.data_bits
     document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits
     document.getElementById('hamlib_handshake_advanced').value = config.handshake
@@ -303,6 +305,8 @@ advancedHamlibSettingsModal
         var stop_bits = document.getElementById('hamlib_stopbits_advanced').value
         var handshake = document.getElementById('hamlib_handshake_advanced').value
         
+        config.rx_audio = document.getElementById("audio_input_selectbox").options[rx_audio].text
+        config.tx_audio = document.getElementById("audio_output_selectbox").options[tx_audio].text
         config.deviceid = deviceid
         config.deviceport = deviceport
         config.serialspeed = serialspeed
@@ -395,6 +399,7 @@ advancedHamlibSettingsModal
         daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake)                 
     })
     
+    /* REMOVED FROM HTML
     // TEST HAMLIB ADVANCED
     document.getElementById("testHamlibAdvanced").addEventListener("click", () => {
 
@@ -416,7 +421,7 @@ advancedHamlibSettingsModal
        
         daemon.testHamlib(deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake)                 
     })    
-    
+    */
 
 
     // START TRANSMISSION
@@ -975,7 +980,10 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 var option = document.createElement("option");
                 option.text = arg.input_devices[i]['NAME'];
                 option.value = arg.input_devices[i]['ID'];
-
+                // set device from config if available
+                if(config.rx_audio == option.text){
+                    option.setAttribute('selected', true);
+                }
                 document.getElementById("audio_input_selectbox").add(option);
             }
         }
@@ -987,7 +995,11 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             for (i = 0; i < arg.output_devices.length; i++) {
                 var option = document.createElement("option");
                 option.text = arg.output_devices[i]['NAME'];
-                option.value = arg.output_devices[i]['ID'];
+                option.value = arg.output_devices[i]['ID'];               
+                // set device from config if available
+                if(config.tx_audio == option.text){
+                    option.setAttribute('selected', true);
+                }
                 document.getElementById("audio_output_selectbox").add(option);
             }
         }
@@ -1001,6 +1013,10 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 var option = document.createElement("option");
                 option.text = arg.serial_devices[i]['DESCRIPTION'];
                 option.value = arg.serial_devices[i]['PORT'];
+                // set device from config if available
+                if(config.deviceport == option.value){
+                    option.setAttribute('selected', true);
+                }
                 document.getElementById("hamlib_deviceport").add(option);
             }
         }
@@ -1011,6 +1027,10 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 var option = document.createElement("option");
                 option.text = arg.serial_devices[i]['DESCRIPTION'];
                 option.value = arg.serial_devices[i]['PORT'];
+                // set device from config if available
+                if(config.deviceport == option.value){
+                    option.setAttribute('selected', true);
+                }
                 document.getElementById("hamlib_deviceport_advanced").add(option);
             }
         }
@@ -1023,6 +1043,10 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 var option = document.createElement("option");
                 option.text = arg.serial_devices[i]['DESCRIPTION'];
                 option.value = arg.serial_devices[i]['PORT'];
+                // set device from config if available
+                if(config.pttport == option.value){
+                    option.setAttribute('selected', true);
+                }
                 document.getElementById("hamlib_ptt_port_advanced").add(option);
             }
         }  
@@ -1097,18 +1121,21 @@ ipcRenderer.on('action-update-hamlib-test', (event, arg) => {
     console.log(arg.hamlib_result)
     if (arg.hamlib_result == 'SUCCESS') {
         document.getElementById("testHamlib").className = "btn btn-sm btn-success";
-        document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-success";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-success";
 
 
     }
     if (arg.hamlib_result == 'NOSUCCESS') {
         document.getElementById("testHamlib").className = "btn btn-sm btn-warning";
-        document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-warning";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-warning";
 
     }
     if (arg.hamlib_result == 'FAILED') {
         document.getElementById("testHamlib").className = "btn btn-sm btn-danger";
-        document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-danger";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-danger";
     }
 
 });
