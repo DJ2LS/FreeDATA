@@ -15,6 +15,8 @@ try:
     sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
+    # installation path for Suse
+    sys.path.append('/usr/local/lib64/python'+ python_version +'/site-packages')
     import Hamlib
             
     # https://stackoverflow.com/a/4703409
