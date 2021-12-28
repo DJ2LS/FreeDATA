@@ -12,6 +12,7 @@ import sys
 import re
 import logging, structlog, log_handler
 import atexit
+import time
 # for rig_model -> rig_number only
 
                
@@ -48,7 +49,7 @@ class radio:
             if int(self.devicename):
                 self.devicenumber = int(self.devicename)
             else:
-                self.devicenumber = 6
+                self.devicenumber = 6 #dummy
                 structlog.get_logger("structlog").warning("[TNC] RADIO NOT FOUND USING DUMMY!", error=e)   
                 
                 
@@ -64,9 +65,10 @@ class radio:
             
     def get_frequency(self):
         cmd = self.cmd + ' f'
-        sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)  
-        command_channel = sw_proc.stdout
-        freq = command_channel.readline()
+        sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        time.sleep(0.5)
+        freq = sw_proc.communicate()[0]
+        #print('get_frequency', freq, sw_proc.communicate())
         return int(freq)
         
     def get_mode(self):
@@ -86,8 +88,8 @@ class radio:
     def get_ptt(self):
         cmd = self.cmd + ' t'
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)  
-        command_channel = sw_proc.stdout
-        status = command_channel.readline()
+        time.sleep(0.5)
+        status = sw_proc.communicate()[0]
         return status
                   
     def set_ptt(self, state):
