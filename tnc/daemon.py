@@ -20,8 +20,8 @@ import serial.tools.list_ports
 import static
 import crcengine
 import re
-import rig
 import logging, structlog, log_handler
+
 
 log_handler.setup_logging("daemon")
 # get python version, which is needed later for determining installation path
@@ -197,7 +197,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     options.append(stop_bits)
                     options.append('--handshake')
                     options.append(handshake)
+                    
+                    if HAMLIB_USE_RIGCTL:
+                        options.append('--rigctl')
 
+                    
+                 
+        
+        
 
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
@@ -351,11 +358,19 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)
-
+    PARSER.add_argument('--rigctl', dest="hamlib_use_rigctl",action="store_true", default=False, help="force using of rigctl")
+    
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
-
+    HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
+    if HAMLIB_USE_RIGCTL:
+        structlog.get_logger("structlog").warning("using rigctl....")
+        import rigctl as rig
+    else:
+        structlog.get_logger("structlog").warning("using rig.......")
+        import rig
     # --------------------------------------------START CMD SERVER
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
     DAEMON_THREAD.start()
+

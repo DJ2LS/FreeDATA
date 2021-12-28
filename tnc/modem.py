@@ -21,7 +21,14 @@ import data_handler
 import re
 import queue
 import codec2
-import rig
+
+print(static.HAMLIB_USE_RIGCTL)
+if static.HAMLIB_USE_RIGCTL:
+    structlog.get_logger("structlog").warning("using rigctl....")
+    import rigctl as rig
+else:
+    structlog.get_logger("structlog").warning("using rig.......")
+    import rig
 
 # option for testing miniaudio instead of audioop for sample rate conversion
 #import miniaudio
