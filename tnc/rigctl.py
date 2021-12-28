@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Franco Spinelli, IW2DHW
 #
 # versione mia di rig.py per gestire Ft897D tramite rigctl e senza
 # fare alcun riferimento alla configurazione
