@@ -50,6 +50,8 @@ class SERIAL(ctypes.Structure):
         ("data_bits", ctypes.c_int),
         ("stop_bits", ctypes.c_int),
         ("rate", ctypes.c_int),
+        ("parity", ctypes.c_int),
+        ("handshake", ctypes.c_void_p),
     ]
     
 class PARM(ctypes.Structure):
@@ -57,51 +59,37 @@ class PARM(ctypes.Structure):
         ("serial", SERIAL),
     ]
     
-class RIGPORT(ctypes.Structure):
+class TYPE(ctypes.Structure):
     _fields_ = [
-        ("pathname", ctypes.c_float),
-        ("parm", PARM),
+        ("rig", ctypes.c_void_p),
     ]
     
-class STATE(ctypes.Structure):
-    _fields_ = [
-        ("rigport", RIGPORT),
-
-
-    ]
-
-class MY_RIG(ctypes.Structure):
+class MYPORT(ctypes.Structure):
     _fields_ = [
         ("pathname", ctypes.c_char),
-        ("state", STATE),
+        ("model", ctypes.c_int),
+        ("parm", PARM),
+        ("type", TYPE),
 
     ]
-    
-    
-'''    
-        myport.type.rig = RIG_PORT_SERIAL;
-        myport.parm.serial.rate = 9600;
-        myport.parm.serial.data_bits = 8;
-        myport.parm.serial.stop_bits = 1;
-        myport.parm.serial.parity = RIG_PARITY_NONE;
-        myport.parm.serial.handshake = RIG_HANDSHAKE_NONE;
-        strncpy(myport.pathname, SERIAL_PORT, HAMLIB_FILPATHLEN - 1);''
-'''        
 
 
-hamlib.rig_set_debug(6) #6
+hamlib.rig_set_debug(9) #6
+myrig_model = 3085 #3085 = ICOM 6 = DUMMY
 
-model = 3085 #3085 = ICOM 6 = DUMMY
-my_rig = MY_RIG()
-my_rig.state.rigport.parm.serial.data_bits = 7
+myport = MYPORT()
+myport.parm.serial.data_bits = 7
+myport.parm.serial.stop_bits = 2
+myport.parm.serial.rate = 9600
 
-rig = hamlib.rig_init(my_rig)
 
-#hamlib.serial_setup()
-#hamlib.serial_open('dev12')
 
-retcode = hamlib.rig_open(my_rig)
+rig = hamlib.rig_init(myrig_model)
+retcode = hamlib.serial_setup(myport)
+print(retcode)
 
+retcode = hamlib.rig_open(rig)
+print(retcode)
 
 
 hamlib.rig_close(rig)
