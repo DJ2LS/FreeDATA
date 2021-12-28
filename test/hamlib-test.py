@@ -85,25 +85,36 @@ myport.parm.serial.rate = 9600
 
 
 rig = hamlib.rig_init(myrig_model)
-retcode = hamlib.serial_setup(myport)
+
+retcode = hamlib.rig_set_parm(rig, 'stop_bits', 5)
 print(retcode)
 
+'''
+parameter = create_string_buffer(16)
+retcode = hamlib.rig_get_parm(rig, 0, parameter)
+print(retcode)
+print(bytes(parameter))
+'''
+
+
+# attempt to access global vars. Maybe we can access structures as well?
+# https://github.com/Hamlib/Hamlib/blob/f5b229f9dc4b4364d2f40e0b0b415e92c9a371ce/src/rig.c#L95
+hamlib_version = ctypes.cast(hamlib.hamlib_version, ctypes.POINTER(ctypes.c_char*21))
+print(hamlib_version.contents.value)
+
+
+'''
+retcode = hamlib.rig_has_get_parm(rig, 7)
+print(retcode)
+'''
+
+'''
 retcode = hamlib.rig_open(rig)
 print(retcode)
 
 
 hamlib.rig_close(rig)
-
-
-
-
-
-
-
-
-
-
-
+'''
 
 
 
