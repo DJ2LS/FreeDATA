@@ -18,6 +18,7 @@ import numpy as np
 import helpers
 import static
 import data_handler
+
 import re
 import queue
 import codec2
@@ -233,16 +234,15 @@ class RF():
         mod_out_postamble = create_string_buffer(n_tx_postamble_modem_samples * 2)
 
         # add empty data to handle ptt toggle time
-        data_delay_seconds = 250
-        data_delay = int(self.MODEM_SAMPLE_RATE*(data_delay_seconds/1000))
+        data_delay_mseconds = 0 #miliseconds
+        data_delay = int(self.MODEM_SAMPLE_RATE*(data_delay_mseconds/1000))
         mod_out_silence = create_string_buffer(data_delay*2)
         txbuffer = bytes(mod_out_silence) 
 
         for i in range(1,repeats+1):
-            
             # write preamble to txbuffer
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-            time.sleep(0.01)
+            time.sleep(0.001)
             txbuffer += bytes(mod_out_preamble)
             
             # create modulaton for n frames in list
@@ -260,19 +260,19 @@ class RF():
                 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
-                time.sleep(0.01)
+                time.sleep(0.001)
                 txbuffer += bytes(mod_out)
                 
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
             txbuffer += bytes(mod_out_postamble)
-            time.sleep(0.01)
+            time.sleep(0.001)
             # add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE*(repeat_delay/1000))
             mod_out_silence = create_string_buffer(samples_delay*2)
             txbuffer += bytes(mod_out_silence)
-            time.sleep(0.01)
+            time.sleep(0.001)
             
             # resample up to 48k (resampler works on np.int16)
             x = np.frombuffer(txbuffer, dtype=np.int16)
@@ -291,11 +291,12 @@ class RF():
                 self.modoutqueue.put(c)
 
         # maybe we need to toggle PTT before craeting modulation because of queue processing
+        start = time.time()
         static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
-        
+        print(time.time()-start)
       
         self.c_lib.freedv_close(freedv)        
         return True
@@ -346,7 +347,7 @@ class RF():
     # worker for FIFO queue for processing received frames           
     def worker(self):
         while True:
-            time.sleep(0.1)
+            time.sleep(0.01)
             data = self.dataqueue.get()
             self.process_data(data[0], data[1], data[2])
             self.dataqueue.task_done()
@@ -359,7 +360,7 @@ class RF():
     # we could also create an own function, which returns True. 
     def process_data(self, bytes_out, freedv, bytes_per_frame):
 
-        if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[6:7]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
+        if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[3:4]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -546,3 +547,9 @@ class RF():
                     static.FFT = [0] * 320
             else:
                 pass
+                
+    def get_bytes_per_frame(self, mode):
+        freedv = cast(codec2.api.freedv_open(mode), c_void_p)
+
+        # get number of bytes per frame for mode
+        return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
