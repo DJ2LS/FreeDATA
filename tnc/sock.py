@@ -249,6 +249,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "RX_MSG_BUFFER_LENGTH": str(len(static.RX_MSG_BUFFER)),
                         "ARQ_BYTES_PER_MINUTE": str(static.ARQ_BYTES_PER_MINUTE),
                         "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+                        "ARQ_COMPRESSION_FACTOR": str(static.ARQ_COMPRESSION_FACTOR),
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES": str(static.TOTAL_BYTES),
                         "INFO" : static.INFO,

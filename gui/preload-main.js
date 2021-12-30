@@ -701,6 +701,15 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
     document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute
 
+    // SET BYTES PER MINUTE COMPRESSED
+    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
+        var arq_bytes_per_minute_compressed = 0
+    } else {
+        var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor)
+    }
+    document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed
+    
+    
     // SET TOTAL BYTES
     if (typeof(arg.total_bytes) == 'undefined') {
         var total_bytes = 0

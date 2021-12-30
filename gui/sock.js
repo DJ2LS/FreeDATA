@@ -152,6 +152,7 @@ client.on('data', function(data) {
                 arq_rx_n_current_arq_frame: data['ARQ_RX_N_CURRENT_ARQ_FRAME'],
                 arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
                 arq_bytes_per_minute: data['ARQ_BYTES_PER_MINUTE'],
+                arq_compression_factor: data['ARQ_COMPRESSION_FACTOR'],
                 total_bytes: data['TOTAL_BYTES'],
                 arq_transmission_percent: data['ARQ_TRANSMISSION_PERCENT'],
                 stations: data['STATIONS'],

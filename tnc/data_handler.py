@@ -11,7 +11,7 @@ import threading
 import time
 from random import randrange
 import asyncio
-
+import zlib
 import ujson as json
 import static
 import modem
@@ -151,7 +151,7 @@ def arq_data_received(data_in, bytes_per_frame):
     bof_position = static.RX_FRAME_BUFFER.find(DATA_FRAME_BOF)
     eof_position = static.RX_FRAME_BUFFER.find(DATA_FRAME_EOF)
     if bof_position >= 0 and eof_position > 0 and not None in static.RX_BURST_BUFFER:
-     
+        print(f"bof_position {bof_position} / eof_position {eof_position}")
         RX_FRAME_BOF_RECEIVED = True
         RX_FRAME_EOF_RECEIVED = True
      
@@ -168,9 +168,10 @@ def arq_data_received(data_in, bytes_per_frame):
             static.INFO.append("ARQ;RECEIVING;SUCCESS")
             #calculate transfer rate here!
             
-            import zlib
-            data_frame = zlib.decompress(data_frame)
-            
+            # decompression
+            data_frame_decompressed = zlib.decompress(data_frame)
+            static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(data_frame)
+            data_frame = data_frame_decompressed
             # decode to utf-8 string
             data_frame = data_frame.decode("utf-8")
             
@@ -227,8 +228,12 @@ def arq_data_received(data_in, bytes_per_frame):
 
 def arq_transmit(data_out, mode, n_frames_per_burst):
     data_out = bytes(data_out)
-    import zlib
-    data_out = zlib.compress(data_out)
+    # compression
+    data_frame_compressed = zlib.compress(data_out)
+    static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(data_frame_compressed)
+    data_out = data_frame_compressed
+    
+    
     
     global RPT_REQUEST_BUFFER
     global DATA_FRAME_ACK_RECEIVED

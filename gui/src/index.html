@@ -951,7 +951,7 @@
 	<!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
 	<nav class="navbar fixed-bottom navbar-light bg-light">
 		<div class="container-fluid">
-			<div class="btn-toolbar" style="width:20%" role="toolbar">
+			<div class="btn-toolbar" role="toolbar">
 				<div class="btn-group btn-group-sm me-2" role="group">
 					<button class="btn btn-secondary" id="ptt_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>">
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-broadcast-pin" viewBox="0 0 16 16">
@@ -975,21 +975,31 @@
 				</div>
 
 			</div>
-			<div class="container-fluid" style="width:30%">
+			
+			<div class="container-fluid p-0" style="width:15rem">
 				<div class="input-group input-group-sm">
 					<!--<span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>--> <span class="input-group-text" id="frequency">---</span>
 					<!--<span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>--> <span class="input-group-text" id="mode">---</span>
 					<!--<span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>--> <span class="input-group-text" id="bandwith">---</span>
 				</div>
 			</div>
-			<div class="container-fluid" style="width:30%">
+			
+			<div class="container-fluid p-0" style="width:12rem">
 				<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1"><strong>B/min</strong></span>
 					<span class="input-group-text" id="bytes_per_min">---</span>
-					<span class="input-group-text" id="basic-addon1"><strong>Total</strong></span>
+					<span class="input-group-text" id="bytes_per_min_compressed">---</span>
+				</div>
+				</div>
+				<div class="container-fluid p-0" style="width:10rem">
+				
+				<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1"><strong>Bytes</strong></span>
 					<span class="input-group-text" id="total_bytes">---</span>
 				</div>
+	
+	
 			</div>
-			<div class="container-fluid" style="width:20%">
+			<div class="container-fluid p-0" style="width:15rem">
+
 				<div class="progress" style="height: 30px;">
 					<div class="progress-bar progress-bar-striped bg-primary" id="transmission_progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 					<!--<p class="justify-content-center d-flex position-absolute w-100">PROGRESS</p>-->
