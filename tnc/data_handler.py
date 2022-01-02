@@ -119,7 +119,9 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
             txbuffer = [ack_frame]
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
             modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)
-     
+
+            print(calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER)))    
+
     
     # check if we received last frame of burst and we have "Nones" in our rx buffer
     # this is an indicator for missed frames.
@@ -442,8 +444,9 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     global DATA_CHANNEL_READY_FOR_DATA
     
     static.TNC_STATE = 'BUSY'
-       
-    asyncio.run(arq_open_data_channel(mode))
+    
+    arq_open_data_channel(mode, len(data_out))   
+    #asyncio.run(arq_open_data_channel(mode))
     # wait until data channel is open
     while not DATA_CHANNEL_READY_FOR_DATA:
         time.sleep(0.01)
@@ -451,8 +454,8 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     arq_transmit(data_out, mode, n_frames_per_burst)
     
 
-async def arq_open_data_channel(mode:int):
-
+#async def arq_open_data_channel(mode:int, data_len:int):
+def arq_open_data_channel(mode:int, data_len:int):
     global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_LAST_RECEIVED
     
@@ -466,6 +469,7 @@ async def arq_open_data_channel(mode:int):
     connection_frame[1:2]   = static.DXCALLSIGN_CRC8
     connection_frame[2:3]   = static.MYCALLSIGN_CRC8
     connection_frame[3:9]   = static.MYCALLSIGN
+    connection_frame[9:12]   = data_len.to_bytes(2, byteorder='big')
     connection_frame[12:13] = bytes([DATA_CHANNEL_MODE])
     
     while not DATA_CHANNEL_READY_FOR_DATA:
@@ -476,7 +480,7 @@ async def arq_open_data_channel(mode:int):
             structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
             
             
-                
+              
             txbuffer = [connection_frame]
             modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer) 
             
@@ -515,6 +519,7 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.TNC_STATE = 'BUSY'
 
     mode = int.from_bytes(bytes(data_in[12:13]), "big")
+    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:12]), "big")
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     connection_frame = bytearray(14)
@@ -690,8 +695,9 @@ def arq_reset_ack(state:bool):
     DATA_FRAME_ACK_RECEIVED = state
 
 
-def calculate_transfer_rate_rx(tx_start_of_transmission:float, receivedbytes:int, rx_data_length:int) -> list:
+def calculate_transfer_rate_rx(tx_start_of_transmission:float, receivedbytes:int) -> list:
     try:      
+        rx_data_length = static.TOTAL_BYTES
         static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes / rx_data_length) * 100)
         
         transmissiontime = time.time() - rx_start_of_transmission
