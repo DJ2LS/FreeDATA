@@ -48,8 +48,8 @@ RPT_REQUEST_BUFFER              =   []          # requested frames, saved in a l
       
 RX_START_OF_TRANSMISSION        =   0           # time of transmission start
 
-DATA_FRAME_BOF                  =   b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
-DATA_FRAME_EOF                  =   b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
+DATA_FRAME_BOF                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
+DATA_FRAME_EOF                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
 
 def arq_data_received(data_in:bytes, bytes_per_frame:int):
