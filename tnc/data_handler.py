@@ -120,7 +120,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
             modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)
 
-            print(calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER)))    
+            calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER))   
 
     
     # check if we received last frame of burst and we have "Nones" in our rx buffer
@@ -142,7 +142,9 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
         txbuffer = [rpt_frame]
         structlog.get_logger("structlog").info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)
-    
+        calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER))
+        
+        
     # we should never reach this point
     else:
         structlog.get_logger("structlog").error("we shouldnt reach this point...")
@@ -168,7 +170,6 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
         if data_frame_crc == helpers.get_crc_16(data_frame):
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
             static.INFO.append("ARQ;RECEIVING;SUCCESS")
-            #calculate transfer rate here!
             
             # decompression
             data_frame_decompressed = zlib.decompress(data_frame)
@@ -210,6 +211,9 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
             txbuffer = [ack_frame]
             modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)
             
+            # update our statistics AFTER the frame ACK
+            calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER))
+                        
             structlog.get_logger("structlog").info("[TNC] | RX | DATACHANNEL [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
 
         else:
@@ -255,10 +259,6 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
 
     static.INFO.append("ARQ;TRANSMITTING")
     structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=DATA_CHANNEL_MODE, bytes=len(data_out))
-
-
-    # make sure we have only bytes
-    #data_out = bytes(data_out)
 
     # save len of data_out to TOTAL_BYTES for our statistics
     static.TOTAL_BYTES = len(data_out)
@@ -469,8 +469,16 @@ def arq_open_data_channel(mode:int, data_len:int):
     connection_frame[1:2]   = static.DXCALLSIGN_CRC8
     connection_frame[2:3]   = static.MYCALLSIGN_CRC8
     connection_frame[3:9]   = static.MYCALLSIGN
-    connection_frame[9:12]   = data_len.to_bytes(2, byteorder='big')
-    connection_frame[12:13] = bytes([DATA_CHANNEL_MODE])
+    connection_frame[9:12]  = data_len.to_bytes(2, byteorder='big')
+    connection_frame[12:13] = int(static.ARQ_COMPRESSION_FACTOR * 10).to_bytes(2, byteorder='big')
+    
+    
+    #connection_frame[2:8]   = static.MYCALLSIGN
+    #connection_frame[8:11]  = data_len.to_bytes(2, byteorder='big')
+    #connection_frame[11:12]  = int(static.ARQ_COMPRESSION_FACTOR * 10).to_bytes(2, byteorder='big')        
+    #connection_frame[12:13] = bytes([DATA_CHANNEL_MODE])
+    
+    
     
     while not DATA_CHANNEL_READY_FOR_DATA:
         time.sleep(0.01)
@@ -506,10 +514,13 @@ def arq_received_data_channel_opener(data_in:bytes):
     
     #global DATA_CHANNEL_MODE
     global DATA_CHANNEL_LAST_RECEIVED
+    global RX_START_OF_TRANSMISSION
+    
     
     static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
+    
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
     structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
@@ -518,8 +529,12 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.ARQ_STATE = 'DATA'
     static.TNC_STATE = 'BUSY'
 
-    mode = int.from_bytes(bytes(data_in[12:13]), "big")
-    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:12]), "big")
+    #mode = int.from_bytes(bytes(data_in[12:13]), "big")
+    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:11]), "big")
+    static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
+    
+    
+    
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     connection_frame = bytearray(14)
@@ -527,12 +542,17 @@ def arq_received_data_channel_opener(data_in:bytes):
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
     connection_frame[3:9] = static.MYCALLSIGN
-    connection_frame[12:13] = bytes([mode])
+    #connection_frame[12:13] = bytes([mode])
 
+    
+    
     txbuffer = [connection_frame]
     modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)
     
-    structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, mode=mode)
+    structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
+    
+    # set start of transmission for our statistics
+    RX_START_OF_TRANSMISSION = time.time()
     
 def arq_received_channel_is_open(data_in:bytes):
 
@@ -695,12 +715,13 @@ def arq_reset_ack(state:bool):
     DATA_FRAME_ACK_RECEIVED = state
 
 
-def calculate_transfer_rate_rx(tx_start_of_transmission:float, receivedbytes:int) -> list:
-    try:      
-        rx_data_length = static.TOTAL_BYTES
-        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes / rx_data_length) * 100)
-        
+def calculate_transfer_rate_rx(rx_start_of_transmission:float, receivedbytes:int) -> list:
+
+    try: 
+        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes / static.TOTAL_BYTES) * 100)
+
         transmissiontime = time.time() - rx_start_of_transmission
+        
         if receivedbytes > 0:
             static.ARQ_BITS_PER_SECOND = int((receivedbytes*8) / transmissiontime)
             static.ARQ_BYTES_PER_MINUTE = int((receivedbytes) / (transmissiontime/60))

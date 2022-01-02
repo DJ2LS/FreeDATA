@@ -291,12 +291,10 @@ class RF():
                 self.modoutqueue.put(c)
 
         # maybe we need to toggle PTT before craeting modulation because of queue processing
-        start = time.time()
         static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
-        print(time.time()-start)
       
         self.c_lib.freedv_close(freedv)        
         return True
@@ -429,7 +427,7 @@ class RF():
             elif frametype == 225:
                 logging.debug("ARQ arq_received_data_channel_opener")
                 data_handler.arq_received_data_channel_opener(bytes_out[:-2])
-
+    
             # ARQ CHANNEL IS OPENED
             elif frametype == 226:
                 logging.debug("ARQ arq_received_channel_is_open")
