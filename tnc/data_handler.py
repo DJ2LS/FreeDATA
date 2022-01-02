@@ -227,13 +227,6 @@ def arq_data_received(data_in, bytes_per_frame):
 
 
 def arq_transmit(data_out, mode, n_frames_per_burst):
-    data_out = bytes(data_out)
-    # compression
-    data_frame_compressed = zlib.compress(data_out)
-    static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(data_frame_compressed)
-    data_out = data_frame_compressed
-    
-    
     
     global RPT_REQUEST_BUFFER
     global DATA_FRAME_ACK_RECEIVED
@@ -260,12 +253,31 @@ def arq_transmit(data_out, mode, n_frames_per_burst):
 
     static.INFO.append("ARQ;TRANSMITTING")
     structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=DATA_CHANNEL_MODE, bytes=len(data_out))
-    tx_start_of_transmission = time.time()
-    # reset statistics
-    calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
+
+
+    # make sure we have only bytes
+    #data_out = bytes(data_out)
+
     # save len of data_out to TOTAL_BYTES for our statistics
     static.TOTAL_BYTES = len(data_out)
     
+    # compression
+    data_frame_compressed = zlib.compress(data_out)
+    static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(data_frame_compressed)
+    data_out = data_frame_compressed    
+
+
+
+
+
+
+
+
+
+    tx_start_of_transmission = time.time()
+    # reset statistics
+    calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
+
     # append a crc and beginn and end of file indicators
     frame_payload_crc = helpers.get_crc_16(data_out)
     data_out = DATA_FRAME_BOF + frame_payload_crc + data_out + DATA_FRAME_EOF
