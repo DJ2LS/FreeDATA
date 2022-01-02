@@ -530,7 +530,7 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.TNC_STATE = 'BUSY'
 
     #mode = int.from_bytes(bytes(data_in[12:13]), "big")
-    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:11]), "big")
+    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:12]), "big")
     static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
     print(static.ARQ_COMPRESSION_FACTOR)
     print(int.from_bytes(bytes(data_in[12:13]), "big"))
@@ -718,11 +718,8 @@ def arq_reset_ack(state:bool):
 
 def calculate_transfer_rate_rx(rx_start_of_transmission:float, receivedbytes:int) -> list:
     
-    receivedbytes = receivedbytes * static.ARQ_COMPRESSION_FACTOR
-    print(static.ARQ_COMPRESSION_FACTOR)
-    print(receivedbytes)
     try: 
-        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes / static.TOTAL_BYTES) * 100)
+        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / static.TOTAL_BYTES) * 100)
 
         transmissiontime = time.time() - rx_start_of_transmission
         
