@@ -244,6 +244,7 @@ class RF():
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
             time.sleep(0.001)
             txbuffer += bytes(mod_out_preamble)
+                
             
             # create modulaton for n frames in list
             for n in range(0,len(frames)):
@@ -262,6 +263,7 @@ class RF():
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
                 time.sleep(0.001)
                 txbuffer += bytes(mod_out)
+                print(len(txbuffer))
                 
             
             # append postamble to txbuffer          

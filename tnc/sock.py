@@ -324,8 +324,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print(exc_type, fname, exc_tb.tb_lineno)
                 print("############ END OF ERROR #######################")
 
-                print("reset of connection...")
-                structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
+                structlog.get_logger("structlog").warning("[TNC] reset of tcp/ip connection...")
                 #socketTimeout = 0
 
                 structlog.get_logger("structlog").error("[TNC] Network error", e = sys.exc_info()[0])

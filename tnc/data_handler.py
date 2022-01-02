@@ -280,7 +280,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     #initial bufferposition is 0
     bufferposition = 0    
     # iterate through data out buffer
-    while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and DATA_CHANNEL_READY_FOR_DATA:
+    while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and DATA_CHANNEL_READY_FOR_DATA and static.ARQ_STATE == 'DATA':
 
         print(DATA_CHANNEL_READY_FOR_DATA)
         print(DATA_FRAME_ACK_RECEIVED)
@@ -328,7 +328,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
             
             # lets wait for an ACK or RPT frame
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
-            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout and DATA_CHANNEL_READY_FOR_DATA:
+            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout and DATA_CHANNEL_READY_FOR_DATA and static.ARQ_STATE == 'DATA':
                 time.sleep(0.001)
                 
             # once we received a burst ack, reset its state and break the RETRIES loop
@@ -445,38 +445,38 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     
     static.TNC_STATE = 'BUSY'
     
+    # we need to compress data for gettin a compression factor.
+    # so we are compressing twice. This is not that nice and maybe theres another way
+    # for calculating transmission statistics
+    static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
+    
+    
     arq_open_data_channel(mode, len(data_out))   
-    #asyncio.run(arq_open_data_channel(mode))
     # wait until data channel is open
     while not DATA_CHANNEL_READY_FOR_DATA:
         time.sleep(0.01)
  
     arq_transmit(data_out, mode, n_frames_per_burst)
     
-
-#async def arq_open_data_channel(mode:int, data_len:int):
 def arq_open_data_channel(mode:int, data_len:int):
     global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_LAST_RECEIVED
     
     DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
     
-    DATA_CHANNEL_MODE = int(mode)    
+    #DATA_CHANNEL_MODE = int(mode)    
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+
+    # multiply compression factor for reducing it from float to int
+    compression_factor = int(static.ARQ_COMPRESSION_FACTOR * 10)
 
     connection_frame        = bytearray(14)
     connection_frame[:1]    = bytes([225])
     connection_frame[1:2]   = static.DXCALLSIGN_CRC8
     connection_frame[2:3]   = static.MYCALLSIGN_CRC8
     connection_frame[3:9]   = static.MYCALLSIGN
-    connection_frame[9:12]  = data_len.to_bytes(2, byteorder='big')
-    connection_frame[12:13] = int(static.ARQ_COMPRESSION_FACTOR * 10).to_bytes(2, byteorder='big')
-    
-    
-    #connection_frame[2:8]   = static.MYCALLSIGN
-    #connection_frame[8:11]  = data_len.to_bytes(2, byteorder='big')
-    #connection_frame[11:12]  = int(static.ARQ_COMPRESSION_FACTOR * 10).to_bytes(2, byteorder='big')        
-    #connection_frame[12:13] = bytes([DATA_CHANNEL_MODE])
+    connection_frame[9:12]  = data_len.to_bytes(3, byteorder='big')
+    connection_frame[12:13] = bytes([compression_factor])
     
     
     
@@ -532,9 +532,9 @@ def arq_received_data_channel_opener(data_in:bytes):
     #mode = int.from_bytes(bytes(data_in[12:13]), "big")
     static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:11]), "big")
     static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
-    
-    
-    
+    print(static.ARQ_COMPRESSION_FACTOR)
+    print(int.from_bytes(bytes(data_in[12:13]), "big"))
+    print(bytes(data_in[12:13]))
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     connection_frame = bytearray(14)
@@ -542,6 +542,7 @@ def arq_received_data_channel_opener(data_in:bytes):
     connection_frame[1:2] = static.DXCALLSIGN_CRC8
     connection_frame[2:3] = static.MYCALLSIGN_CRC8
     connection_frame[3:9] = static.MYCALLSIGN
+    
     #connection_frame[12:13] = bytes([mode])
 
     
@@ -716,7 +717,10 @@ def arq_reset_ack(state:bool):
 
 
 def calculate_transfer_rate_rx(rx_start_of_transmission:float, receivedbytes:int) -> list:
-
+    
+    receivedbytes = receivedbytes * static.ARQ_COMPRESSION_FACTOR
+    print(static.ARQ_COMPRESSION_FACTOR)
+    print(receivedbytes)
     try: 
         static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes / static.TOTAL_BYTES) * 100)
 
