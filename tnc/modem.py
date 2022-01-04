@@ -376,7 +376,7 @@ class RF():
             if 50 >= frametype >= 10:
 
                 # get snr of received data
-                snr = calculate_snr(self, freedv)
+                snr = self.calculate_snr(freedv)
 
                 # send payload data to arq checker without CRC16
                 data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr)
