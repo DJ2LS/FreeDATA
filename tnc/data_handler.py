@@ -36,6 +36,9 @@ and moving them to module wide globals
 
 '''
 
+TESTMODE = False
+
+
 # MODULE GLOBALS
 
 DATA_CHANNEL_LAST_RECEIVED      =   0.0         # time of last "live sign" of a frame      
@@ -60,6 +63,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
     global DATA_CHANNEL_LAST_RECEIVED
     global DATA_FRAME_BOF
     global DATA_FRAME_EOF
+    global TESTMODE
     # only process data if we are in ARQ and BUSY state else return to quit
     if not static.ARQ_STATE and static.TNC_STATE != 'BUSY':
         return
@@ -215,7 +219,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
             
             # update our statistics AFTER the frame ACK
             calculate_transfer_rate_rx(RX_START_OF_TRANSMISSION, len(static.RX_FRAME_BUFFER))
-                        
+                       
             structlog.get_logger("structlog").info("[TNC] | RX | DATACHANNEL [" + str(static.MYCALLSIGN, 'utf-8') + "]<< >>[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
 
         else:
@@ -232,14 +236,15 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
             txbuffer = [nack_frame]
             modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)    
             
-                
         # And finally we do a cleanup of our buffers and states
-        arq_cleanup()        
+        # do cleanup only when not in testmode
+        if not TESTMODE:
+            arq_cleanup()        
         
 
 
 def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
-    
+
     global RPT_REQUEST_BUFFER
     global DATA_FRAME_ACK_RECEIVED
     global RPT_REQUEST_RECEIVED
@@ -248,7 +253,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     #global TX_START_OF_TRANSMISSION
     global DATA_FRAME_BOF
     global DATA_FRAME_EOF
-
+    global TESTMODE
 
     TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
     TX_N_RETRIES_PER_BURST          = 0                     # retries we already sent data
@@ -387,34 +392,24 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     if DATA_FRAME_ACK_RECEIVED:
     
         static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
+
         structlog.get_logger("structlog").info("ARQ | TX | DATA TRANSMITTED!", BytesPerMinute=static.ARQ_BYTES_PER_MINUTE, BitsPerSecond=static.ARQ_BITS_PER_SECOND)
+
+
+            
     else:
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
         structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!")
 
-    # and last but not least doing a state cleanup
-    arq_cleanup()
-   
+    # and last but not least doing a state cleanup    
+    # do cleanup only when not in testmode
+    if not TESTMODE:
+        arq_cleanup()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # quit after transmission
+    if TESTMODE:
+        import os
+        os._exit(0)
 
 
 def burst_ack_received(data_in:bytes):
@@ -815,6 +810,8 @@ def arq_cleanup():
     global RX_FRAME_BOF_RECEIVED
     global RX_FRAME_EOF_RECEIVED            
     global BURST_ACK_SNR
+    
+    structlog.get_logger("structlog").debug("cleanup")
     
     RX_FRAME_BOF_RECEIVED = False
     RX_FRAME_EOF_RECEIVED = False
