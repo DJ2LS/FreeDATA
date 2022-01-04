@@ -113,7 +113,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
             ack_frame[:1] = bytes([60])
             ack_frame[1:2] = static.DXCALLSIGN_CRC8
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
-            ack_frame[3:4] = snr
+            ack_frame[3:4] = bytes([snr])
             # and transmit it
             txbuffer = [ack_frame]
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
