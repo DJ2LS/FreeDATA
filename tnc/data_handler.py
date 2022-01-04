@@ -16,6 +16,7 @@ import ujson as json
 import static
 import modem
 import helpers
+import codec2
 modem = modem.RF()
 
 
@@ -55,7 +56,7 @@ DATA_FRAME_BOF                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End
 DATA_FRAME_EOF                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
 
-def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
+def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int, freedv):
     data_in = bytes(data_in)    
     
     # we neeed to declare our global variables, so the thread has access to them
@@ -82,7 +83,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
     # get some important data from the frame
     RX_N_FRAME_OF_BURST         = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
     RX_N_FRAMES_PER_BURST       = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
-    
+
     print(f"RX_N_FRAME_OF_BURST-{RX_N_FRAME_OF_BURST}")
     print(f"RX_N_FRAMES_PER_BURST-{RX_N_FRAMES_PER_BURST}")
 
@@ -136,6 +137,14 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
         # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
         missing_frames = [(frame+1) for frame, element in enumerate(static.RX_BURST_BUFFER) if element == None]
         
+        structlog.get_logger("structlog").debug("all frames per burst received", frame=RX_N_FRAME_OF_BURST, frames=RX_N_FRAMES_PER_BURST)
+            
+        # set n frames per burst to modem
+        # this is an idea so its not getting lost....
+        # we need to work on this 
+        codec2.api.freedv_set_frames_per_burst(freedv,len(missing_frames))
+        
+        
         # then create a repeat frame 
         rpt_frame       = bytearray(14)
         rpt_frame[:1]   = bytes([62])
@@ -152,7 +161,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
         
     # we should never reach this point
     else:
-        structlog.get_logger("structlog").error("we shouldnt reach this point...")
+        structlog.get_logger("structlog").error("we shouldnt reach this point...", frame=RX_N_FRAME_OF_BURST, frames=RX_N_FRAMES_PER_BURST)
     
     # We have a BOF and EOF flag in our data. If we received both we received our frame.
     # In case of loosing data but we received already a BOF and EOF we need to make sure, we 
@@ -350,7 +359,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
                 # bufferposition = bufferposition_end
              
                 tempbuffer.append(frame)
-            
+
             structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
             modem.transmit(mode=data_mode, repeats=1, repeat_delay=0, frames=tempbuffer)
             
@@ -477,14 +486,14 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
     
     
-    arq_open_data_channel(mode, len(data_out))   
+    arq_open_data_channel(mode, len(data_out), n_frames_per_burst)   
     # wait until data channel is open
     while not static.ARQ_STATE:
         time.sleep(0.01)
  
     arq_transmit(data_out, mode, n_frames_per_burst)
     
-def arq_open_data_channel(mode:int, data_len:int):
+def arq_open_data_channel(mode:int, data_len:int, n_frames_per_burst:int):
     global DATA_CHANNEL_LAST_RECEIVED
     
     DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
@@ -501,8 +510,8 @@ def arq_open_data_channel(mode:int, data_len:int):
     connection_frame[3:9]   = static.MYCALLSIGN
     connection_frame[9:12]  = data_len.to_bytes(3, byteorder='big')
     connection_frame[12:13] = bytes([compression_factor])
-    
-    
+    connection_frame[13:14] = bytes([n_frames_per_burst])    
+    print(connection_frame)
     
     while not static.ARQ_STATE:
         time.sleep(0.01)
@@ -542,6 +551,11 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
+    n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
+    
+    modem.set_frames_per_burst(n_frames_per_burst)
+
+        
     
     helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         

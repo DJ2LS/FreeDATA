@@ -381,7 +381,7 @@ class RF():
                 snr = self.calculate_snr(freedv)
                 structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
-                data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr)
+                data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv)
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
                 if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
@@ -571,3 +571,7 @@ class RF():
 
         # get number of bytes per frame for mode
         return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
+        
+    def set_frames_per_burst(self, n_frames_per_burst):
+        codec2.api.freedv_set_frames_per_burst(self.datac1_freedv,n_frames_per_burst)
+        codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,n_frames_per_burst)        
