@@ -288,7 +288,9 @@ class RF():
                 # if data is shorter than the expcected audio frames per buffer we need to append 0
                 # to prevent the callback from stucking/crashing
                 if len(c) < self.AUDIO_FRAMES_PER_BUFFER_RX*2:
-                    c += bytes(self.AUDIO_FRAMES_PER_BUFFER_RX*2 - len(c))
+                    delta = bytes(self.AUDIO_FRAMES_PER_BUFFER_RX*2 - len(c))
+                    c += delta
+                    structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=len(delta))
                 self.modoutqueue.put(c)
 
         # maybe we need to toggle PTT before craeting modulation because of queue processing
@@ -302,10 +304,10 @@ class RF():
 
     def audio(self):
         try:                        
-            print(f"starting pyaudio callback", file=sys.stderr)
+            structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
             self.audio_stream.start_stream()
         except Exception as e:
-            print(f"pyAudio error: {e}", file=sys.stderr) 
+            structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)            
            
 
         while self.audio_stream.is_active():
@@ -377,45 +379,45 @@ class RF():
 
                 # get snr of received data
                 snr = self.calculate_snr(freedv)
-                print(f"SNR - {snr}")
+                structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
                 data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr)
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
                 if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
-                    logging.debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
+                    structlog.get_logger("structlog").debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                     self.c_lib.freedv_set_sync(freedv, 0)
 
 
             # BURST ACK
             elif frametype == 60:
-                logging.debug("ACK RECEIVED....")
+                structlog.get_logger("structlog").debug("ACK RECEIVED....")
                 
                 data_handler.burst_ack_received(bytes_out[:-2])
 
             # FRAME ACK
             elif frametype == 61:
-                logging.debug("FRAME ACK RECEIVED....")
+                structlog.get_logger("structlog").debug("FRAME ACK RECEIVED....")
                 data_handler.frame_ack_received()
 
             # FRAME RPT
             elif frametype == 62:
-                logging.debug("REPEAT REQUEST RECEIVED....")
+                structlog.get_logger("structlog").debug("REPEAT REQUEST RECEIVED....")
                 data_handler.burst_rpt_received(bytes_out[:-2])
 
             # FRAME NACK
             elif frametype == 63:
-                logging.debug("FRAME NOT ACK RECEIVED....")
+                structlog.get_logger("structlog").debug("FRAME NOT ACK RECEIVED....")
                 data_handler.frame_nack_received(bytes_out[:-2])
 
             # CQ FRAME
             elif frametype == 200:
-                logging.debug("CQ RECEIVED....")
+                structlog.get_logger("structlog").debug("CQ RECEIVED....")
                 data_handler.received_cq(bytes_out[:-2])
 
             # PING FRAME
             elif frametype == 210:
-                logging.debug("PING RECEIVED....")
+                structlog.get_logger("structlog").debug("PING RECEIVED....")
                 frequency_offset = self.get_frequency_offset(freedv)
                 #print("Freq-Offset: " + str(frequency_offset))
                 data_handler.received_ping(bytes_out[:-2], frequency_offset)
@@ -423,7 +425,7 @@ class RF():
 
             # PING ACK
             elif frametype == 211:
-                logging.debug("PING ACK RECEIVED....")
+                structlog.get_logger("structlog").debug("PING ACK RECEIVED....")
                 # early detection of frequency offset
                 #frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
                 #print("Freq-Offset: " + str(frequency_offset))
@@ -438,18 +440,18 @@ class RF():
 
             # ARQ FILE TRANSFER RECEIVED!
             elif frametype == 225:
-                logging.debug("ARQ arq_received_data_channel_opener")
+                structlog.get_logger("structlog").debug("ARQ arq_received_data_channel_opener")
                 data_handler.arq_received_data_channel_opener(bytes_out[:-2])
     
             # ARQ CHANNEL IS OPENED
             elif frametype == 226:
-                logging.debug("ARQ arq_received_channel_is_open")
+                structlog.get_logger("structlog").debug("ARQ arq_received_channel_is_open")
                 data_handler.arq_received_channel_is_open(bytes_out[:-2])
 
             # ARQ CONNECT ACK / KEEP ALIVE
             # this is outdated and we may remove it
             elif frametype == 230:
-                logging.debug("BEACON RECEIVED")
+                structlog.get_logger("structlog").debug("BEACON RECEIVED")
                 data_handler.received_beacon(bytes_out[:-2])
 
             # TESTFRAMES

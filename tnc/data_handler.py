@@ -193,13 +193,13 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
             crc = checksum            
             '''
             if rawdata["dt"] == "f":
-                #logging.debug("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
+                #structlog.get_logger("structlog").debug("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
                 static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
                 
             # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
             if rawdata["dt"] == "m":
                 static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
-                #logging.debug("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
+                #structlog.get_logger("structlog").debug("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
             
             
             # BUILDING ACK FRAME FOR DATA FRAME
@@ -283,8 +283,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     bufferposition = 0    
     # iterate through data out buffer
     while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE:
-        print(DATA_FRAME_ACK_RECEIVED)
 
+        structlog.get_logger("structlog").debug("DATA_FRAME_ACK_RECEIVED", state=DATA_FRAME_ACK_RECEIVED)
 
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
@@ -294,7 +294,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
             # force usage of selected mode
             if mode != 255:
                 data_mode = mode
-                print(f"selecting fixed mode {data_mode}")
+                structlog.get_logger("structlog").debug("FIXED MODE", mode=data_mode)
+
             else:
                 # at beginnign of transmission try fastest mode
                 if bufferposition == 0:
@@ -302,12 +303,12 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
                 # if we have a reduced SNR OR its the second attempt of sending data, select slower mode
                 if BURST_ACK_SNR < 10 or TX_N_RETRIES_PER_BURST >= 2:
                     data_mode = 12
-                    print(f"selecting auto mode {data_mode}") 
+                    structlog.get_logger("structlog").debug("AUTO MODE", mode=data_mode)
                     
                 # if we have (again) a high SNR and our attmepts are 0, then switch back to a faster mode
                 if BURST_ACK_SNR < 20 and TX_N_RETRIES_PER_BURST == 0:
                     data_mode = 10
-                    print(f"selecting auto mode {data_mode}")
+                    structlog.get_logger("structlog").debug("FIXED MODE", mode=data_mode)
                     
 
             # payload information
@@ -374,7 +375,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
                 
                 
             # NEXT ATTEMPT
-            print(f"ATTEMPT {TX_N_RETRIES_PER_BURST}/{TX_N_MAX_RETRIES_PER_BURST}")
+            structlog.get_logger("structlog").debug("ATTEMPT", retry=TX_N_RETRIES_PER_BURST, maxretries=TX_N_MAX_RETRIES_PER_BURST)
         
         # update buffer position
         bufferposition = bufferposition_end
@@ -428,7 +429,7 @@ def burst_ack_received(data_in:bytes):
         BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
         BURST_ACK_SNR = int.from_bytes(bytes(data_in[3:4]), "big")
-        print(BURST_ACK_SNR)
+
 
 def frame_ack_received():
     global DATA_FRAME_ACK_RECEIVED
