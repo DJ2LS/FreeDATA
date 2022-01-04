@@ -289,16 +289,22 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
                         
-            # TEST WITH MODE GEAR SHIFTING
-
+            # AUTO MODE SELECTION
+            # mode 255 == AUTO MODE
+            # force usage of selected mode
             if mode != 255:
                 data_mode = mode
                 print(f"selecting fixed mode {data_mode}")
             else:
+                # at beginnign of transmission try fastest mode
+                if bufferposition == 0:
+                    data_mode = 10
+                # if we have a reduced SNR OR its the second attempt of sending data, select slower mode
                 if BURST_ACK_SNR < 10 or TX_N_RETRIES_PER_BURST >= 2:
                     data_mode = 12
                     print(f"selecting auto mode {data_mode}") 
-
+                    
+                # if we have (again) a high SNR and our attmepts are 0, then switch back to a faster mode
                 if BURST_ACK_SNR < 20 and TX_N_RETRIES_PER_BURST == 0:
                     data_mode = 10
                     print(f"selecting auto mode {data_mode}")
