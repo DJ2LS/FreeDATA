@@ -242,7 +242,7 @@ class RF():
         for i in range(1,repeats+1):
             # write preamble to txbuffer
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-            time.sleep(0.01)
+            time.sleep(0.05)
             txbuffer += bytes(mod_out_preamble)
                 
             
@@ -261,20 +261,19 @@ class RF():
                 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
-                time.sleep(0.01)
+                time.sleep(0.05)
                 txbuffer += bytes(mod_out)
-                print(len(txbuffer))
                 
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
             txbuffer += bytes(mod_out_postamble)
-            time.sleep(0.01)
+            time.sleep(0.05)
             # add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE*(repeat_delay/1000))
             mod_out_silence = create_string_buffer(samples_delay*2)
             txbuffer += bytes(mod_out_silence)
-            time.sleep(0.001)
+            #time.sleep(0.05)
             
             # resample up to 48k (resampler works on np.int16)
             x = np.frombuffer(txbuffer, dtype=np.int16)
@@ -376,9 +375,9 @@ class RF():
                 # send payload data to arq checker without CRC16
                 data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame)
 
-                #print("static.ARQ_RX_BURST_BUFFER.count(None) " + str(static.ARQ_RX_BURST_BUFFER.count(None)))
-                if static.RX_BURST_BUFFER.count(None) <= 1:
-                    logging.debug("FULL BURST BUFFER ---> UNSYNC")
+                # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
+                if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
+                    logging.debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                     self.c_lib.freedv_set_sync(freedv, 0)
 
 

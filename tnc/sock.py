@@ -122,7 +122,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="PING")
                     PING_THREAD.start()
 
-                # and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":
                     static.TNC_STATE = 'BUSY'
 
@@ -192,7 +192,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     print(" >>> STOPPING TRANSMISSION <<<")
                     structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
                     static.TNC_STATE = 'IDLE'
-                    static.ARQ_STATE = 'IDLE'
+                    static.ARQ_STATE = False
 
                     
                 # SETTINGS AND STATUS ---------------------------------------------

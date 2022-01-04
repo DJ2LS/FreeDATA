@@ -648,11 +648,11 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
 
     // ARQ STATE
-    if (arg.arq_state == 'DATA') {
+    if (arg.arq_state == 'True') {
         document.getElementById("arq_state").className = "btn btn-warning";
         document.getElementById("startTransmission").disabled = true
         document.getElementById("stopTransmission").disabled = false
-    } else if (arg.arq_state == 'IDLE') {
+    } else if (arg.arq_state == 'False') {
         document.getElementById("arq_state").className = "btn btn-secondary";
         document.getElementById("startTransmission").disabled = false
         document.getElementById("stopTransmission").disabled = true

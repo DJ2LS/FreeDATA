@@ -37,7 +37,6 @@ and moving them to module wide globals
 
 # MODULE GLOBALS
 
-DATA_CHANNEL_READY_FOR_DATA     =   False       # Indicator if we are ready for sending or receiving data
 DATA_CHANNEL_LAST_RECEIVED      =   0.0         # time of last "live sign" of a frame      
 DATA_CHANNEL_MODE               =   0           # mode for data channel
 
@@ -58,11 +57,10 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
     # we neeed to declare our global variables, so the thread has access to them
     global RX_START_OF_TRANSMISSION
     global DATA_CHANNEL_LAST_RECEIVED
-    global DATA_CHANNEL_READY_FOR_DATA
     global DATA_FRAME_BOF
     global DATA_FRAME_EOF
     # only process data if we are in ARQ and BUSY state else return to quit
-    if static.ARQ_STATE != 'DATA' and static.TNC_STATE != 'BUSY':
+    if not static.ARQ_STATE and static.TNC_STATE != 'BUSY':
         return
     
     # these vars will be overwritten during processing data
@@ -72,7 +70,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
     RX_PAYLOAD_PER_MODEM_FRAME = bytes_per_frame - 2    # payload per moden frame
 
     static.TNC_STATE = 'BUSY'
-    static.ARQ_STATE = 'DATA'
+    static.ARQ_STATE = True
     static.INFO.append("ARQ;RECEIVING")
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
         
@@ -166,8 +164,9 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
         data_frame_crc = payload[:2]
         data_frame = payload[2:]
 
+        data_frame_crc_received = helpers.get_crc_16(data_frame)
         # check if data_frame_crc is equal with received crc
-        if data_frame_crc == helpers.get_crc_16(data_frame):
+        if data_frame_crc == data_frame_crc_received:
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
             static.INFO.append("ARQ;RECEIVING;SUCCESS")
             
@@ -218,17 +217,11 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
 
         else:
             static.INFO.append("ARQ;RECEIVING;FAILED")
-            structlog.get_logger("structlog").warning("[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!", e="wrong crc")
+            structlog.get_logger("structlog").warning("[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!", e="wrong crc", expected=data_frame_crc, received=data_frame_crc_received)
      
         
         # And finally we do a cleanup of our buffers and states
-        DATA_CHANNEL_READY_FOR_DATA = False
-        RX_FRAME_BOF_RECEIVED = False
-        RX_FRAME_EOF_RECEIVED = False
-        static.RX_BURST_BUFFER = []
-        static.RX_FRAME_BUFFER = b''
-        static.TNC_STATE = 'IDLE'
-        static.ARQ_STATE = 'IDLE'        
+        arq_cleanup()        
         
 
 
@@ -239,11 +232,10 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     global RPT_REQUEST_RECEIVED
     global BURST_ACK_RECEIVED
     #global TX_START_OF_TRANSMISSION
-    global DATA_CHANNEL_READY_FOR_DATA
     global DATA_FRAME_BOF
     global DATA_FRAME_EOF
-    
-        
+
+
     DATA_CHANNEL_MODE = mode
 
     TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
@@ -280,11 +272,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     #initial bufferposition is 0
     bufferposition = 0    
     # iterate through data out buffer
-    while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and DATA_CHANNEL_READY_FOR_DATA and static.ARQ_STATE == 'DATA':
-
-        print(DATA_CHANNEL_READY_FOR_DATA)
+    while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE:
         print(DATA_FRAME_ACK_RECEIVED)
-
 
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
@@ -328,7 +317,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
             
             # lets wait for an ACK or RPT frame
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
-            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout and DATA_CHANNEL_READY_FOR_DATA and static.ARQ_STATE == 'DATA':
+            while not BURST_ACK_RECEIVED and not RPT_REQUEST_RECEIVED and not DATA_FRAME_ACK_RECEIVED and time.time() < burstacktimeout and static.ARQ_STATE:
                 time.sleep(0.001)
                 
             # once we received a burst ack, reset its state and break the RETRIES loop
@@ -345,7 +334,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
             
             
             # we need this part for leaving the repeat loop
-            if not DATA_CHANNEL_READY_FOR_DATA:
+            # static.ARQ_STATE == 'DATA' --> when stopping transmission manually
+            if not static.ARQ_STATE:
                 #print("not ready for data...leaving loop....")
                 break
                 
@@ -361,17 +351,15 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
         
 
     if DATA_FRAME_ACK_RECEIVED:
+    
+        static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
         structlog.get_logger("structlog").info("ARQ | TX | DATA TRANSMITTED!", BytesPerMinute=static.ARQ_BYTES_PER_MINUTE, BitsPerSecond=static.ARQ_BITS_PER_SECOND)
     else:
+        static.INFO.append("ARQ;TRANSMITTING;FAILED")
         structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!")
 
     # and last but not least doing a state cleanup
-    static.TNC_STATE = 'IDLE'
-    static.ARQ_STATE = 'IDLE'
-    DATA_CHANNEL_READY_FOR_DATA = False
-    BURST_ACK_RECEIVED = False
-    RPT_REQUEST_RECEIVED = False
-    DATA_FRAME_ACK_RECEIVED = False
+    arq_cleanup()
    
 
 
@@ -400,7 +388,7 @@ def burst_ack_received():
     global DATA_CHANNEL_LAST_RECEIVED
     
     # only process data if we are in ARQ and BUSY state
-    if static.ARQ_STATE == 'DATA':
+    if static.ARQ_STATE:
         BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
 
@@ -410,7 +398,7 @@ def frame_ack_received():
     global DATA_CHANNEL_LAST_RECEIVED
 
     # only process data if we are in ARQ and BUSY state
-    if static.ARQ_STATE == 'DATA':       
+    if static.ARQ_STATE:       
         DATA_FRAME_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
 
@@ -422,7 +410,7 @@ def burst_rpt_received(data_in:bytes):
  
  
     # only process data if we are in ARQ and BUSY state
-    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY':
+    if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
            
         RPT_REQUEST_RECEIVED = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
@@ -441,7 +429,6 @@ def burst_rpt_received(data_in:bytes):
 
 
 def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
-    global DATA_CHANNEL_READY_FOR_DATA
     
     static.TNC_STATE = 'BUSY'
     
@@ -453,13 +440,12 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     
     arq_open_data_channel(mode, len(data_out))   
     # wait until data channel is open
-    while not DATA_CHANNEL_READY_FOR_DATA:
+    while not static.ARQ_STATE:
         time.sleep(0.01)
  
     arq_transmit(data_out, mode, n_frames_per_burst)
     
 def arq_open_data_channel(mode:int, data_len:int):
-    global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_LAST_RECEIVED
     
     DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
@@ -480,7 +466,7 @@ def arq_open_data_channel(mode:int, data_len:int):
     
     
     
-    while not DATA_CHANNEL_READY_FOR_DATA:
+    while not static.ARQ_STATE:
         time.sleep(0.01)
         for attempt in range(1,DATA_CHANNEL_MAX_RETRIES+1):
             static.INFO.append("DATACHANNEL;OPENING")
@@ -496,17 +482,16 @@ def arq_open_data_channel(mode:int, data_len:int):
             while time.time() < timeout:    
                 time.sleep(0.01)
                 # break if data channel is openend    
-                if DATA_CHANNEL_READY_FOR_DATA:
+                if static.ARQ_STATE:
                     break
-            if DATA_CHANNEL_READY_FOR_DATA:
+            if static.ARQ_STATE:
                 break
 
-            if not DATA_CHANNEL_READY_FOR_DATA and attempt == DATA_CHANNEL_MAX_RETRIES:
+            if not static.ARQ_STATE and attempt == DATA_CHANNEL_MAX_RETRIES:
                 static.INFO.append("DATACHANNEL;FAILED")
                 
                 structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
-                static.TNC_STATE = 'IDLE'
-                static.ARQ_STATE = 'IDLE'
+                arq_cleanup()
                 sys.exit() # close thread and so connection attempts
 
 
@@ -526,7 +511,7 @@ def arq_received_data_channel_opener(data_in:bytes):
     structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
     
     
-    static.ARQ_STATE = 'DATA'
+    static.ARQ_STATE = True
     static.TNC_STATE = 'BUSY'
 
     #mode = int.from_bytes(bytes(data_in[12:13]), "big")
@@ -558,7 +543,6 @@ def arq_received_data_channel_opener(data_in:bytes):
 def arq_received_channel_is_open(data_in:bytes):
 
     global DATA_CHANNEL_LAST_RECEIVED
-    global DATA_CHANNEL_READY_FOR_DATA
     global DATA_CHANNEL_MODE
     
     static.INFO.append("DATACHANNEL;OPEN")
@@ -574,14 +558,12 @@ def arq_received_channel_is_open(data_in:bytes):
         structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
 
         # as soon as we set ARQ_STATE to DATA, transmission starts   
-        static.ARQ_STATE = 'DATA'
-        DATA_CHANNEL_READY_FOR_DATA = True
+        static.ARQ_STATE = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time())
     else:
         structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, info="wrong mode rcvd")
         # as soon as we set ARQ_STATE to DATA, transmission starts
-        static.ARQ_STATE = 'DATA'
-        DATA_CHANNEL_READY_FOR_DATA = True
+        static.ARQ_STATE = True
         DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
 # ############################################################################################################
@@ -703,17 +685,7 @@ def received_cq(data_in:bytes):
 
 
 
-def arq_reset_ack(state:bool):
-    """
-    Author: DJ2LS
-    """
-    global BURST_ACK_RECEIVED
-    global RPT_REQUEST_RECEIVED
-    global DATA_FRAME_ACK_RECEIVED
-    
-    BURST_ACK_RECEIVED = state
-    RPT_REQUEST_RECEIVED = state
-    DATA_FRAME_ACK_RECEIVED = state
+
 
 
 def calculate_transfer_rate_rx(rx_start_of_transmission:float, receivedbytes:int) -> list:
@@ -789,13 +761,9 @@ def data_channel_keep_alive_watchdog():
 
     """
     global DATA_CHANNEL_LAST_RECEIVED
-    global DATA_CHANNEL_READY_FOR_DATA
-    global BURST_ACK_RECEIVED
-    global RPT_REQUEST_RECEIVED
-    global DATA_FRAME_ACK_RECEIVED
-    
+            
     # and not static.ARQ_SEND_KEEP_ALIVE:
-    if static.ARQ_STATE == 'DATA' and static.TNC_STATE == 'BUSY':
+    if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
         time.sleep(0.01)
         if DATA_CHANNEL_LAST_RECEIVED + 30 > time.time():
             time.sleep(0.01)
@@ -803,18 +771,39 @@ def data_channel_keep_alive_watchdog():
         else:
             DATA_CHANNEL_LAST_RECEIVED = 0
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
-            #arq_reset_frame_machine()  
+            arq_cleanup()
+            
+            
+def arq_cleanup():
+    global DATA_CHANNEL_LAST_RECEIVED
+    global BURST_ACK_RECEIVED
+    global RPT_REQUEST_RECEIVED
+    global DATA_FRAME_ACK_RECEIVED
+    global RX_FRAME_BOF_RECEIVED
+    global RX_FRAME_EOF_RECEIVED            
 
-            static.TNC_STATE = 'IDLE'
-            static.ARQ_STATE = 'IDLE'
-            DATA_CHANNEL_READY_FOR_DATA = False
-            BURST_ACK_RECEIVED = False
-            RPT_REQUEST_RECEIVED = False
-            DATA_FRAME_ACK_RECEIVED = False
-            
-            
-            
+    RX_FRAME_BOF_RECEIVED = False
+    RX_FRAME_EOF_RECEIVED = False
+    static.TNC_STATE = 'IDLE'
+    static.ARQ_STATE = False
+    BURST_ACK_RECEIVED = False
+    RPT_REQUEST_RECEIVED = False
+    DATA_FRAME_ACK_RECEIVED = False
+    static.RX_BURST_BUFFER = []
+    static.RX_FRAME_BUFFER = b'' 
 
+
+def arq_reset_ack(state:bool):
+    """
+    Author: DJ2LS
+    """
+    global BURST_ACK_RECEIVED
+    global RPT_REQUEST_RECEIVED
+    global DATA_FRAME_ACK_RECEIVED
+    
+    BURST_ACK_RECEIVED = state
+    RPT_REQUEST_RECEIVED = state
+    DATA_FRAME_ACK_RECEIVED = state
 
 # START THE THREAD FOR THE TIMEOUT WATCHDOG
 WATCHDOG_SERVER_THREAD = threading.Thread(target=watchdog, name="watchdog")
