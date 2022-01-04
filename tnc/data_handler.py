@@ -108,12 +108,14 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
         if not RX_FRAME_BOF_RECEIVED and not RX_FRAME_EOF_RECEIVED and data_in.find(DATA_FRAME_EOF) < 0:  
             print(RX_FRAME_BOF_RECEIVED)
             print(RX_FRAME_EOF_RECEIVED)
+            
+
             # create an ack frame
             ack_frame = bytearray(14)
             ack_frame[:1] = bytes([60])
             ack_frame[1:2] = static.DXCALLSIGN_CRC8
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
-            ack_frame[3:4] = bytes([snr])
+            ack_frame[3:4] = bytes([int(snr)])
             # and transmit it
             txbuffer = [ack_frame]
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
@@ -286,23 +288,22 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
 
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
-            
-            
+                        
             # TEST WITH MODE GEAR SHIFTING
-            print(mode)
-            print(BURST_ACK_SNR)
+
             if mode != 255:
                 data_mode = mode
+                print(f"selecting fixed mode {data_mode}")
             else:
-                if BURST_ACK_SNR == 0:
+                if BURST_ACK_SNR < 10 or TX_N_RETRIES_PER_BURST >= 2:
                     data_mode = 12
-                    BURST_ACK_SNR = 15
-                elif BURST_ACK_SNR > 10:
-                    data_mode = 10
+                    print(f"selecting auto mode {data_mode}") 
 
+                if BURST_ACK_SNR < 20 and TX_N_RETRIES_PER_BURST == 0:
+                    data_mode = 10
+                    print(f"selecting auto mode {data_mode}")
                     
-            print(mode)
-            print(data_mode)
+
             # payload information
             payload_per_frame = modem.get_bytes_per_frame(data_mode) -2 
             # tempbuffer list for storing our data frames
@@ -409,16 +410,18 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
 
 
 
-def burst_ack_received(snr):
+def burst_ack_received(data_in:bytes):
     global BURST_ACK_RECEIVED
     global BURST_ACK_SNR
     global DATA_CHANNEL_LAST_RECEIVED
+    
+    
     
     # only process data if we are in ARQ and BUSY state
     if static.ARQ_STATE:
         BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
-        BURST_ACK_SNR = snr
+        BURST_ACK_SNR = int.from_bytes(bytes(data_in[3:4]), "big")
         print(BURST_ACK_SNR)
 
 def frame_ack_received():

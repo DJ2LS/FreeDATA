@@ -377,7 +377,7 @@ class RF():
 
                 # get snr of received data
                 snr = self.calculate_snr(freedv)
-
+                print(f"SNR - {snr}")
                 # send payload data to arq checker without CRC16
                 data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr)
 
@@ -390,8 +390,8 @@ class RF():
             # BURST ACK
             elif frametype == 60:
                 logging.debug("ACK RECEIVED....")
-                snr = int.from_bytes(bytes(bytes_out[3:4]), "big")
-                data_handler.burst_ack_received(snr)
+                
+                data_handler.burst_ack_received(bytes_out[:-2])
 
             # FRAME ACK
             elif frametype == 61:
@@ -516,11 +516,13 @@ class RF():
         self.c_lib.freedv_get_modem_stats(freedv, byref(
             modem_stats_sync), byref(modem_stats_snr))
         modem_stats_snr = modem_stats_snr.value
+
         try:
             static.SNR = round(modem_stats_snr, 1)
+            return static.SNR
         except:
             static.SNR = 0
-
+            return static.SNR
 
     def update_rig_data(self):
         while True:
