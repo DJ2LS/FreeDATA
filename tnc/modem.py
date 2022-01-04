@@ -348,6 +348,9 @@ class RF():
         while True:
             time.sleep(0.01)
             data = self.dataqueue.get()
+            # data[0] = bytes_out
+            # data[1] = freedv session
+            # data[2] = bytes_per_frame
             self.process_data(data[0], data[1], data[2])
             self.dataqueue.task_done()
    
@@ -372,8 +375,11 @@ class RF():
             
             if 50 >= frametype >= 10:
 
+                # get snr of received data
+                snr = calculate_snr(self, freedv)
+
                 # send payload data to arq checker without CRC16
-                data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame)
+                data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr)
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
                 if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
@@ -384,7 +390,8 @@ class RF():
             # BURST ACK
             elif frametype == 60:
                 logging.debug("ACK RECEIVED....")
-                data_handler.burst_ack_received()
+                snr = int.from_bytes(bytes(bytes_out[3:4]), "big")
+                data_handler.burst_ack_received(snr)
 
             # FRAME ACK
             elif frametype == 61:

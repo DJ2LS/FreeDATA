@@ -18,6 +18,7 @@ import modem
 import helpers
 modem = modem.RF()
 
+
 '''
 Author: DJ2LS
 Description:
@@ -38,8 +39,8 @@ and moving them to module wide globals
 # MODULE GLOBALS
 
 DATA_CHANNEL_LAST_RECEIVED      =   0.0         # time of last "live sign" of a frame      
-DATA_CHANNEL_MODE               =   0           # mode for data channel
 
+BURST_ACK_SNR                   =   0           # SNR from received ack frames
 BURST_ACK_RECEIVED              =   False       # if we received an acknowledge frame for a burst
 DATA_FRAME_ACK_RECEIVED         =   False       # if we received an acknowledge frame for a data frame
 RPT_REQUEST_RECEIVED            =   False       # if we received an request for repeater frames
@@ -51,7 +52,7 @@ DATA_FRAME_BOF                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End
 DATA_FRAME_EOF                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
 
-def arq_data_received(data_in:bytes, bytes_per_frame:int):
+def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int):
     data_in = bytes(data_in)    
     
     # we neeed to declare our global variables, so the thread has access to them
@@ -112,7 +113,7 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
             ack_frame[:1] = bytes([60])
             ack_frame[1:2] = static.DXCALLSIGN_CRC8
             ack_frame[2:3] = static.MYCALLSIGN_CRC8
-
+            ack_frame[3:4] = snr
             # and transmit it
             txbuffer = [ack_frame]
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
@@ -241,12 +242,11 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     global DATA_FRAME_ACK_RECEIVED
     global RPT_REQUEST_RECEIVED
     global BURST_ACK_RECEIVED
+    global BURST_ACK_SNR
     #global TX_START_OF_TRANSMISSION
     global DATA_FRAME_BOF
     global DATA_FRAME_EOF
 
-
-    DATA_CHANNEL_MODE = mode
 
     TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
     TX_N_RETRIES_PER_BURST          = 0                     # retries we already sent data
@@ -260,7 +260,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     RPT_ACK_TIMEOUT_SECONDS         =   3.0        # timeout for rpt frame acknowledges
 
     static.INFO.append("ARQ;TRANSMITTING")
-    structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=DATA_CHANNEL_MODE, bytes=len(data_out))
+    structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, bytes=len(data_out))
 
     # save len of data_out to TOTAL_BYTES for our statistics
     static.TOTAL_BYTES = len(data_out)
@@ -283,10 +283,28 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE:
         print(DATA_FRAME_ACK_RECEIVED)
 
+
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
+            
+            
+            # TEST WITH MODE GEAR SHIFTING
+            print(mode)
+            print(BURST_ACK_SNR)
+            if mode != 255:
+                data_mode = mode
+            else:
+                if BURST_ACK_SNR == 0:
+                    data_mode = 12
+                    BURST_ACK_SNR = 15
+                elif BURST_ACK_SNR > 10:
+                    data_mode = 10
+
+                    
+            print(mode)
+            print(data_mode)
             # payload information
-            payload_per_frame = modem.get_bytes_per_frame(mode) -2 
+            payload_per_frame = modem.get_bytes_per_frame(data_mode) -2 
             # tempbuffer list for storing our data frames
             tempbuffer = []
             # append data frames with TX_N_FRAMES_PER_BURST to tempbuffer
@@ -320,8 +338,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
              
                 tempbuffer.append(frame)
             
-            structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=DATA_CHANNEL_MODE, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
-            modem.transmit(mode=DATA_CHANNEL_MODE, repeats=1, repeat_delay=0, frames=tempbuffer)
+            structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
+            modem.transmit(mode=data_mode, repeats=1, repeat_delay=0, frames=tempbuffer)
             
             # lets wait for an ACK or RPT frame
             burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
@@ -391,15 +409,17 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
 
 
 
-def burst_ack_received():
+def burst_ack_received(snr):
     global BURST_ACK_RECEIVED
+    global BURST_ACK_SNR
     global DATA_CHANNEL_LAST_RECEIVED
     
     # only process data if we are in ARQ and BUSY state
     if static.ARQ_STATE:
         BURST_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
-
+        BURST_ACK_SNR = snr
+        print(BURST_ACK_SNR)
 
 def frame_ack_received():
     global DATA_FRAME_ACK_RECEIVED
@@ -411,7 +431,7 @@ def frame_ack_received():
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
 
 
-def frame_nack_received():
+def frame_nack_received(data_in:bytes):
     static.INFO.append("ARQ;TRANSMITTING;FAILED")
     arq_cleanup()
 
@@ -463,8 +483,7 @@ def arq_open_data_channel(mode:int, data_len:int):
     global DATA_CHANNEL_LAST_RECEIVED
     
     DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
-    
-    #DATA_CHANNEL_MODE = int(mode)    
+   
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     # multiply compression factor for reducing it from float to int
@@ -511,7 +530,6 @@ def arq_open_data_channel(mode:int, data_len:int):
 
 def arq_received_data_channel_opener(data_in:bytes):
     
-    #global DATA_CHANNEL_MODE
     global DATA_CHANNEL_LAST_RECEIVED
     global RX_START_OF_TRANSMISSION
     
@@ -557,7 +575,6 @@ def arq_received_data_channel_opener(data_in:bytes):
 def arq_received_channel_is_open(data_in:bytes):
 
     global DATA_CHANNEL_LAST_RECEIVED
-    global DATA_CHANNEL_MODE
     
     static.INFO.append("DATACHANNEL;OPEN")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
@@ -566,20 +583,12 @@ def arq_received_channel_is_open(data_in:bytes):
     
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
-    # we are doing a mode check here, but this doesn't seem to be necessary since we have simultaneous decoding
-    # we are forcing doing a transmission at the moment --> see else statement
-    if DATA_CHANNEL_MODE == int.from_bytes(bytes(data_in[12:13]), "big"):
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
+    structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
 
-        # as soon as we set ARQ_STATE to DATA, transmission starts   
-        static.ARQ_STATE = True
-        DATA_CHANNEL_LAST_RECEIVED = int(time.time())
-    else:
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR, info="wrong mode rcvd")
-        # as soon as we set ARQ_STATE to DATA, transmission starts
-        static.ARQ_STATE = True
-        DATA_CHANNEL_LAST_RECEIVED = int(time.time())
-
+    # as soon as we set ARQ_STATE to DATA, transmission starts   
+    static.ARQ_STATE = True
+    DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+    
 # ############################################################################################################
 # PING HANDLER
 # ############################################################################################################
@@ -795,7 +804,8 @@ def arq_cleanup():
     global DATA_FRAME_ACK_RECEIVED
     global RX_FRAME_BOF_RECEIVED
     global RX_FRAME_EOF_RECEIVED            
-
+    global BURST_ACK_SNR
+    
     RX_FRAME_BOF_RECEIVED = False
     RX_FRAME_EOF_RECEIVED = False
     static.TNC_STATE = 'IDLE'
@@ -805,7 +815,7 @@ def arq_cleanup():
     DATA_FRAME_ACK_RECEIVED = False
     static.RX_BURST_BUFFER = []
     static.RX_FRAME_BUFFER = b'' 
-
+    BURST_ACK_SNR = 255
 
 def arq_reset_ack(state:bool):
     """
