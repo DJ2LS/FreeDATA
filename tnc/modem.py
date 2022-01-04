@@ -396,6 +396,11 @@ class RF():
                 logging.debug("REPEAT REQUEST RECEIVED....")
                 data_handler.burst_rpt_received(bytes_out[:-2])
 
+            # FRAME NACK
+            elif frametype == 63:
+                logging.debug("FRAME NOT ACK RECEIVED....")
+                data_handler.frame_nack_received(bytes_out[:-2])
+
             # CQ FRAME
             elif frametype == 200:
                 logging.debug("CQ RECEIVED....")
@@ -435,10 +440,12 @@ class RF():
                 data_handler.arq_received_channel_is_open(bytes_out[:-2])
 
             # ARQ CONNECT ACK / KEEP ALIVE
+            # this is outdated and we may remove it
             elif frametype == 230:
                 logging.debug("BEACON RECEIVED")
                 data_handler.received_beacon(bytes_out[:-2])
 
+            # TESTFRAMES
             elif frametype == 255:
                 structlog.get_logger("structlog").debug("TESTFRAME RECEIVED", frame=bytes_out[:])
                 
@@ -448,6 +455,7 @@ class RF():
 
             
             # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
+            # this should be changed to a timeout based unsync
             if frame == n_frames_per_burst:
                 logging.info("LAST FRAME ---> UNSYNC")
                 self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC

@@ -218,8 +218,18 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int):
         else:
             static.INFO.append("ARQ;RECEIVING;FAILED")
             structlog.get_logger("structlog").warning("[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!", e="wrong crc", expected=data_frame_crc, received=data_frame_crc_received)
-     
-        
+
+            # BUILDING NACK FRAME FOR DATA FRAME
+            nack_frame       = bytearray(14)
+            nack_frame[:1]   = bytes([63])
+            nack_frame[1:2]  = static.DXCALLSIGN_CRC8
+            nack_frame[2:3]  = static.MYCALLSIGN_CRC8     
+            
+            # TRANSMIT NACK FRAME FOR BURST
+            txbuffer = [nack_frame]
+            modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)    
+            
+                
         # And finally we do a cleanup of our buffers and states
         arq_cleanup()        
         
@@ -260,10 +270,8 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(data_frame_compressed)
     data_out = data_frame_compressed    
 
-
-
-    tx_start_of_transmission = time.time()
     # reset statistics
+    tx_start_of_transmission = time.time()
     calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
 
     # append a crc and beginn and end of file indicators
@@ -401,6 +409,12 @@ def frame_ack_received():
     if static.ARQ_STATE:       
         DATA_FRAME_ACK_RECEIVED = True  # Force data loops of TNC to stop and continue with next frame
         DATA_CHANNEL_LAST_RECEIVED = int(time.time()) # we need to update our timeout timestamp
+
+
+def frame_nack_received():
+    static.INFO.append("ARQ;TRANSMITTING;FAILED")
+    arq_cleanup()
+
 
 
 def burst_rpt_received(data_in:bytes):
