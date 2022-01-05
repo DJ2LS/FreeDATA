@@ -31,6 +31,7 @@ import time
 
 import static
 import data_handler
+
 import helpers
 
 import sys
@@ -121,7 +122,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="PING")
                     PING_THREAD.start()
 
-                # and static.ARQ_READY_FOR_DATA == True: # and static.ARQ_STATE == 'CONNECTED' :
+
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":
                     static.TNC_STATE = 'BUSY'
 
@@ -191,7 +192,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     print(" >>> STOPPING TRANSMISSION <<<")
                     structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
                     static.TNC_STATE = 'IDLE'
-                    static.ARQ_STATE = 'IDLE'
+                    static.ARQ_STATE = False
 
                     
                 # SETTINGS AND STATUS ---------------------------------------------
@@ -248,6 +249,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                         "RX_MSG_BUFFER_LENGTH": str(len(static.RX_MSG_BUFFER)),
                         "ARQ_BYTES_PER_MINUTE": str(static.ARQ_BYTES_PER_MINUTE),
                         "ARQ_BYTES_PER_MINUTE_BURST": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+                        "ARQ_COMPRESSION_FACTOR": str(static.ARQ_COMPRESSION_FACTOR),
                         "ARQ_TRANSMISSION_PERCENT": str(static.ARQ_TRANSMISSION_PERCENT),
                         "TOTAL_BYTES": str(static.TOTAL_BYTES),
                         "INFO" : static.INFO,
@@ -322,8 +324,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                 print(exc_type, fname, exc_tb.tb_lineno)
                 print("############ END OF ERROR #######################")
 
-                print("reset of connection...")
-                structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
+                structlog.get_logger("structlog").warning("[TNC] reset of tcp/ip connection...")
                 #socketTimeout = 0
 
                 structlog.get_logger("structlog").error("[TNC] Network error", e = sys.exc_info()[0])

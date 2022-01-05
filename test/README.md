@@ -1,3 +1,34 @@
+
+# Instructions
+
+1. Install:
+   ```
+   cd FreeDATA
+   mkdir build
+   cd build
+   cmake -DCODEC2_BUILD_DIR=$HOME/codec2/build_linux ..
+   ```
+2. List available tests:
+   ```
+   ctest -N
+   Test project /home/david/FreeDATA/build
+   Test #1: 000_audio_tests
+   Test #2: 001_highsnr_stdio_audio
+
+   Total Tests: 2
+   ```
+3. Run tests:
+   ```
+   ctest --output-on-failure
+   ```
+4. Run tests verbosely:
+   ```
+   ctest -V
+   ```
+
+
+
+
 # 001_HIGHSNR_STDIO_AUDIO TEST SUITE
 
 1. Install
