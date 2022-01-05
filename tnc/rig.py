@@ -4,6 +4,7 @@ import sys
 import re
 import logging, structlog, log_handler
 import atexit
+import subprocess
 
 
 # try importing hamlib    
@@ -29,9 +30,23 @@ try:
     else:
         structlog.get_logger("structlog").warning("[TNC] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
 except Exception as e:
-    structlog.get_logger("structlog").critical("[TNC] Hamlib not found", error=e)
-
-               
+    structlog.get_logger("structlog").warning("[TNC] Python Hamlib binding not found", error=e)
+    try:
+        structlog.get_logger("structlog").warning("[TNC] Trying to open rigctl", error=e)
+        rigctl = subprocess.Popen("rigctl -V",shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        hamlib_version = rigctl.stdout.readline()
+        hamlib_version = hamlib_version.split(' ')
+        print(hamlib_version[0])
+        print(hamlib_version[1])
+        print(hamlib_version[2])
+        if hamlib_version[1] == 'Hamlib':
+            rigctl = True
+            print(hamlib_version)
+        else:
+            rigctl = False
+            raise Exception
+    except Exception as e:
+        structlog.get_logger("structlog").critical("[TNC] HAMLIB NOT INSTALLED", error=e)   
                
 class radio:
     def __init__(self):
@@ -50,13 +65,13 @@ class radio:
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake):    
         
         self.devicename = devicename
-        self.deviceport = deviceport
+        self.deviceport = str(deviceport)
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
-        self.hamlib_ptt_type = hamlib_ptt_type
-        self.pttport = pttport
-        self.data_bits = data_bits
-        self.stop_bits = stop_bits
-        self.handshake = handshake
+        self.hamlib_ptt_type = str(hamlib_ptt_type)
+        self.pttport = str(pttport)
+        self.data_bits = str(data_bits)
+        self.stop_bits = str(stop_bits)
+        self.handshake = str(handshake)
         
                 
         # try to init hamlib
@@ -66,6 +81,7 @@ class radio:
             # get devicenumber by looking for deviceobject in Hamlib module
             try:
                 self.devicenumber = int(getattr(Hamlib, self.devicename))
+                print(self.devicenumber)
             except:
                 structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
                 self.devicenumber = 0
@@ -80,6 +96,16 @@ class radio:
             self.my_rig.set_conf("data_bits", self.data_bits)
             self.my_rig.set_conf("ptt_pathname", self.pttport)
                         
+
+            print(self.my_rig.get_conf("rig_pathname"))
+            print(self.my_rig.get_conf("retry"))
+            print(self.my_rig.get_conf("serial_speed"))
+            print(self.my_rig.get_conf("serial_handshake"))
+            print(self.my_rig.get_conf("stop_bits"))
+            print(self.my_rig.get_conf("data_bits"))
+            print(self.my_rig.get_conf("ptt_pathname"))                    
+                    
+                    
                         
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
@@ -159,17 +185,18 @@ class radio:
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
         return bandwith
 
-    def set_mode(self, mode):
-        return 0
+    # not needed yet beacuse of some possible problems
+    #def set_mode(self, mode):
+    #    return 0
       
     def get_ptt(self):
         return self.my_rig.get_ptt()
                   
     def set_ptt(self, state):
         if state:
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+            self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 1)
         else:
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+            self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 0)
         return state
         
     def close_rig(self):

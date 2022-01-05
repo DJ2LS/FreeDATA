@@ -36,9 +36,8 @@ if __name__ == '__main__':
     PARSER.add_argument('--data_bits', dest="hamlib_data_bits", default="8", help="Hamlib data bits", type=str)         
     PARSER.add_argument('--stop_bits', dest="hamlib_stop_bits", default="1", help="Hamlib stop bits", type=str)          
     PARSER.add_argument('--handshake', dest="hamlib_handshake", default="None", help="Hamlib handshake", type=str)          
-     
+    PARSER.add_argument('--rigctl', dest="hamlib_use_rigctl", action="store_true", default=False, help="force using of rigctl")     
             
- 
     
     ARGS = PARSER.parse_args()
     
@@ -52,7 +51,9 @@ if __name__ == '__main__':
     static.HAMLIB_SERIAL_SPEED = ARGS.hamlib_serialspeed
     static.HAMLIB_DATA_BITS = ARGS.hamlib_data_bits
     static.HAMLIB_STOP_BITS = ARGS.hamlib_stop_bits
-    static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake        
+    static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
+    static.HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
+    print(ARGS.hamlib_use_rigctl)
     
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

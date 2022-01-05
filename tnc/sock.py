@@ -338,8 +338,7 @@ def start_cmd_socket():
         structlog.get_logger("structlog").info("[TNC] Starting TCP/IP socket", port=static.PORT)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
-        cmdserver = ThreadedTCPServer(
-            (static.HOST, static.PORT), ThreadedTCPRequestHandler)
+        cmdserver = ThreadedTCPServer((static.HOST, static.PORT), ThreadedTCPRequestHandler)
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
         server_thread.start()
