@@ -822,6 +822,7 @@ def data_channel_keep_alive_watchdog():
         else:
             DATA_CHANNEL_LAST_RECEIVED = 0
             logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+            static.INFO.append("ARQ;RECEIVING;FAILED")
             arq_cleanup()
             
             

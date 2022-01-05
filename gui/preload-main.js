@@ -918,36 +918,54 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         }  
          // ARQ RECEIVING TOAST
         if (arg.info[i] == "ARQ;RECEIVING"){
+        
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+        
             var toastARQreceiving = document.getElementById('toastARQreceiving')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving) // Returns a Bootstrap toast instance
             toast.show()
         }        
          // ARQ RECEIVING SUCCESS TOAST
         if (arg.info[i] == "ARQ;RECEIVING;SUCCESS"){
+            
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-success";
+            
             var toastARQreceivingsuccess = document.getElementById('toastARQreceivingsuccess')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingsuccess) // Returns a Bootstrap toast instance
             toast.show()
         }
          // ARQ RECEIVING FAILED TOAST
         if (arg.info[i] == "ARQ;RECEIVING;FAILED"){
+        
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
+        
             var toastARQreceivingfailed = document.getElementById('toastARQreceivingfailed')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingfailed) // Returns a Bootstrap toast instance
             toast.show()
         }        
          // ARQ TRANSMITTING TOAST
         if (arg.info[i] == "ARQ;TRANSMITTING"){
+        
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+        
             var toastARQtransmitting = document.getElementById('toastARQtransmitting')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting) // Returns a Bootstrap toast instance
             toast.show()
         }        
          // ARQ TRANSMITTING SUCCESS TOAST
         if (arg.info[i] == "ARQ;TRANSMITTING;SUCCESS"){
+        
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-success";
+        
             var toastARQtransmittingsuccess = document.getElementById('toastARQtransmittingsuccess')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingsuccess) // Returns a Bootstrap toast instance
             toast.show()
         }               
          // ARQ TRANSMITTING FAILED TOAST
         if (arg.info[i] == "ARQ;TRANSMITTING;FAILED"){
+        
+            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
+        
             var toastARQtransmittingfailed = document.getElementById('toastARQtransmittingfailed')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed) // Returns a Bootstrap toast instance
             toast.show()
