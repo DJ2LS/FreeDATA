@@ -296,12 +296,10 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     
     #initial bufferposition is 0
     bufferposition = 0
-    bufferposition_burst = 0
 
     # iterate through data out buffer
     while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE:
-        # tempbuffer list for storing our data frames
-        tempbuffer = []
+
         
         
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
@@ -332,37 +330,40 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
             # payload information
             payload_per_frame = modem.get_bytes_per_frame(data_mode) -2 
 
+            # tempbuffer list for storing our data frames
+            tempbuffer = []
+        
             # append data frames with TX_N_FRAMES_PER_BURST to tempbuffer
-            for i in range(0, TX_N_FRAMES_PER_BURST):
-                arqheader = bytearray()
-                arqheader[:1] = bytes([10 + i])
-                arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST]) 
-                arqheader[3:4] = bytes(static.DXCALLSIGN_CRC8) 
-                arqheader[4:5] = bytes(static.MYCALLSIGN_CRC8) 
-                
-                bufferposition_end = (bufferposition + payload_per_frame - len(arqheader))           
+            # this part ineeds to a completly rewrite!
+            # TX_NF_RAMES_PER_BURST = 1 is working
 
-                # normal behavior
-                if bufferposition_end <= len(data_out):
+            arqheader = bytearray()
+            arqheader[:1] = bytes([10]) #bytes([10 + i])
+            arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST]) 
+            arqheader[3:4] = bytes(static.DXCALLSIGN_CRC8) 
+            arqheader[4:5] = bytes(static.MYCALLSIGN_CRC8) 
+                
+            bufferposition_end = (bufferposition + payload_per_frame - len(arqheader))           
+
+            # normal behavior
+            if bufferposition_end <= len(data_out):
                    
-                   frame = data_out[bufferposition:bufferposition_end]
-                   frame = arqheader + frame 
+               frame = data_out[bufferposition:bufferposition_end]
+               frame = arqheader + frame 
                    
-                # this point shouldnt reached that often                   
-                elif bufferposition > len(data_out):
-                    break
+            # this point shouldnt reached that often                   
+            elif bufferposition > len(data_out):
+                break
                 
-                # the last bytes of a frame    
-                else:
-                    extended_data_out = data_out[bufferposition:]
-                    extended_data_out += bytes([0]) * (payload_per_frame-len(extended_data_out)-len(arqheader))
-                    frame = arqheader + extended_data_out
+            # the last bytes of a frame    
+            else:
+                extended_data_out = data_out[bufferposition:]
+                extended_data_out += bytes([0]) * (payload_per_frame-len(extended_data_out)-len(arqheader))
+                frame = arqheader + extended_data_out
                 
-                # update the bufferposition    
-                bufferposition = bufferposition_end
                 
-                # append frame to tempbuffer for transmission
-                tempbuffer.append(frame)
+            # append frame to tempbuffer for transmission
+            tempbuffer.append(frame)
             
             structlog.get_logger("structlog").debug("[TNC] tempbuffer", tempbuffer=tempbuffer)
             structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
