@@ -93,11 +93,11 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int, freedv):
     '''
     if len(static.RX_BURST_BUFFER) != RX_N_FRAMES_PER_BURST:
         static.RX_BURST_BUFFER = [None] * RX_N_FRAMES_PER_BURST   
-    
+
     # append data to rx burst buffer
     static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[4:]
-
- 
+    
+    structlog.get_logger("structlog").debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
     '''
     check if we received all frames per burst by checking if burst buffer has no more "Nones"
     this is the ideal case because we received all data
@@ -106,15 +106,12 @@ def arq_data_received(data_in:bytes, bytes_per_frame:int, snr:int, freedv):
         # then iterate through burst buffer and append data to frame buffer
         for i in range(0,len(static.RX_BURST_BUFFER)):
             static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
-        # then delete burst buffer
+            # then delete burst buffer
             static.RX_BURST_BUFFER = []
 
         # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
         if not RX_FRAME_BOF_RECEIVED and not RX_FRAME_EOF_RECEIVED and data_in.find(DATA_FRAME_EOF) < 0:  
-            print(RX_FRAME_BOF_RECEIVED)
-            print(RX_FRAME_EOF_RECEIVED)
             
-
             # create an ack frame
             ack_frame = bytearray(14)
             ack_frame[:1] = bytes([60])
@@ -296,16 +293,20 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     # append a crc and beginn and end of file indicators
     frame_payload_crc = helpers.get_crc_16(data_out)
     data_out = DATA_FRAME_BOF + frame_payload_crc + data_out + DATA_FRAME_EOF
+    
     #initial bufferposition is 0
-    bufferposition = 0    
+    bufferposition = 0
+    bufferposition_burst = 0
+
     # iterate through data out buffer
     while bufferposition < len(data_out) and not DATA_FRAME_ACK_RECEIVED and static.ARQ_STATE:
-
-        structlog.get_logger("structlog").debug("DATA_FRAME_ACK_RECEIVED", state=DATA_FRAME_ACK_RECEIVED)
-
+        # tempbuffer list for storing our data frames
+        tempbuffer = []
+        
+        
         # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
         for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
-                        
+
             # AUTO MODE SELECTION
             # mode 255 == AUTO MODE
             # force usage of selected mode
@@ -330,8 +331,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
 
             # payload information
             payload_per_frame = modem.get_bytes_per_frame(data_mode) -2 
-            # tempbuffer list for storing our data frames
-            tempbuffer = []
+
             # append data frames with TX_N_FRAMES_PER_BURST to tempbuffer
             for i in range(0, TX_N_FRAMES_PER_BURST):
                 arqheader = bytearray()
@@ -341,7 +341,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
                 arqheader[4:5] = bytes(static.MYCALLSIGN_CRC8) 
                 
                 bufferposition_end = (bufferposition + payload_per_frame - len(arqheader))           
-                
+
                 # normal behavior
                 if bufferposition_end <= len(data_out):
                    
@@ -359,10 +359,12 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
                     frame = arqheader + extended_data_out
                 
                 # update the bufferposition    
-                # bufferposition = bufferposition_end
-             
+                bufferposition = bufferposition_end
+                
+                # append frame to tempbuffer for transmission
                 tempbuffer.append(frame)
-
+            
+            structlog.get_logger("structlog").debug("[TNC] tempbuffer", tempbuffer=tempbuffer)
             structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
             modem.transmit(mode=data_mode, repeats=1, repeat_delay=0, frames=tempbuffer)
             
@@ -396,6 +398,7 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
         
         # update buffer position
         bufferposition = bufferposition_end
+
         # update stats
         calculate_transfer_rate_tx(tx_start_of_transmission, bufferposition_end, len(data_out)) 
         #GOING TO NEXT ITERATION
@@ -519,7 +522,7 @@ def arq_open_data_channel(mode:int, data_len:int, n_frames_per_burst:int):
     connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
     connection_frame[12:13] = bytes([compression_factor])
     connection_frame[13:14] = bytes([n_frames_per_burst])    
-    print(connection_frame)
+
     
     while not static.ARQ_STATE:
         time.sleep(0.01)
@@ -576,11 +579,6 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.ARQ_STATE = True
     static.TNC_STATE = 'BUSY'
 
-    #mode = int.from_bytes(bytes(data_in[12:13]), "big")
-
-    print(static.ARQ_COMPRESSION_FACTOR)
-    print(int.from_bytes(bytes(data_in[12:13]), "big"))
-    print(bytes(data_in[12:13]))
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
 
     connection_frame = bytearray(14)

@@ -312,6 +312,7 @@ class RF():
 
         while self.audio_stream.is_active():
             while self.datac0_buffer.nbuffer >= self.datac0_nin:        
+
                 # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
                 self.datac0_buffer.pop(self.datac0_nin)
@@ -322,6 +323,7 @@ class RF():
                     self.calculate_snr(self.datac0_freedv)
                         
             while self.datac1_buffer.nbuffer >= self.datac1_nin:
+
                 # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
                 self.datac1_buffer.pop(self.datac1_nin)
@@ -332,6 +334,7 @@ class RF():
                     self.calculate_snr(self.datac1_freedv)
                                             
             while self.datac3_buffer.nbuffer >= self.datac3_nin:
+
                 # demodulate audio    
                 nbytes = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
                 self.datac3_buffer.pop(self.datac3_nin)
@@ -339,8 +342,9 @@ class RF():
                 if nbytes == self.datac3_bytes_per_frame:
                     self.dataqueue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
                     self.get_scatter(self.datac3_freedv)
-                    self.calculate_snr(self.datac3_freedv)            
-            
+                    self.calculate_snr(self.datac3_freedv)  
+                              
+                    
             
             
                       
@@ -376,7 +380,6 @@ class RF():
             #print("Freq-Offset: " + str(frequency_offset))
             
             if 50 >= frametype >= 10:
-
                 # get snr of received data
                 snr = self.calculate_snr(freedv)
                 structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
