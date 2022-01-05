@@ -140,11 +140,13 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(rx_audio, tx_audio, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake) {
     var json_command = JSON.stringify({
         type: 'SET',
         command: 'STARTTNC',
         parameter: [{
+            mycall: mycall,
+            mygrid: mygrid,
             rx_audio: rx_audio,
             tx_audio: tx_audio,
             devicename: devicename,
@@ -190,6 +192,20 @@ exports.testHamlib = function(devicename, deviceport, serialspeed, pttprotocol, 
     })
     console.log(json_command)
     writeDaemonCommand(json_command)
+}
+
+
+
+//Save myCall
+exports.saveMyCall = function(callsign) {
+    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : "' + Date.now() + '"}'
+    writeDaemonCommand(command)
+}
+
+// Save myGrid
+exports.saveMyGrid = function(grid) {
+    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '", "timestamp" : "' + Date.now() + '"}'
+    writeDaemonCommand(command)
 }
 
 

@@ -192,17 +192,6 @@ function hexToBytes(hex) {
     return bytes;
 }
 
-//Save myCall
-exports.saveMyCall = function(callsign) {
-    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : ' + Date.now() + '}'
-    writeTncCommand(command)
-}
-
-// Save myGrid
-exports.saveMyGrid = function(grid) {
-    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '", "timestamp" : ' + Date.now() + '}'
-    writeTncCommand(command)
-}
 
 //Get TNC State
 exports.getTncState = function() {

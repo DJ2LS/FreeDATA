@@ -21,6 +21,7 @@ import static
 import crcengine
 import re
 import logging, structlog, log_handler
+import helpers
 
 
 log_handler.setup_logging("daemon")
@@ -149,8 +150,32 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             # print(received_json["type"])
             # print(received_json["command"])
             # try:
+            
+                if received_json["type"] == 'SET' and received_json["command"] == 'MYCALLSIGN':
+                    callsign = received_json["parameter"]
+                    print(received_json)
+                    if bytes(callsign, 'utf-8') == b'':
+                        self.request.sendall(b'INVALID CALLSIGN')
+                        structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
+                    else:
+                        static.MYCALLSIGN = bytes(callsign, 'utf-8')
+                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+  
+                        structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
+                
+                if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
+                    mygrid = received_json["parameter"]
+
+                    if bytes(mygrid, 'utf-8') == b'':
+                        self.request.sendall(b'INVALID GRID')
+                    else:
+                        static.MYGRID = bytes(mygrid, 'utf-8')
+                        structlog.get_logger("structlog").info("[DMN] SET MYGRID", grid=static.MYGRID)
+            
 
                 if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
+                    mycall = str(received_json["parameter"][0]["mycall"])
+                    mygrid = str(received_json["parameter"][0]["mygrid"])
                     rx_audio = str(received_json["parameter"][0]["rx_audio"])
                     tx_audio = str(received_json["parameter"][0]["tx_audio"])
                     devicename = str(received_json["parameter"][0]["devicename"])
@@ -177,6 +202,10 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     # list of parameters, necessary for running subprocess command as a list
                     options = []
+                    options.append('--mycall')
+                    options.append(mycall)
+                    options.append('--mygrid')
+                    options.append(mygrid)     
                     options.append('--rx')
                     options.append(rx_audio)
                     options.append('--tx')

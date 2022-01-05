@@ -244,7 +244,7 @@ advancedHamlibSettingsModal
         callsign = document.getElementById("myCall").value
         config.mycall = callsign.toUpperCase()
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        sock.saveMyCall(callsign)
+        daemon.saveMyCall(callsign)
     });
 
     // saveMyGrid button clicked
@@ -252,7 +252,7 @@ advancedHamlibSettingsModal
         grid = document.getElementById("myGrid").value
         config.mygrid = grid
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        sock.saveMyGrid(grid)
+        daemon.saveMyGrid(grid)
 
     });
       
@@ -294,6 +294,9 @@ advancedHamlibSettingsModal
 
     // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
+        var mycall = document.getElementById("myCall").value
+        mycall = mycall.toUpperCase()
+        var mygrid = document.getElementById("myGrid").value
         var rx_audio = document.getElementById("audio_input_selectbox").value
         var tx_audio = document.getElementById("audio_output_selectbox").value
         var deviceid = document.getElementById("hamlib_deviceid").value
@@ -325,7 +328,9 @@ advancedHamlibSettingsModal
                 config.tx_audio = device.text
             }
         }        
-                        
+        
+        config.mycall = mycall
+        config.mygrid = mygrid                
         config.deviceid = deviceid
         config.deviceport = deviceport
         config.serialspeed = serialspeed
@@ -348,20 +353,15 @@ advancedHamlibSettingsModal
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.show() 
         
-        daemon.startTNC(rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake)
+
+        daemon.startTNC(mycall, mygrid, rx_audio, tx_audio, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake)
         
-
-
-        setTimeout(function() {
-            sock.saveMyCall(config.mycall);
-        }, 3000);
-        setTimeout(function() {
-            sock.saveMyGrid(config.mygrid);
-        }, 3500);
+        
     })
 
     // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
+        
         daemon.stopTNC()
         
                 
@@ -966,7 +966,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         
             document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
         
-            var toastARQtransmittingfailed = document.getElementById('toastARQtransmittingfailed')
             var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed) // Returns a Bootstrap toast instance
             toast.show()
         }        
@@ -995,12 +994,11 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     document.getElementById("progressbar_cpu").setAttribute("style", "width:" + arg.cpu_usage + "%;")
     document.getElementById("progressbar_cpu_value").innerHTML = arg.cpu_usage + "%"
     */
-    document.getElementById("ram_load").innerHTML = "RAM " + arg.ram_usage + "%"    
-    document.getElementById("cpu_load").innerHTML = "CPU " + arg.cpu_usage + "%"
+    document.getElementById("ram_load").innerHTML = arg.ram_usage + "%"    
+    document.getElementById("cpu_load").innerHTML = arg.cpu_usage + "%"
     
     // OPERATING SYSTEM
-
-    document.getElementById("operating_system").innerHTML = "OS " + os.type()
+    //document.getElementById("operating_system").innerHTML = "OS " + os.type()
 
     
     // PYTHON VERSION

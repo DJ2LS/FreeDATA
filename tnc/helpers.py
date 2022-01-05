@@ -8,10 +8,9 @@ Created on Fri Dec 25 21:25:14 2020
 
 import time
 import logging
-import asyncio
 import crcengine
 import static
-import data_handler
+
 
 
 def wait(seconds):

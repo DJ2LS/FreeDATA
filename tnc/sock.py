@@ -196,25 +196,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                     
                 # SETTINGS AND STATUS ---------------------------------------------
-                if received_json["type"] == 'SET' and received_json["command"] == 'MYCALLSIGN':
-                    callsign = received_json["parameter"]
-
-                    if bytes(callsign, encoding) == b'':
-                        self.request.sendall(b'INVALID CALLSIGN')
-                    else:
-                        static.MYCALLSIGN = bytes(callsign, encoding)
-                        static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
-  
-                        structlog.get_logger("structlog").info("[TNC] SET MYCALL", grid=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
                 
-                if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
-                    mygrid = received_json["parameter"]
-
-                    if bytes(mygrid, encoding) == b'':
-                        self.request.sendall(b'INVALID GRID')
-                    else:
-                        static.MYGRID = bytes(mygrid, encoding)
-                        structlog.get_logger("structlog").info("[TNC] SET MYGRID", grid=static.MYGRID)
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'STATION_INFO':
                     output = {

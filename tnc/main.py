@@ -13,6 +13,7 @@ import threading
 import static
 import subprocess
 import sys
+import helpers
 
 import logging, structlog, log_handler
 
@@ -24,7 +25,9 @@ import logging, structlog, log_handler
 if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
-    PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
+    PARSER = argparse.ArgumentParser(description='FreeDATA TNC')
+    PARSER.add_argument('--mycall', dest="mycall", default="AA0AA", help="My callsign", type=str)
+    PARSER.add_argument('--mygrid', dest="mygrid", default="JN12AA", help="My gridsquare", type=str) 
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
     PARSER.add_argument('--port', dest="socket_port", default=3000, help="Socket port", type=int)
@@ -40,7 +43,11 @@ if __name__ == '__main__':
             
     
     ARGS = PARSER.parse_args()
-    
+
+    static.MYCALLSIGN = bytes(ARGS.mycall, 'utf-8')
+    static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)  
+    static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
+        
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
     static.PORT = ARGS.socket_port
