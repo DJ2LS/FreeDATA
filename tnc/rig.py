@@ -194,9 +194,9 @@ class radio:
                   
     def set_ptt(self, state):
         if state:
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 1)
+            self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 1)
         else:
-            self.my_rig.set_ptt(self.hamlib_ptt_type, 0)
+            self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 0)
         return state
         
     def close_rig(self):
