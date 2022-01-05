@@ -143,8 +143,8 @@ jobs:
         working-directory: tnc
         run: |      
           #pyinstaller -F daemon.py -n daemon
-          pyinstaller -F daemon.py --add-binary lib/hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./lib/hamlib/linux/ --add-binary lib/hamlib/linux/Hamlib.py:./lib/hamlib/linux/ -n daemon
-          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary lib/hamlib/linux/_Hamlib.cpython-39-x86_64-linux-gnu.so:./lib/hamlib/linux/ --add-binary lib/hamlib/linux/Hamlib.py:./lib/hamlib/linux/ -n tnc main.py
+          pyinstaller -F daemon.py --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n daemon
+          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n tnc main.py
  
       - name: LIST ALL FILES
         shell: bash
