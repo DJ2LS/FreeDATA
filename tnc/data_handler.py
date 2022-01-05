@@ -275,11 +275,14 @@ def arq_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     DATA_FRAME_ACK_TIMEOUT_SECONDS  =   3.0        # timeout for data frame acknowledges
     RPT_ACK_TIMEOUT_SECONDS         =   3.0        # timeout for rpt frame acknowledges
 
-    static.INFO.append("ARQ;TRANSMITTING")
-    structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, bytes=len(data_out))
 
-    # save len of data_out to TOTAL_BYTES for our statistics
-    static.TOTAL_BYTES = len(data_out)
+    # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
+    static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
+    
+    
+    static.INFO.append("ARQ;TRANSMITTING")
+    structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, kBytes=static.TOTAL_BYTES)
+
     
     # compression
     data_frame_compressed = zlib.compress(data_out)
@@ -486,6 +489,7 @@ def open_dc_and_transmit(data_out:bytes, mode:int, n_frames_per_burst:int):
     static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
     
     
+    
     arq_open_data_channel(mode, len(data_out), n_frames_per_burst)   
     # wait until data channel is open
     while not static.ARQ_STATE:
@@ -497,8 +501,11 @@ def arq_open_data_channel(mode:int, data_len:int, n_frames_per_burst:int):
     global DATA_CHANNEL_LAST_RECEIVED
     
     DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
-   
     DATA_CHANNEL_LAST_RECEIVED = int(time.time())
+
+    # devide by 1024 for getting Bytes -> kBytes 
+    data_len = int(data_len / 1024)
+
 
     # multiply compression factor for reducing it from float to int
     compression_factor = int(static.ARQ_COMPRESSION_FACTOR * 10)
@@ -508,7 +515,8 @@ def arq_open_data_channel(mode:int, data_len:int, n_frames_per_burst:int):
     connection_frame[1:2]   = static.DXCALLSIGN_CRC8
     connection_frame[2:3]   = static.MYCALLSIGN_CRC8
     connection_frame[3:9]   = static.MYCALLSIGN
-    connection_frame[9:12]  = data_len.to_bytes(3, byteorder='big')
+    connection_frame[9:10]   = bytes([0]) # ONE BYTE LEFT FOR OTHER THINGS
+    connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
     connection_frame[12:13] = bytes([compression_factor])
     connection_frame[13:14] = bytes([n_frames_per_burst])    
     print(connection_frame)
@@ -551,8 +559,11 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
     static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
     static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-    n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
-    
+
+    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[10:12]), "big") # kBytes
+    static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
+    n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
+        
     modem.set_frames_per_burst(n_frames_per_burst)
 
         
@@ -566,8 +577,7 @@ def arq_received_data_channel_opener(data_in:bytes):
     static.TNC_STATE = 'BUSY'
 
     #mode = int.from_bytes(bytes(data_in[12:13]), "big")
-    static.TOTAL_BYTES = int.from_bytes(bytes(data_in[9:12]), "big")
-    static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
+
     print(static.ARQ_COMPRESSION_FACTOR)
     print(int.from_bytes(bytes(data_in[12:13]), "big"))
     print(bytes(data_in[12:13]))
@@ -733,7 +743,7 @@ def received_cq(data_in:bytes):
 def calculate_transfer_rate_rx(rx_start_of_transmission:float, receivedbytes:int) -> list:
     
     try: 
-        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / static.TOTAL_BYTES) * 100)
+        static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES * 1024)) * 100)
 
         transmissiontime = time.time() - rx_start_of_transmission
         
@@ -764,8 +774,8 @@ def calculate_transfer_rate_tx(tx_start_of_transmission:float, sentbytes:int, tx
 
         if sentbytes > 0:
             
-            static.ARQ_BITS_PER_SECOND = int((sentbytes*8) / transmissiontime)
-            static.ARQ_BYTES_PER_MINUTE = int((sentbytes) / (transmissiontime/60))
+            static.ARQ_BITS_PER_SECOND = int((sentbytes*8) / transmissiontime) # Bits per Second
+            static.ARQ_BYTES_PER_MINUTE = int((sentbytes) / (transmissiontime/60)) #Bytes per Minute
 
         else:
             static.ARQ_BITS_PER_SECOND = 0
