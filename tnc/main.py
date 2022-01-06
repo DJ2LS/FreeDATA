@@ -12,6 +12,7 @@ import argparse
 import threading
 import static
 import subprocess
+import socketserver
 import sys
 import helpers
 
@@ -74,6 +75,15 @@ if __name__ == '__main__':
 
     # --------------------------------------------START CMD SERVER
 
-    CMD_SERVER_THREAD = threading.Thread(target=sock.start_cmd_socket, name="cmd server")
-    CMD_SERVER_THREAD.start()
+    try:
+        structlog.get_logger("structlog").info("[TNC] Starting TCP/IP socket", port=static.PORT)
+        # https://stackoverflow.com/a/16641793
+        socketserver.TCPServer.allow_reuse_address = True
+        cmdserver = sock.ThreadedTCPServer((static.HOST, static.PORT), sock.ThreadedTCPRequestHandler)
+        server_thread = threading.Thread(target=cmdserver.serve_forever)
+        server_thread.daemon = True
+        server_thread.start()
 
+    except Exception as e:
+        structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=e)
+       

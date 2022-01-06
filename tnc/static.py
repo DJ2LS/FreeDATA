@@ -29,7 +29,7 @@ DXGRID = b''
 # Server Defaults
 HOST = "0.0.0.0"
 PORT = 3000
-SOCKET_TIMEOUT = 3 # seconds
+SOCKET_TIMEOUT = 1 # seconds
 # ---------------------------------
 
 
