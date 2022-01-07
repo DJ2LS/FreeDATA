@@ -72,7 +72,8 @@ ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
 
         var message = document.createElement("td");
         var messageText = document.createElement('span');
-        var messageString = arg.data[i]['RXDATA'][0]['data']
+        var messageString = arg.data[i]['RXDATA'][0]['d'] //data
+        console.log(messageString)
         messageText.innerText = messageString
         message.appendChild(messageText);
 
