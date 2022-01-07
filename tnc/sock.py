@@ -148,8 +148,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     dxcallsign = received_json["dxcallsign"]
                     mode = int(received_json["mode"])
                     n_frames = int(received_json["n_frames"])
-                    data = received_json["d"] # d = data
-                    checksum = received_json["crc"] # crc = checksum
+                    data = received_json["data"] # d = data
+                    checksum = received_json["checksum"] # crc = checksum
                    
 
                     static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
