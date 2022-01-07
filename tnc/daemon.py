@@ -386,6 +386,11 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
     HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
+    
+    # force use of rigctl when on windows
+    if sys.platform == 'win32' or sys.platform == 'win64':
+        HAMLIB_USE_RIGCTL = True
+    
     if HAMLIB_USE_RIGCTL:
         structlog.get_logger("structlog").warning("using hamlib rigctl module...")
         hamlib_version = 0

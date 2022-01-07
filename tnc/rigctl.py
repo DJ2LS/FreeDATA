@@ -9,6 +9,8 @@
 import subprocess
 import structlog
 import time
+import sys
+
 # for rig_model -> rig_number only
 
                
@@ -47,10 +49,16 @@ class radio:
             else:
                 self.devicenumber = 6 #dummy
                 structlog.get_logger("structlog").warning("[TNC] RADIO NOT FOUND USING DUMMY!", error=e)   
-                
-                
+
         print(self.devicenumber, self.deviceport, self.serialspeed)
-        self.cmd = 'rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
+
+        # select precompiled executable for win32/win64 rigctl
+        # this is really a hack...somewhen we need a native hamlib integration for windows
+        if sys.platform == 'win32' or sys.platform == 'win64':
+            self.cmd = 'lib\\hamlib\\'+sys.platform+'\\rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
+ 
+        else:
+            self.cmd = 'rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
 
         # eseguo semplicemente rigctl con il solo comando T 1 o T 0 per
         # il set e t per il get        

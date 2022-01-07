@@ -59,6 +59,10 @@ if __name__ == '__main__':
     static.HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
     print(ARGS.hamlib_use_rigctl)
     
+    # force use of rigctl when on windows
+    if sys.platform == 'win32' or sys.platform == 'win64':
+        HAMLIB_USE_RIGCTL = True
+        
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     
     
