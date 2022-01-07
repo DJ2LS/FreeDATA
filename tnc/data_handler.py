@@ -373,7 +373,7 @@ class DATA():
                     
                 # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
                 if rawdata["dt"] == "m":
-                    static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), complete_data_frame])
+                    static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
                     #structlog.get_logger("structlog").debug("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
                 
                 
