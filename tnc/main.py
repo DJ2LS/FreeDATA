@@ -17,6 +17,7 @@ import data_handler
 import structlog
 import log_handler
 import modem
+import sys
 
 
 if __name__ == '__main__':
