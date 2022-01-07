@@ -288,13 +288,18 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                                 p = pyaudio.PyAudio()
                         # else do it the default way
                         except:
-                            p = pyaudio.Pyaudio()
+                            p = pyaudio.PyAudio()
                                     
                         for i in range(0, p.get_device_count()):
-
-                            maxInputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
-                            maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
-                            name = p.get_device_info_by_host_api_device_index(0, i).get('name')
+                            # we need to do a try exception, beacuse for windows theres now audio device range
+                            try:
+                                maxInputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
+                                maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
+                                name = p.get_device_info_by_host_api_device_index(0, i).get('name')
+                            except:
+                                maxInputChannels = 0
+                                maxOutputChannels = 0
+                                name = ''
                             #crc_name = crc_algorithm(bytes(name, encoding='utf-8'))
                             #crc_name = crc_name.to_bytes(2, byteorder='big')
                             #crc_name = crc_name.hex()
@@ -383,6 +388,7 @@ if __name__ == '__main__':
     HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
     if HAMLIB_USE_RIGCTL:
         structlog.get_logger("structlog").warning("using hamlib rigctl module...")
+        hamlib_version = 0
         import rigctl as rig
     else:
         structlog.get_logger("structlog").info("using hamlib rig module...")
@@ -391,4 +397,3 @@ if __name__ == '__main__':
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
     DAEMON_THREAD.start()
-
