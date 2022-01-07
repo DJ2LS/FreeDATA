@@ -46,7 +46,8 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
-
+        self.rx_frame_bof_received = False
+        self.rx_frame_eof_received = False
 
 
 
@@ -131,15 +132,17 @@ class DATA():
             
             if 50 >= frametype >= 10:
                 # get snr of received data
-                snr = self.calculate_snr(freedv)
+                #snr = self.calculate_snr(freedv)
+                # we need to find a wy fixing this because of mooving to class system this isn't working anymore
+                snr = static.SNR
                 structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
                 self.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv)
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
-                if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
-                    structlog.get_logger("structlog").debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
-                    self.c_lib.freedv_set_sync(freedv, 0)
+                #if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
+                #    structlog.get_logger("structlog").debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
+                #    self.c_lib.freedv_set_sync(freedv, 0)
 
             # BURST ACK
             elif frametype == 60:
@@ -265,7 +268,7 @@ class DATA():
                 static.RX_BURST_BUFFER = []
 
             # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
-            if not RX_FRAME_BOF_RECEIVED and not RX_FRAME_EOF_RECEIVED and data_in.find(self.data_frame_eof) < 0:  
+            if not self.rx_frame_bof_received and not self.rx_frame_eof_received and data_in.find(self.data_frame_eof) < 0:  
                 
                 # create an ack frame
                 ack_frame = bytearray(14)
@@ -322,8 +325,8 @@ class DATA():
         eof_position = static.RX_FRAME_BUFFER.find(self.data_frame_eof)
         if bof_position >= 0 and eof_position > 0 and not None in static.RX_BURST_BUFFER:
             print(f"bof_position {bof_position} / eof_position {eof_position}")
-            RX_FRAME_BOF_RECEIVED = True
-            RX_FRAME_EOF_RECEIVED = True
+            self.rx_frame_bof_received = True
+            self.rx_frame_eof_received = True
          
             #now extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
@@ -404,9 +407,6 @@ class DATA():
 
     def arq_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
 
-
-        global BURST_ACK_SNR
-        #global TX_START_OF_TRANSMISSION
         global TESTMODE
 
         TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
@@ -520,6 +520,7 @@ class DATA():
                 burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
                 while not self.burst_ack_received and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.001)
+                    print(self.burst_ack_received)
                     
                 # once we received a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack_received:
@@ -578,7 +579,7 @@ class DATA():
 
     # signalling frames received
     def burst_ack_received(self, data_in:bytes):
-        global BURST_ACK_SNR
+        
         
         
         
@@ -913,14 +914,11 @@ class DATA():
     # ----------------------CLEANUP AND RESET FUNCTIONS
     def arq_cleanup(self):
 
-        global RX_FRAME_BOF_RECEIVED
-        global RX_FRAME_EOF_RECEIVED            
-        global BURST_ACK_SNR
-        
+
         structlog.get_logger("structlog").debug("cleanup")
         
-        RX_FRAME_BOF_RECEIVED = False
-        RX_FRAME_EOF_RECEIVED = False
+        self.rx_frame_bof_received = False
+        self.rx_frame_eof_received = False
         static.TNC_STATE = 'IDLE'
         static.ARQ_STATE = False
         self.burst_ack_received = False
