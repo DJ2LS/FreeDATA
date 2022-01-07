@@ -66,7 +66,6 @@ AUDIO_RMS = 0
 FFT = []
 
 
-
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST = 0
 ARQ_BYTES_PER_MINUTE = 0

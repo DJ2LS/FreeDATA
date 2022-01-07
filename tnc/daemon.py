@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Dec 22 16:58:45 2020
+daemon.py
 
-@author: DJ2LS
+Author: DJ2LS, January 2022
 
 """
 
@@ -11,7 +11,6 @@ import argparse
 import threading
 import socketserver
 import time
-import os
 import sys
 import subprocess
 import ujson as json
@@ -20,7 +19,8 @@ import serial.tools.list_ports
 import static
 import crcengine
 import re
-import logging, structlog, log_handler
+import structlog
+import log_handler
 import helpers
 
 
@@ -112,25 +112,28 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
             data = bytes()
 
             # we need to loop through buffer until end of chunk is reached or timeout occured
-            while True and socketTimeout > time.time():
+            while socketTimeout > time.time():
                 chunk = self.request.recv(45)
                 data += chunk
                 # or chunk.endswith(b'\n'):
-                if chunk.endswith(b'}\n') or chunk.endswith(b'}'):
+                if chunk.startswith(b'{"type"') and chunk.endswith(b'}\n'):
                     break
             data = data[:-1]  # remove b'\n'
-            data = str(data, 'utf-8')
+            data = str(data, encoding)
 
             if len(data) > 0:
-                socketTimeout = time.time() + 3
-
-            # convert data to json object
-            # we need to do some error handling in case of socket timeout
-
-            try:
+                # reset socket timeout
+                socketTimeout = time.time() + static.SOCKET_TIMEOUT
                 # only read first line of string. multiple lines will cause an json error
                 # this occurs possibly, if we are getting data too fast
+                #    data = data.splitlines()[0]
                 data = data.splitlines()[0]
+
+
+            # we need to do some error handling in case of socket timeout or decoding issue
+            try:
+
+                # convert data to json object
                 received_json = json.loads(data)
 
             # GET COMMANDS
@@ -362,25 +365,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         print(e)
                         structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0])
 
-            # exception, if JSON cant be decoded
-            # except Exception as e:
-            except ValueError as e:
-                print("############ START OF ERROR #####################")
-                print('DAEMON PROGRAM ERROR: %s' % str(e))
-                print("Wrong command")
-                print(data)
-                print(e)
-                exc_type, exc_tb = sys.exc_info()
-                fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-                print(exc_type, fname, exc_tb.tb_lineno)
-                print("############ END OF ERROR #######################")
+            except Exception as e:
+                #socketTimeout = 0
+                structlog.get_logger("structlog").error("[DMN] Network error", e=e)
+        structlog.get_logger("structlog").warning("[DMN] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
 
-            # exception for any other errors
-            # in case of index error for example which is caused by a hard network interruption
-            except:
-                structlog.get_logger("structlog").error("[DMN] Network error", e = sys.exc_info()[0])
-        structlog.get_logger("structlog").warning("[DMN] Closing client socket")                
-        
 
 if __name__ == '__main__':
 
@@ -393,10 +382,10 @@ if __name__ == '__main__':
     PORT = ARGS.socket_port
     HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
     if HAMLIB_USE_RIGCTL:
-        structlog.get_logger("structlog").warning("using rigctl....")
+        structlog.get_logger("structlog").warning("using hamlib rigctl module...")
         import rigctl as rig
     else:
-        structlog.get_logger("structlog").warning("using rig.......")
+        structlog.get_logger("structlog").info("using hamlib rig module...")
         import rig
     # --------------------------------------------START CMD SERVER
 

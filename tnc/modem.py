@@ -23,7 +23,6 @@ import re
 import queue
 import codec2
 
-print(static.HAMLIB_USE_RIGCTL)
 if static.HAMLIB_USE_RIGCTL:
     structlog.get_logger("structlog").warning("using rigctl....")
     import rigctl as rig
@@ -84,6 +83,9 @@ class MODEMSTATS(ctypes.Structure):
         ("uw_fails", ctypes.c_int),
     ]
 
+# init FIFO queue to store received frames in
+MODEM_RECEIVED_QUEUE = queue.Queue()
+MODEM_TRANSMIT_QUEUE = queue.Queue()
 
 class RF():
 
@@ -92,7 +94,7 @@ class RF():
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400*2  #8192
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 2400     #8192 Lets to some tests with very small chunks for TX
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 2400*2     #8192 Lets to some tests with very small chunks for TX
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
@@ -104,8 +106,8 @@ class RF():
         self.c_lib = codec2.api
         self.resampler = codec2.resampler()
 
-        # init FIFO queue to store received frames in
-        self.dataqueue = queue.Queue()
+        self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
+        self.modem_received_queue = MODEM_RECEIVED_QUEUE
 
         # init FIFO queue to store modulation out in
         self.modoutqueue = queue.Queue()
@@ -175,7 +177,11 @@ class RF():
                                      output_device_index=static.AUDIO_OUTPUT_DEVICE,
                                      stream_callback=self.audio_callback
                                      )
-
+        try:                        
+            structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
+            self.audio_stream.start_stream()
+        except Exception as e:
+            structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         self.hamlib = rig.radio()
@@ -183,19 +189,27 @@ class RF():
         
         # --------------------------------------------START DECODER THREAD
 
-        FFT_THREAD = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
-        FFT_THREAD.start()
+        fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
+        fft_thread.start()
         
-        AUDIO_THREAD = threading.Thread(target=self.audio, name="AUDIO_THREAD")
-        AUDIO_THREAD.start()
+        audio_thread_datac0 = threading.Thread(target=self.audio_datac0, name="AUDIO_THREAD DATAC0")
+        audio_thread_datac0.start()
 
-        HAMLIB_THREAD = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
-        HAMLIB_THREAD.start()
+        audio_thread_datac1 = threading.Thread(target=self.audio_datac1, name="AUDIO_THREAD DATAC1")
+        audio_thread_datac1.start()
         
-        WORKER_THREAD = threading.Thread(target=self.worker, name="WORKER_THREAD")
-        WORKER_THREAD.start()
+        audio_thread_datac3 = threading.Thread(target=self.audio_datac3, name="AUDIO_THREAD DATAC3")
+        audio_thread_datac3.start()
         
-
+        hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
+        hamlib_thread.start()
+        
+        worker_received = threading.Thread(target=self.worker_received, name="WORKER_THREAD")
+        worker_received.start()
+        
+        worker_transmit = threading.Thread(target=self.worker_transmit, name="WORKER_THREAD")
+        worker_transmit.start()
+        
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
         
@@ -208,7 +222,7 @@ class RF():
         self.fft_data += bytes(x)
         
         if self.modoutqueue.empty():
-            data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2*2)
+            data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2)
         else:
             data_out48k = self.modoutqueue.get()
         
@@ -249,7 +263,8 @@ class RF():
         for i in range(1,repeats+1):
             # write preamble to txbuffer
             codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-            time.sleep(0.05)
+            #time.sleep(0.05)
+            threading.Event().wait(0.05)
             txbuffer += bytes(mod_out_preamble)
                 
             
@@ -268,14 +283,16 @@ class RF():
                 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
-                time.sleep(0.05)
+                #time.sleep(0.05)
+                threading.Event().wait(0.05)
                 txbuffer += bytes(mod_out)
                 
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
             txbuffer += bytes(mod_out_postamble)
-            time.sleep(0.05)
+            #time.sleep(0.05)
+            threading.Event().wait(0.05)
             # add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE*(repeat_delay/1000))
             mod_out_silence = create_string_buffer(samples_delay*2)
@@ -309,181 +326,73 @@ class RF():
         self.c_lib.freedv_close(freedv)        
         return True
 
-    def audio(self):
-        try:                        
-            structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
-            self.audio_stream.start_stream()
-        except Exception as e:
-            structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)            
-           
-
+    def audio_datac0(self):             
+        nbytes_datac0 = 0
+        
         while self.audio_stream.is_active():
+            threading.Event().wait(0.01)
             while self.datac0_buffer.nbuffer >= self.datac0_nin:        
 
                 # demodulate audio
-                nbytes = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
+                nbytes_datac0 = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
                 self.datac0_buffer.pop(self.datac0_nin)
                 self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
-                if nbytes == self.datac0_bytes_per_frame:
-                    self.dataqueue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
+                if nbytes_datac0 == self.datac0_bytes_per_frame:
+                    self.modem_received_queue.put([self.datac0_bytes_out, self.datac0_freedv ,self.datac0_bytes_per_frame])
                     self.get_scatter(self.datac0_freedv)
                     self.calculate_snr(self.datac0_freedv)
-                        
+
+    def audio_datac1(self):
+        nbytes_datac1 = 0
+        while self.audio_stream.is_active():
+            threading.Event().wait(0.01)
             while self.datac1_buffer.nbuffer >= self.datac1_nin:
 
-                # demodulate audio
-                nbytes = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
-                self.datac1_buffer.pop(self.datac1_nin)
-                self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
-                if nbytes == self.datac1_bytes_per_frame:
-                    self.dataqueue.put([self.datac1_bytes_out, self.datac1_freedv ,self.datac1_bytes_per_frame])
-                    self.get_scatter(self.datac1_freedv)
-                    self.calculate_snr(self.datac1_freedv)
-                                            
-            while self.datac3_buffer.nbuffer >= self.datac3_nin:
+                    # demodulate audio
+                    nbytes_datac1 = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
+                    self.datac1_buffer.pop(self.datac1_nin)
+                    self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
+                    if nbytes_datac1 == self.datac1_bytes_per_frame:
+                        self.modem_received_queue.put([self.datac1_bytes_out, self.datac1_freedv ,self.datac1_bytes_per_frame])
+                        self.get_scatter(self.datac1_freedv)
+                        self.calculate_snr(self.datac1_freedv)
+                     
+    def audio_datac3(self):                
+            nbytes_datac3 = 0
+            while self.audio_stream.is_active():
+                threading.Event().wait(0.01)
+                while self.datac3_buffer.nbuffer >= self.datac3_nin:
 
-                # demodulate audio    
-                nbytes = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
-                self.datac3_buffer.pop(self.datac3_nin)
-                self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-                if nbytes == self.datac3_bytes_per_frame:
-                    self.dataqueue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
-                    self.get_scatter(self.datac3_freedv)
-                    self.calculate_snr(self.datac3_freedv)  
+                    # demodulate audio    
+                    nbytes_datac3 = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
+                    self.datac3_buffer.pop(self.datac3_nin)
+                    self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
+                    if nbytes_datac3 == self.datac3_bytes_per_frame:
+                        self.modem_received_queue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
+                        self.get_scatter(self.datac3_freedv)
+                        self.calculate_snr(self.datac3_freedv)  
                               
                     
-            
+           
+    # worker for FIFO queue for processing received frames           
+    def worker_transmit(self):
+        while True:
+            data = self.modem_transmit_queue.get()
+            self.transmit(mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3])
+            self.modem_transmit_queue.task_done()            
             
                       
            
     # worker for FIFO queue for processing received frames           
-    def worker(self):
+    def worker_received(self):
         while True:
-            time.sleep(0.01)
-            data = self.dataqueue.get()
+            data = self.modem_received_queue.get()
             # data[0] = bytes_out
             # data[1] = freedv session
             # data[2] = bytes_per_frame
-            self.process_data(data[0], data[1], data[2])
-            self.dataqueue.task_done()
+            data_handler.DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2]])
+            self.modem_received_queue.task_done()
    
-    
-    # forward data only if broadcast or we are the receiver
-    # bytes_out[1:2] == callsign check for signalling frames, 
-    # bytes_out[6:7] == callsign check for data frames, 
-    # bytes_out[1:2] == b'\x01' --> broadcasts like CQ with n frames per_burst = 1
-    # we could also create an own function, which returns True. 
-    def process_data(self, bytes_out, freedv, bytes_per_frame):
-
-        if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[3:4]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
-
-            # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
-            frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
-            frame = frametype - 10
-            n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
-            #self.c_lib.freedv_set_frames_per_burst(freedv, n_frames_per_burst);
-
-            #frequency_offset = self.get_frequency_offset(freedv)
-            #print("Freq-Offset: " + str(frequency_offset))
-            
-            if 50 >= frametype >= 10:
-                # get snr of received data
-                snr = self.calculate_snr(freedv)
-                structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
-                # send payload data to arq checker without CRC16
-                data_handler.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv)
-
-                # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
-                if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
-                    structlog.get_logger("structlog").debug(f"LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
-                    self.c_lib.freedv_set_sync(freedv, 0)
-
-
-            # BURST ACK
-            elif frametype == 60:
-                structlog.get_logger("structlog").debug("ACK RECEIVED....")
-                
-                data_handler.burst_ack_received(bytes_out[:-2])
-
-            # FRAME ACK
-            elif frametype == 61:
-                structlog.get_logger("structlog").debug("FRAME ACK RECEIVED....")
-                data_handler.frame_ack_received()
-
-            # FRAME RPT
-            elif frametype == 62:
-                structlog.get_logger("structlog").debug("REPEAT REQUEST RECEIVED....")
-                data_handler.burst_rpt_received(bytes_out[:-2])
-
-            # FRAME NACK
-            elif frametype == 63:
-                structlog.get_logger("structlog").debug("FRAME NOT ACK RECEIVED....")
-                data_handler.frame_nack_received(bytes_out[:-2])
-
-            # CQ FRAME
-            elif frametype == 200:
-                structlog.get_logger("structlog").debug("CQ RECEIVED....")
-                data_handler.received_cq(bytes_out[:-2])
-
-            # PING FRAME
-            elif frametype == 210:
-                structlog.get_logger("structlog").debug("PING RECEIVED....")
-                frequency_offset = self.get_frequency_offset(freedv)
-                #print("Freq-Offset: " + str(frequency_offset))
-                data_handler.received_ping(bytes_out[:-2], frequency_offset)
-                
-
-            # PING ACK
-            elif frametype == 211:
-                structlog.get_logger("structlog").debug("PING ACK RECEIVED....")
-                # early detection of frequency offset
-                #frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
-                #print("Freq-Offset: " + str(frequency_offset))
-                #current_frequency = self.my_rig.get_freq()
-                #corrected_frequency = current_frequency + frequency_offset
-                # temporarely disabled this feature, beacuse it may cause some confusion.
-                # we also have problems if we are operating at band bordes like 7.000Mhz
-                # If we get a corrected frequency less 7.000 Mhz, Ham Radio devices will not transmit...
-                #self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
-                #self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
-                data_handler.received_ping_ack(bytes_out[:-2])
-
-            # ARQ FILE TRANSFER RECEIVED!
-            elif frametype == 225:
-                structlog.get_logger("structlog").debug("ARQ arq_received_data_channel_opener")
-                data_handler.arq_received_data_channel_opener(bytes_out[:-2])
-    
-            # ARQ CHANNEL IS OPENED
-            elif frametype == 226:
-                structlog.get_logger("structlog").debug("ARQ arq_received_channel_is_open")
-                data_handler.arq_received_channel_is_open(bytes_out[:-2])
-
-            # ARQ CONNECT ACK / KEEP ALIVE
-            # this is outdated and we may remove it
-            elif frametype == 230:
-                structlog.get_logger("structlog").debug("BEACON RECEIVED")
-                data_handler.received_beacon(bytes_out[:-2])
-
-            # TESTFRAMES
-            elif frametype == 255:
-                structlog.get_logger("structlog").debug("TESTFRAME RECEIVED", frame=bytes_out[:])
-                
-                
-            else:
-                structlog.get_logger("structlog").warning("[TNC] ARQ - other frame type", frametype=frametype)
-
-            
-            # DO UNSYNC AFTER LAST BURST by checking the frame nums against the total frames per burst
-            # this should be changed to a timeout based unsync
-            if frame == n_frames_per_burst:
-                logging.info("LAST FRAME ---> UNSYNC")
-                self.c_lib.freedv_set_sync(freedv, 0)  # FORCE UNSYNC
-            
-
-        else:
-            # for debugging purposes to receive all data
-            structlog.get_logger("structlog").debug("[TNC] Unknown frame received", frame=bytes_out[:-2])
-
 
     def get_frequency_offset(self, freedv):
         modemStats = MODEMSTATS()
@@ -538,7 +447,8 @@ class RF():
 
     def update_rig_data(self):
         while True:
-            time.sleep(0.5)            
+            #time.sleep(0.5)
+            threading.Event().wait(0.5)
             #(static.HAMLIB_FREQUENCY, static.HAMLIB_MODE, static.HAMLIB_BANDWITH, static.PTT_STATE) = self.hamlib.get_rig_data()
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
@@ -546,12 +456,14 @@ class RF():
     
     def calculate_fft(self):
         while True:
-            time.sleep(0.01)
+            #time.sleep(0.01)
+            threading.Event().wait(0.01)
             # WE NEED TO OPTIMIZE THIS!
-            if len(self.fft_data) >= 1024:
+            if len(self.fft_data) >= 128:
+            
                 data_in = self.fft_data
-                self.fft_data = bytes()
-                
+                self.fft_data = bytes()                       
+
                 # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
                 audio_data = np.fromstring(data_in, np.int16)
                 # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
@@ -568,6 +480,7 @@ class RF():
                     dfftlist = dfft.tolist()
                     
                     static.FFT = dfftlist[0:320] #200 --> bandwith 3000    
+
                 except:
                     
                     structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
@@ -576,12 +489,16 @@ class RF():
             else:
                 pass
                 
-    def get_bytes_per_frame(self, mode):
-        freedv = cast(codec2.api.freedv_open(mode), c_void_p)
-
-        # get number of bytes per frame for mode
-        return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
-        
     def set_frames_per_burst(self, n_frames_per_burst):
         codec2.api.freedv_set_frames_per_burst(self.datac1_freedv,n_frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,n_frames_per_burst)        
+                
+                
+                
+                
+def get_bytes_per_frame(mode):
+    freedv = cast(codec2.api.freedv_open(mode), c_void_p)
+
+    # get number of bytes per frame for mode
+    return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
+    

@@ -11,16 +11,12 @@ Created on Tue Dec 22 16:58:45 2020
 import argparse
 import threading
 import static
-import subprocess
 import socketserver
-import sys
 import helpers
-
-import logging, structlog, log_handler
-
-
-
-
+import data_handler
+import structlog
+import log_handler
+import modem
 
 
 if __name__ == '__main__':
@@ -65,13 +61,15 @@ if __name__ == '__main__':
     
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     
-    import helpers
     
-    
-
     # config logging
-    #helpers.setup_logging()
     log_handler.setup_logging("tnc")
+
+    # start data handler
+    data_handler.DATA()
+    
+    # start modem
+    modem = modem.RF()
 
     # --------------------------------------------START CMD SERVER
 

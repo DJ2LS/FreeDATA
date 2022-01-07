@@ -83,30 +83,29 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
                 # CQ CQ CQ -----------------------------------------------------
                 if received_json["command"] == "CQCQCQ":
-
-                    CQ_THREAD = threading.Thread(target=data_handler.transmit_cq, args=[], name="CQ")
-                    CQ_THREAD.start()
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['CQ'])
 
                 # START_BEACON -----------------------------------------------------
                 if received_json["command"] == "START_BEACON":
+
                     static.BEACON_STATE = True
                     interval = int(received_json["parameter"])
-                    BEACON_THREAD = threading.Thread(target=data_handler.run_beacon, args=[interval], name="START BEACON")
-                    BEACON_THREAD.start()
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, True])
+
                     
                 # STOP_BEACON -----------------------------------------------------
                 if received_json["command"] == "STOP_BEACON":
                     static.BEACON_STATE = False
                     structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, False])
                     
                                         
                 # PING ----------------------------------------------------------
                 if received_json["type"] == 'PING' and received_json["command"] == "PING":
                     # send ping frame and wait for ACK
                     dxcallsign = received_json["dxcallsign"]
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
 
-                    PING_THREAD = threading.Thread(target=data_handler.transmit_ping, args=[dxcallsign], name="PING")
-                    PING_THREAD.start()
 
 
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendFile":
@@ -137,9 +136,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_FILE', data_out, mode, n_frames])
 
-                    ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
-                    ARQ_DATA_THREAD.start()
                 # send message
                 if received_json["type"] == 'ARQ' and received_json["command"] == "sendMessage":
                     static.TNC_STATE = 'BUSY'
@@ -168,8 +166,8 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     dataframe = json.dumps(rawdata)
                     data_out = bytes(dataframe, 'utf-8')
 
-                    ARQ_DATA_THREAD = threading.Thread(target=data_handler.open_dc_and_transmit, args=[data_out, mode, n_frames], name="ARQ_DATA")
-                    ARQ_DATA_THREAD.start()
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_MESSAGE', data_out, mode, n_frames])
+
                     
                     
                 if received_json["type"] == 'ARQ' and received_json["command"] == "stopTransmission":

@@ -7,11 +7,7 @@
 # e' una pezza clamorosa ma serve per poter provare on-air il modem
 #
 import subprocess
-#
-import sys
-import re
-import logging, structlog, log_handler
-import atexit
+import structlog
 import time
 # for rig_model -> rig_number only
 

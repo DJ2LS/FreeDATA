@@ -7,7 +7,6 @@ Created on Fri Dec 25 21:25:14 2020
 """
 
 import time
-import logging
 import crcengine
 import static
 

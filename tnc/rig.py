@@ -2,7 +2,7 @@
 
 import sys
 import re
-import logging, structlog, log_handler
+import structlog
 import atexit
 import subprocess
 
