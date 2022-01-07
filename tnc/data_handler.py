@@ -38,7 +38,7 @@ class DATA():
 
         self.data_channel_last_received      =   0.0         # time of last "live sign" of a frame      
         self.burst_ack_snr                  =   0           # SNR from received ack frames
-        self.burst_ack_received              =   False       # if we received an acknowledge frame for a burst
+        self.burst_ack              =   False       # if we received an acknowledge frame for a burst
         self.data_frame_ack_received         =   False       # if we received an acknowledge frame for a data frame
         self.rpt_request_received            =   False       # if we received an request for repeater frames
         self.rpt_request_buffer              =   []          # requested frames, saved in a list           
@@ -147,7 +147,7 @@ class DATA():
             # BURST ACK
             elif frametype == 60:
                 structlog.get_logger("structlog").debug("ACK RECEIVED....")
-                self.self.burst_ack_received(bytes_out[:-2])
+                self.burst_ack_received(bytes_out[:-2])
 
             # FRAME ACK
             elif frametype == 61:
@@ -279,8 +279,11 @@ class DATA():
                 # and transmit it
                 txbuffer = [ack_frame]
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
+                static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
-
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
                 self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))   
 
         
@@ -310,7 +313,11 @@ class DATA():
             # and transmit it
             txbuffer = [rpt_frame]
             structlog.get_logger("structlog").info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
+            static.TRANSMITTING = True
             modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+            # wait while transmitting
+            while static.TRANSMITTING:
+                time.sleep(0.01)
             self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
             
             
@@ -379,7 +386,11 @@ class DATA():
                 # TRANSMIT ACK FRAME FOR BURST
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
                 txbuffer = [ack_frame]
+                static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
                 # update our statistics AFTER the frame ACK
                 self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
                            
@@ -397,7 +408,11 @@ class DATA():
                 
                 # TRANSMIT NACK FRAME FOR BURST
                 txbuffer = [nack_frame]
-                modem.transmit(mode=14, repeats=1, repeat_delay=0, frames=txbuffer)    
+                static.TRANSMITTING = True
+                modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
             # And finally we do a cleanup of our buffers and states
             # do cleanup only when not in testmode
             if not TESTMODE:
@@ -448,8 +463,7 @@ class DATA():
         # iterate through data out buffer
         while bufferposition < len(data_out) and not self.data_frame_ack_received and static.ARQ_STATE:
 
-            
-            
+                       
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
 
@@ -515,16 +529,26 @@ class DATA():
                 
                 structlog.get_logger("structlog").debug("[TNC] tempbuffer", tempbuffer=tempbuffer)
                 structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
+                
+                # we need to set our TRANSMITTING flag before we are adding an object the transmit queue
+                # this is not that nice, we could improve this somehow
+                static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([data_mode,1,0,tempbuffer])
-                # lets wait for an ACK or RPT frame
+                
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
+                
+                # after transmission finished  wait for an ACK or RPT frame
                 burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
-                while not self.burst_ack_received and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
-                    time.sleep(0.001)
-                    print(self.burst_ack_received)
+                while not self.burst_ack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
+                    time.sleep(0.01)
+                    structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE)
+                    
                     
                 # once we received a burst ack, reset its state and break the RETRIES loop
-                if self.burst_ack_received:
-                    self.burst_ack_received = False # reset ack state
+                if self.burst_ack:
+                    self.burst_ack = False # reset ack state
                     TX_N_RETRIES_PER_BURST = 0 # reset retries
                     break #break retry loop
 
@@ -585,7 +609,7 @@ class DATA():
         
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
-            self.burst_ack_received = True  # Force data loops of TNC to stop and continue with next frame
+            self.burst_ack = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
             self.burst_ack_snr= int.from_bytes(bytes(data_in[3:4]), "big")
 
@@ -673,7 +697,12 @@ class DATA():
                 structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
                 
                 txbuffer = [connection_frame]
+                
+                static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
                 
                 timeout = time.time() + 3    
                 while time.time() < timeout:    
@@ -719,10 +748,14 @@ class DATA():
         connection_frame[1:2] = static.DXCALLSIGN_CRC8
         connection_frame[2:3] = static.MYCALLSIGN_CRC8
         connection_frame[3:9] = static.MYCALLSIGN
-        
+
         txbuffer = [connection_frame]
-        modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         
+        static.TRANSMITTING = True
+        modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)
         structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
         
         # set start of transmission for our statistics
@@ -762,8 +795,11 @@ class DATA():
         ping_frame[3:9] = static.MYCALLSIGN
 
         txbuffer = [ping_frame]
+        static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])  
-
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)
     def received_ping(self, data_in:bytes, frequency_offset:str):
 
         static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
@@ -782,8 +818,11 @@ class DATA():
         ping_frame[9:11] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
 
         txbuffer = [ping_frame]
+        static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
-        
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)       
     def received_ping_ack(self, data_in:bytes):
 
         static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
@@ -818,9 +857,13 @@ class DATA():
                 structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
                 
                 txbuffer = [beacon_frame]
+                static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
-                #time.sleep(interval)
-                threading.Event().wait(interval)
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
+                time.sleep(interval)
+                #threading.Event().wait(interval)
                                                                 
         except Exception as e:
             print(e)
@@ -846,8 +889,11 @@ class DATA():
         cq_frame[8:14] = static.MYGRID
         
         txbuffer = [cq_frame]
+        static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,2,500,txbuffer])
-
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)
         return
 
 
@@ -921,7 +967,7 @@ class DATA():
         self.rx_frame_eof_received = False
         static.TNC_STATE = 'IDLE'
         static.ARQ_STATE = False
-        self.burst_ack_received = False
+        self.burst_ack = False
         self.rpt_request_received = False
         self.data_frame_ack_received = False
         static.RX_BURST_BUFFER = []
@@ -930,7 +976,7 @@ class DATA():
 
     def arq_reset_ack(self,state:bool):
 
-        self.burst_ack_received = state
+        self.burst_ack = state
         self.rpt_request_received = state
         self.data_frame_ack_received = state
 

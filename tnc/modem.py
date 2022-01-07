@@ -86,6 +86,7 @@ class MODEMSTATS(ctypes.Structure):
 # init FIFO queue to store received frames in
 MODEM_RECEIVED_QUEUE = queue.Queue()
 MODEM_TRANSMIT_QUEUE = queue.Queue()
+static.TRANSMITTING = False
 
 class RF():
 
@@ -232,7 +233,7 @@ class RF():
 
 
     def transmit(self, mode, repeats, repeat_delay, frames):     
-        
+        static.TRANSMITTING = True
         # open codec2 instance       
         #self.MODE = codec2.freedv_get_mode_value_by_name(mode)
         self.MODE = mode
@@ -323,8 +324,10 @@ class RF():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
       
-        self.c_lib.freedv_close(freedv)        
-        return True
+        self.c_lib.freedv_close(freedv)
+        self.modem_transmit_queue.task_done()
+        static.TRANSMITTING = False
+        threading.Event().set()
 
     def audio_datac0(self):             
         nbytes_datac0 = 0
@@ -379,7 +382,7 @@ class RF():
         while True:
             data = self.modem_transmit_queue.get()
             self.transmit(mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3])
-            self.modem_transmit_queue.task_done()            
+            #self.modem_transmit_queue.task_done()            
             
                       
            
