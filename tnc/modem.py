@@ -217,10 +217,17 @@ class RF():
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)    
 
-        self.datac0_buffer.push(x)
-        self.datac1_buffer.push(x)
-        self.datac3_buffer.push(x)
-        self.fft_data += bytes(x)
+        # avoid buffer overflow
+        if not self.datac0_buffer.nbuffer+len(x) > self.datac0_buffer.size:
+            self.datac0_buffer.push(x)
+        # avoid buffer overflow    
+        if not self.datac1_buffer.nbuffer+len(x) > self.datac1_buffer.size:
+            self.datac1_buffer.push(x)
+        # avoid buffer overflow
+        if not self.datac3_buffer.nbuffer+len(x) > self.datac3_buffer.size:
+            self.datac3_buffer.push(x)
+        
+        self.fft_data = bytes(x)
         
         if self.modoutqueue.empty():
             data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2)
