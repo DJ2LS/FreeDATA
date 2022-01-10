@@ -46,7 +46,7 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
-        self.mode_list = [14,12,10] # mode list of available modes
+        self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
 
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
@@ -482,15 +482,16 @@ class DATA():
                     # as soon as we received an ACK for the current burst, speed_level will increase
                     # by 1.
                     # the can be optimised by checking the optimal speed level for the current conditions
+                    print(self.tx_n_retry_of_burst)
                     if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
                         self.speed_level -= 1
                         if self.speed_level < 0:
                             self.speed_level = 0
                     
-                    if self.tx_n_retry_of_burst <= 1:
-                        self.speed_level += 1
-                        if self.speed_level >= len(self.mode_list)-1:
-                            self.speed_level = len(self.mode_list)-1
+                    #if self.tx_n_retry_of_burst <= 1:
+                    #    self.speed_level += 1
+                    #    if self.speed_level >= len(self.mode_list)-1:
+                    #        self.speed_level = len(self.mode_list)-1
                     data_mode = self.mode_list[self.speed_level]
                     print(f"data_mode {data_mode} speed_level {self.speed_level}")
                     
@@ -580,7 +581,7 @@ class DATA():
             # update buffer position
             bufferposition = bufferposition_end
 
-            # update stats
+        #     # update stats
             self.calculate_transfer_rate_tx(tx_start_of_transmission, bufferposition_end, len(data_out)) 
             #GOING TO NEXT ITERATION
             
@@ -612,8 +613,10 @@ class DATA():
     # signalling frames received
     def burst_ack_received(self, data_in:bytes):
         
-        
-        
+        # increase speed level if we received a burst ack
+        self.speed_level += 1
+        if self.speed_level >= len(self.mode_list)-1:
+             self.speed_level = len(self.mode_list)-1
         
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
@@ -631,7 +634,8 @@ class DATA():
 
     def frame_nack_received(self, data_in:bytes):
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
-        self.arq_cleanup()
+        if not TESTMODE:
+            self.arq_cleanup()
 
 
 
@@ -725,7 +729,8 @@ class DATA():
                     static.INFO.append("DATACHANNEL;FAILED")
                     
                     structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
-                    self.arq_cleanup()
+                    if not TESTMODE:
+                        self.arq_cleanup()
                     sys.exit() # close thread and so connection attempts
 
 
@@ -1016,4 +1021,5 @@ class DATA():
                 self.data_channel_last_received = 0
                 logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                 static.INFO.append("ARQ;RECEIVING;FAILED")
-                self.arq_cleanup()
+                if not TESTMODE:
+                    self.arq_cleanup()
