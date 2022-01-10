@@ -210,7 +210,7 @@ class DATA():
             # ARQ STOP TRANSMISSION
             elif frametype == 227:
                 structlog.get_logger("structlog").debug("ARQ received stop transmis")
-                self.received_stop_transmission(bytes_out[:-2])
+                self.received_stop_transmission()
 
             # ARQ CONNECT ACK / KEEP ALIVE
             # this is outdated and we may remove it
