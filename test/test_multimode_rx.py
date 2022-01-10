@@ -56,6 +56,16 @@ rx_total_frames_datac3 = 0
 rx_frames_datac3 = 0
 rx_bursts_datac3 = 0
 
+# time meassurement
+time_start_datac0 = 0
+time_end_datac0 = 0
+time_start_datac1 = 0
+time_end_datac1 = 0
+time_start_datac3 = 0
+time_end_datac3 = 0
+time_needed_datac0 = 0
+time_needed_datac1 = 0
+time_needed_datac3 = 0
 
 # open codec2 instance        
 datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
@@ -113,7 +123,7 @@ datac0_nin = codec2.api.freedv_nin(datac0_freedv)
 datac1_nin = codec2.api.freedv_nin(datac1_freedv)               
 datac3_nin = codec2.api.freedv_nin(datac3_freedv)               
 
-def print_stats():
+def print_stats(time_needed_datac0, time_needed_datac1, time_needed_datac3):
     if DEBUGGING_MODE:
         datac0_rxstatus = codec2.api.freedv_get_rx_status(datac0_freedv)
         datac0_rxstatus = codec2.api.rx_sync_flags_to_text[datac0_rxstatus]
@@ -124,8 +134,8 @@ def print_stats():
         datac3_rxstatus = codec2.api.freedv_get_rx_status(datac3_freedv)
         datac3_rxstatus = codec2.api.rx_sync_flags_to_text[datac3_rxstatus]
 
-        print("NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s" % \
-              (datac0_nin, datac0_rxstatus, datac1_nin, datac1_rxstatus, datac3_nin, datac3_rxstatus),
+        print("NIN0: %5d RX_STATUS0: %4s TIME: %4s | NIN1: %5d RX_STATUS1: %4s TIME: %4s | NIN3: %5d RX_STATUS3: %4s TIME: %4s" % \
+              (datac0_nin, datac0_rxstatus, round(time_needed_datac0, 4), datac1_nin, datac1_rxstatus, round(time_needed_datac1, 4) ,datac3_nin, datac3_rxstatus, round(time_needed_datac3, 4)),
               file=sys.stderr)
 
 while receive and time.time() < timeout:
@@ -156,7 +166,9 @@ while receive and time.time() < timeout:
                    
     while datac0_buffer.nbuffer >= datac0_nin:        
         # demodulate audio
+        time_start_datac0 = time.time()
         nbytes = codec2.api.freedv_rawdatarx(datac0_freedv, datac0_bytes_out, datac0_buffer.buffer.ctypes)
+        time_end_datac0 = time.time()
         datac0_buffer.pop(datac0_nin)
         datac0_nin = codec2.api.freedv_nin(datac0_freedv)
         if nbytes == datac0_bytes_per_frame:
@@ -166,11 +178,14 @@ while receive and time.time() < timeout:
             if rx_frames_datac0 == N_FRAMES_PER_BURST:
                 rx_frames_datac0 = 0
                 rx_bursts_datac0 = rx_bursts_datac0 + 1
-        print_stats()
+        time_needed_datac0 = time_end_datac0 - time_start_datac0
+        print_stats(time_needed_datac0, time_needed_datac1, time_needed_datac3)
        
     while datac1_buffer.nbuffer >= datac1_nin:
         # demodulate audio
+        time_start_datac1 = time.time()
         nbytes = codec2.api.freedv_rawdatarx(datac1_freedv, datac1_bytes_out, datac1_buffer.buffer.ctypes)
+        time_end_datac1 = time.time()
         datac1_buffer.pop(datac1_nin)
         datac1_nin = codec2.api.freedv_nin(datac1_freedv)
         if nbytes == datac1_bytes_per_frame:
@@ -180,11 +195,14 @@ while receive and time.time() < timeout:
             if rx_frames_datac1 == N_FRAMES_PER_BURST:
                 rx_frames_datac1 = 0
                 rx_bursts_datac1 = rx_bursts_datac1 + 1
-        print_stats()
+        time_needed_datac1 = time_end_datac1 - time_start_datac1
+        print_stats(time_needed_datac0, time_needed_datac1, time_needed_datac3)
                     
     while datac3_buffer.nbuffer >= datac3_nin:
         # demodulate audio    
+        time_start_datac3 = time.time()
         nbytes = codec2.api.freedv_rawdatarx(datac3_freedv, datac3_bytes_out, datac3_buffer.buffer.ctypes)
+        time_end_datac3 = time.time()
         datac3_buffer.pop(datac3_nin)
         datac3_nin = codec2.api.freedv_nin(datac3_freedv)
         if nbytes == datac3_bytes_per_frame:
@@ -194,7 +212,8 @@ while receive and time.time() < timeout:
             if rx_frames_datac3 == N_FRAMES_PER_BURST:
                 rx_frames_datac3 = 0
                 rx_bursts_datac3 = rx_bursts_datac3 + 1   
-        print_stats()
+        time_needed_datac3 = time_end_datac3 - time_start_datac3
+        print_stats(time_needed_datac0, time_needed_datac1, time_needed_datac3)
 
     if rx_bursts_datac0 == N_BURSTS and rx_bursts_datac1 == N_BURSTS and rx_bursts_datac3 == N_BURSTS:
         receive = False 
@@ -206,6 +225,10 @@ if nread_exceptions:
 if time.time() > timeout:
     print(f"TIMEOUT REACHED", file=sys.stderr)    
           
+
+
+
+
 print(f"DATAC0: {rx_bursts_datac0}/{rx_total_frames_datac0} DATAC1: {rx_bursts_datac1}/{rx_total_frames_datac1} DATAC3: {rx_bursts_datac3}/{rx_total_frames_datac3}", file=sys.stderr)
 
 if AUDIO_INPUT_DEVICE != -1: 

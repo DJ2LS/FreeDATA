@@ -108,6 +108,10 @@ receive = True
 audio_buffer = codec2.audio_buffer(AUDIO_FRAMES_PER_BUFFER*2)
 resampler = codec2.resampler()
 
+# time meassurement
+time_start = 0
+time_end = 0
+
 # Copy received 48 kHz to a file.  Listen to this file with:
 #   aplay -r 48000 -f S16_LE rx48.raw
 # Corruption of this file is a good way to detect audio card issues
@@ -139,9 +143,12 @@ while receive and time.time() < timeout:
     
     # when we have enough samples call FreeDV Rx
     while audio_buffer.nbuffer >= nin:
-
+        # start time measurement
+        time_start = time.time()
         # demodulate audio
         nbytes = codec2.api.freedv_rawdatarx(freedv, bytes_out, audio_buffer.buffer.ctypes)        
+        time_end = time.time()
+        
         audio_buffer.pop(nin)
         
         # call me on every loop!
@@ -152,8 +159,10 @@ while receive and time.time() < timeout:
             rx_errors = rx_errors + 1
         if DEBUGGING_MODE:        
           rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
-          print("nin: %5d rx_status: %4s naudio_buffer: %4d" % \
-                (nin,rx_status,audio_buffer.nbuffer), file=sys.stderr)
+          time_needed = time_end - time_start
+
+          print("nin: %5d rx_status: %4s naudio_buffer: %4d time: %4s" % \
+                (nin,rx_status,audio_buffer.nbuffer, time_needed), file=sys.stderr)
 
         if nbytes:
             total_n_bytes = total_n_bytes + nbytes
