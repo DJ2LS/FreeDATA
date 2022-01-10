@@ -20,17 +20,17 @@ if (!fs.existsSync(configFolder)) {
 // create config file if not exists
 var configContent = `
 {
-  "tnc_host": "192.168.178.163",
+  "tnc_host": "127.0.0.1",
   "tnc_port": "3000",
-  "daemon_host": "192.168.178.163",
+  "daemon_host": "127.0.0.1",
   "daemon_port": "3001",
   "mycall": "AA0AA",
   "mygrid": "JN40aa",
-  "deviceid": "2028",
-  "deviceport": "/dev/ttyUSB0",
+  "deviceid": "RIG_MODEL_DUMMY_NOVFO",
+  "deviceport": "/dev/ttyACM1",
   "serialspeed": "9600",
-  "ptt": "RTS",
-  "spectrum": "scatter",
+  "ptt": "USB",
+  "spectrum": "waterfall",
   "tnclocation": "localhost"
 }
 `;
@@ -86,10 +86,10 @@ var daemonProcess = null;
 
 function createWindow() {
     win = new BrowserWindow({
-        width: 1000,
+        width: 1050,
         height: 430,
         autoHideMenuBar: true,
-        icon: __dirname + '/src/app-icon.png',
+        icon: __dirname + '/src/cube_round.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
             preload: require.resolve('./preload-main.js'),

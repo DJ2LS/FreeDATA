@@ -25,9 +25,11 @@ import helpers
 
 
 log_handler.setup_logging("daemon")
+structlog.get_logger("structlog").info("[DMN] Starting FreeDATA daemon", author="DJ2LS", year="2022", version="0.1")
+
 # get python version, which is needed later for determining installation path
 python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
-structlog.get_logger("structlog").info("[DMN] Starting...", python=python_version)
+structlog.get_logger("structlog").info("[DMN] Python", version=python_version)
 
 
 ####################################################
