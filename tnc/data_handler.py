@@ -261,10 +261,20 @@ class DATA():
         this is the ideal case because we received all data
         '''
         if not None in static.RX_BURST_BUFFER:
-            # then iterate through burst buffer and append data to frame buffer
+            # then iterate through burst buffer and stick the burst together
+            # the temp burst buffer is needed for checking, if we already recevied data
+            temp_burst_buffer = b''
             for i in range(0,len(static.RX_BURST_BUFFER)):
-                static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
-                # then delete burst buffer
+                #static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
+                temp_burst_buffer += static.RX_BURST_BUFFER[i]
+
+            # if frame buffer ends not with the current frame, we are going to append new data
+            # if data already exists, we received the frame correctly, but the ACK frame didnt receive its destination (ISS)
+            if not static.RX_FRAME_BUFFER.endswith(temp_burst_buffer):
+                static.RX_FRAME_BUFFER += temp_burst_buffer
+                static.RX_BURST_BUFFER = []
+            else:
+                structlog.get_logger("structlog").info("[TNC] ARQ | RX | Frame already received - sending ACK again")
                 static.RX_BURST_BUFFER = []
 
             # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
