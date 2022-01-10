@@ -909,7 +909,15 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             var toastDATACHANNELreceivedopener = document.getElementById('toastDATACHANNELreceivedopener')
             var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener) // Returns a Bootstrap toast instance
             toast.show()
-        }                       
+        }  
+         // TRANSMISSION STOPPED
+        if (arg.info[i] == "TRANSMISSION;STOPPED"){
+            var toastDATACHANNELreceivedopener = document.getElementById('toastTRANSMISSIONstopped')
+            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener) // Returns a Bootstrap toast instance
+            toast.show()
+        }         
+               
+                             
          // DATACHANNEL FAILED TOAST
         if (arg.info[i] == "DATACHANNEL;FAILED"){
             var toastDATACHANNELfailed = document.getElementById('toastDATACHANNELfailed')

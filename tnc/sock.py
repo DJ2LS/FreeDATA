@@ -171,6 +171,7 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
                     
                     
                 if received_json["type"] == 'ARQ' and received_json["command"] == "stopTransmission":
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['STOP'])
                     print(" >>> STOPPING TRANSMISSION <<<")
                     structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
                     static.TNC_STATE = 'IDLE'

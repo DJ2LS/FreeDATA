@@ -72,7 +72,9 @@ class DATA():
             if data[0] == 'CQ':
                 # [0] CQ
                 self.transmit_cq()
-                
+            elif data[0] == 'STOP':
+                self.stop_transmission()
+            
             elif data[0] == 'PING':
                 # [0] PING
                 # [1] dxcallsign
@@ -203,6 +205,12 @@ class DATA():
             elif frametype == 226:
                 structlog.get_logger("structlog").debug("ARQ arq_received_channel_is_open")
                 self.arq_received_channel_is_open(bytes_out[:-2])
+
+    
+            # ARQ STOP TRANSMISSION
+            elif frametype == 227:
+                structlog.get_logger("structlog").debug("ARQ received stop transmis")
+                self.received_stop_transmission(bytes_out[:-2])
 
             # ARQ CONNECT ACK / KEEP ALIVE
             # this is outdated and we may remove it
@@ -859,8 +867,31 @@ class DATA():
         static.TNC_STATE = 'IDLE'
     
 
+    def stop_transmission(self):
+        structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
+        stop_frame      = bytearray(14)
+        stop_frame[:1]  = bytes([227])
+        stop_frame[1:2] = static.DXCALLSIGN_CRC8
+        stop_frame[2:3] = static.MYCALLSIGN_CRC8
 
+        txbuffer = [stop_frame]
+        static.TRANSMITTING = True
+        modem.MODEM_TRANSMIT_QUEUE.put([14,2,250,txbuffer])
+        while static.TRANSMITTING:
+            time.sleep(0.01)
+            
+        static.TNC_STATE = 'IDLE'
+        static.ARQ_STATE = False
+        static.INFO.append("TRANSMISSION;STOPPED")
+        self.arq_cleanup()
 
+    def received_stop_transmission(self):
+        structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
+        static.TNC_STATE = 'IDLE'
+        static.ARQ_STATE = False
+        static.INFO.append("TRANSMISSION;STOPPED")
+        self.arq_cleanup()
+        
     # ----------- BROADCASTS
     
     def run_beacon(self, interval:int):
