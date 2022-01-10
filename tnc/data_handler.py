@@ -46,10 +46,12 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
 
+        self.mode_list = [14,12,10] # mode list of available modes
+
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-
+        self.transmission_timeout = 360 # transmission timeout in seco
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit")
         worker_thread_transmit.start()
@@ -65,7 +67,6 @@ class DATA():
     def worker_transmit(self):
          while True:
             data = self.data_queue_transmit.get()
-            print(data)
             # [0] Command
 
             if data[0] == 'CQ':
@@ -106,7 +107,6 @@ class DATA():
     def worker_receive(self):
          while True:
             data = self.data_queue_received.get()
-            print(data)
             # [0] bytes
             # [1] freedv instance
             # [2] bytes_per_frame
@@ -376,7 +376,6 @@ class DATA():
                     static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
                     #structlog.get_logger("structlog").debug("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
                 
-                
                 # BUILDING ACK FRAME FOR DATA FRAME
                 ack_frame       = bytearray(14)
                 ack_frame[:1]   = bytes([61])
@@ -423,10 +422,13 @@ class DATA():
     def arq_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
 
         global TESTMODE
+        
+        self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+        
 
         TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
-        TX_N_RETRIES_PER_BURST          = 0                     # retries we already sent data
-        TX_N_MAX_RETRIES_PER_BURST      = 5                     # max amount of retries we sent before frame is lost
+        self.tx_n_retry_of_burst          = 0                     # retries we already sent data
+        TX_N_MAX_RETRIES_PER_BURST      = 50                     # max amount of retries we sent before frame is lost
         TX_N_FRAMES_PER_BURST           = n_frames_per_burst    # amount of n frames per burst    
         TX_BUFFER = []  # our buffer for appending new data
         
@@ -465,7 +467,7 @@ class DATA():
 
                        
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
-            for TX_N_RETRIES_PER_BURST in range(0,TX_N_MAX_RETRIES_PER_BURST):
+            for self.tx_n_retry_of_burst in range(0,TX_N_MAX_RETRIES_PER_BURST):
 
                 # AUTO MODE SELECTION
                 # mode 255 == AUTO MODE
@@ -475,18 +477,24 @@ class DATA():
                     structlog.get_logger("structlog").debug("FIXED MODE", mode=data_mode)
 
                 else:
-                    # at beginnign of transmission try fastest mode
-                    if bufferposition == 0:
-                        data_mode = 10
-                    # if we have a reduced SNR OR its the second attempt of sending data, select slower mode
-                    if self.burst_ack_snr< 10 or TX_N_RETRIES_PER_BURST >= 2:
-                        data_mode = 12
-                        structlog.get_logger("structlog").debug("AUTO MODE", mode=data_mode)
-                        
-                    # if we have (again) a high SNR and our attmepts are 0, then switch back to a faster mode
-                    if self.burst_ack_snr< 20 and TX_N_RETRIES_PER_BURST == 0:
-                        data_mode = 10
-                        structlog.get_logger("structlog").debug("FIXED MODE", mode=data_mode)
+                    # we are doing a modulo check of transmission retries of the actual burst
+                    # every 2nd retry which failes, decreases speedlevel by 1.
+                    # as soon as we received an ACK for the current burst, speed_level will increase
+                    # by 1.
+                    # the can be optimised by checking the optimal speed level for the current conditions
+                    if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
+                        self.speed_level -= 1
+                        if self.speed_level < 0:
+                            self.speed_level = 0
+                    
+                    if self.tx_n_retry_of_burst <= 1:
+                        self.speed_level += 1
+                        if self.speed_level >= len(self.mode_list)-1:
+                            self.speed_level = len(self.mode_list)-1
+                    data_mode = self.mode_list[self.speed_level]
+                    print(f"data_mode {data_mode} speed_level {self.speed_level}")
+                    
+           
                         
 
                 # payload information
@@ -528,7 +536,7 @@ class DATA():
                 tempbuffer.append(frame)
                 
                 structlog.get_logger("structlog").debug("[TNC] tempbuffer", tempbuffer=tempbuffer)
-                structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=TX_N_RETRIES_PER_BURST)
+                structlog.get_logger("structlog").info("[TNC] ARQ | TX | FRAMES", mode=data_mode, fpb=TX_N_FRAMES_PER_BURST, retry=self.tx_n_retry_of_burst)
                 
                 # we need to set our TRANSMITTING flag before we are adding an object the transmit queue
                 # this is not that nice, we could improve this somehow
@@ -549,7 +557,7 @@ class DATA():
                 # once we received a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack:
                     self.burst_ack = False # reset ack state
-                    TX_N_RETRIES_PER_BURST = 0 # reset retries
+                    self.tx_n_retry_of_burst = 0 # reset retries
                     break #break retry loop
 
                 if self.rpt_request_received:
@@ -567,7 +575,7 @@ class DATA():
                     
                     
                 # NEXT ATTEMPT
-                structlog.get_logger("structlog").debug("ATTEMPT", retry=TX_N_RETRIES_PER_BURST, maxretries=TX_N_MAX_RETRIES_PER_BURST)
+                structlog.get_logger("structlog").debug("ATTEMPT", retry=self.tx_n_retry_of_burst, maxretries=TX_N_MAX_RETRIES_PER_BURST)
             
             # update buffer position
             bufferposition = bufferposition_end
@@ -843,8 +851,7 @@ class DATA():
     def run_beacon(self, interval:int):
         try:
             structlog.get_logger("structlog").warning("[TNC] Starting beacon!", interval=interval)
-            print(static.BEACON_STATE)
-            print(static.ARQ_STATE)
+
             while static.BEACON_STATE and not static.ARQ_STATE:
 
                 beacon_frame = bytearray(14)
@@ -1002,7 +1009,7 @@ class DATA():
         # and not static.ARQ_SEND_KEEP_ALIVE:
         if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
             time.sleep(0.01)
-            if self.data_channel_last_received + 30 > time.time():
+            if self.data_channel_last_received + self.transmission_timeout > time.time():
                 time.sleep(0.01)
                 #pass
             else:
