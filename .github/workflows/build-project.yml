@@ -52,37 +52,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |      
-          pyinstaller -F \
-            --add-binary lib/hamlib/win32/libgcc_s_sjlj-1.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libhamlib-4.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libusb-1.0.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libwinpthread-1.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/rigctl.exe;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win64/libgcc_s_sjlj-1.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libhamlib-4.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libusb-1.0.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libwinpthread-1.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/rigctl.exe;./lib/hamlib/win64/ \
-            daemon.py -n daemon
+          pyinstaller -F --add-binary lib/hamlib/win32/libgcc_s_sjlj-1.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libhamlib-4.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libusb-1.0.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libwinpthread-1.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/rigctl.exe;./lib/hamlib/win32/ --add-binary lib/hamlib/win64/libgcc_s_sjlj-1.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libhamlib-4.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libusb-1.0.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libwinpthread-1.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/rigctl.exe;./lib/hamlib/win64/ daemon.py -n daemon
             
       - name: Build Windows TNC
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |                
-          pyinstaller -F \
-            --add-binary lib/codec2/windows/libcodec2.dll;. \
-            --add-binary lib/codec2/windows/libcodec2.dll;./lib/codec2/windows/ \
-            --add-binary lib/hamlib/win32/libgcc_s_sjlj-1.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libhamlib-4.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libusb-1.0.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/libwinpthread-1.dll;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win32/rigctl.exe;./lib/hamlib/win32/ \
-            --add-binary lib/hamlib/win64/libgcc_s_sjlj-1.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libhamlib-4.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libusb-1.0.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/libwinpthread-1.dll;./lib/hamlib/win64/ \
-            --add-binary lib/hamlib/win64/rigctl.exe;./lib/hamlib/win64/ \
-            main.py -n tnc  
+          pyinstaller -F --add-binary lib/codec2/windows/libcodec2.dll;. --add-binary lib/codec2/windows/libcodec2.dll;./lib/codec2/windows/ --add-binary lib/hamlib/win32/libgcc_s_sjlj-1.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libhamlib-4.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libusb-1.0.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/libwinpthread-1.dll;./lib/hamlib/win32/ --add-binary lib/hamlib/win32/rigctl.exe;./lib/hamlib/win32/ --add-binary lib/hamlib/win64/libgcc_s_sjlj-1.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libhamlib-4.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libusb-1.0.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/libwinpthread-1.dll;./lib/hamlib/win64/ --add-binary lib/hamlib/win64/rigctl.exe;./lib/hamlib/win64/ main.py -n tnc  
 
           
 
@@ -218,18 +194,17 @@ jobs:
           make
           
           
-      - name: Build Linux
+      - name: Build Linux Daemon
         if: matrix.os == 'ubuntu-20.04'
         working-directory: tnc
         run: |      
-
-          pyinstaller -F \
-            --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ \
-            -n daemon daemon.py
-          pyinstaller -F \
-            --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. \
-            --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ \
-            -n tnc main.py
+          pyinstaller -F --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n daemon daemon.py
+            
+      - name: Build Linux TNC
+        if: matrix.os == 'ubuntu-20.04'
+        working-directory: tnc
+        run: |   
+          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n tnc main.py
  
       - name: LIST ALL FILES
         shell: bash
