@@ -70,8 +70,49 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14         
+
+      - name: Copy TNC to GUI Windows
+        if: matrix.os == 'windows-latest'
+        run: |          
+          cp -R ./tnc/dist ./gui/tnc
+          ls -R        
+          
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          package_root: "./gui/"
+          github_token: ${{ secrets.github_token }}
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R   
+          
+      - name: chmod +x
+        shell: bash
+        run: |
+          chmod +x ./gui/dist/*.*    
           
           
+      - name: Create app bundle
+        shell: bash
+        run: |
+          mkdir gui-bundle
+          cp ./gui/dist/*.* gui-bundle
+          cp ./tnc/dist/daemon gui-bundle
+          cp ./tnc/dist/tnc gui-bundle
+          chmod +x ./gui-bundle/tnc
+          chmod +x ./gui-bundle/daemon
+          cd ./gui-bundle
+          zip -r FreeDATA_windows.zip .
+          ls -R  
+          
+                    
+      - name: Upload Windows GUI Bundle artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: gui-bundle-windows-artifact
+          path: ./gui-bundle/FreeDATA_windows.zip          
           
 
   build_linux_release:
