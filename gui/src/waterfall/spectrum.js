@@ -73,7 +73,7 @@ Spectrum.prototype.drawSpectrum = function(bins) {
     var height = this.ctx.canvas.height;
 
     // Fill with black
-    this.ctx.fillStyle = "black";
+    this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, width, height);
 
     // FFT averaging
@@ -192,7 +192,7 @@ Spectrum.prototype.addData = function(data) {
         if (data.length != this.wf_size) {
             this.wf_size = data.length;
             this.ctx_wf.canvas.width = data.length;
-            this.ctx_wf.fillStyle = "black";
+            this.ctx_wf.fillStyle = "white";
             this.ctx_wf.fillRect(0, 0, this.wf.width, this.wf.height);
             this.imagedata = this.ctx_wf.createImageData(data.length, 1);
         }
@@ -396,7 +396,7 @@ function Spectrum(id, options) {
     this.paused = false;
     this.fullscreen = false;
     this.min_db = 0;
-    this.max_db = 50;
+    this.max_db = 70;
     this.spectrumHeight = 0;
 
     // Colors
@@ -408,7 +408,7 @@ function Spectrum(id, options) {
     this.canvas.height = this.canvas.clientHeight;
     this.canvas.width = this.canvas.clientWidth;
     this.ctx = this.canvas.getContext("2d");
-    this.ctx.fillStyle = "black";
+    this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Create offscreen canvas for axes

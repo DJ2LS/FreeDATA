@@ -26,12 +26,23 @@ def freedv_get_mode(mode):
 # pathlib.Path("lib/codec2/linux/libcodec2.so.1.0")                     precompiled
 # pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0")     external loading manual build
 # pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0")           external loading precompiled
-libname = ["libcodec2.so", \
-            pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0"), \
-            pathlib.Path("lib/codec2/linux/libcodec2.so.1.0"), \
-            pathlib.Path("../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
-            pathlib.Path("../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
-            ]
+
+
+if sys.platform == 'linux':
+    libname = ["libcodec2.so", \
+                pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0"), \
+                pathlib.Path("lib/codec2/linux/libcodec2.so.1.0"), \
+                pathlib.Path("../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
+                pathlib.Path("../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
+                ]
+elif sys.platform == 'win32' or sys.platform == 'win64':
+    libname = ["libcodec2.dll", \
+                pathlib.Path("lib\\codec2\\windows\\libcodec2.dll"), \
+
+                ]
+else:
+    print(f"[C2 ] Platform not supported {sys.platform}", file=sys.stderr)  
+    
 # iterate through codec2 search pathes
 for i in libname:
     try:
@@ -44,7 +55,7 @@ for i in libname:
 # quit module if codec2 cant be loaded    
 if not 'api' in locals():
     print(f"[C2 ] Loading Codec2 library failed", file=sys.stderr)
-    quit()
+
 
 
 
