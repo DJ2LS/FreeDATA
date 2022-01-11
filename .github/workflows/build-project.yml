@@ -99,8 +99,8 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.* gui-bundle
-          cp ./tnc/dist/daemon gui-bundle
-          cp ./tnc/dist/tnc gui-bundle
+          cp ./tnc/dist/daemon.exe gui-bundle
+          cp ./tnc/dist/tnc.exe gui-bundle
           chmod +x ./gui-bundle/tnc
           chmod +x ./gui-bundle/daemon
           cd ./gui-bundle
