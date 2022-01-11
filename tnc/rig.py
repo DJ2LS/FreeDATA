@@ -14,10 +14,20 @@ try:
 
     # installation path for Ubuntu 20.04 LTS python modules
     sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+    
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
+    
     # installation path for Suse
     sys.path.append('/usr/local/lib64/python'+ python_version +'/site-packages')
+
+    # everything else... not nice, but an attempt to see how its running within app bundle
+    sys.path.append('/usr/local/lib/python3.6/site-packages')
+    sys.path.append('/usr/local/lib/python3.7/site-packages')
+    sys.path.append('/usr/local/lib/python3.8/site-packages')
+    sys.path.append('/usr/local/lib/python3.9/site-packages')
+    sys.path.append('/usr/local/lib/python3.10/site-packages')
+    
     import Hamlib
             
     # https://stackoverflow.com/a/4703409

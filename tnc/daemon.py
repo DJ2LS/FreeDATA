@@ -64,8 +64,18 @@ def noalsaerr():
 try:
     # installation path for Ubuntu 20.04 LTS python modules
     sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+                
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
+
+    # everything else... not nice, but an attempt 
+    sys.path.append('/usr/local/lib/python3.6/site-packages')
+    sys.path.append('/usr/local/lib/python3.7/site-packages')
+    sys.path.append('/usr/local/lib/python3.8/site-packages')
+    sys.path.append('/usr/local/lib/python3.9/site-packages')
+    sys.path.append('/usr/local/lib/python3.10/site-packages')
+
+
     import Hamlib
             
     # https://stackoverflow.com/a/4703409
@@ -104,7 +114,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
         structlog.get_logger("structlog").debug("[DMN] Client connected", ip=self.client_address[0])
 
         # loop through socket buffer until timeout is reached. then close buffer
-        socketTimeout = time.time() + 3
+        socketTimeout = time.time() + 6
         while socketTimeout > time.time():
 
             time.sleep(0.01)
@@ -346,6 +356,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         data_bits = str(received_json["parameter"][0]["data_bits"])
                         stop_bits = str(received_json["parameter"][0]["stop_bits"])
                         handshake = str(received_json["parameter"][0]["handshake"])
+                        
                         
                         hamlib = rig.radio()
                         hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake)
