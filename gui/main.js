@@ -5,7 +5,7 @@ const {
 } = require('electron')
 const path = require('path')
 const fs = require('fs')
-
+const os = require('os');
 app.setName("FreeDATA");
 
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
@@ -153,19 +153,35 @@ function createWindow() {
 app.whenReady().then(() => {
     createWindow()
 
-    // start daemon
+    // start daemon by checking os
     // https://stackoverflow.com/a/5775120
     console.log("Trying to start daemon binary")
-    daemonProcess = exec('./daemon', function callback(err, stdout, stderr) {
-        if (err) {
-            console.error("Can't start daemon binary");
-            console.error("--> this is only working with the app bundle and a precompiled binaries");
-        return;
-        }
-        console.log(stdout); 
-    });
-
-
+    
+    if(os.platform()=='linux' || os.platform()=='darwin'){
+        daemonProcess = exec('./daemon', function callback(err, stdout, stderr) {
+            if (err) {
+                console.log(os.platform())
+                console.error(err)
+                console.error("Can't start daemon binary");
+                console.error("--> this is only working with the app bundle and a precompiled binaries");
+            return;
+            }
+            console.log(stdout); 
+        });
+    }
+    
+    if(os.platform()=='win32' || os.platform()=='win64'){
+        daemonProcess = exec('daemon.exe', function callback(err, stdout, stderr) {
+            if (err) {
+                console.log(os.platform())
+                console.error(err)
+                console.error("Can't start daemon binary");
+                console.error("--> this is only working with the app bundle and a precompiled binaries");
+            return;
+            }
+            console.log(stdout); 
+        });
+    }
 
 
 

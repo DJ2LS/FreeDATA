@@ -27,6 +27,10 @@ def freedv_get_mode(mode):
 # pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0")     external loading manual build
 # pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0")           external loading precompiled
 
+# append local search path
+# Possibly this resolves problems when using ms-windows
+sys.path.append('.')
+
 
 if sys.platform == 'linux':
     libname = ["libcodec2.so", \

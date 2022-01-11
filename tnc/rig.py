@@ -6,6 +6,9 @@ import structlog
 import atexit
 import subprocess
 
+# append local search path
+# Possibly this resolves problems when using ms-windows
+sys.path.append('.')
 
 # try importing hamlib    
 try:
