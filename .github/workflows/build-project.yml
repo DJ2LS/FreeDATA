@@ -105,9 +105,16 @@ jobs:
           chmod +x ./gui-bundle/tnc
           chmod +x ./gui-bundle/daemon
           cd ./gui-bundle
-          zip -r FreeDATA_windows.zip .
           ls -R  
-          
+       
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+            type: 'zip'
+            filename: 'FreeDATA_windows.zip'
+            directory: ./gui-bundle/
+            path: .
+            #exclusions: '*.git* /*node_modules/* .editorconfig'   
                     
       - name: Upload Windows GUI Bundle artifacts
         uses: actions/upload-artifact@v2
@@ -247,6 +254,9 @@ jobs:
           cd ./gui-bundle
           zip -r FreeDATA_linux.zip .
           ls -R  
+       
+       
+       
           
       - name: Upload Ubuntu GUI Bundle artifacts
         uses: actions/upload-artifact@v2
