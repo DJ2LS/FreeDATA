@@ -4,7 +4,8 @@
 import ctypes
 from ctypes import *
 import sys
-import pathlib
+import os
+#import pathlib
 from enum import Enum
 import numpy as np
 #print("loading codec2 module", file=sys.stderr)
@@ -19,6 +20,14 @@ class FREEDV_MODE(Enum):
 def freedv_get_mode(mode):
     return FREEDV_MODE[mode].value
 
+
+# check if we are running in a pyinstaller environment
+try:
+    app_path = sys._MEIPASS
+except:
+    app_path = os.path.abspath(".")
+sys.path.append(app_path)
+
 # -------------------------------------------- LOAD FREEDV
 # codec2 search pathes in descending order
 # libcodec2.so                                                          ctests
@@ -27,22 +36,16 @@ def freedv_get_mode(mode):
 # pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0")     external loading manual build
 # pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0")           external loading precompiled
 
-# append local search path
-# Possibly this resolves problems when using ms-windows
-sys.path.append('.')
-
-
 if sys.platform == 'linux':
     libname = ["libcodec2.so", \
-                pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0"), \
-                pathlib.Path("lib/codec2/linux/libcodec2.so.1.0"), \
-                pathlib.Path("../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
-                pathlib.Path("../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
+                os.path.join(app_path, "codec2/build_linux/src/libcodec2.so.1.0"), \
+                os.path.join(app_path, "lib/codec2/linux/libcodec2.so.1.0"), \
+                os.path.join(app_path, "../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
+                os.path.join(app_path, "../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
                 ]
 elif sys.platform == 'win32' or sys.platform == 'win64':
     libname = ["libcodec2.dll", \
-                pathlib.Path("lib\\codec2\\windows\\libcodec2.dll"), \
-
+                os.path.join(base_path, "lib\\codec2\\windows\\libcodec2.dll")
                 ]
 else:
     print(f"[C2 ] Platform not supported {sys.platform}", file=sys.stderr)  

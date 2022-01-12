@@ -7,8 +7,13 @@ import atexit
 import subprocess
 
 # append local search path
-# Possibly this resolves problems when using ms-windows
-sys.path.append('.')
+# check if we are running in a pyinstaller environment
+try:
+    app_path = sys._MEIPASS
+except:
+    app_path = os.path.abspath(".")
+sys.path.append(app_path)
+
 
 # try importing hamlib    
 try:
@@ -25,6 +30,7 @@ try:
     sys.path.append('/usr/local/lib64/python'+ python_version +'/site-packages')
 
     # everything else... not nice, but an attempt to see how its running within app bundle
+    # this is not needed as python will be shipped with app bundle
     sys.path.append('/usr/local/lib/python3.6/site-packages')
     sys.path.append('/usr/local/lib/python3.7/site-packages')
     sys.path.append('/usr/local/lib/python3.8/site-packages')

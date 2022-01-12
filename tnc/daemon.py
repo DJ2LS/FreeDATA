@@ -22,7 +22,7 @@ import re
 import structlog
 import log_handler
 import helpers
-
+import os
 
 log_handler.setup_logging("daemon")
 structlog.get_logger("structlog").info("[DMN] Starting FreeDATA daemon", author="DJ2LS", year="2022", version="0.1")
@@ -60,6 +60,13 @@ def noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################    
 
+# check if we are running in a pyinstaller environment
+try:
+    app_path = sys._MEIPASS
+except:
+    app_path = os.path.abspath(".")
+sys.path.append(app_path)
+    
 # try importing hamlib    
 try:
     # installation path for Ubuntu 20.04 LTS python modules
@@ -254,13 +261,21 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     # this helps running the tnc in a developer environment
                     try:
                         command = []
-                        command.append('./tnc')
+                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                            command.append('./tnc')
+                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                            command.append('tnc.exe')
+                                
                         command += options
                         p = subprocess.Popen(command)
                         structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
                     except:
                         command = []
-                        command.append('python3')
+                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                            command.append('python3')
+                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                            command.append('python')
+                            
                         command.append('main.py')
                         command += options
                         p = subprocess.Popen(command)

@@ -227,12 +227,13 @@ class RF():
         if not self.datac3_buffer.nbuffer+len(x) > self.datac3_buffer.size:
             self.datac3_buffer.push(x)
         
-        self.fft_data = bytes(x)
         
         if self.modoutqueue.empty():
             data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2)
+            self.fft_data = bytes(x)
         else:
             data_out48k = self.modoutqueue.get()
+            self.fft_data = bytes(data_out48k)
         
         return (data_out48k, pyaudio.paContinue)
 
@@ -241,6 +242,8 @@ class RF():
 
     def transmit(self, mode, repeats, repeat_delay, frames):     
         static.TRANSMITTING = True
+        # toggle ptt early to save some time
+        static.PTT_STATE = self.hamlib.set_ptt(True)
         # open codec2 instance       
         #self.MODE = codec2.freedv_get_mode_value_by_name(mode)
         self.MODE = mode
@@ -326,7 +329,7 @@ class RF():
                 self.modoutqueue.put(c)
 
         # maybe we need to toggle PTT before craeting modulation because of queue processing
-        static.PTT_STATE = self.hamlib.set_ptt(True)
+        #static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
@@ -368,19 +371,19 @@ class RF():
                         self.calculate_snr(self.datac1_freedv)
                      
     def audio_datac3(self):                
-            nbytes_datac3 = 0
-            while self.audio_stream.is_active():
-                threading.Event().wait(0.01)
-                while self.datac3_buffer.nbuffer >= self.datac3_nin:
+        nbytes_datac3 = 0
+        while self.audio_stream.is_active():
+            threading.Event().wait(0.01)
+            while self.datac3_buffer.nbuffer >= self.datac3_nin:
 
-                    # demodulate audio    
-                    nbytes_datac3 = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
-                    self.datac3_buffer.pop(self.datac3_nin)
-                    self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-                    if nbytes_datac3 == self.datac3_bytes_per_frame:
-                        self.modem_received_queue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
-                        self.get_scatter(self.datac3_freedv)
-                        self.calculate_snr(self.datac3_freedv)  
+                # demodulate audio    
+                nbytes_datac3 = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
+                self.datac3_buffer.pop(self.datac3_nin)
+                self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
+                if nbytes_datac3 == self.datac3_bytes_per_frame:
+                    self.modem_received_queue.put([self.datac3_bytes_out, self.datac3_freedv ,self.datac3_bytes_per_frame])
+                    self.get_scatter(self.datac3_freedv)
+                    self.calculate_snr(self.datac3_freedv)  
                               
                     
            
@@ -472,6 +475,7 @@ class RF():
             if len(self.fft_data) >= 128:
             
                 data_in = self.fft_data
+                # delte fft_buffer
                 self.fft_data = bytes()                       
 
                 # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c

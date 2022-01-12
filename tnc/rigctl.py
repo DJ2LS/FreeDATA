@@ -10,7 +10,7 @@ import subprocess
 import structlog
 import time
 import sys
-
+import os
 # for rig_model -> rig_number only
 
                
@@ -38,6 +38,14 @@ class radio:
         self.data_bits = data_bits
         self.stop_bits = stop_bits
         self.handshake = handshake
+ 
+ 
+         # check if we are running in a pyinstaller environment
+        try:
+            app_path = sys._MEIPASS
+        except:
+            app_path = os.path.abspath(".")
+        sys.path.append(app_path)            
         
         # get devicenumber by looking for deviceobject in Hamlib module
         try:
@@ -52,10 +60,13 @@ class radio:
 
         print(self.devicenumber, self.deviceport, self.serialspeed)
 
+
+
+
         # select precompiled executable for win32/win64 rigctl
         # this is really a hack...somewhen we need a native hamlib integration for windows
         if sys.platform == 'win32' or sys.platform == 'win64':
-            self.cmd = 'lib\\hamlib\\'+sys.platform+'\\rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
+            self.cmd = app_path + 'lib\\hamlib\\'+sys.platform+'\\rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
  
         else:
             self.cmd = 'rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
