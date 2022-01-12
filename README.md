@@ -1,9 +1,9 @@
 # FreeDATA
-My attempt to create a free and opensource TNC with a GUI for [codec2](https://github.com/drowe67/codec2) for sending data over HF channels. 
+My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application. 
 
 ## Under development
-This project is still a prototype and not usable at this time.
-Build steps for other OS than Ubuntu are provided, but not working, yet.
+Please keep in mind, that this project is still a prototype with many issues which need to be solved.
+Build steps for other OS than Ubuntu are provided, but not fully working, yet.
 
 ## Preview
 ![preview](https://github.com/DJ2LS/FreeDATA/blob/main/documentation/FreeDATA_preview.gif?raw=true "Preview")
