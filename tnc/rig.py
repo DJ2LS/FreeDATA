@@ -5,6 +5,7 @@ import re
 import structlog
 import atexit
 import subprocess
+import os
 
 # append local search path
 # check if we are running in a pyinstaller environment

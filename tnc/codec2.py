@@ -45,7 +45,7 @@ if sys.platform == 'linux':
                 ]
 elif sys.platform == 'win32' or sys.platform == 'win64':
     libname = ["libcodec2.dll", \
-                os.path.join(base_path, "lib\\codec2\\windows\\libcodec2.dll")
+                os.path.join(app_path, "lib\\codec2\\windows\\libcodec2.dll")
                 ]
 else:
     print(f"[C2 ] Platform not supported {sys.platform}", file=sys.stderr)  
