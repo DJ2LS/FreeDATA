@@ -53,6 +53,8 @@ python3 test_tx.py --mode datac1 --delay 500 --frames 2 --bursts 1 | python3 tes
 ```
 
 ## AUDIO test via virtual audio devices
+### Important:
+The virtual audio devices are great for testing, but they are also a little bit tricky to handle. So there's a high chance, the tests will fail, if you are running them via virtual audio devices. You should run the tests several times, while keeping this in mind. Most time the ctest is working even if it is failing.
 
 1. Create virtual audio devices. Note: This command needs to be run again after every reboot
    ```
