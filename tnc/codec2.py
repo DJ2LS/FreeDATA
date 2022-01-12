@@ -44,8 +44,7 @@ if sys.platform == 'linux':
                 os.path.join(app_path, "../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
                 ]
 elif sys.platform == 'win32' or sys.platform == 'win64':
-    libname = ["libcodec2.dll", \
-                os.path.join(app_path, "lib\\codec2\\windows\\libcodec2.dll")
+    libname = [app_path + "\\lib\\codec2\\windows\\libcodec2.dll", \
                 ]
 else:
     print(f"[C2 ] Platform not supported {sys.platform}", file=sys.stderr)  
@@ -53,7 +52,12 @@ else:
 # iterate through codec2 search pathes
 for i in libname:
     try:
-        api = ctypes.CDLL(i)
+        # we need CDLL and the LibraryLoader, as there are problems with different OS
+        try:
+            api = ctypes.CDLL(i) # runs on linux/unix
+        except:
+            api = ctypes.LibraryLoader(i) # runs on windows
+            
         print(f"[C2 ] Codec2 library found - {i}", file=sys.stderr)
         break
     except:
