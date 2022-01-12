@@ -1,6 +1,8 @@
 # FreeDATA
 My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application. 
 
+[mailing-list](https://groups.io/g/freedata)
+
 ## Under development
 Please keep in mind, that this project is still a prototype with many issues which need to be solved.
 Build steps for other OS than Ubuntu are provided, but not fully working, yet.
