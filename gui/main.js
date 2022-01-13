@@ -89,7 +89,7 @@ function createWindow() {
         width: 1050,
         height: 430,
         autoHideMenuBar: true,
-        icon: __dirname + '/src/cube_round.png',
+        icon: __dirname + '/src/icon_cube_border.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
             preload: require.resolve('./preload-main.js'),
