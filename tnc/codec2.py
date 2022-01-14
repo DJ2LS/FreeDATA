@@ -52,11 +52,8 @@ else:
 # iterate through codec2 search pathes
 for i in libname:
     try:
-        # we need CDLL and the LibraryLoader, as there are problems with different OS
-        try:
-            api = ctypes.CDLL(i) # runs on linux/unix
-        except:
-            api = ctypes.LibraryLoader(i) # runs on windows
+        # this is not working for all OS. Specially windows has some more problems. We need to fix this somehow.
+        api = ctypes.CDLL(i)
             
         print(f"[C2 ] Codec2 library found - {i}", file=sys.stderr)
         break
