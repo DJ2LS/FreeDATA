@@ -31,7 +31,10 @@ var configContent = `
   "serialspeed": "9600",
   "ptt": "USB",
   "spectrum": "waterfall",
-  "tnclocation": "localhost"
+  "tnclocation": "localhost",
+  "stop_bits" : "1",
+  "data_bits" : "8",
+  "handshake" : "None"
 }
 `;
 if (!fs.existsSync(configPath)) {
