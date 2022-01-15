@@ -415,7 +415,7 @@ class DATA():
 
             else:
                 static.INFO.append("ARQ;RECEIVING;FAILED")
-                structlog.get_logger("structlog").warning("[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!", e="wrong crc", expected=data_frame_crc, received=data_frame_crc_received)
+                structlog.get_logger("structlog").warning("[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!", e="wrong crc", expected=data_frame_crc, received=data_frame_crc_received, overflows=static.BUFFER_OVERFLOW_COUNTER)
 
                 # BUILDING NACK FRAME FOR DATA FRAME
                 nack_frame       = bytearray(14)
@@ -500,7 +500,7 @@ class DATA():
                     # as soon as we received an ACK for the current burst, speed_level will increase
                     # by 1.
                     # the can be optimised by checking the optimal speed level for the current conditions
-                    print(self.tx_n_retry_of_burst)
+
                     if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
                         self.speed_level -= 1
                         if self.speed_level < 0:
@@ -511,8 +511,7 @@ class DATA():
                     #    if self.speed_level >= len(self.mode_list)-1:
                     #        self.speed_level = len(self.mode_list)-1
                     data_mode = self.mode_list[self.speed_level]
-                    print(f"data_mode {data_mode} speed_level {self.speed_level}")
-                    
+                    structlog.get_logger("structlog").debug("Speed-level", level=self.speed_level, retry=self.tx_n_retry_of_burst)                    
            
                         
 
@@ -570,7 +569,7 @@ class DATA():
                 burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
                 while not self.burst_ack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.01)
-                    structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE)
+                    structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE, overflows=static.BUFFER_OVERFLOW_COUNTER)
                     
                     
                 # once we received a burst ack, reset its state and break the RETRIES loop
@@ -594,7 +593,7 @@ class DATA():
                     
                     
                 # NEXT ATTEMPT
-                structlog.get_logger("structlog").debug("ATTEMPT", retry=self.tx_n_retry_of_burst, maxretries=TX_N_MAX_RETRIES_PER_BURST)
+                structlog.get_logger("structlog").debug("ATTEMPT", retry=self.tx_n_retry_of_burst, maxretries=TX_N_MAX_RETRIES_PER_BURST,overflows=static.BUFFER_OVERFLOW_COUNTER)
             
             # update buffer position
             bufferposition = bufferposition_end
@@ -608,13 +607,13 @@ class DATA():
         
             static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
 
-            structlog.get_logger("structlog").info("ARQ | TX | DATA TRANSMITTED!", BytesPerMinute=static.ARQ_BYTES_PER_MINUTE, BitsPerSecond=static.ARQ_BITS_PER_SECOND)
+            structlog.get_logger("structlog").info("ARQ | TX | DATA TRANSMITTED!", BytesPerMinute=static.ARQ_BYTES_PER_MINUTE, BitsPerSecond=static.ARQ_BITS_PER_SECOND, overflows=static.BUFFER_OVERFLOW_COUNTER)
 
 
                 
         else:
             static.INFO.append("ARQ;TRANSMITTING;FAILED")
-            structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!")
+            structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!", overflows=static.BUFFER_OVERFLOW_COUNTER)
 
         # and last but not least doing a state cleanup    
         # do cleanup only when not in testmode
@@ -1044,7 +1043,10 @@ class DATA():
         # reset modem receiving state to reduce cpu load
         modem.RECEIVE_DATAC1 = False
         modem.RECEIVE_DATAC3 = False
-            
+
+        # reset buffer overflow counter
+        static.BUFFER_OVERFLOW_COUNTER = [0,0,0]
+                    
     def arq_reset_ack(self,state:bool):
 
         self.burst_ack = state
