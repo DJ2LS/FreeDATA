@@ -7,6 +7,9 @@ import atexit
 import subprocess
 import os
 
+# set global hamlib version
+hamlib_version = 0
+
 # append local search path
 # check if we are running in a pyinstaller environment
 try:
@@ -46,28 +49,28 @@ try:
             
     min_hamlib_version = 4.1
     if hamlib_version > min_hamlib_version:
-        structlog.get_logger("structlog").info("[TNC] Hamlib found", version=hamlib_version)
+        structlog.get_logger("structlog").info("[RIG] Hamlib found", version=hamlib_version)
     else:
-        structlog.get_logger("structlog").warning("[TNC] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
+        structlog.get_logger("structlog").warning("[RIG] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
 except Exception as e:
-    structlog.get_logger("structlog").warning("[TNC] Python Hamlib binding not found", error=e)
+    structlog.get_logger("structlog").warning("[RIG] Python Hamlib binding not found", error=e)
     try:
-        structlog.get_logger("structlog").warning("[TNC] Trying to open rigctl", error=e)
+        structlog.get_logger("structlog").warning("[RIG] Trying to open rigctl")
         rigctl = subprocess.Popen("rigctl -V",shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         hamlib_version = rigctl.stdout.readline()
         hamlib_version = hamlib_version.split(' ')
-        print(hamlib_version[0])
-        print(hamlib_version[1])
-        print(hamlib_version[2])
+
         if hamlib_version[1] == 'Hamlib':
-            rigctl = True
-            print(hamlib_version)
+            structlog.get_logger("structlog").warning("[RIG] Rigctl found! Start daemon with parameter --rigctl", version=hamlib_version[2])
+            sys.exit()
         else:
-            rigctl = False
             raise Exception
     except Exception as e:
-        structlog.get_logger("structlog").critical("[TNC] HAMLIB NOT INSTALLED", error=e)   
-               
+        structlog.get_logger("structlog").critical("[RIG] HAMLIB NOT INSTALLED", error=e)   
+        hamlib_version = 0
+        sys.exit()
+ 
+        
 class radio:
     def __init__(self):
     

@@ -60,42 +60,7 @@ def noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################    
 
-# check if we are running in a pyinstaller environment
-try:
-    app_path = sys._MEIPASS
-except:
-    app_path = os.path.abspath(".")
-sys.path.append(app_path)
-    
-# try importing hamlib    
-try:
-    # installation path for Ubuntu 20.04 LTS python modules
-    sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
-                
-    # installation path for Ubuntu 20.10 +
-    sys.path.append('/usr/local/lib/')
 
-    # everything else... not nice, but an attempt 
-    sys.path.append('/usr/local/lib/python3.6/site-packages')
-    sys.path.append('/usr/local/lib/python3.7/site-packages')
-    sys.path.append('/usr/local/lib/python3.8/site-packages')
-    sys.path.append('/usr/local/lib/python3.9/site-packages')
-    sys.path.append('/usr/local/lib/python3.10/site-packages')
-
-
-    import Hamlib
-            
-    # https://stackoverflow.com/a/4703409
-    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
-    hamlib_version = float(hamlib_version[0])
-            
-    min_hamlib_version = 4.1
-    if hamlib_version > min_hamlib_version:
-        structlog.get_logger("structlog").info("[DMN] Hamlib found", version=hamlib_version)
-    else:
-        structlog.get_logger("structlog").warning("[DMN] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
-except Exception as e:
-    structlog.get_logger("structlog").critical("[DMN] Hamlib not found", error=e)
 
 # load crc engine    
 crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
@@ -265,7 +230,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                             command.append('./tnc')
                         elif sys.platform == 'win32' or sys.platform == 'win64':
                             command.append('tnc.exe')
-                                
+                               
                         command += options
                         p = subprocess.Popen(command)
                         structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
@@ -395,12 +360,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         self.request.sendall(bytes(jsondata, encoding))
                         
                     except Exception as e:
-                        print(e)
-                        structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0])
+                        structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0], error=e)
 
             except Exception as e:
                 #socketTimeout = 0
-                structlog.get_logger("structlog").error("[DMN] Network error", e=e)
+                structlog.get_logger("structlog").error("[DMN] Network error", error=e)
         structlog.get_logger("structlog").warning("[DMN] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
 
 
@@ -420,12 +384,14 @@ if __name__ == '__main__':
         HAMLIB_USE_RIGCTL = True
     
     if HAMLIB_USE_RIGCTL:
-        structlog.get_logger("structlog").warning("using hamlib rigctl module...")
+        structlog.get_logger("structlog").warning("[DMN] Using Hamlib rigctl module...")
         hamlib_version = 0
         import rigctl as rig
     else:
-        structlog.get_logger("structlog").info("using hamlib rig module...")
+        structlog.get_logger("structlog").info("[DMN] Using Hamlib rig module...")
         import rig
+        hamlib_version = rig.hamlib_version
+
     # --------------------------------------------START CMD SERVER
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")
