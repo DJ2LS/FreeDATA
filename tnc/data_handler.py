@@ -714,7 +714,7 @@ class DATA():
         connection_frame[1:2]   = static.DXCALLSIGN_CRC8
         connection_frame[2:3]   = static.MYCALLSIGN_CRC8
         connection_frame[3:9]   = static.MYCALLSIGN
-        connection_frame[9:10]   = bytes([0]) # ONE BYTE LEFT FOR OTHER THINGS
+        connection_frame[9:10]   = bytes([mode])
         connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
         connection_frame[12:13] = bytes([compression_factor])
         connection_frame[13:14] = bytes([n_frames_per_burst])    
@@ -761,6 +761,20 @@ class DATA():
         static.TOTAL_BYTES = int.from_bytes(bytes(data_in[10:12]), "big") # kBytes
         static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
+        mode = int.from_bytes(bytes(data_in[9:10]), "big") 
+
+        # set modes we want to listening to
+        mode_name = codec2.freedv_get_mode_name_by_value(mode)
+        if mode_name == 'datac1':
+            modem.RECEIVE_DATAC1 = True
+        elif mode_name == 'datac3':
+            modem.RECEIVE_DATAC3 = True
+        elif mode_name == 'allmodes':
+            modem.RECEIVE_DATAC1 = True
+            modem.RECEIVE_DATAC3 = True
+
+
+
         
         #we need to find a way how to do this. this isn't working anymore since we mode to a class based module
         #modem.set_frames_per_burst(n_frames_per_burst)
@@ -1027,6 +1041,10 @@ class DATA():
         static.RX_FRAME_BUFFER = b'' 
         self.burst_ack_snr= 255
 
+        # reset modem receiving state to reduce cpu load
+        modem.RECEIVE_DATAC1 = False
+        modem.RECEIVE_DATAC3 = False
+            
     def arq_reset_ack(self,state:bool):
 
         self.burst_ack = state

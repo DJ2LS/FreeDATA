@@ -16,11 +16,17 @@ class FREEDV_MODE(Enum):
     datac0 = 14
     datac1 = 10
     datac3 = 12
-    
-def freedv_get_mode(mode):
+    allmodes = 255
+
+# function for returning the mode value
+def freedv_get_mode_value_by_name(mode):
     return FREEDV_MODE[mode].value
 
-
+# function for returning the mode name
+def freedv_get_mode_name_by_value(mode):
+    return FREEDV_MODE(mode).name
+    
+    
 # check if we are running in a pyinstaller environment
 try:
     app_path = sys._MEIPASS

@@ -88,6 +88,10 @@ MODEM_RECEIVED_QUEUE = queue.Queue()
 MODEM_TRANSMIT_QUEUE = queue.Queue()
 static.TRANSMITTING = False
 
+# receive only specific modes to reduce cpu load
+RECEIVE_DATAC1 = False
+RECEIVE_DATAC3 = False
+
 class RF():
 
     def __init__(self):
@@ -217,14 +221,15 @@ class RF():
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)    
 
-        # avoid buffer overflow
+        
+        # avoid buffer overflow by filling only if buffer not full
         if not self.datac0_buffer.nbuffer+len(x) > self.datac0_buffer.size:
             self.datac0_buffer.push(x)
-        # avoid buffer overflow    
-        if not self.datac1_buffer.nbuffer+len(x) > self.datac1_buffer.size:
+        # avoid buffer overflow by filling only if buffer not full and selected datachannel mode
+        if not self.datac1_buffer.nbuffer+len(x) > self.datac1_buffer.size and RECEIVE_DATAC1:
             self.datac1_buffer.push(x)
-        # avoid buffer overflow
-        if not self.datac3_buffer.nbuffer+len(x) > self.datac3_buffer.size:
+        # avoid buffer overflow by filling only if buffer not full and selected datachannel mode
+        if not self.datac3_buffer.nbuffer+len(x) > self.datac3_buffer.size and RECEIVE_DATAC3:
             self.datac3_buffer.push(x)
         
         
@@ -245,7 +250,6 @@ class RF():
         # toggle ptt early to save some time
         static.PTT_STATE = self.hamlib.set_ptt(True)
         # open codec2 instance       
-        #self.MODE = codec2.freedv_get_mode_value_by_name(mode)
         self.MODE = mode
         freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
 
@@ -340,12 +344,10 @@ class RF():
         threading.Event().set()
 
     def audio_datac0(self):             
-        nbytes_datac0 = 0
-        
+        nbytes_datac0 = 0    
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
             while self.datac0_buffer.nbuffer >= self.datac0_nin:        
-
                 # demodulate audio
                 nbytes_datac0 = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
                 self.datac0_buffer.pop(self.datac0_nin)
@@ -360,7 +362,6 @@ class RF():
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
             while self.datac1_buffer.nbuffer >= self.datac1_nin:
-
                     # demodulate audio
                     nbytes_datac1 = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
                     self.datac1_buffer.pop(self.datac1_nin)
@@ -375,7 +376,6 @@ class RF():
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
             while self.datac3_buffer.nbuffer >= self.datac3_nin:
-
                 # demodulate audio    
                 nbytes_datac3 = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
                 self.datac3_buffer.pop(self.datac3_nin)
