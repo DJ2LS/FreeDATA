@@ -161,7 +161,7 @@ app.whenReady().then(() => {
     console.log("Trying to start daemon binary")
     
     if(os.platform()=='linux' || os.platform()=='darwin'){
-        daemonProcess = exec('./daemon', function callback(err, stdout, stderr) {
+        daemonProcess = exec('./tnc/daemon', function callback(err, stdout, stderr) {
             if (err) {
                 console.log(os.platform())
                 console.error(err)
@@ -174,7 +174,7 @@ app.whenReady().then(() => {
     }
     
     if(os.platform()=='win32' || os.platform()=='win64'){
-        daemonProcess = exec('daemon.exe', function callback(err, stdout, stderr) {
+        daemonProcess = exec('./tnc/daemon.exe', function callback(err, stdout, stderr) {
             if (err) {
                 console.log(os.platform())
                 console.error(err)

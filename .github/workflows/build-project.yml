@@ -58,7 +58,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |                
-          pyinstaller -F --add-binary="libcodec2.dll;lib/codec2/windows/" --add-binary="lib/hamlib/win32/*;lib/hamlib/win32" --add-binary="lib/hamlib/win64/*;lib/hamlib/win64" main.py -n tnc
+          pyinstaller -F --add-binary="lib/codec2/windows/*;lib/codec2/windows/" --add-binary="lib/hamlib/win32/*;lib/hamlib/win32" --add-binary="lib/hamlib/win64/*;lib/hamlib/win64" main.py -n tnc
           
 
           
