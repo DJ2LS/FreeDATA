@@ -58,7 +58,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |                
-          pyinstaller -F --add-binary="lib/codec2/windows/*;lib/codec2/windows/" --add-binary="lib/hamlib/win32/*;lib/hamlib/win32" --add-binary="lib/hamlib/win64/*;lib/hamlib/win64" main.py -n tnc
+          pyinstaller -F --add-binary="libcodec2.dll;lib/codec2/windows/" --add-binary="lib/hamlib/win32/*;lib/hamlib/win32" --add-binary="lib/hamlib/win64/*;lib/hamlib/win64" main.py -n tnc
           
 
           
@@ -186,9 +186,8 @@ jobs:
 
       - name: Build codec2 Linux
         if: matrix.os == 'ubuntu-20.04'
-        #working-directory: tnc
+        working-directory: tnc
         run: |
-          cd ~
           git clone https://github.com/drowe67/codec2.git
           cd codec2 && mkdir build_linux && cd build_linux
           cmake ../
@@ -199,14 +198,8 @@ jobs:
         if: matrix.os == 'ubuntu-20.04'
         working-directory: tnc
         run: |      
-          pyinstaller -F --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n daemon daemon.py
-            
-      - name: Build Linux TNC
-        if: matrix.os == 'ubuntu-20.04'
-        working-directory: tnc
-        run: |   
-          pyinstaller -F --add-binary ~/codec2/build_linux/src/libcodec2.so.1.0:. --add-binary lib/hamlib/linux/libhamlib.so:./lib/hamlib/linux/ -n tnc main.py
- 
+          pyinstaller freedata.spec
+       
       - name: LIST ALL FILES
         shell: bash
         run: |
@@ -226,17 +219,18 @@ jobs:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
 
+      - name: Copy TNC to GUI Linux
+        if: matrix.os == 'ubuntu-20.04'
+        run: |          
+          cp -R ./tnc/dist/tnc ./gui/tnc
+          ls -R        
+
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
           node-version: 14
           
-      - name: Copy TNC to GUI Linux
-        if: matrix.os == 'ubuntu-20.04'
-        run: |          
-          cp -R ./tnc/dist ./gui/tnc
-          ls -R        
-          
+                    
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -259,10 +253,9 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.AppImage gui-bundle
-          cp ./tnc/dist/daemon gui-bundle
-          cp ./tnc/dist/tnc gui-bundle
-          chmod +x ./gui-bundle/tnc
-          chmod +x ./gui-bundle/daemon
+          cp -R ./tnc/dist/tnc gui-bundle
+          chmod +x ./gui-bundle/tnc/tnc
+          chmod +x ./gui-bundle/tnc/daemon
           cd ./gui-bundle
           zip -r FreeDATA_linux.zip .
           ls -R  
