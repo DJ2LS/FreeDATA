@@ -51,6 +51,7 @@ c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 
 @contextmanager
 def noalsaerr():
+
     asound = cdll.LoadLibrary('libasound.so')
     asound.snd_lib_error_set_handler(c_error_handler)
     yield
@@ -82,7 +83,7 @@ def start_daemon():
 
 class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
-    def handle(self):
+    def handle(self, hamlib_version = 0):
         structlog.get_logger("structlog").debug("[DMN] Client connected", ip=self.client_address[0])
 
         # loop through socket buffer until timeout is reached. then close buffer
@@ -97,10 +98,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
 
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while socketTimeout > time.time():
-                chunk = self.request.recv(45)
-                data += chunk
+                data += self.request.recv(64)
                 # or chunk.endswith(b'\n'):
-                if chunk.startswith(b'{"type"') and chunk.endswith(b'}\n'):
+                if data.startswith(b'{"type"') and data.endswith(b'}\n'):
                     break
             data = data[:-1]  # remove b'\n'
             data = str(data, encoding)
@@ -173,8 +173,9 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     data_bits = str(received_json["parameter"][0]["data_bits"])
                     stop_bits = str(received_json["parameter"][0]["stop_bits"])
                     handshake = str(received_json["parameter"][0]["handshake"])
-                    
-
+                    radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
+                    rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
+                    rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
                     
                     structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=devicename, port=deviceport)
                     #print(received_json["parameter"][0])
@@ -213,14 +214,14 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     options.append(stop_bits)
                     options.append('--handshake')
                     options.append(handshake)
-                    
-                    if HAMLIB_USE_RIGCTL:
-                        options.append('--rigctl')
+                    options.append('--radiocontrol')
+                    options.append(radiocontrol)
+                    options.append('--rigctld_ip')
+                    options.append(rigctld_ip)
+                    options.append('--rigctld_port')
+                    options.append(rigctld_port)
 
-                    
-                 
-        
-        
+
 
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
@@ -256,7 +257,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     static.TNCSTARTED = False
 
                 if received_json["type"] == 'GET' and received_json["command"] == 'DAEMON_STATE':
-
+                    
                     data = {
                         'COMMAND': 'DAEMON_STATE',
                         'DAEMON_STATE': [],
@@ -279,7 +280,7 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                             with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
                                 p = pyaudio.PyAudio()
                         # else do it the default way
-                        except:
+                        except Exception as e:
                             p = pyaudio.PyAudio()
                                     
                         for i in range(0, p.get_device_count()):
@@ -336,10 +337,25 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         data_bits = str(received_json["parameter"][0]["data_bits"])
                         stop_bits = str(received_json["parameter"][0]["stop_bits"])
                         handshake = str(received_json["parameter"][0]["handshake"])
+                        radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
+                        rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
+                        rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+
                         
-                        
+                        # check how we want to control the radio
+                        if radiocontrol == 'direct':
+                            import rig
+                        elif radiocontrol == 'rigctl':
+                            import rigctl as rig
+                        elif radiocontrol == 'rigctld':
+                            import rigctld as rig
+                        else:
+                            raise NotImplementedError 
+                                
                         hamlib = rig.radio()
-                        hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake)
+                        hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
+
+                        hamlib_version = rig.hamlib_version
                         
                         hamlib.set_ptt(True)      
                         pttstate = hamlib.get_ptt()
@@ -363,7 +379,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         structlog.get_logger("structlog").error("[DMN] Hamlib: Can't open rig", e = sys.exc_info()[0], error=e)
 
             except Exception as e:
-                #socketTimeout = 0
                 structlog.get_logger("structlog").error("[DMN] Network error", error=e)
         structlog.get_logger("structlog").warning("[DMN] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
 
@@ -373,25 +388,10 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)
-    PARSER.add_argument('--rigctl', dest="hamlib_use_rigctl",action="store_true", default=False, help="force using of rigctl")
     
     ARGS = PARSER.parse_args()
     PORT = ARGS.socket_port
-    HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
     
-    # force use of rigctl when on windows
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        HAMLIB_USE_RIGCTL = True
-    
-    if HAMLIB_USE_RIGCTL:
-        structlog.get_logger("structlog").warning("[DMN] Using Hamlib rigctl module...")
-        hamlib_version = 0
-        import rigctl as rig
-    else:
-        structlog.get_logger("structlog").info("[DMN] Using Hamlib rig module...")
-        import rig
-        hamlib_version = rig.hamlib_version
-
     # --------------------------------------------START CMD SERVER
 
     DAEMON_THREAD = threading.Thread(target=start_daemon, name="daemon")

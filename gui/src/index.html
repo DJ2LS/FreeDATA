@@ -12,7 +12,6 @@
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
-
 	<title>FreeDATA</title>
 </head>
 
@@ -143,15 +142,13 @@
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
-			    <!-- STOPPING TRANSMISSION -->
+				<!-- STOPPING TRANSMISSION -->
 				<div class="toast align-items-center text-white bg-danger border-0" id="toastTRANSMISSIONstopped" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
 						<div class="toast-body">Transmission stopped!</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
-				
-				
 				<!-- DATACHANNEL RECEIVED OPENER -->
 				<div class="toast align-items-center text-white bg-secondary border-0" id="toastDATACHANNELreceivedopener" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
@@ -253,6 +250,17 @@
 								<path d="M14 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM2.5 6a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4Zm0 2a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4Z" />
 								<path fill-rule="evenodd" d="M0 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2 1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1H5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1 2 2 0 0 1-2-2V6Zm2-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
 							</svg> <strong>RADIO SETTINGS</strong>
+							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
+								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch1" autocomplete="off" checked>
+								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch1"><strong>direct</strong>
+								</label>
+								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch2" autocomplete="off">
+								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch2"><strong>rigctl</strong>
+								</label>
+								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch3" autocomplete="off">
+								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong>rigctld</strong>
+								</label>
+							</div>
 							<div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a ptt device">
 								<button type="button" id="advancedHamlibSettingsButton" data-bs-toggle="modal" data-bs-target="#advancedHamlibSettingsModal" class="btn btn-sm btn-secondary">
 									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
@@ -265,373 +273,381 @@
 							</div>
 						</div>
 						<div class="card-body p-2">
-							<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+							<div id="radio-control-direct">
+								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-projector-fill" viewBox="0 0 16 16">
   <path d="M2 4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1h6a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2Zm.5 2h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1 0-1ZM14 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-12 1a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5Z"/>
 </svg>
 							</span>
-								<!--<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceid" style="width:7rem">-->
-								<input class="form-control" list="datalistOptions" id="hamlib_deviceid" placeholder="Search radio..." style="width:7rem">
-								<datalist id="datalistOptions">
-									<option value="RIG_MODEL_ADT_200A">ADAT www.adat.ch ADT-200A</option>
-									<option value="RIG_MODEL_DX77">Alinco DX-77</option>
-									<option value="RIG_MODEL_DXSR8">Alinco DX-SR8</option>
-									<option value="RIG_MODEL_DDS60">AmQRPDDS-60</option>
-									<option value="RIG_MODEL_FUNCUBEDONGLE">AMSAT-UK FUNcube Dongle</option>
-									<option value="RIG_MODEL_SI570PEABERRY1">AE9RBSi570 Peaberry V1</option>
-									<option value="RIG_MODEL_SI570PEABERRY2">AE9RBSi570 Peaberry V2</option>
-									<option value="RIG_MODEL_FUNCUBEDONGLEPLUS">AMSAT-UK FUNcube Dongle Pro+</option>
-									<option value="RIG_MODEL_AR8200">AOR AR8200</option>
-									<option value="RIG_MODEL_AR8000">AOR AR8000</option>
-									<option value="RIG_MODEL_AR7030">AOR AR7030</option>
-									<option value="RIG_MODEL_AR5000">AOR AR5000</option>
-									<option value="RIG_MODEL_AR3030">AOR AR3030</option>
-									<option value="RIG_MODEL_AR3000A">AOR AR3000A</option>
-									<option value="RIG_MODEL_AR2700">AOR AR2700</option>
-									<option value="RIG_MODEL_AR8600">AOR AR8600</option>
-									<option value="RIG_MODEL_AR5000A">AOR AR5000A</option>
-									<option value="RIG_MODEL_AR7030P">AOR AR7030 Plus</option>
-									<option value="RIG_MODEL_SR2200">AOR SR2200</option>
-									<option value="RIG_MODEL_BARRETT_2050">Barrett2050</option>
-									<option value="RIG_MODEL_BARRETT_950">Barrett950</option>
-									<option value="RIG_MODEL_DWT">Coding TechnologiesDigital World Travelle</option>
-									<option value="RIG_MODEL_DORJI_DRA818V">DorjiDRA818V</option>
-									<option value="RIG_MODEL_DORJI_DRA818U">DorjiDRA818U</option>
-									<option value="RIG_MODEL_DKR8A">DrakeR-8A</option>
-									<option value="RIG_MODEL_DKR8B">DrakeR-8B</option>
-									<option value="RIG_MODEL_DTTSP">DTTS Microwave Society DttSP IPC</option>
-									<option value="RIG_MODEL_DTTSP_UDP">DTTS Microwave Society DttSP UDP</option>
-									<option value="RIG_MODEL_ELAD_FDM_DUO">ELAD FDM-DUO</option>
-									<option value="RIG_MODEL_K2">Elecraft K2</option>
-									<option value="RIG_MODEL_K3">Elecraft K3</option>
-									<option value="RIG_MODEL_K4">Elecraft K4</option>
-									<option value="RIG_MODEL_XG3">Elecraft XG3</option>
-									<option value="RIG_MODEL_K3S">Elecraft K3S</option>
-									<option value="RIG_MODEL_KX2">Elecraft KX2</option>
-									<option value="RIG_MODEL_KX3">Elecraft KX3</option>
-									<option value="RIG_MODEL_ELEKTOR304">ElektorElektor 3/04</option>
-									<option value="RIG_MODEL_ELEKTOR507">ElektorElektor SDR-USB</option>
-									<option value="RIG_MODEL_FIFISDR">FiFi FiFi-SDR</option>
-									<option value="RIG_MODEL_POWERSDR">FlexRadio/ANAN PowerSDR/Thetis</option>
-									<option value="RIG_MODEL_F6K">FlexRadio6xxx</option>
-									<option value="RIG_MODEL_SDR1000">Flex-radio SDR-1000</option>
-									<option value="RIG_MODEL_FLRIG">FLRigFLRig</option>
-									<option value="RIG_MODEL_FASDR">FunkamateurFA-SDR</option>
-									<option value="RIG_MODEL_DUMMY">Hamlib Dummy</option>
-									<option value="RIG_MODEL_DUMMY_NOVFO">Hamlib Dummy No VFO</option>
-									<option value="RIG_MODEL_NETRIGCTL">Hamlib NET rigctl</option>
-									<option value="RIG_MODEL_RSHFIQ">HobbyPCB RS-HFIQ</option>
-									<option value="RIG_MODEL_PT8000A">Hilberling PT-8000A</option>
-									<option value="RIG_MODEL_IC1275">Icom IC-1275</option>
-									<option value="RIG_MODEL_IC271">Icom IC-271</option>
-									<option value="RIG_MODEL_IC275">Icom IC-275</option>
-									<option value="RIG_MODEL_IC471">Icom IC-471</option>
-									<option value="RIG_MODEL_IC475">Icom IC-475</option>
-									<option value="RIG_MODEL_IC575">Icom IC-575</option>
-									<option value="RIG_MODEL_IC706">Icom IC-706</option>
-									<option value="RIG_MODEL_IC706MKII">Icom IC-706MkII</option>
-									<option value="RIG_MODEL_IC706MKIIG">Icom IC-706MkIIG</option>
-									<option value="RIG_MODEL_IC707">Icom IC-707</option>
-									<option value="RIG_MODEL_IC718">Icom IC-718</option>
-									<option value="RIG_MODEL_IC725">Icom IC-725</option>
-									<option value="RIG_MODEL_IC726">Icom IC-726</option>
-									<option value="RIG_MODEL_IC728">Icom IC-728</option>
-									<option value="RIG_MODEL_IC729">Icom IC-729</option>
-									<option value="RIG_MODEL_IC735">Icom IC-735</option>
-									<option value="RIG_MODEL_IC736">Icom IC-736</option>
-									<option value="RIG_MODEL_IC737">Icom IC-737</option>
-									<option value="RIG_MODEL_IC738">Icom IC-738</option>
-									<option value="RIG_MODEL_IC746">Icom IC-746</option>
-									<option value="RIG_MODEL_IC751">Icom IC-751</option>
-									<option value="RIG_MODEL_IC756">Icom IC-756</option>
-									<option value="RIG_MODEL_IC756PRO">Icom IC-756PRO</option>
-									<option value="RIG_MODEL_IC761">Icom IC-761</option>
-									<option value="RIG_MODEL_IC765">Icom IC-765</option>
-									<option value="RIG_MODEL_IC775">Icom IC-775</option>
-									<option value="RIG_MODEL_IC781">Icom IC-781</option>
-									<option value="RIG_MODEL_IC820">Icom IC-820H</option>
-									<option value="RIG_MODEL_IC821H">Icom IC-821H</option>
-									<option value="RIG_MODEL_IC970">Icom IC-970</option>
-									<option value="RIG_MODEL_ICR10">Icom IC-R10</option>
-									<option value="RIG_MODEL_ICR71">Icom IC-R71</option>
-									<option value="RIG_MODEL_ICR72">Icom IC-R72</option>
-									<option value="RIG_MODEL_ICR75">Icom IC-R75</option>
-									<option value="RIG_MODEL_ICR7000">Icom IC-R7000</option>
-									<option value="RIG_MODEL_ICR7100">Icom IC-R7100</option>
-									<option value="RIG_MODEL_ICR8500">Icom ICR-8500</option>
-									<option value="RIG_MODEL_ICR9000">Icom IC-R9000</option>
-									<option value="RIG_MODEL_IC910">Icom IC-910</option>
-									<option value="RIG_MODEL_IC78">Icom IC-78</option>
-									<option value="RIG_MODEL_IC746PRO">Icom IC-746PRO</option>
-									<option value="RIG_MODEL_IC756PROII">Icom IC-756PROII</option>
-									<option value="RIG_MODEL_ICID1">Icom IC ID-1</option>
-									<option value="RIG_MODEL_IC703">Icom IC-703</option>
-									<option value="RIG_MODEL_IC7800">Icom IC-7800</option>
-									<option value="RIG_MODEL_IC756PROIII">Icom IC-756PROIII</option>
-									<option value="RIG_MODEL_ICR20">Icom IC-R20</option>
-									<option value="RIG_MODEL_IC7000">Icom IC-7000</option>
-									<option value="RIG_MODEL_IC7200">Icom IC-7200</option>
-									<option value="RIG_MODEL_IC7700">Icom IC-7700</option>
-									<option value="RIG_MODEL_IC7600">Icom IC-7600</option>
-									<option value="RIG_MODEL_DELTAII">Ten-TecDelta II</option>
-									<option value="RIG_MODEL_IC92D">Icom IC-92D</option>
-									<option value="RIG_MODEL_ICR9500">Icom IC-R9500</option>
-									<option value="RIG_MODEL_IC7410">Icom IC-7410</option>
-									<option value="RIG_MODEL_IC9100">Icom IC-9100</option>
-									<option value="RIG_MODEL_ICRX7">Icom IC-RX7</option>
-									<option value="RIG_MODEL_IC7100">Icom IC-7100</option>
-									<option value="RIG_MODEL_ID5100">Icom ID-5100</option>
-									<option value="RIG_MODEL_IC2730">Icom IC-2730</option>
-									<option value="RIG_MODEL_IC7300">Icom IC-7300</option>
-									<option value="RIG_MODEL_IC_M700PRO">Icom IC-M700PRO</option>
-									<option value="RIG_MODEL_IC_M802">Icom IC-M802</option>
-									<option value="RIG_MODEL_IC_M710">Icom IC-M710</option>
-									<option value="RIG_MODEL_IC_M803">Icom IC-M803</option>
-									<option value="RIG_MODEL_PERSEUS">Microtelecom Perseus</option>
-									<option value="RIG_MODEL_IC785x">Icom IC-785x</option>
-									<option value="RIG_MODEL_X108G">XeiguX108G</option>
-									<option value="RIG_MODEL_ICR6">Icom IC-R6</option>
-									<option value="RIG_MODEL_IC7610">Icom IC-7610</option>
-									<option value="RIG_MODEL_ICR8600">Icom IC-R8600</option>
-									<option value="RIG_MODEL_ICR30">Icom IC-R30</option>
-									<option value="RIG_MODEL_IC9700">Icom IC-9700</option>
-									<option value="RIG_MODEL_ID4100">Icom ID-4100</option>
-									<option value="RIG_MODEL_ID31">Icom ID-31</option>
-									<option value="RIG_MODEL_ID51">Icom ID-51</option>
-									<option value="RIG_MODEL_IC705">Icom IC-705</option>
-									<option value="RIG_MODEL_PCR1000">Icom IC-PCR1000</option>
-									<option value="RIG_MODEL_PCR100">Icom IC-PCR100</option>
-									<option value="RIG_MODEL_PCR1500">Icom IC-PCR1500</option>
-									<option value="RIG_MODEL_PCR2500">Icom IC-PCR2500</option>
-									<option value="RIG_MODEL_NRD525">JRCNRD-525</option>
-									<option value="RIG_MODEL_NRD535">JRCNRD-535D</option>
-									<option value="RIG_MODEL_NRD545">JRCNRD-545 DSP</option>
-									<option value="RIG_MODEL_505DSP">Kachina505DSP</option>
-									<option value="RIG_MODEL_SI570PICUSB">KTH-SDR kitSi570 PIC-USB</option>
-									<option value="RIG_MODEL_TS50">KenwoodTS-50S</option>
-									<option value="RIG_MODEL_TS440">KenwoodTS-440S</option>
-									<option value="RIG_MODEL_TS450S">KenwoodTS-450S</option>
-									<option value="RIG_MODEL_TS570D">KenwoodTS-570D</option>
-									<option value="RIG_MODEL_TS690S">KenwoodTS-690S</option>
-									<option value="RIG_MODEL_TS711">KenwoodTS-711</option>
-									<option value="RIG_MODEL_TS790">KenwoodTS-790</option>
-									<option value="RIG_MODEL_TS811">KenwoodTS-811</option>
-									<option value="RIG_MODEL_TS850">KenwoodTS-850</option>
-									<option value="RIG_MODEL_TS870S">KenwoodTS-870S</option>
-									<option value="RIG_MODEL_TS940">KenwoodTS-940S</option>
-									<option value="RIG_MODEL_TS950S">KenwoodTS-950S</option>
-									<option value="RIG_MODEL_TS950SDX">KenwoodTS-950SDX</option>
-									<option value="RIG_MODEL_TS2000">KenwoodTS-2000</option>
-									<option value="RIG_MODEL_R5000">KenwoodR-5000</option>
-									<option value="RIG_MODEL_TS570S">KenwoodTS-570S</option>
-									<option value="RIG_MODEL_THD7A">KenwoodTH-D7A</option>
-									<option value="RIG_MODEL_THF6A">KenwoodTH-F6A</option>
-									<option value="RIG_MODEL_THF7E">KenwoodTH-F7E</option>
-									<option value="RIG_MODEL_TS930">KenwoodTS-930</option>
-									<option value="RIG_MODEL_THG71">KenwoodTH-G71</option>
-									<option value="RIG_MODEL_TS680S">KenwoodTS-680S</option>
-									<option value="RIG_MODEL_TS140S">KenwoodTS-140S</option>
-									<option value="RIG_MODEL_TMD700">KenwoodTM-D700</option>
-									<option value="RIG_MODEL_TMV7">KenwoodTM-V7</option>
-									<option value="RIG_MODEL_TS480">KenwoodTS-480</option>
-									<option value="RIG_MODEL_TRC80">KenwoodTRC-80</option>
-									<option value="RIG_MODEL_TS590S">KenwoodTS-590S</option>
-									<option value="RIG_MODEL_TRANSFOX">SigFox Transfox</option>
-									<option value="RIG_MODEL_THD72A">KenwoodTH-D72A</option>
-									<option value="RIG_MODEL_TMD710">KenwoodTM-D710(G)</option>
-									<option value="RIG_MODEL_TS590SG">KenwoodTS-590SG</option>
-									<option value="RIG_MODEL_TS990S">KenwoodTS-990s</option>
-									<option value="RIG_MODEL_TS890S">KenwoodTS-890S</option>
-									<option value="RIG_MODEL_THD74">KenwoodTH-D74</option>
-									<option value="RIG_MODEL_HF235">Lowe HF-235</option>
-									<option value="RIG_MODEL_MALACHITE">MalachiteDSP</option>
-									<option value="RIG_MODEL_MINIVNA">mRSminiVNA</option>
-									<option value="RIG_MODEL_HIQSDR">N2ADRHiQSDR</option>
-									<option value="RIG_MODEL_OS535">OptoelectronicsOptoScan535</option>
-									<option value="RIG_MODEL_OS456">OptoelectronicsOptoScan456</option>
-									<option value="RIG_MODEL_HPSDR">OpenHPSDRPiHPSDR</option>
-									<option value="RIG_MODEL_PRM8060">Philips/Simoco PRM8060</option>
-									<option value="RIG_MODEL_RA6790">RacalRA6790/GM</option>
-									<option value="RIG_MODEL_RA3702">RacalRA3702</option>
-									<option value="RIG_MODEL_EKD500">RFTEKD-500</option>
-									<option value="RIG_MODEL_ESMC">Rohde&SchwarzESMC</option>
-									<option value="RIG_MODEL_EB200">Rohde&SchwarzEB200</option>
-									<option value="RIG_MODEL_XK2100">Rohde&SchwarzXK2100</option>
-									<option value="RIG_MODEL_TRP8000">Skanti TRP8000</option>
-									<option value="RIG_MODEL_TRP8255">Skanti TRP 8255 S R</option>
-									<option value="RIG_MODEL_DRT1">SAT-SchneiderDRT1</option>
-									<option value="RIG_MODEL_SI570AVRUSB">SoftRock Si570 AVR-USB</option>
-									<option value="RIG_MODEL_OMNIVIP">Ten-TecOmni VI Plus</option>
-									<option value="RIG_MODEL_TT550">Ten-TecTT-550</option>
-									<option value="RIG_MODEL_TT538">Ten-TecTT-538 Jupiter</option>
-									<option value="RIG_MODEL_RX320">Ten-TecRX-320</option>
-									<option value="RIG_MODEL_RX340">Ten-TecRX-340</option>
-									<option value="RIG_MODEL_RX350">Ten-TecRX-350</option>
-									<option value="RIG_MODEL_TT516">Ten-TecTT-516 Argonaut V</option>
-									<option value="RIG_MODEL_TT565">Ten-TecTT-565 Orion</option>
-									<option value="RIG_MODEL_TT585">Ten-TecTT-585 Paragon</option>
-									<option value="RIG_MODEL_TT588">Ten-TecTT-588 Omni VII</option>
-									<option value="RIG_MODEL_RX331">Ten-TecRX-331</option>
-									<option value="RIG_MODEL_TT599">Ten-TecTT-599 Eagle</option>
-									<option value="RIG_MODEL_DSP10">TAPR DSP-10</option>
-									<option value="RIG_MODEL_TRXMANAGER_RIG">TRXManager 5.7.630+</option>
-									<option value="RIG_MODEL_BC780">Uniden BC780xlt</option>
-									<option value="RIG_MODEL_BC245">Uniden BC245xlt</option>
-									<option value="RIG_MODEL_BC895">Uniden BC895xlt</option>
-									<option value="RIG_MODEL_PRO2052">Radio ShackPRO-2052</option>
-									<option value="RIG_MODEL_BC250">Uniden BC250D</option>
-									<option value="RIG_MODEL_BCD396T">Uniden BCD-396T</option>
-									<option value="RIG_MODEL_BCD996T">Uniden BCD-996T</option>
-									<option value="RIG_MODEL_BC898">Uniden BC898T</option>
-									<option value="RIG_MODEL_VX1700">Vertex StandardVX-1700</option>
-									<option value="RIG_MODEL_V4L">Video4LinuxSW/FM radio</option>
-									<option value="RIG_MODEL_V4L2">Video4Linux2 SW/FM radio</option>
-									<option value="RIG_MODEL_WJ8888">Watkins-JohnsonWJ-8888</option>
-									<option value="RIG_MODEL_WR1000">Winradio WR-1000</option>
-									<option value="RIG_MODEL_WR1500">Winradio WR-1500</option>
-									<option value="RIG_MODEL_WR1550">Winradio WR-1550</option>
-									<option value="RIG_MODEL_WR3100">Winradio WR-3100</option>
-									<option value="RIG_MODEL_WR3150">Winradio WR-3150</option>
-									<option value="RIG_MODEL_WR3500">Winradio WR-3500</option>
-									<option value="RIG_MODEL_WR3700">Winradio WR-3700</option>
-									<option value="RIG_MODEL_G313">Winradio WR-G313</option>
-									<option value="RIG_MODEL_FT847">Yaesu FT-847</option>
-									<option value="RIG_MODEL_FT1000D">Yaesu FT-1000D</option>
-									<option value="RIG_MODEL_FT1000MPMKV">YaesuMARK-V FT-1000MP</option>
-									<option value="RIG_MODEL_FT747">Yaesu FT-747GX</option>
-									<option value="RIG_MODEL_FT757">Yaesu FT-757GX</option>
-									<option value="RIG_MODEL_FT757GXII">Yaesu FT-757GXII</option>
-									<option value="RIG_MODEL_FT767">Yaesu FT-767GX</option>
-									<option value="RIG_MODEL_FT736R">Yaesu FT-736R</option>
-									<option value="RIG_MODEL_FT840">Yaesu FT-840</option>
-									<option value="RIG_MODEL_FT900">Yaesu FT-900</option>
-									<option value="RIG_MODEL_FT920">Yaesu FT-920</option>
-									<option value="RIG_MODEL_FT890">Yaesu FT-890</option>
-									<option value="RIG_MODEL_FT990">Yaesu FT-990</option>
-									<option value="RIG_MODEL_FRG100">Yaesu FRG-100</option>
-									<option value="RIG_MODEL_FRG9600">Yaesu FRG-9600</option>
-									<option value="RIG_MODEL_FRG8800">Yaesu FRG-8800</option>
-									<option value="RIG_MODEL_FT817">Yaesu FT-817</option>
-									<option value="RIG_MODEL_FT100">Yaesu FT-100</option>
-									<option value="RIG_MODEL_FT857">Yaesu FT-857</option>
-									<option value="RIG_MODEL_FT897">Yaesu FT-897</option>
-									<option value="RIG_MODEL_FT1000MP">Yaesu FT-1000MP</option>
-									<option value="RIG_MODEL_FT1000MPMKVFLD">Yaesu MARK-V Field FT-1000MP</option>
-									<option value="RIG_MODEL_VR5000">Yaesu VR-5000</option>
-									<option value="RIG_MODEL_FT450">Yaesu FT-450</option>
-									<option value="RIG_MODEL_FT950">Yaesu FT-950</option>
-									<option value="RIG_MODEL_FT2000">Yaesu FT-2000</option>
-									<option value="RIG_MODEL_FT9000">Yaesu FTDX-9000</option>
-									<option value="RIG_MODEL_FT980">Yaesu FT-980</option>
-									<option value="RIG_MODEL_FTDX5000">Yaesu FTDX-5000</option>
-									<option value="RIG_MODEL_FTDX1200">Yaesu FTDX-1200</option>
-									<option value="RIG_MODEL_FT991">Yaesu FT-991</option>
-									<option value="RIG_MODEL_FT891">Yaesu FT-891</option>
-									<option value="RIG_MODEL_FTDX3000">Yaesu FTDX-3000</option>
-									<option value="RIG_MODEL_FT847UNI">Yaesu FT-847UNI</option>
-									<option value="RIG_MODEL_FT600">Yaesu FT-600</option>
-									<option value="RIG_MODEL_FTDX101D">Yaesu FTDX-101D</option>
-									<option value="RIG_MODEL_FT818">Yaesu FT-818</option>
-									<option value="RIG_MODEL_FTDX10">Yaesu FTDX-10</option>
-									<option value="RIG_MODEL_FT897D">Yaesu FT-897D</option>
-									<option value="RIG_MODEL_FTDX101MP">Yaesu FTDX-101MP</option>
-								</datalist>	<span class="input-group-text" id="basic-addon1">
+									<!--<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceid" style="width:7rem">-->
+									<input class="form-control" list="datalistOptions" id="hamlib_deviceid" placeholder="Search radio..." style="width:7rem">
+									<datalist id="datalistOptions">
+										<option value="RIG_MODEL_ADT_200A">ADAT www.adat.ch ADT-200A</option>
+										<option value="RIG_MODEL_DX77">Alinco DX-77</option>
+										<option value="RIG_MODEL_DXSR8">Alinco DX-SR8</option>
+										<option value="RIG_MODEL_DDS60">AmQRPDDS-60</option>
+										<option value="RIG_MODEL_FUNCUBEDONGLE">AMSAT-UK FUNcube Dongle</option>
+										<option value="RIG_MODEL_SI570PEABERRY1">AE9RBSi570 Peaberry V1</option>
+										<option value="RIG_MODEL_SI570PEABERRY2">AE9RBSi570 Peaberry V2</option>
+										<option value="RIG_MODEL_FUNCUBEDONGLEPLUS">AMSAT-UK FUNcube Dongle Pro+</option>
+										<option value="RIG_MODEL_AR8200">AOR AR8200</option>
+										<option value="RIG_MODEL_AR8000">AOR AR8000</option>
+										<option value="RIG_MODEL_AR7030">AOR AR7030</option>
+										<option value="RIG_MODEL_AR5000">AOR AR5000</option>
+										<option value="RIG_MODEL_AR3030">AOR AR3030</option>
+										<option value="RIG_MODEL_AR3000A">AOR AR3000A</option>
+										<option value="RIG_MODEL_AR2700">AOR AR2700</option>
+										<option value="RIG_MODEL_AR8600">AOR AR8600</option>
+										<option value="RIG_MODEL_AR5000A">AOR AR5000A</option>
+										<option value="RIG_MODEL_AR7030P">AOR AR7030 Plus</option>
+										<option value="RIG_MODEL_SR2200">AOR SR2200</option>
+										<option value="RIG_MODEL_BARRETT_2050">Barrett2050</option>
+										<option value="RIG_MODEL_BARRETT_950">Barrett950</option>
+										<option value="RIG_MODEL_DWT">Coding TechnologiesDigital World Travelle</option>
+										<option value="RIG_MODEL_DORJI_DRA818V">DorjiDRA818V</option>
+										<option value="RIG_MODEL_DORJI_DRA818U">DorjiDRA818U</option>
+										<option value="RIG_MODEL_DKR8A">DrakeR-8A</option>
+										<option value="RIG_MODEL_DKR8B">DrakeR-8B</option>
+										<option value="RIG_MODEL_DTTSP">DTTS Microwave Society DttSP IPC</option>
+										<option value="RIG_MODEL_DTTSP_UDP">DTTS Microwave Society DttSP UDP</option>
+										<option value="RIG_MODEL_ELAD_FDM_DUO">ELAD FDM-DUO</option>
+										<option value="RIG_MODEL_K2">Elecraft K2</option>
+										<option value="RIG_MODEL_K3">Elecraft K3</option>
+										<option value="RIG_MODEL_K4">Elecraft K4</option>
+										<option value="RIG_MODEL_XG3">Elecraft XG3</option>
+										<option value="RIG_MODEL_K3S">Elecraft K3S</option>
+										<option value="RIG_MODEL_KX2">Elecraft KX2</option>
+										<option value="RIG_MODEL_KX3">Elecraft KX3</option>
+										<option value="RIG_MODEL_ELEKTOR304">ElektorElektor 3/04</option>
+										<option value="RIG_MODEL_ELEKTOR507">ElektorElektor SDR-USB</option>
+										<option value="RIG_MODEL_FIFISDR">FiFi FiFi-SDR</option>
+										<option value="RIG_MODEL_POWERSDR">FlexRadio/ANAN PowerSDR/Thetis</option>
+										<option value="RIG_MODEL_F6K">FlexRadio6xxx</option>
+										<option value="RIG_MODEL_SDR1000">Flex-radio SDR-1000</option>
+										<option value="RIG_MODEL_FLRIG">FLRigFLRig</option>
+										<option value="RIG_MODEL_FASDR">FunkamateurFA-SDR</option>
+										<option value="RIG_MODEL_DUMMY">Hamlib Dummy</option>
+										<option value="RIG_MODEL_DUMMY_NOVFO">Hamlib Dummy No VFO</option>
+										<option value="RIG_MODEL_NETRIGCTL">Hamlib NET rigctl</option>
+										<option value="RIG_MODEL_RSHFIQ">HobbyPCB RS-HFIQ</option>
+										<option value="RIG_MODEL_PT8000A">Hilberling PT-8000A</option>
+										<option value="RIG_MODEL_IC1275">Icom IC-1275</option>
+										<option value="RIG_MODEL_IC271">Icom IC-271</option>
+										<option value="RIG_MODEL_IC275">Icom IC-275</option>
+										<option value="RIG_MODEL_IC471">Icom IC-471</option>
+										<option value="RIG_MODEL_IC475">Icom IC-475</option>
+										<option value="RIG_MODEL_IC575">Icom IC-575</option>
+										<option value="RIG_MODEL_IC706">Icom IC-706</option>
+										<option value="RIG_MODEL_IC706MKII">Icom IC-706MkII</option>
+										<option value="RIG_MODEL_IC706MKIIG">Icom IC-706MkIIG</option>
+										<option value="RIG_MODEL_IC707">Icom IC-707</option>
+										<option value="RIG_MODEL_IC718">Icom IC-718</option>
+										<option value="RIG_MODEL_IC725">Icom IC-725</option>
+										<option value="RIG_MODEL_IC726">Icom IC-726</option>
+										<option value="RIG_MODEL_IC728">Icom IC-728</option>
+										<option value="RIG_MODEL_IC729">Icom IC-729</option>
+										<option value="RIG_MODEL_IC735">Icom IC-735</option>
+										<option value="RIG_MODEL_IC736">Icom IC-736</option>
+										<option value="RIG_MODEL_IC737">Icom IC-737</option>
+										<option value="RIG_MODEL_IC738">Icom IC-738</option>
+										<option value="RIG_MODEL_IC746">Icom IC-746</option>
+										<option value="RIG_MODEL_IC751">Icom IC-751</option>
+										<option value="RIG_MODEL_IC756">Icom IC-756</option>
+										<option value="RIG_MODEL_IC756PRO">Icom IC-756PRO</option>
+										<option value="RIG_MODEL_IC761">Icom IC-761</option>
+										<option value="RIG_MODEL_IC765">Icom IC-765</option>
+										<option value="RIG_MODEL_IC775">Icom IC-775</option>
+										<option value="RIG_MODEL_IC781">Icom IC-781</option>
+										<option value="RIG_MODEL_IC820">Icom IC-820H</option>
+										<option value="RIG_MODEL_IC821H">Icom IC-821H</option>
+										<option value="RIG_MODEL_IC970">Icom IC-970</option>
+										<option value="RIG_MODEL_ICR10">Icom IC-R10</option>
+										<option value="RIG_MODEL_ICR71">Icom IC-R71</option>
+										<option value="RIG_MODEL_ICR72">Icom IC-R72</option>
+										<option value="RIG_MODEL_ICR75">Icom IC-R75</option>
+										<option value="RIG_MODEL_ICR7000">Icom IC-R7000</option>
+										<option value="RIG_MODEL_ICR7100">Icom IC-R7100</option>
+										<option value="RIG_MODEL_ICR8500">Icom ICR-8500</option>
+										<option value="RIG_MODEL_ICR9000">Icom IC-R9000</option>
+										<option value="RIG_MODEL_IC910">Icom IC-910</option>
+										<option value="RIG_MODEL_IC78">Icom IC-78</option>
+										<option value="RIG_MODEL_IC746PRO">Icom IC-746PRO</option>
+										<option value="RIG_MODEL_IC756PROII">Icom IC-756PROII</option>
+										<option value="RIG_MODEL_ICID1">Icom IC ID-1</option>
+										<option value="RIG_MODEL_IC703">Icom IC-703</option>
+										<option value="RIG_MODEL_IC7800">Icom IC-7800</option>
+										<option value="RIG_MODEL_IC756PROIII">Icom IC-756PROIII</option>
+										<option value="RIG_MODEL_ICR20">Icom IC-R20</option>
+										<option value="RIG_MODEL_IC7000">Icom IC-7000</option>
+										<option value="RIG_MODEL_IC7200">Icom IC-7200</option>
+										<option value="RIG_MODEL_IC7700">Icom IC-7700</option>
+										<option value="RIG_MODEL_IC7600">Icom IC-7600</option>
+										<option value="RIG_MODEL_DELTAII">Ten-TecDelta II</option>
+										<option value="RIG_MODEL_IC92D">Icom IC-92D</option>
+										<option value="RIG_MODEL_ICR9500">Icom IC-R9500</option>
+										<option value="RIG_MODEL_IC7410">Icom IC-7410</option>
+										<option value="RIG_MODEL_IC9100">Icom IC-9100</option>
+										<option value="RIG_MODEL_ICRX7">Icom IC-RX7</option>
+										<option value="RIG_MODEL_IC7100">Icom IC-7100</option>
+										<option value="RIG_MODEL_ID5100">Icom ID-5100</option>
+										<option value="RIG_MODEL_IC2730">Icom IC-2730</option>
+										<option value="RIG_MODEL_IC7300">Icom IC-7300</option>
+										<option value="RIG_MODEL_IC_M700PRO">Icom IC-M700PRO</option>
+										<option value="RIG_MODEL_IC_M802">Icom IC-M802</option>
+										<option value="RIG_MODEL_IC_M710">Icom IC-M710</option>
+										<option value="RIG_MODEL_IC_M803">Icom IC-M803</option>
+										<option value="RIG_MODEL_PERSEUS">Microtelecom Perseus</option>
+										<option value="RIG_MODEL_IC785x">Icom IC-785x</option>
+										<option value="RIG_MODEL_X108G">XeiguX108G</option>
+										<option value="RIG_MODEL_ICR6">Icom IC-R6</option>
+										<option value="RIG_MODEL_IC7610">Icom IC-7610</option>
+										<option value="RIG_MODEL_ICR8600">Icom IC-R8600</option>
+										<option value="RIG_MODEL_ICR30">Icom IC-R30</option>
+										<option value="RIG_MODEL_IC9700">Icom IC-9700</option>
+										<option value="RIG_MODEL_ID4100">Icom ID-4100</option>
+										<option value="RIG_MODEL_ID31">Icom ID-31</option>
+										<option value="RIG_MODEL_ID51">Icom ID-51</option>
+										<option value="RIG_MODEL_IC705">Icom IC-705</option>
+										<option value="RIG_MODEL_PCR1000">Icom IC-PCR1000</option>
+										<option value="RIG_MODEL_PCR100">Icom IC-PCR100</option>
+										<option value="RIG_MODEL_PCR1500">Icom IC-PCR1500</option>
+										<option value="RIG_MODEL_PCR2500">Icom IC-PCR2500</option>
+										<option value="RIG_MODEL_NRD525">JRCNRD-525</option>
+										<option value="RIG_MODEL_NRD535">JRCNRD-535D</option>
+										<option value="RIG_MODEL_NRD545">JRCNRD-545 DSP</option>
+										<option value="RIG_MODEL_505DSP">Kachina505DSP</option>
+										<option value="RIG_MODEL_SI570PICUSB">KTH-SDR kitSi570 PIC-USB</option>
+										<option value="RIG_MODEL_TS50">KenwoodTS-50S</option>
+										<option value="RIG_MODEL_TS440">KenwoodTS-440S</option>
+										<option value="RIG_MODEL_TS450S">KenwoodTS-450S</option>
+										<option value="RIG_MODEL_TS570D">KenwoodTS-570D</option>
+										<option value="RIG_MODEL_TS690S">KenwoodTS-690S</option>
+										<option value="RIG_MODEL_TS711">KenwoodTS-711</option>
+										<option value="RIG_MODEL_TS790">KenwoodTS-790</option>
+										<option value="RIG_MODEL_TS811">KenwoodTS-811</option>
+										<option value="RIG_MODEL_TS850">KenwoodTS-850</option>
+										<option value="RIG_MODEL_TS870S">KenwoodTS-870S</option>
+										<option value="RIG_MODEL_TS940">KenwoodTS-940S</option>
+										<option value="RIG_MODEL_TS950S">KenwoodTS-950S</option>
+										<option value="RIG_MODEL_TS950SDX">KenwoodTS-950SDX</option>
+										<option value="RIG_MODEL_TS2000">KenwoodTS-2000</option>
+										<option value="RIG_MODEL_R5000">KenwoodR-5000</option>
+										<option value="RIG_MODEL_TS570S">KenwoodTS-570S</option>
+										<option value="RIG_MODEL_THD7A">KenwoodTH-D7A</option>
+										<option value="RIG_MODEL_THF6A">KenwoodTH-F6A</option>
+										<option value="RIG_MODEL_THF7E">KenwoodTH-F7E</option>
+										<option value="RIG_MODEL_TS930">KenwoodTS-930</option>
+										<option value="RIG_MODEL_THG71">KenwoodTH-G71</option>
+										<option value="RIG_MODEL_TS680S">KenwoodTS-680S</option>
+										<option value="RIG_MODEL_TS140S">KenwoodTS-140S</option>
+										<option value="RIG_MODEL_TMD700">KenwoodTM-D700</option>
+										<option value="RIG_MODEL_TMV7">KenwoodTM-V7</option>
+										<option value="RIG_MODEL_TS480">KenwoodTS-480</option>
+										<option value="RIG_MODEL_TRC80">KenwoodTRC-80</option>
+										<option value="RIG_MODEL_TS590S">KenwoodTS-590S</option>
+										<option value="RIG_MODEL_TRANSFOX">SigFox Transfox</option>
+										<option value="RIG_MODEL_THD72A">KenwoodTH-D72A</option>
+										<option value="RIG_MODEL_TMD710">KenwoodTM-D710(G)</option>
+										<option value="RIG_MODEL_TS590SG">KenwoodTS-590SG</option>
+										<option value="RIG_MODEL_TS990S">KenwoodTS-990s</option>
+										<option value="RIG_MODEL_TS890S">KenwoodTS-890S</option>
+										<option value="RIG_MODEL_THD74">KenwoodTH-D74</option>
+										<option value="RIG_MODEL_HF235">Lowe HF-235</option>
+										<option value="RIG_MODEL_MALACHITE">MalachiteDSP</option>
+										<option value="RIG_MODEL_MINIVNA">mRSminiVNA</option>
+										<option value="RIG_MODEL_HIQSDR">N2ADRHiQSDR</option>
+										<option value="RIG_MODEL_OS535">OptoelectronicsOptoScan535</option>
+										<option value="RIG_MODEL_OS456">OptoelectronicsOptoScan456</option>
+										<option value="RIG_MODEL_HPSDR">OpenHPSDRPiHPSDR</option>
+										<option value="RIG_MODEL_PRM8060">Philips/Simoco PRM8060</option>
+										<option value="RIG_MODEL_RA6790">RacalRA6790/GM</option>
+										<option value="RIG_MODEL_RA3702">RacalRA3702</option>
+										<option value="RIG_MODEL_EKD500">RFTEKD-500</option>
+										<option value="RIG_MODEL_ESMC">Rohde&SchwarzESMC</option>
+										<option value="RIG_MODEL_EB200">Rohde&SchwarzEB200</option>
+										<option value="RIG_MODEL_XK2100">Rohde&SchwarzXK2100</option>
+										<option value="RIG_MODEL_TRP8000">Skanti TRP8000</option>
+										<option value="RIG_MODEL_TRP8255">Skanti TRP 8255 S R</option>
+										<option value="RIG_MODEL_DRT1">SAT-SchneiderDRT1</option>
+										<option value="RIG_MODEL_SI570AVRUSB">SoftRock Si570 AVR-USB</option>
+										<option value="RIG_MODEL_OMNIVIP">Ten-TecOmni VI Plus</option>
+										<option value="RIG_MODEL_TT550">Ten-TecTT-550</option>
+										<option value="RIG_MODEL_TT538">Ten-TecTT-538 Jupiter</option>
+										<option value="RIG_MODEL_RX320">Ten-TecRX-320</option>
+										<option value="RIG_MODEL_RX340">Ten-TecRX-340</option>
+										<option value="RIG_MODEL_RX350">Ten-TecRX-350</option>
+										<option value="RIG_MODEL_TT516">Ten-TecTT-516 Argonaut V</option>
+										<option value="RIG_MODEL_TT565">Ten-TecTT-565 Orion</option>
+										<option value="RIG_MODEL_TT585">Ten-TecTT-585 Paragon</option>
+										<option value="RIG_MODEL_TT588">Ten-TecTT-588 Omni VII</option>
+										<option value="RIG_MODEL_RX331">Ten-TecRX-331</option>
+										<option value="RIG_MODEL_TT599">Ten-TecTT-599 Eagle</option>
+										<option value="RIG_MODEL_DSP10">TAPR DSP-10</option>
+										<option value="RIG_MODEL_TRXMANAGER_RIG">TRXManager 5.7.630+</option>
+										<option value="RIG_MODEL_BC780">Uniden BC780xlt</option>
+										<option value="RIG_MODEL_BC245">Uniden BC245xlt</option>
+										<option value="RIG_MODEL_BC895">Uniden BC895xlt</option>
+										<option value="RIG_MODEL_PRO2052">Radio ShackPRO-2052</option>
+										<option value="RIG_MODEL_BC250">Uniden BC250D</option>
+										<option value="RIG_MODEL_BCD396T">Uniden BCD-396T</option>
+										<option value="RIG_MODEL_BCD996T">Uniden BCD-996T</option>
+										<option value="RIG_MODEL_BC898">Uniden BC898T</option>
+										<option value="RIG_MODEL_VX1700">Vertex StandardVX-1700</option>
+										<option value="RIG_MODEL_V4L">Video4LinuxSW/FM radio</option>
+										<option value="RIG_MODEL_V4L2">Video4Linux2 SW/FM radio</option>
+										<option value="RIG_MODEL_WJ8888">Watkins-JohnsonWJ-8888</option>
+										<option value="RIG_MODEL_WR1000">Winradio WR-1000</option>
+										<option value="RIG_MODEL_WR1500">Winradio WR-1500</option>
+										<option value="RIG_MODEL_WR1550">Winradio WR-1550</option>
+										<option value="RIG_MODEL_WR3100">Winradio WR-3100</option>
+										<option value="RIG_MODEL_WR3150">Winradio WR-3150</option>
+										<option value="RIG_MODEL_WR3500">Winradio WR-3500</option>
+										<option value="RIG_MODEL_WR3700">Winradio WR-3700</option>
+										<option value="RIG_MODEL_G313">Winradio WR-G313</option>
+										<option value="RIG_MODEL_FT847">Yaesu FT-847</option>
+										<option value="RIG_MODEL_FT1000D">Yaesu FT-1000D</option>
+										<option value="RIG_MODEL_FT1000MPMKV">YaesuMARK-V FT-1000MP</option>
+										<option value="RIG_MODEL_FT747">Yaesu FT-747GX</option>
+										<option value="RIG_MODEL_FT757">Yaesu FT-757GX</option>
+										<option value="RIG_MODEL_FT757GXII">Yaesu FT-757GXII</option>
+										<option value="RIG_MODEL_FT767">Yaesu FT-767GX</option>
+										<option value="RIG_MODEL_FT736R">Yaesu FT-736R</option>
+										<option value="RIG_MODEL_FT840">Yaesu FT-840</option>
+										<option value="RIG_MODEL_FT900">Yaesu FT-900</option>
+										<option value="RIG_MODEL_FT920">Yaesu FT-920</option>
+										<option value="RIG_MODEL_FT890">Yaesu FT-890</option>
+										<option value="RIG_MODEL_FT990">Yaesu FT-990</option>
+										<option value="RIG_MODEL_FRG100">Yaesu FRG-100</option>
+										<option value="RIG_MODEL_FRG9600">Yaesu FRG-9600</option>
+										<option value="RIG_MODEL_FRG8800">Yaesu FRG-8800</option>
+										<option value="RIG_MODEL_FT817">Yaesu FT-817</option>
+										<option value="RIG_MODEL_FT100">Yaesu FT-100</option>
+										<option value="RIG_MODEL_FT857">Yaesu FT-857</option>
+										<option value="RIG_MODEL_FT897">Yaesu FT-897</option>
+										<option value="RIG_MODEL_FT1000MP">Yaesu FT-1000MP</option>
+										<option value="RIG_MODEL_FT1000MPMKVFLD">Yaesu MARK-V Field FT-1000MP</option>
+										<option value="RIG_MODEL_VR5000">Yaesu VR-5000</option>
+										<option value="RIG_MODEL_FT450">Yaesu FT-450</option>
+										<option value="RIG_MODEL_FT950">Yaesu FT-950</option>
+										<option value="RIG_MODEL_FT2000">Yaesu FT-2000</option>
+										<option value="RIG_MODEL_FT9000">Yaesu FTDX-9000</option>
+										<option value="RIG_MODEL_FT980">Yaesu FT-980</option>
+										<option value="RIG_MODEL_FTDX5000">Yaesu FTDX-5000</option>
+										<option value="RIG_MODEL_FTDX1200">Yaesu FTDX-1200</option>
+										<option value="RIG_MODEL_FT991">Yaesu FT-991</option>
+										<option value="RIG_MODEL_FT891">Yaesu FT-891</option>
+										<option value="RIG_MODEL_FTDX3000">Yaesu FTDX-3000</option>
+										<option value="RIG_MODEL_FT847UNI">Yaesu FT-847UNI</option>
+										<option value="RIG_MODEL_FT600">Yaesu FT-600</option>
+										<option value="RIG_MODEL_FTDX101D">Yaesu FTDX-101D</option>
+										<option value="RIG_MODEL_FT818">Yaesu FT-818</option>
+										<option value="RIG_MODEL_FTDX10">Yaesu FTDX-10</option>
+										<option value="RIG_MODEL_FT897D">Yaesu FT-897D</option>
+										<option value="RIG_MODEL_FTDX101MP">Yaesu FTDX-101MP</option>
+									</datalist>	<span class="input-group-text" id="basic-addon1">
 								
 								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-alt" viewBox="0 0 16 16">
   <path d="M1 13.5a.5.5 0 0 0 .5.5h3.797a.5.5 0 0 0 .439-.26L11 3h3.5a.5.5 0 0 0 0-1h-3.797a.5.5 0 0 0-.439.26L5 13H1.5a.5.5 0 0 0-.5.5zm10 0a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5z"/>
 </svg>
 								
 								</span>
-								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
-									<option value="RIG">RIG</option>
-									<option value="USB">USB</option>
-									<option value="RTS">Serial RTS</option>
-									<option value="DTR-H">Serial DTR-High</option>
-									<option value="DTR-H">Serial DTR-Low</option>
-									<option value="PARALLEL">Rig PARALLEL</option>
-									<option value="MICDATA">Rig MICDATA</option>
-									<option value="CM108">Rig CM108</option>
-								</select>
-							</div>
-							<!--<hr class="m-1">-->
-							<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
+										<option value="RIG">RIG</option>
+										<option value="USB">USB</option>
+										<option value="RTS">Serial RTS</option>
+										<option value="DTR-H">Serial DTR-High</option>
+										<option value="DTR-H">Serial DTR-Low</option>
+										<option value="PARALLEL">Rig PARALLEL</option>
+										<option value="MICDATA">Rig MICDATA</option>
+										<option value="CM108">Rig CM108</option>
+									</select>
+								</div>
+								<!--<hr class="m-1">-->
+								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
 							
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-usb-symbol" viewBox="0 0 16 16">
   <path d="m7.792.312-1.533 2.3A.25.25 0 0 0 6.467 3H7.5v7.319a2.5 2.5 0 0 0-.515-.298L5.909 9.56A1.5 1.5 0 0 1 5 8.18v-.266a1.5 1.5 0 1 0-1 0v.266a2.5 2.5 0 0 0 1.515 2.298l1.076.461a1.5 1.5 0 0 1 .888 1.129 2.001 2.001 0 1 0 1.021-.006v-.902a1.5 1.5 0 0 1 .756-1.303l1.484-.848A2.5 2.5 0 0 0 11.995 7h.755a.25.25 0 0 0 .25-.25v-2.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25v2.5c0 .138.112.25.25.25h.741a1.5 1.5 0 0 1-.747 1.142L8.76 8.99a2.584 2.584 0 0 0-.26.17V3h1.033a.25.25 0 0 0 .208-.389L8.208.312a.25.25 0 0 0-.416 0Z"/>
 </svg>
 							
 							</span>
-								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport" style="width:7rem">
-									<!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport" style="width:7rem">
+										<!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                  <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
-								</select> <span class="input-group-text" id="basic-addon1">Speed</span>
-								<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
-									<option value="1200">1200</option>
-									<option value="2400">2400</option>
-									<option value="4800">4800</option>
-									<option selected value="9600">9600</option>
-									<option value="14400">14400</option>
-									<option value="19200">19200</option>
-									<option value="28800">28800</option>
-									<option value="38400">38400</option>
-									<option value="57600">57600</option>
-									<option value="115200">115200</option>
-								</select>
+									</select> <span class="input-group-text" id="basic-addon1">Speed</span>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
+										<option value="1200">1200</option>
+										<option value="2400">2400</option>
+										<option value="4800">4800</option>
+										<option selected value="9600">9600</option>
+										<option value="14400">14400</option>
+										<option value="19200">19200</option>
+										<option value="28800">28800</option>
+										<option value="38400">38400</option>
+										<option value="57600">57600</option>
+										<option value="115200">115200</option>
+									</select>
+								</div>
+							</div>
+							<div id="radio-control-rigctl">
+								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-projector-fill" viewBox="0 0 16 16">
+  <path d="M2 4a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2 1 1 0 0 0 1 1h1a1 1 0 0 0 1-1h6a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1 2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H2Zm.5 2h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1 0-1ZM14 7.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Zm-12 1a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5Z"/>
+</svg>
+								</span>
+									<input type="text" class="form-control" placeholder="Device id" id="hamlib_deviceid_rigctl" aria-label="Device ID" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-alt" viewBox="0 0 16 16">
+  <path d="M1 13.5a.5.5 0 0 0 .5.5h3.797a.5.5 0 0 0 .439-.26L11 3h3.5a.5.5 0 0 0 0-1h-3.797a.5.5 0 0 0-.439.26L5 13H1.5a.5.5 0 0 0-.5.5zm10 0a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 0-1h-3a.5.5 0 0 0-.5.5z"/>
+</svg>
+								
+								</span>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol_rigctl" style="width: 0.5rem">
+										<option value="RIG">RIG</option>
+										<option value="USB">USB</option>
+										<option value="RTS">Serial RTS</option>
+										<option value="DTR-H">Serial DTR-High</option>
+										<option value="DTR-H">Serial DTR-Low</option>
+										<option value="PARALLEL">Rig PARALLEL</option>
+										<option value="MICDATA">Rig MICDATA</option>
+										<option value="CM108">Rig CM108</option>
+									</select>
+								</div>
+								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+							
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-usb-symbol" viewBox="0 0 16 16">
+  <path d="m7.792.312-1.533 2.3A.25.25 0 0 0 6.467 3H7.5v7.319a2.5 2.5 0 0 0-.515-.298L5.909 9.56A1.5 1.5 0 0 1 5 8.18v-.266a1.5 1.5 0 1 0-1 0v.266a2.5 2.5 0 0 0 1.515 2.298l1.076.461a1.5 1.5 0 0 1 .888 1.129 2.001 2.001 0 1 0 1.021-.006v-.902a1.5 1.5 0 0 1 .756-1.303l1.484-.848A2.5 2.5 0 0 0 11.995 7h.755a.25.25 0 0 0 .25-.25v-2.5a.25.25 0 0 0-.25-.25h-2.5a.25.25 0 0 0-.25.25v2.5c0 .138.112.25.25.25h.741a1.5 1.5 0 0 1-.747 1.142L8.76 8.99a2.584 2.584 0 0 0-.26.17V3h1.033a.25.25 0 0 0 .208-.389L8.208.312a.25.25 0 0 0-.416 0Z"/>
+</svg>
+							
+							</span>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport_rigctl" style="width:7rem">
+										<!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+                                 <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
+									</select> <span class="input-group-text" id="basic-addon1">Speed</span>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed_rigctl">
+										<option value="1200">1200</option>
+										<option value="2400">2400</option>
+										<option value="4800">4800</option>
+										<option selected value="9600">9600</option>
+										<option value="14400">14400</option>
+										<option value="19200">19200</option>
+										<option value="28800">28800</option>
+										<option value="38400">38400</option>
+										<option value="57600">57600</option>
+										<option value="115200">115200</option>
+									</select>
+								</div>
+							</div>
+							<div id="radio-control-rigctld">
+								<div class="input-group  input-group-sm mb-1">
+									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">
+<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
+																
+								</div>
 							</div>
 						</div>
 						<div class="card-footer text-muted small">Please select your radio settings. Starting the TNC saves them.</div>
 					</div>
 				</div>
-				<!--
-                  <div class="col-3">
-                     <div class="card text-dark bg-light mb-0" >
-                        <div class="card-header p-1"><strong>TNC STATUS</strong></div>
-                        <div class="card-body p-1 mb-1">
-                           <div class="container p-1">
-                  
-                                    <div class="input-group input-group-sm mb-1">
-                                       <button type="button" id="startTNC"class="btn btn-success">Start</button>
-                                       <span class="input-group-text" id="tnc_running_state" style="width: 5rem">---</span>
-                                       <button type="button" id="stopTNC"class="btn btn-danger">STOP</button>
-                                    </div>
-                  
-                  
-                              <div class="row">
-                                 <div class="col-md-auto">
-                                    CPU
-                                 </div>
-                                 <div class="col-8">
-                                    <div class="progress" style="height: 20px;" >
-                                       <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_cpu" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                       <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_cpu_value"></p>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="row">
-                                 <div class="col-md-auto">
-                                    RAM
-                                 </div>
-                                 <div class="col-8">
-                                    <div class="progress" style="height: 20px;" >
-                                       <div class="progress-bar progress-bar-striped bg-primary" id="progressbar_ram" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                                       <p class="justify-content-center d-flex position-absolute w-100" id="progressbar_ram_value"></p>
-                                    </div>
-                                 </div>
-                              </div>
-                              <div class="row">
-                                 <div class="col-md-auto">
-                                    TOE
-                                 </div>
-                                 <div class="col-md-auto">
-                                    <p class="text-start mb-0" id="toe"></p>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
-                  
-                     </div>
-                  </div>
-                  --></div>
+			</div>
 			<div class="row collapse multi-collapse show mt-2" id="collapseSecondRow">
 				<div class="col">
 					<div class="card text-dark mb-1">

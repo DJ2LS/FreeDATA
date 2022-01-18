@@ -7,6 +7,7 @@ import atexit
 import subprocess
 import os
 
+
 # set global hamlib version
 hamlib_version = 0
 
@@ -25,7 +26,7 @@ try:
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 
     # installation path for Ubuntu 20.04 LTS python modules
-    sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+    #sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
     
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
@@ -37,10 +38,11 @@ try:
     # this is not needed as python will be shipped with app bundle
     sys.path.append('/usr/local/lib/python3.6/site-packages')
     sys.path.append('/usr/local/lib/python3.7/site-packages')
-    sys.path.append('/usr/local/lib/python3.8/site-packages')
+    #sys.path.append('/usr/local/lib/python3.8/site-packages')
     sys.path.append('/usr/local/lib/python3.9/site-packages')
     sys.path.append('/usr/local/lib/python3.10/site-packages')
     
+    sys.path.append('lib/hamlib/linux/python3.8/site-packages')
     import Hamlib
             
     # https://stackoverflow.com/a/4703409
@@ -85,7 +87,7 @@ class radio:
         self.stop_bits = ''
         self.handshake = ''
  
-    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake):    
+    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_port, rigctld_ip):    
         
         self.devicename = devicename
         self.deviceport = str(deviceport)
@@ -106,7 +108,7 @@ class radio:
                 self.devicenumber = int(getattr(Hamlib, self.devicename))
                 print(self.devicenumber)
             except:
-                structlog.get_logger("structlog").error("[DMN] Hamlib: rig not supported...")
+                structlog.get_logger("structlog").error("[RIG] Hamlib: rig not supported...")
                 self.devicenumber = 0
             
             
@@ -177,11 +179,11 @@ class radio:
                 error = error[1]
                             
                 if error == 'Permission denied':
-                    structlog.get_logger("structlog").error("[DMN] Hamlib has no permissions", e = error)
+                    structlog.get_logger("structlog").error("[RIG] Hamlib has no permissions", e = error)
                     help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
-                    structlog.get_logger("structlog").error("[DMN] HELP:", check = help_url)
+                    structlog.get_logger("structlog").error("[RIG] HELP:", check = help_url)
             except:
-                structlog.get_logger("structlog").info("[DMN] Hamlib device openend", status='SUCCESS')
+                structlog.get_logger("structlog").info("[RIG] Hamlib device openend", status='SUCCESS')
 
 
             # set ptt to false if ptt is stuck for some reason
@@ -194,7 +196,7 @@ class radio:
             return True
 
         except Exception as e:
-            structlog.get_logger("structlog").error("[TNC] Hamlib - can't open rig", error=e, e=sys.exc_info()[0])
+            structlog.get_logger("structlog").error("[RIG] Hamlib - can't open rig", error=e, e=sys.exc_info()[0])
             return False
             
     def get_frequency(self):

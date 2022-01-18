@@ -56,11 +56,10 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
 
             # we need to loop through buffer until end of chunk is reached or timeout occured
             while socketTimeout > time.time():
+            
+                data += self.request.recv(64)  # we keep amount of bytes short
 
-                chunk = self.request.recv(71)  # we keep amount of bytes short
-                data += chunk
-
-                if chunk.startswith(b'{"type"') and chunk.endswith(b'}\n'):
+                if data.startswith(b'{"type"') and data.endswith(b'}\n'):
                     break
                     
             data = data[:-1]  # remove b'\n'

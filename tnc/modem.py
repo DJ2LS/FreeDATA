@@ -23,16 +23,6 @@ import re
 import queue
 import codec2
 
-if static.HAMLIB_USE_RIGCTL:
-    structlog.get_logger("structlog").warning("using rigctl....")
-    import rigctl as rig
-else:
-    structlog.get_logger("structlog").warning("using rig.......")
-    import rig
-
-# option for testing miniaudio instead of audioop for sample rate conversion
-#import miniaudio
-
 
 ####################################################
 # https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
@@ -189,9 +179,20 @@ class RF():
             structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
 
         # --------------------------------------------INIT AND OPEN HAMLIB
-        self.hamlib = rig.radio()
-        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE)
+        # check how we want to control the radio
+        if static.HAMLIB_RADIOCONTROL == 'direct':
+            import rig
+        elif static.HAMLIB_RADIOCONTROL == 'rigctl':
+            import rigctl as rig
+        elif static.HAMLIB_RADIOCONTROL == 'rigctld':
+            import rigctld as rig
+        else:
+            raise NotImplementedError 
+
         
+        self.hamlib = rig.radio()
+        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE, rigctld_ip = static.HAMLIB_RGICTLD_IP, rigctld_port = static.HAMLIB_RGICTLD_PORT)
+
         # --------------------------------------------START DECODER THREAD
 
         fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")

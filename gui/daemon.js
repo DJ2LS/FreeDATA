@@ -140,7 +140,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
     var json_command = JSON.stringify({
         type: 'SET',
         command: 'STARTTNC',
@@ -149,6 +149,7 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, devicename, devi
             mygrid: mygrid,
             rx_audio: rx_audio,
             tx_audio: tx_audio,
+            radiocontrol: radiocontrol,
             devicename: devicename,
             deviceport: deviceport,
             pttprotocol: pttprotocol,
@@ -156,8 +157,9 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, devicename, devi
             serialspeed: serialspeed,
             data_bits: data_bits,
             stop_bits: stop_bits,
-            handshake: handshake
-
+            handshake: handshake,
+            rigctld_port: rigctld_port,
+            rigctld_ip: rigctld_ip
         }]
     })
 
@@ -173,12 +175,13 @@ exports.stopTNC = function() {
 }
 
 // TEST HAMLIB
-exports.testHamlib = function(devicename, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake) {
+exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
 
     var json_command = JSON.stringify({
         type: 'GET',
         command: 'TEST_HAMLIB',
         parameter: [{
+            radiocontrol: radiocontrol,
             devicename: devicename,
             deviceport: deviceport,
             pttprotocol: pttprotocol,
@@ -186,8 +189,9 @@ exports.testHamlib = function(devicename, deviceport, serialspeed, pttprotocol, 
             serialspeed: serialspeed,
             data_bits: data_bits,
             stop_bits: stop_bits,
-            handshake: handshake
-
+            handshake: handshake,
+            rigctld_port: rigctld_port,
+            rigctld_ip: rigctld_ip
         }]
     })
     console.log(json_command)

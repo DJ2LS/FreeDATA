@@ -37,8 +37,12 @@ if __name__ == '__main__':
     PARSER.add_argument('--data_bits', dest="hamlib_data_bits", default="8", help="Hamlib data bits", type=str)         
     PARSER.add_argument('--stop_bits', dest="hamlib_stop_bits", default="1", help="Hamlib stop bits", type=str)          
     PARSER.add_argument('--handshake', dest="hamlib_handshake", default="None", help="Hamlib handshake", type=str)          
-    PARSER.add_argument('--rigctl', dest="hamlib_use_rigctl", action="store_true", default=False, help="force using of rigctl")     
-            
+    PARSER.add_argument('--radiocontrol', dest="hamlib_radiocontrol", default="direct", help="Set how you want to control your radio")                 
+    PARSER.add_argument('--rigctld_port', dest="rigctld_port", default="direct", help="Set rigctld port")    
+    PARSER.add_argument('--rigctld_ip', dest="rigctld_ip", default="direct", help="Set rigctld ip")    
+ 
+
+ 
     
     ARGS = PARSER.parse_args()
 
@@ -57,12 +61,9 @@ if __name__ == '__main__':
     static.HAMLIB_DATA_BITS = ARGS.hamlib_data_bits
     static.HAMLIB_STOP_BITS = ARGS.hamlib_stop_bits
     static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
-    static.HAMLIB_USE_RIGCTL = ARGS.hamlib_use_rigctl
-    print(ARGS.hamlib_use_rigctl)
-    
-    # force use of rigctl when on windows
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        HAMLIB_USE_RIGCTL = True
+    static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
+    static.HAMLIB_RGICTLD_IP = ARGS.rigctld_ip
+    static.HAMLIB_RGICTLD_PORT = ARGS.rigctld_port
         
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

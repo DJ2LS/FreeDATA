@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-# Franco Spinelli, IW2DHW
+# Intially created by Franco Spinelli, IW2DHW, 01/2022
+# Updated by DJ2LS
+#
 #
 # versione mia di rig.py per gestire Ft897D tramite rigctl e senza
 # fare alcun riferimento alla configurazione
@@ -13,6 +15,8 @@ import sys
 import os
 # for rig_model -> rig_number only
 
+# set global hamlib version
+hamlib_version = 0
                
 class radio:
     def __init__(self):
@@ -28,7 +32,7 @@ class radio:
         self.stop_bits = ''
         self.handshake = ''
  
-    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake):    
+    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):    
         
         self.devicename = devicename
         self.deviceport = deviceport
@@ -56,8 +60,12 @@ class radio:
                 self.devicenumber = int(self.devicename)
             else:
                 self.devicenumber = 6 #dummy
-                structlog.get_logger("structlog").warning("[TNC] RADIO NOT FOUND USING DUMMY!", error=e)   
-
+                structlog.get_logger("structlog").warning("[RIGCTL] RADIO NOT FOUND USING DUMMY!", error=e)   
+        
+        # set deviceport to dummy port, if we selected dummy model
+        if self.devicenumber == 1 or self.devicenumber == 6:
+            self.deviceport = '/dev/ttyUSB0'
+            
         print(self.devicenumber, self.deviceport, self.serialspeed)
 
 

@@ -34,7 +34,15 @@ var configContent = `
   "tnclocation": "localhost",
   "stop_bits" : "1",
   "data_bits" : "8",
-  "handshake" : "None"
+  "handshake" : "None",
+  "radiocontrol" : "direct",
+  "deviceport_rigctl" : "3",
+  "deviceid_rigctl" : "3",
+  "serialspeed_rigctl" : "9600",
+  "pttprotocol_rigctl" : "USB",
+  "rigctld_port" : "4532",
+  "rigctld_ip" : "127.0.0.1"
+
 }
 `;
 if (!fs.existsSync(configPath)) {
