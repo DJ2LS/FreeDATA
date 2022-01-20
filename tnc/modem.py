@@ -9,7 +9,6 @@ import sys
 import ctypes
 from ctypes import *
 import pathlib
-#import asyncio
 import logging, structlog, log_handler
 import time
 import threading
@@ -22,35 +21,9 @@ import data_handler
 import re
 import queue
 import codec2
+import audio
 
 
-####################################################
-# https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
-# https://github.com/DJ2LS/FreeDATA/issues/22
-# we need to have a look at this if we want to run this on Windows and MacOS !
-# Currently it seems, this is a Linux-only problem
-
-from ctypes import *
-from contextlib import contextmanager
-import pyaudio
-
-ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-
-def py_error_handler(filename, line, function, err, fmt):
-    pass
-
-c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
-
-@contextmanager
-def noalsaerr():
-    asound = cdll.LoadLibrary('libasound.so')
-    asound.snd_lib_error_set_handler(c_error_handler)
-    yield
-    asound.snd_lib_error_set_handler(None)
-    
-# with noalsaerr():
-#   p = pyaudio.PyAudio()
-######################################################
 
 
 MODEM_STATS_NR_MAX = 320
@@ -143,11 +116,11 @@ class RF():
         try:
         # we need to "try" this, because sometimes libasound.so isn't in the default place                   
             # try to supress error messages
-            with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
-                self.p = pyaudio.PyAudio()
+            with audio.noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+                self.p = audio.pyaudio.PyAudio()
         # else do it the default way
         except:
-            self.p = pyaudio.PyAudio()
+            self.p = audio.pyaudio.PyAudio()
         atexit.register(self.p.terminate)
         
         # --------------------------------------------OPEN RX AUDIO CHANNEL
@@ -162,7 +135,7 @@ class RF():
                 static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #1 = TX
                 print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
                 
-        self.audio_stream = self.p.open(format=pyaudio.paInt16,
+        self.audio_stream = self.p.open(format=audio.pyaudio.paInt16,
                                      channels=self.AUDIO_CHANNELS,
                                      rate=self.AUDIO_SAMPLE_RATE_RX,
                                      frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
@@ -249,7 +222,7 @@ class RF():
             data_out48k = self.modoutqueue.get()
             self.fft_data = bytes(data_out48k)
         
-        return (data_out48k, pyaudio.paContinue)
+        return (data_out48k, audio.pyaudio.paContinue)
 
     # --------------------------------------------------------------------------------------------------------
 

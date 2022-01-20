@@ -109,7 +109,7 @@ client.on('data', function(data) {
     msg += data.toString('utf8'); // append data to buffer so we can stick long data together
     //console.log(data)
     // check if we reached an EOF, if true, clear buffer and parse JSON data
-    if (data.endsWith('"EOF":"EOF"}')) {
+    if (data.endsWith('"EOF":"EOF"}\n')) {
         //console.log(msg)
         try {
             //console.log(msg)

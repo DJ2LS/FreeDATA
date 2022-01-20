@@ -7,7 +7,7 @@ Created on Wed Dec 23 11:13:57 2020
 Here we are saving application wide variables and stats, which have to be accessed everywhere.
 Not nice, tipps are appreciated :-) 
 """
-
+NETWORK_BUFFER = b''
 # DAEMON
 DAEMONPORT = 3001
 TNCSTARTED = False

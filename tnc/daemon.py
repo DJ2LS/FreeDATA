@@ -23,6 +23,13 @@ import structlog
 import log_handler
 import helpers
 import os
+import queue
+import audio
+
+ 
+DAEMON_QUEUE = queue.Queue()
+
+
 
 log_handler.setup_logging("daemon")
 structlog.get_logger("structlog").info("[DMN] Starting FreeDATA daemon", author="DJ2LS", year="2022", version="0.1")
@@ -30,36 +37,6 @@ structlog.get_logger("structlog").info("[DMN] Starting FreeDATA daemon", author=
 # get python version, which is needed later for determining installation path
 python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 structlog.get_logger("structlog").info("[DMN] Python", version=python_version)
-
-
-####################################################
-# https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
-# https://github.com/DJ2LS/FreeDATA/issues/22
-# we need to have a look at this if we want to run this on Windows and MacOS !
-# Currently it seems, this is a Linux-only problem
-
-from ctypes import *
-from contextlib import contextmanager
-import pyaudio
-
-ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
-
-def py_error_handler(filename, line, function, err, fmt):
-    pass
-
-c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
-
-@contextmanager
-def noalsaerr():
-
-    asound = cdll.LoadLibrary('libasound.so')
-    asound.snd_lib_error_set_handler(c_error_handler)
-    yield
-    asound.snd_lib_error_set_handler(None)
-    
-# with noalsaerr():
-#   p = pyaudio.PyAudio()
-######################################################    
 
 
 
@@ -178,15 +155,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                     rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
                     
                     structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=devicename, port=deviceport)
-                    #print(received_json["parameter"][0])
-
-                    # command = "--rx "+ rx_audio +" \
-                    #    --tx "+ tx_audio +" \
-                    #    --deviceport "+ deviceport +" \
-                    #    --deviceid "+ deviceid + " \
-                    #    --serialspeed "+ serialspeed + " \
-                    #    --pttprotocol "+ pttprotocol + " \
-                    #    --pttport "+ pttport
 
                     # list of parameters, necessary for running subprocess command as a list
                     options = []
@@ -265,8 +233,8 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         'HAMLIB_VERSION': str(hamlib_version),
                         'INPUT_DEVICES': [],
                         'OUTPUT_DEVICES': [],
-                        'SERIAL_DEVICES': [
-                    ], "CPU": str(psutil.cpu_percent()), "RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
+                        'SERIAL_DEVICES': [],
+                        "CPU": str(psutil.cpu_percent()), "RAM": str(psutil.virtual_memory().percent), "VERSION": "0.1-prototype"}
 
                     if static.TNCSTARTED:
                         data["DAEMON_STATE"].append({"STATUS": "running"})
@@ -277,11 +245,11 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                         try:
                         # we need to "try" this, because sometimes libasound.so isn't in the default place                   
                             # try to supress error messages
-                            with noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
-                                p = pyaudio.PyAudio()
+                            with audio.noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
+                                p = audio.pyaudio.PyAudio()
                         # else do it the default way
                         except Exception as e:
-                            p = pyaudio.PyAudio()
+                            p = audio.pyaudio.PyAudio()
                                     
                         for i in range(0, p.get_device_count()):
                             # we need to do a try exception, beacuse for windows theres now audio device range
@@ -293,10 +261,6 @@ class CMDTCPRequestHandler(socketserver.BaseRequestHandler):
                                 maxInputChannels = 0
                                 maxOutputChannels = 0
                                 name = ''
-                            #crc_name = crc_algorithm(bytes(name, encoding='utf-8'))
-                            #crc_name = crc_name.to_bytes(2, byteorder='big')
-                            #crc_name = crc_name.hex()
-                            #name = name + ' [' + crc_name + ']' 
             
                             if maxInputChannels > 0:
                                 data["INPUT_DEVICES"].append(

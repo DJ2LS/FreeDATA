@@ -71,11 +71,13 @@ if __name__ == '__main__':
     # config logging
     log_handler.setup_logging("tnc")
     structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version="0.1")
+    
     # start data handler
     data_handler.DATA()
     
     # start modem
     modem = modem.RF()
+
 
     # --------------------------------------------START CMD SERVER
 
