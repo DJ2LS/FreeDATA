@@ -85,7 +85,7 @@ daemon.on('data', function(data) {
     msg += data.toString('utf8'); /*append data to buffer so we can stick long data together */
 
     /* check if we reached an EOF, if true, clear buffer and parse JSON data */
-    if (data.endsWith('}')) {
+    if (data.endsWith('}\n')) {
         /*console.log(msg)*/
         try {
             /*console.log(msg)*/
@@ -163,7 +163,7 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
         }]
     })
 
-    //console.log(json_command)
+    console.log(json_command)
     writeDaemonCommand(json_command)
 
 }

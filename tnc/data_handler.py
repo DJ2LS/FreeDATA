@@ -48,6 +48,8 @@ class DATA():
 
         self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
 
+        self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 

@@ -7,7 +7,6 @@ Created on Wed Dec 23 11:13:57 2020
 Here we are saving application wide variables and stats, which have to be accessed everywhere.
 Not nice, tipps are appreciated :-) 
 """
-NETWORK_BUFFER = b''
 # DAEMON
 DAEMONPORT = 3001
 TNCSTARTED = False
@@ -31,12 +30,14 @@ HOST = "0.0.0.0"
 PORT = 3000
 SOCKET_TIMEOUT = 1 # seconds
 # ---------------------------------
-
+SERIAL_DEVICES = []
+# ---------------------------------
 
 
 PTT_STATE = False
 TRANSMITTING = False
 
+HAMLIB_VERSION = '0'
 HAMLIB_PTT_TYPE = 'RTS'
 HAMLIB_DEVICE_NAME = 'RIG_MODEL_DUMMY_NOVFO'
 HAMLIB_DEVICE_PORT = '/dev/ttyUSB0'
@@ -61,6 +62,8 @@ SCATTER = []
 # ---------------------------------
 
 # Audio Defaults
+AUDIO_INPUT_DEVICES = []
+AUDIO_OUTPUT_DEVICES = []
 AUDIO_INPUT_DEVICE = -2
 AUDIO_OUTPUT_DEVICE = -2
 BUFFER_OVERFLOW_COUNTER = [0,0,0]

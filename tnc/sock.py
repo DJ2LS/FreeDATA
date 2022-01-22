@@ -31,32 +31,56 @@ import sys
 import os
 import logging, structlog, log_handler
 import queue
+import psutil
+import audio
 
 SOCKET_QUEUE = queue.Queue()
+DAEMON_QUEUE = queue.Queue()
+
+CONNECTED_CLIENTS = set()
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
-
-
+                
+                
+                
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
-    
+
+        
     def send_to_client(self):
         while self.connection_alive:
             # send tnc state as network stream
-            data = send_tnc_state()   
+            # check server port against daemon port and send corresponding data
+            if self.server.server_address[1] == static.PORT and not static.TNCSTARTED:
+                data = send_tnc_state()
+                SOCKET_QUEUE.put(data)
+            else:
+                data = send_daemon_state()
+                SOCKET_QUEUE.put(data)
+                time.sleep(0.5)
+
+
+            while not SOCKET_QUEUE.empty():
+                data = SOCKET_QUEUE.get()
+                sock_data = bytes(data, 'utf-8')
+                sock_data += b'\n' # append line limiter
+                
+                # send data to all clients
+                for client in CONNECTED_CLIENTS:
+                    client.send(sock_data)
+            
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
-            static.INFO = []
-
-            sock_data = bytes(data, 'utf-8')
-            sock_data += b'\n' # append line limiter
-            self.request.sendall(sock_data)
+            static.INFO = []            
+            #self.request.sendall(sock_data)
             time.sleep(0.15)
 
     def receive_from_client(self):
         data = bytes()
         while self.connection_alive:
+            # BrokenPipeError: [Errno 32] Broken pipe
             chunk = self.request.recv(2)
             data += chunk
             
@@ -66,18 +90,20 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 
             if data.startswith(b'{"type"') and data.endswith(b'}\n'):                
                 data = data[:-1]  # remove b'\n'
-                process_tnc_commands(data)
-                data = bytes()
-                
-            if data.endswith(b'1\n'):
-                print(data)
-                data = bytes()
+                if self.server.server_address[1] == static.PORT:
+                    process_tnc_commands(data)
+                else:
+                    process_daemon_commands(data)
                     
+                data = bytes()
+
  
     def handle(self):
+        CONNECTED_CLIENTS.add(self.request)
 
         structlog.get_logger("structlog").debug("[TNC] Client connected", ip=self.client_address[0], port=self.client_address[1])
         self.connection_alive = True
+        
         self.sendThread = threading.Thread(target=self.send_to_client, args=[]).start()
         self.receiveThread = threading.Thread(target=self.receive_from_client, args=[]).start()
         
@@ -85,8 +111,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         while self.connection_alive:
             time.sleep(1)
 
-        structlog.get_logger("structlog").warning("[TNC] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
+        
 
+    def finish(self):
+        structlog.get_logger("structlog").warning("[TNC] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
+        CONNECTED_CLIENTS.remove(self.request)
+        print(CONNECTED_CLIENTS)
 
 
 def process_tnc_commands(data):
@@ -204,8 +234,9 @@ def process_tnc_commands(data):
                 output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_BUFFER[i][0], 'utf-8'), "DXGRID": str(static.RX_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_BUFFER[i][2], "RXDATA": [rawdata]})
 
             jsondata = json.dumps(output)
-            self.request.sendall(bytes(jsondata, encoding))
-
+            #self.request.sendall(bytes(jsondata, encoding))
+            SOCKET_QUEUE.put(jsondata)
+            
         if received_json["type"] == 'GET' and received_json["command"] == 'RX_MSG_BUFFER':
             output = {
                 "COMMAND": "RX_MSG_BUFFER",
@@ -218,13 +249,15 @@ def process_tnc_commands(data):
                 output["DATA-ARRAY"].append({"DXCALLSIGN": str(static.RX_MSG_BUFFER[i][0], 'utf-8'), "DXGRID": str(static.RX_MSG_BUFFER[i][1], 'utf-8'), "TIMESTAMP": static.RX_MSG_BUFFER[i][2], "RXDATA": [rawdata]})
 
             jsondata = json.dumps(output)
-            self.request.sendall(bytes(jsondata, encoding))
+            #self.request.sendall(bytes(jsondata, encoding))
+            SOCKET_QUEUE.put(jsondata)
             
         if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_BUFFER':
             static.RX_BUFFER = []                    
             
         if received_json["type"] == 'SET' and received_json["command"] == 'DEL_RX_MSG_BUFFER':
             static.RX_MSG_BUFFER = []
+    
     # exception, if JSON cant be decoded
     except Exception as e:
         structlog.get_logger("structlog").error("[TNC] Network error", e=e)
@@ -265,11 +298,12 @@ def send_tnc_state():
         output["STATIONS"].append({"DXCALLSIGN": str(static.HEARD_STATIONS[i][0], 'utf-8'), "DXGRID": str(static.HEARD_STATIONS[i][1], 'utf-8'),"TIMESTAMP": static.HEARD_STATIONS[i][2], "DATATYPE": static.HEARD_STATIONS[i][3], "SNR": static.HEARD_STATIONS[i][4], "OFFSET": static.HEARD_STATIONS[i][5], "FREQUENCY": static.HEARD_STATIONS[i][6]})
       
     jsondata = json.dumps(output)
-    static.NETWORK_BUFFER = jsondata
     return jsondata
 
 
-def process_daemon_commands():
+def process_daemon_commands(data):
+    # convert data to json object
+    received_json = json.loads(data)
     
     if received_json["type"] == 'SET' and received_json["command"] == 'MYCALLSIGN':
         callsign = received_json["parameter"]
@@ -292,8 +326,8 @@ def process_daemon_commands():
             static.MYGRID = bytes(mygrid, 'utf-8')
             structlog.get_logger("structlog").info("[DMN] SET MYGRID", grid=static.MYGRID)
 
-
     if received_json["type"] == 'SET' and received_json["command"] == 'STARTTNC' and not static.TNCSTARTED:
+        
         mycall = str(received_json["parameter"][0]["mycall"])
         mygrid = str(received_json["parameter"][0]["mygrid"])
         rx_audio = str(received_json["parameter"][0]["rx_audio"])
@@ -309,6 +343,52 @@ def process_daemon_commands():
         radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
         rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
         rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+        DAEMON_QUEUE.put(['STARTTNC', \
+                                mycall, \
+                                mygrid, \
+                                rx_audio, \
+                                tx_audio, \
+                                devicename, \
+                                deviceport, \
+                                serialspeed, \
+                                pttprotocol, \
+                                pttport, \
+                                data_bits, \
+                                stop_bits, \
+                                handshake, \
+                                radiocontrol, \
+                                rigctld_ip, \
+                                rigctld_port \
+                                ])
+    
+
+    if received_json["type"] == 'GET' and received_json["command"] == 'TEST_HAMLIB':
+
+
+        devicename = str(received_json["parameter"][0]["devicename"])
+        deviceport = str(received_json["parameter"][0]["deviceport"])
+        serialspeed = str(received_json["parameter"][0]["serialspeed"])
+        pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
+        pttport = str(received_json["parameter"][0]["pttport"])
+        data_bits = str(received_json["parameter"][0]["data_bits"])
+        stop_bits = str(received_json["parameter"][0]["stop_bits"])
+        handshake = str(received_json["parameter"][0]["handshake"])
+        radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
+        rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
+        rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+        DAEMON_QUEUE.put(['TEST_HAMLIB', \
+                                devicename, \
+                                deviceport, \
+                                serialspeed, \
+                                pttprotocol, \
+                                pttport, \
+                                data_bits, \
+                                stop_bits, \
+                                handshake, \
+                                radiocontrol, \
+                                rigctld_ip, \
+                                rigctld_port \
+                                ])
 
     if received_json["type"] == 'SET' and received_json["command"] == 'STOPTNC':
         static.TNCPROCESS.kill()
@@ -316,5 +396,28 @@ def process_daemon_commands():
         static.TNCSTARTED = False
         
         
-def sent_daemon_state():
-    pass
+def send_daemon_state():
+    
+    python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+
+    
+    output = {
+        'COMMAND': 'DAEMON_STATE',
+        'DAEMON_STATE': [],
+        'PYTHON_VERSION': str(python_version),
+        'HAMLIB_VERSION': static.HAMLIB_VERSION,
+        'INPUT_DEVICES': static.AUDIO_INPUT_DEVICES,
+        'OUTPUT_DEVICES': static.AUDIO_OUTPUT_DEVICES,
+        'SERIAL_DEVICES': static.SERIAL_DEVICES,
+        'CPU': str(psutil.cpu_percent()),
+        'RAM': str(psutil.virtual_memory().percent),
+        'VERSION': '0.1'
+        }
+    
+    if static.TNCSTARTED:
+        output["DAEMON_STATE"].append({"STATUS": "running"})
+    else:
+        output["DAEMON_STATE"].append({"STATUS": "stopped"})
+        
+    jsondata = json.dumps(output)
+    return jsondata
