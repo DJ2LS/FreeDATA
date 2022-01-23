@@ -85,7 +85,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             data += chunk
             
             if chunk == b'':
-                print("connection broken. Closing...")
+                #print("connection broken. Closing...")
                 self.connection_alive = False
                 
             if data.startswith(b'{"type"') and data.endswith(b'}\n'):                

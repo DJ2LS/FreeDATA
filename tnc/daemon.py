@@ -30,6 +30,10 @@ import sock
 
 class DAEMON():
     def __init__(self):
+        
+        # load crc engine    
+        self.crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
+        
         self.daemon_queue = sock.DAEMON_QUEUE
         update_audio_devices = threading.Thread(target=self.update_audio_devices, name="UPDATE_AUDIO_DEVICES")
         update_audio_devices.start()
@@ -53,7 +57,7 @@ class DAEMON():
             for port, desc, hwid in ports:
             
                 # calculate hex of hwid if we have unique names
-                crc_hwid = crc_algorithm(bytes(hwid, encoding='utf-8'))
+                crc_hwid = self.crc_algorithm(bytes(hwid, encoding='utf-8'))
                 crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
                 crc_hwid = crc_hwid.hex()
                 description = desc + ' [' + crc_hwid + ']'

@@ -20,7 +20,7 @@ var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
-setInterval(daemon.getDaemonState, 1000)
+//setInterval(daemon.getDaemonState, 1000)
 //setInterval(sock.getTncState, 150)
 setInterval(sock.getRxBuffer, 1000)
 setInterval(sock.getMsgRxBuffer, 1000)

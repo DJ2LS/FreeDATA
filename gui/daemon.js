@@ -34,23 +34,41 @@ function connectDAEMON() {
 
 daemon.on('connect', function(data) {
     console.log('DAEMON connection established')
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
+
 })
 
 daemon.on('error', function(data) {
     console.log('DAEMON connection error');
     setTimeout(connectDAEMON, 2000)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
+
 });
 
 /*
 client.on('close', function(data) {
 	console.log(' TNC connection closed');
     setTimeout(connectTNC, 2000)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
 });
 */
 
 daemon.on('end', function(data) {
     console.log('DAEMON connection ended');
     setTimeout(connectDAEMON, 2000)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
 });
 
 //exports.writeCommand = function(command){

@@ -66,6 +66,11 @@ class RF():
         self.AUDIO_CHUNKS = 48 #8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) #48
         self.AUDIO_CHANNELS = 1
         
+        # locking state for mod out so buffer will be filled before we can use it
+        # https://github.com/DJ2LS/FreeDATA/issues/127
+        # https://github.com/DJ2LS/FreeDATA/issues/99
+        self.mod_out_locked = True
+        
         # make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
         
@@ -215,7 +220,7 @@ class RF():
         else:
             static.BUFFER_OVERFLOW_COUNTER[2] += 1
         
-        if self.modoutqueue.empty():
+        if self.modoutqueue.empty() or self.mod_out_locked:
             data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2)
             self.fft_data = bytes(x)
         else:
@@ -300,6 +305,9 @@ class RF():
             x = np.frombuffer(txbuffer, dtype=np.int16)
             txbuffer_48k = self.resampler.resample8_to_48(x)
 
+            # explicitly lock our usage of mod_out_queue
+            self.mod_out_locked = True
+            
             # split modualted audio to chunks
             #https://newbedev.com/how-to-split-a-byte-string-into-separate-bytes-in-python
             txbuffer_48k = bytes(txbuffer_48k)
@@ -314,12 +322,18 @@ class RF():
                     structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=len(delta))
                 self.modoutqueue.put(c)
 
+        # Release our mod_out_lock so we can use the queue 
+        self.mod_out_locked = False
+
         # maybe we need to toggle PTT before craeting modulation because of queue processing
         #static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
         static.PTT_STATE = self.hamlib.set_ptt(False)
-      
+        
+        # after processing we want to set the locking state back to true to be prepared for next transmission
+        self.mod_out_locked = True
+        
         self.c_lib.freedv_close(freedv)
         self.modem_transmit_queue.task_done()
         static.TRANSMITTING = False
