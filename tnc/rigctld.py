@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import socket
+import structlog
+import log_handler
 import logging
 # class taken from darsidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
@@ -17,7 +19,7 @@ class radio():
         """ Open a connection to rotctld, and test it for validity """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.settimeout(timeout)
-
+        self.connected = False
         self.hostname = hostname
         self.port = port
 
@@ -29,12 +31,20 @@ class radio():
     
     def connect(self):
         """ Connect to rotctld instance """
-        self.sock.connect((self.hostname,self.port))
+        try:
+            self.sock.connect((self.hostname,self.port))
+            self.connected = True
+            structlog.get_logger("structlog").info("[RIGCTLD] Connected to rigctld!", ip=self.hostname, port=self.port)
+        except:
+            # ConnectionRefusedError: [Errno 111] Connection refused
+            structlog.get_logger("structlog").critical("[RIGCTLD] Could not connect to rigctld!", ip=self.hostname, port=self.port)
+        
         ptt = self.get_ptt()
         if ptt == None:
             # Timeout!
             self.close()
             raise Exception("Timeout!")
+            
         else:
             return ptt
 
@@ -47,7 +57,8 @@ class radio():
         """ Send a command to the connected rotctld instance,
             and return the return value.
         """
-        self.sock.sendall(command+b'\n')
+        if self.connected:
+            self.sock.sendall(command+b'\n')
         try:
             return self.sock.recv(1024)
         except:

@@ -63,7 +63,7 @@ except Exception as e:
         hamlib_version = hamlib_version.split(' ')
 
         if hamlib_version[1] == 'Hamlib':
-            structlog.get_logger("structlog").warning("[RIG] Rigctl found! Start daemon with parameter --rigctl", version=hamlib_version[2])
+            structlog.get_logger("structlog").warning("[RIG] Rigctl found! Please try using this", version=hamlib_version[2])
             sys.exit()
         else:
             raise Exception
