@@ -185,8 +185,9 @@ def process_tnc_commands(data):
             rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
             dataframe = json.dumps(rawdata)
             data_out = bytes(dataframe, 'utf-8')
+            print("kommen wir hier an?!?")
             data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_FILE', data_out, mode, n_frames])
-
+            print(data_handler.DATA_QUEUE_TRANSMIT.qsize())
         # TRANSMIT MESSAGE ----------------------------------------------------------
         if received_json["type"] == 'ARQ' and received_json["command"] == "sendMessage":
             static.TNC_STATE = 'BUSY'

@@ -4,6 +4,7 @@ import structlog
 import log_handler
 import logging
 import time
+import static
 # class taken from darsidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
@@ -27,7 +28,7 @@ class radio():
 
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):
         self.hostname = rigctld_ip
-        self.ip = rigctld_port
+        self.port = int(rigctld_port)
         
         
         if self.connect():
@@ -49,9 +50,9 @@ class radio():
                 # ConnectionRefusedError: [Errno 111] Connection refused
                 self.connected = False
                 structlog.get_logger("structlog").warning("[RIGCTLD] Re-Trying to establish a connection to rigctld!", attempt=a+1, ip=self.hostname, port=self.port)
-                time.sleep(1)
-        
-        
+                time.sleep(0.5)
+        return False
+    
     def close_rig(self):
         self.sock.close()
         self.connected = False

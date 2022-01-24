@@ -383,6 +383,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
         // collapse settings screen
+        // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
+        /*
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.hide()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
@@ -391,7 +393,7 @@ window.addEventListener('DOMContentLoaded', () => {
         collapseThirdRow.show() 
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.show() 
-   
+        */
         // overriding settings for rigctl / direct
         if (document.getElementById("radio-control-switch2").checked){
             var radiocontrol = 'rigctl'
@@ -419,17 +421,18 @@ window.addEventListener('DOMContentLoaded', () => {
         
                 
         // collapse settings screen
+        // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
+        /*
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.show()
         var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
         collapseSecondRow.show() 
         
-        
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.hide()
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.hide() 
-        
+        */
 
         
   

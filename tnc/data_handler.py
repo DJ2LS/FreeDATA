@@ -68,6 +68,7 @@ class DATA():
         
     def worker_transmit(self):
          while True:
+  
             data = self.data_queue_transmit.get()
             # [0] Command
 
@@ -107,6 +108,7 @@ class DATA():
                 
             else:
                 # wrong command
+                print(f"wrong command {data}")
                 pass
             
             
@@ -604,7 +606,7 @@ class DATA():
                     #print("not ready for data...leaving loop....")
                     break
                     
-                    
+                self.calculate_transfer_rate_tx(tx_start_of_transmission, bufferposition_end, len(data_out))    
                 # NEXT ATTEMPT
                 structlog.get_logger("structlog").debug("ATTEMPT", retry=self.tx_n_retry_of_burst, maxretries=TX_N_MAX_RETRIES_PER_BURST,overflows=static.BUFFER_OVERFLOW_COUNTER)
             
@@ -693,23 +695,25 @@ class DATA():
 
 
     def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
-        
         static.TNC_STATE = 'BUSY'
+        self.datachannel_timeout = False
         
         # we need to compress data for gettin a compression factor.
         # so we are compressing twice. This is not that nice and maybe theres another way
         # for calculating transmission statistics
         static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
         
+        self.arq_open_data_channel(mode, n_frames_per_burst)
         
-        
-        self.arq_open_data_channel(mode, n_frames_per_burst)   
         # wait until data channel is open
-        while not static.ARQ_STATE:
+        while not static.ARQ_STATE and not self.datachannel_timeout:
             time.sleep(0.01)
-     
-        self.arq_transmit(data_out, mode, n_frames_per_burst)
-    
+        
+        if static.ARQ_STATE:
+            self.arq_transmit(data_out, mode, n_frames_per_burst)
+        else:
+             return False
+            
     def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):
         
         DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
@@ -730,6 +734,7 @@ class DATA():
         #connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
         connection_frame[12:13] = bytes([compression_factor])
         connection_frame[13:14] = bytes([n_frames_per_burst])    
+                
         
         while not static.ARQ_STATE:
             time.sleep(0.01)
@@ -759,11 +764,13 @@ class DATA():
                     static.INFO.append("DATACHANNEL;FAILED")
                     
                     structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                    self.datachannel_timeout = True
                     if not TESTMODE:
                         self.arq_cleanup()
-                    sys.exit() # close thread and so connection attempts
-
-
+                    
+                    return False
+                    #sys.exit() # close thread and so connection attempts
+            
     def arq_received_data_channel_opener(self, data_in:bytes):
 
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
@@ -795,6 +802,14 @@ class DATA():
            
         static.ARQ_STATE = True
         static.TNC_STATE = 'BUSY'
+
+        # reset ARQ statistics
+        static.ARQ_BYTES_PER_MINUTE_BURST = 0
+        static.ARQ_BYTES_PER_MINUTE = 0
+        static.ARQ_BITS_PER_SECOND_BURST = 0
+        static.ARQ_BITS_PER_SECOND = 0
+        static.ARQ_TRANSMISSION_PERCENT = 0
+        static.TOTAL_BYTES = 0
 
         self.data_channel_last_received = int(time.time())
 
