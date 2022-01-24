@@ -47,7 +47,7 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
 
     static.MYCALLSIGN = bytes(ARGS.mycall, 'utf-8')
-    static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)  
+    static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
     static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
         
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device

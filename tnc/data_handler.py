@@ -37,14 +37,14 @@ class DATA():
 
 
         self.data_channel_last_received      =   0.0         # time of last "live sign" of a frame      
-        self.burst_ack_snr                  =   0           # SNR from received ack frames
-        self.burst_ack              =   False       # if we received an acknowledge frame for a burst
+        self.burst_ack_snr                   =   0           # SNR from received ack frames
+        self.burst_ack                       =   False       # if we received an acknowledge frame for a burst
         self.data_frame_ack_received         =   False       # if we received an acknowledge frame for a data frame
         self.rpt_request_received            =   False       # if we received an request for repeater frames
         self.rpt_request_buffer              =   []          # requested frames, saved in a list           
         self.rx_start_of_transmission        =   0           # time of transmission start
-        self.data_frame_bof                  =   b'BOF'#b'\xAA\xAA' # 2 bytes for the BOF End of File indicator in a data frame
-        self.data_frame_eof                  =   b'EOF'#b'\xFF\xFF' # 2 bytes for the EOF End of File indicator in a data frame
+        self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
+        self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
         self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
 
@@ -119,12 +119,11 @@ class DATA():
 
     def process_data(self, bytes_out, freedv, bytes_per_frame):    
         # forward data only if broadcast or we are the receiver
-        # bytes_out[1:2] == callsign check for signalling frames, 
-        # bytes_out[6:7] == callsign check for data frames, 
+        # bytes_out[1:3] == callsign check for signalling frames, 
         # bytes_out[1:2] == b'\x01' --> broadcasts like CQ with n frames per_burst = 1
-        # we could also create an own function, which returns True. 
+        # we could also create an own function, which returns True.
 
-        if bytes(bytes_out[1:2]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[3:4]) == static.MYCALLSIGN_CRC8 or bytes(bytes_out[1:2]) == b'\x01':
+        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or bytes(bytes_out[1:2]) == b'\x01':
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -252,8 +251,6 @@ class DATA():
         RX_N_FRAME_OF_BURST         = int.from_bytes(bytes(data_in[:1]), "big") - 10  # get number of burst frame
         RX_N_FRAMES_PER_BURST       = int.from_bytes(bytes(data_in[1:2]), "big")  # get number of bursts from received frame
 
-        print(f"RX_N_FRAME_OF_BURST-{RX_N_FRAME_OF_BURST}")
-        print(f"RX_N_FRAMES_PER_BURST-{RX_N_FRAMES_PER_BURST}")
 
         '''   
         The RX burst buffer needs to have a fixed length filled with "None". We need this later for counting the "Nones"   
@@ -262,8 +259,9 @@ class DATA():
         if len(static.RX_BURST_BUFFER) != RX_N_FRAMES_PER_BURST:
             static.RX_BURST_BUFFER = [None] * RX_N_FRAMES_PER_BURST   
 
+
         # append data to rx burst buffer
-        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[4:]
+        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[6:] # [frame_type][n_frames_per_burst][CRC16][CRC16]
         
         structlog.get_logger("structlog").debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
         '''
@@ -293,9 +291,9 @@ class DATA():
                 # create an ack frame
                 ack_frame = bytearray(14)
                 ack_frame[:1] = bytes([60])
-                ack_frame[1:2] = static.DXCALLSIGN_CRC8
-                ack_frame[2:3] = static.MYCALLSIGN_CRC8
-                ack_frame[3:4] = bytes([int(snr)])
+                ack_frame[1:3] = static.DXCALLSIGN_CRC
+                ack_frame[3:5] = static.MYCALLSIGN_CRC
+                ack_frame[5:6] = bytes([int(snr)])
                 # and transmit it
                 txbuffer = [ack_frame]
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
@@ -326,9 +324,9 @@ class DATA():
             # then create a repeat frame 
             rpt_frame       = bytearray(14)
             rpt_frame[:1]   = bytes([62])
-            rpt_frame[1:2]  = static.DXCALLSIGN_CRC8
-            rpt_frame[2:3]  = static.MYCALLSIGN_CRC8
-            rpt_frame[3:9]  = missing_frames
+            rpt_frame[1:3] = static.DXCALLSIGN_CRC
+            rpt_frame[3:5] = static.MYCALLSIGN_CRC
+            rpt_frame[5:11]  = missing_frames
 
             # and transmit it
             txbuffer = [rpt_frame]
@@ -345,11 +343,20 @@ class DATA():
         else:
             structlog.get_logger("structlog").error("we shouldnt reach this point...", frame=RX_N_FRAME_OF_BURST, frames=RX_N_FRAMES_PER_BURST)
         
+        
+
+        
         # We have a BOF and EOF flag in our data. If we received both we received our frame.
         # In case of loosing data but we received already a BOF and EOF we need to make sure, we 
         # received the complete last burst by checking it for Nones    
         bof_position = static.RX_FRAME_BUFFER.find(self.data_frame_bof)
         eof_position = static.RX_FRAME_BUFFER.find(self.data_frame_eof)
+
+        # get total bytes per transmission information as soon we recevied a frame with a BOF
+        if bof_position >=0:
+            crc_position = bof_position+len(self.data_frame_bof)
+            size_position = crc_position + 4
+            static.TOTAL_BYTES = int.from_bytes(bytes(static.RX_FRAME_BUFFER[size_position:size_position + 4]), "big") # Bytes
         if bof_position >= 0 and eof_position > 0 and not None in static.RX_BURST_BUFFER:
             print(f"bof_position {bof_position} / eof_position {eof_position}")
             self.rx_frame_bof_received = True
@@ -359,10 +366,11 @@ class DATA():
             payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
             # get the data frame crc
 
-            data_frame_crc = payload[:2]
-            data_frame = payload[2:]
+            data_frame_crc = payload[:4]
+            frame_length = int.from_bytes(bytes(static.RX_FRAME_BUFFER[size_position:size_position + 4]), "big")
 
-            data_frame_crc_received = helpers.get_crc_16(data_frame)
+            data_frame = payload[8:]
+            data_frame_crc_received = helpers.get_crc_32(data_frame)
             # check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
@@ -399,8 +407,8 @@ class DATA():
                 # BUILDING ACK FRAME FOR DATA FRAME
                 ack_frame       = bytearray(14)
                 ack_frame[:1]   = bytes([61])
-                ack_frame[1:2]  = static.DXCALLSIGN_CRC8
-                ack_frame[2:3]  = static.MYCALLSIGN_CRC8
+                ack_frame[1:3] = static.DXCALLSIGN_CRC
+                ack_frame[3:5] = static.MYCALLSIGN_CRC
 
                 # TRANSMIT ACK FRAME FOR BURST
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
@@ -422,8 +430,8 @@ class DATA():
                 # BUILDING NACK FRAME FOR DATA FRAME
                 nack_frame       = bytearray(14)
                 nack_frame[:1]   = bytes([63])
-                nack_frame[1:2]  = static.DXCALLSIGN_CRC8
-                nack_frame[2:3]  = static.MYCALLSIGN_CRC8     
+                nack_frame[1:3] = static.DXCALLSIGN_CRC
+                nack_frame[3:5] = static.MYCALLSIGN_CRC  
                 
                 # TRANSMIT NACK FRAME FOR BURST
                 txbuffer = [nack_frame]
@@ -446,24 +454,24 @@ class DATA():
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
         
 
-        TX_N_SENT_BYTES                = 0                      # already sent bytes per data frame
-        self.tx_n_retry_of_burst          = 0                     # retries we already sent data
-        TX_N_MAX_RETRIES_PER_BURST      = 50                     # max amount of retries we sent before frame is lost
+        TX_N_SENT_BYTES                 = 0                     # already sent bytes per data frame
+        self.tx_n_retry_of_burst        = 0                     # retries we already sent data
+        TX_N_MAX_RETRIES_PER_BURST      = 50                    # max amount of retries we sent before frame is lost
         TX_N_FRAMES_PER_BURST           = n_frames_per_burst    # amount of n frames per burst    
         TX_BUFFER = []  # our buffer for appending new data
         
         # TIMEOUTS
-        BURST_ACK_TIMEOUT_SECONDS       =   3.0         # timeout for burst  acknowledges
+        BURST_ACK_TIMEOUT_SECONDS       =   3.0        # timeout for burst  acknowledges
         DATA_FRAME_ACK_TIMEOUT_SECONDS  =   3.0        # timeout for data frame acknowledges
         RPT_ACK_TIMEOUT_SECONDS         =   3.0        # timeout for rpt frame acknowledges
 
 
         # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
-        static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
-        
-        
+        #static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
+        static.TOTAL_BYTES = len(data_out)
+        frame_total_size = len(data_out).to_bytes(4, byteorder='big')
         static.INFO.append("ARQ;TRANSMITTING")
-        structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, kBytes=static.TOTAL_BYTES)
+        structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, Bytes=static.TOTAL_BYTES)
 
         
         # compression
@@ -476,8 +484,9 @@ class DATA():
         self.calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
 
         # append a crc and beginn and end of file indicators
-        frame_payload_crc = helpers.get_crc_16(data_out)
-        data_out = self.data_frame_bof + frame_payload_crc + data_out + self.data_frame_eof
+        frame_payload_crc = helpers.get_crc_32(data_out)
+        # data_out = self.data_frame_bof + frame_payload_crc + data_out + self.data_frame_eof
+        data_out = self.data_frame_bof + frame_payload_crc + frame_total_size + data_out + self.data_frame_eof
         
         #initial bufferposition is 0
         bufferposition = 0
@@ -530,8 +539,8 @@ class DATA():
                 arqheader = bytearray()
                 arqheader[:1] = bytes([10]) #bytes([10 + i])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST]) 
-                arqheader[3:4] = bytes(static.DXCALLSIGN_CRC8) 
-                arqheader[4:5] = bytes(static.MYCALLSIGN_CRC8) 
+                arqheader[2:4] = static.DXCALLSIGN_CRC
+                arqheader[4:6] = static.MYCALLSIGN_CRC
                     
                 bufferposition_end = (bufferposition + payload_per_frame - len(arqheader))           
 
@@ -571,7 +580,7 @@ class DATA():
                 burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
                 while not self.burst_ack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.01)
-                    structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE, overflows=static.BUFFER_OVERFLOW_COUNTER)
+                    #structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE, overflows=static.BUFFER_OVERFLOW_COUNTER)
                     
                     
                 # once we received a burst ack, reset its state and break the RETRIES loop
@@ -692,31 +701,31 @@ class DATA():
         
         
         
-        self.arq_open_data_channel(mode, len(data_out), n_frames_per_burst)   
+        self.arq_open_data_channel(mode, n_frames_per_burst)   
         # wait until data channel is open
         while not static.ARQ_STATE:
             time.sleep(0.01)
      
         self.arq_transmit(data_out, mode, n_frames_per_burst)
     
-    def arq_open_data_channel(self, mode:int, data_len:int, n_frames_per_burst:int):
+    def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):
         
         DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
         self.data_channel_last_received = int(time.time())
 
         # devide by 1024 for getting Bytes -> kBytes 
-        data_len = int(data_len / 1024)
+        #data_len = int(data_len / 1024)
 
         # multiply compression factor for reducing it from float to int
         compression_factor = int(static.ARQ_COMPRESSION_FACTOR * 10)
 
         connection_frame        = bytearray(14)
         connection_frame[:1]    = bytes([225])
-        connection_frame[1:2]   = static.DXCALLSIGN_CRC8
-        connection_frame[2:3]   = static.MYCALLSIGN_CRC8
-        connection_frame[3:9]   = static.MYCALLSIGN
-        connection_frame[9:10]   = bytes([mode])
-        connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
+        connection_frame[1:3] = static.DXCALLSIGN_CRC
+        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        connection_frame[5:11]   = static.MYCALLSIGN
+        connection_frame[11:12]   = bytes([mode])
+        #connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
         connection_frame[12:13] = bytes([compression_factor])
         connection_frame[13:14] = bytes([n_frames_per_burst])    
         
@@ -756,13 +765,11 @@ class DATA():
     def arq_received_data_channel_opener(self, data_in:bytes):
 
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
-        static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
-        static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
-
-        static.TOTAL_BYTES = int.from_bytes(bytes(data_in[10:12]), "big") # kBytes
+        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+        static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
         static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
-        mode = int.from_bytes(bytes(data_in[9:10]), "big") 
+        mode = int.from_bytes(bytes(data_in[11:12]), "big") 
 
         # set modes we want to listening to
         mode_name = codec2.freedv_get_mode_name_by_value(mode)
@@ -791,9 +798,9 @@ class DATA():
 
         connection_frame = bytearray(14)
         connection_frame[:1] = bytes([226])
-        connection_frame[1:2] = static.DXCALLSIGN_CRC8
-        connection_frame[2:3] = static.MYCALLSIGN_CRC8
-        connection_frame[3:9] = static.MYCALLSIGN
+        connection_frame[1:3] = static.DXCALLSIGN_CRC
+        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        #connection_frame[5:11] = static.MYCALLSIGN
 
         txbuffer = [connection_frame]
         
@@ -810,8 +817,8 @@ class DATA():
     def arq_received_channel_is_open(self, data_in:bytes):
         
         static.INFO.append("DATACHANNEL;OPEN")
-        static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
-        static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
+        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+        #static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         self.data_channel_last_received = int(time.time())
@@ -829,16 +836,16 @@ class DATA():
     # ---------- PING
     def transmit_ping(self, callsign:str):
         static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
-        static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
-        
+        static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                
         static.INFO.append("PING;SENDING")
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(static.MYCALLSIGN, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]" )
 
         ping_frame      = bytearray(14)
         ping_frame[:1]  = bytes([210])
-        ping_frame[1:2] = static.DXCALLSIGN_CRC8
-        ping_frame[2:3] = static.MYCALLSIGN_CRC8
-        ping_frame[3:9] = static.MYCALLSIGN
+        ping_frame[1:3] = static.DXCALLSIGN_CRC
+        ping_frame[3:5] = static.MYCALLSIGN_CRC
+        ping_frame[5:11] = static.MYCALLSIGN
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
@@ -846,10 +853,11 @@ class DATA():
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
+            
     def received_ping(self, data_in:bytes, frequency_offset:str):
 
-        static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
-        static.DXCALLSIGN = bytes(data_in[3:9]).rstrip(b'\x00')
+        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+        static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         static.INFO.append("PING;RECEIVING")
@@ -858,21 +866,22 @@ class DATA():
 
         ping_frame      = bytearray(14)
         ping_frame[:1]  = bytes([211])
-        ping_frame[1:2] = static.DXCALLSIGN_CRC8
-        ping_frame[2:3] = static.MYCALLSIGN_CRC8
-        ping_frame[3:9] = static.MYGRID
-        ping_frame[9:11] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
+        ping_frame[1:3] = static.DXCALLSIGN_CRC
+        ping_frame[3:5] = static.MYCALLSIGN_CRC
+        ping_frame[5:11] = static.MYGRID
+        ping_frame[11:13] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
-            time.sleep(0.01)       
+            time.sleep(0.01)
+            
     def received_ping_ack(self, data_in:bytes):
 
-        static.DXCALLSIGN_CRC8 = bytes(data_in[2:3]).rstrip(b'\x00')
-        static.DXGRID = bytes(data_in[3:9]).rstrip(b'\x00')
+        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+        static.DXGRID = bytes(data_in[5:11]).rstrip(b'\x00')
            
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
@@ -886,8 +895,8 @@ class DATA():
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
         stop_frame      = bytearray(14)
         stop_frame[:1]  = bytes([227])
-        stop_frame[1:2] = static.DXCALLSIGN_CRC8
-        stop_frame[2:3] = static.MYCALLSIGN_CRC8
+        stop_frame[1:3] = static.DXCALLSIGN_CRC
+        stop_frame[3:5] = static.MYCALLSIGN_CRC
 
         txbuffer = [stop_frame]
         static.TRANSMITTING = True
@@ -977,7 +986,7 @@ class DATA():
     def calculate_transfer_rate_rx(self, rx_start_of_transmission:float, receivedbytes:int) -> list:
         
         try: 
-            static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES * 1024)) * 100)
+            static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES)) * 100)
 
             transmissiontime = time.time() - self.rx_start_of_transmission
             

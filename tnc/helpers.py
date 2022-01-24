@@ -48,7 +48,18 @@ def get_crc_16(data):
     crc_data = crc_data.to_bytes(2, byteorder='big')
     return crc_data
 
+def get_crc_32(data):
+    """
+    Author: DJ2LS
 
+    Get the CRC32 of a byte string
+
+    param: data = bytes()
+    """
+    crc_algorithm = crcengine.new('crc32')  # load crc16 library
+    crc_data = crc_algorithm(data)
+    crc_data = crc_data.to_bytes(4, byteorder='big')
+    return crc_data
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):

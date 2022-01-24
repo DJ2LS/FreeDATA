@@ -68,8 +68,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 
                 # send data to all clients
                 for client in CONNECTED_CLIENTS:
-                    client.send(sock_data)
-            
+                    try:
+                        client.send(sock_data)
+                    except:
+                        print("connection lost...")
+                        CONNECTED_CLIENTS.remove(self.request)
+                        
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
@@ -168,7 +172,7 @@ def process_tnc_commands(data):
            
 
             static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-            static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
 
             # dt = datatype
             # --> f = file
@@ -197,7 +201,7 @@ def process_tnc_commands(data):
            
 
             static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-            static.DXCALLSIGN_CRC8 = helpers.get_crc_8(static.DXCALLSIGN)
+            static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
             
             # dt = datatype
             # --> f = file
@@ -310,12 +314,12 @@ def process_daemon_commands(data):
         print(received_json)
         if bytes(callsign, 'utf-8') == b'':
             self.request.sendall(b'INVALID CALLSIGN')
-            structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
+            structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
         else:
             static.MYCALLSIGN = bytes(callsign, 'utf-8')
-            static.MYCALLSIGN_CRC8 = helpers.get_crc_8(static.MYCALLSIGN)
+            static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)
 
-            structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC8)
+            structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
 
     if received_json["type"] == 'SET' and received_json["command"] == 'MYGRID':
         mygrid = received_json["parameter"]
