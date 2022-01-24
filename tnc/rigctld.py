@@ -3,6 +3,7 @@ import socket
 import structlog
 import log_handler
 import logging
+import time
 # class taken from darsidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
@@ -22,35 +23,38 @@ class radio():
         self.connected = False
         self.hostname = hostname
         self.port = port
-
+        self.connection_attempts = 5
 
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):
-        self.connect()
-        logging.debug(f"Rigctl intialized")
-        return True
-    
+        self.hostname = rigctld_ip
+        self.ip = rigctld_port
+        
+        
+        if self.connect():
+            logging.debug(f"Rigctl intialized")
+            return True
+        else:
+            structlog.get_logger("structlog").error("[RIGCTLD] Can't connect to rigctld!", ip=self.hostname, port=self.port)
+            return False
+        
     def connect(self):
         """ Connect to rotctld instance """
-        try:
-            self.sock.connect((self.hostname,self.port))
-            self.connected = True
-            structlog.get_logger("structlog").info("[RIGCTLD] Connected to rigctld!", ip=self.hostname, port=self.port)
-        except:
-            # ConnectionRefusedError: [Errno 111] Connection refused
-            structlog.get_logger("structlog").critical("[RIGCTLD] Could not connect to rigctld!", ip=self.hostname, port=self.port)
+        for a in range(0,self.connection_attempts):
+            try:
+                self.sock.connect((self.hostname,self.port))
+                self.connected = True
+                structlog.get_logger("structlog").info("[RIGCTLD] Connected to rigctld!", attempt=a+1, ip=self.hostname, port=self.port)
+                return True
+            except:
+                # ConnectionRefusedError: [Errno 111] Connection refused
+                self.connected = False
+                structlog.get_logger("structlog").warning("[RIGCTLD] Re-Trying to establish a connection to rigctld!", attempt=a+1, ip=self.hostname, port=self.port)
+                time.sleep(1)
         
-        ptt = self.get_ptt()
-        if ptt == None:
-            # Timeout!
-            self.close()
-            raise Exception("Timeout!")
-            
-        else:
-            return ptt
-
-
+        
     def close_rig(self):
         self.sock.close()
+        self.connected = False
 
 
     def send_command(self, command):
@@ -58,35 +62,57 @@ class radio():
             and return the return value.
         """
         if self.connected:
-            self.sock.sendall(command+b'\n')
-        try:
-            return self.sock.recv(1024)
-        except:
-            return None
+            try:
+                self.sock.sendall(command+b'\n')
+            except:
+                structlog.get_logger("structlog").warning("[RIGCTLD] Command not executed!", command=command, ip=self.hostname, port=self.port)
+                self.connected = False
 
-    def get_mode(self):
-        data = self.send_command(b"m")
-        data = data.split(b'\n')
-        mode = data[0]
-        return mode.decode("utf-8")       
-               
-    def get_bandwith(self):
-        data = self.send_command(b"m")
-        data = data.split(b'\n')
-        bandwith = data[1]
-        return bandwith.decode("utf-8")
-                
-    def get_frequency(self):
-        frequency =  self.send_command(b"f")
-        return frequency.decode("utf-8")
-
-    def get_ptt(self):
-        return self.send_command(b"t")
-                  
-    def set_ptt(self, state):
-        if state:
-             self.send_command(b"T 1")
+            try:
+                return self.sock.recv(1024)
+            except:
+                structlog.get_logger("structlog").warning("[RIGCTLD] No command response!", command=command, ip=self.hostname, port=self.port)
+                self.connected = False
         else:
-             self.send_command(b"T 0")
-        return state        
+            structlog.get_logger("structlog").error("[RIGCTLD] No connection to rigctl!", ip=self.hostname, port=self.port)
+            self.connect()
         
+    def get_mode(self):
+        try:
+            data = self.send_command(b"m")
+            data = data.split(b'\n')
+            mode = data[0]
+            return mode.decode("utf-8")       
+        except:
+            0
+    def get_bandwith(self):
+        try:
+            data = self.send_command(b"m")
+            data = data.split(b'\n')
+            bandwith = data[1]
+            return bandwith.decode("utf-8")
+        except:
+            return 0
+        
+    def get_frequency(self):
+        try:
+            frequency = self.send_command(b"f")
+            return frequency.decode("utf-8")
+        except:
+            return 0
+        
+    def get_ptt(self):
+        try:
+            return self.send_command(b"t")
+        except:
+            return False
+        
+    def set_ptt(self, state):
+        try:
+            if state:
+                 self.send_command(b"T 1")
+            else:
+                 self.send_command(b"T 0")
+            return state        
+        except:
+            return False

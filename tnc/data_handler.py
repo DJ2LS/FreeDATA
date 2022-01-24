@@ -74,7 +74,9 @@ class DATA():
             if data[0] == 'CQ':
                 # [0] CQ
                 self.transmit_cq()
+                
             elif data[0] == 'STOP':
+                # [0] STOP
                 self.stop_transmission()
             
             elif data[0] == 'PING':

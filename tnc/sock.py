@@ -94,6 +94,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 
             if data.startswith(b'{"type"') and data.endswith(b'}\n'):                
                 data = data[:-1]  # remove b'\n'
+                print(data)
                 if self.server.server_address[1] == static.PORT:
                     process_tnc_commands(data)
                 else:
@@ -145,7 +146,7 @@ def process_tnc_commands(data):
         if received_json["command"] == "STOP_BEACON":
             static.BEACON_STATE = False
             structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
-            data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, False])
+            data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', None, False])
             
                                 
         # PING ----------------------------------------------------------
@@ -404,7 +405,6 @@ def send_daemon_state():
     
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 
-    
     output = {
         'COMMAND': 'DAEMON_STATE',
         'DAEMON_STATE': [],
