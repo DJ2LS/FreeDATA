@@ -61,15 +61,15 @@ for i in libname:
         # this is not working for all OS. Specially windows has some more problems. We need to fix this somehow.
         api = ctypes.CDLL(i)
             
-        print(f"[C2 ] Codec2 library found - {i}", file=sys.stderr)
+        print(f"[C2 ] Codec2 library loaded - {i}", file=sys.stderr)
         break
-    except:
-        print(f"[C2 ] Codec2 library not found - {i}", file=sys.stderr)
+    except Exception as e:
+        print(f"[C2 ] Codec2 library not loaded - {i} - {e}", file=sys.stderr)
         pass
 # quit module if codec2 cant be loaded    
 if not 'api' in locals():
     print(f"[C2 ] Loading Codec2 library failed", file=sys.stderr)
-
+    exit()
 
 
 

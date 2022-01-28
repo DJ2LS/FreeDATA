@@ -55,9 +55,9 @@ def get_input_devices():
             name = ''
 
         if maxInputChannels > 0:
-            input_devices.append({"ID": i, "NAME": str(name)})
+            input_devices.append({"id": i, "name": str(name)})
         if maxOutputChannels > 0:
-            output_devices.append({"ID": i, "NAME": str(name)})
+            output_devices.append({"id": i, "name": str(name)})
     
     p.terminate()
     

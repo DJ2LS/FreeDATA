@@ -109,7 +109,7 @@ client.on('data', function(data) {
     msg += data.toString('utf8'); // append data to buffer so we can stick long data together
     //console.log(data)
     // check if we reached an EOF, if true, clear buffer and parse JSON data
-    if (data.endsWith('"EOF":"EOF"}\n')) {
+    if (data.endsWith('"EOF":"EOF"}\n') || data.endsWith('"}\n')) {
         //console.log(msg)
         try {
             //console.log(msg)
@@ -120,68 +120,100 @@ client.on('data', function(data) {
         msg = '';
         /* console.log("EOF detected!") */
 
-        //console.log(data)
 
-        if (data['COMMAND'] == 'TNC_STATE') {
+
+        if (data['command'] == 'tnc_state') {
             //console.log(data)
             // set length of RX Buffer to global variable
-            rxBufferLengthTnc = data['RX_BUFFER_LENGTH']
-            rxMsgBufferLengthTnc = data['RX_MSG_BUFFER_LENGTH']
+            rxBufferLengthTnc = data['rx_buffer_length']
+            rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
 
             let Data = {
-                toe: Date.now() - data['TIMESTAMP'], // time of execution
-                ptt_state: data['PTT_STATE'],
-                busy_state: data['TNC_STATE'],
-                arq_state: data['ARQ_STATE'],
+                ptt_state: data['ptt_state'],
+                busy_state: data['tnc_state'],
+                arq_state: data['arq_state'],
                 //channel_state: data['CHANNEL_STATE'],
-                frequency: data['FREQUENCY'],
-                mode: data['MODE'],
-                bandwith: data['BANDWITH'],
-                rms_level: (data['AUDIO_RMS'] / 1000) * 100,
-                fft: data['FFT'],
-                scatter: data['SCATTER'],
-                info: data['INFO'],
-                rx_buffer_length: data['RX_BUFFER_LENGTH'],
-                rx_msg_buffer_length: data['RX_MSG_BUFFER_LENGTH'],
-                tx_n_max_retries: data['TX_N_MAX_RETRIES'],
-                arq_tx_n_frames_per_burst: data['ARQ_TX_N_FRAMES_PER_BURST'],
-                arq_tx_n_bursts: data['ARQ_TX_N_BURSTS'],
-                arq_tx_n_current_arq_frame: data['ARQ_TX_N_CURRENT_ARQ_FRAME'],
-                arq_tx_n_total_arq_frames: data['ARQ_TX_N_TOTAL_ARQ_FRAMES'],
-                arq_rx_frame_n_bursts: data['ARQ_RX_FRAME_N_BURSTS'],
-                arq_rx_n_current_arq_frame: data['ARQ_RX_N_CURRENT_ARQ_FRAME'],
-                arq_n_arq_frames_per_data_frame: data['ARQ_N_ARQ_FRAMES_PER_DATA_FRAME'],
-                arq_bytes_per_minute: data['ARQ_BYTES_PER_MINUTE'],
-                arq_compression_factor: data['ARQ_COMPRESSION_FACTOR'],
-                total_bytes: data['TOTAL_BYTES'],
-                arq_transmission_percent: data['ARQ_TRANSMISSION_PERCENT'],
-                stations: data['STATIONS'],
-                beacon_state: data['BEACON_STATE'],
+                frequency: data['frequency'],
+                mode: data['mode'],
+                bandwith: data['bandwith'],
+                rms_level: (data['audio_rms'] / 1000) * 100,
+                fft: data['fft'],
+                scatter: data['scatter'],
+                info: data['info'],
+                rx_buffer_length: data['rx_buffer_length'],
+                rx_msg_buffer_length: data['rx_msg_buffer_length'],
+                tx_n_max_retries: data['tx_n_max_retries'],
+                arq_tx_n_frames_per_burst: data['arq_tx_n_frames_per_burst'],
+                arq_tx_n_bursts: data['arq_tx_n_bursts'],
+                arq_tx_n_current_arq_frame: data['arq_tx_n_current_arq_frame'],
+                arq_tx_n_total_arq_frames: data['arq_tx_n_total_arq_frames'],
+                arq_rx_frame_n_bursts: data['arq_rx_frame_n_bursts'],
+                arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
+                arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
+                arq_bytes_per_minute: data['arq_bytes_per_minute'],
+                arq_compression_factor: data['arq_compression_factor'],
+                total_bytes: data['total_bytes'],
+                arq_transmission_percent: data['arq_transmission_percent'],
+                stations: data['stations'],
+                beacon_state: data['beacon_state'],
             };
             //console.log(Data)
             ipcRenderer.send('request-update-tnc-state', Data);
         }
 
-        if (data['COMMAND'] == 'RX_BUFFER') {
+        /* A TEST WITH THE NEW STREAMING DATA .... */
+        
+        if (data['arq'] == 'received') {
 
-            rxBufferLengthGui = data['DATA-ARRAY'].length
+            rxBufferLengthGui = data['data'].length
+            
+            console.log(data['uuid'])
+            console.log(data['type'])            
+            
             let Data = {
-                data: data['DATA-ARRAY'],
+                data: data['data'],
             };
-
+            alert(data['data'])
             ipcRenderer.send('request-update-rx-buffer', Data);
         }
 
-        if (data['COMMAND'] == 'RX_MSG_BUFFER') {
+        if (data['command'] == 'rx_buffer') {
 
-            rxMsgBufferLengthGui = data['DATA-ARRAY'].length
-            let Data = {
-                data: data['DATA-ARRAY'],
+            console.log(data['data-array'])
+            // iterate through buffer list and sort it to file or message array
+            dataArray = []
+            messageArray = []
+            for (i = 0; i < data['data-array'].length; i++) {
+
+                if(data['data-array'][i]['rxdata'][0]['dt'] == 'f'){
+                    dataArray.push(data['data-array'][i])
+                    
+                }
+                
+                if(data['data-array'][i]['rxdata'][0]['dt'] == 'm'){
+                    messageArray.push(data['data-array'][i])
+
+                }
+                
+                
+            }
+            
+            rxBufferLengthGui = dataArray.length
+            let Files = {
+                data: dataArray,
+            };
+            ipcRenderer.send('request-update-rx-buffer', Files);
+            
+            rxMsgBufferLengthGui = messageArray.length
+            let Messages = {
+                data: messageArray,
             };
 
-            ipcRenderer.send('request-update-rx-msg-buffer', Data);
+            ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+            
+            
         }
-        // check if EOF	...
+
     }
 
 });
@@ -195,13 +227,13 @@ function hexToBytes(hex) {
 
 //Get TNC State
 exports.getTncState = function() {
-    command = '{"type" : "GET", "command" : "TNC_STATE", "timestamp" : ' + Date.now() + '}';
+    command = '{"type" : "get", "command" : "tnc_state"}';
     writeTncCommand(command)
 }
 
 //Get DATA State
 exports.getDataState = function() {
-    command = '{"type" : "GET", "command" : "DATA_STATE", "timestamp" : ' + Date.now() + '}';
+    command = '{"type" : "get", "command" : "data_state"}';
     //writeTncCommand(command)
 }
 
@@ -213,25 +245,25 @@ exports.getDataState = function() {
 
 // Send Ping
 exports.sendPing = function(dxcallsign) {
-    command = '{"type" : "PING", "command" : "PING", "dxcallsign" : "' + dxcallsign + '", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "ping", "command" : "ping", "dxcallsign" : "' + dxcallsign + '"}'
     writeTncCommand(command)
 }
 
 // Send CQ
 exports.sendCQ = function() {
-    command = '{"type" : "BROADCAST", "command" : "CQCQCQ", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "broadcast", "command" : "cqcqcq"}'
     writeTncCommand(command)
 }
 
 // Send File
 exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, checksum) {
-    command = '{"type" : "ARQ", "command" : "sendFile",  "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "arq", "command" : "send_file",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}]}'
     writeTncCommand(command)
 }
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
-    command = '{"type" : "ARQ", "command" : "sendMessage",  "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
     console.log(command)
     writeTncCommand(command)
 }
@@ -239,13 +271,13 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
 
 //STOP TRANSMISSION
 exports.stopTransmission = function() {
-    command = '{"type" : "ARQ", "command": "stopTransmission", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "arq", "command": "stop_transmission"}'
     writeTncCommand(command)
 }
 
 // Get RX BUffer
 exports.getRxBuffer = function() {
-    command = '{"type" : "GET", "command" : "RX_BUFFER", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "get", "command" : "rx_buffer"}'
 
     // call command only if new data arrived
     if (rxBufferLengthGui != rxBufferLengthTnc) {
@@ -253,35 +285,16 @@ exports.getRxBuffer = function() {
     }
 }
 
-// Get RX MSG BUffer
-exports.getMsgRxBuffer = function() {
-    command = '{"type" : "GET", "command" : "RX_MSG_BUFFER", "timestamp" : ' + Date.now() + '}'
-
-    // call command only if new data arrived
-    if (rxMsgBufferLengthGui != rxMsgBufferLengthTnc) {
-        writeTncCommand(command)
-    }
-}
-
-// DELETE RX MSG BUffer
-exports.delRxMsgBuffer = function() {
-    command = '{"type" : "SET", "command" : "DEL_RX_MSG_BUFFER", "timestamp" : ' + Date.now() + '}'
-
-    // call command only if new data arrived
-    if (rxMsgBufferLengthGui != rxMsgBufferLengthTnc) {
-        writeTncCommand(command)
-    }
-}
 
 // START BEACON
 exports.startBeacon = function(interval) {
-    command = '{"type" : "BROADCAST", "command" : "START_BEACON", "parameter": "' + interval + '","timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "broadcast", "command" : "start_beacon", "parameter": "' + interval + '"}'
     writeTncCommand(command)
 }
 
 // STOP BEACON
 exports.stopBeacon = function() {
-    command = '{"type" : "BROADCAST", "command" : "STOP_BEACON", "timestamp" : ' + Date.now() + '}'
+    command = '{"type" : "broadcast", "command" : "stop_beacon"}'
     writeTncCommand(command)
 }
 

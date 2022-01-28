@@ -114,24 +114,24 @@ daemon.on('data', function(data) {
         msg = '';
         /*console.log("EOF detected!")*/
 
-        if (data['COMMAND'] == 'DAEMON_STATE') {
+        if (data['command'] == 'daemon_state') {
             let Data = {
-                input_devices: data['INPUT_DEVICES'],
-                output_devices: data['OUTPUT_DEVICES'],
-                python_version: data['PYTHON_VERSION'],
-                hamlib_version: data['HAMLIB_VERSION'],
-                serial_devices: data['SERIAL_DEVICES'],
-                tnc_running_state: data['DAEMON_STATE'][0]['STATUS'],
-                ram_usage: data['RAM'],
-                cpu_usage: data['CPU'],
-                version: data['VERSION'],
+                input_devices: data['input_devices'],
+                output_devices: data['output_devices'],
+                python_version: data['python_version'],
+                hamlib_version: data['hamlib_version'],
+                serial_devices: data['serial_devices'],
+                tnc_running_state: data['daemon_state'][0]['status'],
+                ram_usage: data['ram'],
+                cpu_usage: data['cpu'],
+                version: data['version'],
             };
             ipcRenderer.send('request-update-daemon-state', Data);
         }
 
-        if (data['COMMAND'] == 'TEST_HAMLIB') {
+        if (data['command'] == 'test_hamlib') {
             let Data = {
-                hamlib_result: data['RESULT'],
+                hamlib_result: data['result'],
                 
             };
             ipcRenderer.send('request-update-hamlib-test', Data);
@@ -151,7 +151,7 @@ function hexToBytes(hex) {
 
 exports.getDaemonState = function() {
     //function getDaemonState(){
-    command = '{"type" : "GET", "command" : "DAEMON_STATE"}'
+    command = '{"type" : "get", "command" : "daemon_state"}'
     writeDaemonCommand(command)
 }
 
@@ -160,8 +160,8 @@ exports.getDaemonState = function() {
 
 exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
     var json_command = JSON.stringify({
-        type: 'SET',
-        command: 'STARTTNC',
+        type: 'set',
+        command: 'start_tnc',
         parameter: [{
             mycall: mycall,
             mygrid: mygrid,
@@ -188,7 +188,7 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
 
 // STOP TNC
 exports.stopTNC = function() {
-    command = '{"type" : "SET", "command": "STOPTNC" , "parameter": "---" }'
+    command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }'
     writeDaemonCommand(command)
 }
 
@@ -196,8 +196,8 @@ exports.stopTNC = function() {
 exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
 
     var json_command = JSON.stringify({
-        type: 'GET',
-        command: 'TEST_HAMLIB',
+        type: 'get',
+        command: 'test_hamlib',
         parameter: [{
             radiocontrol: radiocontrol,
             devicename: devicename,
@@ -220,13 +220,13 @@ exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed,
 
 //Save myCall
 exports.saveMyCall = function(callsign) {
-    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : "' + Date.now() + '"}'
+    command = '{"type" : "set", "command": "mycallsign" , "parameter": "' + callsign + '"}'
     writeDaemonCommand(command)
 }
 
 // Save myGrid
 exports.saveMyGrid = function(grid) {
-    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '", "timestamp" : "' + Date.now() + '"}'
+    command = '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}'
     writeDaemonCommand(command)
 }
 

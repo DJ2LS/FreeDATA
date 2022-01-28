@@ -18,7 +18,8 @@ import modem
 import helpers
 import codec2
 import queue
-
+import sock
+import uuid
 
 
 TESTMODE = False
@@ -93,6 +94,13 @@ class DATA():
 
             elif data[0] == 'ARQ_FILE':
                 # [0] ARQ_FILE
+                # [1] DATA_OUT bytes
+                # [2] MODE int
+                # [3] N_FRAMES_PER_BURST int
+                self.open_dc_and_transmit(data[1], data[2], data[3])
+
+            elif data[0] == 'ARQ_RAW':
+                # [0] ARQ_RAW
                 # [1] DATA_OUT bytes
                 # [2] MODE int
                 # [3] N_FRAMES_PER_BURST int
@@ -399,15 +407,36 @@ class DATA():
                 d = data                
                 crc = checksum            
                 '''
-                if rawdata["dt"] == "f":
-                    #structlog.get_logger("structlog").debug("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
-                    static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
+                #if rawdata["dt"] == "f" or rawdata["dt"] == "m":
+                #    datatype = rawdata["dt"]
+                #else:
+                #    datatype = "raw"
                     
-                # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
-                if rawdata["dt"] == "m":
-                    static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
-                    #structlog.get_logger("structlog").debug("RECEIVED MESSAGE --> MOVING DATA TO MESSAGE BUFFER")
+                uniqueid = str(uuid.uuid4()) 
+                static.RX_BUFFER.append([uniqueid, int(time.time()), static.DXCALLSIGN,static.DXGRID, data_frame])
+                print(static.RX_BUFFER)
+                jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": [rawdata]}
+                data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(data_out)
                 
+                '''
+                if rawdata["dt"] == "f" or rawdata["dt"] == "m":
+                    #structlog.get_logger("structlog").debug("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
+                    static.RX_BUFFER.append([uuid4(), datatype ,static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
+                    jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0], "type" : static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "timestamp": static.RX_BUFFER[i][4], "data": [rawdata]}
+                    data_out = json.dumps(jsondata)
+                    sock.SOCKET_QUEUE.put(data_out)
+                # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
+                #elif rawdata["dt"] == "m":
+                #    static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
+               
+                # here we should have our raw data
+                else:
+                    static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
+                    jsondata = {"arq":"raw", "dxcallsign": str(static.RX_BUFFER[i][0], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][1], 'utf-8'), "timestamp": static.RX_BUFFER[i][2], "data": [rawdata]}
+                    data_out = json.dumps(jsondata)
+                    sock.SOCKET_QUEUE.put(data_out)                
+                '''
                 # BUILDING ACK FRAME FOR DATA FRAME
                 ack_frame       = bytearray(14)
                 ack_frame[:1]   = bytes([61])

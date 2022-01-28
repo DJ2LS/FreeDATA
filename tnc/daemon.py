@@ -61,7 +61,7 @@ class DAEMON():
                 crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
                 crc_hwid = crc_hwid.hex()
                 description = desc + ' [' + crc_hwid + ']'
-                serial_devices.append({"PORT": str(port), "DESCRIPTION": str(description) })
+                serial_devices.append({"port": str(port), "description": str(description) })
             
             static.SERIAL_DEVICES = serial_devices
             time.sleep(1)
@@ -210,13 +210,13 @@ class DAEMON():
                 
                 if pttstate:
                     structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
-                    response = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'SUCCESS'}
+                    response = {'command': 'test_hamlib', 'result': 'SUCCESS'}
                 elif not pttstate:
                     structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
-                    response = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'NOSUCCESS'}
+                    response = {'command': 'test_hamlib', 'result': 'NOSUCCESS'}
                 else:
                     structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
-                    response = {'COMMAND': 'TEST_HAMLIB', 'RESULT': 'FAILED'}
+                    response = {'command': 'test_hamlib', 'result': 'FAILED'}
                     
                 hamlib.set_ptt(False)                 
                 hamlib.close_rig()

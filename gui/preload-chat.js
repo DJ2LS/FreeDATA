@@ -18,11 +18,11 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("sendMessage").addEventListener("click", () => {
             dxcallsign = document.getElementById('chatModuleDxCall').value
             message = document.getElementById('chatModuleMessage').value
-            
+
             let Data = {
-                command: "sendMessage",
+                command: "send_message",
                 dxcallsign : dxcallsign.toUpperCase(), 
-                mode : 10, 
+                mode : 12, 
                 frames : 1, 
                 data : message, 
                 checksum : '123'
@@ -36,7 +36,6 @@ window.addEventListener('DOMContentLoaded', () => {
 ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
 
     var data = arg.data
-    console.log(arg.data)
     var tbl = document.getElementById("rx-msg-data");
     document.getElementById("rx-msg-data").innerHTML = ''
     
@@ -53,7 +52,7 @@ ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
         //https://stackoverflow.com/q/51421470
 
         //https://stackoverflow.com/a/847196
-        timestampRaw = arg.data[i]['TIMESTAMP']
+        timestampRaw = arg.data[i]['timestamp']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
         var minutes = "0" + date.getMinutes();
@@ -67,12 +66,12 @@ ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
 
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
-        dxCallText.innerText = arg.data[i]['DXCALLSIGN']
+        dxCallText.innerText = arg.data[i]['dxcallsign']
         dxCall.appendChild(dxCallText);
 
         var message = document.createElement("td");
         var messageText = document.createElement('span');
-        var messageString = arg.data[i]['RXDATA'][0]['d'] //data
+        var messageString = arg.data[i]['rxdata'][0]['d'] //data
         console.log(messageString)
         messageText.innerText = messageString
         message.appendChild(messageText);
@@ -85,5 +84,4 @@ ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
 
     }
 
-    ipcRenderer.send('run-tnc-command', {"command" : "delRxMsgBuffer"});
 })

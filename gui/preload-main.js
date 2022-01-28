@@ -517,7 +517,7 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log(data)
 
             let Data = {
-                command: "sendFile",
+                command: "send_file",
                 dxcallsign: document.getElementById("dataModalDxCall").value.toUpperCase(),
                 mode: document.getElementById("datamode").value,
                 frames: document.getElementById("framesperburst").value,
@@ -537,7 +537,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // START TRANSMISSION
     document.getElementById("stopTransmission").addEventListener("click", () => {
             let Data = {
-                command: "stopTransmission"
+                command: "stop_transmission"
             };
             ipcRenderer.send('run-tnc-command', Data);    
     })
@@ -690,7 +690,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
         document.getElementById("startTransmission").disabled = true
-        document.getElementById("stopTransmission").disabled = false
+        //document.getElementById("stopTransmission").disabled = false
 
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-success";
@@ -698,22 +698,22 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         document.getElementById("busy_state").className = "btn btn-secondary"
         document.getElementById("startTransmission").disabled = true
-        document.getElementById("stopTransmission").disabled = false
+        //document.getElementById("stopTransmission").disabled = false
     }
 
     // ARQ STATE
     if (arg.arq_state == 'True') {
         document.getElementById("arq_state").className = "btn btn-warning";
         document.getElementById("startTransmission").disabled = true
-        document.getElementById("stopTransmission").disabled = false
+        //document.getElementById("stopTransmission").disabled = false
     } else if (arg.arq_state == 'False') {
         document.getElementById("arq_state").className = "btn btn-secondary";
         document.getElementById("startTransmission").disabled = false
-        document.getElementById("stopTransmission").disabled = true
+        //document.getElementById("stopTransmission").disabled = true
     } else {
         document.getElementById("arq_state").className = "btn btn-secondary"
         document.getElementById("startTransmission").disabled = true
-        document.getElementById("stopTransmission").disabled = false
+        //document.getElementById("stopTransmission").disabled = false
     }
 
     // BEACON STATE
@@ -787,8 +787,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
-        if (arg.stations[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
-            var dxGrid = arg.stations[i]['DXGRID']
+        if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value) {
+            var dxGrid = arg.stations[i]['dxgrid']
             var myGrid = document.getElementById("myGrid").value
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
@@ -798,8 +798,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 document.getElementById("pingDistance").innerHTML = '---'
                 document.getElementById("dataModalPingDistance").innerHTML = '---'
             }
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
-            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['SNR']
+            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr']
+            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr']
         }
 
         // now we update the heard stations list
@@ -807,7 +807,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         //https://stackoverflow.com/q/51421470
 
         //https://stackoverflow.com/a/847196
-        timestampRaw = arg.stations[i]['TIMESTAMP']
+        timestampRaw = arg.stations[i]['timestamp']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
         var minutes = "0" + date.getMinutes();
@@ -821,25 +821,25 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var frequency = document.createElement("td");
         var frequencyText = document.createElement('span');
-        frequencyText.innerText = arg.stations[i]['FREQUENCY']
+        frequencyText.innerText = arg.stations[i]['frequency']
         frequency.appendChild(frequencyText);
         
         
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
-        dxCallText.innerText = arg.stations[i]['DXCALLSIGN']
+        dxCallText.innerText = arg.stations[i]['dxcallsign']
         dxCall.appendChild(dxCallText);
 
         var dxGrid = document.createElement("td");
         var dxGridText = document.createElement('span');
-        dxGridText.innerText = arg.stations[i]['DXGRID']
+        dxGridText.innerText = arg.stations[i]['dxgrid']
         dxGrid.appendChild(dxGridText);
 
         var gridDistance = document.createElement("td");
         var gridDistanceText = document.createElement('span');
 
         try {
-            gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['DXGRID'])) + ' km';
+            gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['dxgrid'])) + ' km';
         } catch {
             gridDistanceText.innerText = '---'
         }
@@ -847,7 +847,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
-        if(arg.stations[i]['DATATYPE'] == 'DATA-CHANNEL'){
+        if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
             dataTypeText.innerText = 'DATA-C'
             dataType.appendChild(dataTypeText);
         }
@@ -875,12 +875,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var snr = document.createElement("td");
         var snrText = document.createElement('span');
-        snrText.innerText = arg.stations[i]['SNR']
+        snrText.innerText = arg.stations[i]['snr']
         snr.appendChild(snrText);
 
         var offset = document.createElement("td");
         var offsetText = document.createElement('span');
-        offsetText.innerText = arg.stations[i]['OFFSET']
+        offsetText.innerText = arg.stations[i]['offset']
         offset.appendChild(offsetText);
 
         row.appendChild(timestamp);
@@ -1082,8 +1082,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("audio_input_selectbox").innerHTML = ""
             for (i = 0; i < arg.input_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.input_devices[i]['NAME'];
-                option.value = arg.input_devices[i]['ID'];
+                option.text = arg.input_devices[i]['name'];
+                option.value = arg.input_devices[i]['id'];
                 // set device from config if available
                 
                 if(config.rx_audio == option.text){
@@ -1099,8 +1099,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("audio_output_selectbox").innerHTML = ""
             for (i = 0; i < arg.output_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.output_devices[i]['NAME'];
-                option.value = arg.output_devices[i]['ID'];               
+                option.text = arg.output_devices[i]['name'];
+                option.value = arg.output_devices[i]['id'];               
                 // set device from config if available
                 if(config.tx_audio == option.text){
                     option.setAttribute('selected', true);
@@ -1116,8 +1116,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("hamlib_deviceport").innerHTML = ""
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['DESCRIPTION'];
-                option.value = arg.serial_devices[i]['PORT'];
+                option.text = arg.serial_devices[i]['description'];
+                option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
                 if(config.deviceport == option.value){
                     option.setAttribute('selected', true);
@@ -1132,8 +1132,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("hamlib_deviceport_advanced").innerHTML = ""
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['DESCRIPTION'];
-                option.value = arg.serial_devices[i]['PORT'];
+                option.text = arg.serial_devices[i]['description'];
+                option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
                 if(config.deviceport == option.value){
                     option.setAttribute('selected', true);
@@ -1147,8 +1147,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("hamlib_deviceport_rigctl").innerHTML = ""
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['DESCRIPTION'];
-                option.value = arg.serial_devices[i]['PORT'];
+                option.text = arg.serial_devices[i]['description'];
+                option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
                 if(config.deviceport == option.value){
                     option.setAttribute('selected', true);
@@ -1165,8 +1165,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("hamlib_ptt_port_advanced").innerHTML = ""
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['DESCRIPTION'];
-                option.value = arg.serial_devices[i]['PORT'];
+                option.text = arg.serial_devices[i]['description'];
+                option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
                 if(config.pttport == option.value){
                     option.setAttribute('selected', true);
@@ -1289,7 +1289,7 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
-    var data = arg.data["DATA"]
+    var data = arg.data["data"]
 
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
@@ -1297,14 +1297,14 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
     for (i = 0; i < arg.data.length; i++) {
 
         // first we update the PING window
-        if (arg.data[i]['DXCALLSIGN'] == document.getElementById("dxCall").value) {
+        if (arg.data[i]['dxcallsign'] == document.getElementById("dxCall").value) {
             /*
             // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
             if(arg.data[i]['DXGRID'] != ''){
                 document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
             }
             */
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['SNR']
+            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr']
 
         }
 
@@ -1314,7 +1314,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         //https://stackoverflow.com/q/51421470
 
         //https://stackoverflow.com/a/847196
-        timestampRaw = arg.data[i]['TIMESTAMP']
+        timestampRaw = arg.data[i]['timestamp']
         var date = new Date(timestampRaw * 1000);
         var hours = date.getHours();
         var minutes = "0" + date.getMinutes();
@@ -1328,7 +1328,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
-        dxCallText.innerText = arg.data[i]['DXCALLSIGN']
+        dxCallText.innerText = arg.data[i]['dxcallsign']
         dxCall.appendChild(dxCallText);
 
         /*
@@ -1340,7 +1340,8 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        var fileNameString = arg.data[i]['RXDATA'][0]['fn']
+        var fileNameString = arg.data[i]['rxdata'][0]['fn']
+
         fileNameText.innerText = fileNameString
         fileName.appendChild(fileNameText);
 
@@ -1368,7 +1369,7 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
 
         // write file to rxdata folder
-        var base64String = arg.data[i]['RXDATA'][0]['d']
+        var base64String = arg.data[i]['rxdata'][0]['d']
         // remove header from base64 String
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()
@@ -1384,26 +1385,24 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 });
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
-    if (arg.command == 'saveMyCall') {
+    if (arg.command == 'save_my_call') {
         sock.saveMyCall(arg.callsign)
     }
-    if (arg.command == 'saveMyGrid') {
+    if (arg.command == 'save_my_grid') {
         sock.saveMyGrid(arg.grid)
     }
     if (arg.command == 'ping') {
         sock.sendPing(arg.dxcallsign)
     }
 
-    if (arg.command == 'sendFile') {
+    if (arg.command == 'send_file') {
         sock.sendFile(arg.dxcallsign, arg.mode, arg.frames, arg.filename, arg.filetype, arg.data, arg.checksum)
     }
-    if (arg.command == 'sendMessage') {
+    if (arg.command == 'send_message') {
         sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum)
     }
-    if (arg.command == 'stopTransmission') {
+    if (arg.command == 'stop_transmission') {
         sock.stopTransmission()
     }
-    if (arg.command == 'delRxMsgBuffer') {
-        sock.delRxMsgBuffer()
-    }
+
 });
