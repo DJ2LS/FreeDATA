@@ -11,7 +11,7 @@ var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
 var daemon = new net.Socket();
-var msg = ''; // Current message, per connection.
+var socketchunk = ''; // Current message, per connection.
 
 setTimeout(connectDAEMON, 500)
 
@@ -20,7 +20,7 @@ function connectDAEMON() {
     console.log('connecting to DAEMON...')
 
     //clear message buffer after reconnecting or inital connection
-    msg = '';
+    socketchunk = '';
     
     if (config.tnclocation == 'localhost') {
         daemon.connect(3001, '127.0.0.1')
@@ -97,50 +97,90 @@ writeDaemonCommand = function(command) {
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
 
-daemon.on('data', function(data) {
+daemon.on('data', function(socketdata) {
 
-    data = data.toString('utf8'); /* convert data to string */
-    msg += data.toString('utf8'); /*append data to buffer so we can stick long data together */
+    /*
+    inspired by:
+    stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
+    */
 
-    /* check if we reached an EOF, if true, clear buffer and parse JSON data */
-    if (data.endsWith('}\n')) {
-        /*console.log(msg)*/
-        try {
-            /*console.log(msg)*/
-            data = JSON.parse(msg)
-        } catch (e) {
-            console.log(e); /* "SyntaxError */
-        }
-        msg = '';
-        /*console.log("EOF detected!")*/
 
-        if (data['command'] == 'daemon_state') {
-            let Data = {
-                input_devices: data['input_devices'],
-                output_devices: data['output_devices'],
-                python_version: data['python_version'],
-                hamlib_version: data['hamlib_version'],
-                serial_devices: data['serial_devices'],
-                tnc_running_state: data['daemon_state'][0]['status'],
-                ram_usage: data['ram'],
-                cpu_usage: data['cpu'],
-                version: data['version'],
-            };
-            ipcRenderer.send('request-update-daemon-state', Data);
-        }
+    socketdata = socketdata.toString('utf8'); // convert data to string
+    socketchunk += socketdata// append data to buffer so we can stick long data together
 
-        if (data['command'] == 'test_hamlib') {
-            let Data = {
-                hamlib_result: data['result'],
-                
-            };
-            ipcRenderer.send('request-update-hamlib-test', Data);
+
+    // check if we received begin and end of json data
+    if (socketchunk.startsWith('{"') && socketchunk.endsWith('"}\n')) {
+
+        var data = ''
+
+        // split data into chunks if we received multiple commands
+        socketchunk = socketchunk.split("\n"); 
+        data = JSON.parse(socketchunk[0])    
+             
+
+        // search for empty entries in socketchunk and remove them
+        for (i = 0; i < socketchunk.length; i++) {
+            if (socketchunk[i] === ''){
+                socketchunk.splice(i, 1);
+            }
         }
         
         
-        ////// check if EOF	...
+        //iterate through socketchunks array to execute multiple commands in row 
+        for (i = 0; i < socketchunk.length; i++) {
+
+            //check if data is not empty
+            if(socketchunk[i].length > 0){
+            
+                //try to parse JSON
+                try {
+
+                    data = JSON.parse(socketchunk[i])
+
+                } catch (e) {
+                    console.log(e); // "SyntaxError
+                    console.log(socketchunk[i])
+                    socketchunk = ''
+
+                }
+
+            }
+            
+            
+            
+
+            if (data['command'] == 'daemon_state') {
+                let Data = {
+                    input_devices: data['input_devices'],
+                    output_devices: data['output_devices'],
+                    python_version: data['python_version'],
+                    hamlib_version: data['hamlib_version'],
+                    serial_devices: data['serial_devices'],
+                    tnc_running_state: data['daemon_state'][0]['status'],
+                    ram_usage: data['ram'],
+                    cpu_usage: data['cpu'],
+                    version: data['version'],
+                };
+                ipcRenderer.send('request-update-daemon-state', Data);
+            }
+
+            if (data['command'] == 'test_hamlib') {
+                let Data = {
+                    hamlib_result: data['result'],
+                    
+                };
+                ipcRenderer.send('request-update-hamlib-test', Data);
+            }
+        
+        
+
+        }
+   
+    //finally delete message buffer 
+    socketchunk = '';
+    
     }
-
 });
 
 function hexToBytes(hex) {

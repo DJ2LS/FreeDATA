@@ -386,7 +386,7 @@ class DATA():
             # check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
-                static.INFO.append("ARQ;RECEIVING;SUCCESS")
+                
                 
                 # decompression
                 data_frame_decompressed = zlib.decompress(data_frame)
@@ -418,25 +418,8 @@ class DATA():
                 jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": [rawdata]}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
-                
-                '''
-                if rawdata["dt"] == "f" or rawdata["dt"] == "m":
-                    #structlog.get_logger("structlog").debug("RECEIVED FILE --> MOVING DATA TO RX BUFFER")
-                    static.RX_BUFFER.append([uuid4(), datatype ,static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
-                    jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0], "type" : static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "timestamp": static.RX_BUFFER[i][4], "data": [rawdata]}
-                    data_out = json.dumps(jsondata)
-                    sock.SOCKET_QUEUE.put(data_out)
-                # if datatype is a file, we append to RX_MSG_BUFFER, which contains messages only            
-                #elif rawdata["dt"] == "m":
-                #    static.RX_MSG_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
+                static.INFO.append("ARQ;RECEIVING;SUCCESS")
                
-                # here we should have our raw data
-                else:
-                    static.RX_BUFFER.append([static.DXCALLSIGN,static.DXGRID,int(time.time()), data_frame])
-                    jsondata = {"arq":"raw", "dxcallsign": str(static.RX_BUFFER[i][0], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][1], 'utf-8'), "timestamp": static.RX_BUFFER[i][2], "data": [rawdata]}
-                    data_out = json.dumps(jsondata)
-                    sock.SOCKET_QUEUE.put(data_out)                
-                '''
                 # BUILDING ACK FRAME FOR DATA FRAME
                 ack_frame       = bytearray(14)
                 ack_frame[:1]   = bytes([61])

@@ -11,7 +11,7 @@ var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
 var client = new net.Socket();
-var msg = ''; // Current message, per connection.
+var socketchunk = ''; // Current message, per connection.
 
 // globals for getting new data only if available so we are saving bandwith
 var rxBufferLengthTnc = 0
@@ -27,7 +27,7 @@ function connectTNC() {
     //console.log('connecting to TNC...')
 
     //clear message buffer after reconnecting or inital connection
-    msg = '';
+    socketchunk = '';
 
     if (config.tnclocation == 'localhost') {
         client.connect(3000, '127.0.0.1')
@@ -99,123 +99,173 @@ writeTncCommand = function(command) {
     }
 }
 
-client.on('data', function(data) {
+client.on('data', function(socketdata) {
 
     /*
+    inspired by:
     stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
     */
 
-    data = data.toString('utf8'); // convert data to string
-    msg += data.toString('utf8'); // append data to buffer so we can stick long data together
-    //console.log(data)
-    // check if we reached an EOF, if true, clear buffer and parse JSON data
-    if (data.endsWith('"EOF":"EOF"}\n') || data.endsWith('"}\n')) {
-        //console.log(msg)
-        try {
-            //console.log(msg)
-            data = JSON.parse(msg)
-        } catch (e) {
-            console.log(e); /* "SyntaxError*/
+
+    socketdata = socketdata.toString('utf8'); // convert data to string
+    socketchunk += socketdata// append data to buffer so we can stick long data together
+
+
+    // check if we received begin and end of json data
+    if (socketchunk.startsWith('{"') && socketchunk.endsWith('"}\n')) {
+
+        var data = ''
+
+        // split data into chunks if we received multiple commands
+        socketchunk = socketchunk.split("\n"); 
+        data = JSON.parse(socketchunk[0])    
+             
+
+        // search for empty entries in socketchunk and remove them
+        for (i = 0; i < socketchunk.length; i++) {
+            if (socketchunk[i] === ''){
+                socketchunk.splice(i, 1);
+            }
         }
-        msg = '';
-        /* console.log("EOF detected!") */
-
-
-
-        if (data['command'] == 'tnc_state') {
-            //console.log(data)
-            // set length of RX Buffer to global variable
-            rxBufferLengthTnc = data['rx_buffer_length']
-            rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
-
-            let Data = {
-                ptt_state: data['ptt_state'],
-                busy_state: data['tnc_state'],
-                arq_state: data['arq_state'],
-                //channel_state: data['CHANNEL_STATE'],
-                frequency: data['frequency'],
-                mode: data['mode'],
-                bandwith: data['bandwith'],
-                rms_level: (data['audio_rms'] / 1000) * 100,
-                fft: data['fft'],
-                scatter: data['scatter'],
-                info: data['info'],
-                rx_buffer_length: data['rx_buffer_length'],
-                rx_msg_buffer_length: data['rx_msg_buffer_length'],
-                tx_n_max_retries: data['tx_n_max_retries'],
-                arq_tx_n_frames_per_burst: data['arq_tx_n_frames_per_burst'],
-                arq_tx_n_bursts: data['arq_tx_n_bursts'],
-                arq_tx_n_current_arq_frame: data['arq_tx_n_current_arq_frame'],
-                arq_tx_n_total_arq_frames: data['arq_tx_n_total_arq_frames'],
-                arq_rx_frame_n_bursts: data['arq_rx_frame_n_bursts'],
-                arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
-                arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
-                arq_bytes_per_minute: data['arq_bytes_per_minute'],
-                arq_compression_factor: data['arq_compression_factor'],
-                total_bytes: data['total_bytes'],
-                arq_transmission_percent: data['arq_transmission_percent'],
-                stations: data['stations'],
-                beacon_state: data['beacon_state'],
-            };
-            //console.log(Data)
-            ipcRenderer.send('request-update-tnc-state', Data);
-        }
-
-        /* A TEST WITH THE NEW STREAMING DATA .... */
         
-        if (data['arq'] == 'received') {
+        
+        //iterate through socketchunks array to execute multiple commands in row 
+        for (i = 0; i < socketchunk.length; i++) {
 
-            rxBufferLengthGui = data['data'].length
+            //check if data is not empty
+            if(socketchunk[i].length > 0){
             
-            console.log(data['uuid'])
-            console.log(data['type'])            
-            
-            let Data = {
-                data: data['data'],
-            };
-            alert(data['data'])
-            ipcRenderer.send('request-update-rx-buffer', Data);
-        }
+                //try to parse JSON
+                try {
 
-        if (data['command'] == 'rx_buffer') {
+                    data = JSON.parse(socketchunk[i])
 
-            console.log(data['data-array'])
-            // iterate through buffer list and sort it to file or message array
-            dataArray = []
-            messageArray = []
-            for (i = 0; i < data['data-array'].length; i++) {
-
-                if(data['data-array'][i]['rxdata'][0]['dt'] == 'f'){
-                    dataArray.push(data['data-array'][i])
-                    
-                }
-                
-                if(data['data-array'][i]['rxdata'][0]['dt'] == 'm'){
-                    messageArray.push(data['data-array'][i])
+                } catch (e) {
+                    console.log(e); // "SyntaxError
+                    console.log(socketchunk[i])
+                    socketchunk = ''
 
                 }
-                
-                
+
             }
             
-            rxBufferLengthGui = dataArray.length
-            let Files = {
-                data: dataArray,
-            };
-            ipcRenderer.send('request-update-rx-buffer', Files);
-            
-            rxMsgBufferLengthGui = messageArray.length
-            let Messages = {
-                data: messageArray,
-            };
 
-            ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+            if (data['command'] == 'tnc_state') {
+                //console.log(data)
+                // set length of RX Buffer to global variable
+                rxBufferLengthTnc = data['rx_buffer_length']
+                rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
+
+                let Data = {
+                    ptt_state: data['ptt_state'],
+                    busy_state: data['tnc_state'],
+                    arq_state: data['arq_state'],
+                    //channel_state: data['CHANNEL_STATE'],
+                    frequency: data['frequency'],
+                    mode: data['mode'],
+                    bandwith: data['bandwith'],
+                    rms_level: (data['audio_rms'] / 1000) * 100,
+                    fft: data['fft'],
+                    scatter: data['scatter'],
+                    info: data['info'],
+                    rx_buffer_length: data['rx_buffer_length'],
+                    rx_msg_buffer_length: data['rx_msg_buffer_length'],
+                    tx_n_max_retries: data['tx_n_max_retries'],
+                    arq_tx_n_frames_per_burst: data['arq_tx_n_frames_per_burst'],
+                    arq_tx_n_bursts: data['arq_tx_n_bursts'],
+                    arq_tx_n_current_arq_frame: data['arq_tx_n_current_arq_frame'],
+                    arq_tx_n_total_arq_frames: data['arq_tx_n_total_arq_frames'],
+                    arq_rx_frame_n_bursts: data['arq_rx_frame_n_bursts'],
+                    arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
+                    arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
+                    arq_bytes_per_minute: data['arq_bytes_per_minute'],
+                    arq_compression_factor: data['arq_compression_factor'],
+                    total_bytes: data['total_bytes'],
+                    arq_transmission_percent: data['arq_transmission_percent'],
+                    stations: data['stations'],
+                    beacon_state: data['beacon_state'],
+                };
+
+                ipcRenderer.send('request-update-tnc-state', Data);
+            }
+
+            /* A TEST WITH STREAMING DATA .... */       
             
+            if (data['arq'] == 'received') {
+                dataArray = []
+                messageArray = []
+
+
+                if(data['data'][0]['dt'] == 'f'){
+                    dataArray.push(data)
+                }
+                        
+                if(data['data'][0]['dt'] == 'm'){
+                    messageArray.push(data)
+                }
+                
+
+
+                rxBufferLengthGui = dataArray.length
+                let Files = {
+                    data: dataArray,
+                };
+                ipcRenderer.send('request-update-rx-buffer', Files);
+                
+                rxMsgBufferLengthGui = messageArray.length
+                let Messages = {
+                    data: messageArray,
+                };
+                ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+
+            }
+
+            if (data['command'] == 'rx_buffer') {
+
+                // iterate through buffer list and sort it to file or message array
+                dataArray = []
+                messageArray = []
+
+
+                for (i = 0; i < data['data-array'].length; i++) {
+                    try{
+                        if(data['data-array'][i]['data'][0]['dt'] == 'f'){
+                            dataArray.push(data['data-array'][i])
+                            
+                        }
+                        
+                        if(data['data-array'][i]['data'][0]['dt'] == 'm'){
+                            messageArray.push(data['data-array'][i])
+
+                        }
+                    } catch (e) {
+                        console.log(e)
+                    }
+                }
             
+                console.log(dataArray)
+                
+                
+                rxBufferLengthGui = dataArray.length
+                let Files = {
+                    data: dataArray,
+                };
+                ipcRenderer.send('request-update-rx-buffer', Files);
+                
+                rxMsgBufferLengthGui = messageArray.length
+                let Messages = {
+                    data: messageArray,
+                };
+                ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+      
+            }
+
         }
-
+   
+    //finally delete message buffer 
+    socketchunk = '';
+    
     }
-
 });
 
 function hexToBytes(hex) {
@@ -237,11 +287,6 @@ exports.getDataState = function() {
     //writeTncCommand(command)
 }
 
-//Get Heard Stations
-//exports.getHeardStations = function() {
-//    command = '{"type" : "GET", "command" : "HEARD_STATIONS", "timestamp" : ' + Date.now() + '}';
-//    writeTncCommand(command)
-//}
 
 // Send Ping
 exports.sendPing = function(dxcallsign) {

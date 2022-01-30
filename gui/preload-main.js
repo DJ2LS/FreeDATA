@@ -988,6 +988,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             toast.show()
         }        
          // ARQ RECEIVING SUCCESS TOAST
+        console.log(arg.info[i])
         if (arg.info[i] == "ARQ;RECEIVING;SUCCESS"){
             
             document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-success";
@@ -1288,11 +1289,12 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 });
 
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
-
+    
     var data = arg.data["data"]
 
     var tbl = document.getElementById("rx-data");
     document.getElementById("rx-data").innerHTML = ''
+
 
     for (i = 0; i < arg.data.length; i++) {
 
@@ -1307,6 +1309,8 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
             document.getElementById("pingDB").innerHTML = arg.stations[i]['snr']
 
         }
+
+
 
         // now we update the received files list
 
@@ -1338,10 +1342,11 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
                 dxGrid.appendChild(dxGridText);
         */
 
+        console.log(arg.data) 
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        var fileNameString = arg.data[i]['rxdata'][0]['fn']
-
+        var fileNameString = arg.data[i]['data'][0]['fn']
+        
         fileNameText.innerText = fileNameString
         fileName.appendChild(fileNameText);
 
@@ -1349,7 +1354,6 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         row.appendChild(dxCall);
         //      row.appendChild(dxGrid);
         row.appendChild(fileName);
-
         tbl.appendChild(row);
 
         // https://stackoverflow.com/a/26227660
@@ -1368,8 +1372,8 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         });
 
 
-        // write file to rxdata folder
-        var base64String = arg.data[i]['rxdata'][0]['d']
+        // write file to data folder
+        var base64String = arg.data[i]['data'][0]['d']
         // remove header from base64 String
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
         var base64Data = base64String.split(';base64,').pop()

@@ -67,13 +67,16 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 sock_data = bytes(data, 'utf-8')
                 sock_data += b'\n' # append line limiter
                 # send data to all clients
-                for client in CONNECTED_CLIENTS:
-                    try:
-                        client.send(sock_data)
-                    except:
-                        print("connection lost...")
-                        CONNECTED_CLIENTS.remove(self.request)
-                        
+                try:
+                    for client in CONNECTED_CLIENTS:
+                        try:
+                            client.send(sock_data)
+                        except:
+                            print("connection lost...")
+                            CONNECTED_CLIENTS.remove(self.request)
+                except:
+                    print("client not anymore in client list")
+                    
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
@@ -135,135 +138,156 @@ def process_tnc_commands(data):
         received_json = json.loads(data)
         # CQ CQ CQ -----------------------------------------------------
         if received_json["command"] == "cqcqcq":
-            data_handler.DATA_QUEUE_TRANSMIT.put(['CQ'])
-
+            try:
+                data_handler.DATA_QUEUE_TRANSMIT.put(['CQ'])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
         # START_BEACON -----------------------------------------------------
         if received_json["command"] == "start_beacon":
-
-            static.BEACON_STATE = True
-            interval = int(received_json["parameter"])
-            data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, True])
-
-            
+            try:
+                static.BEACON_STATE = True
+                interval = int(received_json["parameter"])
+                data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, True])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                
         # STOP_BEACON -----------------------------------------------------
         if received_json["command"] == "stop_beacon":
-            static.BEACON_STATE = False
-            structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
-            data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', None, False])
-            
+            try:
+                static.BEACON_STATE = False
+                structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
+                data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', None, False])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
                                 
         # PING ----------------------------------------------------------
         if received_json["type"] == 'ping' and received_json["command"] == "ping":
             # send ping frame and wait for ACK
-            dxcallsign = received_json["dxcallsign"]
-            data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
-
+            try:
+                dxcallsign = received_json["dxcallsign"]
+                data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
-            dxcallsign = received_json["parameter"][0]["dxcallsign"]
-            mode = int(received_json["parameter"][0]["mode"])
-            n_frames = int(received_json["parameter"][0]["n_frames"])
-            data = received_json["parameter"][0]["data"]
+            try:    
+                dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                mode = int(received_json["parameter"][0]["mode"])
+                n_frames = int(received_json["parameter"][0]["n_frames"])
+                data = received_json["parameter"][0]["data"]
 
-            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-            static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
-            rawdata = {"raw": data}
-            dataframe = json.dumps(rawdata)
-            data_out = bytes(dataframe, 'utf-8')
-            data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', data_out, mode, n_frames])
-            print(data_handler.DATA_QUEUE_TRANSMIT.qsize())
-            
+                static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+                static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                rawdata = {"raw": data}
+                dataframe = json.dumps(rawdata)
+                data_out = bytes(dataframe, 'utf-8')
+                data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', data_out, mode, n_frames])
+                print(data_handler.DATA_QUEUE_TRANSMIT.qsize())
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)            
         # TRANSMIT FILE ----------------------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_file":
-            static.TNC_STATE = 'BUSY'
+            try:
+                static.TNC_STATE = 'BUSY'
 
-            # on a new transmission we reset the timer
-            static.ARQ_START_OF_TRANSMISSION = int(time.time())
+                # on a new transmission we reset the timer
+                static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
-            dxcallsign = received_json["parameter"][0]["dxcallsign"]
-            mode = int(received_json["parameter"][0]["mode"])
-            n_frames = int(received_json["parameter"][0]["n_frames"])
-            filename = received_json["parameter"][0]["filename"]
-            filetype = received_json["parameter"][0]["filetype"]
-            data = received_json["parameter"][0]["data"]
-            checksum = received_json["parameter"][0]["checksum"]
-           
+                dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                mode = int(received_json["parameter"][0]["mode"])
+                n_frames = int(received_json["parameter"][0]["n_frames"])
+                filename = received_json["parameter"][0]["filename"]
+                filetype = received_json["parameter"][0]["filetype"]
+                data = received_json["parameter"][0]["data"]
+                checksum = received_json["parameter"][0]["checksum"]
+               
 
-            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-            static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+                static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
 
-            # dt = datatype
-            # --> f = file
-            # --> m = message
-            # fn = filename
-            # ft = filetype
-            # d = data                
-            # crc = checksum
-            rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
-            dataframe = json.dumps(rawdata)
-            data_out = bytes(dataframe, 'utf-8')
-            data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_FILE', data_out, mode, n_frames])
-            print(data_handler.DATA_QUEUE_TRANSMIT.qsize())
+                # dt = datatype
+                # --> f = file
+                # --> m = message
+                # fn = filename
+                # ft = filetype
+                # d = data                
+                # crc = checksum
+                rawdata = {"dt": "f", "fn": filename, "ft": filetype,"d": data, "crc": checksum}
+                dataframe = json.dumps(rawdata)
+                data_out = bytes(dataframe, 'utf-8')
+                data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_FILE', data_out, mode, n_frames])
+                print(data_handler.DATA_QUEUE_TRANSMIT.qsize())
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)            
         # TRANSMIT MESSAGE ----------------------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_message":
-            static.TNC_STATE = 'BUSY'
-            print(received_json)
-            # on a new transmission we reset the timer
-            static.ARQ_START_OF_TRANSMISSION = int(time.time())
+            try:
+                static.TNC_STATE = 'BUSY'
+                print(received_json)
+                # on a new transmission we reset the timer
+                static.ARQ_START_OF_TRANSMISSION = int(time.time())
 
-            dxcallsign = received_json["parameter"][0]["dxcallsign"]
-            mode = int(received_json["parameter"][0]["mode"])
-            n_frames = int(received_json["parameter"][0]["n_frames"])
-            data = received_json["parameter"][0]["data"] # d = data
-            checksum = received_json["parameter"][0]["checksum"] # crc = checksum
-           
+                dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                mode = int(received_json["parameter"][0]["mode"])
+                n_frames = int(received_json["parameter"][0]["n_frames"])
+                data = received_json["parameter"][0]["data"] # d = data
+                checksum = received_json["parameter"][0]["checksum"] # crc = checksum
+               
 
-            static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
-            static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
-            
-            # dt = datatype
-            # --> f = file
-            # --> m = message
-            # fn = filename
-            # ft = filetype
-            # d = data                
-            # crc = checksum
-            rawdata = {"dt": "m","d": data, "crc": checksum}
-            dataframe = json.dumps(rawdata)
-            data_out = bytes(dataframe, 'utf-8')
+                static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+                static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                
+                # dt = datatype
+                # --> f = file
+                # --> m = message
+                # fn = filename
+                # ft = filetype
+                # d = data                
+                # crc = checksum
+                rawdata = {"dt": "m","d": data, "crc": checksum}
+                dataframe = json.dumps(rawdata)
+                data_out = bytes(dataframe, 'utf-8')
 
-            data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_MESSAGE', data_out, mode, n_frames])
-
+                data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_MESSAGE', data_out, mode, n_frames])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
             
         # STOP TRANSMISSION ----------------------------------------------------------    
         if received_json["type"] == 'arq' and received_json["command"] == "stop_transmission":
-            if static.TNC_STATE == 'BUSY' or static.ARQ_STATE:
-                data_handler.DATA_QUEUE_TRANSMIT.put(['STOP'])
-            structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
-            static.TNC_STATE = 'IDLE'
-            static.ARQ_STATE = False
-
+            try:
+                if static.TNC_STATE == 'BUSY' or static.ARQ_STATE:
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['STOP'])
+                structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
+                static.TNC_STATE = 'IDLE'
+                static.ARQ_STATE = False
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                
 
         if received_json["type"] == 'get' and received_json["command"] == 'rx_buffer':
-            output = {
-                "command": "rx_buffer",
-                "data-array": [],
-                "EOF": "EOF",
-            }
-            
-            for i in range(0, len(static.RX_BUFFER)):
-                rawdata = json.loads(static.RX_BUFFER[i][4])
-                output["data-array"].append({"uuid": static.RX_BUFFER[i][0],"timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'),  "rxdata": [rawdata]})
+            try:
+                output = {
+                    "command": "rx_buffer",
+                    "data-array": [],
+                }
+                
+                for i in range(0, len(static.RX_BUFFER)):
+                    rawdata = json.loads(static.RX_BUFFER[i][4])
+                    output["data-array"].append({"uuid": static.RX_BUFFER[i][0],"timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'),  "data": [rawdata]})
 
-            jsondata = json.dumps(output)
-            #self.request.sendall(bytes(jsondata, encoding))
-            SOCKET_QUEUE.put(jsondata)
+                jsondata = json.dumps(output)
+                #self.request.sendall(bytes(jsondata, encoding))
+                print(jsondata)
+                SOCKET_QUEUE.put(jsondata)
+                
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                
         '''    
         if received_json["type"] == 'GET' and received_json["command"] == 'rx_msg_buffer':
             output = {
                 "command": "rx_msg_buffer",
                 "data-array": [],
-                "EOF": "EOF",
             }
             for i in range(0, len(static.RX_MSG_BUFFER)):
 
@@ -275,17 +299,21 @@ def process_tnc_commands(data):
             SOCKET_QUEUE.put(jsondata)
         '''    
         if received_json["type"] == 'set' and received_json["command"] == 'del_rx_buffer':
-            static.RX_BUFFER = []
-            
+            try:
+                static.RX_BUFFER = []
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+
         '''    
         if received_json["type"] == 'set' and received_json["command"] == 'del_rx_msg_buffer':
             static.RX_MSG_BUFFER = []
         '''
     # exception, if JSON cant be decoded
     except Exception as e:
-        structlog.get_logger("structlog").error("[TNC] Network error", e=e)
+        structlog.get_logger("structlog").error("[TNC] JSON decoding error", e=e)
 
 def send_tnc_state():
+    
     encoding = 'utf-8'
 
     output = {
@@ -313,7 +341,6 @@ def send_tnc_state():
         "mycallsign": str(static.MYCALLSIGN, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
-        "EOF": "EOF",
     }
 
     # add heard stations to heard stations object
@@ -329,96 +356,110 @@ def process_daemon_commands(data):
     received_json = json.loads(data)
     
     if received_json["type"] == 'set' and received_json["command"] == 'mycallsign':
-        callsign = received_json["parameter"]
-        print(received_json)
-        if bytes(callsign, 'utf-8') == b'':
-            self.request.sendall(b'INVALID CALLSIGN')
-            structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
-        else:
-            static.MYCALLSIGN = bytes(callsign, 'utf-8')
-            static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)
+        try:
+            callsign = received_json["parameter"]
+            print(received_json)
+            if bytes(callsign, 'utf-8') == b'':
+                self.request.sendall(b'INVALID CALLSIGN')
+                structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
+            else:
+                static.MYCALLSIGN = bytes(callsign, 'utf-8')
+                static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)
 
-            structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
-
+                structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
+        except Exception as e:        
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            
+            
     if received_json["type"] == 'set' and received_json["command"] == 'mygrid':
-        mygrid = received_json["parameter"]
+        try:
+            mygrid = received_json["parameter"]
 
-        if bytes(mygrid, 'utf-8') == b'':
-            self.request.sendall(b'INVALID GRID')
-        else:
-            static.MYGRID = bytes(mygrid, 'utf-8')
-            structlog.get_logger("structlog").info("[DMN] SET MYGRID", grid=static.MYGRID)
-
+            if bytes(mygrid, 'utf-8') == b'':
+                self.request.sendall(b'INVALID GRID')
+            else:
+                static.MYGRID = bytes(mygrid, 'utf-8')
+                structlog.get_logger("structlog").info("[SCK] SET MYGRID", grid=static.MYGRID)
+        except Exception as e:        
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            
+            
     if received_json["type"] == 'set' and received_json["command"] == 'start_tnc' and not static.TNCSTARTED:
         
-        mycall = str(received_json["parameter"][0]["mycall"])
-        mygrid = str(received_json["parameter"][0]["mygrid"])
-        rx_audio = str(received_json["parameter"][0]["rx_audio"])
-        tx_audio = str(received_json["parameter"][0]["tx_audio"])
-        devicename = str(received_json["parameter"][0]["devicename"])
-        deviceport = str(received_json["parameter"][0]["deviceport"])
-        serialspeed = str(received_json["parameter"][0]["serialspeed"])
-        pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-        pttport = str(received_json["parameter"][0]["pttport"])
-        data_bits = str(received_json["parameter"][0]["data_bits"])
-        stop_bits = str(received_json["parameter"][0]["stop_bits"])
-        handshake = str(received_json["parameter"][0]["handshake"])
-        radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
-        rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
-        rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
-        DAEMON_QUEUE.put(['STARTTNC', \
-                                mycall, \
-                                mygrid, \
-                                rx_audio, \
-                                tx_audio, \
-                                devicename, \
-                                deviceport, \
-                                serialspeed, \
-                                pttprotocol, \
-                                pttport, \
-                                data_bits, \
-                                stop_bits, \
-                                handshake, \
-                                radiocontrol, \
-                                rigctld_ip, \
-                                rigctld_port \
-                                ])
-    
+        try:
+            mycall = str(received_json["parameter"][0]["mycall"])
+            mygrid = str(received_json["parameter"][0]["mygrid"])
+            rx_audio = str(received_json["parameter"][0]["rx_audio"])
+            tx_audio = str(received_json["parameter"][0]["tx_audio"])
+            devicename = str(received_json["parameter"][0]["devicename"])
+            deviceport = str(received_json["parameter"][0]["deviceport"])
+            serialspeed = str(received_json["parameter"][0]["serialspeed"])
+            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
+            pttport = str(received_json["parameter"][0]["pttport"])
+            data_bits = str(received_json["parameter"][0]["data_bits"])
+            stop_bits = str(received_json["parameter"][0]["stop_bits"])
+            handshake = str(received_json["parameter"][0]["handshake"])
+            radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
+            rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
+            rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+            DAEMON_QUEUE.put(['STARTTNC', \
+                                    mycall, \
+                                    mygrid, \
+                                    rx_audio, \
+                                    tx_audio, \
+                                    devicename, \
+                                    deviceport, \
+                                    serialspeed, \
+                                    pttprotocol, \
+                                    pttport, \
+                                    data_bits, \
+                                    stop_bits, \
+                                    handshake, \
+                                    radiocontrol, \
+                                    rigctld_ip, \
+                                    rigctld_port \
+                                    ])
+        except Exception as e:        
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
     if received_json["type"] == 'get' and received_json["command"] == 'test_hamlib':
 
-
-        devicename = str(received_json["parameter"][0]["devicename"])
-        deviceport = str(received_json["parameter"][0]["deviceport"])
-        serialspeed = str(received_json["parameter"][0]["serialspeed"])
-        pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-        pttport = str(received_json["parameter"][0]["pttport"])
-        data_bits = str(received_json["parameter"][0]["data_bits"])
-        stop_bits = str(received_json["parameter"][0]["stop_bits"])
-        handshake = str(received_json["parameter"][0]["handshake"])
-        radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
-        rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
-        rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
-        DAEMON_QUEUE.put(['TEST_HAMLIB', \
-                                devicename, \
-                                deviceport, \
-                                serialspeed, \
-                                pttprotocol, \
-                                pttport, \
-                                data_bits, \
-                                stop_bits, \
-                                handshake, \
-                                radiocontrol, \
-                                rigctld_ip, \
-                                rigctld_port \
-                                ])
-
+        try:
+            devicename = str(received_json["parameter"][0]["devicename"])
+            deviceport = str(received_json["parameter"][0]["deviceport"])
+            serialspeed = str(received_json["parameter"][0]["serialspeed"])
+            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
+            pttport = str(received_json["parameter"][0]["pttport"])
+            data_bits = str(received_json["parameter"][0]["data_bits"])
+            stop_bits = str(received_json["parameter"][0]["stop_bits"])
+            handshake = str(received_json["parameter"][0]["handshake"])
+            radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
+            rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
+            rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+            DAEMON_QUEUE.put(['TEST_HAMLIB', \
+                                    devicename, \
+                                    deviceport, \
+                                    serialspeed, \
+                                    pttprotocol, \
+                                    pttport, \
+                                    data_bits, \
+                                    stop_bits, \
+                                    handshake, \
+                                    radiocontrol, \
+                                    rigctld_ip, \
+                                    rigctld_port \
+                                    ])
+        except Exception as e:        
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            
     if received_json["type"] == 'set' and received_json["command"] == 'stop_tnc':
-        static.TNCPROCESS.kill()
-        structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
-        static.TNCSTARTED = False
-        
-        
+        try:
+            static.TNCPROCESS.kill()
+            structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
+            static.TNCSTARTED = False
+        except Exception as e:        
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            
 def send_daemon_state():
     
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
