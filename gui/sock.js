@@ -13,6 +13,9 @@ const config = require(configPath);
 var client = new net.Socket();
 var socketchunk = ''; // Current message, per connection.
 
+// split character
+const split_char = '\0;'
+
 // globals for getting new data only if available so we are saving bandwith
 var rxBufferLengthTnc = 0
 var rxBufferLengthGui = 0
@@ -229,15 +232,20 @@ client.on('data', function(socketdata) {
 
                 for (i = 0; i < data['data-array'].length; i++) {
                     try{
-                        if(data['data-array'][i]['data'][0]['dt'] == 'f'){
-                            dataArray.push(data['data-array'][i])
-                            
+                        var encoded_data = atob(data['data-array'][i]['data'])
+                        var splitted_data = encoded_data.split(split_char)
+
+
+                        if(splitted_data[0] == 'f'){
+                            dataArray.push(data['data-array'][i]) 
+                            //dataArray.push(splitted_data)                           
                         }
                         
-                        if(data['data-array'][i]['data'][0]['dt'] == 'm'){
+                        if(splitted_data[0] == 'm'){
                             messageArray.push(data['data-array'][i])
-
+                            //messageArray.push(splitted_data)
                         }
+                        
                     } catch (e) {
                         console.log(e)
                     }
@@ -302,7 +310,22 @@ exports.sendCQ = function() {
 
 // Send File
 exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, checksum) {
-    command = '{"type" : "arq", "command" : "send_file",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}]}'
+
+    console.log(data) 
+    console.log(filetype)
+    console.log(filename)
+                
+    var datatype = "f"
+
+    //data = data.split('base64,')
+    //data = data[1]
+    data = datatype + split_char + filename + split_char + filetype + split_char + checksum + split_char + data
+    console.log(data)
+    console.log(btoa(data))
+    data = btoa(data)
+    
+    //command = '{"type" : "arq", "command" : "send_file",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     writeTncCommand(command)
 }
 

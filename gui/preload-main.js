@@ -13,6 +13,10 @@ const {
 } = require('qth-locator');
 const os = require('os');
 
+// split character used for appending addiotional data to files
+const split_char = '\0;'
+
+
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -69,6 +73,23 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('hamlib_handshake_advanced').value = config.handshake
 
     document.getElementById("beaconInterval").value = config.beacon_interval
+ 
+    document.getElementById("beaconInterval").value = config.enable_scatter
+    document.getElementById("beaconInterval").value = config.enable_fft
+    
+    if(config.enable_scatter == 'True'){
+        document.getElementById("scatterSwitch").checked = true
+    } else {
+        document.getElementById("scatterSwitch").checked = false
+    }
+
+    if(config.enable_fft == 'True'){
+        document.getElementById("fftSwitch").checked = true
+    } else {
+        document.getElementById("fftSwitch").checked = false
+    }
+        
+
     
     
     if (config.spectrum == 'waterfall') {
@@ -87,8 +108,26 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // radio control element
-    if (config.radiocontrol == 'rigctl') {
-  
+    if (config.radiocontrol == 'direct') {
+
+        document.getElementById("radio-control-switch0").checked = false
+        document.getElementById("radio-control-switch1").checked = true
+        document.getElementById("radio-control-switch2").checked = false
+        document.getElementById("radio-control-switch3").checked = false
+
+        document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
+        document.getElementById("radio-control-rigctl").style.display = 'none';
+        document.getElementById("radio-control-rigctld").style.display = 'none';  
+
+        document.getElementById("radio-control-direct").style.display = 'block';
+        document.getElementById("radio-control-direct").style.visibility = 'visible';
+        document.getElementById("radio-control-direct").style.height = '100%'; 
+
+    
+    } else if (config.radiocontrol == 'rigctl') {
+
+        document.getElementById("radio-control-switch0").checked = false  
         document.getElementById("radio-control-switch1").checked = false
         document.getElementById("radio-control-switch2").checked = true
         document.getElementById("radio-control-switch3").checked = false
@@ -104,6 +143,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     } else if (config.radiocontrol == 'rigctld') {
 
+        document.getElementById("radio-control-switch0").checked = false
         document.getElementById("radio-control-switch1").checked = false
         document.getElementById("radio-control-switch2").checked = false
         document.getElementById("radio-control-switch3").checked = true
@@ -118,8 +158,9 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("radio-control-rigctld").style.height = '100%';
         
     } else {
-
-        document.getElementById("radio-control-switch1").checked = true
+    
+        document.getElementById("radio-control-switch0").checked = true
+        document.getElementById("radio-control-switch1").checked = false
         document.getElementById("radio-control-switch2").checked = false
         document.getElementById("radio-control-switch3").checked = false
 
@@ -154,6 +195,21 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     // on click radio control toggle view
+    // disabled
+    document.getElementById("radio-control-switch0").addEventListener("click", () => {
+        document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
+        document.getElementById("radio-control-rigctl").style.display = 'none';
+        document.getElementById("radio-control-rigctld").style.display = 'none';  
+
+        document.getElementById("radio-control-direct").style.display = 'block';
+        document.getElementById("radio-control-direct").style.visibility = 'visible';
+        document.getElementById("radio-control-direct").style.height = '100%';
+        config.radiocontrol = 'disabled'
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+    
+    
     // direct
     document.getElementById("radio-control-switch1").addEventListener("click", () => {
         document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
@@ -304,6 +360,33 @@ window.addEventListener('DOMContentLoaded', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         sock.startBeacon(interval)
     });  
+    
+    // sendscatter Switch clicked
+    document.getElementById("scatterSwitch").addEventListener("click", () => {
+        console.log(document.getElementById("scatterSwitch").checked)
+        if(document.getElementById("scatterSwitch").checked == true){
+            config.enable_scatter = "True"       
+        } else {
+            config.enable_scatter = "False"       
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });  
+    
+    // sendfft Switch clicked
+    document.getElementById("fftSwitch").addEventListener("click", () => {
+        if(document.getElementById("fftSwitch").checked == true){
+            config.enable_fft = "True"       
+        } else {
+            config.enable_fft = "False"       
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+    
+    
+    
+    
 
     // Stop beacon button clicked
     document.getElementById("stopBeacon").addEventListener("click", () => {
@@ -314,21 +397,22 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("startTNC").addEventListener("click", () => {
 
 
-            var deviceid_rigctl = document.getElementById("hamlib_deviceid_rigctl").value
-            var deviceport_rigctl = document.getElementById("hamlib_deviceport_rigctl").value
-            var serialspeed_rigctl = document.getElementById("hamlib_serialspeed_rigctl").value
-            var pttprotocol_rigctl = document.getElementById("hamlib_ptt_protocol_rigctl").value
-        
-            var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value
-            var rigctld_port = document.getElementById("hamlib_rigctld_port").value
+        var deviceid_rigctl = document.getElementById("hamlib_deviceid_rigctl").value
+        var deviceport_rigctl = document.getElementById("hamlib_deviceport_rigctl").value
+        var serialspeed_rigctl = document.getElementById("hamlib_serialspeed_rigctl").value
+        var pttprotocol_rigctl = document.getElementById("hamlib_ptt_protocol_rigctl").value
+    
+        var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value
+        var rigctld_port = document.getElementById("hamlib_rigctld_port").value
 
-            var deviceid = document.getElementById("hamlib_deviceid").value
-            var deviceport = document.getElementById("hamlib_deviceport").value
-            var serialspeed = document.getElementById("hamlib_serialspeed").value
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
+        var deviceid = document.getElementById("hamlib_deviceid").value
+        var deviceport = document.getElementById("hamlib_deviceport").value
+        var serialspeed = document.getElementById("hamlib_serialspeed").value
+        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
 
         var mycall = document.getElementById("myCall").value
         mycall = mycall.toUpperCase()
+        
         var mygrid = document.getElementById("myGrid").value
         var rx_audio = document.getElementById("audio_input_selectbox").value
         var tx_audio = document.getElementById("audio_output_selectbox").value
@@ -338,6 +422,20 @@ window.addEventListener('DOMContentLoaded', () => {
         var stop_bits = document.getElementById('hamlib_stopbits_advanced').value
         var handshake = document.getElementById('hamlib_handshake_advanced').value
         
+        if (document.getElementById("scatterSwitch").checked == true){
+            var enable_scatter = "True"
+        } else {
+            var enable_scatter = "False"
+        }
+        
+
+        if (document.getElementById("fftSwitch").checked == true){
+            var enable_fft = "True"
+        } else {
+            var enable_fft = "False"
+        }
+
+
        
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
@@ -376,7 +474,8 @@ window.addEventListener('DOMContentLoaded', () => {
         config.rigctld_port = rigctld_port
         config.rigctld_ip = rigctld_ip
         config.deviceport_rigctl = deviceport_rigctl
- 
+        config.enable_scatter = enable_scatter
+        config.enable_fft = enable_fft
  
         
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -405,11 +504,14 @@ window.addEventListener('DOMContentLoaded', () => {
         } else if (document.getElementById("radio-control-switch3").checked) {
             var radiocontrol = 'rigctld'
 
-        } else {
+        } else if (document.getElementById("radio-control-switch1").checked) {
             var radiocontrol = 'direct'
+                        
+        } else {
+            var radiocontrol = 'disabled'
         }     
 
-        daemon.startTNC(mycall, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port)
+        daemon.startTNC(mycall, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter)
         
         
     })
@@ -465,13 +567,13 @@ window.addEventListener('DOMContentLoaded', () => {
         var handshake = document.getElementById("hamlib_handshake_advanced").value
         var pttport = document.getElementById("hamlib_ptt_port_advanced").value
 
-            var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value
-            var rigctld_port = document.getElementById("hamlib_rigctld_port").value
+        var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value
+        var rigctld_port = document.getElementById("hamlib_rigctld_port").value
 
-            var deviceid = document.getElementById("hamlib_deviceid").value
-            var deviceport = document.getElementById("hamlib_deviceport").value
-            var serialspeed = document.getElementById("hamlib_serialspeed").value
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
+        var deviceid = document.getElementById("hamlib_deviceid").value
+        var deviceport = document.getElementById("hamlib_deviceport").value
+        var serialspeed = document.getElementById("hamlib_serialspeed").value
+        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value
 
 
         // overriding settings for rigctl / direct
@@ -485,8 +587,10 @@ window.addEventListener('DOMContentLoaded', () => {
         } else if (document.getElementById("radio-control-switch3").checked) {
             var radiocontrol = 'rigctld'
 
-        } else {
+        } else if (document.getElementById("radio-control-switch1").checked) {
             var radiocontrol = 'direct'
+        } else {
+            var radiocontrol = 'disabled'
         }     
 
 
@@ -507,14 +611,17 @@ window.addEventListener('DOMContentLoaded', () => {
         var fileList = document.getElementById("dataModalFile").files;
 
         var reader = new FileReader();
-        //reader.readAsBinaryString(fileList[0]);
-        reader.readAsDataURL(fileList[0]);
+        reader.readAsBinaryString(fileList[0]);
+        //reader.readAsDataURL(fileList[0]);
 
         reader.onload = function(e) {
             // binary data
 
             var data = e.target.result
             console.log(data)
+            
+
+            
 
             let Data = {
                 command: "send_file",
@@ -1063,19 +1170,21 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     // OPERATING SYSTEM
     //document.getElementById("operating_system").innerHTML = "OS " + os.type()
 
-    
+    /*
     // PYTHON VERSION
     document.getElementById("python_version").innerHTML = "Python " + arg.python_version
     document.getElementById("python_version").className = "btn btn-sm btn-success";    
-    
+    */
+    /*
     // HAMLIB VERSION
     document.getElementById("hamlib_version").innerHTML = "Hamlib " + arg.hamlib_version
     document.getElementById("hamlib_version").className = "btn btn-sm btn-success";
-    
+    */
+    /*
     // NODE VERSION
     document.getElementById("node_version").innerHTML = "Node " + process.version
     document.getElementById("node_version").className = "btn btn-sm btn-success";
-
+    */
       
     // UPDATE AUDIO INPUT
     if (arg.tnc_running_state == "stopped") {
@@ -1343,9 +1452,20 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         */
 
         console.log(arg.data) 
+        
+        var encoded_data = atob(arg.data[i]['data'])
+        var splitted_data = encoded_data.split(split_char)
+        console.log(splitted_data)
+
+        
+        
+        
+        
         var fileName = document.createElement("td");
         var fileNameText = document.createElement('span');
-        var fileNameString = arg.data[i]['data'][0]['fn']
+        //var fileNameString = arg.data[i]['data'][0]['fn']
+        var fileNameString = splitted_data[1]
+        
         
         fileNameText.innerText = fileNameString
         fileName.appendChild(fileNameText);
@@ -1373,15 +1493,17 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
 
 
         // write file to data folder
-        var base64String = arg.data[i]['data'][0]['d']
+        ////var base64String = arg.data[i]['data'][0]['d']
         // remove header from base64 String
         // https://www.codeblocq.com/2016/04/Convert-a-base64-string-to-a-file-in-Node/
-        var base64Data = base64String.split(';base64,').pop()
+        ////var base64Data = base64String.split(';base64,').pop()
         //write data to file
+        var base64Data = splitted_data[4]
         var receivedFile = path.join(receivedFilesFolder, fileNameString);
         console.log(receivedFile)
 
-        require("fs").writeFile(receivedFile, base64Data, 'base64', function(err) {
+        require("fs").writeFile(receivedFile, base64Data, 'binary', function(err) {
+        //require("fs").writeFile(receivedFile, base64Data, 'base64', function(err) {
             console.log(err);
         });
     }

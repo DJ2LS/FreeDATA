@@ -198,7 +198,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter) {
     var json_command = JSON.stringify({
         type: 'set',
         command: 'start_tnc',
@@ -217,7 +217,9 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
             stop_bits: stop_bits,
             handshake: handshake,
             rigctld_port: rigctld_port,
-            rigctld_ip: rigctld_ip
+            rigctld_ip: rigctld_ip,
+            enable_scatter: enable_scatter,
+            enable_fft: enable_fft
         }]
     })
 

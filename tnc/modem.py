@@ -17,7 +17,8 @@ import numpy as np
 import helpers
 import static
 import data_handler
-
+import ujson as json
+import sock
 import re
 import queue
 import codec2
@@ -58,6 +59,10 @@ RECEIVE_DATAC3 = False
 class RF():
 
     def __init__(self):
+        
+        self.sampler_avg = 0
+        self.buffer_avg = 0
+        
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
@@ -164,17 +169,19 @@ class RF():
             import rigctl as rig
         elif static.HAMLIB_RADIOCONTROL == 'rigctld':
             import rigctld as rig
+        elif static.HAMLIB_RADIOCONTROL == 'disabled':
+            import rigdummy as rig
         else:
-            raise NotImplementedError 
+            import rigdummy as rig 
 
         
         self.hamlib = rig.radio()
         self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE, rigctld_ip = static.HAMLIB_RGICTLD_IP, rigctld_port = static.HAMLIB_RGICTLD_PORT)
 
         # --------------------------------------------START DECODER THREAD
-
-        fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
-        fft_thread.start()
+        if static.ENABLE_FFT:
+            fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
+            fft_thread.start()
         
         audio_thread_datac0 = threading.Thread(target=self.audio_datac0, name="AUDIO_THREAD DATAC0")
         audio_thread_datac0.start()
@@ -185,8 +192,9 @@ class RF():
         audio_thread_datac3 = threading.Thread(target=self.audio_datac3, name="AUDIO_THREAD DATAC3")
         audio_thread_datac3.start()
         
-        hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
-        hamlib_thread.start()
+        
+        #hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
+        #hamlib_thread.start()
         
         worker_received = threading.Thread(target=self.worker_received, name="WORKER_THREAD")
         worker_received.start()
@@ -196,10 +204,13 @@ class RF():
         
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
-        
         x = np.frombuffer(data_in48k, dtype=np.int16)
+        time_sampler_start = time.time()
         x = self.resampler.resample48_to_8(x)    
-      
+        time_sampler_end = time.time()
+
+
+        time_buffer_start = time.time()
         # avoid buffer overflow by filling only if buffer not full
         if not self.datac0_buffer.nbuffer+len(x) > self.datac0_buffer.size:
             self.datac0_buffer.push(x)
@@ -223,10 +234,13 @@ class RF():
         if self.modoutqueue.empty() or self.mod_out_locked:
             data_out48k = bytes(self.AUDIO_FRAMES_PER_BUFFER_TX*2)
             self.fft_data = bytes(x)
+            
         else:
             data_out48k = self.modoutqueue.get()
             self.fft_data = bytes(data_out48k)
-        
+            
+        time_buffer_end = time.time()
+        #print(f"SAMPLER {time_sampler_end - time_sampler_start} BUFFER {time_buffer_end - time_buffer_start}")
         return (data_out48k, audio.pyaudio.paContinue)
 
     # --------------------------------------------------------------------------------------------------------
@@ -234,8 +248,13 @@ class RF():
 
     def transmit(self, mode, repeats, repeat_delay, frames):     
         static.TRANSMITTING = True
-        # toggle ptt early to save some time
+        # toggle ptt early to save some time and send ptt state via socket
         static.PTT_STATE = self.hamlib.set_ptt(True)
+        jsondata = {"ptt":"True"}
+        data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(data_out)
+        
+        
         # open codec2 instance       
         self.MODE = mode
         freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
@@ -300,6 +319,8 @@ class RF():
             mod_out_silence = create_string_buffer(samples_delay*2)
             txbuffer += bytes(mod_out_silence)
             #time.sleep(0.05)
+
+            
             
             # resample up to 48k (resampler works on np.int16)
             x = np.frombuffer(txbuffer, dtype=np.int16)
@@ -311,6 +332,7 @@ class RF():
             # split modualted audio to chunks
             #https://newbedev.com/how-to-split-a-byte-string-into-separate-bytes-in-python
             txbuffer_48k = bytes(txbuffer_48k)
+
             chunk = [txbuffer_48k[i:i+self.AUDIO_FRAMES_PER_BUFFER_RX*2] for i in range(0, len(txbuffer_48k), self.AUDIO_FRAMES_PER_BUFFER_RX*2)]
             # add modulated chunks to fifo buffer
             for c in chunk:
@@ -322,14 +344,18 @@ class RF():
                     structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=len(delta))
                 self.modoutqueue.put(c)
 
+
+        
         # Release our mod_out_lock so we can use the queue 
         self.mod_out_locked = False
 
-        # maybe we need to toggle PTT before craeting modulation because of queue processing
-        #static.PTT_STATE = self.hamlib.set_ptt(True)
         while not self.modoutqueue.empty():
             pass
+        
         static.PTT_STATE = self.hamlib.set_ptt(False)
+        jsondata = {"ptt":"False"}
+        data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(data_out)
         
         # after processing we want to set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
@@ -413,29 +439,30 @@ class RF():
         
         
     def get_scatter(self, freedv):
-        modemStats = MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats.restype = None
-        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        if static.ENABLE_SCATTER:
+            modemStats = MODEMSTATS()
+            self.c_lib.freedv_get_modem_extended_stats.restype = None
+            self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
 
-        scatterdata = []
-        scatterdata_small = []
-        for i in range(MODEM_STATS_NC_MAX):
-            for j in range(MODEM_STATS_NR_MAX):
-                # check if odd or not to get every 2nd item for x
-                if (j % 2) == 0:
-                    xsymbols = round(modemStats.rx_symbols[i][j]/1000)
-                    ysymbols = round(modemStats.rx_symbols[i][j+1]/1000)
-                    # check if value 0.0 or has real data
-                    if xsymbols != 0.0 and ysymbols != 0.0:
-                        scatterdata.append({"x": xsymbols, "y": ysymbols})
+            scatterdata = []
+            scatterdata_small = []
+            for i in range(MODEM_STATS_NC_MAX):
+                for j in range(MODEM_STATS_NR_MAX):
+                    # check if odd or not to get every 2nd item for x
+                    if (j % 2) == 0:
+                        xsymbols = round(modemStats.rx_symbols[i][j]/1000)
+                        ysymbols = round(modemStats.rx_symbols[i][j+1]/1000)
+                        # check if value 0.0 or has real data
+                        if xsymbols != 0.0 and ysymbols != 0.0:
+                            scatterdata.append({"x": xsymbols, "y": ysymbols})
 
-        # only append scatter data if new data arrived
-        if 150 > len(scatterdata) > 0:
-            static.SCATTER = scatterdata
-        else:
-            # only take every tenth data point
-            scatterdata_small = scatterdata[::10]
-            static.SCATTER = scatterdata_small
+            # only append scatter data if new data arrived
+            if 150 > len(scatterdata) > 0:
+                static.SCATTER = scatterdata
+            else:
+                # only take every tenth data point
+                scatterdata_small = scatterdata[::10]
+                static.SCATTER = scatterdata_small
 
     
     def calculate_snr(self, freedv):
@@ -456,7 +483,7 @@ class RF():
 
     def update_rig_data(self):
         while True:
-            #time.sleep(0.5)
+            #time.sleep(1.5)
             threading.Event().wait(0.5)
             #(static.HAMLIB_FREQUENCY, static.HAMLIB_MODE, static.HAMLIB_BANDWITH, static.PTT_STATE) = self.hamlib.get_rig_data()
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
@@ -495,7 +522,7 @@ class RF():
                     
                     structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
                     # else 0
-                    static.FFT = [0] * 320
+                    static.FFT = [0]
             else:
                 pass
                 

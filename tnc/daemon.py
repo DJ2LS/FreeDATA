@@ -87,11 +87,18 @@ class DAEMON():
             # data[13] radiocontrol
             # data[14] rigctld_ip
             # data[15] rigctld_port
+            # data[16] send_scatter
+            # data[17] send_fft
+
             if data[0] == 'STARTTNC':
                 structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
                 # list of parameters, necessary for running subprocess command as a list
                 options = []
+                
+                options.append('--port')
+                options.append(str(static.DAEMONPORT - 1))
+                
                 options.append('--mycall')
                 options.append(data[1])
                 
@@ -136,7 +143,13 @@ class DAEMON():
                 
                 options.append('--rigctld_port')
                 options.append(data[15])
-
+                
+                if data[16] == 'True':
+                    options.append('--scatter')
+                    
+                if data[17] == 'True':
+                    options.append('--fft')
+                    
                 # try running tnc from binary, else run from source
                 # this helps running the tnc in a developer environment
                 try:
@@ -198,7 +211,7 @@ class DAEMON():
                 elif radiocontrol == 'rigctld':
                     import rigctld as rig
                 else:
-                    raise NotImplementedError 
+                    import rigdummy as rig
                         
                 hamlib = rig.radio()
                 hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)

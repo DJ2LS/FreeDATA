@@ -37,9 +37,11 @@ if __name__ == '__main__':
     PARSER.add_argument('--data_bits', dest="hamlib_data_bits", default="8", help="Hamlib data bits", type=str)         
     PARSER.add_argument('--stop_bits', dest="hamlib_stop_bits", default="1", help="Hamlib stop bits", type=str)          
     PARSER.add_argument('--handshake', dest="hamlib_handshake", default="None", help="Hamlib handshake", type=str)          
-    PARSER.add_argument('--radiocontrol', dest="hamlib_radiocontrol", default="direct", help="Set how you want to control your radio")                 
+    PARSER.add_argument('--radiocontrol', dest="hamlib_radiocontrol", default="disabled", help="Set how you want to control your radio")                 
     PARSER.add_argument('--rigctld_port', dest="rigctld_port", default="direct", help="Set rigctld port")    
     PARSER.add_argument('--rigctld_ip', dest="rigctld_ip", default="direct", help="Set rigctld ip")    
+    PARSER.add_argument('--scatter', dest="send_scatter", action="store_true", help="Send scatter information via network") 
+    PARSER.add_argument('--fft', dest="send_fft", action="store_true", help="Send fft information via network") 
  
 
  
@@ -49,7 +51,6 @@ if __name__ == '__main__':
     static.MYCALLSIGN = bytes(ARGS.mycall, 'utf-8')
     static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
     static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
-        
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
     static.PORT = ARGS.socket_port
@@ -64,6 +65,8 @@ if __name__ == '__main__':
     static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
     static.HAMLIB_RGICTLD_IP = ARGS.rigctld_ip
     static.HAMLIB_RGICTLD_PORT = ARGS.rigctld_port
+    static.ENABLE_SCATTER = ARGS.send_scatter
+    static.ENABLE_FFT = ARGS.send_fft    
         
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

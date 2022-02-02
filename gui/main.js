@@ -41,7 +41,9 @@ var configContent = `
   "serialspeed_rigctl" : "9600",
   "pttprotocol_rigctl" : "USB",
   "rigctld_port" : "4532",
-  "rigctld_ip" : "127.0.0.1"
+  "rigctld_ip" : "127.0.0.1",
+  "enable_scatter" : "False",
+  "enable_fft" : "False",
 
 }
 `;

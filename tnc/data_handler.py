@@ -20,6 +20,7 @@ import codec2
 import queue
 import sock
 import uuid
+import base64
 
 
 TESTMODE = False
@@ -47,14 +48,19 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
-        self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
-
+        #self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
+        self.mode_list = [14,12,10] # mode list of available modes, each mode will be used 2times per speed level
+        self.time_list = [3, 6, 7] # list for time to wait for correspinding mode in seconds
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
-
+        self.is_IRS = False
+        self.burst_nack = False
+        self.burst_nack_counter = 0
+        self.frame_received_counter = 0
+        
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-        self.transmission_timeout = 360 # transmission timeout in seco
+        self.transmission_timeout = 120 # transmission timeout in seconds
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit")
         worker_thread_transmit.start()
@@ -176,9 +182,15 @@ class DATA():
 
             # FRAME NACK
             elif frametype == 63:
-                structlog.get_logger("structlog").debug("FRAME NOT ACK RECEIVED....")
+                structlog.get_logger("structlog").debug("FRAME NACK RECEIVED....")
                 self.frame_nack_received(bytes_out[:-2])
 
+            # BURST NACK
+            elif frametype == 64:
+                structlog.get_logger("structlog").debug("BURST NACK RECEIVED....")
+                self.burst_nack_received(bytes_out[:-2])
+                
+                
             # CQ FRAME
             elif frametype == 200:
                 structlog.get_logger("structlog").debug("CQ RECEIVED....")
@@ -222,7 +234,7 @@ class DATA():
     
             # ARQ STOP TRANSMISSION
             elif frametype == 227:
-                structlog.get_logger("structlog").debug("ARQ received stop transmis")
+                structlog.get_logger("structlog").debug("ARQ received stop transmission")
                 self.received_stop_transmission()
 
             # ARQ CONNECT ACK / KEEP ALIVE
@@ -300,20 +312,33 @@ class DATA():
             # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
             if not self.rx_frame_bof_received and not self.rx_frame_eof_received and data_in.find(self.data_frame_eof) < 0:  
                 
+                self.frame_received_counter += 1                
+                if self.frame_received_counter >= 2:
+                    self.frame_received_counter = 0
+                    self.speed_level += 1
+                    if self.speed_level >= len(self.mode_list):
+                        self.speed_level = len(self.mode_list) - 1 
+
+                # updated modes we are listening to
+                self.set_listening_modes()
+
+                                
                 # create an ack frame
                 ack_frame = bytearray(14)
                 ack_frame[:1] = bytes([60])
                 ack_frame[1:3] = static.DXCALLSIGN_CRC
                 ack_frame[3:5] = static.MYCALLSIGN_CRC
                 ack_frame[5:6] = bytes([int(snr)])
+                ack_frame[6:7] = bytes([int(self.speed_level)])
                 # and transmit it
                 txbuffer = [ack_frame]
-                structlog.get_logger("structlog").info("[TNC] ARQ | RX | ACK")
+                structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING ACK")
                 static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
                 # wait while transmitting
                 while static.TRANSMITTING:
                     time.sleep(0.01)
+                
                 self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))   
 
         
@@ -392,11 +417,13 @@ class DATA():
                 data_frame_decompressed = zlib.decompress(data_frame)
                 static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(data_frame)
                 data_frame = data_frame_decompressed
+                
                 # decode to utf-8 string
-                data_frame = data_frame.decode("utf-8")
+                #data_frame = data_frame.decode("utf-8")
+
                 
                 # decode json objects from data frame to inspect if we received a file or message
-                rawdata = json.loads(data_frame)
+                #rawdata = json.loads(data_frame)
                 '''
                 if datatype is a file, we append to RX_BUFFER, which contains files only
                 dt = datatype
@@ -412,10 +439,12 @@ class DATA():
                 #else:
                 #    datatype = "raw"
                     
-                uniqueid = str(uuid.uuid4()) 
-                static.RX_BUFFER.append([uniqueid, int(time.time()), static.DXCALLSIGN,static.DXGRID, data_frame])
-                print(static.RX_BUFFER)
-                jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": [rawdata]}
+                uniqueid = str(uuid.uuid4())
+                base64_data = base64.b64encode(data_frame)
+                base64_data = base64_data.decode("utf-8")
+                static.RX_BUFFER.append([uniqueid, int(time.time()), static.DXCALLSIGN,static.DXGRID, base64_data])
+                
+                jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": base64_data}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
@@ -425,7 +454,8 @@ class DATA():
                 ack_frame[:1]   = bytes([61])
                 ack_frame[1:3] = static.DXCALLSIGN_CRC
                 ack_frame[3:5] = static.MYCALLSIGN_CRC
-
+                ack_frame[5:6] = bytes([int(snr)])
+                ack_frame[6:7] = bytes([int(self.speed_level)])
                 # TRANSMIT ACK FRAME FOR BURST
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
                 txbuffer = [ack_frame]
@@ -448,7 +478,9 @@ class DATA():
                 nack_frame[:1]   = bytes([63])
                 nack_frame[1:3] = static.DXCALLSIGN_CRC
                 nack_frame[3:5] = static.MYCALLSIGN_CRC  
-                
+                nack_frame[5:6] = bytes([int(snr)])
+                nack_frame[6:7] = bytes([int(self.speed_level)])
+                                
                 # TRANSMIT NACK FRAME FOR BURST
                 txbuffer = [nack_frame]
                 static.TRANSMITTING = True
@@ -593,8 +625,8 @@ class DATA():
                     time.sleep(0.01)
                 
                 # after transmission finished  wait for an ACK or RPT frame
-                burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS
-                while not self.burst_ack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
+                burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
+                while not self.burst_ack and not self.burst_nack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.01)
                     #structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE, overflows=static.BUFFER_OVERFLOW_COUNTER)
                     
@@ -605,6 +637,10 @@ class DATA():
                     self.tx_n_retry_of_burst = 0 # reset retries
                     break #break retry loop
 
+                if self.burst_nack:
+                    self.burst_nack = False #reset nack state
+
+                # not yet implemented
                 if self.rpt_request_received:
                     pass
 
@@ -658,15 +694,34 @@ class DATA():
     def burst_ack_received(self, data_in:bytes):
         
         # increase speed level if we received a burst ack
-        self.speed_level += 1
-        if self.speed_level >= len(self.mode_list)-1:
-             self.speed_level = len(self.mode_list)-1
+        #self.speed_level += 1
+        #if self.speed_level >= len(self.mode_list)-1:
+        #     self.speed_level = len(self.mode_list)-1
         
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
             self.burst_ack = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
-            self.burst_ack_snr= int.from_bytes(bytes(data_in[3:4]), "big")
+            self.burst_ack_snr= int.from_bytes(bytes(data_in[5:6]), "big")
+            self.speed_level= int.from_bytes(bytes(data_in[6:7]), "big")
+            print(self.speed_level)
+            self.burst_nack_counter = 0
+    # signalling frames received
+    def burst_nack_received(self, data_in:bytes):
+        
+        # increase speed level if we received a burst ack
+        #self.speed_level += 1
+        #if self.speed_level >= len(self.mode_list)-1:
+        #     self.speed_level = len(self.mode_list)-1
+        
+        # only process data if we are in ARQ and BUSY state
+        if static.ARQ_STATE:
+            self.burst_nack = True  # Force data loops of TNC to stop and continue with next frame
+            self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
+            self.burst_ack_snr= int.from_bytes(bytes(data_in[5:6]), "big")
+            self.speed_level= int.from_bytes(bytes(data_in[6:7]), "big")
+            self.burst_nack_counter += 1
+            print(self.speed_level)
 
 
     def frame_ack_received(self):
@@ -728,6 +783,8 @@ class DATA():
             
     def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):
         
+        self.is_IRS = False
+        
         DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
         self.data_channel_last_received = int(time.time())
 
@@ -785,6 +842,8 @@ class DATA():
             
     def arq_received_data_channel_opener(self, data_in:bytes):
 
+        self.is_IRS = True
+        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
@@ -792,6 +851,9 @@ class DATA():
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
         mode = int.from_bytes(bytes(data_in[11:12]), "big") 
 
+        # updated modes we are listening to
+        self.set_listening_modes()
+        '''
         # set modes we want to listening to
         mode_name = codec2.freedv_get_mode_name_by_value(mode)
         if mode_name == 'datac1':
@@ -799,9 +861,10 @@ class DATA():
         elif mode_name == 'datac3':
             modem.RECEIVE_DATAC3 = True
         elif mode_name == 'allmodes':
-            modem.RECEIVE_DATAC1 = True
-            modem.RECEIVE_DATAC3 = True
-
+            pass
+            #modem.RECEIVE_DATAC1 = True
+            #modem.RECEIVE_DATAC3 = True
+        '''
 
 
         
@@ -1086,13 +1149,31 @@ class DATA():
 
         # reset buffer overflow counter
         static.BUFFER_OVERFLOW_COUNTER = [0,0,0]
-                    
+
+        self.is_IRS = False
+        self.burst_nack = False
+        self.burst_nack_counter = 0
+        self.frame_received_counter = 0
+        self.speed_level = len(self.mode_list) - 1
+
     def arq_reset_ack(self,state:bool):
 
         self.burst_ack = state
         self.rpt_request_received = state
         self.data_frame_ack_received = state
 
+
+    def set_listening_modes(self):
+        # set modes we want to listening to
+        mode_name = codec2.freedv_get_mode_name_by_value(self.mode_list[self.speed_level])
+        if mode_name == 'datac1':
+            modem.RECEIVE_DATAC1 = True
+        elif mode_name == 'datac3':
+            modem.RECEIVE_DATAC3 = True
+        elif mode_name == 'allmodes':
+            modem.RECEIVE_DATAC1 = True
+            modem.RECEIVE_DATAC3 = True
+                    
 
     # ------------------------- WATCHDOG FUNCTIONS FOR TIMER
     def watchdog(self):
@@ -1102,9 +1183,52 @@ class DATA():
         watchdog master function. Frome here we call the watchdogs
         """
         while True:
-            time.sleep(0.5)
+            time.sleep(0.1)
             self.data_channel_keep_alive_watchdog()
+            self.burst_watchdog()
 
+    def burst_watchdog(self):
+        '''
+        # ISS SIDE WE ALSO NEED TO CHECK TIME SO WE ARE SENDING IN CORRECT MODE IF WE MISSED A NACK FRAME
+        if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and not self.is_IRS:
+            if self.data_channel_last_received + self.time_list[self.speed_level] < time.time():
+                self.speed_level -= 1
+                if self.speed_level <= 0:
+                    self.speed_level = 0
+                self.data_channel_last_received = time.time()
+        '''        
+        # IRS SIDE        
+        if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and self.is_IRS:
+            if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
+                print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
+                #pass
+            else:
+                print("TIMEOUT")
+                self.frame_received_counter = 0
+                self.speed_level -= 1
+                if self.speed_level <= 0:
+                    self.speed_level = 0
+                
+                # updated modes we are listening to
+                self.set_listening_modes()
+                
+                # BUILDING NACK FRAME FOR DATA FRAME
+                burst_nack_frame       = bytearray(14)
+                burst_nack_frame[:1]   = bytes([64])
+                burst_nack_frame[1:3] = static.DXCALLSIGN_CRC
+                burst_nack_frame[3:5] = static.MYCALLSIGN_CRC  
+                burst_nack_frame[5:6] = bytes([0])
+                burst_nack_frame[6:7] = bytes([int(self.speed_level)])
+                                
+                # TRANSMIT NACK FRAME FOR BURST
+                txbuffer = [burst_nack_frame]
+                static.TRANSMITTING = True
+                modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                # wait while transmitting
+                #while static.TRANSMITTING:
+                #    #time.sleep(0.01)
+                #    self.data_channel_last_received = time.time()
+                self.data_channel_last_received = time.time()
 
     def data_channel_keep_alive_watchdog(self):
         """
