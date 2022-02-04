@@ -10,6 +10,9 @@ from enum import Enum
 import numpy as np
 #print("loading codec2 module", file=sys.stderr)
 from threading import Lock
+import glob
+import structlog
+
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
@@ -34,41 +37,28 @@ except:
     app_path = os.path.abspath(".")
 sys.path.append(app_path)
 
-# -------------------------------------------- LOAD FREEDV
-# codec2 search pathes in descending order
-# libcodec2.so                                                          ctests
-# pathlib.Path("codec2/build_linux/src/libcodec2.so.1.0")               manual build
-# pathlib.Path("lib/codec2/linux/libcodec2.so.1.0")                     precompiled
-# pathlib.Path("../../tnc/codec2/build_linux/src/libcodec2.so.1.0")     external loading manual build
-# pathlib.Path("../../tnc/lib/codec2/linux/libcodec2.so.1.0")           external loading precompiled
-
-if sys.platform == 'linux':
-    libname = ["libcodec2.so", \
-                os.path.join(app_path, "codec2/build_linux/src/libcodec2.so.1.0"), \
-                os.path.join(app_path, "lib/codec2/linux/libcodec2.so.1.0"), \
-                os.path.join(app_path, "../tnc/codec2/build_linux/src/libcodec2.so.1.0"), \
-                os.path.join(app_path, "../tnc/lib/codec2/linux/libcodec2.so.1.0"), \
-                ]
+structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
+if sys.platform == 'linux' or sys.platform == 'darwin':
+    files = glob.glob('**/*libcodec2*',recursive=True)
 elif sys.platform == 'win32' or sys.platform == 'win64':
-    libname = [app_path + "\\lib\\codec2\\windows\\libcodec2.dll", \
-                ]
+    files = glob.glob('**\*libcodec2*',recursive=True)
 else:
-    print(f"[C2 ] Platform not supported {sys.platform}", file=sys.stderr)  
+    files = []
     
-# iterate through codec2 search pathes
-for i in libname:
+files.append('libcodec2.so')
+
+for file in files:
     try:
-        # this is not working for all OS. Specially windows has some more problems. We need to fix this somehow.
-        api = ctypes.CDLL(i)
-            
-        print(f"[C2 ] Codec2 library loaded - {i}", file=sys.stderr)
+        api = ctypes.CDLL(file)
+        structlog.get_logger("structlog").info("[C2 ] Libcodec2 loaded", path=file)
         break
-    except Exception as e:
-        print(f"[C2 ] Codec2 library not loaded - {i} - {e}", file=sys.stderr)
+    except:
         pass
+
+
 # quit module if codec2 cant be loaded    
 if not 'api' in locals():
-    print(f"[C2 ] Loading Codec2 library failed", file=sys.stderr)
+    structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded", path=file)
     exit()
 
 
