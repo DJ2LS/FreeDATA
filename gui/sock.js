@@ -57,8 +57,8 @@ client.on('error', function(data) {
 
     };
     ipcRenderer.send('request-update-tnc-state', Data);
-
-    setTimeout(connectTNC, 2000)
+    client.destroy();
+    setTimeout(connectTNC, 500)
     // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
 
 });
@@ -72,32 +72,26 @@ client.on('close', function(data) {
 
 client.on('end', function(data) {
     console.log('TNC connection ended');
-    //setTimeout(connectTNC, 2000)
-    setTimeout(connectTNC, 0)
 
-    //      setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
+    client.destroy();
+    setTimeout(connectTNC, 500)
 
 });
 
-//exports.writeTncCommand = function(command){
 writeTncCommand = function(command) {
 
     //console.log(command)
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
     if (client.readyState == 'open') {
-        //uiMain.setTNCconnection('open')
         client.write(command + '\n');
     }
 
     if (client.readyState == 'closed') {
-        //uiMain.setTNCconnection('closed')
-        //console.log("CLOSED!!!!!")
+        console.log("CLOSED!")
     }
 
     if (client.readyState == 'opening') {
-        //uiMain.setTNCconnection('opening')
-        //console.log("OPENING!!!!!")
         console.log('connecting to TNC...')
     }
 }
@@ -238,12 +232,12 @@ client.on('data', function(socketdata) {
 
                         if(splitted_data[0] == 'f'){
                             dataArray.push(data['data-array'][i]) 
-                            //dataArray.push(splitted_data)                           
+
                         }
                         
                         if(splitted_data[0] == 'm'){
                             messageArray.push(data['data-array'][i])
-                            //messageArray.push(splitted_data)
+
                         }
                         
                     } catch (e) {

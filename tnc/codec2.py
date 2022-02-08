@@ -146,7 +146,7 @@ class audio_buffer:
     # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
     # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
-        print("create audio_buffer: ", size)
+        structlog.get_logger("structlog").debug("[C2 ] creating audio buffer", size=size)
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
@@ -180,7 +180,7 @@ class resampler:
     MEM48 = api.FDMDV_OS_TAPS_48K
 
     def __init__(self):
-        print("create 48<->8 kHz resampler")
+        structlog.get_logger("structlog").debug("[C2 ] create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
         

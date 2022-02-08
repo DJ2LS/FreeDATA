@@ -26,7 +26,7 @@ import os
 import queue
 import audio
 import sock
-
+import atexit
 
 class DAEMON():
     def __init__(self):
@@ -89,7 +89,8 @@ class DAEMON():
             # data[15] rigctld_port
             # data[16] send_scatter
             # data[17] send_fft
-
+            # data[18] low_bandwith_mode
+            
             if data[0] == 'STARTTNC':
                 structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
@@ -149,7 +150,10 @@ class DAEMON():
                     
                 if data[17] == 'True':
                     options.append('--fft')
-                    
+
+                if data[18] == 'True':
+                    options.append('--500hz')
+
                 # try running tnc from binary, else run from source
                 # this helps running the tnc in a developer environment
                 try:
@@ -161,6 +165,8 @@ class DAEMON():
                            
                     command += options
                     p = subprocess.Popen(command)
+                    atexit.register(p.kill)
+
                     structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
                 except:
                     command = []
@@ -176,7 +182,14 @@ class DAEMON():
 
                 static.TNCPROCESS = p  # .pid
                 static.TNCSTARTED = True
-
+            '''
+            # WE HAVE THIS PART in SOCKET
+            if data[0] == 'STOPTNC':
+                    static.TNCPROCESS.kill()
+                    structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
+                    #os.kill(static.TNCPROCESS, signal.SIGKILL)
+                    static.TNCSTARTED = False
+            '''        
             # data[1] devicename
             # data[2] deviceport
             # data[3] serialspeed

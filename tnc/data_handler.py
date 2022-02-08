@@ -32,8 +32,6 @@ class DATA():
 
     def __init__(self):
 
-        print("init DATA handler...")
-        
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
 
@@ -48,10 +46,30 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
-        #self.mode_list = [14,14,14,12,10] # mode list of available modes, each mode will be used 2times per speed level
-        self.mode_list = [14,12,10] # mode list of available modes, each mode will be used 2times per speed level
-        self.time_list = [3, 6, 7] # list for time to wait for correspinding mode in seconds
+        self.rx_n_max_retries_per_burst = 10
+        self.n_retries_per_burst = 0
+        
+        self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel ope ner
+
+        self.data_channel_max_retries = 3
+        
+        self.mode_list_low_bw = [14,12]
+        self.time_list_low_bw = [3,6]
+
+        self.mode_list_high_bw = [14,12,10] # mode list of available modes, each mode will be used 2times per speed level
+        self.time_list_high_bw = [3, 6, 7] # list for time to wait for correspinding mode in seconds
+
+        # mode list for selecting between low bandwith ( 500Hz ) and normal modes with higher bandwith
+        if static.LOW_BANDWITH_MODE:
+            self.mode_list = self.mode_list_low_bw # mode list of available modes, each mode will be used 2times per speed level
+            self.time_list = self.time_list_low_bw # list for time to wait for correspinding mode in seconds
+
+        else:
+            self.mode_list = self.mode_list_high_bw # mode list of available modes, each mode will be used 2times per speed level
+            self.time_list = self.time_list_high_bw # list for time to wait for correspinding mode in seconds
+        
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+        
         self.is_IRS = False
         self.burst_nack = False
         self.burst_nack_counter = 0
@@ -60,7 +78,7 @@ class DATA():
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-        self.transmission_timeout = 120 # transmission timeout in seconds
+        self.transmission_timeout = 30 # transmission timeout in seconds
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit")
         worker_thread_transmit.start()
@@ -222,24 +240,31 @@ class DATA():
                 self.received_ping_ack(bytes_out[:-2])
 
             # ARQ FILE TRANSFER RECEIVED!
-            elif frametype == 225:
+            elif frametype == 225 or frametype == 227:
                 structlog.get_logger("structlog").debug("ARQ arq_received_data_channel_opener")
                 self.arq_received_data_channel_opener(bytes_out[:-2])
     
             # ARQ CHANNEL IS OPENED
-            elif frametype == 226:
+            elif frametype == 226 or frametype == 228:
                 structlog.get_logger("structlog").debug("ARQ arq_received_channel_is_open")
                 self.arq_received_channel_is_open(bytes_out[:-2])
 
+
+
+            # ARQ MANUAL MODE TRANSMISSION
+            elif 230 <= frametype <= 240 :
+                structlog.get_logger("structlog").debug("ARQ manual mode ")
+                self.arq_received_data_channel_opener(bytes_out[:-2])
+
     
             # ARQ STOP TRANSMISSION
-            elif frametype == 227:
+            elif frametype == 249:
                 structlog.get_logger("structlog").debug("ARQ received stop transmission")
                 self.received_stop_transmission()
 
             # ARQ CONNECT ACK / KEEP ALIVE
             # this is outdated and we may remove it
-            elif frametype == 230:
+            elif frametype == 250:
                 structlog.get_logger("structlog").debug("BEACON RECEIVED")
                 self.received_beacon(bytes_out[:-2])
 
@@ -283,7 +308,6 @@ class DATA():
         if len(static.RX_BURST_BUFFER) != RX_N_FRAMES_PER_BURST:
             static.RX_BURST_BUFFER = [None] * RX_N_FRAMES_PER_BURST   
 
-
         # append data to rx burst buffer
         static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[6:] # [frame_type][n_frames_per_burst][CRC16][CRC16]
         
@@ -320,7 +344,7 @@ class DATA():
                         self.speed_level = len(self.mode_list) - 1 
 
                 # updated modes we are listening to
-                self.set_listening_modes()
+                self.set_listening_modes(self.mode_list[self.speed_level])
 
                                 
                 # create an ack frame
@@ -379,8 +403,6 @@ class DATA():
         # we should never reach this point
         else:
             structlog.get_logger("structlog").error("we shouldnt reach this point...", frame=RX_N_FRAME_OF_BURST, frames=RX_N_FRAMES_PER_BURST)
-        
-        
 
         
         # We have a BOF and EOF flag in our data. If we received both we received our frame.
@@ -391,9 +413,15 @@ class DATA():
 
         # get total bytes per transmission information as soon we recevied a frame with a BOF
         if bof_position >=0:
-            crc_position = bof_position+len(self.data_frame_bof)
-            size_position = crc_position + 4
-            static.TOTAL_BYTES = int.from_bytes(bytes(static.RX_FRAME_BUFFER[size_position:size_position + 4]), "big") # Bytes
+            
+            payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
+            frame_length = int.from_bytes(payload[4:8], "big") #4:8 4bytes
+            static.TOTAL_BYTES = frame_length
+            compression_factor = int.from_bytes(payload[8:9], "big") #4:8 4bytes
+            static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
+            self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
+            
+
         if bof_position >= 0 and eof_position > 0 and not None in static.RX_BURST_BUFFER:
             print(f"bof_position {bof_position} / eof_position {eof_position}")
             self.rx_frame_bof_received = True
@@ -402,11 +430,13 @@ class DATA():
             #now extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
             # get the data frame crc
+            data_frame_crc = payload[:4] #0:4 4bytes
+            frame_length = int.from_bytes(payload[4:8], "big") #4:8 4bytes
+            static.TOTAL_BYTES = frame_length
+            # 8:9 = compression factor
 
-            data_frame_crc = payload[:4]
-            frame_length = int.from_bytes(bytes(static.RX_FRAME_BUFFER[size_position:size_position + 4]), "big")
+            data_frame = payload[9:]
 
-            data_frame = payload[8:]
             data_frame_crc_received = helpers.get_crc_32(data_frame)
             # check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
@@ -500,7 +530,6 @@ class DATA():
         global TESTMODE
         
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
-        
 
         TX_N_SENT_BYTES                 = 0                     # already sent bytes per data frame
         self.tx_n_retry_of_burst        = 0                     # retries we already sent data
@@ -524,7 +553,10 @@ class DATA():
         
         # compression
         data_frame_compressed = zlib.compress(data_out)
-        static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(data_frame_compressed)
+        compression_factor = len(data_out) / len(data_frame_compressed)
+        static.ARQ_COMPRESSION_FACTOR = compression_factor
+        compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
+        
         data_out = data_frame_compressed    
 
         # reset statistics
@@ -534,7 +566,7 @@ class DATA():
         # append a crc and beginn and end of file indicators
         frame_payload_crc = helpers.get_crc_32(data_out)
         # data_out = self.data_frame_bof + frame_payload_crc + data_out + self.data_frame_eof
-        data_out = self.data_frame_bof + frame_payload_crc + frame_total_size + data_out + self.data_frame_eof
+        data_out = self.data_frame_bof + frame_payload_crc + frame_total_size + compression_factor + data_out + self.data_frame_eof
         
         #initial bufferposition is 0
         bufferposition = 0
@@ -559,17 +591,25 @@ class DATA():
                     # as soon as we received an ACK for the current burst, speed_level will increase
                     # by 1.
                     # the can be optimised by checking the optimal speed level for the current conditions
-
+                    '''
                     if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
                         self.speed_level -= 1
                         if self.speed_level < 0:
                             self.speed_level = 0
+                    '''
                     
                     #if self.tx_n_retry_of_burst <= 1:
                     #    self.speed_level += 1
                     #    if self.speed_level >= len(self.mode_list)-1:
                     #        self.speed_level = len(self.mode_list)-1
+                    
+                    # if speed level is greater than our available modes, set speed level to maximum = lenght of mode list -1
+                    
+                    print(self.mode_list)
+                    if self.speed_level >= len(self.mode_list):
+                        self.speed_level = len(self.mode_list) - 1
                     data_mode = self.mode_list[self.speed_level]
+                    
                     structlog.get_logger("structlog").debug("Speed-level", level=self.speed_level, retry=self.tx_n_retry_of_burst)                    
            
                         
@@ -625,11 +665,14 @@ class DATA():
                     time.sleep(0.01)
                 
                 # after transmission finished  wait for an ACK or RPT frame
+                '''
                 burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
                 while not self.burst_ack and not self.burst_nack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.01)
-                    #structlog.get_logger("structlog").debug("[TNC] waiting for ack", burst_ack=self.burst_ack, frame_ack = self.data_frame_ack_received, arq_state = static.ARQ_STATE, overflows=static.BUFFER_OVERFLOW_COUNTER)
-                    
+                '''
+                #burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
+                while not self.burst_ack and not self.burst_nack and not self.rpt_request_received and not self.data_frame_ack_received and static.ARQ_STATE:
+                    time.sleep(0.01)
                     
                 # once we received a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack:
@@ -781,39 +824,36 @@ class DATA():
         else:
              return False
             
-    def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):
-        
-        self.is_IRS = False
-        
-        DATA_CHANNEL_MAX_RETRIES        =   5           # N attempts for connecting to another station
+    def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):      
+        self.is_IRS = False      
         self.data_channel_last_received = int(time.time())
 
-        # devide by 1024 for getting Bytes -> kBytes 
-        #data_len = int(data_len / 1024)
+        if static.LOW_BANDWITH_MODE and mode == 255:
+            frametype = bytes([227])
+            structlog.get_logger("structlog").debug("requesting low bandwith mode")
 
-        # multiply compression factor for reducing it from float to int
-        compression_factor = int(static.ARQ_COMPRESSION_FACTOR * 10)
+        else:
+            frametype = bytes([225])
+            structlog.get_logger("structlog").debug("requesting high bandwith mode")
 
+        
+        if 230 <= mode <= 240:
+            structlog.get_logger("structlog").debug("requesting manual mode --> not yet implemented ")
+            frametype = bytes([mode])
+            
         connection_frame        = bytearray(14)
-        connection_frame[:1]    = bytes([225])
+        connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
         connection_frame[5:11]   = static.MYCALLSIGN
-        connection_frame[11:12]   = bytes([mode])
-        #connection_frame[10:12]  = data_len.to_bytes(2, byteorder='big')
-        connection_frame[12:13] = bytes([compression_factor])
-        connection_frame[13:14] = bytes([n_frames_per_burst])    
-                
+        connection_frame[13:14] = bytes([n_frames_per_burst])                    
         
         while not static.ARQ_STATE:
             time.sleep(0.01)
-            for attempt in range(1,DATA_CHANNEL_MAX_RETRIES+1):
+            for attempt in range(1,self.data_channel_max_retries+1):
                 static.INFO.append("DATACHANNEL;OPENING")
-                
-                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(DATA_CHANNEL_MAX_RETRIES))
-                
-                txbuffer = [connection_frame]
-                
+                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(self.data_channel_max_retries))                
+                txbuffer = [connection_frame]                
                 static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
                 # wait while transmitting
@@ -829,7 +869,7 @@ class DATA():
                 if static.ARQ_STATE:
                     break
 
-                if not static.ARQ_STATE and attempt == DATA_CHANNEL_MAX_RETRIES:
+                if not static.ARQ_STATE and attempt == self.data_channel_max_retries:
                     static.INFO.append("DATACHANNEL;FAILED")
                     
                     structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
@@ -839,60 +879,61 @@ class DATA():
                     
                     return False
                     #sys.exit() # close thread and so connection attempts
-            
-    def arq_received_data_channel_opener(self, data_in:bytes):
 
-        self.is_IRS = True
-        
+
+ 
+
+
+    def arq_received_data_channel_opener(self, data_in:bytes):
+        self.is_IRS = True        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
-        static.ARQ_COMPRESSION_FACTOR = float(int.from_bytes(bytes(data_in[12:13]), "big") / 10)
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
-        mode = int.from_bytes(bytes(data_in[11:12]), "big") 
-
-        # updated modes we are listening to
-        self.set_listening_modes()
-        '''
-        # set modes we want to listening to
-        mode_name = codec2.freedv_get_mode_name_by_value(mode)
-        if mode_name == 'datac1':
-            modem.RECEIVE_DATAC1 = True
-        elif mode_name == 'datac3':
-            modem.RECEIVE_DATAC3 = True
-        elif mode_name == 'allmodes':
-            pass
-            #modem.RECEIVE_DATAC1 = True
-            #modem.RECEIVE_DATAC3 = True
-        '''
-
-
+        frametype = int.from_bytes(bytes(data_in[:1]), "big")
+        #check if we received low bandwith mode
+        if frametype == 225:
+            self.received_low_bandwith_mode = False
+            self.mode_list = self.mode_list_high_bw 
+            self.time_list = self.time_list_high_bw
+            self.speed_level = len(self.mode_list) - 1 
+        else:
+            self.received_low_bandwith_mode = True
+            self.mode_list = self.mode_list_low_bw 
+            self.time_list = self.time_list_low_bw
+            self.speed_level = len(self.mode_list) - 1 
+   
         
-        #we need to find a way how to do this. this isn't working anymore since we mode to a class based module
-        #modem.set_frames_per_burst(n_frames_per_burst)
+        if 230 <= frametype <= 240:
+            print("manual mode request")
+        
+        # updated modes we are listening to
+        self.set_listening_modes(self.mode_list[self.speed_level])
 
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide")
            
         static.ARQ_STATE = True
         static.TNC_STATE = 'BUSY'
 
-        # reset ARQ statistics
-        static.ARQ_BYTES_PER_MINUTE_BURST = 0
-        static.ARQ_BYTES_PER_MINUTE = 0
-        static.ARQ_BITS_PER_SECOND_BURST = 0
-        static.ARQ_BITS_PER_SECOND = 0
-        static.ARQ_TRANSMISSION_PERCENT = 0
-        static.TOTAL_BYTES = 0
+
+        self.reset_statistics()
 
         self.data_channel_last_received = int(time.time())
-
+        # check if we are in low bandwith mode
+        if static.LOW_BANDWITH_MODE or self.received_low_bandwith_mode:
+            frametype = bytes([228])
+            structlog.get_logger("structlog").debug("responding with low bandwith mode")
+        else:
+            frametype = bytes([226])
+            structlog.get_logger("structlog").debug("responding with high bandwith mode")
+        
         connection_frame = bytearray(14)
-        connection_frame[:1] = bytes([226])
+        connection_frame[:1] = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        #connection_frame[5:11] = static.MYCALLSIGN
+        connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION]) #crc8 of version for checking protocol version    
 
         txbuffer = [connection_frame]
         
@@ -901,28 +942,46 @@ class DATA():
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
+        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide", snr=static.SNR)
         
         # set start of transmission for our statistics
         self.rx_start_of_transmission = time.time()
-    
+
+
+
     def arq_received_channel_is_open(self, data_in:bytes):
-        
-        static.INFO.append("DATACHANNEL;OPEN")
-        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        #static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
-        helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
-        
-        self.data_channel_last_received = int(time.time())
+        protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
+        if protocol_version == static.ARQ_PROTOCOL_VERSION:
+            static.INFO.append("DATACHANNEL;OPEN")
+            static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+            frametype = int.from_bytes(bytes(data_in[:1]), "big")  
+                
+            if frametype == 228:
+                self.received_low_bandwith_mode = True
+                self.mode_list = self.mode_list_low_bw 
+                self.time_list = self.time_list_low_bw
+                self.speed_level = len(self.mode_list) - 1 
+                structlog.get_logger("structlog").debug("low bandwith mode", modes=self.mode_list)
+            else:
+                self.received_low_bandwith_mode = False
+                self.mode_list = self.mode_list_high_bw 
+                self.time_list = self.time_list_high_bw
+                self.speed_level = len(self.mode_list) - 1 
+                structlog.get_logger("structlog").debug("high bandwith mode", modes=self.mode_list)
+                
+            helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+            
+            structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
 
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR)
-
-        # as soon as we set ARQ_STATE to DATA, transmission starts   
-        static.ARQ_STATE = True
-        self.data_channel_last_received = int(time.time())
-    
-
-
+            # as soon as we set ARQ_STATE to DATA, transmission starts   
+            static.ARQ_STATE = True
+            self.data_channel_last_received = int(time.time())
+        else:
+            static.TNC_STATE = 'IDLE'
+            static.ARQ_STATE = False
+            static.INFO.append("PROTOCOL;VERSION_MISSMATCH")
+            structlog.get_logger("structlog").warning("protocol version missmatch", received=protocol_version, own=static.ARQ_PROTOCOL_VERSION)
+            self.arq_cleanup()
 
 
     # ---------- PING
@@ -986,7 +1045,7 @@ class DATA():
     def stop_transmission(self):
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
         stop_frame      = bytearray(14)
-        stop_frame[:1]  = bytes([227])
+        stop_frame[:1]  = bytes([249])
         stop_frame[1:3] = static.DXCALLSIGN_CRC
         stop_frame[3:5] = static.MYCALLSIGN_CRC
 
@@ -1017,7 +1076,7 @@ class DATA():
             while static.BEACON_STATE and not static.ARQ_STATE:
 
                 beacon_frame = bytearray(14)
-                beacon_frame[:1]   = bytes([230])
+                beacon_frame[:1]   = bytes([250])
                 beacon_frame[1:2]  = b'\x01'
                 beacon_frame[2:8]  = static.MYCALLSIGN
                 beacon_frame[8:14] = static.MYGRID
@@ -1099,7 +1158,15 @@ class DATA():
 
 
 
-
+    def reset_statistics(self):
+        # reset ARQ statistics
+        static.ARQ_BYTES_PER_MINUTE_BURST = 0
+        static.ARQ_BYTES_PER_MINUTE = 0
+        static.ARQ_BITS_PER_SECOND_BURST = 0
+        static.ARQ_BITS_PER_SECOND = 0
+        static.ARQ_TRANSMISSION_PERCENT = 0
+        static.TOTAL_BYTES = 0
+        
     def calculate_transfer_rate_tx(self, tx_start_of_transmission:float, sentbytes:int, tx_buffer_length:int) -> list:
         
         try:
@@ -1155,7 +1222,15 @@ class DATA():
         self.burst_nack_counter = 0
         self.frame_received_counter = 0
         self.speed_level = len(self.mode_list) - 1
-
+        
+        # low bandwith mode indicator
+        self.received_low_bandwith_mode = False
+        
+        # reset retry counter for rx channel / burst
+        self.n_retries_per_burst = 0
+        
+        
+        
     def arq_reset_ack(self,state:bool):
 
         self.burst_ack = state
@@ -1163,16 +1238,21 @@ class DATA():
         self.data_frame_ack_received = state
 
 
-    def set_listening_modes(self):
-        # set modes we want to listening to
-        mode_name = codec2.freedv_get_mode_name_by_value(self.mode_list[self.speed_level])
+    def set_listening_modes(self, mode):
+        # set modes we want listening to
+        
+        mode_name = codec2.freedv_get_mode_name_by_value(mode)
         if mode_name == 'datac1':
             modem.RECEIVE_DATAC1 = True
+            structlog.get_logger("structlog").debug("changing listening data mode", mode="datac1")
+
         elif mode_name == 'datac3':
             modem.RECEIVE_DATAC3 = True
+            structlog.get_logger("structlog").debug("changing listening data mode", mode="datac3")
         elif mode_name == 'allmodes':
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
+            structlog.get_logger("structlog").debug("changing listening data mode", mode="datac1/datac3")
                     
 
     # ------------------------- WATCHDOG FUNCTIONS FOR TIMER
@@ -1188,20 +1268,12 @@ class DATA():
             self.burst_watchdog()
 
     def burst_watchdog(self):
-        '''
-        # ISS SIDE WE ALSO NEED TO CHECK TIME SO WE ARE SENDING IN CORRECT MODE IF WE MISSED A NACK FRAME
-        if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and not self.is_IRS:
-            if self.data_channel_last_received + self.time_list[self.speed_level] < time.time():
-                self.speed_level -= 1
-                if self.speed_level <= 0:
-                    self.speed_level = 0
-                self.data_channel_last_received = time.time()
-        '''        
+      
         # IRS SIDE        
         if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and self.is_IRS:
             if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
-                print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
-                #pass
+                #print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
+                pass
             else:
                 print("TIMEOUT")
                 self.frame_received_counter = 0
@@ -1210,7 +1282,7 @@ class DATA():
                     self.speed_level = 0
                 
                 # updated modes we are listening to
-                self.set_listening_modes()
+                self.set_listening_modes(self.mode_list[self.speed_level])
                 
                 # BUILDING NACK FRAME FOR DATA FRAME
                 burst_nack_frame       = bytearray(14)
@@ -1229,7 +1301,13 @@ class DATA():
                 #    #time.sleep(0.01)
                 #    self.data_channel_last_received = time.time()
                 self.data_channel_last_received = time.time()
-
+                self.n_retries_per_burst += 1
+                
+            if self.n_retries_per_burst >= self.rx_n_max_retries_per_burst:
+                self.arq_cleanup()
+                print("RX TIMEOUT!!!!")
+                #print(self.n_retries_per_burst)
+                
     def data_channel_keep_alive_watchdog(self):
         """
         Author: DJ2LS
@@ -1241,6 +1319,7 @@ class DATA():
             time.sleep(0.01)
             if self.data_channel_last_received + self.transmission_timeout > time.time():
                 time.sleep(0.01)
+                #print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 #pass
             else:
                 self.data_channel_last_received = 0

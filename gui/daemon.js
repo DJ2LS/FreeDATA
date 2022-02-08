@@ -32,7 +32,7 @@ function connectDAEMON() {
     //client.setTimeout(5000);
 }
 
-daemon.on('connect', function(data) {
+daemon.on('connect', function(err) {
     console.log('DAEMON connection established')
     let Data = {
         daemon_connection: daemon.readyState,
@@ -41,8 +41,10 @@ daemon.on('connect', function(data) {
 
 })
 
-daemon.on('error', function(data) {
+daemon.on('error', function(err) {
     console.log('DAEMON connection error');
+    console.log(err)
+    daemon.destroy();
     setTimeout(connectDAEMON, 2000)
     let Data = {
         daemon_connection: daemon.readyState,
@@ -64,7 +66,8 @@ client.on('close', function(data) {
 
 daemon.on('end', function(data) {
     console.log('DAEMON connection ended');
-    setTimeout(connectDAEMON, 2000)
+    daemon.destroy();
+    setTimeout(connectDAEMON, 500)
     let Data = {
         daemon_connection: daemon.readyState,
     };
@@ -198,7 +201,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode) {
     var json_command = JSON.stringify({
         type: 'set',
         command: 'start_tnc',
@@ -219,7 +222,8 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
             rigctld_port: rigctld_port,
             rigctld_ip: rigctld_ip,
             enable_scatter: enable_scatter,
-            enable_fft: enable_fft
+            enable_fft: enable_fft,
+            low_bandwith_mode : low_bandwith_mode
         }]
     })
 

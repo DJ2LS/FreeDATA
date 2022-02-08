@@ -106,7 +106,6 @@ class radio:
             # get devicenumber by looking for deviceobject in Hamlib module
             try:
                 self.devicenumber = int(getattr(Hamlib, self.devicename))
-                print(self.devicenumber)
             except:
                 structlog.get_logger("structlog").error("[RIG] Hamlib: rig not supported...")
                 self.devicenumber = 0
@@ -120,17 +119,9 @@ class radio:
             self.my_rig.set_conf("stop_bits", self.stop_bits)
             self.my_rig.set_conf("data_bits", self.data_bits)
             self.my_rig.set_conf("ptt_pathname", self.pttport)
-                        
+                 
 
-            print(self.my_rig.get_conf("rig_pathname"))
-            print(self.my_rig.get_conf("retry"))
-            print(self.my_rig.get_conf("serial_speed"))
-            print(self.my_rig.get_conf("serial_handshake"))
-            print(self.my_rig.get_conf("stop_bits"))
-            print(self.my_rig.get_conf("data_bits"))
-            print(self.my_rig.get_conf("ptt_pathname"))                    
-                    
-                    
+                                        
                         
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
@@ -168,7 +159,9 @@ class radio:
             else: #self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
-            
+            structlog.get_logger("structlog").info("[RIG] Opening...", device=self.devicenumber, path=self.my_rig.get_conf("rig_pathname"), serial_speed=self.my_rig.get_conf("serial_speed"), serial_handshake=self.my_rig.get_conf("serial_handshake"), stop_bits=self.my_rig.get_conf("stop_bits"), data_bits=self.my_rig.get_conf("data_bits"), ptt_pathname=self.my_rig.get_conf("ptt_pathname"))
+
+
             self.my_rig.open()
             atexit.register(self.my_rig.close)
             

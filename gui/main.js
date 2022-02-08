@@ -2,15 +2,15 @@ const {
     app,
     BrowserWindow,
     ipcMain
-} = require('electron')
-const path = require('path')
-const fs = require('fs')
+} = require('electron');
+const path = require('path');
+const fs = require('fs');
 const os = require('os');
 app.setName("FreeDATA");
 
-var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
+var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config");
 var configFolder = path.join(appDataFolder, "FreeDATA");
-var configPath = path.join(configFolder, 'config.json')
+var configPath = path.join(configFolder, 'config.json');
 
 // create config folder if not exists
 if (!fs.existsSync(configFolder)) {
@@ -44,6 +44,7 @@ var configContent = `
   "rigctld_ip" : "127.0.0.1",
   "enable_scatter" : "False",
   "enable_fft" : "False",
+  "low_bandwith_mode" : "False"
 
 }
 `;
@@ -67,7 +68,7 @@ var configContent = `
 }
 `;
 if (!fs.existsSync(chatDB)) {
-    fs.writeFileSync(chatDB, configContent)
+    fs.writeFileSync(chatDB, configContent);
 }
 
 
@@ -134,8 +135,8 @@ function createWindow() {
         }
     })
 
-    chat.loadFile('src/chat-module.html')
-    chat.setMenuBarVisibility(false)
+    chat.loadFile('src/chat-module.html');
+    chat.setMenuBarVisibility(false);
 
 
     // Emitted when the window is closed.
@@ -158,13 +159,13 @@ function createWindow() {
     // https://stackoverflow.com/questions/44258831/only-hide-the-window-when-closing-it-electron
     chat.on('close', function(evt) {
         evt.preventDefault();
-        chat.hide()
+        chat.hide();
     });
     
 }
 
 app.whenReady().then(() => {
-    createWindow()
+    createWindow();
 
     // start daemon by checking os
     // https://stackoverflow.com/a/5775120
@@ -173,8 +174,8 @@ app.whenReady().then(() => {
     if(os.platform()=='linux' || os.platform()=='darwin'){
         daemonProcess = exec('./tnc/daemon', function callback(err, stdout, stderr) {
             if (err) {
-                console.log(os.platform())
-                console.error(err)
+                console.log(os.platform());
+                console.error(err);
                 console.error("Can't start daemon binary");
                 console.error("--> this is only working with the app bundle and a precompiled binaries");
             return;
@@ -186,8 +187,8 @@ app.whenReady().then(() => {
     if(os.platform()=='win32' || os.platform()=='win64'){
         daemonProcess = exec('./tnc/daemon.exe', function callback(err, stdout, stderr) {
             if (err) {
-                console.log(os.platform())
-                console.error(err)
+                console.log(os.platform());
+                console.error(err);
                 console.error("Can't start daemon binary");
                 console.error("--> this is only working with the app bundle and a precompiled binaries");
             return;
@@ -200,7 +201,7 @@ app.whenReady().then(() => {
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow()
+            createWindow();
         }
     })
 })
@@ -210,14 +211,14 @@ app.on('window-all-closed', () => {
     daemonProcess.kill('SIGINT');
 
     if (process.platform !== 'darwin') {
-        app.quit()
+        app.quit();
     }
 })
 
 // IPC HANDLER
 
 ipcMain.on('request-show-chat-window', (event, arg) => {
-    chat.show()
+    chat.show();
  });
 
 

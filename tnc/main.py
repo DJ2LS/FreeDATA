@@ -42,8 +42,8 @@ if __name__ == '__main__':
     PARSER.add_argument('--rigctld_ip', dest="rigctld_ip", default="direct", help="Set rigctld ip")    
     PARSER.add_argument('--scatter', dest="send_scatter", action="store_true", help="Send scatter information via network") 
     PARSER.add_argument('--fft', dest="send_fft", action="store_true", help="Send fft information via network") 
+    PARSER.add_argument('--500hz', dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )") 
  
-
  
     
     ARGS = PARSER.parse_args()
@@ -67,6 +67,11 @@ if __name__ == '__main__':
     static.HAMLIB_RGICTLD_PORT = ARGS.rigctld_port
     static.ENABLE_SCATTER = ARGS.send_scatter
     static.ENABLE_FFT = ARGS.send_fft    
+    static.LOW_BANDWITH_MODE = ARGS.low_bandwith_mode    
+        
+        
+        
+
         
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

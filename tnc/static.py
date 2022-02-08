@@ -7,6 +7,9 @@ Created on Wed Dec 23 11:13:57 2020
 Here we are saving application wide variables and stats, which have to be accessed everywhere.
 Not nice, tipps are appreciated :-) 
 """
+
+VERSION = '0.1'
+
 # DAEMON
 DAEMONPORT = 3001
 TNCSTARTED = False
@@ -23,6 +26,7 @@ DXCALLSIGN_CRC = b'A'
 MYGRID = b''
 DXGRID = b''
 
+LOW_BANDWITH_MODE = False
 # ---------------------------------
 
 # Server Defaults
@@ -72,6 +76,9 @@ BUFFER_OVERFLOW_COUNTER = [0,0,0]
 AUDIO_RMS = 0
 FFT = [0]
 ENABLE_FFT = False
+
+# ARQ PROTOCOL VERSION
+ARQ_PROTOCOL_VERSION = 0
 
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST = 0
