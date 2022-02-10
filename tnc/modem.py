@@ -193,8 +193,8 @@ class RF():
         audio_thread_datac3.start()
         
         
-        #hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
-        #hamlib_thread.start()
+        hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
+        hamlib_thread.start()
         
         worker_received = threading.Thread(target=self.worker_received, name="WORKER_THREAD")
         worker_received.start()

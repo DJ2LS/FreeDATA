@@ -96,6 +96,18 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("500HzModeSwitch").checked = false;
     }        
 
+    // theme selector
+
+    if(config.theme != 'default'){
+
+        var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
+        document.getElementById("theme_selector").value = config.theme;
+        document.getElementById("bootstrap_theme").href = theme_path;
+    } else {    
+        var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+        document.getElementById("theme_selector").value = 'default';
+        document.getElementById("bootstrap_theme").href = theme_path;
+    }
     
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
@@ -399,9 +411,26 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 
     
+
     
+    // Theme selector clicked
+    document.getElementById("theme_selector").addEventListener("click", () => {
+        
+        var theme = document.getElementById("theme_selector").value;
+        if(theme != 'default'){
+            var theme_path = "../node_modules/bootswatch/dist/"+ theme +"/bootstrap.min.css";
+        } else {
+            var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+        }
+        
+        document.getElementById("bootstrap_theme").href = theme_path
+        
+        config.theme = theme;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
     
-    
+        //document.getElementById("css1").href = "demo2.css";    
+    });
 
     // Stop beacon button clicked
     document.getElementById("stopBeacon").addEventListener("click", () => {

@@ -45,7 +45,7 @@ var configContent = `
   "enable_scatter" : "False",
   "enable_fft" : "False",
   "low_bandwith_mode" : "False"
-
+  "theme" : "default"
 }
 `;
 if (!fs.existsSync(configPath)) {

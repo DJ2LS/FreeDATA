@@ -8,11 +8,13 @@
 	<meta http-equiv="Content-Security-Policy" content="script-src 'self';">
 	<!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self';">-->
 	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" id="bootstrap_theme" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+
+
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
-	<title>FreeDATA</title>
+	<title>FreeDATA by DJ2LS</title>
 </head>
 
 <body>
@@ -59,7 +61,7 @@
 				</div>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF Chat</strong>
+				<button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" disabled> <strong>RF Chat</strong>
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-chat-left-text-fill" viewBox="0 0 16 16">
 						<path d="M0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4.414a1 1 0 0 0-.707.293L.854 15.146A.5.5 0 0 1 0 14.793V2zm3.5 1a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1h-9zm0 2.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z" />
 					</svg>
@@ -75,8 +77,21 @@
 					<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-file-earmark-arrow-up-fill" viewBox="0 0 16 16">
 						<path d="M9.293 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.707A1 1 0 0 0 13.707 4L10 .293A1 1 0 0 0 9.293 0zM9.5 3.5v-2l3 3h-2a1 1 0 0 1-1-1zM6.354 9.854a.5.5 0 0 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 8.707V12.5a.5.5 0 0 1-1 0V8.707L6.354 9.854z" />
 					</svg>
-				</button>
+				</button>			
 				</span>
+				
+				
+				<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
+				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary">
+					    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
+						    <path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z" />
+					    </svg>
+				    </button>
+			    </span>
+							
+							
+							
+							
 			</div>
 		</div>
 	</nav>
@@ -1080,12 +1095,68 @@
 	<!-- chart.js -->
 	<script src="../node_modules/chart.js/dist/chart.min.js"></script>
 	<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
+
 	<!--<script src="../ui.js"></script>-->
 	<!-- WATERFALL -->
 	<script src="waterfall/colormap.js"></script>
 	<script src="waterfall/spectrum.js"></script>
 	<script src="waterfall/spectrogram.js"></script>
 	<!--<script src="waterfall/script.js"></script>-->
+	
+	<!-- INFO MODAL -->
+	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="infoModal">
+		<div class="modal-dialog modal-dialog-scrollable">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title">App settings</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+				
+				
+				
+                    <div class="input-group  input-group-sm mb-1"> 
+                        <span class="input-group-text" id="basic-addon1">Theme</span>
+						    <select class="form-select form-select-sm" aria-label=".form-select-sm" id="theme_selector">
+
+                                 <option value="default">Default</option>
+                                 <option value="cerulean">Cerulean</option>
+                                 <option value="cosmo">Cosmo</option>
+                                 <option value="cyborg">Cyborg</option>
+                                 <option value="darkly">Darkly</option>
+                                 <option value="flatly">Flatly</option>
+                                 <option value="journal">Journal</option>
+                                 <option value="litera">Litera</option>
+                                 <option value="lumen">Lumen</option>
+                                 <option value="lux">Lux</option>
+                                 <option value="materia">Materia</option>
+                                 <option value="minty">Minty</option>
+                                 <option value="morph">Morhp</option>
+                                 <option value="pulse">Pulse</option>
+                                 <option value="quartz">Quartz</option>
+                                 <option value="sandstone">Sandstone</option>
+                                 <option value="simplex">Simplex</option>
+                                 <option value="sketchy">Sketchy</option>
+                                 <option value="slate">Slate</option>
+                                 <option value="solar">Solar</option>
+                                 <option value="spacelab">Spacelab</option>
+                                 <option value="superhero">Superhero</option>
+                                 <option value="united">United</option>
+                                 <option value="vapor">Vapor</option>
+                                 <option value="yeti">Yeti</option>
+                                 <option value="zephyr">Zephyr</option>
+                                 
+							</select> 
+									
+					</div>				
+									
+
+
+
+	            </div>
+	        </div>
+	    </div>
+	</div>
 	<!-- HAMLIB ADVANCED SETTINGS MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="advancedHamlibSettingsModal">
 		<div class="modal-dialog">
