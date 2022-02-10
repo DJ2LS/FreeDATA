@@ -44,8 +44,10 @@ var configContent = `
   "rigctld_ip" : "127.0.0.1",
   "enable_scatter" : "False",
   "enable_fft" : "False",
-  "low_bandwith_mode" : "False"
-  "theme" : "default"
+  "low_bandwith_mode" : "False",
+  "theme" : "default",
+  "screen_height" : 1050,
+  "screen_width" : 430
 }
 `;
 if (!fs.existsSync(configPath)) {
@@ -100,8 +102,8 @@ var daemonProcess = null;
 
 function createWindow() {
     win = new BrowserWindow({
-        width: 1050,
-        height: 430,
+        width: config.screen_width,
+        height: config.screen_height,
         autoHideMenuBar: true,
         icon: __dirname + '/src/icon_cube_border.png',
         webPreferences: {

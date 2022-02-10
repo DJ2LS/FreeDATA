@@ -428,9 +428,16 @@ window.addEventListener('DOMContentLoaded', () => {
         config.theme = theme;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
-    
-        //document.getElementById("css1").href = "demo2.css";    
     });
+
+    //screen size
+    window.addEventListener('resize',() => {
+
+    config.screen_height = window.innerHeight;
+    config.screen_width = window.innerWidth;
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
 
     // Stop beacon button clicked
     document.getElementById("stopBeacon").addEventListener("click", () => {
