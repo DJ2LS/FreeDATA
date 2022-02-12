@@ -14,7 +14,7 @@ const {
 const os = require('os');
 
 // split character used for appending addiotional data to files
-const split_char = '\0;'
+const split_char = '\0;';
 
 
 // https://stackoverflow.com/a/26227660
@@ -1342,9 +1342,57 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     }
     
     
-    // TNC RUNNING STATE
-    //document.getElementById("tnc_running_state").innerHTML = arg.tnc_running_state;
-    if (arg.tnc_running_state == "running") {
+});
+
+
+// ACTION UPDATE HAMLIB TEST
+ipcRenderer.on('action-update-hamlib-test', (event, arg) => {
+    console.log(arg.hamlib_result);
+    if (arg.hamlib_result == 'SUCCESS') {
+        document.getElementById("testHamlib").className = "btn btn-sm btn-success";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-success";
+
+
+    }
+    if (arg.hamlib_result == 'NOSUCCESS') {
+        document.getElementById("testHamlib").className = "btn btn-sm btn-warning";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-warning";
+
+    }
+    if (arg.hamlib_result == 'FAILED') {
+        document.getElementById("testHamlib").className = "btn btn-sm btn-danger";
+        // BUTTON HAS BEEN REMOVED
+        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-danger";
+    }
+
+});
+
+
+
+ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
+
+    if (arg.daemon_connection == 'open') {
+        document.getElementById("daemon_connection_state").className = "btn btn-success";
+        //document.getElementById("blurdiv").style.webkitFilter = "blur(0px)";
+
+    }
+    if (arg.daemon_connection == 'opening') {
+        document.getElementById("daemon_connection_state").className = "btn btn-warning";
+        //document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
+
+    }
+    if (arg.daemon_connection == 'closed') {
+        document.getElementById("daemon_connection_state").className = "btn btn-danger";
+        //document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
+    }
+
+});
+
+ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
+
+    if (arg.tnc_connection == "open") {
         document.getElementById('hamlib_deviceid').disabled = true;
         document.getElementById('hamlib_deviceport').disabled = true;
         document.getElementById('advancedHamlibSettingsButton').disabled = true;
@@ -1392,55 +1440,13 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
         collapseFourthRow.hide();
     }
 
-});
 
 
-// ACTION UPDATE HAMLIB TEST
-ipcRenderer.on('action-update-hamlib-test', (event, arg) => {
-    console.log(arg.hamlib_result);
-    if (arg.hamlib_result == 'SUCCESS') {
-        document.getElementById("testHamlib").className = "btn btn-sm btn-success";
-        // BUTTON HAS BEEN REMOVED
-        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-success";
 
 
-    }
-    if (arg.hamlib_result == 'NOSUCCESS') {
-        document.getElementById("testHamlib").className = "btn btn-sm btn-warning";
-        // BUTTON HAS BEEN REMOVED
-        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-warning";
-
-    }
-    if (arg.hamlib_result == 'FAILED') {
-        document.getElementById("testHamlib").className = "btn btn-sm btn-danger";
-        // BUTTON HAS BEEN REMOVED
-        //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-danger";
-    }
 
 });
 
-
-
-
-
-ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
-
-    if (arg.daemon_connection == 'open') {
-        document.getElementById("daemon_connection_state").className = "btn btn-success";
-        document.getElementById("blurdiv").style.webkitFilter = "blur(0px)";
-
-    }
-    if (arg.daemon_connection == 'opening') {
-        document.getElementById("daemon_connection_state").className = "btn btn-warning";
-        document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
-
-    }
-    if (arg.daemon_connection == 'closed') {
-        document.getElementById("daemon_connection_state").className = "btn btn-danger";
-        document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
-    }
-
-});
 
 ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
     

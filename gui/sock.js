@@ -41,12 +41,28 @@ function connectTNC() {
 
 client.on('connect', function(data) {
     console.log('TNC connection established')
+    let Data = {
+        busy_state: "-",
+        arq_state: "-",
+        //channel_state: "-",
+        frequency: "-",
+        mode: "-",
+        bandwith: "-",
+        rms_level: 0
+    };
+    ipcRenderer.send('request-update-tnc-state', Data);
+    
+    // also update tnc connection state
+    ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});   
+    
+    
 })
 
 client.on('error', function(data) {
     console.log('TNC connection error');
 
     let Data = {
+        tnc_connection: client.readyState,
         busy_state: "-",
         arq_state: "-",
         //channel_state: "-",
@@ -57,6 +73,7 @@ client.on('error', function(data) {
 
     };
     ipcRenderer.send('request-update-tnc-state', Data);
+    ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
     client.destroy();
     setTimeout(connectTNC, 500)
     // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
@@ -72,31 +89,37 @@ client.on('close', function(data) {
 
 client.on('end', function(data) {
     console.log('TNC connection ended');
-
+    ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
     client.destroy();
+    
     setTimeout(connectTNC, 500)
 
 });
 
 writeTncCommand = function(command) {
-
+    
     //console.log(command)
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
     if (client.readyState == 'open') {
         client.write(command + '\n');
+
     }
 
     if (client.readyState == 'closed') {
         console.log("CLOSED!")
+
     }
 
     if (client.readyState == 'opening') {
         console.log('connecting to TNC...')
+
     }
 }
 
 client.on('data', function(socketdata) {
+
+    ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
 
     /*
     inspired by:
