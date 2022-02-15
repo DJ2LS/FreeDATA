@@ -99,10 +99,8 @@ jobs:
         shell: bash
         run: |
           mkdir gui-bundle
-          cp ./gui/dist/*.* gui-bundle
-          cp ./tnc/dist/* gui-bundle
-          cd ./gui-bundle
-          ls -R  
+          cp -R ./tnc/dist/ gui-bundle
+
        
       - name: Archive Release
         uses: thedoctor0/zip-release@master
