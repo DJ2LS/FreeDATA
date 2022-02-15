@@ -36,8 +36,8 @@ daemon_exe = EXE(daemon_pyz,
           entitlements_file=None )
           
 # add lib folder to system path. We only need to do this once
-daemon_a.datas += Tree('./lib', prefix='lib')
-daemon_a.datas += Tree('./codec2', prefix='codec2')
+daemon_a.datas += Tree('lib', prefix='lib')
+# daemon_a.datas += Tree('./codec2', prefix='codec2')
 
 
 # TNC --------------------------------------------------
