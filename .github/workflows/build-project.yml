@@ -72,7 +72,7 @@ jobs:
         with:
           node-version: 14         
 
-      - name: Copy TNC and DAEMOn to GUI Windows
+      - name: Copy TNC and DAEMON to GUI Windows
         if: matrix.os == 'windows-latest'
         run: |          
           cp -R ./tnc/dist ./gui/
@@ -100,10 +100,7 @@ jobs:
         run: |
           mkdir gui-bundle
           cp ./gui/dist/*.* gui-bundle
-          cp ./tnc/dist/daemon.exe gui-bundle
-          cp ./tnc/dist/tnc.exe gui-bundle
-          chmod +x ./gui-bundle/tnc
-          chmod +x ./gui-bundle/daemon
+          cp ./tnc/dist/* gui-bundle
           cd ./gui-bundle
           ls -R  
        
