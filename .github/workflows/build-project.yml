@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir gui-bundle
           cp -R ./gui/dist/win-unpacked/ gui-bundle
-          cp -R ./tnc/dist/tnc gui-bundle
+          cp -R ./tnc/dist/tnc gui-bundle/win-unpacked
 
       - name: LIST ALL FILES
         shell: bash
