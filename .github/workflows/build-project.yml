@@ -100,7 +100,7 @@ jobs:
         run: |
           mkdir gui-bundle
           cp -R ./tnc/dist/ gui-bundle
-
+          cp -R ./gui/dist/ gui-bundle
        
       - name: Archive Release
         uses: thedoctor0/zip-release@master
