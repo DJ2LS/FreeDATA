@@ -73,12 +73,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14         
-
-      - name: Copy TNC and DAEMON to GUI Windows
-        if: matrix.os == 'windows-latest'
-        run: |          
-          cp -R ./tnc/dist ./gui/
-          ls -R        
+     
           
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -89,21 +84,22 @@ jobs:
       - name: LIST ALL FILES
         shell: bash
         run: |
-          ls -R   
+          ls -R  
           
-      - name: chmod +x
-        shell: bash
-        run: |
-          chmod +x ./gui/dist/*.*    
-          
-          
+                 
       - name: Create app bundle
         shell: bash
         run: |
           mkdir gui-bundle
-          cp -R ./tnc/dist/ gui-bundle
-          cp -R ./gui/dist/ gui-bundle
-       
+          cp -R ./gui/dist/win-unpacked/ gui-bundle
+          cp -R ./tnc/dist/tnc gui-bundle
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R  
+          
+                    
       - name: Archive Release
         uses: thedoctor0/zip-release@master
         with:
@@ -118,7 +114,11 @@ jobs:
         with:
           name: gui-bundle-windows-artifact
           path: ./gui-bundle/FreeDATA_windows.zip          
-          
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R            
 
   build_linux_release:
     name: Build Linux release
