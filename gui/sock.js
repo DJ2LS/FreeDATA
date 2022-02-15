@@ -186,6 +186,7 @@ client.on('data', function(socketdata) {
                     bandwith: data['bandwith'],
                     rms_level: (data['audio_rms'] / 1000) * 100,
                     fft: data['fft'],
+                    channel_busy: data['channel_busy'],
                     scatter: data['scatter'],
                     info: data['info'],
                     rx_buffer_length: data['rx_buffer_length'],

@@ -45,212 +45,224 @@ class DAEMON():
         worker.start()
         
         
+        
     def update_audio_devices(self):
         while 1:
-            static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_input_devices()
-            time.sleep(1)
+            #print("update audio")
+            try:
+                static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
+                # WE NEED TO WAIT SOME MORE TIME, SO WE ARE NOT CAUSING A CRASH ON RASPBERRY PIs!
+                # pyAudio will crash there if we are opening and closing pyaudio too fast
+                time.sleep(3)
+            except Exception as e:
+                print(e)
     
     def update_serial_devices(self):
         while 1:
-            serial_devices = []
-            ports = serial.tools.list_ports.comports()
-            for port, desc, hwid in ports:
-            
-                # calculate hex of hwid if we have unique names
-                crc_hwid = self.crc_algorithm(bytes(hwid, encoding='utf-8'))
-                crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
-                crc_hwid = crc_hwid.hex()
-                description = desc + ' [' + crc_hwid + ']'
-                serial_devices.append({"port": str(port), "description": str(description) })
-            
-            static.SERIAL_DEVICES = serial_devices
-            time.sleep(1)
-            
-            
+            try:
+                #print("update serial")
+                serial_devices = []
+                ports = serial.tools.list_ports.comports()
+                for port, desc, hwid in ports:
+                
+                    # calculate hex of hwid if we have unique names
+                    crc_hwid = self.crc_algorithm(bytes(hwid, encoding='utf-8'))
+                    crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
+                    crc_hwid = crc_hwid.hex()
+                    description = desc + ' [' + crc_hwid + ']'
+                    serial_devices.append({"port": str(port), "description": str(description) })
+                
+                static.SERIAL_DEVICES = serial_devices
+                time.sleep(1)
+            except Exception as e:
+                print(e)
+                
     def worker(self):
         while 1:
-        
-            data = self.daemon_queue.get()
-
-            # data[1] mycall
-            # data[2] mygrid
-            # data[3] rx_audio
-            # data[4] tx_audio
-            # data[5] devicename
-            # data[6] deviceport
-            # data[7] serialspeed
-            # data[8] pttprotocol
-            # data[9] pttport
-            # data[10] data_bits
-            # data[11] stop_bits
-            # data[12] handshake
-            # data[13] radiocontrol
-            # data[14] rigctld_ip
-            # data[15] rigctld_port
-            # data[16] send_scatter
-            # data[17] send_fft
-            # data[18] low_bandwith_mode
+            try:
             
-            if data[0] == 'STARTTNC':
-                structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+                data = self.daemon_queue.get()
 
-                # list of parameters, necessary for running subprocess command as a list
-                options = []
+                # data[1] mycall
+                # data[2] mygrid
+                # data[3] rx_audio
+                # data[4] tx_audio
+                # data[5] devicename
+                # data[6] deviceport
+                # data[7] serialspeed
+                # data[8] pttprotocol
+                # data[9] pttport
+                # data[10] data_bits
+                # data[11] stop_bits
+                # data[12] handshake
+                # data[13] radiocontrol
+                # data[14] rigctld_ip
+                # data[15] rigctld_port
+                # data[16] send_scatter
+                # data[17] send_fft
+                # data[18] low_bandwith_mode
                 
-                options.append('--port')
-                options.append(str(static.DAEMONPORT - 1))
-                
-                options.append('--mycall')
-                options.append(data[1])
-                
-                options.append('--mygrid')
-                options.append(data[2])
-                
-                options.append('--rx')
-                options.append(data[3])
-                
-                options.append('--tx')
-                options.append(data[4])
-                
-                options.append('--devicename')
-                options.append(data[5])
-                
-                options.append('--deviceport')
-                options.append(data[6])
-                
-                options.append('--serialspeed')
-                options.append(data[7])
-                
-                options.append('--pttprotocol')
-                options.append(data[8])
-                
-                options.append('--pttport')
-                options.append(data[9])
-                
-                options.append('--data_bits')
-                options.append(data[10])
-                
-                options.append('--stop_bits')
-                options.append(data[11])
-                
-                options.append('--handshake')
-                options.append(data[12])
-                
-                options.append('--radiocontrol')
-                options.append(data[13])
-                
-                options.append('--rigctld_ip')
-                options.append(data[14])
-                
-                options.append('--rigctld_port')
-                options.append(data[15])
-                
-                if data[16] == 'True':
-                    options.append('--scatter')
+                if data[0] == 'STARTTNC':
+                    structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+
+                    # list of parameters, necessary for running subprocess command as a list
+                    options = []
                     
-                if data[17] == 'True':
-                    options.append('--fft')
-
-                if data[18] == 'True':
-                    options.append('--500hz')
-
-                # try running tnc from binary, else run from source
-                # this helps running the tnc in a developer environment
-                try:
-                    command = []
-                    if sys.platform == 'linux' or sys.platform == 'darwin':
-                        command.append('./tnc')
-                    elif sys.platform == 'win32' or sys.platform == 'win64':
-                        command.append('tnc.exe')
-                           
-                    command += options
-                    p = subprocess.Popen(command)
-                    atexit.register(p.kill)
-
-                    structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
-                except:
-                    command = []
-                    if sys.platform == 'linux' or sys.platform == 'darwin':
-                        command.append('python3')
-                    elif sys.platform == 'win32' or sys.platform == 'win64':
-                        command.append('python')
+                    options.append('--port')
+                    options.append(str(static.DAEMONPORT - 1))
+                    
+                    options.append('--mycall')
+                    options.append(data[1])
+                    
+                    options.append('--mygrid')
+                    options.append(data[2])
+                    
+                    options.append('--rx')
+                    options.append(data[3])
+                    
+                    options.append('--tx')
+                    options.append(data[4])
+                    
+                    options.append('--devicename')
+                    options.append(data[5])
+                    
+                    options.append('--deviceport')
+                    options.append(data[6])
+                    
+                    options.append('--serialspeed')
+                    options.append(data[7])
+                    
+                    options.append('--pttprotocol')
+                    options.append(data[8])
+                    
+                    options.append('--pttport')
+                    options.append(data[9])
+                    
+                    options.append('--data_bits')
+                    options.append(data[10])
+                    
+                    options.append('--stop_bits')
+                    options.append(data[11])
+                    
+                    options.append('--handshake')
+                    options.append(data[12])
+                    
+                    options.append('--radiocontrol')
+                    options.append(data[13])
+                    
+                    options.append('--rigctld_ip')
+                    options.append(data[14])
+                    
+                    options.append('--rigctld_port')
+                    options.append(data[15])
+                    
+                    if data[16] == 'True':
+                        options.append('--scatter')
                         
-                    command.append('main.py')
-                    command += options
-                    p = subprocess.Popen(command)
-                    structlog.get_logger("structlog").info("[DMN] TNC started", path="source")
+                    if data[17] == 'True':
+                        options.append('--fft')
 
-                static.TNCPROCESS = p  # .pid
-                static.TNCSTARTED = True
-            '''
-            # WE HAVE THIS PART in SOCKET
-            if data[0] == 'STOPTNC':
-                    static.TNCPROCESS.kill()
-                    structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
-                    #os.kill(static.TNCPROCESS, signal.SIGKILL)
-                    static.TNCSTARTED = False
-            '''        
-            # data[1] devicename
-            # data[2] deviceport
-            # data[3] serialspeed
-            # data[4] pttprotocol
-            # data[5] pttport
-            # data[6] data_bits
-            # data[7] stop_bits
-            # data[8] handshake
-            # data[9] radiocontrol
-            # data[10] rigctld_ip
-            # data[11] rigctld_port
-            if data[0] == 'TEST_HAMLIB':
+                    if data[18] == 'True':
+                        options.append('--500hz')
 
-                devicename = data[1]
-                deviceport = data[2]
-                serialspeed = data[3]
-                pttprotocol = data[4]
-                pttport = data[5]
-                data_bits = data[6]
-                stop_bits = data[7]
-                handshake = data[8]
-                radiocontrol = data[9]
-                rigctld_ip = data[10]
-                rigctld_port = data[11]
+                    # try running tnc from binary, else run from source
+                    # this helps running the tnc in a developer environment
+                    try:
+                        command = []
+                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                            command.append('./tnc')
+                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                            command.append('tnc.exe')
+                               
+                        command += options
+                        p = subprocess.Popen(command)
+                        atexit.register(p.kill)
+
+                        structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
+                    except:
+                        command = []
+                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                            command.append('python3')
+                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                            command.append('python')
+                            
+                        command.append('main.py')
+                        command += options
+                        p = subprocess.Popen(command)
+                        structlog.get_logger("structlog").info("[DMN] TNC started", path="source")
+
+                    static.TNCPROCESS = p  # .pid
+                    static.TNCSTARTED = True
+                '''
+                # WE HAVE THIS PART in SOCKET
+                if data[0] == 'STOPTNC':
+                        static.TNCPROCESS.kill()
+                        structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
+                        #os.kill(static.TNCPROCESS, signal.SIGKILL)
+                        static.TNCSTARTED = False
+                '''        
+                # data[1] devicename
+                # data[2] deviceport
+                # data[3] serialspeed
+                # data[4] pttprotocol
+                # data[5] pttport
+                # data[6] data_bits
+                # data[7] stop_bits
+                # data[8] handshake
+                # data[9] radiocontrol
+                # data[10] rigctld_ip
+                # data[11] rigctld_port
+                if data[0] == 'TEST_HAMLIB':
+
+                    devicename = data[1]
+                    deviceport = data[2]
+                    serialspeed = data[3]
+                    pttprotocol = data[4]
+                    pttport = data[5]
+                    data_bits = data[6]
+                    stop_bits = data[7]
+                    handshake = data[8]
+                    radiocontrol = data[9]
+                    rigctld_ip = data[10]
+                    rigctld_port = data[11]
 
 
-                # check how we want to control the radio
-                if radiocontrol == 'direct':
-                    import rig
-                elif radiocontrol == 'rigctl':
-                    import rigctl as rig
-                elif radiocontrol == 'rigctld':
-                    import rigctld as rig
-                else:
-                    import rigdummy as rig
+                    # check how we want to control the radio
+                    if radiocontrol == 'direct':
+                        import rig
+                    elif radiocontrol == 'rigctl':
+                        import rigctl as rig
+                    elif radiocontrol == 'rigctld':
+                        import rigctld as rig
+                    else:
+                        import rigdummy as rig
+                            
+                    hamlib = rig.radio()
+                    hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
+
+                    hamlib_version = rig.hamlib_version
+
+                    hamlib.set_ptt(True)      
+                    pttstate = hamlib.get_ptt()
+                    
+                    if pttstate:
+                        structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
+                        response = {'command': 'test_hamlib', 'result': 'SUCCESS'}
+                    elif not pttstate:
+                        structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
+                        response = {'command': 'test_hamlib', 'result': 'NOSUCCESS'}
+                    else:
+                        structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
+                        response = {'command': 'test_hamlib', 'result': 'FAILED'}
                         
-                hamlib = rig.radio()
-                hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
-
-                hamlib_version = rig.hamlib_version
-
-                hamlib.set_ptt(True)      
-                pttstate = hamlib.get_ptt()
-                
-                if pttstate:
-                    structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
-                    response = {'command': 'test_hamlib', 'result': 'SUCCESS'}
-                elif not pttstate:
-                    structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
-                    response = {'command': 'test_hamlib', 'result': 'NOSUCCESS'}
-                else:
-                    structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
-                    response = {'command': 'test_hamlib', 'result': 'FAILED'}
+                    hamlib.set_ptt(False)                 
+                    hamlib.close_rig()
+                        
+                    jsondata = json.dumps(response)
+                    sock.SOCKET_QUEUE.put(jsondata)
                     
-                hamlib.set_ptt(False)                 
-                hamlib.close_rig()
-                    
-                jsondata = json.dumps(response)
-                sock.SOCKET_QUEUE.put(jsondata)
-                
-
+            except Exception as e:
+                print(e)
 
 if __name__ == '__main__':
 
@@ -277,4 +289,7 @@ if __name__ == '__main__':
 
     daemon = DAEMON()
     while True:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except Exception as e:
+            print(e)

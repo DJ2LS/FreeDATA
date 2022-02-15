@@ -28,8 +28,9 @@ def noalsaerr():
 # with noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################
-     
-def get_input_devices():
+
+        
+def get_audio_devices():
     # UPDATE LIST OF AUDIO DEVICES    
     try:
     # we need to "try" this, because sometimes libasound.so isn't in the default place                   
@@ -39,10 +40,10 @@ def get_input_devices():
     # else do it the default way
     except Exception as e:
         p = pyaudio.PyAudio()
-
+    
     input_devices = []
     output_devices = []
-
+    
     for i in range(0, p.get_device_count()):
         # we need to do a try exception, beacuse for windows theres now audio device range
         try:
@@ -62,8 +63,3 @@ def get_input_devices():
     p.terminate()
     
     return [input_devices, output_devices]
-
-
-
-def get_output_devices():
-    pass

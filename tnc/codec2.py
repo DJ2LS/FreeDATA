@@ -5,10 +5,8 @@ import ctypes
 from ctypes import *
 import sys
 import os
-#import pathlib
 from enum import Enum
 import numpy as np
-#print("loading codec2 module", file=sys.stderr)
 from threading import Lock
 import glob
 import structlog
@@ -40,12 +38,13 @@ sys.path.append(app_path)
 structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
 if sys.platform == 'linux' or sys.platform == 'darwin':
     files = glob.glob('**/*libcodec2*',recursive=True)
+    files.append('libcodec2.so')
+
 elif sys.platform == 'win32' or sys.platform == 'win64':
-    files = glob.glob('**\*libcodec2*',recursive=True)
+    files = glob.glob('**\*libcodec2*.dll',recursive=True)
 else:
     files = []
     
-files.append('libcodec2.so')
 
 for file in files:
     try:
@@ -59,7 +58,7 @@ for file in files:
 # quit module if codec2 cant be loaded    
 if not 'api' in locals():
     structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded", path=file)
-    exit()
+    os._exit(1)
 
 
 

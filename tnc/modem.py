@@ -6,6 +6,7 @@ Created on Wed Dec 23 07:04:24 2020
 @author: DJ2LS
 """
 import sys
+import os
 import ctypes
 from ctypes import *
 import pathlib
@@ -63,6 +64,7 @@ class RF():
         self.sampler_avg = 0
         self.buffer_avg = 0
         
+
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
@@ -132,7 +134,7 @@ class RF():
         except:
             self.p = audio.pyaudio.PyAudio()
         atexit.register(self.p.terminate)
-        
+                
         # --------------------------------------------OPEN RX AUDIO CHANNEL
         # optional auto selection of loopback device if using in testmode
         if static.AUDIO_INPUT_DEVICE == -2:
@@ -144,17 +146,24 @@ class RF():
                 static.AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX
                 static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #1 = TX
                 print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
-                
-        self.audio_stream = self.p.open(format=audio.pyaudio.paInt16,
-                                     channels=self.AUDIO_CHANNELS,
-                                     rate=self.AUDIO_SAMPLE_RATE_RX,
-                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
-                                     input=True,
-                                     output=True,
-                                     input_device_index=static.AUDIO_INPUT_DEVICE,
-                                     output_device_index=static.AUDIO_OUTPUT_DEVICE,
-                                     stream_callback=self.audio_callback
-                                     )
+         
+        try:
+            self.audio_stream = self.p.open(format=audio.pyaudio.paInt16,
+                                         channels=self.AUDIO_CHANNELS,
+                                         rate=self.AUDIO_SAMPLE_RATE_RX,
+                                         frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
+                                         input=True,
+                                         output=True,
+                                         input_device_index=static.AUDIO_INPUT_DEVICE,
+                                         output_device_index=static.AUDIO_OUTPUT_DEVICE,
+                                         stream_callback=self.audio_callback
+                                         )
+            structlog.get_logger("structlog").info("opened audio devices")
+           
+        except Exception as e:
+            structlog.get_logger("structlog").error("can't open audio device. Exit", e=e)
+            os._exit(1)
+            
         try:                        
             structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
             self.audio_stream.start_stream()
@@ -204,6 +213,7 @@ class RF():
         
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
+
         x = np.frombuffer(data_in48k, dtype=np.int16)
         time_sampler_start = time.time()
         x = self.resampler.resample48_to_8(x)    
@@ -491,6 +501,9 @@ class RF():
             static.HAMLIB_BANDWITH = self.hamlib.get_bandwith()
     
     def calculate_fft(self):
+        # channel_busy_delay counter
+        channel_busy_delay = 0
+        
         while True:
             #time.sleep(0.01)
             threading.Event().wait(0.01)
@@ -512,8 +525,35 @@ class RF():
                     # set value 0 to 1 to avoid division by zero
                     fftarray[fftarray == 0] = 1
                     dfft = 10.*np.log10(abs(fftarray))
+                    
+                    # get average of dfft
+                    avg = np.mean(dfft)
+                    # detect signals which are higher than the average + 10 ( +10 smoothes the output )
+                    # data higher than the average must be a signal. Therefore we are setting it to 100 so it will be highlighted
+                    # have to do this when we are not transmittig so our own sending data will not affect this too much
+                    if not static.TRANSMITTING:
+                        dfft[dfft>avg+10] = 100
+                    
+                    # check for signals higher than average by checking for "100"
+                    # if we have a signal, increment our channel_busy delay counter so we have a smoother state toggle
+                    
+                    if np.sum(dfft[dfft>avg+10]) >= 300 and not static.TRANSMITTING:
+                        static.CHANNEL_BUSY = True
+                        channel_busy_delay += 5
+                        # limit delay counter to a maximun of 30. The higher this value, the linger we will wait until releasing state
+                        if channel_busy_delay > 50:
+                            channel_busy_delay = 50
+                    else:
+                        # decrement channel busy counter if no signal has been detected. 
+                        channel_busy_delay -= 1
+                        if channel_busy_delay < 0:
+                            channel_busy_delay = 0
+                        # if our channel busy counter reached 0, we toggle state to False
+                        if channel_busy_delay == 0:
+                            static.CHANNEL_BUSY = False
+                    
                     # round data to decrease size
-                    dfft = np.around(dfft, 1)
+                    dfft = np.around(dfft, 0)
                     dfftlist = dfft.tolist()
                     
                     static.FFT = dfftlist[0:320] #200 --> bandwith 3000    

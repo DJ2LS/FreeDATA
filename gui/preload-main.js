@@ -857,6 +857,18 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("ptt_state").className = "btn btn-secondary";
     }
 
+    // CHANNEL BUSY STATE
+    if (arg.channel_busy == 'True') {
+        document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
+
+    } else if (arg.channel_busy == 'False') {
+        document.getElementById("channel_busy").className = "btn btn-sm btn-success";
+
+    } else {
+        document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
+
+    }
+
     // BUSY STATE
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-danger";
@@ -1400,7 +1412,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('hamlib_ptt_protocol').disabled = true;
         document.getElementById('audio_input_selectbox').disabled = true;
         document.getElementById('audio_output_selectbox').disabled = true;
-        document.getElementById('stopTNC').disabled = false;
+        //document.getElementById('stopTNC').disabled = false;
         document.getElementById('startTNC').disabled = true;
         document.getElementById('dxCall').disabled = false;
         document.getElementById("hamlib_serialspeed").disabled = true;
@@ -1423,7 +1435,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('hamlib_ptt_protocol').disabled = false;
         document.getElementById('audio_input_selectbox').disabled = false;
         document.getElementById('audio_output_selectbox').disabled = false;
-        document.getElementById('stopTNC').disabled = true;
+        //document.getElementById('stopTNC').disabled = true;
         document.getElementById('startTNC').disabled = false;
         document.getElementById('dxCall').disabled = true;
         document.getElementById("hamlib_serialspeed").disabled = false;

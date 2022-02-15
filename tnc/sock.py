@@ -259,6 +259,7 @@ def send_tnc_state():
         "mode": str(static.HAMLIB_MODE),
         "bandwith": str(static.HAMLIB_BANDWITH),
         "fft": str(static.FFT),
+        "channel_busy": str(static.CHANNEL_BUSY),
         "scatter": static.SCATTER,
         "rx_buffer_length": str(len(static.RX_BUFFER)),
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
@@ -402,26 +403,29 @@ def process_daemon_commands(data):
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
             
 def send_daemon_state():
-    
-    python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+    try:
+        python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 
-    output = {
-        'command': 'daemon_state',
-        'daemon_state': [],
-        'python_version': str(python_version),
-        'hamlib_version': static.HAMLIB_VERSION,
-        'input_devices': static.AUDIO_INPUT_DEVICES,
-        'output_devices': static.AUDIO_OUTPUT_DEVICES,
-        'serial_devices': static.SERIAL_DEVICES,
-        #'cpu': str(psutil.cpu_percent()),
-        #'ram': str(psutil.virtual_memory().percent),
-        'version': '0.1'
-        }
-    
-    if static.TNCSTARTED:
-        output["daemon_state"].append({"status": "running"})
-    else:
-        output["daemon_state"].append({"status": "stopped"})
+        output = {
+            'command': 'daemon_state',
+            'daemon_state': [],
+            'python_version': str(python_version),
+            'hamlib_version': static.HAMLIB_VERSION,
+            'input_devices': static.AUDIO_INPUT_DEVICES,
+            'output_devices': static.AUDIO_OUTPUT_DEVICES,
+            'serial_devices': static.SERIAL_DEVICES,
+            #'cpu': str(psutil.cpu_percent()),
+            #'ram': str(psutil.virtual_memory().percent),
+            'version': '0.1'
+            }
         
-    jsondata = json.dumps(output)
-    return jsondata
+        if static.TNCSTARTED:
+            output["daemon_state"].append({"status": "running"})
+        else:
+            output["daemon_state"].append({"status": "stopped"})
+            
+        jsondata = json.dumps(output)
+        return jsondata
+    except Exception as e:
+        print(e)
+        return None
