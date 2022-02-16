@@ -1,4 +1,4 @@
-name: Build/PROJECT/WIN
+name: Windows Nightly
 on:
   push:
     #tags:
@@ -105,7 +105,7 @@ jobs:
         with:
             type: 'zip'
             filename: 'FreeDATA_windows.zip'
-            directory: ./gui-bundle/
+            directory: ./gui-bundle/win-unpacked/
             path: .
             #exclusions: '*.git* /*node_modules/* .editorconfig'   
                     

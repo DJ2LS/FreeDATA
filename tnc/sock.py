@@ -39,6 +39,11 @@ SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
 
 CONNECTED_CLIENTS = set()
+CLOSE_SIGNAL = False
+
+
+
+
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
@@ -51,7 +56,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         
     def send_to_client(self):
         tempdata = b''
-        while self.connection_alive:
+        while self.connection_alive and not CLOSE_SIGNAL:
+
             # send tnc state as network stream
             # check server port against daemon port and send corresponding data
             
@@ -92,49 +98,53 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def receive_from_client(self):
         data = bytes()
-        while self.connection_alive:
-            # BrokenPipeError: [Errno 32] Broken pipe
-            chunk = self.request.recv(1024)
-            data += chunk
-            
-            if chunk == b'':
-                #print("connection broken. Closing...")
+        while self.connection_alive and not CLOSE_SIGNAL:
+            try:
+                chunk = self.request.recv(1024)
+                data += chunk
+                
+                if chunk == b'':
+                    #print("connection broken. Closing...")
+                    self.connection_alive = False
+                    
+                if data.startswith(b'{') and data.endswith(b'}\n'):                
+                    # split data by \n if we have multiple commands in socket buffer
+                    data = data.split(b'\n')
+                    # remove empty data
+                    data.remove(b'')
+                    
+                    # iterate thorugh data list
+                    for commands in data:
+                        if self.server.server_address[1] == static.PORT:
+                            process_tnc_commands(commands)
+                        else:
+                            process_daemon_commands(commands)
+                    
+                    # finally delete our rx buffer to be ready for new commands
+                    data = bytes()
+            except Exception as e:
+                structlog.get_logger("structlog").info("[SCK] Connection closed", ip=self.client_address[0], port=self.client_address[1], e=e)
                 self.connection_alive = False
                 
-            if data.startswith(b'{') and data.endswith(b'}\n'):                
-                # split data by \n if we have multiple commands in socket buffer
-                data = data.split(b'\n')
-                # remove empty data
-                data.remove(b'')
-                
-                # iterate thorugh data list
-                for commands in data:
-                    if self.server.server_address[1] == static.PORT:
-                        process_tnc_commands(commands)
-                    else:
-                        process_daemon_commands(commands)
-                
-                # finally delete our rx buffer to be ready for new commands
-                data = bytes()
-
  
     def handle(self):
+
         CONNECTED_CLIENTS.add(self.request)
 
-        structlog.get_logger("structlog").debug("[TNC] Client connected", ip=self.client_address[0], port=self.client_address[1])
+        structlog.get_logger("structlog").debug("[SCK] Client connected", ip=self.client_address[0], port=self.client_address[1])
         self.connection_alive = True
         
-        self.sendThread = threading.Thread(target=self.send_to_client, args=[]).start()
-        self.receiveThread = threading.Thread(target=self.receive_from_client, args=[]).start()
+        self.sendThread = threading.Thread(target=self.send_to_client, args=[],daemon=True).start()
+        self.receiveThread = threading.Thread(target=self.receive_from_client, args=[],daemon=True).start()
         
         # keep connection alive until we close it
-        while self.connection_alive:
+        while self.connection_alive and not CLOSE_SIGNAL:
             time.sleep(1)
 
         
 
     def finish(self):
-        structlog.get_logger("structlog").warning("[TNC] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
+        structlog.get_logger("structlog").warning("[SCK] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
         try:
             CONNECTED_CLIENTS.remove(self.request)
         except:

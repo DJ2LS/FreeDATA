@@ -189,26 +189,26 @@ class RF():
 
         # --------------------------------------------START DECODER THREAD
         if static.ENABLE_FFT:
-            fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD")
+            fft_thread = threading.Thread(target=self.calculate_fft, name="FFT_THREAD" ,daemon=True)
             fft_thread.start()
         
-        audio_thread_datac0 = threading.Thread(target=self.audio_datac0, name="AUDIO_THREAD DATAC0")
+        audio_thread_datac0 = threading.Thread(target=self.audio_datac0, name="AUDIO_THREAD DATAC0",daemon=True)
         audio_thread_datac0.start()
 
-        audio_thread_datac1 = threading.Thread(target=self.audio_datac1, name="AUDIO_THREAD DATAC1")
+        audio_thread_datac1 = threading.Thread(target=self.audio_datac1, name="AUDIO_THREAD DATAC1",daemon=True)
         audio_thread_datac1.start()
         
-        audio_thread_datac3 = threading.Thread(target=self.audio_datac3, name="AUDIO_THREAD DATAC3")
+        audio_thread_datac3 = threading.Thread(target=self.audio_datac3, name="AUDIO_THREAD DATAC3",daemon=True)
         audio_thread_datac3.start()
         
         
-        hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD")
+        hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD",daemon=True)
         hamlib_thread.start()
         
-        worker_received = threading.Thread(target=self.worker_received, name="WORKER_THREAD")
+        worker_received = threading.Thread(target=self.worker_received, name="WORKER_THREAD",daemon=True)
         worker_received.start()
         
-        worker_transmit = threading.Thread(target=self.worker_transmit, name="WORKER_THREAD")
+        worker_transmit = threading.Thread(target=self.worker_transmit, name="WORKER_THREAD",daemon=True)
         worker_transmit.start()
         
     # --------------------------------------------------------------------------------------------------------

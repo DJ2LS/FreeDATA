@@ -27,6 +27,16 @@ import queue
 import audio
 import sock
 import atexit
+import signal
+
+# signal handler for closing aplication
+def signal_handler(sig, frame):
+    print('Closing daemon...')
+    sock.CLOSE_SIGNAL = True
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_handler)
+
+
 
 class DAEMON():
     def __init__(self):
@@ -35,13 +45,13 @@ class DAEMON():
         self.crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
         
         self.daemon_queue = sock.DAEMON_QUEUE
-        update_audio_devices = threading.Thread(target=self.update_audio_devices, name="UPDATE_AUDIO_DEVICES")
+        update_audio_devices = threading.Thread(target=self.update_audio_devices, name="UPDATE_AUDIO_DEVICES", daemon=True)
         update_audio_devices.start()
 
-        update_serial_devices = threading.Thread(target=self.update_serial_devices, name="UPDATE_SERIAL_DEVICES")
+        update_serial_devices = threading.Thread(target=self.update_serial_devices, name="UPDATE_SERIAL_DEVICES", daemon=True)
         update_serial_devices.start()
 
-        worker = threading.Thread(target=self.worker, name="WORKER")
+        worker = threading.Thread(target=self.worker, name="WORKER", daemon=True)
         worker.start()
         
         
@@ -176,6 +186,7 @@ class DAEMON():
                                
                         command += options
                         p = subprocess.Popen(command)
+                        
                         atexit.register(p.kill)
 
                         structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
@@ -189,6 +200,8 @@ class DAEMON():
                         command.append('main.py')
                         command += options
                         p = subprocess.Popen(command)
+                        atexit.register(p.kill)
+
                         structlog.get_logger("structlog").info("[DMN] TNC started", path="source")
 
                     static.TNCPROCESS = p  # .pid
@@ -264,6 +277,8 @@ class DAEMON():
             except Exception as e:
                 print(e)
 
+
+
 if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
@@ -273,6 +288,9 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
     static.DAEMONPORT = ARGS.socket_port
     
+    log_handler.setup_logging("daemon")
+
+
 
     try:
         structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
@@ -286,10 +304,8 @@ if __name__ == '__main__':
     except Exception as e:
         structlog.get_logger("structlog").error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=e)
     
-
     daemon = DAEMON()
+
+    
     while True:
-        try:
-            time.sleep(1)
-        except Exception as e:
-            print(e)
+        time.sleep(1)

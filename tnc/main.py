@@ -18,7 +18,17 @@ import structlog
 import log_handler
 import modem
 import sys
+import signal
+import time
 
+
+# signal handler for closing aplication
+def signal_handler(sig, frame):
+    print('Closing tnc...')
+    sock.CLOSE_SIGNAL = True
+    sys.exit(0)
+    
+signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
 
@@ -95,9 +105,12 @@ if __name__ == '__main__':
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer((static.HOST, static.PORT), sock.ThreadedTCPRequestHandler)
         server_thread = threading.Thread(target=cmdserver.serve_forever)
+
         server_thread.daemon = True
         server_thread.start()
 
     except Exception as e:
         structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=e)
-       
+
+    while 1:
+        time.sleep(1)

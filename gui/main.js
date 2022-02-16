@@ -6,6 +6,8 @@ const {
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const exec = require('child_process').execFile;
+
 app.setName("FreeDATA");
 
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config");
@@ -94,7 +96,7 @@ fs.mkdir(receivedFilesFolder, {
 
 
 const config = require(configPath);
-const exec = require('child_process').exec;
+
 
 let win = null;
 let data = null;
@@ -187,7 +189,8 @@ app.whenReady().then(() => {
     }
     
     if(os.platform()=='win32' || os.platform()=='win64'){
-        daemonProcess = exec('./tnc/daemon.exe', function callback(err, stdout, stderr) {
+
+        daemonProcess = exec('tnc\\daemon.exe', function callback(err, stdout, stderr) {
             if (err) {
                 console.log(os.platform());
                 console.error(err);
@@ -196,9 +199,9 @@ app.whenReady().then(() => {
             return;
             }
             console.log(stdout); 
-        });
+            console.log(stderr); 
+        });            
     }
-
 
 
     app.on('activate', () => {
@@ -209,8 +212,7 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-    // kill daemon process
-    daemonProcess.kill('SIGINT');
+
 
     if (process.platform !== 'darwin') {
         app.quit();

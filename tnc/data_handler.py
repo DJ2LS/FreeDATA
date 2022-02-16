@@ -80,14 +80,14 @@ class DATA():
 
         self.transmission_timeout = 30 # transmission timeout in seconds
 
-        worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit")
+        worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",daemon=True)
         worker_thread_transmit.start()
          
-        worker_thread_receive = threading.Thread(target=self.worker_receive, name="worker thread receive")
+        worker_thread_receive = threading.Thread(target=self.worker_receive, name="worker thread receive",daemon=True)
         worker_thread_receive.start()
         
         # START THE THREAD FOR THE TIMEOUT WATCHDOG
-        watchdog_thread = threading.Thread(target=self.watchdog, name="watchdog")
+        watchdog_thread = threading.Thread(target=self.watchdog, name="watchdog",daemon=True)
         watchdog_thread.start()
         
         
@@ -158,11 +158,12 @@ class DATA():
         # bytes_out[1:3] == callsign check for signalling frames, 
         # bytes_out[1:2] == b'\x01' --> broadcasts like CQ with n frames per_burst = 1
         # we could also create an own function, which returns True.
+        
+        frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
 
-        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or bytes(bytes_out[1:2]) == b'\x01':
+        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or frametype == 200 or frametype == 250:
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
-            frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
@@ -262,7 +263,6 @@ class DATA():
                 structlog.get_logger("structlog").debug("ARQ received stop transmission")
                 self.received_stop_transmission()
 
-            # ARQ CONNECT ACK / KEEP ALIVE
             # this is outdated and we may remove it
             elif frametype == 250:
                 structlog.get_logger("structlog").debug("BEACON RECEIVED")
@@ -1077,9 +1077,8 @@ class DATA():
 
                 beacon_frame = bytearray(14)
                 beacon_frame[:1]   = bytes([250])
-                beacon_frame[1:2]  = b'\x01'
-                beacon_frame[2:8]  = static.MYCALLSIGN
-                beacon_frame[8:14] = static.MYGRID
+                beacon_frame[1:7]  = static.MYCALLSIGN
+                beacon_frame[7:13] = static.MYGRID
             
                 static.INFO.append("BEACON;SENDING")
                 structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
@@ -1112,9 +1111,8 @@ class DATA():
         
         cq_frame       = bytearray(14)
         cq_frame[:1]   = bytes([200])
-        cq_frame[1:2]  = b'\x01'
-        cq_frame[2:8]  = static.MYCALLSIGN
-        cq_frame[8:14] = static.MYGRID
+        cq_frame[1:7]  = static.MYCALLSIGN
+        cq_frame[7:13] = static.MYGRID
         
         txbuffer = [cq_frame]
         static.TRANSMITTING = True
