@@ -6,7 +6,7 @@ const {
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const exec = require('child_process').execFile;
+const exec = require('child_process').spawn;
 
 app.setName("FreeDATA");
 
@@ -190,17 +190,16 @@ app.whenReady().then(() => {
     
     if(os.platform()=='win32' || os.platform()=='win64'){
 
-        daemonProcess = exec('tnc\\daemon.exe', function callback(err, stdout, stderr) {
-            if (err) {
-                console.log(os.platform());
-                console.error(err);
-                console.error("Can't start daemon binary");
-                console.error("--> this is only working with the app bundle and a precompiled binaries");
-            return;
-            }
-            console.log(stdout); 
-            console.log(stderr); 
-        });            
+        daemonProcess = exec('tnc\\daemon.exe', [])
+        
+        daemonProcess.on('error', (err) => {
+          console.log(err);
+        });
+        
+        daemonProcess.on('message', (data) => {
+          console.log(data);
+        });
+                
     }
 
 
@@ -212,7 +211,17 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-
+    // closing the tnc binary if not closed when closing application
+    console.log("closing tnc...")
+    
+    if(os.platform()=='win32' || os.platform()=='win64'){
+        exec('Taskkill', ['/IM', 'tnc.exe', '/F'])
+    }
+    
+    if(os.platform()=='linux' || os.platform()=='darwin'){
+        exec('pkill', ['-9', 'tnc'])
+    }
+        
 
     if (process.platform !== 'darwin') {
         app.quit();
