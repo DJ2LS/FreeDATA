@@ -36,10 +36,13 @@ except:
 sys.path.append(app_path)
 
 structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
-if sys.platform == 'linux' or sys.platform == 'darwin':
+if sys.platform == 'linux':
     files = glob.glob('**/*libcodec2*',recursive=True)
     files.append('libcodec2.so')
 
+elif sys.platform == 'darwin':
+    files = glob.glob('**/*libcodec2*.dylib',recursive=True)
+    
 elif sys.platform == 'win32' or sys.platform == 'win64':
     files = glob.glob('**\*libcodec2*.dll',recursive=True)
 else:
