@@ -41,6 +41,14 @@ window.addEventListener('DOMContentLoaded', () => {
     })
 */
 
+
+    // DISABLE HAMLIB DIRECT AND RIGCTL ON WINDOWS
+    if(os.platform()=='win32' || os.platform()=='win64'){
+
+        document.getElementById("radio-control-switch1").style.disabled = true;
+        document.getElementById("radio-control-switch2").style.disabled = true;
+    }
+
     // ENABLE TOOLTIPS EVERYWHERE
     // https://getbootstrap.com/docs/5.1/components/tooltips/
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
