@@ -113,7 +113,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: gui-bundle-windows-artifact
-          path: ./gui-bundle/FreeDATA_windows.zip          
+          path: ./gui-bundle/win-unpacked/FreeDATA_windows.zip          
 
       - name: LIST ALL FILES
         shell: bash
