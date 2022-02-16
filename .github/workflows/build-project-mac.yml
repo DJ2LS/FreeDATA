@@ -44,12 +44,11 @@ jobs:
       - name: Install Portaudio
         if: matrix.os == 'macos-10.15'
         run: |
-            brew remove portaudio
             brew install portaudio
             pip3 install pyaudio
 
 
-      - name: Build codec2 Linux
+      - name: Build codec2 macOS
         if: matrix.os == 'macos-10.15'
         working-directory: tnc
         run: |
