@@ -4,10 +4,12 @@ My attempt to create a free and open-source TNC with a GUI for [codec2](https://
 [mailing-list](https://groups.io/g/freedata)
 
 ## Under development
-Please keep in mind, that this project is still a prototype with many issues which need to be solved.
-Build steps for other OS than Ubuntu are provided, but not fully working, yet.
+
 ![Build Windows](https://github.com/DJ2LS/FreeDATA/actions/workflows/build-project-win.yml/badge.svg)
 ![Build Linux](https://github.com/DJ2LS/FreeDATA/actions/workflows/build-project-linux.yml/badge.svg)
+
+Please keep in mind, that this project is still a prototype with many issues which need to be solved.
+Build steps for other OS than Ubuntu are provided, but not fully working, yet.
 
 Please check the [Releases](https://github.com/DJ2LS/FreeDATA/releases) section for downloading nightly builds
 
