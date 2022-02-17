@@ -37,7 +37,8 @@ def get_audio_devices():
     p = Process(target=update_audio_devices)
     p.start()
     p.join()
-    return AUDIO_DEVICES.get()    
+    audio_devices = AUDIO_DEVICES.get()
+    return audio_devices    
     
 def update_audio_devices():
     # UPDATE LIST OF AUDIO DEVICES    
