@@ -24,7 +24,7 @@ import re
 import queue
 import codec2
 import audio
-
+import multiprocessing
 
 
 
@@ -166,7 +166,8 @@ class RF():
             
         try:                        
             structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
-            self.audio_stream.start_stream()
+            #self.audio_stream.start_stream()
+            multiprocessing.Process(target=self.audio_stream.start_stream).start()
         except Exception as e:
             structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
 

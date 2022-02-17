@@ -1,6 +1,7 @@
 
 import json
-
+import sys
+import multiprocessing
 ####################################################
 # https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
 # https://github.com/DJ2LS/FreeDATA/issues/22
@@ -10,8 +11,8 @@ import json
 from ctypes import *
 from contextlib import contextmanager
 import pyaudio
-from multiprocessing import Process, Queue
-AUDIO_DEVICES = Queue()
+
+AUDIO_DEVICES = multiprocessing.Queue()
 
 
 
@@ -31,13 +32,15 @@ def noalsaerr():
     
 # with noalsaerr():
 #   p = pyaudio.PyAudio()
-######################################################
+#####################################################
 
 def get_audio_devices():
-    p = Process(target=update_audio_devices)
+
+    p = multiprocessing.Process(target=update_audio_devices)
     p.start()
     p.join()
     audio_devices = AUDIO_DEVICES.get()
+
     return audio_devices    
     
 def update_audio_devices():
@@ -71,6 +74,7 @@ def update_audio_devices():
             output_devices.append({"id": i, "name": str(name)})
     
     p.terminate()
-    AUDIO_DEVICES.put([input_devices, output_devices])
 
+    AUDIO_DEVICES.put([input_devices, output_devices])
+    return [input_devices, output_devices]
 

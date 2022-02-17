@@ -20,6 +20,7 @@ import modem
 import sys
 import signal
 import time
+import multiprocessing
 
 
 # signal handler for closing aplication
@@ -31,7 +32,8 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == '__main__':
-
+    # we need to run this on windows for multiprocessing support
+    multiprocessing.freeze_support()
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA TNC')
     PARSER.add_argument('--mycall', dest="mycall", default="AA0AA", help="My callsign", type=str)

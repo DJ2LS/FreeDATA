@@ -28,6 +28,7 @@ import audio
 import sock
 import atexit
 import signal
+import multiprocessing
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
@@ -58,12 +59,11 @@ class DAEMON():
         
     def update_audio_devices(self):
         while 1:
-            #print("update audio")
             try:
-                static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
-                # WE NEED TO WAIT SOME MORE TIME, SO WE ARE NOT CAUSING A CRASH ON RASPBERRY PIs!
-                # pyAudio will crash there if we are opening and closing pyaudio too fast
-                time.sleep(3)
+                if not static.TNCSTARTED:
+                    print("updating audio devices")
+                    static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
+                time.sleep(2)
             except Exception as e:
                 print(e)
     
@@ -281,10 +281,13 @@ class DAEMON():
 
 if __name__ == '__main__':
 
+    # we need to run this on windows for multiprocessing support
+    multiprocessing.freeze_support()
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)
-    
+    #PARSER.add_argument('--multiprocessing-fork', dest="multi_processing", help="test", type=str)    
+    #PARSER.add_argument('pipe_handle', dest="pipe_handle_param", help="test", type=str)    
     ARGS = PARSER.parse_args()
     static.DAEMONPORT = ARGS.socket_port
     
