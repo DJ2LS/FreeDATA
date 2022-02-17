@@ -156,12 +156,12 @@ class DATA():
     def process_data(self, bytes_out, freedv, bytes_per_frame):    
         # forward data only if broadcast or we are the receiver
         # bytes_out[1:3] == callsign check for signalling frames, 
-        # bytes_out[1:2] == b'\x01' --> broadcasts like CQ with n frames per_burst = 1
+        # bytes_out[2:4] == transmission
         # we could also create an own function, which returns True.
         
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
 
-        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or frametype == 200 or frametype == 250:
+        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or bytes(bytes_out[2:4]) == static.MYCALLSIGN_CRC or frametype == 200 or frametype == 250:
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
@@ -1125,8 +1125,8 @@ class DATA():
 
     def received_cq(self, data_in:bytes):
         # here we add the received station to the heard stations buffer
-        dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
-        dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
+        dxcallsign = bytes(data_in[1:7]).rstrip(b'\x00')
+        dxgrid = bytes(data_in[7:13]).rstrip(b'\x00')
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)

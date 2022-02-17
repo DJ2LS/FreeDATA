@@ -64,8 +64,8 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("myGrid").value = config.mygrid;
     
     document.getElementById('hamlib_deviceid').value = config.deviceid;
-    document.getElementById('hamlib_serialspeed').value = config.serialspeed;
-    document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol; 
+    document.getElementById('hamlib_serialspeed').value = config.serialspeed_direct;
+    document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol_direct; 
 
     document.getElementById("hamlib_rigctld_ip").value = config.rigctld_ip;
     document.getElementById("hamlib_rigctld_port").value = config.rigctld_port;
@@ -74,11 +74,11 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("hamlib_serialspeed_rigctl").value = config.serialspeed_rigctl;
     document.getElementById("hamlib_ptt_protocol_rigctl").value = config.pttprotocol_rigctl; 
     
-    document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed;
-    document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol;     
-    document.getElementById('hamlib_databits_advanced').value = config.data_bits;
-    document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits;
-    document.getElementById('hamlib_handshake_advanced').value = config.handshake;
+    document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed_direct;
+    document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol_direct;     
+    document.getElementById('hamlib_databits_advanced').value = config.data_bits_direct;
+    document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits_direct;
+    document.getElementById('hamlib_handshake_advanced').value = config.handshake_direct;
 
     document.getElementById("beaconInterval").value = config.beacon_interval;
  
@@ -550,12 +550,12 @@ window.addEventListener('DOMContentLoaded', () => {
         config.mygrid = mygrid;                
         config.deviceid = deviceid;
         config.deviceport = deviceport;
-        config.serialspeed = serialspeed;
-        config.pttprotocol = pttprotocol;
+        config.serialspeed_direct = serialspeed;
+        config.pttprotocol_direct = pttprotocol;
         config.pttport = pttport;
-        config.data_bits = data_bits;
-        config.stop_bits = stop_bits;
-        config.handshake = handshake;
+        config.data_bits_direct = data_bits;
+        config.stop_bits_direct = stop_bits;
+        config.handshake_direct = handshake;
         config.deviceid_rigctl = deviceid_rigctl;
         config.serialspeed_rigctl = serialspeed_rigctl;
         config.pttprotocol_rigctl = pttprotocol_rigctl;

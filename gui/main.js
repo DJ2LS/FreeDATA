@@ -30,17 +30,17 @@ var configContent = `
   "mygrid": "JN40aa",
   "deviceid": "RIG_MODEL_DUMMY_NOVFO",
   "deviceport": "/dev/ttyACM1",
-  "serialspeed": "9600",
-  "ptt": "USB",
+  "serialspeed_direct": "9600",
   "spectrum": "waterfall",
   "tnclocation": "localhost",
-  "stop_bits" : "1",
-  "data_bits" : "8",
-  "handshake" : "None",
-  "radiocontrol" : "direct",
+  "stop_bits_direct" : "1",
+  "data_bits_direct" : "8",
+  "handshake_direct" : "None",
+  "radiocontrol" : "disabled",
   "deviceport_rigctl" : "3",
   "deviceid_rigctl" : "3",
   "serialspeed_rigctl" : "9600",
+  "pttprotocol_direct" : "USB",
   "pttprotocol_rigctl" : "USB",
   "rigctld_port" : "4532",
   "rigctld_ip" : "127.0.0.1",
@@ -48,8 +48,8 @@ var configContent = `
   "enable_fft" : "False",
   "low_bandwith_mode" : "False",
   "theme" : "default",
-  "screen_height" : 1050,
-  "screen_width" : 430
+  "screen_height" : 430,
+  "screen_width" : 1050
 }
 `;
 if (!fs.existsSync(configPath)) {
