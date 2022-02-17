@@ -78,17 +78,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 data = SOCKET_QUEUE.get()
                 sock_data = bytes(data, 'utf-8')
                 sock_data += b'\n' # append line limiter
+                
                 # send data to all clients
-                try:
-                    for client in CONNECTED_CLIENTS:
-                        try:
-                            client.send(sock_data)
-                        except:
-                            print("connection lost...")
-                            CONNECTED_CLIENTS.remove(self.request)
-                except:
-                    print("client not anymore in client list")
-                    
+                #try:
+                for client in CONNECTED_CLIENTS:
+                    try:
+                        client.send(sock_data)
+                    except:
+                        print("connection lost...")
+
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
@@ -106,8 +104,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if chunk == b'':
                     #print("connection broken. Closing...")
                     self.connection_alive = False
-                    
-                if data.startswith(b'{') and data.endswith(b'}\n'):                
+                print(chunk)   
+                if data.startswith(b'{') and data.endswith(b'}\n'):   
                     # split data by \n if we have multiple commands in socket buffer
                     data = data.split(b'\n')
                     # remove empty data
@@ -119,7 +117,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                             process_tnc_commands(commands)
                         else:
                             process_daemon_commands(commands)
-                    
+
+                        # wait some time between processing multiple commands
+                        # this is only a first test to avoid doubled transmission
+                        # we might improve this by only processing one command or 
+                        # doing some kind of selection to determin which commands need to be dropped
+                        # and which one can be processed during a running transmission
+                        time.sleep(3)
+                        
+                        
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
             except Exception as e:

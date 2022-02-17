@@ -10,6 +10,10 @@ import json
 from ctypes import *
 from contextlib import contextmanager
 import pyaudio
+from multiprocessing import Process, Queue
+AUDIO_DEVICES = Queue()
+
+
 
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
@@ -29,8 +33,13 @@ def noalsaerr():
 #   p = pyaudio.PyAudio()
 ######################################################
 
-        
 def get_audio_devices():
+    p = Process(target=update_audio_devices)
+    p.start()
+    p.join()
+    return AUDIO_DEVICES.get()    
+    
+def update_audio_devices():
     # UPDATE LIST OF AUDIO DEVICES    
     try:
     # we need to "try" this, because sometimes libasound.so isn't in the default place                   
@@ -61,5 +70,6 @@ def get_audio_devices():
             output_devices.append({"id": i, "name": str(name)})
     
     p.terminate()
-    
-    return [input_devices, output_devices]
+    AUDIO_DEVICES.put([input_devices, output_devices])
+
+
