@@ -439,8 +439,10 @@ def send_daemon_state():
             output["daemon_state"].append({"status": "running"})
         else:
             output["daemon_state"].append({"status": "stopped"})
-            
+        
+          
         jsondata = json.dumps(output)
+
         return jsondata
     except Exception as e:
         print(e)

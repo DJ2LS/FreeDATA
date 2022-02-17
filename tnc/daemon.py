@@ -61,12 +61,12 @@ class DAEMON():
         while 1:
             try:
                 if not static.TNCSTARTED:
-                    print("updating audio devices")
                     static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
-                time.sleep(2)
             except Exception as e:
                 print(e)
-    
+            time.sleep(2)
+            
+            
     def update_serial_devices(self):
         while 1:
             try:
@@ -283,6 +283,7 @@ if __name__ == '__main__':
 
     # we need to run this on windows for multiprocessing support
     multiprocessing.freeze_support()
+
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
     PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)

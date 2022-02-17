@@ -12,7 +12,7 @@ from ctypes import *
 from contextlib import contextmanager
 import pyaudio
 
-AUDIO_DEVICES = multiprocessing.Queue()
+
 
 
 
@@ -36,14 +36,15 @@ def noalsaerr():
 
 def get_audio_devices():
 
-    p = multiprocessing.Process(target=update_audio_devices)
+    proxy_input_devices = multiprocessing.Manager().list()
+    proxy_output_devices = multiprocessing.Manager().list()
+    p = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
     p.start()
     p.join()
-    audio_devices = AUDIO_DEVICES.get()
 
-    return audio_devices    
-    
-def update_audio_devices():
+    return list(proxy_input_devices), list(proxy_output_devices)   
+
+def fetch_audio_devices(input_devices, output_devices):
     # UPDATE LIST OF AUDIO DEVICES    
     try:
     # we need to "try" this, because sometimes libasound.so isn't in the default place                   
@@ -54,8 +55,8 @@ def update_audio_devices():
     except Exception as e:
         p = pyaudio.PyAudio()
     
-    input_devices = []
-    output_devices = []
+    #input_devices = []
+    #output_devices = []
     
     for i in range(0, p.get_device_count()):
         # we need to do a try exception, beacuse for windows theres now audio device range
@@ -74,7 +75,9 @@ def update_audio_devices():
             output_devices.append({"id": i, "name": str(name)})
     
     p.terminate()
+    #proxy_input_devices = input_devices
+    #proxy_output_devices = output_devices
+    #d = [input_devices, output_devices]
 
-    AUDIO_DEVICES.put([input_devices, output_devices])
-    return [input_devices, output_devices]
+
 
