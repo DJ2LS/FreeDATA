@@ -329,6 +329,7 @@ class DATA():
             if not static.RX_FRAME_BUFFER.endswith(temp_burst_buffer):
                 static.RX_FRAME_BUFFER += temp_burst_buffer
                 static.RX_BURST_BUFFER = []
+                
             else:
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | Frame already received - sending ACK again")
                 static.RX_BURST_BUFFER = []
@@ -1275,7 +1276,13 @@ class DATA():
             else:
                 print("TIMEOUT")
                 self.frame_received_counter = 0
-                self.speed_level -= 1
+                self.burst_nack_counter += 1
+                
+                if self.burst_nack_counter >= 2:
+                    self.speed_level -= 1
+                    print(self.burst_nack_counter)
+                    print(self.speed_level)
+                    self.burst_nack_counter = 0
                 if self.speed_level <= 0:
                     self.speed_level = 0
                 
