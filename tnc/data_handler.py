@@ -342,8 +342,9 @@ class DATA():
 
 
                 search_position = len(static.RX_FRAME_BUFFER)-search_area
-                # fin dposition of data. returns -1 if nothing found in area else >= 0 
-                get_position = static.RX_FRAME_BUFFER[search_position:].find(temp_burst_buffer)
+                # find position of data. returns -1 if nothing found in area else >= 0
+                # we are beginning from the end, so if data exists twice or more, only the last one should be replaced
+                get_position = static.RX_FRAME_BUFFER[search_position:].rfind(temp_burst_buffer)
                 # if we find data, replace it at this position with the new data and strip it
                 if get_position >= 0:
                     static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[:search_position + get_position]
