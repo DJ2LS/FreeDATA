@@ -46,7 +46,7 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
-        self.rx_n_max_retries_per_burst = 10
+        self.rx_n_max_retries_per_burst = 15
         self.n_retries_per_burst = 0
         
         self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel ope ner
@@ -78,7 +78,7 @@ class DATA():
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-        self.transmission_timeout = 30 # transmission timeout in seconds
+        self.transmission_timeout = 60 # transmission timeout in seconds
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",daemon=True)
         worker_thread_transmit.start()
@@ -326,13 +326,36 @@ class DATA():
 
             # if frame buffer ends not with the current frame, we are going to append new data
             # if data already exists, we received the frame correctly, but the ACK frame didnt receive its destination (ISS)
-            if not static.RX_FRAME_BUFFER.endswith(temp_burst_buffer):
-                static.RX_FRAME_BUFFER += temp_burst_buffer
-                static.RX_BURST_BUFFER = []
-                
-            else:
+            if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer):
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | Frame already received - sending ACK again")
                 static.RX_BURST_BUFFER = []
+            
+            # here we are going to search for our data in the last received bytes
+            # this increases chance we are not loosing the entire frame in case of signalling frame loss
+            else:
+                
+
+                # static.RX_FRAME_BUFFER --> exisitng data
+                # temp_burst_buffer --> new data
+                # search_area --> area where we want to search
+                search_area = 510
+
+
+                search_position = len(static.RX_FRAME_BUFFER)-search_area
+                # fin dposition of data. returns -1 if nothing found in area else >= 0 
+                get_position = static.RX_FRAME_BUFFER[search_position:].find(temp_burst_buffer)
+                # if we find data, replace it at this position with the new data and strip it
+                if get_position >= 0:
+                    static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[:search_position + get_position]
+                    static.RX_FRAME_BUFFER += temp_burst_buffer
+                    structlog.get_logger("structlog").warning("[TNC] ARQ | RX | replacing existing buffer data", area=search_area, pos=get_position)
+                # if we dont find data n this range, we really have new data and going to replace it
+                else:
+                    static.RX_FRAME_BUFFER += temp_burst_buffer
+                    structlog.get_logger("structlog").debug("[TNC] ARQ | RX | appending data to buffer")
+    
+
+
 
             # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
             if not self.rx_frame_bof_received and not self.rx_frame_eof_received and data_in.find(self.data_frame_eof) < 0:  
