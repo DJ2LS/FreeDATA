@@ -61,10 +61,11 @@ class DAEMON():
         while 1:
             try:
                 if not static.TNCSTARTED:
+                    
                     static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
             except Exception as e:
                 print(e)
-            time.sleep(2)
+            time.sleep(1)
             
             
     def update_serial_devices(self):
@@ -280,15 +281,13 @@ class DAEMON():
 
 
 if __name__ == '__main__':
-
     # we need to run this on windows for multiprocessing support
     multiprocessing.freeze_support()
 
+
     # --------------------------------------------GET PARAMETER INPUTS
-    PARSER = argparse.ArgumentParser(description='Simons TEST TNC')
-    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)
-    #PARSER.add_argument('--multiprocessing-fork', dest="multi_processing", help="test", type=str)    
-    #PARSER.add_argument('pipe_handle', dest="pipe_handle_param", help="test", type=str)    
+    PARSER = argparse.ArgumentParser(description='FreeDATA Daemon')
+    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)   
     ARGS = PARSER.parse_args()
     static.DAEMONPORT = ARGS.socket_port
     
@@ -307,7 +306,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         structlog.get_logger("structlog").error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=e)
-    
+        os._exit(1)
     daemon = DAEMON()
 
     

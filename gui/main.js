@@ -181,7 +181,22 @@ app.whenReady().then(() => {
             console.log(file);
         });
     });
+    
+    
+    if(os.platform()=='darwin'){
 
+        daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
+        
+        daemonProcess.on('error', (err) => {
+          console.log(err);
+        });
+        
+        daemonProcess.on('message', (data) => {
+          console.log(data);
+        });
+                
+    }    
+    
 
     if(os.platform()=='linux'){
 
@@ -221,7 +236,9 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
-    // closing the tnc binary if not closed when closing application
+    // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
+    daemonProcess.kill();
+
     console.log("closing tnc...")
     
     if(os.platform()=='win32' || os.platform()=='win64'){
@@ -229,7 +246,9 @@ app.on('window-all-closed', () => {
     }
     
     if(os.platform()=='linux' || os.platform()=='darwin'){
+        console.log("kill process...")
         exec('pkill', ['-9', 'tnc'])
+        
     }
         
 

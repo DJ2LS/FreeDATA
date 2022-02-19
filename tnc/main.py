@@ -113,6 +113,6 @@ if __name__ == '__main__':
 
     except Exception as e:
         structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=e)
-
+        os._exit(1)
     while 1:
         time.sleep(1)
