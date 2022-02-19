@@ -24,7 +24,7 @@ import re
 import queue
 import codec2
 import audio
-import multiprocessing
+
 
 
 
@@ -97,6 +97,9 @@ class RF():
                 
         # open codec2 instance        
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
+        #self.c_lib.freedv_set_fmin_fmax(self.datac0_freedv, c_float(-150.0), c_float(150.0))
+
+        
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)
         self.datac0_payload_per_frame = self.datac0_bytes_per_frame -2
         self.datac0_n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(self.datac0_freedv)
@@ -166,8 +169,8 @@ class RF():
             
         try:                        
             structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
-            #self.audio_stream.start_stream()
-            multiprocessing.Process(target=self.audio_stream.start_stream).start()
+            self.audio_stream.start_stream()
+
         except Exception as e:
             structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
 

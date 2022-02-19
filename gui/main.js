@@ -175,9 +175,17 @@ app.whenReady().then(() => {
     console.log("Trying to start daemon binary")
     
 
+    var folder = path.join(__dirname);
+    fs.readdir(folder, (err, files) => {
+        files.forEach(file => {
+            console.log(file);
+        });
+    });
+
+
     if(os.platform()=='linux'){
 
-        daemonProcess = exec('./tnc/daemon', [])
+        daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
         
         daemonProcess.on('error', (err) => {
           console.log(err);
@@ -192,7 +200,7 @@ app.whenReady().then(() => {
     
     if(os.platform()=='win32' || os.platform()=='win64'){
 
-        daemonProcess = exec('tnc\\daemon.exe', [])
+        daemonProcess = exec(path.join(__dirname) + '\\tnc\\daemon.exe', [])
         
         daemonProcess.on('error', (err) => {
           console.log(err);

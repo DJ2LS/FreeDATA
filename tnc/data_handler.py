@@ -1122,8 +1122,8 @@ class DATA():
 
     def received_beacon(self, data_in:bytes):
     # here we add the received station to the heard stations buffer
-        dxcallsign = bytes(data_in[2:8]).rstrip(b'\x00')
-        dxgrid = bytes(data_in[8:14]).rstrip(b'\x00')
+        dxcallsign = bytes(data_in[1:7]).rstrip(b'\x00')
+        dxgrid = bytes(data_in[7:13]).rstrip(b'\x00')
         static.INFO.append("BEACON;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
