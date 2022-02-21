@@ -290,19 +290,21 @@ if __name__ == '__main__':
     PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)   
     ARGS = PARSER.parse_args()
     static.DAEMONPORT = ARGS.socket_port
-    
-    if sys.platform == 'linux':
-        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon'
-        
-    if sys.platform == 'darwin':
-        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon' 
-           
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'daemon'  
-          
-    log_handler.setup_logging(logging_path)
-
-
+    try:
+        if sys.platform == 'linux':
+            logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon'
+            
+        if sys.platform == 'darwin':
+            logging_path = os.getenv("HOME") + '/Library/' + 'Application Support' + 'FreeDATA/' + 'daemon' 
+               
+        if sys.platform == 'win32' or sys.platform == 'win64':
+            logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'daemon'  
+              
+        if not os.path.exists(logging_path):
+            os.makedirs(logging_path)
+        log_handler.setup_logging(logging_path)
+    except:
+       structlog.get_logger("structlog").error("[TNC] logger init error")       
 
     try:
         structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)

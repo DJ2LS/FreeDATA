@@ -18,6 +18,7 @@ import structlog
 import log_handler
 import modem
 import sys
+import os
 import signal
 import time
 import multiprocessing
@@ -88,19 +89,23 @@ if __name__ == '__main__':
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     
     
-    # config logging
-    
-    
-    if sys.platform == 'linux':
-        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc'
-        
-    if sys.platform == 'darwin':
-        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc' 
-           
-    if sys.platform == 'win32' or sys.platform == 'win64':
-        logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'tnc'  
-          
-    log_handler.setup_logging(logging_path)
+    # config logging  
+    try:  
+        if sys.platform == 'linux':
+            logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc'
+            
+        if sys.platform == 'darwin':
+            logging_path = os.getenv("HOME") + '/Library/' + 'Application Support' + 'FreeDATA/' + 'tnc' 
+               
+        if sys.platform == 'win32' or sys.platform == 'win64':
+            logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'tnc'  
+         
+        if not os.path.exists(logging_path):
+            os.makedirs(logging_path)
+        log_handler.setup_logging(logging_path)
+    except:
+           structlog.get_logger("structlog").error("[DMN] logger init error")       
+
     
     
     structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version="0.1")
