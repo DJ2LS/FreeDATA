@@ -218,13 +218,13 @@ app.whenReady().then(() => {
     
     if(os.platform()=='win32' || os.platform()=='win64'){
         // for windows the relative path via path.join(__dirname) is not needed for some reason 
-        daemonProcess = exec('\\tnc\\daemon.exe', [])
-        /*
+        //daemonProcess = exec('\\tnc\\daemon.exe', [])
+        
         daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon.exe'), [], 
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });
-        */        
+                
     }
 
     // return process messages
