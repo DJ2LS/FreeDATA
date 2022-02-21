@@ -97,7 +97,7 @@ class RF():
                 
         # open codec2 instance        
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
-        #self.c_lib.freedv_set_fmin_fmax(self.datac0_freedv, c_float(-150.0), c_float(150.0))
+        #self.c_lib.freedv_set_tuning_range(self.datac0_freedv, c_float(-150.0), c_float(150.0))
 
         
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)

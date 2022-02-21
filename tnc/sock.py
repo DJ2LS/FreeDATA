@@ -19,7 +19,6 @@ Created on Fri Dec 25 21:25:14 2020
             # "data" : "..."
 
 """
-
 import socketserver
 import threading
 import ujson as json
@@ -192,6 +191,13 @@ def process_tnc_commands(data):
             # send ping frame and wait for ACK
             try:
                 dxcallsign = received_json["dxcallsign"]
+
+                # additional step for beeing sure our callsign is correctly
+                # in case we are not getting a station ssid
+                # then we are forcing a station ssid = 0
+                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+                                
                 data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
             except Exception as e:        
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
@@ -199,6 +205,12 @@ def process_tnc_commands(data):
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
             try:    
                 dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                # additional step for beeing sure our callsign is correctly
+                # in case we are not getting a station ssid
+                # then we are forcing a station ssid = 0
+                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+                
                 mode = int(received_json["parameter"][0]["mode"])
                 n_frames = int(received_json["parameter"][0]["n_frames"])
                 base64data = received_json["parameter"][0]["data"]
@@ -206,7 +218,7 @@ def process_tnc_commands(data):
                 if not len(base64data) % 4: 
                     binarydata = base64.b64decode(base64data)
 
-                    static.DXCALLSIGN = bytes(dxcallsign, 'utf-8')
+                    static.DXCALLSIGN = dxcallsign
                     static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                     data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames])
 

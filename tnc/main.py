@@ -56,12 +56,12 @@ if __name__ == '__main__':
     PARSER.add_argument('--fft', dest="send_fft", action="store_true", help="Send fft information via network") 
     PARSER.add_argument('--500hz', dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )") 
  
- 
-    
+   
     ARGS = PARSER.parse_args()
 
     static.MYCALLSIGN = bytes(ARGS.mycall, 'utf-8')
     static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
+      
     static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
     static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device

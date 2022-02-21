@@ -60,7 +60,13 @@ window.addEventListener('DOMContentLoaded', () => {
     // LOAD SETTINGS
     document.getElementById("tnc_adress").value = config.tnc_host;
     document.getElementById("tnc_port").value = config.tnc_port;
-    document.getElementById("myCall").value = config.mycall;
+    
+    callsign_and_ssid = config.mycall.split("-");
+    callsign = callsign_and_ssid[0];
+    ssid = callsign_and_ssid[1];
+    
+    document.getElementById("myCall").value = callsign;
+    document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
     
     document.getElementById('hamlib_deviceid').value = config.deviceid;
@@ -343,9 +349,11 @@ window.addEventListener('DOMContentLoaded', () => {
     // saveMyCall button clicked
     document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value;
-        config.mycall = callsign.toUpperCase();
+        ssid = document.getElementById("myCallSSID").value;
+        callsign_ssid = callsign.toUpperCase() + '-' + ssid;
+        config.mycall = callsign_ssid;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        daemon.saveMyCall(callsign);
+        daemon.saveMyCall(callsign_ssid);
     });
 
     // saveMyGrid button clicked
@@ -470,7 +478,8 @@ window.addEventListener('DOMContentLoaded', () => {
         var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
 
         var mycall = document.getElementById("myCall").value;
-        mycall = mycall.toUpperCase();
+        var ssid = document.getElementById("myCallSSID").value;
+        callsign_ssid = mycall.toUpperCase() + '-' + ssid;
         
         var mygrid = document.getElementById("myGrid").value;
         
@@ -546,7 +555,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         
         config.radiocontrol = radiocontrol;
-        config.mycall = mycall;
+        config.mycall = callsign_ssid;
         config.mygrid = mygrid;                
         config.deviceid = deviceid;
         config.deviceport = deviceport;
@@ -584,7 +593,7 @@ window.addEventListener('DOMContentLoaded', () => {
         */
 
 
-        daemon.startTNC(mycall, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode);
         
         
     })
@@ -1038,14 +1047,18 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
         var dataType = document.createElement("td");
         var dataTypeText = document.createElement('span');
+        dataTypeText.innerText = arg.stations[i]['datatype'];
+        dataType.appendChild(dataTypeText);
+
         if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
             dataTypeText.innerText = 'DATA-C';
             dataType.appendChild(dataTypeText);
         }
         
-
+        console.log(dataTypeText.innerText)
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
+
         }
 
         if (dataTypeText.innerText == 'DATA-C') {

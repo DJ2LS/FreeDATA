@@ -176,24 +176,26 @@ app.whenReady().then(() => {
     
 
     var folder = path.join(__dirname);
+    console.log(folder)
+    fs.readdir(folder, (err, files) => {
+        files.forEach(file => {
+            console.log(file);
+        });
+    });
+
+    var folder = path.join(__dirname + '/tnc');
+    console.log(folder)
     fs.readdir(folder, (err, files) => {
         files.forEach(file => {
             console.log(file);
         });
     });
     
+        
     
     if(os.platform()=='darwin'){
 
         daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
-        
-        daemonProcess.on('error', (err) => {
-          console.log(err);
-        });
-        
-        daemonProcess.on('message', (data) => {
-          console.log(data);
-        });
                 
     }    
     
@@ -201,31 +203,37 @@ app.whenReady().then(() => {
     if(os.platform()=='linux'){
 
         daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
-        
-        daemonProcess.on('error', (err) => {
-          console.log(err);
-        });
-        
-        daemonProcess.on('message', (data) => {
-          console.log(data);
-        });
                 
     }
 
     
     if(os.platform()=='win32' || os.platform()=='win64'){
-
-        daemonProcess = exec(path.join(__dirname) + '\\tnc\\daemon.exe', [])
-        
-        daemonProcess.on('error', (err) => {
-          console.log(err);
-        });
-        
-        daemonProcess.on('message', (data) => {
-          console.log(data);
-        });
+        // for windows the relative path via path.join(__dirname) is not needed for some reason 
+        daemonProcess = exec('\\tnc\\daemon.exe', [])
                 
     }
+
+    // return process messages
+    
+    daemonProcess.on('error', (err) => {
+          console.log(err);
+    });
+        
+    daemonProcess.on('message', (data) => {
+          console.log(data);
+    });
+    daemonProcess.stdout.on('data', (data) => {
+      console.log(`daemonProcess stdout: ${data}`);
+    });
+
+    daemonProcess.stderr.on('data', (data) => {
+      console.error(`daemonProcess stderr: ${data}`);
+    });
+
+    daemonProcess.on('close', (code) => {
+      console.log(`daemonProcess exited with code ${code}`);
+    });
+
 
 
     app.on('activate', () => {
@@ -237,6 +245,7 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
+    
     daemonProcess.kill();
 
     console.log("closing tnc...")

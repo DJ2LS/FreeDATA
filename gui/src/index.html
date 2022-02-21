@@ -19,7 +19,7 @@
 
 <body>
 	<!-- SECONDARY NAVBAR -->
-	<nav class="navbar bg-light fixed-top navbar-underline  mt-0 mb-1 pb-1 pt-1 shadow">
+	<nav class="navbar bg-light fixed-top mt-0 mb-1 pb-1 pt-1 shadow-sm">
 		<div class="container-fluid mt-0">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Select a local or a remote location of your tnc daemon. Normally local is the preferred option.">
@@ -689,7 +689,29 @@
   <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3zm8-9a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
 </svg>
 									</span>
-										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="callsign" pattern="[A-Z]*" id="myCall" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
+										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="callsign" pattern="[A-Z]*" id="myCall" maxlength="7" aria-label="Input group" aria-describedby="btnGroupAddon">
+								    <select class="form-select form-select-sm" aria-label=".form-select-sm" id="myCallSSID">
+										<option selected value="0">SSID</option>
+										<option value="1">1</option>
+										<option value="2">2</option>
+										<option value="3">3</option>
+										<option value="4">4</option>
+										<option value="5">5</option>
+										<option value="6">6</option>
+										<option value="7">7</option>
+										<option value="8">8</option>
+										<option value="9">9</option>
+										<option value="10">10</option>
+										<option value="11">11</option>
+										<option value="12">12</option>
+										<option value="13">13</option>
+    									<option value="14">14</option>
+    									<option value="15">15</option>
+
+									</select>
+									
+									
+									
 										<button class="btn btn-success" id="saveMyCall" type="button">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
 												<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
@@ -723,7 +745,7 @@
 							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-motherboard" viewBox="0 0 16 16">
 								<path d="M11.5 2a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5Zm2 0a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5Zm-10 8a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6Zm0 2a.5.5 0 0 0 0 1h6a.5.5 0 0 0 0-1h-6ZM5 3a1 1 0 0 0-1 1h-.5a.5.5 0 0 0 0 1H4v1h-.5a.5.5 0 0 0 0 1H4a1 1 0 0 0 1 1v.5a.5.5 0 0 0 1 0V8h1v.5a.5.5 0 0 0 1 0V8a1 1 0 0 0 1-1h.5a.5.5 0 0 0 0-1H9V5h.5a.5.5 0 0 0 0-1H9a1 1 0 0 0-1-1v-.5a.5.5 0 0 0-1 0V3H6v-.5a.5.5 0 0 0-1 0V3Zm0 1h3v3H5V4Zm6.5 7a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h2a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-2Z" />
 								<path d="M1 2a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-2H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 9H1V8H.5a.5.5 0 0 1-.5-.5v-1A.5.5 0 0 1 .5 6H1V5H.5a.5.5 0 0 1-.5-.5v-2A.5.5 0 0 1 .5 2H1Zm1 11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v11Z" />
-							</svg> <strong>SETTINGS</strong>
+							</svg> <strong>TNC SETTINGS</strong>
 						</div>
 						<div class="card-body p-2 mb-1">
 						
@@ -785,7 +807,7 @@
 							<div class="row">
 								<div class="col-md-auto">
 									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send a ping request to a remote station"> <span class="input-group-text">Ping</span>
-										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="DXcall" pattern="[A-Z]*" id="dxCall" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
+										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="DXcall" pattern="[A-Z]*" id="dxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
 										<button class="btn btn-success" id="sendPing" type="button">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-arrows-angle-contract" viewBox="0 0 16 16">
 												<path fill-rule="evenodd" d="M.172 15.828a.5.5 0 0 0 .707 0l4.096-4.096V14.5a.5.5 0 1 0 1 0v-3.975a.5.5 0 0 0-.5-.5H1.5a.5.5 0 0 0 0 1h2.768L.172 15.121a.5.5 0 0 0 0 .707zM15.828.172a.5.5 0 0 0-.707 0l-4.096 4.096V1.5a.5.5 0 1 0-1 0v3.975a.5.5 0 0 0 .5.5H14.5a.5.5 0 0 0 0-1h-2.768L15.828.879a.5.5 0 0 0 0-.707z" />
@@ -948,7 +970,7 @@
 									<div class="row">
 										<div class="col-auto">
 											<div class="input-group input-group-sm mb-0">
-												<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
+												<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
 											</div>
 										</div>
 										<div class="col-auto">

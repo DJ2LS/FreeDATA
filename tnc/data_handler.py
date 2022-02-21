@@ -870,7 +870,7 @@ class DATA():
         connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:11]   = static.MYCALLSIGN
+        connection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
         connection_frame[13:14] = bytes([n_frames_per_burst])                    
         
         while not static.ARQ_STATE:
@@ -913,7 +913,7 @@ class DATA():
         self.is_IRS = True        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         #check if we received low bandwith mode
@@ -1010,8 +1010,8 @@ class DATA():
 
 
     # ---------- PING
-    def transmit_ping(self, callsign:str):
-        static.DXCALLSIGN = bytes(callsign, 'utf-8').rstrip(b'\x00')
+    def transmit_ping(self, dxcallsign:bytes):
+        static.DXCALLSIGN = dxcallsign
         static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                 
         static.INFO.append("PING;SENDING")
@@ -1021,7 +1021,7 @@ class DATA():
         ping_frame[:1]  = bytes([210])
         ping_frame[1:3] = static.DXCALLSIGN_CRC
         ping_frame[3:5] = static.MYCALLSIGN_CRC
-        ping_frame[5:11] = static.MYCALLSIGN
+        ping_frame[5:13] = helpers.callsign_to_bytes(static.MYCALLSIGN)
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
@@ -1033,8 +1033,8 @@ class DATA():
     def received_ping(self, data_in:bytes, frequency_offset:str):
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = bytes(data_in[5:11]).rstrip(b'\x00')
-        helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         static.INFO.append("PING;RECEIVING")
 
@@ -1059,7 +1059,7 @@ class DATA():
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXGRID = bytes(data_in[5:11]).rstrip(b'\x00')
            
-        helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         static.INFO.append("PING;RECEIVEDACK")
 
@@ -1102,13 +1102,14 @@ class DATA():
 
                 beacon_frame = bytearray(14)
                 beacon_frame[:1]   = bytes([250])
-                beacon_frame[1:7]  = static.MYCALLSIGN
-                beacon_frame[7:13] = static.MYGRID
+                beacon_frame[1:9]  = helpers.callsign_to_bytes(static.MYCALLSIGN)
+                beacon_frame[9:13] = static.MYGRID[:4]
             
                 static.INFO.append("BEACON;SENDING")
                 structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
                 
                 txbuffer = [beacon_frame]
+
                 static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
                 # wait while transmitting
@@ -1122,8 +1123,8 @@ class DATA():
 
     def received_beacon(self, data_in:bytes):
     # here we add the received station to the heard stations buffer
-        dxcallsign = bytes(data_in[1:7]).rstrip(b'\x00')
-        dxgrid = bytes(data_in[7:13]).rstrip(b'\x00')
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
         static.INFO.append("BEACON;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
@@ -1136,10 +1137,11 @@ class DATA():
         
         cq_frame       = bytearray(14)
         cq_frame[:1]   = bytes([200])
-        cq_frame[1:7]  = static.MYCALLSIGN
-        cq_frame[7:13] = static.MYGRID
+        cq_frame[1:9]  = helpers.callsign_to_bytes(static.MYCALLSIGN)
+        cq_frame[9:13] = static.MYGRID[:4]
         
         txbuffer = [cq_frame]
+        print(txbuffer)
         static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,2,500,txbuffer])
         # wait while transmitting
@@ -1150,11 +1152,11 @@ class DATA():
 
     def received_cq(self, data_in:bytes):
         # here we add the received station to the heard stations buffer
-        dxcallsign = bytes(data_in[1:7]).rstrip(b'\x00')
-        dxgrid = bytes(data_in[7:13]).rstrip(b'\x00')
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
-        helpers.add_to_heard_stations(dxcallsign,dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+        helpers.add_to_heard_stations(dxcallsign, dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
     # ------------ CALUCLATE TRANSFER RATES
     def calculate_transfer_rate_rx(self, rx_start_of_transmission:float, receivedbytes:int) -> list:

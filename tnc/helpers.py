@@ -63,6 +63,7 @@ def get_crc_32(data):
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
+
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
         static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
@@ -83,6 +84,81 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
+
+
+
+def callsign_to_bytes(callsign):
+    # http://www.aprs.org/aprs11/SSIDs.txt
+    #-0 Your primary station usually fixed and message capable
+    #-1 generic additional station, digi, mobile, wx, etc
+    #-2 generic additional station, digi, mobile, wx, etc
+    #-3 generic additional station, digi, mobile, wx, etc
+    #-4 generic additional station, digi, mobile, wx, etc
+    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    #-6 Special activity, Satellite ops, camping or 6 meters, etc
+    #-7 walkie talkies, HT's or other human portable
+    #-8 boats, sailboats, RV's or second main mobile
+    #-9 Primary Mobile (usually message capable)
+    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    #-11 balloons, aircraft, spacecraft, etc
+    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    #-13 Weather stations
+    #-14 Truckers or generally full time drivers
+    #-15 generic additional station, digi, mobile, wx, etc
+    
+    # try converting to bytestring if possible type string
+    try:    
+        callsign = bytes(callsign, 'utf-8')       
+    except:
+        pass
+
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign ) 
+    callsign = callsign.split(b'-')
+    try:
+        ssid = int(callsign[1])
+    except:
+        ssid = 0
+        
+    callsign = callsign[0]
+    
+    bytestring = bytearray(8)
+    bytestring[:len(callsign)] = callsign
+    bytestring[7:8] = bytes([ssid])
+
+    return bytes(bytestring) 
+    
+def bytes_to_callsign(bytestring):
+
+    # http://www.aprs.org/aprs11/SSIDs.txt
+    #-0 Your primary station usually fixed and message capable
+    #-1 generic additional station, digi, mobile, wx, etc
+    #-2 generic additional station, digi, mobile, wx, etc
+    #-3 generic additional station, digi, mobile, wx, etc
+    #-4 generic additional station, digi, mobile, wx, etc
+    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    #-6 Special activity, Satellite ops, camping or 6 meters, etc
+    #-7 walkie talkies, HT's or other human portable
+    #-8 boats, sailboats, RV's or second main mobile
+    #-9 Primary Mobile (usually message capable)
+    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    #-11 balloons, aircraft, spacecraft, etc
+    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    #-13 Weather stations
+    #-14 Truckers or generally full time drivers
+    #-15 generic additional station, digi, mobile, wx, etc
+        
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )    
+
+    callsign = bytes(bytestring[:7])
+    callsign = callsign.rstrip(b'\x00')
+    ssid = int.from_bytes(bytes(bytestring[7:8]), "big")
+
+    callsign = callsign + b'-'
+    callsign = callsign.decode('utf-8')
+    callsign = callsign + str(ssid)
+    callsign = callsign.encode('utf-8')
+    
+    return bytes(callsign) 
 
 '''
 def setup_logging():
