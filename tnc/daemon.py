@@ -297,7 +297,7 @@ if __name__ == '__main__':
     if sys.platform == 'darwin':
         logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon' 
            
-    if sys.platform == 'win32' || sys.platform == 'win64':
+    if sys.platform == 'win32' or sys.platform == 'win64':
         logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'daemon'  
           
     log_handler.setup_logging(logging_path)
