@@ -175,41 +175,55 @@ app.whenReady().then(() => {
     console.log("Trying to start daemon binary")
     
 
-    var folder = path.join(__dirname);
-    console.log(folder)
-    fs.readdir(folder, (err, files) => {
-        files.forEach(file => {
-            console.log(file);
-        });
-    });
 
-    var folder = path.join(__dirname + '/tnc');
-    console.log(folder)
-    fs.readdir(folder, (err, files) => {
-        files.forEach(file => {
-            console.log(file);
-        });
-    });
+
     
-        
+    
     
     if(os.platform()=='darwin'){
-
-        daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
-                
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
+            {   
+                cwd: path.join(process.resourcesPath, 'tnc'),              
+            });                
     }    
     
+    /*
+    process.resourcesPath -->
+    /tmp/.mount_FreeDAUQYfKb/resources
+    
+    __dirname -->
+    /tmp/.mount_FreeDAUQYfKb/resources/app.asar
+    */
 
     if(os.platform()=='linux'){
+        console.log("starting daemon...")
+        console.log("-------------------------------")
 
-        daemonProcess = exec(path.join(__dirname) + '/tnc/daemon', [])
-                
+    var folder = path.join(process.resourcesPath, 'tnc');
+    //var folder = path.join(__dirname, 'extraResources', 'tnc');
+    console.log(folder);
+    fs.readdir(folder, (err, files) => {
+        console.log(files);
+    });
+    
+        console.log("-------------------------------")        
+
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
+            {   
+                cwd: path.join(process.resourcesPath, 'tnc'),              
+            });
+        
     }
 
     
     if(os.platform()=='win32' || os.platform()=='win64'){
         // for windows the relative path via path.join(__dirname) is not needed for some reason 
-        daemonProcess = exec('\\tnc\\daemon.exe', [])
+        //daemonProcess = exec('\\tnc\\daemon.exe', [])
+        
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon.exe'), [], 
+            {   
+                cwd: path.join(process.resourcesPath, 'tnc'),              
+            });
                 
     }
 
@@ -245,8 +259,12 @@ app.whenReady().then(() => {
 
 app.on('window-all-closed', () => {
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
+    try {
+        daemonProcess.kill();
+    } catch (e) {   
+        console.log(e);
+    }
     
-    daemonProcess.kill();
 
     console.log("closing tnc...")
     

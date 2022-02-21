@@ -291,7 +291,16 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
     static.DAEMONPORT = ARGS.socket_port
     
-    log_handler.setup_logging("daemon")
+    if sys.platform == 'linux':
+        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon'
+        
+    if sys.platform == 'darwin':
+        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon' 
+           
+    if sys.platform == 'win32' || sys.platform == 'win64':
+        logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'daemon'  
+          
+    log_handler.setup_logging(logging_path)
 
 
 

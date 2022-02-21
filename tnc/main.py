@@ -89,7 +89,20 @@ if __name__ == '__main__':
     import sock     
     
     # config logging
-    log_handler.setup_logging("tnc")
+    
+    
+    if sys.platform == 'linux':
+        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc'
+        
+    if sys.platform == 'darwin':
+        logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc' 
+           
+    if sys.platform == 'win32' || sys.platform == 'win64':
+        logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'tnc'  
+          
+    log_handler.setup_logging(logging_path)
+    
+    
     structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version="0.1")
     
     # start data handler
