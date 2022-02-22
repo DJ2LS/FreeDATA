@@ -67,8 +67,8 @@ if not 'api' in locals():
     
 # ctypes function init        
 
-#api.freedv_set_fmin_fmax.restype = c_int
-#api.freedv_set_fmin_fmax.argype = [c_void_p, c_float, c_float]
+#api.freedv_set_tuning_range.restype = c_int
+#api.freedv_set_tuning_range.argype = [c_void_p, c_float, c_float]
 
 api.freedv_open.argype = [c_int]
 api.freedv_open.restype = c_void_p

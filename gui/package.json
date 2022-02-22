@@ -43,6 +43,7 @@
     "productName": "FreeDATA",
     "appId": "app.freedata",
     "dmg": {
+      "publish": ["github"]
       "icon": "./src/icon_cube_border.png",
       "contents": [
         {
@@ -58,12 +59,14 @@
       ]
     },
     "win": {
+      "publish": ["github"]
       "icon": "./src/icon_cube_border.png",
       "target": [
         "nsis"
       ]
     },
     "linux": {
+      "publish": ["github"]
       "icon": "./src/icon_cube_border.png",
       "target": [
         "AppImage"
