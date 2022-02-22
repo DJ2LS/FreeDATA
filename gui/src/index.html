@@ -9,8 +9,6 @@
 	<!-- <meta http-equiv="Content-Security-Policy" content="script-src 'self';">-->
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" id="bootstrap_theme" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-
-
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
@@ -79,8 +77,6 @@
 					</svg>
 				</button>			
 				</span>
-				
-				
 				<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
 				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary">
 					    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders" viewBox="0 0 16 16">
@@ -88,16 +84,63 @@
 					    </svg>
 				    </button>
 			    </span>
-							
-							
-							
-							
 			</div>
 		</div>
 	</nav>
 	<div id="blurdiv" style="-webkit-Filter: blur(0px)">
 		<!--beginn of blur div -->
 		<!-------------------------------- MAIN AREA ---------------->
+		<!-------------------------------- UPDATE TOASTS ---------------->
+		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
+			<div class="toast-container position-absolute top-0 start-0 end-0 p-3">
+				<!-- CHECKING FOR UPDATE -->
+				<div class="toast align-items-center text-white bg-secondary border-0" id="toastUpdateChecking" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">Checking for update</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+				<!-- DOWNLOAD PROGRESS -->
+				<div class="toast align-items-center bg-white" id="toastUpdateProgress" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="false" data-bs-autohide="false">
+					<!--<div class="d-flex"> -->
+					<div class="toast-header"> <strong class="me-auto">Downloading...</strong>
+						<small><span id="toastUpdateProgressSpeed"></span></small>
+					</div>
+					<div class="toast-body w-100">
+						<div class="progress">
+							<div class="progress-bar" style="width: 75%" role="progressbar" id="toastUpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="toastUpdateProgressInfo"></span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!-- DOWNLOADED -->
+				<div class="toast bg-white" role="alert" data-bs-autohide="false" id="toastUpdateDownloaded" aria-live="assertive" aria-atomic="true">
+					<div class="toast-header"> <strong class="me-auto">    Update ready...</strong>
+					</div>
+					<div class="toast-body">Please restart the app for installation!</div>
+				</div>
+				<!-- UPDATE AVAILABLE -->
+				<div class="toast bg-white" role="alert" data-bs-autohide="true" id="toastUpdateAvailable" aria-live="assertive" aria-atomic="true">
+					<div class="toast-header"> <strong class="me-auto">       Update available</strong>
+					</div>
+					<div class="toast-body">going to download...</div>
+				</div>
+				<!-- UPDATE NOT AVAILABLE -->
+				<div class="toast align-items-center text-white bg-primary border-0" id="toastUpdateAvailable" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">UPDATE NOT AVAILABLE!</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+				<!-- NOT CHECKING FOR UPDATE -->
+				<div class="toast align-items-center text-white bg-primary border-0" id="toastUpdateNotChecking" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">We are in a dev environment..</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+			</div>
+		</div>
 		<!-------------------------------- INFO TOASTS ---------------->
 		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
 			<div class="toast-container position-absolute top-0 end-0 p-3">
@@ -268,14 +311,11 @@
 							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
 								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch0" autocomplete="off" checked>
 								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch0">
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
-  <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
-</svg>
-								
+									<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+										<path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+										<path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+									</svg>
 								</label>
-								
-								
 								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch1" autocomplete="off" checked>
 								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch1"><strong>direct</strong>
 								</label>
@@ -662,12 +702,9 @@
 								</div>
 							</div>
 							<div id="radio-control-rigctld">
-								<div class="input-group  input-group-sm mb-1">
-								<span class="input-group-text" id="basic-addon1">IP</span>
-									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">
-									<span class="input-group-text" id="basic-addon1">:</span>
-<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
-																
+								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">IP</span>
+									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">:</span>
+									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
 								</div>
 							</div>
 						</div>
@@ -690,28 +727,24 @@
 </svg>
 									</span>
 										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="callsign" pattern="[A-Z]*" id="myCall" maxlength="7" aria-label="Input group" aria-describedby="btnGroupAddon">
-								    <select class="form-select form-select-sm" aria-label=".form-select-sm" id="myCallSSID" style="width:2rem">
-										<option selected value="0">SSID</option>
-										<option value="1">1</option>
-										<option value="2">2</option>
-										<option value="3">3</option>
-										<option value="4">4</option>
-										<option value="5">5</option>
-										<option value="6">6</option>
-										<option value="7">7</option>
-										<option value="8">8</option>
-										<option value="9">9</option>
-										<option value="10">10</option>
-										<option value="11">11</option>
-										<option value="12">12</option>
-										<option value="13">13</option>
-    									<option value="14">14</option>
-    									<option value="15">15</option>
-
-									</select>
-									
-									
-									
+										<select class="form-select form-select-sm" aria-label=".form-select-sm" id="myCallSSID" style="width:2rem">
+											<option selected value="0">SSID</option>
+											<option value="1">1</option>
+											<option value="2">2</option>
+											<option value="3">3</option>
+											<option value="4">4</option>
+											<option value="5">5</option>
+											<option value="6">6</option>
+											<option value="7">7</option>
+											<option value="8">8</option>
+											<option value="9">9</option>
+											<option value="10">10</option>
+											<option value="11">11</option>
+											<option value="12">12</option>
+											<option value="13">13</option>
+											<option value="14">14</option>
+											<option value="15">15</option>
+										</select>
 										<button class="btn btn-success" id="saveMyCall" type="button">
 											<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
 												<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
@@ -748,22 +781,18 @@
 							</svg> <strong>TNC SETTINGS</strong>
 						</div>
 						<div class="card-body p-2 mb-1">
-						
-						<div class="form-check form-switch form-check-inline">
-                          <input class="form-check-input" type="checkbox" id="fftSwitch">
-                          <label class="form-check-label" for="fftSwitch">Waterfall</label>
-                        </div>
-						
-						<div class="form-check form-switch form-check-inline">
-                          <input class="form-check-input" type="checkbox" id="scatterSwitch">
-                          <label class="form-check-label" for="scatterSwitch">Scatter</label>
-                        </div>
-						
-						<div class="form-check form-switch form-check-inline">
-                          <input class="form-check-input" type="checkbox" id="500HzModeSwitch">
-                          <label class="form-check-label" for="500HzModeSwitch">500Hz</label>
-                        </div>						
-						
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="fftSwitch">
+								<label class="form-check-label" for="fftSwitch">Waterfall</label>
+							</div>
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="scatterSwitch">
+								<label class="form-check-label" for="scatterSwitch">Scatter</label>
+							</div>
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
+								<label class="form-check-label" for="500HzModeSwitch">500Hz</label>
+							</div>
 							<!--<button class="btn btn-secondary btn-sm" id="python_version" type="button" disabled>Python</button>-->
 							<!--<button class="btn btn-secondary btn-sm" id="node_version" type="button" disabled>Node</button>-->
 							<!--<button class="btn btn-secondary btn-sm" id="hamlib_version" type="button" disabled>Hamlib</button>-->
@@ -784,7 +813,6 @@
 				</div>
 			</div>
 		</div>
-
 		<div class="container mt-2 p-0">
 			<div class="row collapse multi-collapse" id="collapseThirdRow">
 				<div class="col-5">
@@ -861,12 +889,7 @@
 								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong>SCATTER</strong>
 								</label>
 							</div>
-							
-							<button class="btn btn-sm btn-secondary" id="channel_busy" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>">
-						busy
-					</button>
-							
-							
+							<button class="btn btn-sm btn-secondary" id="channel_busy" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>">busy</button>
 						</div>
 						<div class="card-body p-1" style="height: 200px">
 							<!--278px-->
@@ -1011,7 +1034,7 @@
 								<div class="card-body p-2">
 									<div class="row">
 										<div class="col">
-											<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1" >Mode</span>
+											<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1">Mode</span>
 												<select class="form-select form-select-sm" aria-label=".form-select-sm" id="datamode" disabled>
 													<option selected value="255">AUTO</option>
 													<!--<option value="232">HIGH SNR (DC1)</option>-->
@@ -1039,7 +1062,7 @@
 							<button type="button" id="startTransmission" data-bs-dismiss="offcanvas" class="btn btn-success" style="width:100%">START TRANSMISSION</button>
 						</div>
 						<div class="col-md-auto">
-							<button type="button" id="stopTransmission" class="btn btn-danger" style="width:100%" >STOP</button>
+							<button type="button" id="stopTransmission" class="btn btn-danger" style="width:100%">STOP</button>
 						</div>
 					</div>
 					<!--
@@ -1123,14 +1146,12 @@
 	<!-- chart.js -->
 	<script src="../node_modules/chart.js/dist/chart.min.js"></script>
 	<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
-
 	<!--<script src="../ui.js"></script>-->
 	<!-- WATERFALL -->
 	<script src="waterfall/colormap.js"></script>
 	<script src="waterfall/spectrum.js"></script>
 	<script src="waterfall/spectrogram.js"></script>
 	<!--<script src="waterfall/script.js"></script>-->
-	
 	<!-- INFO MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="infoModal">
 		<div class="modal-dialog modal-dialog-scrollable">
@@ -1140,50 +1161,39 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-				
-				
-				
-                    <div class="input-group  input-group-sm mb-1"> 
-                        <span class="input-group-text" id="basic-addon1">Theme</span>
-						    <select class="form-select form-select-sm" aria-label=".form-select-sm" id="theme_selector">
-
-                                 <option value="default">Default</option>
-                                 <option value="cerulean">Cerulean</option>
-                                 <option value="cosmo">Cosmo</option>
-                                 <option value="cyborg">Cyborg</option>
-                                 <option value="darkly">Darkly</option>
-                                 <option value="flatly">Flatly</option>
-                                 <option value="journal">Journal</option>
-                                 <option value="litera">Litera</option>
-                                 <option value="lumen">Lumen</option>
-                                 <option value="lux">Lux</option>
-                                 <option value="materia">Materia</option>
-                                 <option value="minty">Minty</option>
-                                 <option value="morph">Morhp</option>
-                                 <option value="pulse">Pulse</option>
-                                 <option value="quartz">Quartz</option>
-                                 <option value="sandstone">Sandstone</option>
-                                 <option value="simplex">Simplex</option>
-                                 <option value="sketchy">Sketchy</option>
-                                 <option value="slate">Slate</option>
-                                 <option value="solar">Solar</option>
-                                 <option value="spacelab">Spacelab</option>
-                                 <option value="superhero">Superhero</option>
-                                 <option value="united">United</option>
-                                 <option value="vapor">Vapor</option>
-                                 <option value="yeti">Yeti</option>
-                                 <option value="zephyr">Zephyr</option>
-                                 
-							</select> 
-									
-					</div>				
-									
-
-
-
-	            </div>
-	        </div>
-	    </div>
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Theme</span>
+						<select class="form-select form-select-sm" aria-label=".form-select-sm" id="theme_selector">
+							<option value="default">Default</option>
+							<option value="cerulean">Cerulean</option>
+							<option value="cosmo">Cosmo</option>
+							<option value="cyborg">Cyborg</option>
+							<option value="darkly">Darkly</option>
+							<option value="flatly">Flatly</option>
+							<option value="journal">Journal</option>
+							<option value="litera">Litera</option>
+							<option value="lumen">Lumen</option>
+							<option value="lux">Lux</option>
+							<option value="materia">Materia</option>
+							<option value="minty">Minty</option>
+							<option value="morph">Morhp</option>
+							<option value="pulse">Pulse</option>
+							<option value="quartz">Quartz</option>
+							<option value="sandstone">Sandstone</option>
+							<option value="simplex">Simplex</option>
+							<option value="sketchy">Sketchy</option>
+							<option value="slate">Slate</option>
+							<option value="solar">Solar</option>
+							<option value="spacelab">Spacelab</option>
+							<option value="superhero">Superhero</option>
+							<option value="united">United</option>
+							<option value="vapor">Vapor</option>
+							<option value="yeti">Yeti</option>
+							<option value="zephyr">Zephyr</option>
+						</select>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 	<!-- HAMLIB ADVANCED SETTINGS MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="advancedHamlibSettingsModal">

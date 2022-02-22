@@ -155,6 +155,9 @@ function createWindow() {
     
     
     win.once('ready-to-show', () => {
+    
+        autoUpdater.autoInstallOnAppQuit = true;
+        autoUpdater.autoDownload = true;
         autoUpdater.checkForUpdatesAndNotify();
     });
 
@@ -181,11 +184,6 @@ app.whenReady().then(() => {
     console.log("Trying to start daemon binary")
     
 
-
-
-    
-    
-    
     if(os.platform()=='darwin'){
         daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
             {   
@@ -213,7 +211,7 @@ app.whenReady().then(() => {
     });
     
         console.log("-------------------------------")        
-
+        
         daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
@@ -236,7 +234,7 @@ app.whenReady().then(() => {
     // return process messages
     
     daemonProcess.on('error', (err) => {
-          console.log(err);
+          console.log(`error when starting daemon: ${err}`);
     });
         
     daemonProcess.on('message', (data) => {
@@ -346,8 +344,54 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
 
 autoUpdater.on('update-available', () => {
   console.log('update available');
-});
-autoUpdater.on('update-downloaded', () => {
-  console.log('update downloaded');
+    let arg = {
+        status: "update-available"
+    };
+  win.webContents.send('action-updater', arg);
+  
 });
 
+autoUpdater.on('update-not-available', () => {
+  console.log('update-not-available');
+    let arg = {
+        status: "update-not-available"
+    };
+  win.webContents.send('action-updater', arg);  
+});
+
+
+autoUpdater.on('update-downloaded', () => {
+  console.log('update downloaded');
+      let arg = {
+        status: "update-downloaded"
+    };
+  win.webContents.send('action-updater', arg); 
+});
+
+autoUpdater.on('checking-for-update', () => {
+    let arg = {
+        status: "checking-for-update"
+    };
+  win.webContents.send('action-updater', arg); 
+});
+
+autoUpdater.on('download-progress', (progress) => {
+    let arg = {
+        status: "download-progress",
+        progress: progress
+    };
+  win.webContents.send('action-updater', arg); 
+});
+
+autoUpdater.on('error', (progress) => {
+    let arg = {
+        status: "error",
+        progress: progress
+    };
+  win.webContents.send('action-updater', arg); 
+});
+
+
+ipcMain.on('restart_app', () => {
+  autoUpdater.quitAndInstall();
+});

@@ -1612,3 +1612,65 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
 
 });
+
+
+ipcRenderer.on('action-updater', (event, arg) => {
+
+        console.log(arg.status)
+
+        if (arg.status == "download-progress"){
+            var progressinfo = '(' + Math.round(arg.progress.transferred/1024) + 'kB /' + Math.round(arg.progress.total/1024) + 'kB)'; 
+            document.getElementById("toastUpdateProgressInfo").innerHTML = progressinfo;            
+            document.getElementById("toastUpdateProgressSpeed").innerHTML = Math.round(arg.progress.bytesPerSecond/1024) + "kByte/s";
+            
+            document.getElementById("toastUpdateProgressBar").setAttribute("aria-valuenow", arg.progress.percent)
+            document.getElementById("toastUpdateProgressBar").setAttribute("style", "width:" + arg.progress.percent + "%;")
+         
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateProgress')             
+            ); // Returns a Bootstrap toast instance
+            
+
+            let showing = document.getElementById("toastUpdateProgress").getAttribute("class").includes("showing");
+            console.log(showing)
+            if(!showing){
+                toast.show();
+                
+            }
+        }   
+
+        if (arg.status == "checking-for-update"){
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateChecking')            
+            ); // Returns a Bootstrap toast instance
+            toast.show();
+        }   
+        if (arg.status == "update-downloaded"){
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateDownloaded')            
+            ); // Returns a Bootstrap toast instance
+            toast.show();
+        }   
+        if (arg.status == "update-not-available"){
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateNotAvailable')            
+            ); // Returns a Bootstrap toast instance
+            toast.show();
+        }   
+        if (arg.status == "update-available"){
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateAvailable')            
+            ); // Returns a Bootstrap toast instance
+            toast.show();
+        }    
+        
+        if (arg.status == "error"){
+            var toast = bootstrap.Toast.getOrCreateInstance(
+                document.getElementById('toastUpdateNotChecking')            
+            ); // Returns a Bootstrap toast instance
+            toast.show();
+        }          
+        
+        
+
+});
