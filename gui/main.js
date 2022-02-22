@@ -3,6 +3,7 @@ const {
     BrowserWindow,
     ipcMain
 } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -151,6 +152,11 @@ function createWindow() {
         win = null;
         chat = null;
     })
+    
+    
+    win.once('ready-to-show', () => {
+        autoUpdater.checkForUpdatesAndNotify();
+    });
 
     
     chat.on('closed', function () {
@@ -335,3 +341,13 @@ ipcMain.on('request-update-rx-buffer', (event, arg) => {
 ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
     chat.webContents.send('action-update-rx-msg-buffer', arg);
 });
+
+
+
+autoUpdater.on('update-available', () => {
+  console.log('update available');
+});
+autoUpdater.on('update-downloaded', () => {
+  console.log('update downloaded');
+});
+
