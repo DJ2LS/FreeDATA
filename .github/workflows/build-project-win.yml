@@ -56,7 +56,11 @@ jobs:
         run: |      
           pyinstaller freedata.spec
             
-
+      - name: Copy TNC to GUI
+        shell: bash
+        run: |          
+          cp -R ./tnc/dist/tnc ./gui/tnc          
+          
       - name: LIST ALL FILES
         shell: bash
         run: |
