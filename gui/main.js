@@ -277,8 +277,13 @@ app.on('window-all-closed', () => {
     }
     
     if(os.platform()=='linux' || os.platform()=='darwin'){
-        console.log("kill process...")
+        console.log("kill tnc process...")
         exec('pkill', ['-9', 'tnc'])
+        
+        // on macOS we need to kill the daemon as well. If we are not doing this, 
+        // the daemon wont startup again because the socket is already in use
+        console.log("kill daemon process...")
+        exec('pkill', ['-9', 'daemon'])        
         
     }
         
