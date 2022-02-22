@@ -1613,7 +1613,7 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
 
 });
 
-
+// IPC ACTION FOR AUTO UPDATER
 ipcRenderer.on('action-updater', (event, arg) => {
 
         console.log(arg.status)

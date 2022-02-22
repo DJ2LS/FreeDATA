@@ -341,7 +341,7 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
 });
 
 
-
+// LISTENER FOR UPDATER EVENTS
 autoUpdater.on('update-available', () => {
   console.log('update available');
     let arg = {
@@ -391,7 +391,8 @@ autoUpdater.on('error', (progress) => {
   win.webContents.send('action-updater', arg); 
 });
 
-
+// not needed yet
+// gives possibility of directly restarting the app
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
 });
