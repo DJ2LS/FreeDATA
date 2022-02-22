@@ -1,11 +1,12 @@
 {
   "name": "FreeDATA",
-  "version": "0.0.1-alpha",
+  "version": "v0.0.1-alpha",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy": "electron-builder --publish always",
   },
   "engines": {
     "node": ">=14.0.0",
