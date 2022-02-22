@@ -867,11 +867,11 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // PTT STATE
     if (arg.ptt_state == 'True') {
-        document.getElementById("ptt_state").className = "btn btn-danger";
+        document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
     } else if (arg.ptt_state == 'False') {
-        document.getElementById("ptt_state").className = "btn btn-success";
+        document.getElementById("ptt_state").className = "btn btn-sm btn-success";
     } else {
-        document.getElementById("ptt_state").className = "btn btn-secondary";
+        document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
     }
 
     // CHANNEL BUSY STATE
@@ -888,47 +888,47 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // BUSY STATE
     if (arg.busy_state == 'BUSY') {
-        document.getElementById("busy_state").className = "btn btn-danger";
+        document.getElementById("busy_state").className = "btn btn-sm btn-danger";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
 
     } else if (arg.busy_state == 'IDLE') {
-        document.getElementById("busy_state").className = "btn btn-success";
+        document.getElementById("busy_state").className = "btn btn-sm btn-success";
 
     } else {
-        document.getElementById("busy_state").className = "btn btn-secondary";
+        document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
     }
 
     // ARQ STATE
     if (arg.arq_state == 'True') {
-        document.getElementById("arq_state").className = "btn btn-warning";
+        document.getElementById("arq_state").className = "btn btn-sm btn-warning";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
     } else if (arg.arq_state == 'False') {
-        document.getElementById("arq_state").className = "btn btn-secondary";
+        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
         document.getElementById("startTransmission").disabled = false;
         //document.getElementById("stopTransmission").disabled = true;
     } else {
-        document.getElementById("arq_state").className = "btn btn-secondary";
+        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
     }
 
     // BEACON STATE
     if (arg.beacon_state == 'True') {
-        document.getElementById("startBeacon").className = "btn btn-success spinner-grow";
+        document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
         document.getElementById("startBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = true;
         document.getElementById("stopBeacon").disabled = false;
     } else if (arg.beacon_state == 'False') {
-        document.getElementById("startBeacon").className = "btn btn-success";
+        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
         document.getElementById("startBeacon").disabled = false;
         document.getElementById("beaconInterval").disabled = false;
         document.getElementById("stopBeacon").disabled = true;
     } else {
-        document.getElementById("startBeacon").className = "btn btn-success";
+        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
         document.getElementById("startBeacon").disabled = false;
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
@@ -962,6 +962,27 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
     document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
+    
+    
+    // SET SPEED LEVEL
+    console.log(arg.speed_level)
+
+    if(arg.speed_level >= 0) {
+        document.getElementById("speed_level").className = "bi bi-reception-1";
+    }
+    if(arg.speed_level >= 1) {
+        document.getElementById("speed_level").className = "bi bi-reception-2";
+    }
+    if(arg.speed_level >= 2) {
+        document.getElementById("speed_level").className = "bi bi-reception-3";
+    }
+    if(arg.speed_level >= 3) {
+        document.getElementById("speed_level").className = "bi bi-reception-4";
+    }
+    if(arg.speed_level >= 4) {
+        document.getElementById("speed_level").className = "bi bi-reception-4";
+    }
+    
     
     
     // SET TOTAL BYTES
@@ -1641,9 +1662,10 @@ ipcRenderer.on('action-updater', (event, arg) => {
 
         if (arg.status == "checking-for-update"){
             var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateChecking')            
+                document.getElementById('toastUpdateChecking')     
             ); // Returns a Bootstrap toast instance
             toast.show();
+            document.title = "FreeDATA by DJ2LS" + ' - v' + arg.version;
         }   
         if (arg.status == "update-downloaded"){
             var toast = bootstrap.Toast.getOrCreateInstance(

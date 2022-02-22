@@ -23,7 +23,7 @@ var rxMsgBufferLengthTnc = 0
 var rxMsgBufferLengthGui = 0
 
 // network connection Timeout
-setTimeout(connectTNC, 3000)
+setTimeout(connectTNC, 2000)
 
 function connectTNC() {
     //exports.connectTNC = function(){
@@ -182,6 +182,7 @@ client.on('data', function(socketdata) {
                     arq_state: data['arq_state'],
                     //channel_state: data['CHANNEL_STATE'],
                     frequency: data['frequency'],
+                    speed_level: data['speed_level'],
                     mode: data['mode'],
                     bandwith: data['bandwith'],
                     rms_level: (data['audio_rms'] / 1000) * 100,

@@ -375,7 +375,8 @@ autoUpdater.on('update-downloaded', () => {
 
 autoUpdater.on('checking-for-update', () => {
     let arg = {
-        status: "checking-for-update"
+        status: "checking-for-update",
+        version: app.getVersion()
     };
   win.webContents.send('action-updater', arg); 
 });

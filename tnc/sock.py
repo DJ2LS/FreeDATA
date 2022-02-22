@@ -284,6 +284,7 @@ def send_tnc_state():
         "audio_rms": str(static.AUDIO_RMS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
+        "speed_level": str(static.ARQ_SPEED_LEVEL),        
         "mode": str(static.HAMLIB_MODE),
         "bandwith": str(static.HAMLIB_BANDWITH),
         "fft": str(static.FFT),

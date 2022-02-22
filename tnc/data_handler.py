@@ -69,6 +69,7 @@ class DATA():
             self.time_list = self.time_list_high_bw # list for time to wait for correspinding mode in seconds
         
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+        static.ARQ_SPEED_LEVEL = self.speed_level
         
         self.is_IRS = False
         self.burst_nack = False
@@ -366,7 +367,8 @@ class DATA():
                     self.frame_received_counter = 0
                     self.speed_level += 1
                     if self.speed_level >= len(self.mode_list):
-                        self.speed_level = len(self.mode_list) - 1 
+                        self.speed_level = len(self.mode_list) - 1
+                        static.ARQ_SPEED_LEVEL = self.speed_level 
 
                 # updated modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
@@ -555,6 +557,7 @@ class DATA():
         global TESTMODE
         
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+        static.ARQ_SPEED_LEVEL = self.speed_level
 
         TX_N_SENT_BYTES                 = 0                     # already sent bytes per data frame
         self.tx_n_retry_of_burst        = 0                     # retries we already sent data
@@ -633,6 +636,7 @@ class DATA():
                     print(self.mode_list)
                     if self.speed_level >= len(self.mode_list):
                         self.speed_level = len(self.mode_list) - 1
+                        static.ARQ_SPEED_LEVEL = self.speed_level
                     data_mode = self.mode_list[self.speed_level]
                     
                     structlog.get_logger("structlog").debug("Speed-level", level=self.speed_level, retry=self.tx_n_retry_of_burst)                    
@@ -772,6 +776,7 @@ class DATA():
             self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
             self.burst_ack_snr= int.from_bytes(bytes(data_in[5:6]), "big")
             self.speed_level= int.from_bytes(bytes(data_in[6:7]), "big")
+            static.ARQ_SPEED_LEVEL = self.speed_level
             print(self.speed_level)
             self.burst_nack_counter = 0
     # signalling frames received
@@ -788,6 +793,7 @@ class DATA():
             self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
             self.burst_ack_snr= int.from_bytes(bytes(data_in[5:6]), "big")
             self.speed_level= int.from_bytes(bytes(data_in[6:7]), "big")
+            static.ARQ_SPEED_LEVEL = self.speed_level
             self.burst_nack_counter += 1
             print(self.speed_level)
 
@@ -1247,6 +1253,7 @@ class DATA():
         self.burst_nack_counter = 0
         self.frame_received_counter = 0
         self.speed_level = len(self.mode_list) - 1
+        static.ARQ_SPEED_LEVEL = self.speed_level
         
         # low bandwith mode indicator
         self.received_low_bandwith_mode = False
@@ -1308,9 +1315,11 @@ class DATA():
                     self.speed_level -= 1
                     print(self.burst_nack_counter)
                     print(self.speed_level)
+                    static.ARQ_SPEED_LEVEL = self.speed_level
                     self.burst_nack_counter = 0
                 if self.speed_level <= 0:
                     self.speed_level = 0
+                    static.ARQ_SPEED_LEVEL = self.speed_level
                 
                 # updated modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
