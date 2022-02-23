@@ -304,7 +304,7 @@ if __name__ == '__main__':
             os.makedirs(logging_path)
         log_handler.setup_logging(logging_path)
     except:
-       structlog.get_logger("structlog").error("[TNC] logger init error")       
+       structlog.get_logger("structlog").error("[DMN] logger init error")       
 
     try:
         structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
@@ -321,5 +321,6 @@ if __name__ == '__main__':
     daemon = DAEMON()
 
     
+    structlog.get_logger("structlog").info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
     while True:
         time.sleep(1)

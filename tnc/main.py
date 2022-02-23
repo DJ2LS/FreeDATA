@@ -108,7 +108,7 @@ if __name__ == '__main__':
 
     
     
-    structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version="0.1")
+    structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version=static.VERSION)
     
     # start data handler
     data_handler.DATA()

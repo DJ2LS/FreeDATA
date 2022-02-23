@@ -70,7 +70,7 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
             type: 'zip'
-            filename: 'FreeDATA_windows.zip'
+            filename: '${{ matrix.zip_name }}.zip'
             directory: ./tnc/dist/tnc
             path: .
             #exclusions: '*.git* /*node_modules/* .editorconfig'   
@@ -85,6 +85,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
+          draft: true
           files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
 
           
