@@ -134,38 +134,45 @@ class DAEMON():
                     options.append('--tx')
                     options.append(data[4])
                     
-                    options.append('--devicename')
-                    options.append(data[5])
+                    # if radiocontrol != disabled
+                    # this should hopefully avoid a ton of problems if we are just running in 
+                    # disabled mode
+
+                    if data[13] != 'disabled':
+
                     
-                    options.append('--deviceport')
-                    options.append(data[6])
-                    
-                    options.append('--serialspeed')
-                    options.append(data[7])
-                    
-                    options.append('--pttprotocol')
-                    options.append(data[8])
-                    
-                    options.append('--pttport')
-                    options.append(data[9])
-                    
-                    options.append('--data_bits')
-                    options.append(data[10])
-                    
-                    options.append('--stop_bits')
-                    options.append(data[11])
-                    
-                    options.append('--handshake')
-                    options.append(data[12])
-                    
-                    options.append('--radiocontrol')
-                    options.append(data[13])
-                    
-                    options.append('--rigctld_ip')
-                    options.append(data[14])
-                    
-                    options.append('--rigctld_port')
-                    options.append(data[15])
+                        options.append('--devicename')
+                        options.append(data[5])
+                        
+                        options.append('--deviceport')
+                        options.append(data[6])
+                        
+                        options.append('--serialspeed')
+                        options.append(data[7])
+                        
+                        options.append('--pttprotocol')
+                        options.append(data[8])
+                        
+                        options.append('--pttport')
+                        options.append(data[9])
+                        
+                        options.append('--data_bits')
+                        options.append(data[10])
+                        
+                        options.append('--stop_bits')
+                        options.append(data[11])
+                        
+                        options.append('--handshake')
+                        options.append(data[12])
+                        
+                        options.append('--radiocontrol')
+                        options.append(data[13])
+                        
+                        options.append('--rigctld_ip')
+                        options.append(data[14])
+                        
+                        options.append('--rigctld_port')
+                        options.append(data[15])
                     
                     if data[16] == 'True':
                         options.append('--scatter')

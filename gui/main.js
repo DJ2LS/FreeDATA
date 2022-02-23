@@ -159,7 +159,7 @@ function createWindow() {
         autoUpdater.autoInstallOnAppQuit = false;
         autoUpdater.autoDownload = true;
         autoUpdater.checkForUpdatesAndNotify();
-        //autoUpdater.quitAndInstall();
+        autoUpdater.quitAndInstall();
     });
 
     
