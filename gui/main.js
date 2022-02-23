@@ -114,7 +114,9 @@ function createWindow() {
             preload: require.resolve('./preload-main.js'),
             nodeIntegration: true,
             contextIsolation: false,
-            enableRemoteModule: false, //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 https://github.com/electron/remote
+            enableRemoteModule: false, 
+            //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 
+            //https://github.com/electron/remote
         }
     })
     // hide menu bar
@@ -146,9 +148,6 @@ function createWindow() {
 
     // Emitted when the window is closed.
     win.on('closed', function() {
-        // Dereference the window object, usually you would store windows
-        // in an array if your app supports multi windows, this is the time
-        // when you should delete the corresponding element.
         win = null;
         chat = null;
     })
@@ -159,14 +158,12 @@ function createWindow() {
         autoUpdater.autoInstallOnAppQuit = false;
         autoUpdater.autoDownload = true;
         autoUpdater.checkForUpdatesAndNotify();
-        autoUpdater.quitAndInstall();
+        //autoUpdater.quitAndInstall();
     });
 
     
     chat.on('closed', function () {
-            // Dereference the window object, usually you would store windows
-            // in an array if your app supports multi windows, this is the time
-            // when you should delete the corresponding element.
+           
         })
     
 
@@ -263,6 +260,8 @@ app.whenReady().then(() => {
 })
 
 app.on('window-all-closed', () => {
+    
+    
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
         daemonProcess.kill();
@@ -284,7 +283,8 @@ app.on('window-all-closed', () => {
         // on macOS we need to kill the daemon as well. If we are not doing this, 
         // the daemon wont startup again because the socket is already in use
         console.log("kill daemon process...")
-        exec('pkill', ['-9', 'daemon'])        
+        //for some reason killing the daemon is killing our screen..it seems theres another "daemon" out there...
+        //exec('pkill', ['-9', 'daemon'])        
         
     }
         
@@ -292,6 +292,7 @@ app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();
     }
+    
 })
 
 // IPC HANDLER
@@ -416,3 +417,4 @@ autoUpdater.on('error', (progress) => {
 ipcMain.on('restart_app', () => {
   autoUpdater.quitAndInstall();
 });
+
