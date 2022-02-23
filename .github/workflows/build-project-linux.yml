@@ -94,6 +94,12 @@ jobs:
         with:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
+          
+      - name: Release TNC         
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip  
 
       - name: Copy TNC to GUI Linux
         if: matrix.os == 'ubuntu-20.04'
