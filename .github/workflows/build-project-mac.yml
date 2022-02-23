@@ -83,12 +83,7 @@ jobs:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
 
-      - name: Release TNC         
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          draft: true
-          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip  
+
           
           
       - name: Copy TNC to GUI
@@ -112,3 +107,9 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
 
+      - name: Release TNC         
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          draft: true
+          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip
