@@ -156,9 +156,10 @@ function createWindow() {
     
     win.once('ready-to-show', () => {
     
-        autoUpdater.autoInstallOnAppQuit = true;
+        autoUpdater.autoInstallOnAppQuit = false;
         autoUpdater.autoDownload = true;
         autoUpdater.checkForUpdatesAndNotify();
+        //autoUpdater.quitAndInstall();
     });
 
     
@@ -347,33 +348,46 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
 
 
 // LISTENER FOR UPDATER EVENTS
-autoUpdater.on('update-available', () => {
+autoUpdater.on('update-available', (info) => {
   console.log('update available');
+  console.log(info)
     let arg = {
-        status: "update-available"
+        status: "update-available",
+        info: info
     };
   win.webContents.send('action-updater', arg);
   
 });
 
-autoUpdater.on('update-not-available', () => {
+autoUpdater.on('update-not-available', (info) => {
   console.log('update-not-available');
+  console.log(info)
     let arg = {
-        status: "update-not-available"
+        status: "update-not-available",
+        info: info
     };
   win.webContents.send('action-updater', arg);  
 });
 
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', (info) => {
+    
   console.log('update downloaded');
       let arg = {
-        status: "update-downloaded"
+        status: "update-downloaded",
+        info: info
     };
   win.webContents.send('action-updater', arg); 
+  // we need to call this at this point. 
+  // if an update is available and we are force closing the app
+  // the entire screen crashes...
+  autoUpdater.quitAndInstall();
+
+  
 });
 
 autoUpdater.on('checking-for-update', () => {
+
     let arg = {
         status: "checking-for-update",
         version: app.getVersion()

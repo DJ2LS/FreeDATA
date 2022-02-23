@@ -111,14 +111,18 @@
 				<div class="toast bg-white" role="alert" data-bs-autohide="false" id="toastUpdateDownloaded" aria-live="assertive" aria-atomic="true">
 					<div class="toast-header"> <strong class="me-auto">    Update ready...</strong>
 					</div>
-					<div class="toast-body">Please restart the app for installation!</div>
+					<div class="toast-body">App is going to restart automatically...</div>
 				</div>
 				<!-- UPDATE AVAILABLE -->
-				<div class="toast bg-white" role="alert" data-bs-autohide="true" id="toastUpdateAvailable" aria-live="assertive" aria-atomic="true">
-					<div class="toast-header"> <i class="bi bi-cloud-arrow-down" style="font-size: 1rem; color: black;"></i><strong class="me-auto">Update available</strong>
+				
+				<div class="toast align-items-center text-white bg-primary border-0" data-bs-autohide="false" id="toastUpdateAvailable" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body"> <i class="bi bi-activity" style="font-size: 1rem; color: black;"></i> Preparing for download...</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
-					<div class="toast-body"><i class="bi bi-cloud-arrow-down" style="font-size: 1rem; color: black;"></i>going to download...</div>
 				</div>
+				
+				
 				<!-- UPDATE NOT AVAILABLE -->
 				<div class="toast align-items-center text-white bg-success border-0" id="toastUpdateNotAvailable" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">

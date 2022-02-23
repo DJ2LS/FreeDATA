@@ -1640,6 +1640,10 @@ ipcRenderer.on('action-updater', (event, arg) => {
         console.log(arg.status)
 
         if (arg.status == "download-progress"){
+        
+            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateAvailable')).hide(); // close our update available notification
+            
+            
             var progressinfo = '(' + Math.round(arg.progress.transferred/1024) + 'kB /' + Math.round(arg.progress.total/1024) + 'kB)'; 
             document.getElementById("toastUpdateProgressInfo").innerHTML = progressinfo;            
             document.getElementById("toastUpdateProgressSpeed").innerHTML = Math.round(arg.progress.bytesPerSecond/1024) + "kByte/s";
