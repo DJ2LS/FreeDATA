@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.0.1-alpha.9",
+  "version": "0.0.1-alpha.12",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -52,7 +52,7 @@
       "publish": [
         "github"
       ],
-      "icon": "./build/icon.png",
+      "icon": "build/icon.png",
       "contents": [
         {
           "x": 130,
@@ -70,7 +70,7 @@
       "publish": [
         "github"
       ],
-      "icon": "./build/icon.png",
+      "icon": "build/icon.png",
       "target": [
         "nsis"
       ]
@@ -79,7 +79,7 @@
       "publish": [
         "github"
       ],
-      "icon": "./build/icon.png",
+      "icon": "build/icon.png",
       "target": [
         "AppImage"
       ],
