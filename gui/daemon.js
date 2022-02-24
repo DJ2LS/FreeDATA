@@ -3,6 +3,10 @@ const path = require('path')
 const {
     ipcRenderer
 } = require('electron')
+const log = require('electron-log');
+const daemonLog = log.scope('daemon');
+
+
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
@@ -17,7 +21,8 @@ setTimeout(connectDAEMON, 500)
 
 function connectDAEMON() {
 
-    console.log('connecting to DAEMON...')
+
+    daemonLog.info('connecting to daemon');
 
     //clear message buffer after reconnecting or inital connection
     socketchunk = '';
@@ -33,7 +38,8 @@ function connectDAEMON() {
 }
 
 daemon.on('connect', function(err) {
-    console.log('DAEMON connection established')
+
+    daemonLog.info('daemon connection established');
     let Data = {
         daemon_connection: daemon.readyState,
     };
@@ -42,10 +48,10 @@ daemon.on('connect', function(err) {
 })
 
 daemon.on('error', function(err) {
-    console.log('DAEMON connection error');
-    console.log(err)
+    daemonLog.error('daemon connection error');
+    daemonLog.error(err)
     daemon.destroy();
-    setTimeout(connectDAEMON, 2000)
+    setTimeout(connectDAEMON, 1000)
     let Data = {
         daemon_connection: daemon.readyState,
     };
@@ -65,7 +71,8 @@ client.on('close', function(data) {
 */
 
 daemon.on('end', function(data) {
-    console.log('DAEMON connection ended');
+
+    daemonLog.warn('daemon connection ended');
     daemon.destroy();
     setTimeout(connectDAEMON, 500)
     let Data = {
@@ -143,7 +150,8 @@ daemon.on('data', function(socketdata) {
 
                 } catch (e) {
                     console.log(e); // "SyntaxError
-                    console.log(socketchunk[i])
+                    daemonLog.error(e);
+                    daemonLog.debug(socketchunk[i])
                     socketchunk = ''
 
                 }
@@ -227,7 +235,7 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
         }]
     })
 
-    console.log(json_command)
+    daemonLog.debug(json_command);
     writeDaemonCommand(json_command)
 
 }
@@ -258,7 +266,7 @@ exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed,
             rigctld_ip: rigctld_ip
         }]
     })
-    console.log(json_command)
+    daemonLog.debug(json_command);
     writeDaemonCommand(json_command)
 }
 

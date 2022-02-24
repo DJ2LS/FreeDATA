@@ -139,7 +139,6 @@ class DAEMON():
                     # disabled mode
 
                     if data[13] != 'disabled':
-
                     
                         options.append('--devicename')
                         options.append(data[5])
@@ -168,11 +167,12 @@ class DAEMON():
                         options.append('--radiocontrol')
                         options.append(data[13])
                         
-                        options.append('--rigctld_ip')
-                        options.append(data[14])
-                        
-                        options.append('--rigctld_port')
-                        options.append(data[15])
+                        if data[13] != 'rigctld':
+                            options.append('--rigctld_ip')
+                            options.append(data[14])
+                            
+                            options.append('--rigctld_port')
+                            options.append(data[15])
                     
                     if data[16] == 'True':
                         options.append('--scatter')
@@ -188,9 +188,9 @@ class DAEMON():
                     try:
                         command = []
                         if sys.platform == 'linux' or sys.platform == 'darwin':
-                            command.append('./tnc')
+                            command.append('./freedata-tnc')
                         elif sys.platform == 'win32' or sys.platform == 'win64':
-                            command.append('tnc.exe')
+                            command.append('freedata-tnc.exe')
                                
                         command += options
                         p = subprocess.Popen(command)

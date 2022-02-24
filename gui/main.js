@@ -8,6 +8,27 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const exec = require('child_process').spawn;
+const log = require('electron-log');
+const mainLog = log.scope('main');
+const daemonProcessLog = log.scope('freedata-daemon');
+
+const sysInfo = log.scope('system information');
+
+sysInfo.info("APP VERSION : " + app.getVersion());
+sysInfo.info("PLATFORM    : " + os.platform());
+sysInfo.info("ARCHITECTURE: " + os.arch());
+sysInfo.info("FREE  MEMORY: " + os.freemem());
+sysInfo.info("TOTAL MEMORY: " + os.totalmem());
+sysInfo.info("LOAD AVG    : " + os.loadavg());
+sysInfo.info("RELEASE     : " + os.release());
+sysInfo.info("TYPE        : " + os.type());
+sysInfo.info("VERSION     : " + os.version());
+sysInfo.info("UPTIME      : " + os.uptime());
+
+
+
+
+
 
 app.setName("FreeDATA");
 
@@ -27,7 +48,7 @@ var configContent = `
   "tnc_port": "3000",
   "daemon_host": "127.0.0.1",
   "daemon_port": "3001",
-  "mycall": "AA0AA",
+  "mycall": "AA0AA-0",
   "mygrid": "JN40aa",
   "deviceid": "RIG_MODEL_DUMMY_NOVFO",
   "deviceport": "/dev/ttyACM1",
@@ -179,11 +200,10 @@ app.whenReady().then(() => {
     createWindow();
 
     // start daemon by checking os
-    console.log("Trying to start daemon binary")
-    
+    mainLog.info('Starting freedata-daemon binary');
 
     if(os.platform()=='darwin'){
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [], 
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });                
@@ -198,23 +218,20 @@ app.whenReady().then(() => {
     */
 
     if(os.platform()=='linux'){
-        console.log("starting daemon...")
-        console.log("-------------------------------")
 
+    /*
     var folder = path.join(process.resourcesPath, 'tnc');
     //var folder = path.join(__dirname, 'extraResources', 'tnc');
     console.log(folder);
     fs.readdir(folder, (err, files) => {
         console.log(files);
     });
-    
-        console.log("-------------------------------")        
-        
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon'), [], 
+    */
+
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [], 
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
-            });
-        
+            });        
     }
 
     
@@ -222,7 +239,7 @@ app.whenReady().then(() => {
         // for windows the relative path via path.join(__dirname) is not needed for some reason 
         //daemonProcess = exec('\\tnc\\daemon.exe', [])
         
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'daemon.exe'), [], 
+        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe'), [], 
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });
@@ -232,22 +249,22 @@ app.whenReady().then(() => {
     // return process messages
     
     daemonProcess.on('error', (err) => {
-          console.log(`error when starting daemon: ${err}`);
+      daemonProcessLog.error(`error when starting daemon: ${err}`);
     });
         
     daemonProcess.on('message', (data) => {
-          console.log(data);
+      daemonProcessLog.info(`${data}`);
     });
     daemonProcess.stdout.on('data', (data) => {
-      console.log(`daemonProcess stdout: ${data}`);
+      daemonProcessLog.info(`${data}`);
     });
 
     daemonProcess.stderr.on('data', (data) => {
-      console.error(`daemonProcess stderr: ${data}`);
+      daemonProcessLog.info(`${data}`);
     });
 
     daemonProcess.on('close', (code) => {
-      console.log(`daemonProcess exited with code ${code}`);
+      daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
     });
 
 
@@ -266,32 +283,44 @@ app.on('window-all-closed', () => {
     try {
         daemonProcess.kill();
     } catch (e) {   
-        console.log(e);
+        mainLog.error(e)
     }
     
 
-    console.log("closing tnc...")
+    mainLog.warn('closing tnc');
     
     if(os.platform()=='win32' || os.platform()=='win64'){
-        exec('Taskkill', ['/IM', 'tnc.exe', '/F'])
+        exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
     }
     
-    if(os.platform()=='linux' || os.platform()=='darwin'){
-        console.log("kill tnc process...")
-        exec('pkill', ['-9', 'tnc'])
+    if(os.platform()=='linux'){
+        
+        exec('pkill', ['-9', 'freedata-tnc'])
         
         // on macOS we need to kill the daemon as well. If we are not doing this, 
         // the daemon wont startup again because the socket is already in use
-        console.log("kill daemon process...")
-        //for some reason killing the daemon is killing our screen..it seems theres another "daemon" out there...
-        //exec('pkill', ['-9', 'daemon'])        
+        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
+        exec('pkill', ['-9', 'freedata-daemon'])        
+    }
+
+    if(os.platform()=='darwin'){
+
+        exec('pkill', ['-9', 'freedata-tnc'])
+        
+        // on macOS we need to kill the daemon as well. If we are not doing this, 
+        // the daemon wont startup again because the socket is already in use
+        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
+        exec('pkill', ['-9', 'freedata-daemon']) 
         
     }
         
-
+    /*
     if (process.platform !== 'darwin') {
         app.quit();
     }
+    */
+    mainLog.warn('quitting app');
+    app.quit();
     
 })
 
@@ -350,8 +379,8 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
 
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on('update-available', (info) => {
-  console.log('update available');
-  console.log(info)
+  mainLog.info('update available');
+
     let arg = {
         status: "update-available",
         info: info
@@ -361,8 +390,7 @@ autoUpdater.on('update-available', (info) => {
 });
 
 autoUpdater.on('update-not-available', (info) => {
-  console.log('update-not-available');
-  console.log(info)
+  mainLog.info('update not available');
     let arg = {
         status: "update-not-available",
         info: info
@@ -372,8 +400,7 @@ autoUpdater.on('update-not-available', (info) => {
 
 
 autoUpdater.on('update-downloaded', (info) => {
-    
-  console.log('update downloaded');
+  mainLog.info('update downloaded');
       let arg = {
         status: "update-downloaded",
         info: info
@@ -382,13 +409,16 @@ autoUpdater.on('update-downloaded', (info) => {
   // we need to call this at this point. 
   // if an update is available and we are force closing the app
   // the entire screen crashes...
-  autoUpdater.quitAndInstall();
+  mainLog.info('quit application and install update');
+  setTimeout(autoUpdater.quitAndInstall, 3000);
+
+  //autoUpdater.quitAndInstall();
 
   
 });
 
 autoUpdater.on('checking-for-update', () => {
-
+mainLog.info('checking for update');
     let arg = {
         status: "checking-for-update",
         version: app.getVersion()
@@ -405,16 +435,11 @@ autoUpdater.on('download-progress', (progress) => {
 });
 
 autoUpdater.on('error', (progress) => {
+    mainLog.info('update error');
     let arg = {
         status: "error",
         progress: progress
     };
   win.webContents.send('action-updater', arg); 
-});
-
-// not needed yet
-// gives possibility of directly restarting the app
-ipcMain.on('restart_app', () => {
-  autoUpdater.quitAndInstall();
 });
 

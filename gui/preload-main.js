@@ -1657,10 +1657,8 @@ ipcRenderer.on('action-updater', (event, arg) => {
             
 
             let showing = document.getElementById("toastUpdateProgress").getAttribute("class").includes("showing");
-            console.log(showing)
             if(!showing){
-                toast.show();
-                
+                toast.show();                
             }
         }   
 
@@ -1678,12 +1676,15 @@ ipcRenderer.on('action-updater', (event, arg) => {
             toast.show();
         }   
         if (arg.status == "update-not-available"){
+            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
             var toast = bootstrap.Toast.getOrCreateInstance(
                 document.getElementById('toastUpdateNotAvailable')            
             ); // Returns a Bootstrap toast instance
             toast.show();
         }   
         if (arg.status == "update-available"){
+        
+            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
             var toast = bootstrap.Toast.getOrCreateInstance(
                 document.getElementById('toastUpdateAvailable')            
             ); // Returns a Bootstrap toast instance

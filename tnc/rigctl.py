@@ -92,17 +92,29 @@ class radio:
         time.sleep(0.5)
         freq = sw_proc.communicate()[0]
         #print('get_frequency', freq, sw_proc.communicate())
-        return int(freq)
+        try:
+            return int(freq)
+        except:
+            return False
+
         
     def get_mode(self):
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
         #return Hamlib.rig_strrmode(hamlib_mode)
-        return 'PKTUSB'
+        try:
+            return 'PKTUSB'
+        except:
+            return False
+
     
     def get_bandwith(self):
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
         bandwith = 2700
-        return bandwith
+
+        try:
+            return bandwith
+        except:
+            return False
 
     def set_mode(self, mode):
         # non usata
@@ -113,7 +125,11 @@ class radio:
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)  
         time.sleep(0.5)
         status = sw_proc.communicate()[0]
-        return status
+
+        try:
+            return status
+        except:
+            return False
                   
     def set_ptt(self, state):
         cmd = self.cmd + ' T '
@@ -125,7 +141,10 @@ class radio:
         print('set_ptt', cmd)
 
         sw_proc = subprocess.Popen(cmd, shell=True, text=True)  
-        return state
+        try:
+            return state
+        except:
+            return False
         
     def close_rig(self):
         #self.my_rig.close()

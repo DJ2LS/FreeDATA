@@ -4,6 +4,9 @@ const {
     ipcRenderer
 } = require('electron')
 
+const log = require('electron-log');
+const socketLog = log.scope('tnc');
+
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -27,7 +30,7 @@ setTimeout(connectTNC, 2000)
 
 function connectTNC() {
     //exports.connectTNC = function(){
-    //console.log('connecting to TNC...')
+    //socketLog.info('connecting to TNC...')
 
     //clear message buffer after reconnecting or inital connection
     socketchunk = '';
@@ -40,7 +43,7 @@ function connectTNC() {
 }
 
 client.on('connect', function(data) {
-    console.log('TNC connection established')
+    socketLog.info('TNC connection established')
     let Data = {
         busy_state: "-",
         arq_state: "-",
@@ -59,7 +62,7 @@ client.on('connect', function(data) {
 })
 
 client.on('error', function(data) {
-    console.log('TNC connection error');
+    socketLog.info('TNC connection error');
 
     let Data = {
         tnc_connection: client.readyState,
@@ -82,13 +85,13 @@ client.on('error', function(data) {
 
 /*
 client.on('close', function(data) {
-	console.log(' TNC connection closed');
+	socketLog.info(' TNC connection closed');
     setTimeout(connectTNC, 2000)
 });
 */
 
 client.on('end', function(data) {
-    console.log('TNC connection ended');
+    socketLog.info('TNC connection ended');
     ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
     client.destroy();
     
@@ -98,7 +101,7 @@ client.on('end', function(data) {
 
 writeTncCommand = function(command) {
     
-    //console.log(command)
+    //socketLog.info(command)
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
     if (client.readyState == 'open') {
@@ -107,12 +110,12 @@ writeTncCommand = function(command) {
     }
 
     if (client.readyState == 'closed') {
-        console.log("CLOSED!")
+        socketLog.info("CLOSED!")
 
     }
 
     if (client.readyState == 'opening') {
-        console.log('connecting to TNC...')
+        socketLog.info('connecting to TNC...')
 
     }
 }
@@ -161,8 +164,8 @@ client.on('data', function(socketdata) {
                     data = JSON.parse(socketchunk[i])
 
                 } catch (e) {
-                    console.log(e); // "SyntaxError
-                    console.log(socketchunk[i])
+                    socketLog.info(e); // "SyntaxError
+                    socketLog.info(socketchunk[i])
                     socketchunk = ''
 
                 }
@@ -171,7 +174,7 @@ client.on('data', function(socketdata) {
             
 
             if (data['command'] == 'tnc_state') {
-                //console.log(data)
+                //socketLog.info(data)
                 // set length of RX Buffer to global variable
                 rxBufferLengthTnc = data['rx_buffer_length']
                 rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
@@ -266,11 +269,11 @@ client.on('data', function(socketdata) {
                         }
                         
                     } catch (e) {
-                        console.log(e)
+                        socketLog.info(e)
                     }
                 }
             
-                console.log(dataArray)
+                socketLog.info(dataArray)
                 
                 
                 rxBufferLengthGui = dataArray.length
@@ -330,17 +333,17 @@ exports.sendCQ = function() {
 // Send File
 exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, checksum) {
 
-    console.log(data) 
-    console.log(filetype)
-    console.log(filename)
+    socketLog.info(data) 
+    socketLog.info(filetype)
+    socketLog.info(filename)
                 
     var datatype = "f"
 
     //data = data.split('base64,')
     //data = data[1]
     data = datatype + split_char + filename + split_char + filetype + split_char + checksum + split_char + data
-    console.log(data)
-    console.log(btoa(data))
+    socketLog.info(data)
+    socketLog.info(btoa(data))
     data = btoa(data)
     
     //command = '{"type" : "arq", "command" : "send_file",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}]}'
@@ -351,7 +354,7 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
     command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    console.log(command)
+    socketLog.info(command)
     writeTncCommand(command)
 }
 
