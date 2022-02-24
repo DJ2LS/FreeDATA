@@ -160,31 +160,3 @@ def bytes_to_callsign(bytestring):
     
     return bytes(callsign) 
 
-'''
-def setup_logging():
-    """
-    Author: DJ2LS
-
-    Set the custom logging format so we can use colors
-
-    # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-    # 'DEBUG'   : 37, # white
-    # 'INFO'    : 36, # cyan
-    # 'WARNING' : 33, # yellow
-    # 'ERROR'   : 31, # red
-    # 'CRITICAL': 41, # white on red bg
-
-    """
-
-    logging.basicConfig(level=logging.INFO,encoding='utf-8',format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',datefmt='%H:%M:%S',handlers=[logging.FileHandler("FreeDATA-TNC.log"), logging.StreamHandler()])
-
-    logging.addLevelName(logging.DEBUG, "\033[1;36m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
-    logging.addLevelName(logging.INFO, "\033[1;37m%s\033[1;0m" % logging.getLevelName(logging.INFO))
-    logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName(logging.ERROR, "\033[1;31m%s\033[1;0m" % "FAILED")
-    #logging.addLevelName( logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-    logging.addLevelName(logging.CRITICAL, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
-
-    logging.addLevelName(25, "\033[1;32m%s\033[1;0m" % "SUCCESS")
-    logging.addLevelName(24, "\033[1;34m%s\033[1;0m" % "DATA")
-'''

@@ -60,7 +60,12 @@ if __name__ == '__main__':
    
     ARGS = PARSER.parse_args()
 
-    static.MYCALLSIGN = bytes(ARGS.mycall, 'utf-8')
+    # additional step for beeing sure our callsign is correctly
+    # in case we are not getting a station ssid
+    # then we are forcing a station ssid = 0
+    mycallsign = bytes(ARGS.mycall.upper(), 'utf-8')
+    mycallsign = helpers.callsign_to_bytes(mycallsign)
+    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
     static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
       
     static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
