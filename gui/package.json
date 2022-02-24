@@ -52,7 +52,7 @@
       "publish": [
         "github"
       ],
-      "icon": "build/icon.png",
+      "icon": "src/icon.png",
       "contents": [
         {
           "x": 130,
@@ -70,7 +70,7 @@
       "publish": [
         "github"
       ],
-      "icon": "build/icon.png",
+      "icon": "src/icon.png",
       "target": [
         "nsis"
       ]
@@ -79,7 +79,7 @@
       "publish": [
         "github"
       ],
-      "icon": "build/icon.png",
+      "icon": "src/icon.png",
       "target": [
         "AppImage"
       ],
