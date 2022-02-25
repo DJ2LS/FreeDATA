@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "v0.0.1-alpha.19",
+  "version": "0.0.1-alpha.20",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -45,10 +45,11 @@
     "productName": "FreeDATA",
     "appId": "app.freedata",
     "directories": {
+      "buildResources": "src/img",
       "output": "dist"
-    },
+    },         
     "dmg": {
-      "icon": "src/icon.png",
+      "icon": "src/img/icon.png",
       "contents": [
         {
           "x": 130,
@@ -63,13 +64,13 @@
       ]
     },
     "win": {
-      "icon": "src/icon.png",
+      "icon": "src/img/icon.png",
       "target": [
         "nsis"
       ]
     },
     "linux": {
-      "icon": "src/icon.png",
+      "icon": "src/img/icon.png",
       "target": [
         "AppImage"
       ],
