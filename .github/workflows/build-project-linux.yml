@@ -1,8 +1,8 @@
-name: Linux Nightly
+name: Linux
 on:
   push:
-    #tags:
-     #- '*'
+    tags:
+     - 'v*'
     
 jobs:
   build_linux_release:
@@ -118,9 +118,10 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          args: "-p always"
 
 
-     - name: Release TNC         
+      - name: Release TNC         
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:

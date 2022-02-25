@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "v0.0.1-alpha.17",
+  "version": "v0.0.1-alpha.18",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -48,9 +48,6 @@
       "output": "dist"
     },
     "dmg": {
-      "publish": [
-        "github"
-      ],
       "icon": "src/icon.png",
       "contents": [
         {
@@ -66,23 +63,21 @@
       ]
     },
     "win": {
-      "publish": [
-        "github"
-      ],
       "icon": "src/icon.png",
       "target": [
         "nsis"
       ]
     },
     "linux": {
-      "publish": [
-        "github"
-      ],
       "icon": "src/icon.png",
       "target": [
         "AppImage"
       ],
       "category": "Development"
+    },
+    "publish":{
+      "provider": "github",
+      "releaseType": "release"  
     },
     "extraResources": [
       "./tnc/**"
