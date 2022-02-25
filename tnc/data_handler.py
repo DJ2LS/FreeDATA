@@ -1030,6 +1030,8 @@ class DATA():
         ping_frame[5:13] = helpers.callsign_to_bytes(static.MYCALLSIGN)
 
         txbuffer = [ping_frame]
+        print(helpers.callsign_to_bytes(static.MYCALLSIGN))
+        print(txbuffer)
         static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])  
         # wait while transmitting

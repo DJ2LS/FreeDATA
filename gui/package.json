@@ -35,7 +35,7 @@
     "chart.js": "^3.5.1",
     "chartjs-plugin-annotation": "^1.0.2",
     "electron-log": "^4.4.6",
-    "electron-updater": "^4.6.5",
+    "electron-updater": "^5.0.0",
     "qth-locator": "^2.1.0"
   },
   "devDependencies": {
