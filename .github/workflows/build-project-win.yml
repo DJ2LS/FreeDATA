@@ -96,7 +96,11 @@ jobs:
         with:
           node-version: 16         
      
-
+      - name: Release TNC         
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
                     
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -108,8 +112,4 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
           
-      - name: Release TNC         
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+

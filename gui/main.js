@@ -399,11 +399,10 @@ autoUpdater.on('update-not-available', (info) => {
 });
 
 
-autoUpdater.on('update-downloaded', (info) => {
+autoUpdater.on('update-downloaded', () => {
   mainLog.info('update downloaded');
       let arg = {
-        status: "update-downloaded",
-        info: info
+        status: "update-downloaded"
     };
   win.webContents.send('action-updater', arg); 
   // we need to call this at this point. 
