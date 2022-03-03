@@ -53,8 +53,8 @@ for file in files:
         api = ctypes.CDLL(file)
         structlog.get_logger("structlog").info("[C2 ] Libcodec2 loaded", path=file)
         break
-    except:
-        pass
+    except Exception as e:
+        structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=e)
 
 
 # quit module if codec2 cant be loaded    
