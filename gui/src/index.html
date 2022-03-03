@@ -48,7 +48,10 @@
 						<i class="bi bi-play-fill" style="font-size: 1rem; color: white;"></i>
 						
 					</button>
-					<div class="input-group-text">TNC</div>
+					<!-- TNC LOG BUTTON -->
+					<button class="btn btn-sm btn-secondary" id="tncLog" type="button">
+						<i class="bi bi-activity" style="font-size: 1rem; color: white;"></i>
+					</button>
 					<!--     <span class="input-group-text" id="tnc_running_state" style="width: 5rem">---</span>-->
 					<button type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" id="stopTNC" class="btn btn-sm btn-danger">
 						<i class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i>
@@ -57,10 +60,12 @@
 				</div>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-2" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" disabled> <strong>RF Chat</strong>
+				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" disabled> <strong>RF Chat</strong>
 				<i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
-					
-				</button>	<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View the received files. This is currently under development!">
+			    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">soon</span>
+				</button>	
+				
+				<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View the received files. This is currently under development!">
 				<button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button"> <strong>Received Files </strong>
 					<i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
 					
@@ -133,7 +138,7 @@
 				<!-- NOT CHECKING FOR UPDATE -->
 				<div class="toast align-items-center text-white bg-warning border-0" id="toastUpdateNotChecking" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">Update failed - Please try again later!</div>
+						<div class="toast-body">Update not available - Please try again later!</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
@@ -1117,7 +1122,7 @@
 				</div>
 				<div class="modal-body">
 					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Theme</span>
-						<select class="form-select form-select-sm" aria-label=".form-select-sm" id="theme_selector">
+						<select class="form-select form-select-sm" id="theme_selector">
 							<option value="default">Default</option>
 							<option value="cerulean">Cerulean</option>
 							<option value="cosmo">Cosmo</option>
@@ -1146,6 +1151,17 @@
 							<option value="zephyr">Zephyr</option>
 						</select>
 					</div>
+					
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Update channel</span>
+						<select class="form-select form-select-sm" id="update_channel_selector">
+							<option value="latest">latest</option>
+							<option value="beta">beta</option>
+							<option value="alpha">alpha</option>
+						</select>
+					</div>
+					
+					
+					
 				</div>
 			</div>
 		</div>

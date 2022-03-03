@@ -62,8 +62,8 @@ client.on('connect', function(data) {
 })
 
 client.on('error', function(data) {
-    socketLog.info('TNC connection error');
-
+    socketLog.error('TNC connection error');
+    socketLog.error(data);
     let Data = {
         tnc_connection: client.readyState,
         busy_state: "-",

@@ -13,7 +13,7 @@ const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
 
 const sysInfo = log.scope('system information');
-
+sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
 sysInfo.info("APP VERSION : " + app.getVersion());
 sysInfo.info("PLATFORM    : " + os.platform());
 sysInfo.info("ARCHITECTURE: " + os.arch());
@@ -24,9 +24,6 @@ sysInfo.info("RELEASE     : " + os.release());
 sysInfo.info("TYPE        : " + os.type());
 sysInfo.info("VERSION     : " + os.version());
 sysInfo.info("UPTIME      : " + os.uptime());
-
-
-
 
 
 
@@ -41,48 +38,72 @@ if (!fs.existsSync(configFolder)) {
     fs.mkdirSync(configFolder);
 }
 
-// create config file if not exists
-var configContent = `
-{
-  "tnc_host": "127.0.0.1",
-  "tnc_port": "3000",
-  "daemon_host": "127.0.0.1",
-  "daemon_port": "3001",
-  "mycall": "AA0AA-0",
-  "mygrid": "JN40aa",
-  "deviceid": "RIG_MODEL_DUMMY_NOVFO",
-  "deviceport": "/dev/ttyACM1",
-  "serialspeed_direct": "9600",
-  "spectrum": "waterfall",
-  "tnclocation": "localhost",
-  "stop_bits_direct" : "1",
-  "data_bits_direct" : "8",
-  "handshake_direct" : "None",
-  "radiocontrol" : "disabled",
-  "deviceport_rigctl" : "3",
-  "deviceid_rigctl" : "3",
-  "serialspeed_rigctl" : "9600",
-  "pttprotocol_direct" : "USB",
-  "pttprotocol_rigctl" : "USB",
-  "rigctld_port" : "4532",
-  "rigctld_ip" : "127.0.0.1",
-  "enable_scatter" : "False",
-  "enable_fft" : "False",
-  "low_bandwith_mode" : "False",
-  "theme" : "default",
-  "screen_height" : 430,
-  "screen_width" : 1050
-}
-`;
+// create config file if not exists with defaults
+const configDefaultSettings = '{\
+                  "tnc_host": "127.0.0.1",\
+                  "tnc_port": "3000",\
+                  "daemon_host": "127.0.0.1",\
+                  "daemon_port": "3001",\
+                  "mycall": "AA0AA-0",\
+                  "mygrid": "JN40aa",\
+                  "deviceid": "RIG_MODEL_DUMMY_NOVFO",\
+                  "deviceport": "/dev/ttyACM1",\
+                  "serialspeed_direct": "9600",\
+                  "spectrum": "waterfall",\
+                  "tnclocation": "localhost",\
+                  "stop_bits_direct" : "1",\
+                  "data_bits_direct" : "8",\
+                  "handshake_direct" : "None",\
+                  "radiocontrol" : "disabled",\
+                  "deviceport_rigctl" : "3",\
+                  "deviceid_rigctl" : "3",\
+                  "serialspeed_rigctl" : "9600",\
+                  "pttprotocol_direct" : "USB",\
+                  "pttprotocol_rigctl" : "USB",\
+                  "rigctld_port" : "4532",\
+                  "rigctld_ip" : "127.0.0.1",\
+                  "enable_scatter" : "False",\
+                  "enable_fft" : "False",\
+                  "low_bandwith_mode" : "False",\
+                  "theme" : "default",\
+                  "screen_height" : 430,\
+                  "screen_width" : 1050,\
+                  "update_channel" : "latest",\
+                  "beacon_interval" : 5\
+                  }';
+
 if (!fs.existsSync(configPath)) {
-    fs.writeFileSync(configPath, configContent)
+    fs.writeFileSync(configPath, configDefaultSettings)
 }
+
+// load settings
+var config = require(configPath);
+
+//config validation
+// check running config against default config.
+// if parameter not exists, add it to running config to prevent errors
+sysInfo.info("CONFIG VALIDATION  -----------------------------  ");
+
+var parsedConfig = JSON.parse(configDefaultSettings);
+for (key in parsedConfig) {    
+    if (config.hasOwnProperty(key)) {
+        sysInfo.info("FOUND SETTTING [" + key + "]: " + config[key]);
+    } else {
+        sysInfo.error("MISSING SETTTING [" + key + "] : " + parsedConfig[key]);
+        config[key] = parsedConfig[key];
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));      
+    }    
+}
+sysInfo.info("------------------------------------------  ");
+
+
+
 
 
 
 var chatDB = path.join(configFolder, 'chatDB.json')
 // create chat database file if not exists
-var configContent = `
+const configContentChatDB = `
 { "chatDB" : [{
     "id" : "00000000",
     "timestamp" : 1234566,
@@ -94,7 +115,7 @@ var configContent = `
 }
 `;
 if (!fs.existsSync(chatDB)) {
-    fs.writeFileSync(chatDB, configContent);
+    fs.writeFileSync(chatDB, configContentChatDB);
 }
 
 
@@ -117,11 +138,12 @@ fs.mkdir(receivedFilesFolder, {
 
 
 
-const config = require(configPath);
+
 
 
 let win = null;
 let data = null;
+let logViewer = null;
 var daemonProcess = null;
 
 function createWindow() {
@@ -166,16 +188,49 @@ function createWindow() {
     chat.loadFile('src/chat-module.html');
     chat.setMenuBarVisibility(false);
 
+    
+    logViewer = new BrowserWindow({
+        height: 900,
+        width: 600,
+        show: false,
+        parent: win,
+        webPreferences: {
+            preload: require.resolve('./preload-log.js'),
+            nodeIntegration: true,
+
+        }
+    })
+
+    logViewer.loadFile('src/log-module.html');
+    logViewer.setMenuBarVisibility(false);
+
+    // Emitted when the window is closed.
+    logViewer.on('close', function(evt) {
+        evt.preventDefault();
+        logViewer.hide();
+    })
+
+
+
+
+
+
 
     // Emitted when the window is closed.
     win.on('closed', function() {
         win = null;
         chat = null;
+        logViewer = null;
     })
     
     
     win.once('ready-to-show', () => {
     
+        log.transports.file.level = "debug"
+        autoUpdater.logger = log.scope('updater');
+        
+        autoUpdater.channel = config.update_channel
+        
         autoUpdater.autoInstallOnAppQuit = false;
         autoUpdater.autoDownload = true;
         autoUpdater.checkForUpdatesAndNotify();
@@ -254,13 +309,26 @@ app.whenReady().then(() => {
         
     daemonProcess.on('message', (data) => {
       daemonProcessLog.info(`${data}`);
+      
     });
+    
     daemonProcess.stdout.on('data', (data) => {
       daemonProcessLog.info(`${data}`);
+
+    
+    
+  win.webContents.send('action-updater', data); 
     });
 
     daemonProcess.stderr.on('data', (data) => {
       daemonProcessLog.info(`${data}`);
+
+            let arg = {
+        entry: `${data}`
+      };
+        logViewer.webContents.send('action-update-log', arg);
+      
+      
     });
 
     daemonProcess.on('close', (code) => {
@@ -376,6 +444,11 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
     chat.webContents.send('action-update-rx-msg-buffer', arg);
 });
 
+ipcMain.on('request-open-tnc-log', (event) => {
+    logViewer.show();
+});
+
+
 
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on('update-available', (info) => {
@@ -399,19 +472,18 @@ autoUpdater.on('update-not-available', (info) => {
 });
 
 
-autoUpdater.on('update-downloaded', () => {
+autoUpdater.on('update-downloaded', (info) => {
   mainLog.info('update downloaded');
       let arg = {
-        status: "update-downloaded"
+        status: "update-downloaded",
+        info: info
     };
   win.webContents.send('action-updater', arg); 
   // we need to call this at this point. 
   // if an update is available and we are force closing the app
   // the entire screen crashes...
   mainLog.info('quit application and install update');
-  setTimeout(autoUpdater.quitAndInstall, 3000);
-
-  //autoUpdater.quitAndInstall();
+  autoUpdater.quitAndInstall();
 
   
 });
@@ -433,12 +505,13 @@ autoUpdater.on('download-progress', (progress) => {
   win.webContents.send('action-updater', arg); 
 });
 
-autoUpdater.on('error', (progress) => {
+autoUpdater.on('error', (error) => {
     mainLog.info('update error');
     let arg = {
         status: "error",
-        progress: progress
+        progress: error
     };
   win.webContents.send('action-updater', arg); 
 });
+
 

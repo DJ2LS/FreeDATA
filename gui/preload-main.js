@@ -123,6 +123,14 @@ window.addEventListener('DOMContentLoaded', () => {
         document.getElementById("bootstrap_theme").href = theme_path;
     }
     
+
+    // Update channel selector
+    document.getElementById("update_channel_selector").value = config.update_channel;
+
+
+
+    
+    
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
         document.getElementById("waterfall-scatter-switch2").checked = false;
@@ -439,12 +447,23 @@ window.addEventListener('DOMContentLoaded', () => {
             var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
         }
         
+        //update path to css file
         document.getElementById("bootstrap_theme").href = theme_path
         
         config.theme = theme;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     });
+    
+    // Update channel selector clicked
+    document.getElementById("update_channel_selector").addEventListener("click", () => {
+        config.update_channel = document.getElementById("update_channel_selector").value;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    });    
+    
+        
+    
 
     //screen size
     window.addEventListener('resize',() => {
@@ -597,6 +616,15 @@ window.addEventListener('DOMContentLoaded', () => {
         
         
     })
+
+    document.getElementById("tncLog").addEventListener("click", () => {
+
+            ipcRenderer.send('request-open-tnc-log');
+    
+    
+    
+})
+
 
     // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
@@ -965,7 +993,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     
     
     // SET SPEED LEVEL
-    console.log(arg.speed_level)
 
     if(arg.speed_level >= 0) {
         document.getElementById("speed_level").className = "bi bi-reception-1";
@@ -1637,8 +1664,6 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
 // IPC ACTION FOR AUTO UPDATER
 ipcRenderer.on('action-updater', (event, arg) => {
 
-        console.log(arg.status)
-
         if (arg.status == "download-progress"){
         
             bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateAvailable')).hide(); // close our update available notification
@@ -1696,6 +1721,8 @@ ipcRenderer.on('action-updater', (event, arg) => {
                 document.getElementById('toastUpdateNotChecking')            
             ); // Returns a Bootstrap toast instance
             toast.show();
+
+            
         }          
         
         
