@@ -339,22 +339,27 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
                 
     var datatype = "f"
 
-    //data = data.split('base64,')
-    //data = data[1]
     data = datatype + split_char + filename + split_char + filetype + split_char + checksum + split_char + data
     socketLog.info(data)
     socketLog.info(btoa(data))
     data = btoa(data)
-    
-    //command = '{"type" : "arq", "command" : "send_file",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "filename" : "' + filename + '", "filetype" : "' + filetype + '", "data" : "' + data + '", "checksum" : "' + checksum + '"}]}'
+
     command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     writeTncCommand(command)
 }
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
-    command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    socketLog.info(command)
+    socketLog.info(data) 
+
+    var datatype = "m"
+    data = datatype + split_char + split_char + checksum + split_char + data
+    socketLog.info(data)
+    socketLog.info(btoa(data))
+    data = btoa(data)
+
+    //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     writeTncCommand(command)
 }
 
