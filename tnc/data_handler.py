@@ -29,11 +29,20 @@ DATA_QUEUE_TRANSMIT = queue.Queue()
 DATA_QUEUE_RECEIVED = queue.Queue()
 
 class DATA():
+    """ """
 
     def __init__(self):
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
+
+        # ------- ARQ SESSION
+        self.arq_file_transfer = False
+        self.IS_ARQ_SESSION_MASTER = False
+        self.arq_session_last_received = 0
+        self.arq_session_timeout = 30
+        self.session_connect_max_retries = 3
+
 
 
         self.data_channel_last_received      =   0.0         # time of last "live sign" of a frame      
@@ -91,10 +100,14 @@ class DATA():
         watchdog_thread = threading.Thread(target=self.watchdog, name="watchdog",daemon=True)
         watchdog_thread.start()
         
+        arq_session_thread = threading.Thread(target=self.heartbeat, name="watchdog",daemon=True)
+        arq_session_thread.start()        
+        
         
     def worker_transmit(self):
-         while True:
-  
+        """ """
+        while True:
+
             data = self.data_queue_transmit.get()
             # [0] Command
 
@@ -105,7 +118,7 @@ class DATA():
             elif data[0] == 'STOP':
                 # [0] STOP
                 self.stop_transmission()
-            
+
             elif data[0] == 'PING':
                 # [0] PING
                 # [1] dxcallsign
@@ -130,23 +143,31 @@ class DATA():
                 # [2] MODE int
                 # [3] N_FRAMES_PER_BURST int
                 self.open_dc_and_transmit(data[1], data[2], data[3])
+                '''
+                print(static.ARQ_SESSION)
+                if not static.ARQ_SESSION:
+                    self.open_dc_and_transmit(data[1], data[2], data[3])
+                else:
+                    self.arq_transmit(data[1], data[2], data[3])
+                '''    
+                
+            elif data[0] == 'CONNECT':
+                # [0] DX CALLSIGN
+                self.arq_session_handler(data[1])                
 
-            elif data[0] == 'ARQ_MESSAGE':
-                # [0] ARQ_FILE
-                # [1] DATA_OUT bytes
-                # [2] MODE int
-                # [3] N_FRAMES_PER_BURST int
-                self.open_dc_and_transmit(data[1], data[2], data[3])
-                
-                
+            elif data[0] == 'DISCONNECT':
+                # [0] DX CALLSIGN
+                self.close_session()
+
             else:
                 # wrong command
                 print(f"wrong command {data}")
                 pass
-            
+
             
     def worker_receive(self):
-         while True:
+        """ """
+        while True:
             data = self.data_queue_received.get()
             # [0] bytes
             # [1] freedv instance
@@ -155,6 +176,16 @@ class DATA():
 
 
     def process_data(self, bytes_out, freedv, bytes_per_frame):    
+        """
+
+        Args:
+          bytes_out: 
+          freedv: 
+          bytes_per_frame: 
+
+        Returns:
+
+        """
         # forward data only if broadcast or we are the receiver
         # bytes_out[1:3] == callsign check for signalling frames, 
         # bytes_out[2:4] == transmission
@@ -241,6 +272,23 @@ class DATA():
                 #self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
                 self.received_ping_ack(bytes_out[:-2])
 
+
+
+            # SESSION OPENER
+            elif frametype == 221:
+                structlog.get_logger("structlog").debug("OPEN SESSION RECEIVED....")
+                self.received_session_opener(bytes_out[:-2])
+
+            # SESSION HEARTBEAT
+            elif frametype == 222:
+                structlog.get_logger("structlog").debug("SESSION HEARTBEAT RECEIVED....")
+                self.received_session_heartbeat(bytes_out[:-2])
+
+            # SESSION CLOSE
+            elif frametype == 223:
+                structlog.get_logger("structlog").debug("CLOSE ARQ SESSION RECEIVED....")
+                self.received_session_close()
+
             # ARQ FILE TRANSFER RECEIVED!
             elif frametype == 225 or frametype == 227:
                 structlog.get_logger("structlog").debug("ARQ arq_received_data_channel_opener")
@@ -283,12 +331,25 @@ class DATA():
 
 
     def arq_data_received(self, data_in:bytes, bytes_per_frame:int, snr:int, freedv):
+        """
+
+        Args:
+          data_in:bytes: 
+          bytes_per_frame:int: 
+          snr:int: 
+          freedv: 
+
+        Returns:
+
+        """
         data_in = bytes(data_in)    
         
         global TESTMODE
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE != 'BUSY':
             return
+
+        self.arq_file_transfer = True
 
         RX_PAYLOAD_PER_MODEM_FRAME = bytes_per_frame - 2    # payload per moden frame
 
@@ -545,6 +606,11 @@ class DATA():
                 # wait while transmitting
                 while static.TRANSMITTING:
                     time.sleep(0.01)
+                    
+
+            # update session timeout
+            self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
+                                
             # And finally we do a cleanup of our buffers and states
             # do cleanup only when not in testmode
             if not TESTMODE:
@@ -553,8 +619,20 @@ class DATA():
 
 
     def arq_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
+        """
+
+        Args:
+          data_out:bytes: 
+          mode:int: 
+          n_frames_per_burst:int: 
+
+        Returns:
+
+        """
 
         global TESTMODE
+        
+        self.arq_file_transfer = True
         
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
         static.ARQ_SPEED_LEVEL = self.speed_level
@@ -764,6 +842,14 @@ class DATA():
 
     # signalling frames received
     def burst_ack_received(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
         
         # increase speed level if we received a burst ack
         #self.speed_level += 1
@@ -781,6 +867,14 @@ class DATA():
             self.burst_nack_counter = 0
     # signalling frames received
     def burst_nack_received(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
         
         # increase speed level if we received a burst ack
         #self.speed_level += 1
@@ -799,20 +893,40 @@ class DATA():
 
 
     def frame_ack_received(self):
+        """ """
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:       
             self.data_frame_ack_received = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time()) # we need to update our timeout timestamp
-
+            self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
 
     def frame_nack_received(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
+        
+        self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
+        
         if not TESTMODE:
             self.arq_cleanup()
 
 
 
     def burst_rpt_received(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
 
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
@@ -831,12 +945,214 @@ class DATA():
 
 
     # ############################################################################################################
+    # ARQ SESSION HANDLER
+    # ############################################################################################################
+
+    def arq_session_handler(self, callsign):
+        """
+
+        Args:
+          callsign: 
+
+        Returns:
+
+        """
+        # das hier müssen wir checken. Sollte vielleicht in INIT!!!
+        self.datachannel_timeout = False
+        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        
+        self.open_session(callsign)
+
+        # wait until data channel is open
+        while not static.ARQ_SESSION and not self.arq_session_timeout:
+            time.sleep(0.01)
+
+        if static.ARQ_SESSION:
+            return True
+        else:
+            return False
+
+
+    def open_session(self, callsign):
+        """
+
+        Args:
+          callsign: 
+
+        Returns:
+
+        """
+        self.IS_ARQ_SESSION_MASTER = True
+
+
+        frametype = bytes([221])
+    
+        connection_frame        = bytearray(14)
+        connection_frame[:1]    = frametype
+        connection_frame[1:3] = static.DXCALLSIGN_CRC
+        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        connection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
+        
+        
+        while not static.ARQ_SESSION:
+            time.sleep(0.01)
+            for attempt in range(1,self.session_connect_max_retries+1):
+                txbuffer = [connection_frame]                
+                static.TRANSMITTING = True
+                
+                structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>?<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", a=attempt)
+                                
+                modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
+                # wait while transmitting
+                while static.TRANSMITTING:
+                    time.sleep(0.01)
+                    
+                timeout = time.time() + 3    
+                while time.time() < timeout:    
+                    time.sleep(0.01)
+                    # break if data channel is openend    
+                    if static.ARQ_SESSION:
+                        # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
+                        break
+                if static.ARQ_SESSION:
+                    break
+        
+        
+                if not static.ARQ_SESSION and attempt == self.session_connect_max_retries:
+                    if not TESTMODE:
+                        self.arq_cleanup()
+                    return False
+                                
+                
+    def received_session_opener(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
+        self.IS_ARQ_SESSION_MASTER = False
+
+        self.arq_session_last_received = int(time.time())
+
+        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+        
+        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        static.ARQ_SESSION = True
+        static.TNC_STATE = 'BUSY'
+
+        self.transmit_session_heartbeat()
+
+
+    def close_session(self):
+        """ """
+        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        static.INFO.append("ARQ;SESSION;CLOSE")
+        self.IS_ARQ_SESSION_MASTER = False
+        static.ARQ_SESSION = False
+        self.arq_cleanup()
+
+        frametype = bytes([223])
+    
+        disconnection_frame        = bytearray(14)
+        disconnection_frame[:1]    = frametype
+        disconnection_frame[1:3] = static.DXCALLSIGN_CRC
+        disconnection_frame[3:5] = static.MYCALLSIGN_CRC
+        disconnection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
+        
+        txbuffer = [disconnection_frame]                
+        static.TRANSMITTING = True
+                        
+        modem.MODEM_TRANSMIT_QUEUE.put([14,2,250,txbuffer])                
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)          
+        
+        
+
+        
+    def received_session_close(self):
+        """ """
+        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        static.INFO.append("ARQ;SESSION;CLOSE")
+        self.IS_ARQ_SESSION_MASTER = False
+        static.ARQ_SESSION = False
+        self.arq_cleanup()
+
+
+    def transmit_session_heartbeat(self):
+        """ """
+
+        static.ARQ_SESSION = True
+        static.TNC_STATE = 'BUSY'
+
+        frametype = bytes([222])
+    
+        connection_frame        = bytearray(14)
+        connection_frame[:1]    = frametype
+        connection_frame[1:3] = static.DXCALLSIGN_CRC
+        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        connection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
+        
+        txbuffer = [connection_frame]                
+        static.TRANSMITTING = True
+                        
+        modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)        
+
+
+
+    def received_session_heartbeat(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
+        structlog.get_logger("structlog").debug("received session heartbeat")
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'SESSION-HB', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+
+
+        self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
+        
+        static.ARQ_SESSION = True
+        #static.ARQ_STATE = True
+        static.TNC_STATE = 'BUSY'
+        self.data_channel_last_received = int(time.time())
+        if static.ARQ_SESSION and not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
+            self.transmit_session_heartbeat()
+
+    # ############################################################################################################
     # ARQ DATA CHANNEL HANDLER
     # ############################################################################################################
 
-
     def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
+        """
+
+        Args:
+          data_out:bytes: 
+          mode:int: 
+          n_frames_per_burst:int: 
+
+        Returns:
+
+        """
         static.TNC_STATE = 'BUSY'
+        self.arq_file_transfer = True
+        
+        # wait a moment for the case, an heartbeat is already on the way back to us
+        if static.ARQ_SESSION:
+            time.sleep(0.5)
+        
+        
         self.datachannel_timeout = False
         
         # we need to compress data for gettin a compression factor.
@@ -856,6 +1172,15 @@ class DATA():
              return False
             
     def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):      
+        """
+
+        Args:
+          mode:int: 
+          n_frames_per_burst:int: 
+
+        Returns:
+
+        """
         self.is_IRS = False      
         self.data_channel_last_received = int(time.time())
 
@@ -916,6 +1241,15 @@ class DATA():
 
 
     def arq_received_data_channel_opener(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
+        self.arq_file_transfer = True
         self.is_IRS = True        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
@@ -981,6 +1315,14 @@ class DATA():
 
 
     def arq_received_channel_is_open(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
         protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
         if protocol_version == static.ARQ_PROTOCOL_VERSION:
             static.INFO.append("DATACHANNEL;OPEN")
@@ -1017,6 +1359,14 @@ class DATA():
 
     # ---------- PING
     def transmit_ping(self, dxcallsign:bytes):
+        """
+
+        Args:
+          dxcallsign:bytes: 
+
+        Returns:
+
+        """
         static.DXCALLSIGN = dxcallsign
         static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                 
@@ -1039,6 +1389,15 @@ class DATA():
             time.sleep(0.01)
             
     def received_ping(self, data_in:bytes, frequency_offset:str):
+        """
+
+        Args:
+          data_in:bytes: 
+          frequency_offset:str: 
+
+        Returns:
+
+        """
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
@@ -1063,6 +1422,14 @@ class DATA():
             time.sleep(0.01)
             
     def received_ping_ack(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXGRID = bytes(data_in[5:11]).rstrip(b'\x00')
@@ -1076,6 +1443,7 @@ class DATA():
     
 
     def stop_transmission(self):
+        """ """
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
         stop_frame      = bytearray(14)
         stop_frame[:1]  = bytes([249])
@@ -1094,6 +1462,7 @@ class DATA():
         self.arq_cleanup()
 
     def received_stop_transmission(self):
+        """ """
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
         static.TNC_STATE = 'IDLE'
         static.ARQ_STATE = False
@@ -1103,6 +1472,14 @@ class DATA():
     # ----------- BROADCASTS
     
     def run_beacon(self, interval:int):
+        """
+
+        Args:
+          interval:int: 
+
+        Returns:
+
+        """
         try:
             structlog.get_logger("structlog").warning("[TNC] Starting beacon!", interval=interval)
 
@@ -1130,6 +1507,14 @@ class DATA():
             print(e)
 
     def received_beacon(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
     # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
@@ -1140,6 +1525,7 @@ class DATA():
 
 
     def transmit_cq(self):
+        """ """
         logging.info("CQ CQ CQ")
         static.INFO.append("CQ;SENDING")
         
@@ -1159,6 +1545,14 @@ class DATA():
 
 
     def received_cq(self, data_in:bytes):
+        """
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+
+        """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
@@ -1168,6 +1562,15 @@ class DATA():
 
     # ------------ CALUCLATE TRANSFER RATES
     def calculate_transfer_rate_rx(self, rx_start_of_transmission:float, receivedbytes:int) -> list:
+        """
+
+        Args:
+          rx_start_of_transmission:float: 
+          receivedbytes:int: 
+
+        Returns:
+
+        """
         
         try: 
             static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES)) * 100)
@@ -1192,6 +1595,7 @@ class DATA():
 
 
     def reset_statistics(self):
+        """ """
         # reset ARQ statistics
         static.ARQ_BYTES_PER_MINUTE_BURST = 0
         static.ARQ_BYTES_PER_MINUTE = 0
@@ -1201,6 +1605,16 @@ class DATA():
         static.TOTAL_BYTES = 0
         
     def calculate_transfer_rate_tx(self, tx_start_of_transmission:float, sentbytes:int, tx_buffer_length:int) -> list:
+        """
+
+        Args:
+          tx_start_of_transmission:float: 
+          sentbytes:int: 
+          tx_buffer_length:int: 
+
+        Returns:
+
+        """
         
         try:
             static.ARQ_TRANSMISSION_PERCENT = int((sentbytes / tx_buffer_length) * 100)
@@ -1228,14 +1642,13 @@ class DATA():
 
     # ----------------------CLEANUP AND RESET FUNCTIONS
     def arq_cleanup(self):
+        """ """
 
 
         structlog.get_logger("structlog").debug("cleanup")
         
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
-        static.TNC_STATE = 'IDLE'
-        static.ARQ_STATE = False
         self.burst_ack = False
         self.rpt_request_received = False
         self.data_frame_ack_received = False
@@ -1263,9 +1676,27 @@ class DATA():
         # reset retry counter for rx channel / burst
         self.n_retries_per_burst = 0
         
+        if not static.ARQ_SESSION:
+            static.TNC_STATE = 'IDLE'
+            
+        static.ARQ_STATE = False
+        self.arq_file_transfer = False
+        self.IS_ARQ_SESSION_MASTER = False
+
+        
+        
+        
         
         
     def arq_reset_ack(self,state:bool):
+        """
+
+        Args:
+          state:bool: 
+
+        Returns:
+
+        """
 
         self.burst_ack = state
         self.rpt_request_received = state
@@ -1273,6 +1704,14 @@ class DATA():
 
 
     def set_listening_modes(self, mode):
+        """
+
+        Args:
+          mode: 
+
+        Returns:
+
+        """
         # set modes we want listening to
         
         mode_name = codec2.freedv_get_mode_name_by_value(mode)
@@ -1291,17 +1730,23 @@ class DATA():
 
     # ------------------------- WATCHDOG FUNCTIONS FOR TIMER
     def watchdog(self):
-        """
-        Author: DJ2LS
-
+        """Author: DJ2LS
+        
         watchdog master function. Frome here we call the watchdogs
+
+        Args:
+
+        Returns:
+
         """
         while True:
             time.sleep(0.1)
             self.data_channel_keep_alive_watchdog()
             self.burst_watchdog()
+            self.arq_session_keep_alive_watchdog()
 
     def burst_watchdog(self):
+        """ """
       
         # IRS SIDE        
         if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and self.is_IRS:
@@ -1351,10 +1796,7 @@ class DATA():
                 #print(self.n_retries_per_burst)
                 
     def data_channel_keep_alive_watchdog(self):
-        """
-        Author: DJ2LS
-
-        """
+        """Author: DJ2LS"""
                 
         # and not static.ARQ_SEND_KEEP_ALIVE:
         if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
@@ -1369,3 +1811,24 @@ class DATA():
                 static.INFO.append("ARQ;RECEIVING;FAILED")
                 if not TESTMODE:
                     self.arq_cleanup()
+                    
+    def arq_session_keep_alive_watchdog(self):
+        """ """
+        if static.ARQ_SESSION and static.TNC_STATE == 'BUSY' and not self.arq_file_transfer:
+            if self.arq_session_last_received + self.arq_session_timeout > time.time():
+                time.sleep(0.01)
+            else:
+                logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                static.INFO.append("ARQ;SESSION;TIMEOUT")
+                self.close_session()
+                
+                 
+                    
+    def heartbeat(self):
+        """ """
+        while 1:
+            time.sleep(0.01)
+            if static.ARQ_SESSION and self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
+                time.sleep(1)
+                self.transmit_session_heartbeat()
+                time.sleep(2)

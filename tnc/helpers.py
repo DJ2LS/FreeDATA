@@ -13,6 +13,14 @@ import static
 
 
 def wait(seconds):
+    """
+
+    Args:
+      seconds: 
+
+    Returns:
+
+    """
     timeout = time.time() + seconds
 
     while time.time() < timeout:
@@ -22,12 +30,17 @@ def wait(seconds):
     
 
 def get_crc_8(data):
-    """
-    Author: DJ2LS
-
+    """Author: DJ2LS
+    
     Get the CRC8 of a byte string
-
+    
     param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
     """
     crc_algorithm = crcengine.new('crc8-ccitt')  # load crc8 library
     crc_data = crc_algorithm(data)
@@ -36,12 +49,17 @@ def get_crc_8(data):
 
 
 def get_crc_16(data):
-    """
-    Author: DJ2LS
-
+    """Author: DJ2LS
+    
     Get the CRC16 of a byte string
-
+    
     param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
     """
     crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
     crc_data = crc_algorithm(data)
@@ -49,12 +67,17 @@ def get_crc_16(data):
     return crc_data
 
 def get_crc_32(data):
-    """
-    Author: DJ2LS
-
+    """Author: DJ2LS
+    
     Get the CRC32 of a byte string
-
+    
     param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
     """
     crc_algorithm = crcengine.new('crc32')  # load crc16 library
     crc_data = crc_algorithm(data)
@@ -63,6 +86,19 @@ def get_crc_32(data):
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
+    """
+
+    Args:
+      dxcallsign: 
+      dxgrid: 
+      datatype: 
+      snr: 
+      offset: 
+      frequency: 
+
+    Returns:
+
+    """
 
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
@@ -88,6 +124,14 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 
 
 def callsign_to_bytes(callsign):
+    """
+
+    Args:
+      callsign: 
+
+    Returns:
+
+    """
     # http://www.aprs.org/aprs11/SSIDs.txt
     #-0 Your primary station usually fixed and message capable
     #-1 generic additional station, digi, mobile, wx, etc
@@ -128,6 +172,14 @@ def callsign_to_bytes(callsign):
     return bytes(bytestring) 
     
 def bytes_to_callsign(bytestring):
+    """
+
+    Args:
+      bytestring: 
+
+    Returns:
+
+    """
 
     # http://www.aprs.org/aprs11/SSIDs.txt
     #-0 Your primary station usually fixed and message capable

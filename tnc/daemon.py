@@ -5,6 +5,8 @@ daemon.py
 
 Author: DJ2LS, January 2022
 
+daemon for providing basic information for the tnc like audio or serial devices
+
 """
 
 import argparse
@@ -32,6 +34,15 @@ import multiprocessing
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
+    """
+    signal handler for closing the network socket on app exit
+    Args:
+      sig: 
+      frame: 
+
+    Returns: system exit
+
+    """
     print('Closing daemon...')
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
@@ -40,6 +51,10 @@ signal.signal(signal.SIGINT, signal_handler)
 
 
 class DAEMON():
+    """ 
+    daemon class
+    
+    """
     def __init__(self):
         
         # load crc engine    
@@ -58,6 +73,9 @@ class DAEMON():
         
         
     def update_audio_devices(self):
+        """ 
+        update audio devices and set to static
+        """
         while 1:
             try:
                 if not static.TNCSTARTED:
@@ -69,6 +87,9 @@ class DAEMON():
             
             
     def update_serial_devices(self):
+        """
+        update serial devices and set to static
+        """
         while 1:
             try:
                 #print("update serial")
@@ -89,6 +110,9 @@ class DAEMON():
                 print(e)
                 
     def worker(self):
+        """
+        a worker for the received commands
+        """
         while 1:
             try:
             
@@ -294,9 +318,12 @@ if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA Daemon')
-    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port", type=int)   
+    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port  in the range of 1024-65536", type=int)   
     ARGS = PARSER.parse_args()
+    
     static.DAEMONPORT = ARGS.socket_port
+
+    
     try:
         if sys.platform == 'linux':
             logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'daemon'

@@ -74,6 +74,7 @@ except Exception as e:
  
         
 class radio:
+    """ """
     def __init__(self):
     
         self.devicename = ''
@@ -88,6 +89,23 @@ class radio:
         self.handshake = ''
  
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_port, rigctld_ip):    
+        """
+
+        Args:
+          devicename: 
+          deviceport: 
+          hamlib_ptt_type: 
+          serialspeed: 
+          pttport: 
+          data_bits: 
+          stop_bits: 
+          handshake: 
+          rigctld_port: 
+          rigctld_ip: 
+
+        Returns:
+
+        """
         
         self.devicename = devicename
         self.deviceport = str(deviceport)
@@ -193,13 +211,16 @@ class radio:
             return False
             
     def get_frequency(self):
+        """ """
         return int(self.my_rig.get_freq())
         
     def get_mode(self):
+        """ """
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
         return Hamlib.rig_strrmode(hamlib_mode)
     
     def get_bandwith(self):
+        """ """
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
         return bandwith
 
@@ -208,9 +229,18 @@ class radio:
     #    return 0
       
     def get_ptt(self):
+        """ """
         return self.my_rig.get_ptt()
                   
     def set_ptt(self, state):
+        """
+
+        Args:
+          state: 
+
+        Returns:
+
+        """
         if state:
             self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 1)
         else:
@@ -218,4 +248,5 @@ class radio:
         return state
         
     def close_rig(self):
+        """ """
         self.my_rig.close()

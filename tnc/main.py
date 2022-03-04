@@ -5,6 +5,9 @@ Created on Tue Dec 22 16:58:45 2020
 
 @author: DJ2LS
 
+main module for running the tnc
+
+
 """
 
 
@@ -26,6 +29,15 @@ import multiprocessing
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
+    """
+    a signal handler, which closes the network/socket when closing the application
+    Args:
+      sig: signal
+      frame: 
+
+    Returns: system exit
+
+    """
     print('Closing tnc...')
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
@@ -41,7 +53,7 @@ if __name__ == '__main__':
     PARSER.add_argument('--mygrid', dest="mygrid", default="JN12AA", help="My gridsquare", type=str) 
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
-    PARSER.add_argument('--port', dest="socket_port", default=3000, help="Socket port", type=int)
+    PARSER.add_argument('--port', dest="socket_port", default=3000, help="Socket port  in the range of 1024-65536", type=int)
     PARSER.add_argument('--deviceport', dest="hamlib_device_port", default="/dev/ttyUSB0", help="Hamlib device port", type=str)
     PARSER.add_argument('--devicename', dest="hamlib_device_name", default="2028", help="Hamlib device name", type=str)    
     PARSER.add_argument('--serialspeed', dest="hamlib_serialspeed", choices=[1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200], default=9600, help="Serialspeed", type=int)    

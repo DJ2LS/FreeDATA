@@ -14,7 +14,7 @@ import static
 hamlib_version = 0
 
 class radio():
-    """ rotctld (hamlib) communication class """
+    """rotctld (hamlib) communication class"""
     # Note: This is a massive hack. 
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
@@ -27,6 +27,23 @@ class radio():
         self.connection_attempts = 5
 
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):
+        """
+
+        Args:
+          devicename: 
+          deviceport: 
+          hamlib_ptt_type: 
+          serialspeed: 
+          pttport: 
+          data_bits: 
+          stop_bits: 
+          handshake: 
+          rigctld_ip: 
+          rigctld_port: 
+
+        Returns:
+
+        """
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
         
@@ -39,7 +56,7 @@ class radio():
             return False
         
     def connect(self):
-        """ Connect to rotctld instance """
+        """Connect to rotctld instance"""
         for a in range(0,self.connection_attempts):
             try:
                 self.sock.connect((self.hostname,self.port))
@@ -54,13 +71,20 @@ class radio():
         return False
     
     def close_rig(self):
+        """ """
         self.sock.close()
         self.connected = False
 
 
     def send_command(self, command):
-        """ Send a command to the connected rotctld instance,
+        """Send a command to the connected rotctld instance,
             and return the return value.
+
+        Args:
+          command: 
+
+        Returns:
+
         """
         if self.connected:
             try:
@@ -79,6 +103,7 @@ class radio():
             self.connect()
         
     def get_mode(self):
+        """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b'\n')
@@ -87,6 +112,7 @@ class radio():
         except:
             0
     def get_bandwith(self):
+        """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b'\n')
@@ -96,6 +122,7 @@ class radio():
             return 0
         
     def get_frequency(self):
+        """ """
         try:
             frequency = self.send_command(b"f")
             return frequency.decode("utf-8")
@@ -103,12 +130,21 @@ class radio():
             return 0
         
     def get_ptt(self):
+        """ """
         try:
             return self.send_command(b"t")
         except:
             return False
         
     def set_ptt(self, state):
+        """
+
+        Args:
+          state: 
+
+        Returns:
+
+        """
         try:
             if state:
                  self.send_command(b"T 1")

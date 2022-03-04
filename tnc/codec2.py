@@ -14,6 +14,9 @@ import structlog
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
+    """
+    enum for codec2 modes and names
+    """
     datac0 = 14
     datac1 = 10
     datac3 = 12
@@ -21,10 +24,26 @@ class FREEDV_MODE(Enum):
 
 # function for returning the mode value
 def freedv_get_mode_value_by_name(mode):
+    """
+    get the codec2 mode by entering its string
+    Args:
+      mode: 
+
+    Returns: int
+
+    """
     return FREEDV_MODE[mode].value
 
 # function for returning the mode name
 def freedv_get_mode_name_by_value(mode):
+    """
+    get the codec2 mode name as string
+    Args:
+      mode: 
+
+    Returns: string
+
+    """
     return FREEDV_MODE(mode).name
     
     
@@ -147,6 +166,11 @@ api.rx_sync_flags_to_text = [
 # audio buffer ---------------------------------------------------------
 
 class audio_buffer:
+    """
+    thread safe audio buffer, which fits to needs of codec2
+    
+    made by David Rowe, VK5DGR
+    """
     # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
     # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
@@ -156,6 +180,15 @@ class audio_buffer:
         self.nbuffer = 0
         self.mutex = Lock()
     def push(self,samples):
+        """
+        Push new data to buffer
+
+        Args:
+          samples: 
+
+        Returns:
+
+        """
         self.mutex.acquire()
         # add samples at the end of the buffer
         assert self.nbuffer+len(samples) <= self.size
@@ -163,6 +196,14 @@ class audio_buffer:
         self.nbuffer += len(samples)
         self.mutex.release()
     def pop(self,size):
+        """
+        get data from buffer in size of NIN
+        Args:
+          size: 
+
+        Returns:
+
+        """
         self.mutex.acquire()
         # remove samples from the start of the buffer
         self.nbuffer -= size;
@@ -179,6 +220,9 @@ api.fdmdv_8_to_48_short.argtype = [c_void_p, c_void_p, c_int]
 api.fdmdv_48_to_8_short.argtype = [c_void_p, c_void_p, c_int]
 
 class resampler:
+    """
+    resampler class
+    """
     # resample an array of variable length, we just store the filter memories here
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K
@@ -190,6 +234,15 @@ class resampler:
         
         
     def resample48_to_8(self,in48):
+        """
+        audio resampler integration from codec2
+        downsample audio from 48000Hz to 8000Hz
+        Args:
+          in48: input data as np.int16
+
+        Returns: downsampled 8000Hz data as np.int16
+
+        """
         assert in48.dtype == np.int16
         # length of input vector must be an integer multiple of api.FDMDV_OS_48
         assert(len(in48) % api.FDMDV_OS_48 == 0)
@@ -211,6 +264,15 @@ class resampler:
         return out8
 
     def resample8_to_48(self,in8):
+        """
+        audio resampler integration from codec2
+        resample audio from 8000Hz to 48000Hz
+        Args:
+          in8: input data as np.int16
+
+        Returns: 48000Hz audio as np.int16
+
+        """
         assert in8.dtype == np.int16
 
         # concat filter memory and input samples

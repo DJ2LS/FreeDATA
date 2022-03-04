@@ -16,12 +16,25 @@ import pyaudio
 ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
 def py_error_handler(filename, line, function, err, fmt):
+    """
+
+    Args:
+      filename: 
+      line: 
+      function: 
+      err: 
+      fmt: 
+
+    Returns:
+
+    """
     pass
 
 c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
 
 @contextmanager
 def noalsaerr():
+    """ """
     asound = cdll.LoadLibrary('libasound.so')
     asound.snd_lib_error_set_handler(c_error_handler)
     yield
@@ -32,6 +45,11 @@ def noalsaerr():
 #####################################################
 
 def get_audio_devices():
+    """
+    return list of input and output audio devices in own process to avoid crashes of portaudio on raspberry pi
+    
+    also uses a process data manager
+    """
     # we need to run this on windows for multiprocessing support
     # multiprocessing.freeze_support()
     #multiprocessing.get_context('spawn')
@@ -47,6 +65,16 @@ def get_audio_devices():
         return list(proxy_input_devices), list(proxy_output_devices)   
 
 def fetch_audio_devices(input_devices, output_devices):
+    """
+    get audio devices from portaudio
+    
+    Args:
+      input_devices: proxy variable for input devices
+      output_devices: proxy variable for outout devices
+
+    Returns:
+
+    """
     # UPDATE LIST OF AUDIO DEVICES    
     try:
     # we need to "try" this, because sometimes libasound.so isn't in the default place                   

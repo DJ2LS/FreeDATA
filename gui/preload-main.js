@@ -24,8 +24,6 @@ var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
-//setInterval(daemon.getDaemonState, 1000);
-//setInterval(sock.getTncState, 150);
 setInterval(sock.getRxBuffer, 1000);
 setInterval(sock.getMsgRxBuffer, 1000);
 
@@ -387,6 +385,22 @@ window.addEventListener('DOMContentLoaded', () => {
         dxcallsign = dxcallsign.toUpperCase();
         sock.sendPing(dxcallsign);
     });
+    
+    
+    
+    
+    
+    // open arq session
+    document.getElementById("openARQSession").addEventListener("click", () => {
+        var dxcallsign = document.getElementById("dataModalDxCall").value;
+        dxcallsign = dxcallsign.toUpperCase();
+        sock.connectARQ(dxcallsign);
+    });
+    
+    // close arq session
+    document.getElementById("closeARQSession").addEventListener("click", () => {
+       sock.disconnectARQ();
+    });        
 
 
     // sendCQ button clicked
@@ -917,6 +931,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // BUSY STATE
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-sm btn-danger";
+        
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
 
@@ -932,7 +947,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // ARQ STATE
     if (arg.arq_state == 'True') {
         document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-        document.getElementById("startTransmission").disabled = true;
+        //document.getElementById("startTransmission").disabled = true;
+        document.getElementById("startTransmission").disabled = false;
         //document.getElementById("stopTransmission").disabled = false;
     } else if (arg.arq_state == 'False') {
         document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
@@ -940,9 +956,24 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         //document.getElementById("stopTransmission").disabled = true;
     } else {
         document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-        document.getElementById("startTransmission").disabled = true;
+        //document.getElementById("startTransmission").disabled = true;
+        document.getElementById("startTransmission").disabled = false;
         //document.getElementById("stopTransmission").disabled = false;
     }
+
+    // ARQ SESSION
+    if (arg.arq_session == 'True') {
+        document.getElementById("arq_session").className = "btn btn-sm btn-warning";
+
+    } else if (arg.arq_session == 'False') {
+        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+
+    } else {
+        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+
+    }
+
+
 
     // BEACON STATE
     if (arg.beacon_state == 'True') {
@@ -1103,6 +1134,11 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             dataType.appendChild(dataTypeText);
         }
         
+        if(arg.stations[i]['datatype'] == 'SESSION-HB'){
+            dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
+            dataType.appendChild(dataTypeText);
+        }
+
         console.log(dataTypeText.innerText)
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
@@ -1110,6 +1146,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         }
 
         if (dataTypeText.innerText == 'DATA-C') {
+            dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
             row.classList.add("table-warning");
         }
 

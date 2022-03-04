@@ -798,16 +798,27 @@
 						<div class="card-body p-2">
 							<div class="row">
 								<div class="col-md-auto">
-									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send a ping request to a remote station"> <span class="input-group-text">Ping</span>
+									<div class="input-group input-group-sm mb-0">
 										<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" placeholder="DXcall" pattern="[A-Z]*" id="dxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
-										<button class="btn btn-sm btn-success" id="sendPing" type="button">
+										<button class="btn btn-sm btn-primary" id="sendPing" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send a ping request to a remote station">
+											Ping
+										</button>
+										
+										<button class="btn btn-sm btn-success" id="openARQSession" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="connect to a remote station">
 											<i class="bi bi-arrows-angle-contract" style="font-size: 0.8rem; color: white;"></i>
+										</button>
+
+										<button class="btn btn-sm btn-danger" id="closeARQSession" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="disconnect from a remote station">
+											<i class="bi bi-arrows-angle-expand" style="font-size: 0.8rem; color: white;"></i>
+										</button>
+
+
 											
 									</div>
 								</div>
 								<div class="col-md-auto">
 									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send a CQ to the world">
-										<button class="btn btn-sm btn-success" id="sendCQ" type="button">CQ CQ CQ</button>
+										<button class="btn btn-sm btn-success" id="sendCQ" type="button">CQ CQ</button>
 									</div>
 								</div>
 								<div class="col-md-auto">
@@ -1063,9 +1074,18 @@
 						
 					</button>
 				</div>
+
+				<div class="btn-group btn-group-sm me-2" role="group">
+					<button class="btn btn-sm btn-secondary" id="arq_session" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>">
+						<i class="bi bi-arrow-left-right" style="font-size: 0.8rem; color: white;"></i>
+						
+					</button>
+				</div>
+				
+				
 				<div class="btn-group btn-group-sm me-2" role="group">
 					<button class="btn btn-sm btn-secondary" id="arq_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>">
-						<i class="bi bi-arrow-left-right" style="font-size: 0.8rem; color: white;"></i>
+						<i class="bi bi-file-earmark-binary" style="font-size: 0.8rem; color: white;"></i>
 						
 					</button>
 				</div>
@@ -1154,7 +1174,7 @@
 					
 					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Update channel</span>
 						<select class="form-select form-select-sm" id="update_channel_selector">
-							<option value="latest">latest</option>
+							<option value="latest">stable</option>
 							<option value="beta">beta</option>
 							<option value="alpha">alpha</option>
 						</select>

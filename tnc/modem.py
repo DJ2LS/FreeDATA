@@ -33,6 +33,7 @@ MODEM_STATS_NC_MAX = 51
 
 
 class MODEMSTATS(ctypes.Structure):
+    """ """
     _fields_ = [
         ("Nc", ctypes.c_int),
         ("snr_est", ctypes.c_float),
@@ -58,6 +59,7 @@ RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 
 class RF():
+    """ """
 
     def __init__(self):
         
@@ -217,11 +219,24 @@ class RF():
         
     # --------------------------------------------------------------------------------------------------------
     def audio_callback(self, data_in48k, frame_count, time_info, status):
+        """
+
+        Args:
+          data_in48k: 
+          frame_count: 
+          time_info: 
+          status: 
+
+        Returns:
+
+        """
 
         x = np.frombuffer(data_in48k, dtype=np.int16)
         time_sampler_start = time.time()
         x = self.resampler.resample48_to_8(x)    
         time_sampler_end = time.time()
+        
+        
 
 
         time_buffer_start = time.time()
@@ -254,6 +269,8 @@ class RF():
             self.fft_data = bytes(data_out48k)
             
         time_buffer_end = time.time()
+ 
+        
         #print(f"SAMPLER {time_sampler_end - time_sampler_start} BUFFER {time_buffer_end - time_buffer_start}")
         return (data_out48k, audio.pyaudio.paContinue)
 
@@ -261,6 +278,17 @@ class RF():
 
 
     def transmit(self, mode, repeats, repeat_delay, frames):     
+        """
+
+        Args:
+          mode: 
+          repeats: 
+          repeat_delay: 
+          frames: 
+
+        Returns:
+
+        """
         static.TRANSMITTING = True
         # toggle ptt early to save some time and send ptt state via socket
         static.PTT_STATE = self.hamlib.set_ptt(True)
@@ -367,6 +395,8 @@ class RF():
             pass
         
         static.PTT_STATE = self.hamlib.set_ptt(False)
+        
+        # push ptt state to socket stream
         jsondata = {"ptt":"False"}
         data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(data_out)
@@ -380,6 +410,7 @@ class RF():
         threading.Event().set()
 
     def audio_datac0(self):             
+        """ """
         nbytes_datac0 = 0    
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
@@ -394,6 +425,7 @@ class RF():
                     self.calculate_snr(self.datac0_freedv)
 
     def audio_datac1(self):
+        """ """
         nbytes_datac1 = 0
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
@@ -408,6 +440,7 @@ class RF():
                         self.calculate_snr(self.datac1_freedv)
                      
     def audio_datac3(self):                
+        """ """
         nbytes_datac3 = 0
         while self.audio_stream.is_active():
             threading.Event().wait(0.01)
@@ -425,6 +458,7 @@ class RF():
            
     # worker for FIFO queue for processing received frames           
     def worker_transmit(self):
+        """ """
         while True:
             data = self.modem_transmit_queue.get()
             self.transmit(mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3])
@@ -434,6 +468,7 @@ class RF():
            
     # worker for FIFO queue for processing received frames           
     def worker_received(self):
+        """ """
         while True:
             data = self.modem_received_queue.get()
             # data[0] = bytes_out
@@ -444,6 +479,14 @@ class RF():
    
 
     def get_frequency_offset(self, freedv):
+        """
+
+        Args:
+          freedv: 
+
+        Returns:
+
+        """
         modemStats = MODEMSTATS()
         self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
@@ -453,6 +496,14 @@ class RF():
         
         
     def get_scatter(self, freedv):
+        """
+
+        Args:
+          freedv: 
+
+        Returns:
+
+        """
         if static.ENABLE_SCATTER:
             modemStats = MODEMSTATS()
             self.c_lib.freedv_get_modem_extended_stats.restype = None
@@ -480,6 +531,14 @@ class RF():
 
     
     def calculate_snr(self, freedv):
+        """
+
+        Args:
+          freedv: 
+
+        Returns:
+
+        """
 
         modem_stats_snr = c_float()
         modem_stats_sync = c_int()
@@ -496,6 +555,7 @@ class RF():
             return static.SNR
 
     def update_rig_data(self):
+        """ """
         while True:
             #time.sleep(1.5)
             threading.Event().wait(0.5)
@@ -505,6 +565,7 @@ class RF():
             static.HAMLIB_BANDWITH = self.hamlib.get_bandwith()
     
     def calculate_fft(self):
+        """ """
         # channel_busy_delay counter
         channel_busy_delay = 0
         
@@ -515,8 +576,13 @@ class RF():
             if len(self.fft_data) >= 128:
             
                 data_in = self.fft_data
-                # delte fft_buffer
-                self.fft_data = bytes()                       
+                
+                # delete fft_buffer
+                self.fft_data = bytes()     
+                
+                
+                
+                                
 
                 # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
                 audio_data = np.fromstring(data_in, np.int16)
@@ -571,6 +637,14 @@ class RF():
                 pass
                 
     def set_frames_per_burst(self, n_frames_per_burst):
+        """
+
+        Args:
+          n_frames_per_burst: 
+
+        Returns:
+
+        """
         codec2.api.freedv_set_frames_per_burst(self.datac1_freedv,n_frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,n_frames_per_burst)        
                 
@@ -578,6 +652,14 @@ class RF():
                 
                 
 def get_bytes_per_frame(mode):
+    """
+
+    Args:
+      mode: 
+
+    Returns:
+
+    """
     freedv = cast(codec2.api.freedv_open(mode), c_void_p)
 
     # get number of bytes per frame for mode

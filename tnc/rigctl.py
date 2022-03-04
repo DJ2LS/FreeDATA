@@ -19,6 +19,7 @@ import os
 hamlib_version = 0
                
 class radio:
+    """ """
     def __init__(self):
     
         self.devicename = ''
@@ -33,6 +34,23 @@ class radio:
         self.handshake = ''
  
     def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):    
+        """
+
+        Args:
+          devicename: 
+          deviceport: 
+          hamlib_ptt_type: 
+          serialspeed: 
+          pttport: 
+          data_bits: 
+          stop_bits: 
+          handshake: 
+          rigctld_ip: 
+          rigctld_port: 
+
+        Returns:
+
+        """
         
         self.devicename = devicename
         self.deviceport = deviceport
@@ -87,6 +105,7 @@ class radio:
         return True
             
     def get_frequency(self):
+        """ """
         cmd = self.cmd + ' f'
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         time.sleep(0.5)
@@ -99,6 +118,7 @@ class radio:
 
         
     def get_mode(self):
+        """ """
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
         #return Hamlib.rig_strrmode(hamlib_mode)
         try:
@@ -108,6 +128,7 @@ class radio:
 
     
     def get_bandwith(self):
+        """ """
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
         bandwith = 2700
 
@@ -117,10 +138,19 @@ class radio:
             return False
 
     def set_mode(self, mode):
+        """
+
+        Args:
+          mode: 
+
+        Returns:
+
+        """
         # non usata
         return 0
       
     def get_ptt(self):
+        """ """
         cmd = self.cmd + ' t'
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)  
         time.sleep(0.5)
@@ -132,6 +162,14 @@ class radio:
             return False
                   
     def set_ptt(self, state):
+        """
+
+        Args:
+          state: 
+
+        Returns:
+
+        """
         cmd = self.cmd + ' T '
         print('set_ptt', state)
         if state:
@@ -147,5 +185,6 @@ class radio:
             return False
         
     def close_rig(self):
+        """ """
         #self.my_rig.close()
         return

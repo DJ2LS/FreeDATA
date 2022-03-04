@@ -33,6 +33,7 @@ import queue
 import psutil
 import audio
 import base64
+import atexit
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -46,14 +47,23 @@ CLOSE_SIGNAL = False
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
+    """
+    the socket handler base class
+    """
     pass
                 
                 
                 
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
+    """ """
 
         
     def send_to_client(self):
+        """
+        function called by socket handler
+        send data to a network client if available
+        
+        """
         tempdata = b''
         while self.connection_alive and not CLOSE_SIGNAL:
 
@@ -94,6 +104,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             time.sleep(0.15)
 
     def receive_from_client(self):
+        """
+        function which is called by the socket handler
+        it processes the data which is returned by a client
+        """
         data = bytes()
         while self.connection_alive and not CLOSE_SIGNAL:
             try:
@@ -133,6 +147,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 
  
     def handle(self):
+        """
+        socket handler
+        """
 
         CONNECTED_CLIENTS.add(self.request)
 
@@ -149,6 +166,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         
 
     def finish(self):
+        """ """
         structlog.get_logger("structlog").warning("[SCK] Closing client socket", ip=self.client_address[0], port=self.client_address[1]) 
         try:
             CONNECTED_CLIENTS.remove(self.request)
@@ -157,6 +175,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
 
 def process_tnc_commands(data):
+    """
+    process tnc commands
+
+    Args:
+      data: 
+
+    Returns:
+
+    """
     # we need to do some error handling in case of socket timeout or decoding issue
     try:
 
@@ -201,16 +228,51 @@ def process_tnc_commands(data):
                 data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
             except Exception as e:        
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
-        # TRANSMIT RAW DATA -------------------------------------------
-        if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
-            try:    
-                dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                
+                
+        # CONNECT ----------------------------------------------------------
+        if received_json["type"] == 'arq' and received_json["command"] == "connect":
+            # send ping frame and wait for ACK
+            try:
+                dxcallsign = received_json["dxcallsign"]
+
                 # additional step for beeing sure our callsign is correctly
                 # in case we are not getting a station ssid
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
                 
+                static.DXCALLSIGN = dxcallsign
+                static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                                
+                data_handler.DATA_QUEUE_TRANSMIT.put(['CONNECT', dxcallsign])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+
+        # DISCONNECT ----------------------------------------------------------
+        if received_json["type"] == 'arq' and received_json["command"] == "disconnect":
+            # send ping frame and wait for ACK
+            try:
+                data_handler.DATA_QUEUE_TRANSMIT.put(['DISCONNECT'])
+            except Exception as e:        
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)                
+                                
+        # TRANSMIT RAW DATA -------------------------------------------
+        if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
+            try:    
+                if not static.ARQ_SESSION:
+                    dxcallsign = received_json["parameter"][0]["dxcallsign"]
+                    # additional step for beeing sure our callsign is correctly
+                    # in case we are not getting a station ssid
+                    # then we are forcing a station ssid = 0
+                    dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+                    dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+                    static.DXCALLSIGN = dxcallsign
+                    static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                else:
+                    dxcallsign = static.DXCALLSIGN = dxcallsign
+                    static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                    
                 mode = int(received_json["parameter"][0]["mode"])
                 n_frames = int(received_json["parameter"][0]["n_frames"])
                 base64data = received_json["parameter"][0]["data"]
@@ -218,8 +280,6 @@ def process_tnc_commands(data):
                 if not len(base64data) % 4: 
                     binarydata = base64.b64decode(base64data)
 
-                    static.DXCALLSIGN = dxcallsign
-                    static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                     data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames])
 
                 else:
@@ -273,6 +333,9 @@ def process_tnc_commands(data):
         structlog.get_logger("structlog").error("[TNC] JSON decoding error", e=e)
 
 def send_tnc_state():
+    """
+    send the tnc state to network
+    """
     
     encoding = 'utf-8'
 
@@ -281,6 +344,7 @@ def send_tnc_state():
         "ptt_state": str(static.PTT_STATE),
         "tnc_state": str(static.TNC_STATE),
         "arq_state": str(static.ARQ_STATE),
+        "arq_session": str(static.ARQ_SESSION),
         "audio_rms": str(static.AUDIO_RMS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
@@ -314,6 +378,15 @@ def send_tnc_state():
 
 
 def process_daemon_commands(data):
+    """
+    process daemon commands
+
+    Args:
+      data: 
+
+    Returns:
+
+    """
     # convert data to json object
     received_json = json.loads(data)
     
@@ -426,12 +499,18 @@ def process_daemon_commands(data):
     if received_json["type"] == 'set' and received_json["command"] == 'stop_tnc':
         try:
             static.TNCPROCESS.kill()
+            # unregister process from atexit to avoid process zombies
+            atexit.unregister(static.TNCPROCESS.kill)
+            
             structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
             static.TNCSTARTED = False
         except Exception as e:        
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
             
 def send_daemon_state():
+    """
+    send the daemon state to network
+    """
     try:
         python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 

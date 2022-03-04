@@ -183,6 +183,7 @@ client.on('data', function(socketdata) {
                     ptt_state: data['ptt_state'],
                     busy_state: data['tnc_state'],
                     arq_state: data['arq_state'],
+                    arq_session: data['arq_session'],
                     //channel_state: data['CHANNEL_STATE'],
                     frequency: data['frequency'],
                     speed_level: data['speed_level'],
@@ -393,3 +394,14 @@ exports.stopBeacon = function() {
     writeTncCommand(command)
 }
 
+// OPEN ARQ SESSION
+exports.connectARQ = function(dxcallsign) {
+    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '"}'
+    writeTncCommand(command)
+}
+
+// CLOSE ARQ SESSION
+exports.disconnectARQ = function() {
+    command = '{"type" : "arq", "command" : "disconnect"}'
+    writeTncCommand(command)
+}
