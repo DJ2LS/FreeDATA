@@ -117,7 +117,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if chunk == b'':
                     #print("connection broken. Closing...")
                     self.connection_alive = False
-                print(chunk)   
+
                 if data.startswith(b'{') and data.endswith(b'}\n'):   
                     # split data by \n if we have multiple commands in socket buffer
                     data = data.split(b'\n')
@@ -270,7 +270,7 @@ def process_tnc_commands(data):
                     static.DXCALLSIGN = dxcallsign
                     static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                 else:
-                    dxcallsign = static.DXCALLSIGN = dxcallsign
+                    dxcallsign = static.DXCALLSIGN
                     static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
                     
                 mode = int(received_json["parameter"][0]["mode"])
@@ -309,7 +309,7 @@ def process_tnc_commands(data):
                 }
                 
                 for i in range(0, len(static.RX_BUFFER)):
-                    print(static.RX_BUFFER[i][4])
+                    #print(static.RX_BUFFER[i][4])
                     #rawdata = json.loads(static.RX_BUFFER[i][4])
                     base64_data = static.RX_BUFFER[i][4]
                     output["data-array"].append({"uuid": static.RX_BUFFER[i][0],"timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'),  "data": base64_data})
@@ -393,7 +393,7 @@ def process_daemon_commands(data):
     if received_json["type"] == 'set' and received_json["command"] == 'mycallsign':
         try:
             callsign = received_json["parameter"]
-            print(received_json)
+
             if bytes(callsign, 'utf-8') == b'':
                 self.request.sendall(b'INVALID CALLSIGN')
                 structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
