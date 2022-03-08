@@ -112,7 +112,7 @@ if __name__ == '__main__':
             logging_path = os.getenv("HOME") + '/.config/' + 'FreeDATA/' + 'tnc'
             
         if sys.platform == 'darwin':
-            logging_path = os.getenv("HOME") + '/Library/' + 'Application Support' + 'FreeDATA/' + 'tnc' 
+            logging_path = os.getenv("HOME") + '/Library/' + 'Application Support/' + 'FreeDATA/' + 'tnc' 
                
         if sys.platform == 'win32' or sys.platform == 'win64':
             logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'tnc'  
