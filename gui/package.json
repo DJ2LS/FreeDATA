@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.1.0-alpha.1",
+  "version": "0.0.1-alpha.23",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -33,9 +33,12 @@
     "bootswatch": "^5.1.3",
     "chart.js": "^3.5.1",
     "chartjs-plugin-annotation": "^1.0.2",
+    "electron-db": "^0.15.7",
     "electron-log": "^4.4.6",
     "electron-updater": "^5.0.0",
-    "qth-locator": "^2.1.0"
+    "lowdb": "^3.0.0",
+    "qth-locator": "^2.1.0",
+    "stormdb": "^0.5.2"
   },
   "devDependencies": {
     "electron": "^17.0.0",
@@ -47,7 +50,7 @@
     "directories": {
       "buildResources": "src/img",
       "output": "dist"
-    },         
+    },
     "dmg": {
       "icon": "src/img/icon.png",
       "contents": [
@@ -76,9 +79,9 @@
       ],
       "category": "Development"
     },
-    "publish":{
+    "publish": {
       "provider": "github",
-      "releaseType": "release"  
+      "releaseType": "release"
     },
     "extraResources": [
       "./tnc/**"
