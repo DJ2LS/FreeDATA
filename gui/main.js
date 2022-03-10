@@ -1,7 +1,9 @@
 const {
     app,
     BrowserWindow,
-    ipcMain
+    ipcMain,
+    dialog,
+    shell
 } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
@@ -69,7 +71,8 @@ const configDefaultSettings = '{\
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
-                  "beacon_interval" : 5\
+                  "beacon_interval" : 5,\
+                  "received_files_folder" : "None"\
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -100,7 +103,7 @@ sysInfo.info("------------------------------------------  ");
 
 
 
-
+/*
 var chatDB = path.join(configFolder, 'chatDB.json')
 // create chat database file if not exists
 const configContentChatDB = `
@@ -117,7 +120,7 @@ const configContentChatDB = `
 if (!fs.existsSync(chatDB)) {
     fs.writeFileSync(chatDB, configContentChatDB);
 }
-
+*/
 
 
 /*
@@ -158,6 +161,7 @@ function createWindow() {
             nodeIntegration: true,
             contextIsolation: false,
             enableRemoteModule: false, 
+            sandbox: false
             //https://stackoverflow.com/questions/53390798/opening-new-window-electron/53393655 
             //https://github.com/electron/remote
         }
@@ -440,13 +444,32 @@ ipcMain.on('request-update-rx-buffer', (event, arg) => {
     win.webContents.send('action-update-rx-buffer', arg);
 });
 
+/*
 ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
     chat.webContents.send('action-update-rx-msg-buffer', arg);
+});
+*/
+ipcMain.on('request-new-msg-received', (event, arg) => {
+    chat.webContents.send('action-new-msg-received', arg);
 });
 
 ipcMain.on('request-open-tnc-log', (event) => {
     logViewer.show();
 });
+
+//folder selector
+ipcMain.on('get-folder-path',(event,data)=>{
+    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../assets/'), 
+        buttonLabel: 'Select folder', properties: ['openDirectory']}).then(folderPaths => {
+            win.webContents.send('return-folder-paths', {path: folderPaths,})              
+    });
+});
+
+//open folder
+ipcMain.on('open-folder',(event,data)=>{
+    shell.showItemInFolder(data.path)
+});
+
 
 
 
@@ -513,5 +536,7 @@ autoUpdater.on('error', (error) => {
     };
   win.webContents.send('action-updater', arg); 
 });
+
+
 
 

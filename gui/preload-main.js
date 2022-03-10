@@ -1,7 +1,5 @@
 const path = require('path');
-const {
-    ipcRenderer
-} = require('electron');
+const {ipcRenderer} = require('electron');
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
 const fs = require('fs');
@@ -29,6 +27,30 @@ setInterval(sock.getMsgRxBuffer, 1000);
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
+
+
+document.getElementById('received_files_folder').addEventListener('click', () => {
+
+    ipcRenderer.send('open-folder',{
+        title: 'Title',
+    });
+    
+    ipcRenderer.on('return-folder-paths',(event,data)=>{
+        document.getElementById("received_files_folder").value = data.path.filePaths[0]
+        config.received_files_folder = data.path.filePaths[0]
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+})
+
+document.getElementById('openReceivedFilesFolder').addEventListener('click', () => {
+
+    ipcRenderer.send('open-folder',{
+        path: config.received_files_folder,
+    });
+})
+
+
+
 
 /*
     // ENABLE BOOTSTRAP POPOVERS EVERYWHERE
@@ -89,6 +111,10 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
     document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
+       
+    document.getElementById("received_files_folder").value = config.received_files_folder;   
+       
+       
        
     if(config.enable_scatter == 'True'){
         document.getElementById("scatterSwitch").checked = true;
@@ -1139,7 +1165,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             dataType.appendChild(dataTypeText);
         }
 
-        console.log(dataTypeText.innerText)
+
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
 
@@ -1646,7 +1672,11 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         console.log("appDataFolder:" + appDataFolder);
         var applicationFolder = path.join(appDataFolder, "FreeDATA");
         console.log(applicationFolder);
-        var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
+        //var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
+        var receivedFilesFolder = path.join(config.received_files_folder);
+        
+        
+        
         console.log("receivedFilesFolder: " + receivedFilesFolder);
         // Creates receivedFiles folder if not exists
         // https://stackoverflow.com/a/13544465

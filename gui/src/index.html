@@ -10,7 +10,7 @@
 	<!-- Bootstrap CSS -->
 	<link rel="stylesheet" id="bootstrap_theme" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">	
-
+    
 	
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
@@ -60,7 +60,7 @@
 				</div>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" disabled> <strong>RF Chat</strong>
+				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF Chat</strong>
 				<i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
 			    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">soon</span>
 				</button>	
@@ -911,8 +911,11 @@
 	<!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
 	<div class="offcanvas offcanvas-end" tabindex="-1" id="receivedFilesSidebar" aria-labelledby="receivedFilesSidebarLabel">
 		<div class="offcanvas-header p-2">
+			               <button class="btn btn-sm btn-primary me-2" id="openReceivedFilesFolder" type="button">
+					<i class="bi bi-folder2-open" style="font-size: 1rem; color: white;"></i>	
+				</button>
 			<h5 id="receivedFilesSidebarLabel">
-               Received Files
+                Received Files
             </h5>
 			<button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
 		</div>
@@ -1132,6 +1135,8 @@
 	<script src="waterfall/spectrum.js"></script>
 	<script src="waterfall/spectrogram.js"></script>
 	<!--<script src="waterfall/script.js"></script>-->
+	
+	
 	<!-- INFO MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="infoModal">
 		<div class="modal-dialog modal-dialog-scrollable">
@@ -1179,7 +1184,12 @@
 							<option value="alpha">alpha</option>
 						</select>
 					</div>
-					
+
+					<div class="input-group  input-group-sm mb-1">
+					  <label class="input-group-text" for="inputGroupFile02">Received files folder</label>
+                      <input type="text" class="form-control" id="received_files_folder">
+					</div>
+										
 					
 					
 				</div>
