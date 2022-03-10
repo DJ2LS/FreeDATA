@@ -211,9 +211,9 @@ def process_tnc_commands(data):
                 
         # STOP_BEACON -----------------------------------------------------
         if received_json["command"] == "stop_beacon":
-            try:
-                static.BEACON_STATE = False
+            try:                
                 structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
+                static.BEACON_STATE = False
                 data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', None, False])
                 command_response("stop_beacon", True)
             except Exception as e:   
@@ -241,6 +241,7 @@ def process_tnc_commands(data):
                 
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "connect":
+            static.BEACON_PAUSE = True
             # send ping frame and wait for ACK
             try:
                 dxcallsign = received_json["dxcallsign"]
@@ -272,6 +273,7 @@ def process_tnc_commands(data):
                                 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
+            static.BEACON_PAUSE = True
             try:    
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]

@@ -99,6 +99,7 @@ ARQ_SESSION = False
 
 # BEACON STATE
 BEACON_STATE = False
+BEACON_PAUSE = False
 
 # ------- RX BUFFER
 RX_BUFFER = []

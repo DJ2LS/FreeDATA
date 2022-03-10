@@ -60,7 +60,7 @@ class DATA():
         
         self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel ope ner
 
-        self.data_channel_max_retries = 3
+        self.data_channel_max_retries = 5
         
         self.mode_list_low_bw = [14,12]
         self.time_list_low_bw = [3,6]
@@ -103,7 +103,11 @@ class DATA():
         arq_session_thread = threading.Thread(target=self.heartbeat, name="watchdog",daemon=True)
         arq_session_thread.start()        
         
+        self.beacon_interval = 0
+        self.beacon_thread = threading.Thread(target=self.run_beacon, name="watchdog",daemon=True)
+        self.beacon_thread.start()
         
+                
     def worker_transmit(self):
         """ """
         while True:
@@ -128,8 +132,13 @@ class DATA():
                 # [0] BEACON
                 # [1] INTERVAL int
                 # [2] STATE bool
-                self.run_beacon(data[1])
-
+                #self.run_beacon(data[1])
+                if data[2]:
+                    self.beacon_interval = data[1]
+                    static.BEACON_STATE = True
+                else:
+                    static.BEACON_STATE = False
+                    
             elif data[0] == 'ARQ_FILE':
                 # [0] ARQ_FILE
                 # [1] DATA_OUT bytes
@@ -561,7 +570,6 @@ class DATA():
                 base64_data = base64.b64encode(data_frame)
                 base64_data = base64_data.decode("utf-8")
                 static.RX_BUFFER.append([uniqueid, int(time.time()), static.DXCALLSIGN,static.DXGRID, base64_data])
-                
                 jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": base64_data}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
@@ -827,6 +835,7 @@ class DATA():
         else:
             static.INFO.append("ARQ;TRANSMITTING;FAILED")
             structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!", overflows=static.BUFFER_OVERFLOW_COUNTER)
+            self.stop_transmission()
 
         # and last but not least doing a state cleanup    
         # do cleanup only when not in testmode
@@ -1474,7 +1483,7 @@ class DATA():
         
     # ----------- BROADCASTS
     
-    def run_beacon(self, interval:int):
+    def run_beacon(self):
         """
         Controlling funktion for running a beacon
         Args:
@@ -1484,28 +1493,31 @@ class DATA():
 
         """
         try:
-            structlog.get_logger("structlog").warning("[TNC] Starting beacon!", interval=interval)
-
-            while static.BEACON_STATE and not static.ARQ_STATE:
-
-                beacon_frame = bytearray(14)
-                beacon_frame[:1]   = bytes([250])
-                beacon_frame[1:9]  = helpers.callsign_to_bytes(static.MYCALLSIGN)
-                beacon_frame[9:13] = static.MYGRID[:4]
             
-                static.INFO.append("BEACON;SENDING")
-                structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=interval)  
-                
-                txbuffer = [beacon_frame]
+            while 1:
+                time.sleep(0.5)
+                while static.BEACON_STATE:
 
-                static.TRANSMITTING = True
-                modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
-                # wait while transmitting
-                while static.TRANSMITTING:
-                    time.sleep(0.01)
-                time.sleep(interval)
-                #threading.Event().wait(interval)
-                                                                
+                    if static.BEACON_STATE and not static.ARQ_SESSION and not self.arq_file_transfer and not static.BEACON_PAUSE:
+                        static.INFO.append("BEACON;SENDING")
+                        structlog.get_logger("structlog").info("[TNC] Sending beacon!", interval=self.beacon_interval)  
+                        
+                        beacon_frame = bytearray(14)
+                        beacon_frame[:1]   = bytes([250])
+                        beacon_frame[1:9]  = helpers.callsign_to_bytes(static.MYCALLSIGN)
+                        beacon_frame[9:13] = static.MYGRID[:4]
+                        txbuffer = [beacon_frame]
+
+                        static.TRANSMITTING = True
+                        modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                        # wait while transmitting
+                        while static.TRANSMITTING:
+                            time.sleep(0.01)
+                            
+                    interval_timer = time.time() + self.beacon_interval
+                    while time.time() < interval_timer and static.BEACON_STATE and not static.BEACON_PAUSE:
+                        time.sleep(0.01)
+
         except Exception as e:
             print(e)
 
@@ -1691,7 +1703,7 @@ class DATA():
         static.ARQ_STATE = False
         self.arq_file_transfer = False
         
-
+        static.BEACON_PAUSE = False
         
         
         
@@ -1768,14 +1780,13 @@ class DATA():
                 #print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
                 pass
             else:
-                print("TIMEOUT")
+                structlog.get_logger("structlog").warning("packet timeout", attempt=self.n_retries_per_burst,  max_attempts=self.rx_n_max_retries_per_burst, speed_level=self.speed_level)
                 self.frame_received_counter = 0
                 self.burst_nack_counter += 1
-                
                 if self.burst_nack_counter >= 2:
                     self.speed_level -= 1
-                    print(self.burst_nack_counter)
-                    print(self.speed_level)
+                    #print(self.burst_nack_counter)
+                    #print(self.speed_level)
                     static.ARQ_SPEED_LEVEL = self.speed_level
                     self.burst_nack_counter = 0
                 if self.speed_level <= 0:
@@ -1805,9 +1816,9 @@ class DATA():
                 self.n_retries_per_burst += 1
                 
             if self.n_retries_per_burst >= self.rx_n_max_retries_per_burst:
+                self.stop_transmission()
                 self.arq_cleanup()
-                print("RX TIMEOUT!!!!")
-                #print(self.n_retries_per_burst)
+
                 
     def data_channel_keep_alive_watchdog(self):
         """

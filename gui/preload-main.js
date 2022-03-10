@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('received_files_folder').addEventListener('click', () => {
 
-    ipcRenderer.send('open-folder',{
+    ipcRenderer.send('get-folder-path',{
         title: 'Title',
     });
     

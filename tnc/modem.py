@@ -352,8 +352,9 @@ class RF():
             x = np.frombuffer(txbuffer, dtype=np.int16)
             txbuffer_48k = self.resampler.resample8_to_48(x)
 
-            # explicitly lock our usage of mod_out_queue
-            self.mod_out_locked = True
+            # explicitly lock our usage of mod_out_queue if needed
+            # deaktivated for testing purposes
+            self.mod_out_locked = False
 
             chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX #4800
             chunk = [txbuffer_48k[i:i+chunk_length] for i in range(0, len(txbuffer_48k), chunk_length)]
@@ -362,7 +363,7 @@ class RF():
                     delta = chunk_length - len(c)
                     delta_zeros = np.zeros(delta, dtype=np.int16)
                     c = np.append(c, delta_zeros)
-                    structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
+                    #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
                 self.modoutqueue.append(c)
             
         # Release our mod_out_lock so we can use the queue 
