@@ -21,7 +21,7 @@ import queue
 import sock
 import uuid
 import base64
-
+import numpy as np
 
 TESTMODE = False
  
