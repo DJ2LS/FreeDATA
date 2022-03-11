@@ -273,6 +273,7 @@ def process_tnc_commands(data):
                                 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
+            
             static.BEACON_PAUSE = True
             try:    
                 if not static.ARQ_SESSION:
@@ -369,6 +370,7 @@ def send_tnc_state():
         "tnc_state": str(static.TNC_STATE),
         "arq_state": str(static.ARQ_STATE),
         "arq_session": str(static.ARQ_SESSION),
+        "arq_session_state": str(static.ARQ_SESSION_STATE),
         "audio_rms": str(static.AUDIO_RMS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),

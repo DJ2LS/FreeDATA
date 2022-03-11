@@ -449,7 +449,7 @@ class DATA():
                 ack_frame[:1] = bytes([60])
                 ack_frame[1:3] = static.DXCALLSIGN_CRC
                 ack_frame[3:5] = static.MYCALLSIGN_CRC
-                ack_frame[5:6] = bytes([int(snr)])
+                ack_frame[5:6] = bytes([int(static.SNR)])
                 ack_frame[6:7] = bytes([int(self.speed_level)])
                 # and transmit it
                 txbuffer = [ack_frame]
@@ -515,6 +515,7 @@ class DATA():
             frame_length = int.from_bytes(payload[4:8], "big") #4:8 4bytes
             static.TOTAL_BYTES = frame_length
             compression_factor = int.from_bytes(payload[8:9], "big") #4:8 4bytes
+            compression_factor = np.clip(compression_factor, 0, 255) #limit to max value of 255
             static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
             self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
             
@@ -668,7 +669,7 @@ class DATA():
         # compression
         data_frame_compressed = zlib.compress(data_out)
         compression_factor = len(data_out) / len(data_frame_compressed)
-        static.ARQ_COMPRESSION_FACTOR = compression_factor
+        static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
         compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
         
         data_out = data_frame_compressed    
@@ -968,17 +969,20 @@ class DATA():
         """
         # das hier müssen wir checken. Sollte vielleicht in INIT!!!
         self.datachannel_timeout = False
-        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
         
         self.open_session(callsign)
 
         # wait until data channel is open
         while not static.ARQ_SESSION and not self.arq_session_timeout:
             time.sleep(0.01)
+            static.ARQ_SESSION_STATE = 'connecting'
 
         if static.ARQ_SESSION:
+            static.ARQ_SESSION_STATE = 'connected'
             return True
         else:
+            static.ARQ_SESSION_STATE = 'failed'
             return False
 
 
@@ -992,7 +996,7 @@ class DATA():
 
         """
         self.IS_ARQ_SESSION_MASTER = True
-
+        static.ARQ_SESSION_STATE = 'connecting'
 
         frametype = bytes([221])
     
@@ -1009,7 +1013,7 @@ class DATA():
                 txbuffer = [connection_frame]                
                 static.TRANSMITTING = True
                 
-                structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>?<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", a=attempt)
+                structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>?<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", a=attempt, state=static.ARQ_SESSION_STATE)
                                 
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
                 # wait while transmitting
@@ -1043,13 +1047,14 @@ class DATA():
 
         """
         self.IS_ARQ_SESSION_MASTER = False
+        static.ARQ_SESSION_STATE = 'connecting'
 
         self.arq_session_last_received = int(time.time())
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
         
-        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
         static.ARQ_SESSION = True
         static.TNC_STATE = 'BUSY'
 
@@ -1058,7 +1063,8 @@ class DATA():
 
     def close_session(self):
         """ """
-        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        static.ARQ_SESSION_STATE = 'disconnecting'
+        structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
         static.INFO.append("ARQ;SESSION;CLOSE")
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
@@ -1085,8 +1091,10 @@ class DATA():
         
     def received_session_close(self):
         """ """
-        logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+        static.ARQ_SESSION_STATE = 'disconnected'
+        structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
         static.INFO.append("ARQ;SESSION;CLOSE")
+
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
         self.arq_cleanup()
@@ -1097,6 +1105,7 @@ class DATA():
 
         static.ARQ_SESSION = True
         static.TNC_STATE = 'BUSY'
+        static.ARQ_SESSION_STATE = 'connected'
 
         frametype = bytes([222])
     
@@ -1132,6 +1141,7 @@ class DATA():
         self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
         
         static.ARQ_SESSION = True
+        static.ARQ_SESSION_STATE = 'connected'
         static.TNC_STATE = 'BUSY'
         self.data_channel_last_received = int(time.time())
         if static.ARQ_SESSION and not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
@@ -1543,7 +1553,7 @@ class DATA():
         """
         Transmit a CQ
         """
-        logging.info("CQ CQ CQ")
+        structlog.get_logger("structlog").info("CQ CQ CQ")
         static.INFO.append("CQ;SENDING")
         
         cq_frame       = bytearray(14)
@@ -1835,7 +1845,7 @@ class DATA():
                 #pass
             else:
                 self.data_channel_last_received = 0
-                logging.info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                structlog.get_logger("structlog").info("DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                 static.INFO.append("ARQ;RECEIVING;FAILED")
                 if not TESTMODE:
                     self.arq_cleanup()
@@ -1849,7 +1859,7 @@ class DATA():
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
                 time.sleep(0.01)
             else:
-                logging.info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                structlog.get_logger("structlog").info("SESSION [" + str(static.MYCALLSIGN, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                 static.INFO.append("ARQ;SESSION;TIMEOUT")
                 self.close_session()
                 

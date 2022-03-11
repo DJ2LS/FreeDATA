@@ -96,6 +96,7 @@ TOTAL_BYTES = 0
 TNC_STATE = 'IDLE'
 ARQ_STATE = False
 ARQ_SESSION = False
+ARQ_SESSION_STATE = 'disconnected' # disconnected, connecting, connected, disconnecting, failed
 
 # BEACON STATE
 BEACON_STATE = False
