@@ -330,8 +330,11 @@ app.whenReady().then(() => {
             let arg = {
         entry: `${data}`
       };
-        logViewer.webContents.send('action-update-log', arg);
-      
+        // send info to log only if log screen available
+        // it seems an error occurs when updating
+        if (logViewer !== null && logViewer !== ''){
+            logViewer.webContents.send('action-update-log', arg);
+        }
       
     });
 
