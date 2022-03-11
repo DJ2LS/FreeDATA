@@ -8,7 +8,7 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-) 
 """
 
-VERSION = '0.0.1-alpha'
+VERSION = '0.1.0-alpha'
 
 # DAEMON
 DAEMONPORT = 3001
