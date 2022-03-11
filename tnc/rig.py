@@ -174,6 +174,9 @@ class radio:
             elif self.hamlib_ptt_type == 'CM108':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_CM108
 
+            elif self.hamlib_ptt_type == 'RIG_PTT_NONE':
+                self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
+                
             else: #self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
