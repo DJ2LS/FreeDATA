@@ -1,8 +1,0 @@
-{
-    "tnc_host" : "127.0.0.1",
-    "tnc_port" : "3000",
-    "daemon_host" : "127.0.0.1",
-    "daemon_port" : "3001",
-    "mycall" : "AA0AA",
-    "mygrid" : "AA11ea"    
-}

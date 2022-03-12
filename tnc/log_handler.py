@@ -1,5 +1,13 @@
 # https://www.structlog.org/en/stable/standard-library.html
 def setup_logging(filename):
+    """
+
+    Args:
+      filename: 
+
+    Returns:
+
+    """
 
     import logging.config
     import structlog

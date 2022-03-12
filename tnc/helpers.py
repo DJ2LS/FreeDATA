@@ -13,6 +13,14 @@ import static
 
 
 def wait(seconds):
+    """
+
+    Args:
+      seconds: 
+
+    Returns:
+
+    """
     timeout = time.time() + seconds
 
     while time.time() < timeout:
@@ -22,12 +30,17 @@ def wait(seconds):
     
 
 def get_crc_8(data):
-    """
-    Author: DJ2LS
-
+    """Author: DJ2LS
+    
     Get the CRC8 of a byte string
-
+    
     param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
     """
     crc_algorithm = crcengine.new('crc8-ccitt')  # load crc8 library
     crc_data = crc_algorithm(data)
@@ -36,22 +49,57 @@ def get_crc_8(data):
 
 
 def get_crc_16(data):
-    """
-    Author: DJ2LS
-
+    """Author: DJ2LS
+    
     Get the CRC16 of a byte string
-
+    
     param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
     """
     crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big')
     return crc_data
 
+def get_crc_32(data):
+    """Author: DJ2LS
+    
+    Get the CRC32 of a byte string
+    
+    param: data = bytes()
 
+    Args:
+      data: 
+
+    Returns:
+
+    """
+    crc_algorithm = crcengine.new('crc32')  # load crc16 library
+    crc_data = crc_algorithm(data)
+    crc_data = crc_data.to_bytes(4, byteorder='big')
+    return crc_data
 
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
+    """
+
+    Args:
+      dxcallsign: 
+      dxgrid: 
+      datatype: 
+      snr: 
+      offset: 
+      frequency: 
+
+    Returns:
+
+    """
+
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
         static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
@@ -73,31 +121,94 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
 
-'''
-def setup_logging():
-    """
-    Author: DJ2LS
 
-    Set the custom logging format so we can use colors
 
-    # https://stackoverflow.com/questions/384076/how-can-i-color-python-logging-output
-    # 'DEBUG'   : 37, # white
-    # 'INFO'    : 36, # cyan
-    # 'WARNING' : 33, # yellow
-    # 'ERROR'   : 31, # red
-    # 'CRITICAL': 41, # white on red bg
-
+def callsign_to_bytes(callsign):
     """
 
-    logging.basicConfig(level=logging.INFO,encoding='utf-8',format='%(asctime)s.%(msecs)03d %(levelname)s:\t%(message)s',datefmt='%H:%M:%S',handlers=[logging.FileHandler("FreeDATA-TNC.log"), logging.StreamHandler()])
+    Args:
+      callsign: 
 
-    logging.addLevelName(logging.DEBUG, "\033[1;36m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
-    logging.addLevelName(logging.INFO, "\033[1;37m%s\033[1;0m" % logging.getLevelName(logging.INFO))
-    logging.addLevelName(logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName(logging.ERROR, "\033[1;31m%s\033[1;0m" % "FAILED")
-    #logging.addLevelName( logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-    logging.addLevelName(logging.CRITICAL, "\033[1;41m%s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
+    Returns:
 
-    logging.addLevelName(25, "\033[1;32m%s\033[1;0m" % "SUCCESS")
-    logging.addLevelName(24, "\033[1;34m%s\033[1;0m" % "DATA")
-'''
+    """
+    # http://www.aprs.org/aprs11/SSIDs.txt
+    #-0 Your primary station usually fixed and message capable
+    #-1 generic additional station, digi, mobile, wx, etc
+    #-2 generic additional station, digi, mobile, wx, etc
+    #-3 generic additional station, digi, mobile, wx, etc
+    #-4 generic additional station, digi, mobile, wx, etc
+    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    #-6 Special activity, Satellite ops, camping or 6 meters, etc
+    #-7 walkie talkies, HT's or other human portable
+    #-8 boats, sailboats, RV's or second main mobile
+    #-9 Primary Mobile (usually message capable)
+    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    #-11 balloons, aircraft, spacecraft, etc
+    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    #-13 Weather stations
+    #-14 Truckers or generally full time drivers
+    #-15 generic additional station, digi, mobile, wx, etc
+    
+    # try converting to bytestring if possible type string
+    try:    
+        callsign = bytes(callsign, 'utf-8')       
+    except:
+        pass
+
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign ) 
+    callsign = callsign.split(b'-')
+    try:
+        ssid = int(callsign[1])
+    except:
+        ssid = 0
+        
+    callsign = callsign[0]
+    
+    bytestring = bytearray(8)
+    bytestring[:len(callsign)] = callsign
+    bytestring[7:8] = bytes([ssid])
+
+    return bytes(bytestring) 
+    
+def bytes_to_callsign(bytestring):
+    """
+
+    Args:
+      bytestring: 
+
+    Returns:
+
+    """
+
+    # http://www.aprs.org/aprs11/SSIDs.txt
+    #-0 Your primary station usually fixed and message capable
+    #-1 generic additional station, digi, mobile, wx, etc
+    #-2 generic additional station, digi, mobile, wx, etc
+    #-3 generic additional station, digi, mobile, wx, etc
+    #-4 generic additional station, digi, mobile, wx, etc
+    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    #-6 Special activity, Satellite ops, camping or 6 meters, etc
+    #-7 walkie talkies, HT's or other human portable
+    #-8 boats, sailboats, RV's or second main mobile
+    #-9 Primary Mobile (usually message capable)
+    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    #-11 balloons, aircraft, spacecraft, etc
+    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    #-13 Weather stations
+    #-14 Truckers or generally full time drivers
+    #-15 generic additional station, digi, mobile, wx, etc
+        
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )    
+
+    callsign = bytes(bytestring[:7])
+    callsign = callsign.rstrip(b'\x00')
+    ssid = int.from_bytes(bytes(bytestring[7:8]), "big")
+
+    callsign = callsign + b'-'
+    callsign = callsign.decode('utf-8')
+    callsign = callsign + str(ssid)
+    callsign = callsign.encode('utf-8')
+    
+    return bytes(callsign) 
+

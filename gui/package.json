@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.0.1",
+  "version": "0.1.2-alpha",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -8,12 +8,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": ">=12.0.0",
+    "node": ">=14.0.0",
     "npm": ">=6.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DJ2LS/FreeDATA.git"
+    "url": "https://github.com/DJ2LS/FreeDATA.git"
   },
   "keywords": [
     "TNC",
@@ -26,15 +26,64 @@
   "bugs": {
     "url": "https://github.com/DJ2LS/FreeDATA/issues"
   },
-  "homepage": "https://github.com/DJ2LS/FreeDATA#readme",
+  "homepage": "https://freedata.app",
   "dependencies": {
     "bootstrap": "^5.1.0",
+    "bootstrap-icons": "^1.8.1",
+    "bootswatch": "^5.1.3",
     "chart.js": "^3.5.1",
     "chartjs-plugin-annotation": "^1.0.2",
-    "qth-locator": "^2.1.0"
+    "electron-log": "^4.4.6",
+    "electron-updater": "^5.0.0",
+    "pouchdb": "^7.2.2",
+    "qth-locator": "^2.1.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "electron": "^15.0.0",
-    "electron-builder": "^22.11.7"
+    "electron": "^17.0.0",
+    "electron-builder": "^22.14.13"
+  },
+  "build": {
+    "productName": "FreeDATA",
+    "appId": "app.freedata",
+    "directories": {
+      "buildResources": "src/img",
+      "output": "dist"
+    },
+    "dmg": {
+      "icon": "src/img/icon.png",
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "win": {
+      "icon": "src/img/icon.png",
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "icon": "src/img/icon.png",
+      "target": [
+        "AppImage"
+      ],
+      "category": "Development"
+    },
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
+    },
+    "extraResources": [
+      "./tnc/**"
+    ]
   }
 }

@@ -3,6 +3,10 @@ const path = require('path')
 const {
     ipcRenderer
 } = require('electron')
+const log = require('electron-log');
+const daemonLog = log.scope('daemon');
+
+
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
@@ -11,16 +15,17 @@ var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
 var daemon = new net.Socket();
-var msg = ''; // Current message, per connection.
+var socketchunk = ''; // Current message, per connection.
 
 setTimeout(connectDAEMON, 500)
 
 function connectDAEMON() {
 
-    console.log('connecting to DAEMON...')
+
+    daemonLog.info('connecting to daemon');
 
     //clear message buffer after reconnecting or inital connection
-    msg = '';
+    socketchunk = '';
     
     if (config.tnclocation == 'localhost') {
         daemon.connect(3001, '127.0.0.1')
@@ -32,25 +37,48 @@ function connectDAEMON() {
     //client.setTimeout(5000);
 }
 
-daemon.on('connect', function(data) {
-    console.log('DAEMON connection established')
+daemon.on('connect', function(err) {
+
+    daemonLog.info('daemon connection established');
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
+
 })
 
-daemon.on('error', function(data) {
-    console.log('DAEMON connection error');
-    setTimeout(connectDAEMON, 2000)
+daemon.on('error', function(err) {
+    daemonLog.error('daemon connection error');
+    daemonLog.error(err)
+    daemon.destroy();
+    setTimeout(connectDAEMON, 1000)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
+
 });
 
 /*
 client.on('close', function(data) {
 	console.log(' TNC connection closed');
     setTimeout(connectTNC, 2000)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
 });
 */
 
 daemon.on('end', function(data) {
-    console.log('DAEMON connection ended');
-    setTimeout(connectDAEMON, 2000)
+
+    daemonLog.warn('daemon connection ended');
+    daemon.destroy();
+    setTimeout(connectDAEMON, 500)
+    let Data = {
+        daemon_connection: daemon.readyState,
+    };
+    ipcRenderer.send('request-update-daemon-connection', Data);
 });
 
 //exports.writeCommand = function(command){
@@ -79,50 +107,91 @@ writeDaemonCommand = function(command) {
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
 
-daemon.on('data', function(data) {
+daemon.on('data', function(socketdata) {
 
-    data = data.toString('utf8'); /* convert data to string */
-    msg += data.toString('utf8'); /*append data to buffer so we can stick long data together */
+    /*
+    inspired by:
+    stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
+    */
 
-    /* check if we reached an EOF, if true, clear buffer and parse JSON data */
-    if (data.endsWith('}')) {
-        /*console.log(msg)*/
-        try {
-            /*console.log(msg)*/
-            data = JSON.parse(msg)
-        } catch (e) {
-            console.log(e); /* "SyntaxError */
-        }
-        msg = '';
-        /*console.log("EOF detected!")*/
 
-        if (data['COMMAND'] == 'DAEMON_STATE') {
-            let Data = {
-                input_devices: data['INPUT_DEVICES'],
-                output_devices: data['OUTPUT_DEVICES'],
-                python_version: data['PYTHON_VERSION'],
-                hamlib_version: data['HAMLIB_VERSION'],
-                serial_devices: data['SERIAL_DEVICES'],
-                tnc_running_state: data['DAEMON_STATE'][0]['STATUS'],
-                ram_usage: data['RAM'],
-                cpu_usage: data['CPU'],
-                version: data['VERSION'],
-            };
-            ipcRenderer.send('request-update-daemon-state', Data);
-        }
+    socketdata = socketdata.toString('utf8'); // convert data to string
+    socketchunk += socketdata// append data to buffer so we can stick long data together
 
-        if (data['COMMAND'] == 'TEST_HAMLIB') {
-            let Data = {
-                hamlib_result: data['RESULT'],
-                
-            };
-            ipcRenderer.send('request-update-hamlib-test', Data);
+
+    // check if we received begin and end of json data
+    if (socketchunk.startsWith('{"') && socketchunk.endsWith('"}\n')) {
+
+        var data = ''
+
+        // split data into chunks if we received multiple commands
+        socketchunk = socketchunk.split("\n"); 
+        data = JSON.parse(socketchunk[0])    
+             
+
+        // search for empty entries in socketchunk and remove them
+        for (i = 0; i < socketchunk.length; i++) {
+            if (socketchunk[i] === ''){
+                socketchunk.splice(i, 1);
+            }
         }
         
         
-        ////// check if EOF	...
+        //iterate through socketchunks array to execute multiple commands in row 
+        for (i = 0; i < socketchunk.length; i++) {
+
+            //check if data is not empty
+            if(socketchunk[i].length > 0){
+            
+                //try to parse JSON
+                try {
+
+                    data = JSON.parse(socketchunk[i])
+
+                } catch (e) {
+                    console.log(e); // "SyntaxError
+                    daemonLog.error(e);
+                    daemonLog.debug(socketchunk[i])
+                    socketchunk = ''
+
+                }
+
+            }
+            
+            
+            
+
+            if (data['command'] == 'daemon_state') {
+                let Data = {
+                    input_devices: data['input_devices'],
+                    output_devices: data['output_devices'],
+                    python_version: data['python_version'],
+                    hamlib_version: data['hamlib_version'],
+                    serial_devices: data['serial_devices'],
+                    tnc_running_state: data['daemon_state'][0]['status'],
+                    ram_usage: data['ram'],
+                    cpu_usage: data['cpu'],
+                    version: data['version'],
+                };
+                ipcRenderer.send('request-update-daemon-state', Data);
+            }
+
+            if (data['command'] == 'test_hamlib') {
+                let Data = {
+                    hamlib_result: data['result'],
+                    
+                };
+                ipcRenderer.send('request-update-hamlib-test', Data);
+            }
+        
+        
+
+        }
+   
+    //finally delete message buffer 
+    socketchunk = '';
+    
     }
-
 });
 
 function hexToBytes(hex) {
@@ -133,17 +202,17 @@ function hexToBytes(hex) {
 
 exports.getDaemonState = function() {
     //function getDaemonState(){
-    command = '{"type" : "GET", "command" : "DAEMON_STATE"}'
+    command = '{"type" : "get", "command" : "daemon_state"}'
     writeDaemonCommand(command)
 }
 
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode) {
     var json_command = JSON.stringify({
-        type: 'SET',
-        command: 'STARTTNC',
+        type: 'set',
+        command: 'start_tnc',
         parameter: [{
             mycall: mycall,
             mygrid: mygrid,
@@ -159,18 +228,21 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
             stop_bits: stop_bits,
             handshake: handshake,
             rigctld_port: rigctld_port,
-            rigctld_ip: rigctld_ip
+            rigctld_ip: rigctld_ip,
+            enable_scatter: enable_scatter,
+            enable_fft: enable_fft,
+            low_bandwith_mode : low_bandwith_mode
         }]
     })
 
-    //console.log(json_command)
+    daemonLog.debug(json_command);
     writeDaemonCommand(json_command)
 
 }
 
 // STOP TNC
 exports.stopTNC = function() {
-    command = '{"type" : "SET", "command": "STOPTNC" , "parameter": "---" }'
+    command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }'
     writeDaemonCommand(command)
 }
 
@@ -178,8 +250,8 @@ exports.stopTNC = function() {
 exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port) {
 
     var json_command = JSON.stringify({
-        type: 'GET',
-        command: 'TEST_HAMLIB',
+        type: 'get',
+        command: 'test_hamlib',
         parameter: [{
             radiocontrol: radiocontrol,
             devicename: devicename,
@@ -194,7 +266,7 @@ exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed,
             rigctld_ip: rigctld_ip
         }]
     })
-    console.log(json_command)
+    daemonLog.debug(json_command);
     writeDaemonCommand(json_command)
 }
 
@@ -202,13 +274,13 @@ exports.testHamlib = function(radiocontrol, devicename, deviceport, serialspeed,
 
 //Save myCall
 exports.saveMyCall = function(callsign) {
-    command = '{"type" : "SET", "command": "MYCALLSIGN" , "parameter": "' + callsign + '", "timestamp" : "' + Date.now() + '"}'
+    command = '{"type" : "set", "command": "mycallsign" , "parameter": "' + callsign + '"}'
     writeDaemonCommand(command)
 }
 
 // Save myGrid
 exports.saveMyGrid = function(grid) {
-    command = '{"type" : "SET", "command": "MYGRID" , "parameter": "' + grid + '", "timestamp" : "' + Date.now() + '"}'
+    command = '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}'
     writeDaemonCommand(command)
 }
 

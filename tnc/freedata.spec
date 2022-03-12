@@ -24,7 +24,7 @@ daemon_exe = EXE(daemon_pyz,
           daemon_a.scripts, 
           [],
           exclude_binaries=True,
-          name='daemon',
+          name='freedata-daemon',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -36,8 +36,8 @@ daemon_exe = EXE(daemon_pyz,
           entitlements_file=None )
           
 # add lib folder to system path. We only need to do this once
-daemon_a.datas += Tree('./lib', prefix='lib')
-daemon_a.datas += Tree('./codec2', prefix='codec2')
+daemon_a.datas += Tree('lib', prefix='lib')
+# daemon_a.datas += Tree('./codec2', prefix='codec2')
 
 
 # TNC --------------------------------------------------
@@ -61,7 +61,7 @@ tnc_exe = EXE(tnc_pyz,
           tnc_a.scripts, 
           [],
           exclude_binaries=True,
-          name='tnc',
+          name='freedata-tnc',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,

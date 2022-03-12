@@ -3,87 +3,293 @@ const {
     ipcRenderer
 } = require('electron')
 
+const { v4: uuidv4 } = require('uuid');
+
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
-var chatDB = path.join(configFolder, 'chatDB.json')
+
+// set date format
+const dateFormat = new Intl.DateTimeFormat('en-GB', {
+    timeStyle: 'long',
+    dateStyle: 'full'
+});
+
+// split character
+const split_char = '\0;'
+
+
+var chatDB = path.join(configFolder, 'chatDB')
+
+// ---- MessageDB
+var PouchDB = require('pouchdb');
+var db = new PouchDB(chatDB);
+
+
+
+// get all messages from database
+//var messages = db.get("messages").value()
+
+// get all dxcallsigns in database
+
+
+
+var dxcallsigns = new Set();
+
+db.allDocs({
+  include_docs: true,
+  attachments: true
+}).then(function (result) {
+  // handle result
+  // get all dxcallsigns and append to list
+  result.rows.forEach(function(item) {
+    update_chat(item.doc)
+  });
+    
+}).catch(function (err) {
+  console.log(err);
+});
+
 
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
+
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
-            dxcallsign = document.getElementById('chatModuleDxCall').value
+    
+            var dxcallsign = document.getElementById('chatModuleDxCall').value
+            dxcallsign = dxcallsign.toUpperCase()
             message = document.getElementById('chatModuleMessage').value
-            
+            console.log(dxcallsign)
             let Data = {
-                command: "sendMessage",
-                dxcallsign : dxcallsign.toUpperCase(), 
-                mode : 10, 
+                command: "send_message",
+                dxcallsign : dxcallsign, 
+                mode : 255, 
                 frames : 1, 
                 data : message, 
                 checksum : '123'
             };
-            ipcRenderer.send('run-tnc-command', Data);    
+            ipcRenderer.send('run-tnc-command', Data);
+            
+            
+        var uuid = uuidv4();
+        db.post({
+          _id: uuid,
+          timestamp: Math.floor(Date.now() / 1000),
+          dxcallsign: dxcallsign,
+          dxgrid: 'NULL',
+          msg: message,
+          checksum: 'NULL',
+          type: "transmit"
+        }).then(function (response) {
+          // handle response
+          console.log("new database entry")
+          console.log(response)
+     
+        }).catch(function (err) {
+          console.log(err);
+        });
+
+
+
+
+        db.get(uuid).then(function (doc) {
+          // handle doc
+          update_chat(doc)
+        }).catch(function (err) {
+          console.log(err);
+        });        
+            
+        // scroll to bottom    
+        var element = document.getElementById("message-container");
+        element.scrollTo(0,element.scrollHeight);   
+        
+        // clear input
+        document.getElementById('chatModuleMessage').value = ''  
+            
+            
+                
     })
 
-})
 
 
-ipcRenderer.on('action-update-rx-msg-buffer', (event, arg) => {
 
-    var data = arg.data
+
+
+});
+
+ipcRenderer.on('action-new-msg-received', (event, arg) => {
     console.log(arg.data)
-    var tbl = document.getElementById("rx-msg-data");
-    document.getElementById("rx-msg-data").innerHTML = ''
+    
+    var new_msg = arg.data
+    new_msg.forEach(function(item) {
+        console.log(item)
+    //for (i = 0; i < arg.data.length; i++) {
+        
+        let obj = new Object();
+        
+        var encoded_data = atob(item.data);
+        var splitted_data = encoded_data.split(split_char)
+
+        //obj.uuid = item.uuid;
+        item.checksum = splitted_data[2]
+        item.msg = splitted_data[3]
+        //obj.dxcallsign = item.dxcallsign;
+        //obj.dxgrid = item.dxgrid;
+        //obj.timestamp = item.timestamp;
+     
+        
+
+
+
+
+
+        // check if message not exists in database.
+        // this might cause big cpu load of file is getting too big
+        /*        
+        if(!JSON.stringify(db.get("messages")).includes(item.uuid)){
+            console.log("new message: " + item);
+            db.get("messages").push(item).save();
+        }
+        */
+        
+
+        db.put({
+          _id: item.uuid,
+          timestamp: item.timestamp,
+          dxcallsign: item.dxcallsign,
+          dxgrid: item.dxgrid,
+          msg: item.msg,
+          checksum: item.checksum,
+          type: "received"
+        }).then(function (response) {
+          // handle response
+          console.log("new database entry")
+          console.log(response)
+     
+        }).catch(function (err) {
+          console.log(err);
+        });
+
+
+
+
+        db.get(item.uuid).then(function (doc) {
+          // handle doc
+          
+          // timestamp
+          update_chat(doc)
+        }).catch(function (err) {
+          console.log(err);
+        });
+
+console.log("...................................")
+return
+
+
+
+        
+        
+        
+       
+        
+        
+    });
+    
+
+      
+      
+      
+      
+
+});
+
+
+
+
+
+
+
+
+// Update chat list
+update_chat = function(obj) {
+
+        var dxcallsign = obj.dxcallsign;
+    
+    // CALLSIGN LIST
+    if(!(document.getElementById('chat-' + dxcallsign + '-list'))){
+        var new_callsign = `
+            <a class="list-group-item list-group-item-action" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
+                      <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${dxcallsign}</h5>
+                        <!--<small>3 days ago</small>-->
+                      </div>
+                      <!--<p class="mb-1">JN48ea</p>-->
+                  </a>
+
+            `;
+        document.getElementById('list-tab').insertAdjacentHTML("beforeend", new_callsign);
+              
+        var message_area = `
+            <div class="tab-pane fade" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>  
+            `;
+        document.getElementById('nav-tabContent').insertAdjacentHTML("beforeend", message_area); 
+        
+        // create eventlistener for listening on clicking on a callsign
+        document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
+            document.getElementById('chatModuleDxCall').value = dxcallsign;
+            
+            // scroll to bottom    
+            var element = document.getElementById("message-container");
+            element.scrollTo(0,element.scrollHeight);  
+        
+            });   
+        
+    }
     
     
+    // APPEND MESSAGES TO CALLSIGN
+
+    var timestamp = dateFormat.format(obj.timestamp * 1000);
     
+    if(!(document.getElementById('msg-' + obj._id))){
+        if (obj.type == 'received'){
+            var new_message = `
+                    <div class="mt-3 mb-0 w-75" id="msg-${obj._id}">            
+                    <p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>
+                    <div class="card border-light bg-light" id="msg-${obj._id}">
+                      <div class="card-body">
+                        <p class="card-text text-break text-wrap">${obj.msg}</p>
+                      </div>
+                    </div>
+                </div>
+                `;
+        }
+        
+        if (obj.type == 'transmit'){
 
-    for (i = 0; i < arg.data.length; i++) {
-    
-    
-    
-    // now we update the received files list
 
-        var row = document.createElement("tr");
-        //https://stackoverflow.com/q/51421470
+            var new_message = `
+                <div class="ml-auto mt-3 mb-0 w-75" style="margin-left: auto;">
+                    <p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p> 
+                    <div class="card text-right border-primary bg-primary" id="msg-${obj._id}">
+                      <div class="card-body">
+                        <p class="card-text text-white text-break text-wrap">${obj.msg}</p>
+                      </div>
+                    </div>
+                </div>
+                `;                
+        }        
+        
 
-        //https://stackoverflow.com/a/847196
-        timestampRaw = arg.data[i]['TIMESTAMP']
-        var date = new Date(timestampRaw * 1000);
-        var hours = date.getHours();
-        var minutes = "0" + date.getMinutes();
-        var seconds = "0" + date.getSeconds();
-        var datetime = hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
-
-        var timestamp = document.createElement("td");
-        var timestampText = document.createElement('span');
-        timestampText.innerText = datetime
-        timestamp.appendChild(timestampText);
-
-        var dxCall = document.createElement("td");
-        var dxCallText = document.createElement('span');
-        dxCallText.innerText = arg.data[i]['DXCALLSIGN']
-        dxCall.appendChild(dxCallText);
-
-        var message = document.createElement("td");
-        var messageText = document.createElement('span');
-        var messageString = arg.data[i]['RXDATA'][0]['d'] //data
-        console.log(messageString)
-        messageText.innerText = messageString
-        message.appendChild(messageText);
-
-        row.appendChild(timestamp);
-        row.appendChild(dxCall);
-        row.appendChild(message);
-
-        tbl.appendChild(row);
-
+    var id = "chat-" + obj.dxcallsign
+    document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
+    var element = document.getElementById("message-container");
+    element.scrollTo(0,element.scrollHeight);
     }
 
-    ipcRenderer.send('run-tnc-command', {"command" : "delRxMsgBuffer"});
-})
+}

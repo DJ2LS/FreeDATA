@@ -1,0 +1,117 @@
+name: macOS
+on:
+  push:
+    tags:
+     - 'v*'
+    
+jobs:
+  build_linux_release:
+    name: Build macOS release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-10.15]
+        include:
+          - os: macos-10.15
+            zip_name: mac_tnc
+            generator: Unix Makefiles
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+            ref: ls-leave-prototype
+          
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9     
+                
+        
+          
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos-10.15'
+        run: |
+          python -m pip install --upgrade pip
+          pip3 install psutil
+          pip3 install crcengine
+          pip3 install pyinstaller
+          pip3 install ujson
+          pip3 install pyserial
+          pip3 install numpy
+          pip3 install structlog
+
+      - name: Install Portaudio
+        if: matrix.os == 'macos-10.15'
+        run: |
+            brew install portaudio
+            pip3 install pyaudio
+
+
+      - name: Build codec2 macOS
+        if: matrix.os == 'macos-10.15'
+        working-directory: tnc
+        run: |
+          git clone https://github.com/drowe67/codec2.git
+          cd codec2 && mkdir build_mac && cd build_mac
+          cmake ../
+          make
+          
+          
+      - name: Build macOS pyinstaller
+        if: matrix.os == 'macos-10.15'
+        working-directory: tnc
+        run: |      
+          pyinstaller freedata.spec
+       
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R   
+
+          
+      - name: Compress
+        shell: bash
+        run: |
+          cd ./tnc/dist
+          mkdir compressed
+          zip -r ./compressed/${{ matrix.zip_name }}.zip *
+
+      - name: Upload macOS TNC artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: tnc-artifact
+          path: ./tnc/dist/compressed/*
+
+
+          
+          
+      - name: Copy TNC to GUI
+        if: matrix.os == 'macos-10.15'
+        run: |          
+          cp -R ./tnc/dist/tnc ./gui/tnc
+          ls -R        
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Release TNC         
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip          
+     
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          package_root: "./gui/"
+          github_token: ${{ secrets.github_token }}
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          args: "-p always"
+          
+
+                         
