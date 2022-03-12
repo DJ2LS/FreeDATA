@@ -104,6 +104,9 @@ writeTncCommand = function(command) {
     //socketLog.info(command)
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
     // if socket openend, we are able to run commands
+
+    
+    
     if (client.readyState == 'open') {
         client.write(command + '\n');
 
@@ -216,21 +219,24 @@ client.on('data', function(socketdata) {
             }
 
             /* A TEST WITH STREAMING DATA .... */       
-            
+            // if we received data through network stream, we get a single data item
             if (data['arq'] == 'received') {
                 dataArray = []
                 messageArray = []
 
-
-                if(data['data'][0]['dt'] == 'f'){
+                socketLog.info(data)
+                // we need to encode here to do a deep check for checking if file or message
+                var encoded_data = atob(data['data'])
+                var splitted_data = encoded_data.split(split_char)
+                
+                
+                if(splitted_data[0] == 'f'){
                     dataArray.push(data)
                 }
                         
-                if(data['data'][0]['dt'] == 'm'){
+                if(splitted_data[0] == 'm'){
                     messageArray.push(data)
                 }
-                
-
 
                 rxBufferLengthGui = dataArray.length
                 let Files = {
@@ -242,19 +248,21 @@ client.on('data', function(socketdata) {
                 let Messages = {
                     data: messageArray,
                 };
-                ipcRenderer.send('request-update-rx-msg-buffer', Messages);
-
+                
+                //ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+                ipcRenderer.send('request-new-msg-received', Messages);
             }
-
+            
+            // if we manually checking for the rx buffer we are getting an array of multiple data
             if (data['command'] == 'rx_buffer') {
-
+                socketLog.info(data)
                 // iterate through buffer list and sort it to file or message array
                 dataArray = []
                 messageArray = []
 
-
                 for (i = 0; i < data['data-array'].length; i++) {
                     try{
+                        // we need to encode here to do a deep check for checking if file or message
                         var encoded_data = atob(data['data-array'][i]['data'])
                         var splitted_data = encoded_data.split(split_char)
 
@@ -274,7 +282,6 @@ client.on('data', function(socketdata) {
                     }
                 }
             
-                socketLog.info(dataArray)
                 
                 
                 rxBufferLengthGui = dataArray.length
@@ -287,7 +294,9 @@ client.on('data', function(socketdata) {
                 let Messages = {
                     data: messageArray,
                 };
-                ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+                //ipcRenderer.send('request-update-rx-msg-buffer', Messages);
+                ipcRenderer.send('request-new-msg-received', Messages);
+                
       
             }
 
@@ -361,6 +370,8 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
     command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
+    socketLog.info(command)
+    socketLog.info("-------------------------------------")
     writeTncCommand(command)
 }
 

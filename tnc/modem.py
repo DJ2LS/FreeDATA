@@ -234,9 +234,7 @@ class RF():
         x = self.resampler.resample48_to_8(x)    
         
         length_x = len(x)
-                
-        time_buffer_start = time.time()
-        
+               
         # avoid decoding when transmitting to reduce CPU
         if not static.TRANSMITTING:
             # avoid buffer overflow by filling only if buffer not full
@@ -266,7 +264,7 @@ class RF():
         else:
             data_out48k = self.modoutqueue.popleft()
             self.fft_data = bytes(data_out48k)
-   
+            
         return (data_out48k, audio.pyaudio.paContinue)
 
     # --------------------------------------------------------------------------------------------------------
@@ -365,7 +363,7 @@ class RF():
                     c = np.append(c, delta_zeros)
                     #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
                 self.modoutqueue.append(c)
-            
+
         # Release our mod_out_lock so we can use the queue 
         self.mod_out_locked = False
 

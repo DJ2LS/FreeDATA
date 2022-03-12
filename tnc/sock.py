@@ -93,8 +93,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 for client in CONNECTED_CLIENTS:
                     try:
                         client.send(sock_data)
-                    except:
+                    except Exception as e:
                         print("connection lost...")
+                        print(e)
+                        self.connection_alive = False
 
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
@@ -114,9 +116,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 chunk = self.request.recv(1024)
                 data += chunk
                 
+                print(data)
                 if chunk == b'':
                     #print("connection broken. Closing...")
                     self.connection_alive = False
+                    
 
                 if data.startswith(b'{') and data.endswith(b'}\n'):   
                     # split data by \n if we have multiple commands in socket buffer
@@ -273,6 +277,9 @@ def process_tnc_commands(data):
                                 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
+            
+            print(received_json)
+            
             
             static.BEACON_PAUSE = True
             try:    

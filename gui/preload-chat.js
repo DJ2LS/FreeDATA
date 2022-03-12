@@ -58,11 +58,9 @@ db.allDocs({
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
 
-
-
-
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
+    
             var dxcallsign = document.getElementById('chatModuleDxCall').value
             dxcallsign = dxcallsign.toUpperCase()
             message = document.getElementById('chatModuleMessage').value
@@ -106,8 +104,12 @@ window.addEventListener('DOMContentLoaded', () => {
           console.log(err);
         });        
             
-            
-            
+        // scroll to bottom    
+        var element = document.getElementById("message-container");
+        element.scrollTo(0,element.scrollHeight);   
+        
+        // clear input
+        document.getElementById('chatModuleMessage').value = ''  
             
             
                 
@@ -121,11 +123,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 ipcRenderer.on('action-new-msg-received', (event, arg) => {
-    //console.log(arg.data)
+    console.log(arg.data)
     
     var new_msg = arg.data
     new_msg.forEach(function(item) {
-        //console.log(item)
+        console.log(item)
     //for (i = 0; i < arg.data.length; i++) {
         
         let obj = new Object();
@@ -178,13 +180,15 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
         db.get(item.uuid).then(function (doc) {
           // handle doc
+          
+          // timestamp
           update_chat(doc)
         }).catch(function (err) {
           console.log(err);
         });
 
-
-
+console.log("...................................")
+return
 
 
 
@@ -238,6 +242,11 @@ update_chat = function(obj) {
         // create eventlistener for listening on clicking on a callsign
         document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
             document.getElementById('chatModuleDxCall').value = dxcallsign;
+            
+            // scroll to bottom    
+            var element = document.getElementById("message-container");
+            element.scrollTo(0,element.scrollHeight);  
+        
             });   
         
     }
@@ -250,11 +259,13 @@ update_chat = function(obj) {
     if(!(document.getElementById('msg-' + obj._id))){
         if (obj.type == 'received'){
             var new_message = `
-                <div class="card border-light mb-3 w-75" id="msg-${obj._id}">
-                  <div class="card-body">
-                    <p class="text-small mb-0 text-muted text-break">${timestamp}</p>
-                    <p class="card-text">${obj.msg}</p>
-                  </div>
+                    <div class="mt-3 mb-0 w-75" id="msg-${obj._id}">            
+                    <p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>
+                    <div class="card border-light bg-light" id="msg-${obj._id}">
+                      <div class="card-body">
+                        <p class="card-text text-break text-wrap">${obj.msg}</p>
+                      </div>
+                    </div>
                 </div>
                 `;
         }
@@ -263,28 +274,22 @@ update_chat = function(obj) {
 
 
             var new_message = `
-                <div class="card text-right border-primary ml-auto mb-3 w-75" style="margin-left: auto;"id="msg-${obj._id}">
-                  <div class="card-body">
-                    <p class="text-small mb-0 text-muted text-break">${timestamp}</p>
-                    <p class="card-text">${obj.msg}</p>
-                  </div>
+                <div class="ml-auto mt-3 mb-0 w-75" style="margin-left: auto;">
+                    <p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p> 
+                    <div class="card text-right border-primary bg-primary" id="msg-${obj._id}">
+                      <div class="card-body">
+                        <p class="card-text text-white text-break text-wrap">${obj.msg}</p>
+                      </div>
+                    </div>
                 </div>
                 `;                
         }        
         
-        
-        
-        
-        
-        
-        
 
     var id = "chat-" + obj.dxcallsign
     document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
+    var element = document.getElementById("message-container");
+    element.scrollTo(0,element.scrollHeight);
     }
-    
-    
-    
-    
-    
+
 }

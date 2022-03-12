@@ -7,7 +7,9 @@
       <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
       <!-- Bootstrap CSS -->
       <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-
+	<link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">	
+	    <!-- Custom CSS -->
+	    <link rel="stylesheet" type="text/css" href="styles.css" />
       <title>FreeDATA - CHAT</title>
    </head>
    <body>
@@ -18,36 +20,61 @@
       <script src="../node_modules/chart.js/dist/chart.min.js"></script>
       <script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
 
-<div class="input-group m-1">
-<input class="form-control" maxlength="6" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
-<input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
-<button class="btn btn-sm btn-primary me-2" id="sendMessage" type="button">SEND MSG</button>
+
+
+
+<div class="container-fluid">
+  <div class="row h-100">
+    <div class="col-4 p-0">
+      <! ------Chats area ---------------------------------------------------------------------->
+          
+        <div class="list-group rounded-0" id="list-tab" role="tablist">       
+        </div>
+
+      
+    </div>
+    <div class="col-8 border vh-100 ">
+      <! ------messages area ---------------------------------------------------------------------->
+        <div class="container overflow-auto" id="message-container" style="height: 90%">
+
+         <div class="tab-content" id="nav-tabContent">
+        </div>       
+
+        <!--<div class="container position-absolute bottom-0">-->
+
+
+        </div>
+       <!-- </div>-->
+        
+        
+      
+    </div>
+  </div>
+  
+
+  
+  
+  
+  <nav class="navbar fixed-bottom navbar-light bg-light">
+  <div class="container-fluid">
+    
+    <div class="input-group bottom-0 w-100">
+    <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
+            <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
+            <button class="btn btn-sm btn-primary me-2" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
+        </div>
+    
+  </div>
+</nav>
+  
+  
+  
 </div>
 
-            <table class="table">
-               <thead>
-                  <tr>
-                     <th scope="col">Time</th>
-                     <th scope="col">DXCall</th>
-                     <!--<th scope="col">DXGrid</th>
-                        <th scope="col">Distance</th>-->
-                     <th scope="col">Message</th>
-                     <!--<th scope="col">SNR</th>-->
-                  </tr>
-               </thead>
-               <tbody id="rx-msg-data">
-                  <!--
-                     <tr>
-                       <th scope="row">1</th>
-                       <td>Mark</td>
-                       <td>Otto</td>
-                       <td>@mdo</td>
-                     </tr>
-                         -->
-               </tbody>
-            </table>
+
+
                
-               
+
                
    </body>
 </html>

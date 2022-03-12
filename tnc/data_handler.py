@@ -546,33 +546,15 @@ class DATA():
                 static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(data_frame)
                 data_frame = data_frame_decompressed
                 
-                # decode to utf-8 string
-                #data_frame = data_frame.decode("utf-8")
-
-                
-                # decode json objects from data frame to inspect if we received a file or message
-                #rawdata = json.loads(data_frame)
-                '''
-                if datatype is a file, we append to RX_BUFFER, which contains files only
-                dt = datatype
-                --> f = file
-                --> m = message
-                fn = filename
-                ft = filetype
-                d = data                
-                crc = checksum            
-                '''
-                #if rawdata["dt"] == "f" or rawdata["dt"] == "m":
-                #    datatype = rawdata["dt"]
-                #else:
-                #    datatype = "raw"
                     
                 uniqueid = str(uuid.uuid4())
+                timestamp = int(time.time())
                 base64_data = base64.b64encode(data_frame)
                 base64_data = base64_data.decode("utf-8")
-                static.RX_BUFFER.append([uniqueid, int(time.time()), static.DXCALLSIGN,static.DXGRID, base64_data])
-                jsondata = {"arq":"received", "uuid" : static.RX_BUFFER[i][0],  "timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": base64_data}
+                static.RX_BUFFER.append([uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data])
+                jsondata = {"arq":"received", "uuid" : uniqueid,  "timestamp": timestamp, "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
                 data_out = json.dumps(jsondata)
+                print(data_out)
                 sock.SOCKET_QUEUE.put(data_out)
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
                
