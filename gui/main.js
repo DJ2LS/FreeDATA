@@ -312,17 +312,16 @@ app.whenReady().then(() => {
     });
         
     daemonProcess.on('message', (data) => {
-      daemonProcessLog.info(`${data}`);
-      
+      daemonProcessLog.info(`${data}`);      
     });
     
     daemonProcess.stdout.on('data', (data) => {
-      daemonProcessLog.info(`${data}`);
-
-    
-    
-  win.webContents.send('action-updater', data); 
+      daemonProcessLog.info(`${data}`);  
     });
+
+
+
+
 
     daemonProcess.stderr.on('data', (data) => {
       daemonProcessLog.info(`${data}`);
