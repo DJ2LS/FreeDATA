@@ -20,18 +20,24 @@
       <script src="../node_modules/chart.js/dist/chart.min.js"></script>
       <script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
 
+<!--<script type="module" src="../node_modules/emoji-picker-element/index.js"></script>-->
+
+<script type="module" src="../node_modules/emoji-picker-element/picker.js"></script>
+<script type="module" src="../node_modules/emoji-picker-element/database.js"></script>
 
 
+<div class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5" style="z-index:100; display: none" id="emojipickercontainer">
+<emoji-picker locale="en" class="position-absolute bottom-0 end-0 p-1 mb-2" data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"></emoji-picker>
+</div> 
 
 <div class="container-fluid">
   <div class="row h-100">
-    <div class="col-4 p-0">
+    <div class="col-4 p-2">
       <! ------Chats area ---------------------------------------------------------------------->
           
-        <div class="list-group rounded-0" id="list-tab" role="tablist">       
+        <div class="list-group" id="list-tab" role="tablist">       
         </div>
 
-      
     </div>
     <div class="col-8 border vh-100 ">
       <! ------messages area ---------------------------------------------------------------------->
@@ -61,7 +67,16 @@
     <div class="input-group bottom-0 w-100">
     <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
             <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
-            <button class="btn btn-sm btn-primary me-2" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
+            <button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button"><i class="bi bi-emoji-smile"></i></button>
+            <button class="btn btn-sm btn-secondary me-2" style="width: 5rem" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
+            
+            
+            
+            
+            
+            
+            
+            
         </div>
     
   </div>

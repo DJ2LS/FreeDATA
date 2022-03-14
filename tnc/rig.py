@@ -38,7 +38,7 @@ try:
     # this is not needed as python will be shipped with app bundle
     sys.path.append('/usr/local/lib/python3.6/site-packages')
     sys.path.append('/usr/local/lib/python3.7/site-packages')
-    #sys.path.append('/usr/local/lib/python3.8/site-packages')
+    sys.path.append('/usr/local/lib/python3.8/site-packages')
     sys.path.append('/usr/local/lib/python3.9/site-packages')
     sys.path.append('/usr/local/lib/python3.10/site-packages')
     

@@ -302,10 +302,16 @@ def process_tnc_commands(data):
                 n_frames = int(received_json["parameter"][0]["n_frames"])
                 base64data = received_json["parameter"][0]["data"]
                 
+                # check if transmission uuid provided else set no-uuid
+                try:
+                    arq_uuid = received_json["uuid"]
+                except:
+                    arq_uuid = 'no-uuid'
+                    
                 if not len(base64data) % 4: 
                     binarydata = base64.b64decode(base64data)
 
-                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames])
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid])
 
                 else:
                     raise TypeError

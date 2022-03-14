@@ -524,7 +524,8 @@ class RF():
         modem_stats_snr = modem_stats_snr.value
 
         try:
-            static.SNR = round(modem_stats_snr, 1)
+            snr = round(modem_stats_snr, 1)
+            static.SNR = np.clip(snr, 0, 255) #limit to max value of 255
             return static.SNR
         except:
             static.SNR = 0

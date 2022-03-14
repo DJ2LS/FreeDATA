@@ -60,7 +60,15 @@
 				</div>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" disabled> <strong>RF Chat</strong>
+			  <button class="btn btn-sm btn-danger" id="stop_transmission_connection" type="button">
+			    <i class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i>
+			     STOP
+			   </button>
+			</div>
+			
+			
+			<div class="btn-toolbar" role="toolbar">
+				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!" > <strong>RF Chat</strong>
 				<i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
 			    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">soon...</span>
 				</button>	
@@ -1269,7 +1277,7 @@
 					</div>
 					<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">PTT Port</span>
 						<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port_advanced">
-							<option value="None">None</option>
+							<!--<option value="None">None</option>-->
 						</select>	
 							<!--
                            <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->

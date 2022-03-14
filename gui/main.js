@@ -454,6 +454,9 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
 ipcMain.on('request-new-msg-received', (event, arg) => {
     chat.webContents.send('action-new-msg-received', arg);
 });
+ipcMain.on('request-update-transmission-status', (event, arg) => {
+    chat.webContents.send('action-update-transmission-status', arg);
+});
 
 ipcMain.on('request-open-tnc-log', (event) => {
     logViewer.show();

@@ -368,6 +368,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // on change ping callsign
         document.getElementById("dataModalDxCall").addEventListener("change", () => {
         document.getElementById("dxCall").value = document.getElementById("dataModalDxCall").value;
+        
             });
         
     
@@ -762,6 +763,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
             bstransmitFileSidebar.show()   
         */
+        
+        
     
         var fileList = document.getElementById("dataModalFile").files;
 
@@ -786,7 +789,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
                 data: data,
                 checksum: '123123123',
             };
-            ipcRenderer.send('run-tnc-command', Data);
+            // only send command if dxcallsign entered and we have a file selected
+            if(document.getElementById("dataModalDxCall").value.length > 0){
+                ipcRenderer.send('run-tnc-command', Data);
+            }
         };
         reader.onerror = function(e) {
             // error occurred
@@ -794,13 +800,23 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         };
 
     })
-    // START TRANSMISSION
+    // STOP TRANSMISSION
     document.getElementById("stopTransmission").addEventListener("click", () => {
             let Data = {
                 command: "stop_transmission"
             };
             ipcRenderer.send('run-tnc-command', Data);    
     })
+    
+    // STOP TRANSMISSION AND CONNECRTION
+    document.getElementById("stop_transmission_connection").addEventListener("click", () => {
+            let Data = {
+                command: "stop_transmission"
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+            sock.disconnectARQ();    
+    })
+    
     
     // OPEN CHAT MODULE
     document.getElementById("openRFChat").addEventListener("click", () => {
@@ -809,6 +825,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             };
             ipcRenderer.send('request-show-chat-window', Data);    
     })    
+    
+    
+    
     
 
   
@@ -1675,15 +1694,13 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
         tbl.appendChild(row);
 
         // https://stackoverflow.com/a/26227660
-        var appDataFolder = process.env.HOME;
-        console.log("appDataFolder:" + appDataFolder);
-        var applicationFolder = path.join(appDataFolder, "FreeDATA");
-        console.log(applicationFolder);
+        //var appDataFolder = process.env.HOME;
+        //console.log("appDataFolder:" + appDataFolder);
+        //var applicationFolder = path.join(appDataFolder, "FreeDATA");
+        //console.log(applicationFolder);
         //var receivedFilesFolder = path.join(applicationFolder, "receivedFiles");
         var receivedFilesFolder = path.join(config.received_files_folder);
-        
-        
-        
+ 
         console.log("receivedFilesFolder: " + receivedFilesFolder);
         // Creates receivedFiles folder if not exists
         // https://stackoverflow.com/a/13544465
@@ -1728,7 +1745,7 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
         sock.sendFile(arg.dxcallsign, arg.mode, arg.frames, arg.filename, arg.filetype, arg.data, arg.checksum);
     }
     if (arg.command == 'send_message') {
-        sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum);
+        sock.sendMessage(arg.dxcallsign, arg.mode, arg.frames, arg.data, arg.checksum, arg.uuid, arg.command);
     }
     if (arg.command == 'stop_transmission') {
         sock.stopTransmission();

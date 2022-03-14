@@ -43,6 +43,7 @@ class DATA():
         self.arq_session_timeout = 30
         self.session_connect_max_retries = 3
 
+        self.transmission_uuid = ''
 
 
         self.data_channel_last_received      =   0.0         # time of last "live sign" of a frame      
@@ -151,7 +152,8 @@ class DATA():
                 # [1] DATA_OUT bytes
                 # [2] MODE int
                 # [3] N_FRAMES_PER_BURST int
-                self.open_dc_and_transmit(data[1], data[2], data[3])
+                # [4] self.transmission_uuid str
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4])
                 '''
                 print(static.ARQ_SESSION)
                 if not static.ARQ_SESSION:
@@ -443,7 +445,6 @@ class DATA():
                 # updated modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
 
-                                
                 # create an ack frame
                 ack_frame = bytearray(14)
                 ack_frame[:1] = bytes([60])
@@ -553,9 +554,8 @@ class DATA():
                 base64_data = base64_data.decode("utf-8")
                 static.RX_BUFFER.append([uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data])
                 jsondata = {"arq":"received", "uuid" : uniqueid,  "timestamp": timestamp, "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
-                data_out = json.dumps(jsondata)
-                print(data_out)
-                sock.SOCKET_QUEUE.put(data_out)
+                json_data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(json_data_out)
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
                
                 # BUILDING ACK FRAME FOR DATA FRAME
@@ -645,6 +645,12 @@ class DATA():
         static.TOTAL_BYTES = len(data_out)
         frame_total_size = len(data_out).to_bytes(4, byteorder='big')
         static.INFO.append("ARQ;TRANSMITTING")
+        
+        jsondata = {"arq":"transmission", "status" :"transmitting", "uuid" : self.transmission_uuid}
+        json_data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(json_data_out)
+                
+                
         structlog.get_logger("structlog").info("[TNC] | TX | DATACHANNEL", mode=mode, Bytes=static.TOTAL_BYTES)
 
         
@@ -680,6 +686,7 @@ class DATA():
                 # force usage of selected mode
                 if mode != 255:
                     data_mode = mode
+                    
                     structlog.get_logger("structlog").debug("FIXED MODE", mode=data_mode)
 
                 else:
@@ -810,13 +817,20 @@ class DATA():
         if self.data_frame_ack_received:
         
             static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
-
+            jsondata = {"arq":"transmission", "status" :"success", "uuid" : self.transmission_uuid}
+            json_data_out = json.dumps(jsondata)
+            sock.SOCKET_QUEUE.put(json_data_out)
+        
             structlog.get_logger("structlog").info("ARQ | TX | DATA TRANSMITTED!", BytesPerMinute=static.ARQ_BYTES_PER_MINUTE, BitsPerSecond=static.ARQ_BITS_PER_SECOND, overflows=static.BUFFER_OVERFLOW_COUNTER)
 
 
                 
         else:
             static.INFO.append("ARQ;TRANSMITTING;FAILED")
+            jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid}
+            json_data_out = json.dumps(jsondata)
+            sock.SOCKET_QUEUE.put(json_data_out)
+            
             structlog.get_logger("structlog").info("ARQ | TX | TRANSMISSION FAILED OR TIME OUT!", overflows=static.BUFFER_OVERFLOW_COUNTER)
             self.stop_transmission()
 
@@ -902,7 +916,9 @@ class DATA():
 
         """
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
-        
+        jsondata = {"arq":"transmission", "status" : "failed", "uuid" : self.transmission_uuid}
+        json_data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(json_data_out)        
         self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
         
         if not TESTMODE:
@@ -1133,7 +1149,7 @@ class DATA():
     # ARQ DATA CHANNEL HANDLER
     # ############################################################################################################
 
-    def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int):
+    def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int, transmission_uuid:str):
         """
 
         Args:
@@ -1146,6 +1162,8 @@ class DATA():
         """
         static.TNC_STATE = 'BUSY'
         self.arq_file_transfer = True
+        
+        self.transmission_uuid = transmission_uuid
         
         # wait a moment for the case, an heartbeat is already on the way back to us
         if static.ARQ_SESSION:
@@ -1226,6 +1244,10 @@ class DATA():
 
                 if not static.ARQ_STATE and attempt == self.data_channel_max_retries:
                     static.INFO.append("DATACHANNEL;FAILED")
+                    print(self.transmission_uuid)
+                    jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid}
+                    json_data_out = json.dumps(jsondata)
+                    sock.SOCKET_QUEUE.put(json_data_out)
                     
                     structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                     self.datachannel_timeout = True
@@ -1582,6 +1604,9 @@ class DATA():
         """
         
         try: 
+            print(static.TOTAL_BYTES)
+            if static.TOTAL_BYTES == 0:
+                static.TOTAL_BYTES = 1
             static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES)) * 100)
 
             transmissiontime = time.time() - self.rx_start_of_transmission

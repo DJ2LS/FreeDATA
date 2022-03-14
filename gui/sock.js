@@ -6,7 +6,9 @@ const {
 
 const log = require('electron-log');
 const socketLog = log.scope('tnc');
-
+const utf8 = require('utf8');
+    
+    
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -132,7 +134,6 @@ client.on('data', function(socketdata) {
     stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
     */
 
-
     socketdata = socketdata.toString('utf8'); // convert data to string
     socketchunk += socketdata// append data to buffer so we can stick long data together
 
@@ -216,6 +217,20 @@ client.on('data', function(socketdata) {
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
+            }
+
+            // update transmission status
+
+            if (data['arq'] == 'transmission'){
+            socketLog.info(data)
+            
+                let state = {
+                    status: data['status'],
+                    uuid: data['uuid'],
+                };
+            ipcRenderer.send('request-update-transmission-status', state);                
+                
+            
             }
 
             /* A TEST WITH STREAMING DATA .... */       
@@ -359,17 +374,23 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 }
 
 // Send Message
-exports.sendMessage = function(dxcallsign, mode, frames, data, checksum) {
+exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, command) {
     socketLog.info(data) 
-
+    // convert message to plain utf8 because of unicode emojis
+    data = utf8.encode(data)
+    socketLog.info(data) 
+    
     var datatype = "m"
-    data = datatype + split_char + split_char + checksum + split_char + data
+    data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data
     socketLog.info(data)
+    
+    
+    
     socketLog.info(btoa(data))
     data = btoa(data)
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     socketLog.info(command)
     socketLog.info("-------------------------------------")
     writeTncCommand(command)
