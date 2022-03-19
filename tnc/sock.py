@@ -302,6 +302,12 @@ def process_tnc_commands(data):
                 n_frames = int(received_json["parameter"][0]["n_frames"])
                 base64data = received_json["parameter"][0]["data"]
                 
+                # check if specific callsign is set with different SSID than the TNC is initialized
+                try:
+                    mycallsign = received_json["parameter"][0]["mycallsign"]
+                except:
+                    mycallsign = static.MYCALLSIGN
+                    
                 # check if transmission uuid provided else set no-uuid
                 try:
                     arq_uuid = received_json["uuid"]
@@ -311,7 +317,7 @@ def process_tnc_commands(data):
                 if not len(base64data) % 4: 
                     binarydata = base64.b64decode(base64data)
 
-                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid])
+                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid, mycallsign])
 
                 else:
                     raise TypeError
@@ -483,6 +489,8 @@ def process_daemon_commands(data):
             enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
             enable_fft = str(received_json["parameter"][0]["enable_fft"])
             low_bandwith_mode = str(received_json["parameter"][0]["low_bandwith_mode"])
+            tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
+            tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
 
             DAEMON_QUEUE.put(['STARTTNC', \
                                     mycall, \
@@ -502,7 +510,9 @@ def process_daemon_commands(data):
                                     rigctld_port, \
                                     enable_scatter, \
                                     enable_fft, \
-                                    low_bandwith_mode \
+                                    low_bandwith_mode, \
+                                    tuning_range_fmin, \
+                                    tuning_range_fmax \
                                     ])
             command_response("start_tnc", True)
             

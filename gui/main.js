@@ -72,7 +72,9 @@ const configDefaultSettings = '{\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
                   "beacon_interval" : 5,\
-                  "received_files_folder" : "None"\
+                  "received_files_folder" : "None",\
+                  "tuning_range_fmin" : "-50.0",\
+                  "tuning_range_fmax" : "50.0"\
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -540,6 +542,7 @@ autoUpdater.on('error', (error) => {
         progress: error
     };
   win.webContents.send('action-updater', arg); 
+  mainLog.error("AUTO UPDATER : " + error);
 });
 
 

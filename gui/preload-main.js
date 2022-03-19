@@ -151,9 +151,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // Update channel selector
     document.getElementById("update_channel_selector").value = config.update_channel;
 
-
-
-    
+    // Update tuning range fmin fmax
+    document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
+    document.getElementById("tuning_range_fmax").value = config.tuning_range_fmax;
     
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
@@ -477,8 +477,20 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     });
 
     
+        // Tuning range clicked
+    document.getElementById("tuning_range_fmin").addEventListener("click", () => {
+        var tuning_range_fmin = document.getElementById("tuning_range_fmin").value;      
+        config.tuning_range_fmin = tuning_range_fmin;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
+    document.getElementById("tuning_range_fmax").addEventListener("click", () => {
+        var tuning_range_fmax = document.getElementById("tuning_range_fmax").value;      
+        config.tuning_range_fmax = tuning_range_fmax;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });    
     
+        
     // Theme selector clicked
     document.getElementById("theme_selector").addEventListener("click", () => {
         
@@ -524,12 +536,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
 
-        /*
-        var deviceid_rigctl = document.getElementById("hamlib_deviceid_rigctl").value;
-        var deviceport_rigctl = document.getElementById("hamlib_deviceport_rigctl").value;
-        var serialspeed_rigctl = document.getElementById("hamlib_serialspeed_rigctl").value;
-        var pttprotocol_rigctl = document.getElementById("hamlib_ptt_protocol_rigctl").value;
-        */
+        var tuning_range_fmin = document.getElementById("tuning_range_fmin").value;
+        var tuning_range_fmax = document.getElementById("tuning_range_fmax").value;
+                
         var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
         var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
 
@@ -637,6 +646,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.enable_scatter = enable_scatter;
         config.enable_fft = enable_fft;
         config.low_bandwith_mode = low_bandwith_mode;
+        
  
         
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -656,7 +666,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax);
         
         
     })

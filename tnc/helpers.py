@@ -212,3 +212,40 @@ def bytes_to_callsign(bytestring):
     
     return bytes(callsign) 
 
+
+
+
+def check_callsign(callsign:bytes, crc_to_check:bytes):
+    """
+    Funktion to check a crc against a callsign to calculate the ssid by generating crc until we got it
+
+    Args:
+      callsign: Callsign which we want to check
+      crc_to_check: The CRC which we want the callsign to check against 
+
+    Returns:
+        [True, Callsign + SSID]
+        False
+    """
+    
+    crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
+    
+    try:
+        callsign = callsign.split(b'-')
+        callsign = callsign[0] # we want the callsign without SSID
+        
+    except:
+        callsign = callsign
+        
+    for ssid in static.SSID_LIST:
+        call_with_ssid = bytearray(callsign)        
+        call_with_ssid.extend('-'.encode('utf-8'))
+        call_with_ssid.extend(str(ssid).encode('utf-8'))
+
+        callsign_crc = get_crc_16(call_with_ssid)
+
+        if callsign_crc == crc_to_check:
+            print(call_with_ssid)
+            return [True, bytes(call_with_ssid)]
+    
+    return False

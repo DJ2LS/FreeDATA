@@ -50,6 +50,7 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA TNC')
     PARSER.add_argument('--mycall', dest="mycall", default="AA0AA", help="My callsign", type=str)
+    PARSER.add_argument('--ssid', dest="ssid_list", nargs='*', default=[0,5], help="SSID list we are responding to", type=str)
     PARSER.add_argument('--mygrid', dest="mygrid", default="JN12AA", help="My gridsquare", type=str) 
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
@@ -68,8 +69,10 @@ if __name__ == '__main__':
     PARSER.add_argument('--scatter', dest="send_scatter", action="store_true", help="Send scatter information via network") 
     PARSER.add_argument('--fft', dest="send_fft", action="store_true", help="Send fft information via network") 
     PARSER.add_argument('--500hz', dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )") 
- 
-   
+    PARSER.add_argument('--tuning_range_fmin', dest="tuning_range_fmin", choices=[-50.0, -100.0, -150.0, -200.0, -250.0], default=-50.0, help="Tuning range fmin", type=float)  
+    PARSER.add_argument('--tuning_range_fmax', dest="tuning_range_fmax", choices=[50.0, 100.0, 150.0, 200.0, 250.0], default=50.0, help="Tuning range fmax", type=float)  
+    
+       
     ARGS = PARSER.parse_args()
 
     # additional step for beeing sure our callsign is correctly
@@ -79,6 +82,9 @@ if __name__ == '__main__':
     mycallsign = helpers.callsign_to_bytes(mycallsign)
     static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
     static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
+    print(static.MYCALLSIGN)
+    
+    static.SSID_LIST = ARGS.ssid_list
       
     static.MYGRID = bytes(ARGS.mygrid, 'utf-8')
     static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
@@ -98,7 +104,8 @@ if __name__ == '__main__':
     static.ENABLE_SCATTER = ARGS.send_scatter
     static.ENABLE_FFT = ARGS.send_fft    
     static.LOW_BANDWITH_MODE = ARGS.low_bandwith_mode    
-        
+    static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin    
+    static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax                
         
         
 

@@ -44,6 +44,9 @@ class DATA():
         self.session_connect_max_retries = 3
 
         self.transmission_uuid = ''
+        
+        self.received_mycall_crc = b'' # received my callsign crc if we received a crc for another ssid
+
 
 
         self.data_channel_last_received      =   0.0         # time of last "live sign" of a frame      
@@ -56,7 +59,7 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
-        self.rx_n_max_retries_per_burst = 15
+        self.rx_n_max_retries_per_burst = 30
         self.n_retries_per_burst = 0
         
         self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel ope ner
@@ -64,10 +67,10 @@ class DATA():
         self.data_channel_max_retries = 5
         
         self.mode_list_low_bw = [14,12]
-        self.time_list_low_bw = [3,6]
+        self.time_list_low_bw = [3,7]
 
         self.mode_list_high_bw = [14,12,10] # mode list of available modes, each mode will be used 2times per speed level
-        self.time_list_high_bw = [3, 6, 7] # list for time to wait for correspinding mode in seconds
+        self.time_list_high_bw = [3, 7, 8] # list for time to wait for correspinding mode in seconds
 
         # mode list for selecting between low bandwith ( 500Hz ) and normal modes with higher bandwith
         if static.LOW_BANDWITH_MODE:
@@ -89,7 +92,7 @@ class DATA():
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-        self.transmission_timeout = 60 # transmission timeout in seconds
+        self.transmission_timeout = 90 # transmission timeout in seconds
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",daemon=True)
         worker_thread_transmit.start()
@@ -140,27 +143,15 @@ class DATA():
                 else:
                     static.BEACON_STATE = False
                     
-            elif data[0] == 'ARQ_FILE':
-                # [0] ARQ_FILE
-                # [1] DATA_OUT bytes
-                # [2] MODE int
-                # [3] N_FRAMES_PER_BURST int
-                self.open_dc_and_transmit(data[1], data[2], data[3])
-
             elif data[0] == 'ARQ_RAW':
                 # [0] ARQ_RAW
                 # [1] DATA_OUT bytes
                 # [2] MODE int
                 # [3] N_FRAMES_PER_BURST int
                 # [4] self.transmission_uuid str
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4])
-                '''
-                print(static.ARQ_SESSION)
-                if not static.ARQ_SESSION:
-                    self.open_dc_and_transmit(data[1], data[2], data[3])
-                else:
-                    self.arq_transmit(data[1], data[2], data[3])
-                '''    
+                # [5] mycallsign with ssid
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
+
                 
             elif data[0] == 'CONNECT':
                 # [0] DX CALLSIGN
@@ -204,8 +195,11 @@ class DATA():
         
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
 
-        if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or bytes(bytes_out[2:4]) == static.MYCALLSIGN_CRC or frametype == 200 or frametype == 250:
 
+
+        #if bytes(bytes_out[1:3]) == static.MYCALLSIGN_CRC or bytes(bytes_out[2:4]) == static.MYCALLSIGN_CRC or frametype == 200 or frametype == 250:
+        if helpers.check_callsign(static.MYCALLSIGN, bytes(bytes_out[1:3])) or helpers.check_callsign(static.MYCALLSIGN, bytes(bytes_out[2:4])) or frametype == 200 or frametype == 250:
+        
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
@@ -353,7 +347,15 @@ class DATA():
         Returns:
 
         """
-        data_in = bytes(data_in)    
+        data_in = bytes(data_in)  
+        
+        # get received crc for different mycall ssids
+        self.received_mycall_crc = data_in[2:4]  
+        
+        # check if callsign ssid override
+        mycallsign = helpers.check_callsign(static.MYCALLSIGN, self.received_mycall_crc)[1] 
+        print(mycallsign)
+        
         
         global TESTMODE
         # only process data if we are in ARQ and BUSY state else return to quit
@@ -550,11 +552,17 @@ class DATA():
                     
                 uniqueid = str(uuid.uuid4())
                 timestamp = int(time.time())
+                
+ 
+                # check if callsign ssid override
+                mycallsign = helpers.check_callsign(static.MYCALLSIGN, self.received_mycall_crc)[1] 
+                
                 base64_data = base64.b64encode(data_frame)
                 base64_data = base64_data.decode("utf-8")
                 static.RX_BUFFER.append([uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data])
-                jsondata = {"arq":"received", "uuid" : uniqueid,  "timestamp": timestamp, "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
+                jsondata = {"arq":"received", "uuid" : uniqueid,  "timestamp": timestamp, "mycallsign" : str(mycallsign, 'utf-8'), "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
                 json_data_out = json.dumps(jsondata)
+                print(jsondata)
                 sock.SOCKET_QUEUE.put(json_data_out)
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
                
@@ -1111,7 +1119,7 @@ class DATA():
         connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
+
         
         txbuffer = [connection_frame]                
         static.TRANSMITTING = True
@@ -1149,7 +1157,7 @@ class DATA():
     # ARQ DATA CHANNEL HANDLER
     # ############################################################################################################
 
-    def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int, transmission_uuid:str):
+    def open_dc_and_transmit(self, data_out:bytes, mode:int, n_frames_per_burst:int, transmission_uuid:str, mycallsign):
         """
 
         Args:
@@ -1177,7 +1185,7 @@ class DATA():
         # for calculating transmission statistics
         static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
         
-        self.arq_open_data_channel(mode, n_frames_per_burst)
+        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
         
         # wait until data channel is open
         while not static.ARQ_STATE and not self.datachannel_timeout:
@@ -1188,7 +1196,7 @@ class DATA():
         else:
              return False
             
-    def arq_open_data_channel(self, mode:int, n_frames_per_burst:int):      
+    def arq_open_data_channel(self, mode:int, n_frames_per_burst:int, mycallsign):      
         """
 
         Args:
@@ -1218,14 +1226,14 @@ class DATA():
         connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:13]   = helpers.callsign_to_bytes(static.MYCALLSIGN)
+        connection_frame[5:13]   = helpers.callsign_to_bytes(mycallsign)
         connection_frame[13:14] = bytes([n_frames_per_burst])                    
         
         while not static.ARQ_STATE:
             time.sleep(0.01)
             for attempt in range(1,self.data_channel_max_retries+1):
                 static.INFO.append("DATACHANNEL;OPENING")
-                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(self.data_channel_max_retries))                
+                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(helpers.callsign_to_bytes(mycallsign), 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(self.data_channel_max_retries))                
                 txbuffer = [connection_frame]                
                 static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
@@ -1249,7 +1257,7 @@ class DATA():
                     json_data_out = json.dumps(jsondata)
                     sock.SOCKET_QUEUE.put(json_data_out)
                     
-                    structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(static.MYCALLSIGN, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                    structlog.get_logger("structlog").warning("[TNC] ARQ | TX | DATA [" + str(mycallsign, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN, 'utf-8') + "]")
                     self.datachannel_timeout = True
                     if not TESTMODE:
                         self.arq_cleanup()
@@ -1275,6 +1283,7 @@ class DATA():
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         #check if we received low bandwith mode
@@ -1297,8 +1306,11 @@ class DATA():
         self.set_listening_modes(self.mode_list[self.speed_level])
 
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+        
+        # check if callsign ssid override
+        mycallsign = helpers.check_callsign(static.MYCALLSIGN, data_in[1:3])[1] 
             
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide")
+        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide")
            
         static.ARQ_STATE = True
         static.TNC_STATE = 'BUSY'
@@ -1328,7 +1340,7 @@ class DATA():
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
-        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(static.MYCALLSIGN, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide", snr=static.SNR)
+        structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide", snr=static.SNR)
         
         # set start of transmission for our statistics
         self.rx_start_of_transmission = time.time()
@@ -1347,7 +1359,7 @@ class DATA():
         protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
         if protocol_version == static.ARQ_PROTOCOL_VERSION:
             static.INFO.append("DATACHANNEL;OPEN")
-            static.DXCALLSIGN_CRC = bytes(data_in[3:5])
+            #static.DXCALLSIGN_CRC = bytes(data_in[3:5])
             frametype = int.from_bytes(bytes(data_in[:1]), "big")  
                 
             if frametype == 228:
@@ -1401,8 +1413,6 @@ class DATA():
         ping_frame[5:13] = helpers.callsign_to_bytes(static.MYCALLSIGN)
 
         txbuffer = [ping_frame]
-        print(helpers.callsign_to_bytes(static.MYCALLSIGN))
-        print(txbuffer)
         static.TRANSMITTING = True
         modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])  
         # wait while transmitting
@@ -1427,7 +1437,10 @@ class DATA():
         
         static.INFO.append("PING;RECEIVING")
 
-        structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(static.MYCALLSIGN, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
+        # check if callsign ssid override
+        mycallsign = helpers.check_callsign(static.MYCALLSIGN, data_in[1:3])[1]        
+        
+        structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
 
         ping_frame      = bytearray(14)
         ping_frame[:1]  = bytes([211])
@@ -1685,6 +1698,8 @@ class DATA():
 
         structlog.get_logger("structlog").debug("cleanup")
         
+        self.received_mycall_crc = b''
+        
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
         self.burst_ack = False
@@ -1697,6 +1712,7 @@ class DATA():
         # reset modem receiving state to reduce cpu load
         modem.RECEIVE_DATAC1 = False
         modem.RECEIVE_DATAC3 = False
+        modem.RECEIVE_FSK_LDPC = False
 
         # reset buffer overflow counter
         static.BUFFER_OVERFLOW_COUNTER = [0,0,0]
@@ -1761,10 +1777,14 @@ class DATA():
         elif mode_name == 'datac3':
             modem.RECEIVE_DATAC3 = True
             structlog.get_logger("structlog").debug("changing listening data mode", mode="datac3")
+        elif mode_name == 'fsk_ldpc':
+            modem.RECEIVE_FSK_LDPC = True
+            structlog.get_logger("structlog").debug("changing listening data mode", mode="fsk_ldpc")    
         elif mode_name == 'allmodes':
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
-            structlog.get_logger("structlog").debug("changing listening data mode", mode="datac1/datac3")
+            modem.RECEIVE_FSK_LDPC = True
+            structlog.get_logger("structlog").debug("changing listening data mode", mode="datac1/datac3/fsk_ldpc")
                     
 
     # ------------------------- WATCHDOG FUNCTIONS FOR TIMER

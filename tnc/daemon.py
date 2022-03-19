@@ -136,6 +136,8 @@ class DAEMON():
                 # data[16] send_scatter
                 # data[17] send_fft
                 # data[18] low_bandwith_mode
+                # data[19] tuning_range_fmin
+                # data[20] tuning_range_fmax
                 
                 if data[0] == 'STARTTNC':
                     structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -207,6 +209,13 @@ class DAEMON():
                     if data[18] == 'True':
                         options.append('--500hz')
 
+                    options.append('--tuning_range_fmin')
+                    options.append(data[19])
+                    
+                    options.append('--tuning_range_fmax')
+                    options.append(data[20])
+
+                    
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
                     try:
@@ -270,6 +279,7 @@ class DAEMON():
                     radiocontrol = data[9]
                     rigctld_ip = data[10]
                     rigctld_port = data[11]
+
 
 
                     # check how we want to control the radio

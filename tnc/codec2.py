@@ -17,6 +17,7 @@ class FREEDV_MODE(Enum):
     """
     enum for codec2 modes and names
     """
+    fsk_ldpc = 9
     datac0 = 14
     datac1 = 10
     datac3 = 12
@@ -138,6 +139,7 @@ api.FREEDV_FS_8000 = 8000
 api.FREEDV_MODE_DATAC1 = 10
 api.FREEDV_MODE_DATAC3 = 12
 api.FREEDV_MODE_DATAC0 = 14
+api.FREEDV_MODE_FSK_LDPC = 9
 
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync

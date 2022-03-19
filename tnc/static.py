@@ -8,7 +8,7 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-) 
 """
 
-VERSION = '0.2.0-alpha'
+VERSION = '0.2.1-alpha'
 
 # DAEMON
 DAEMONPORT = 3001
@@ -25,6 +25,8 @@ DXCALLSIGN_CRC = b'A'
 
 MYGRID = b''
 DXGRID = b''
+
+SSID_LIST = [] # ssid list we are responding to
 
 LOW_BANDWITH_MODE = False
 # ---------------------------------
@@ -114,3 +116,7 @@ HEARD_STATIONS = []
 
 # ------- INFO MESSAGE BUFFER
 INFO = []
+
+# ------- CODEC2 SETTINGS
+TUNING_RANGE_FMIN = -50.0
+TUNING_RANGE_FMAX = 50.0 
