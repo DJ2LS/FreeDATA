@@ -93,6 +93,9 @@ if not 'api' in locals():
 api.freedv_open.argype = [c_int]
 api.freedv_open.restype = c_void_p
 
+api.freedv_open_advanced.argtype = [c_int, c_void_p]
+api.freedv_open_advanced.restype = c_void_p
+
 api.freedv_get_bits_per_modem_frame.argtype = [c_void_p]
 api.freedv_get_bits_per_modem_frame.restype = c_int
 
@@ -140,6 +143,55 @@ api.FREEDV_MODE_DATAC1 = 10
 api.FREEDV_MODE_DATAC3 = 12
 api.FREEDV_MODE_DATAC0 = 14
 api.FREEDV_MODE_FSK_LDPC = 9
+
+# -------------------------------- FSK LDPC MODE SETTINGS
+
+# advanced structure for fsk modes
+class ADVANCED(ctypes.Structure):
+    """ """
+    _fields_ = [
+        ("interleave_frames", ctypes.c_int),    
+        ("M", ctypes.c_int),
+        ("Rs", ctypes.c_int),
+        ("Fs", ctypes.c_int),
+        ("first_tone", ctypes.c_int),        
+        ("tone_spacing", ctypes.c_int),        
+        ("codename", ctypes.c_char_p),                              
+    ]
+
+'''
+adv.interleave_frames = 0                       # max amplitude
+adv.M = 2                                       # number of fsk tones 2/4
+adv.Rs = 100                                    # symbol rate
+adv.Fs = 8000                                   # sample rate
+adv.first_tone = 1500                           # first tone freq
+adv.tone_spacing = 200                          # shift between tones
+adv.codename = 'H_128_256_5'.encode('utf-8')    # code word
+
+HRA_112_112          rate 0.50 (224,112)    BPF: 14     not working
+HRA_56_56            rate 0.50 (112,56)     BPF: 7      not working
+H_2064_516_sparse    rate 0.80 (2580,2064)  BPF: 258    not working
+HRAb_396_504         rate 0.79 (504,396)    BPF: 49     not working
+H_256_768_22         rate 0.33 (768,256)    BPF: 32     working
+H_256_512_4          rate 0.50 (512,256)    BPF: 32     working
+HRAa_1536_512        rate 0.75 (2048,1536)  BPF: 192    not working
+H_128_256_5          rate 0.50 (256,128)    BPF: 16     working
+H_4096_8192_3d       rate 0.50 (8192,4096)  BPF: 512    not working
+H_16200_9720         rate 0.60 (16200,9720) BPF: 1215   not working
+H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    not working
+'''
+# --------------- 2 FSK HRA_56_56, 7 bytes
+api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()
+api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
+api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 2
+api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
+api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1500
+api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 200
+api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'HRA_56_56'.encode('utf-8')   # code word
+
+
+
 
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
