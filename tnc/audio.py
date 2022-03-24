@@ -3,6 +3,9 @@ import json
 import sys
 import multiprocessing
 
+import sounddevice as sd
+
+'''
 ####################################################
 # https://stackoverflow.com/questions/7088672/pyaudio-working-but-spits-out-error-messages-each-time
 # https://github.com/DJ2LS/FreeDATA/issues/22
@@ -42,6 +45,7 @@ def noalsaerr():
     
 # with noalsaerr():
 #   p = pyaudio.PyAudio()
+'''
 #####################################################
 
 def get_audio_devices():
@@ -75,6 +79,7 @@ def fetch_audio_devices(input_devices, output_devices):
     Returns:
 
     """
+    '''
     # UPDATE LIST OF AUDIO DEVICES    
     try:
     # we need to "try" this, because sometimes libasound.so isn't in the default place                   
@@ -87,21 +92,29 @@ def fetch_audio_devices(input_devices, output_devices):
     
     #input_devices = []
     #output_devices = []
-    
-    for i in range(0, p.get_device_count()):
+    '''
+    devices = sd.query_devices(device=None, kind=None)
+    index = 0
+    for device in devices:
+    #for i in range(0, p.get_device_count()):
         # we need to do a try exception, beacuse for windows theres no audio device range
         try:
-            maxInputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
-            maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
-            name = p.get_device_info_by_host_api_device_index(0, i).get('name')
+            
+            #maxInputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxInputChannels')
+            #maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
+            #name = p.get_device_info_by_host_api_device_index(0, i).get('name')
+            name = device["name"]
+            maxOutputChannels = device["max_output_channels"]
+            maxInputChannels = device["max_input_channels"]
+
         except:
             maxInputChannels = 0
             maxOutputChannels = 0
             name = ''
 
         if maxInputChannels > 0:
-            input_devices.append({"id": i, "name": str(name)})
+            input_devices.append({"id": index, "name": str(name)})
         if maxOutputChannels > 0:
-            output_devices.append({"id": i, "name": str(name)})
-    
-    p.terminate()
+            output_devices.append({"id": index, "name": str(name)})
+        index += 1
+    #p.terminate()

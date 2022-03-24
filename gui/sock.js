@@ -233,6 +233,16 @@ client.on('data', function(socketdata) {
             
             }
 
+            // Check for Ping 
+            if (data['type'] == 'ping') {
+                ipcRenderer.send('request-new-msg-received', {data: [data]});
+            }
+
+            // Check for Beacon 
+            if (data['type'] == 'beacon') {
+                ipcRenderer.send('request-new-msg-received', {data: [data]});
+            }
+            
             /* A TEST WITH STREAMING DATA .... */       
             // if we received data through network stream, we get a single data item
             if (data['arq'] == 'received') {
@@ -251,6 +261,7 @@ client.on('data', function(socketdata) {
                         
                 if(splitted_data[0] == 'm'){
                     messageArray.push(data)
+                    console.log(data)
                 }
 
                 rxBufferLengthGui = dataArray.length
@@ -258,13 +269,12 @@ client.on('data', function(socketdata) {
                     data: dataArray,
                 };
                 ipcRenderer.send('request-update-rx-buffer', Files);
+                ipcRenderer.send('request-new-msg-received', Files);
                 
                 rxMsgBufferLengthGui = messageArray.length
                 let Messages = {
                     data: messageArray,
                 };
-                
-                //ipcRenderer.send('request-update-rx-msg-buffer', Messages);
                 ipcRenderer.send('request-new-msg-received', Messages);
             }
             

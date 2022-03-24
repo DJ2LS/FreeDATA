@@ -13,7 +13,8 @@ const exec = require('child_process').spawn;
 const log = require('electron-log');
 const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
-
+const mime = require('mime');
+  
 const sysInfo = log.scope('system information');
 sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
 sysInfo.info("APP VERSION : " + app.getVersion());
@@ -466,9 +467,10 @@ ipcMain.on('request-open-tnc-log', (event) => {
 
 //folder selector
 ipcMain.on('get-folder-path',(event,data)=>{
-    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../assets/'), 
+    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../'), 
         buttonLabel: 'Select folder', properties: ['openDirectory']}).then(folderPaths => {
-            win.webContents.send('return-folder-paths', {path: folderPaths,})              
+            win.webContents.send('return-folder-paths', {path: folderPaths,})     
+
     });
 });
 
@@ -477,8 +479,52 @@ ipcMain.on('open-folder',(event,data)=>{
     shell.showItemInFolder(data.path)
 });
 
+//select file
+ipcMain.on('select-file',(event,data)=>{
+    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../'), 
+        buttonLabel: 'Select file', properties: ['openFile']}).then(filepath => {
+
+console.log(filepath.filePaths[0])
+
+  try {
+  fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
+  //fs.readFile(filepath.filePaths[0], function (err, data) {
 
 
+  var filename = path.basename(filepath.filePaths[0])
+  var mimeType = mime.getType(filename)
+    chat.webContents.send('return-selected-files', {data : data, mime: mimeType, filename: filename}) 
+    })
+       
+  } catch (err) {
+    console.log(err);
+  }
+
+      });  
+
+});
+
+//save file to folder
+ipcMain.on('save-file-to-folder',(event,data)=>{
+        
+       console.log(data)
+        
+        dialog.showSaveDialog({defaultPath: path.join(__dirname, '../')}).then(filepath => {
+
+        console.log(filepath.filePath)
+
+  try {
+  fs.writeFile(filepath.filePath, data.file,  function (err, data) {
+    })
+  } catch (err) {
+    console.log(err);
+  }
+
+      });  
+      
+      
+      
+});
 
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on('update-available', (info) => {

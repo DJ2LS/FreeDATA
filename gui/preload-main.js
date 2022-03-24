@@ -777,7 +777,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         
     
         var fileList = document.getElementById("dataModalFile").files;
-
+        console.log(fileList)
         var reader = new FileReader();
         reader.readAsBinaryString(fileList[0]);
         //reader.readAsDataURL(fileList[0]);

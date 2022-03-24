@@ -17,6 +17,8 @@ class FREEDV_MODE(Enum):
     """
     enum for codec2 modes and names
     """
+    fsk_ldpc_0 = 200
+    fsk_ldpc_1 = 201
     fsk_ldpc = 9
     datac0 = 14
     datac1 = 10
@@ -170,7 +172,7 @@ adv.codename = 'H_128_256_5'.encode('utf-8')    # code word
 
 HRA_112_112          rate 0.50 (224,112)    BPF: 14     not working
 HRA_56_56            rate 0.50 (112,56)     BPF: 7      not working
-H_2064_516_sparse    rate 0.80 (2580,2064)  BPF: 258    not working
+H_2064_516_sparse    rate 0.80 (2580,2064)  BPF: 258    working
 HRAb_396_504         rate 0.79 (504,396)    BPF: 49     not working
 H_256_768_22         rate 0.33 (768,256)    BPF: 32     working
 H_256_512_4          rate 0.50 (512,256)    BPF: 32     working
@@ -178,9 +180,9 @@ HRAa_1536_512        rate 0.75 (2048,1536)  BPF: 192    not working
 H_128_256_5          rate 0.50 (256,128)    BPF: 16     working
 H_4096_8192_3d       rate 0.50 (8192,4096)  BPF: 512    not working
 H_16200_9720         rate 0.60 (16200,9720) BPF: 1215   not working
-H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    not working
+H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
 '''
-# --------------- 2 FSK HRA_56_56, 7 bytes
+# --------------- 2 FSK H_128_256_5, 16 bytes
 api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()
 api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 2
@@ -188,11 +190,51 @@ api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
 api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1500
 api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'HRA_56_56'.encode('utf-8')   # code word
+api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'H_128_256_5'.encode('utf-8')   # code word
 
+# --------------- 4 H_256_512_4, 7 bytes
+api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()
+api.FREEDV_MODE_FSK_LDPC_1_ADV.interleave_frames = 0
+api.FREEDV_MODE_FSK_LDPC_1_ADV.M = 4
+api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
+api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250
+api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
+api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = 'H_256_512_4'.encode('utf-8')   # code word
 
+# ------- MODEM STATS STRUCTURES
 
-
+MODEM_STATS_NC_MAX =       50+1
+MODEM_STATS_NR_MAX =       160
+MODEM_STATS_ET_MAX =       8
+MODEM_STATS_EYE_IND_MAX =  160
+MODEM_STATS_NSPEC =        512
+MODEM_STATS_MAX_F_HZ =     4000
+MODEM_STATS_MAX_F_EST =    4
+# modem stats structure
+class MODEMSTATS(ctypes.Structure):
+    """ """
+    _fields_ = [
+        ("Nc", ctypes.c_int),
+        ("snr_est", ctypes.c_float),
+        ("rx_symbols", (ctypes.c_float * MODEM_STATS_NR_MAX)*MODEM_STATS_NC_MAX),
+        ("nr", ctypes.c_int),
+        ("sync", ctypes.c_int),
+        ("foff", ctypes.c_float),
+        ("rx_timing", ctypes.c_float),
+        ("clock_offset", ctypes.c_float),
+        ("sync_metric", ctypes.c_float),
+        ("pre", ctypes.c_int),
+        ("post", ctypes.c_int),
+        ("uw_fails", ctypes.c_int),
+        ("neyetr", ctypes.c_int), # How many eye traces are plotted
+        ("neyesamp", ctypes.c_int), # How many samples in the eye diagram
+        ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)), # How many samples in the eye diagram
+        ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
+    ]
+    
+    
+    
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
 api.FREEDV_RX_SYNC       = 0x2       # demodulator has sync

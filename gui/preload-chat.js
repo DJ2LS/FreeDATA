@@ -2,314 +2,331 @@ const path = require('path')
 const {
     ipcRenderer
 } = require('electron')
-
-const { v4: uuidv4 } = require('uuid');
+const {
+    v4: uuidv4
+} = require('uuid');
 const utf8 = require('utf8');
-
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
-
-
 // set date format
 const dateFormat = new Intl.DateTimeFormat('en-GB', {
     timeStyle: 'long',
     dateStyle: 'full'
 });
-
+// set date format information
+const dateFormatShort = new Intl.DateTimeFormat('en-GB', {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: false,
+});
 // split character
 const split_char = '\0;'
-
-
+// global for our selected file we want to transmit
+var filetype = '';
+var file = '';
+var filename = '';
 var chatDB = path.join(configFolder, 'chatDB')
-
 // ---- MessageDB
 var PouchDB = require('pouchdb');
 PouchDB.plugin(require('pouchdb-find'));
 var db = new PouchDB(chatDB);
-
-
-
-// get all messages from database
-//var messages = db.get("messages").value()
-
-// get all dxcallsigns in database
-
-
-
-
-
 var dxcallsigns = new Set();
-
-
-
-
-
-
 db.createIndex({
-  index: {
-    fields: ['timestamp', 'uuid', 'dxcallsign', 'dxgrid', 'msg', 'checksum', 'type', 'command', 'status']
-  }
-}).then(function (result) {
-  // handle result
-  console.log(result)
-}).catch(function (err) {
-  console.log(err);
-});
-
-
-          
-db.find({
-          selector: {
-            timestamp: {$exists: true}},
-          sort: [{'timestamp': 'asc'}]
-        }).then(function (result) {
-  // handle result
-  console.log(result);
-  console.log(typeof(result));
-  if(typeof(result) !== 'undefined'){
-  result.docs.forEach(function(item) {
- 
-    update_chat(item);
-  
-    });
-    
+    index: {
+        fields: ['timestamp', 'uuid', 'dxcallsign', 'dxgrid', 'msg', 'checksum', 'type', 'command', 'status', '_attachments']
     }
-}).catch(function (err) {
-  console.log(err);
+}).then(function(result) {
+    // handle result
+    console.log(result)
+}).catch(function(err) {
+    console.log(err);
 });
-  
-  
-
+db.find({
+    selector: {
+        timestamp: {
+            $exists: true
+        }
+    },
+    sort: [{
+        'timestamp': 'asc'
+    }]
+}).then(function(result) {
+    // handle result
+    if (typeof(result) !== 'undefined') {
+        result.docs.forEach(function(item) {
+            console.log(item)
+            update_chat(item);
+        });
+    }
+}).catch(function(err) {
+    console.log(err);
+});
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
-
- 
-    document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {  
-  document.getElementById('chatModuleMessage').setRangeText(event.detail.emoji.unicode)
-  
-  
-  console.log(event.detail);
-})
-  
-  
-  
-document.getElementById("emojipickerbutton").addEventListener("click", () => {  
-var element = document.getElementById("emojipickercontainer")
-
-    console.log(element.style.display);
-    
-    
-  if (element.style.display === "none") {
-    element.style.display = "block";
-  } else {
-    element.style.display = "none";
-  }
-
-
-
-
-})
-
-
+    document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {
+        document.getElementById('chatModuleMessage').setRangeText(event.detail.emoji.unicode)
+        console.log(event.detail);
+    })
+    document.getElementById("emojipickerbutton").addEventListener("click", () => {
+        var element = document.getElementById("emojipickercontainer")
+        console.log(element.style.display);
+        if (element.style.display === "none") {
+            element.style.display = "block";
+        } else {
+            element.style.display = "none";
+        }
+    })
+    document.getElementById("selectFiles").addEventListener("click", () => {
+        ipcRenderer.send('select-file', {
+            title: 'Title',
+        });
+    })
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
-            document.getElementById('emojipickercontainer').style.display = "none";
-            var dxcallsign = document.getElementById('chatModuleDxCall').value;
-            dxcallsign = dxcallsign.toUpperCase();
-            
-            var chatmessage = document.getElementById('chatModuleMessage').value;
-            //chatmessage = Buffer.from(chatmessage, 'utf-8').toString();
-
-            
-            
-            var uuid = uuidv4();
-            console.log(chatmessage)
-            let Data = {
-                command: "send_message",
-                dxcallsign : dxcallsign, 
-                mode : 255, 
-                frames : 1, 
-                data : chatmessage, 
-                checksum : '123',
-                uuid : uuid
-            };
-            ipcRenderer.send('run-tnc-command', Data);
-            
-            
+        document.getElementById('emojipickercontainer').style.display = "none";
+        var dxcallsign = document.getElementById('chatModuleDxCall').value;
+        dxcallsign = dxcallsign.toUpperCase();
+        var chatmessage = document.getElementById('chatModuleMessage').value;
+        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
+        document.getElementById('selectFiles').innerHTML = `
+    <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i> 
+    `;
+        var uuid = uuidv4();
         
+        console.log(chatmessage)
+        let Data = {
+            command: "send_message",
+            dxcallsign: dxcallsign,
+            mode: 255,
+            frames: 1,
+            data: data_with_attachment,
+            checksum: '123',
+            uuid: uuid
+        };
+        ipcRenderer.send('run-tnc-command', Data);
         db.post({
-          _id: uuid,
-          timestamp: Math.floor(Date.now() / 1000),
-          dxcallsign: dxcallsign,
-          dxgrid: 'NULL',
-          msg: chatmessage,
-          checksum: 'NULL',
-          type: "transmit",
-          status: 'transmit',
-          uuid: uuid
-        }).then(function (response) {
-          // handle response
-          console.log("new database entry");
-          console.log(response);
-     
-        }).catch(function (err) {
-          console.log(err);
+            _id: uuid,
+            timestamp: Math.floor(Date.now() / 1000),
+            dxcallsign: dxcallsign,
+            dxgrid: 'NULL',
+            msg: chatmessage,
+            checksum: 'NULL',
+            type: "transmit",
+            status: 'transmit',
+            uuid: uuid,
+            _attachments: {
+                [filename]: {
+                    content_type: filetype,
+                    data: new Buffer(file)
+                }
+            }
+        }).then(function(response) {
+            // handle response
+            console.log("new database entry");
+            console.log(response);
+        }).catch(function(err) {
+            console.log(err);
         });
-
-
-
-
-        db.get(uuid).then(function (doc) {
-          // handle doc
-          update_chat(doc)
-        }).catch(function (err) {
-          console.log(err);
-        });        
-            
+        db.get(uuid, [{
+            attachments: true
+        }]).then(function(doc) {
+            // handle doc
+            update_chat(doc)
+        }).catch(function(err) {
+            console.log(err);
+        });
         // scroll to bottom    
         var element = document.getElementById("message-container");
-        element.scrollTo(0,element.scrollHeight);   
-        
+        element.scrollTo(0, element.scrollHeight);
         // clear input
-        document.getElementById('chatModuleMessage').value = ''  
-         
-                
+        document.getElementById('chatModuleMessage').value = ''
     })
-
-
+    // cleanup after transmission
+    filetype = '';
+    file = '';
+    filename = '';
 });
-
-
-
+ipcRenderer.on('return-selected-files', (event, arg) => {
+    filetype = arg.mime;
+    file = arg.data;
+    filename = arg.filename;
+    document.getElementById('selectFiles').innerHTML = `
+    <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i>
+     <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+        <span class="visually-hidden">New file selected</span>
+     </span>   
+    
+    `;
+});
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
-
     console.log(arg.status);
     console.log(arg.uuid);
-
-
-db.get(arg.uuid).then(function(doc) {
-
-  return db.put({
-    _id: arg.uuid,
-    _rev: doc._rev,
-      timestamp: doc.timestamp,
-      dxcallsign: doc.dxcallsign,
-      dxgrid: doc.dxgrid,
-      msg: doc.msg,
-      checksum: doc.checksum,
-      type: "transmit",
-      status: arg.status,
-      uuid: doc.uuid
-  });
-}).then(function(response) {
-  // handle response
-          db.get(arg.uuid).then(function (doc) {
-          // handle doc
-          update_chat(doc);
-        }).catch(function (err) {
-          console.log(err);
-        });  
-}).catch(function (err) {
-  console.log(err);
-});
-
-    
-    
-    
-    
-
-});
-
-ipcRenderer.on('action-new-msg-received', (event, arg) => {
-    console.log(arg);
-    console.log(arg.data);
-    
-    var new_msg = arg.data;
-    
-    new_msg.forEach(function(item) {
-        console.log(item);
-    //for (i = 0; i < arg.data.length; i++) {
-        
-        let obj = new Object();
-        
-        var encoded_data = atob(item.data);
-        var splitted_data = encoded_data.split(split_char);
-        console.log(utf8.decode(splitted_data[3]));
-        //obj.uuid = item.uuid;
-        item.command = splitted_data[1];
-        item.checksum = splitted_data[2];
-        // convert message to unicode from utf8 because of emojis
-        item.uuid = utf8.decode(splitted_data[3]);
-        item.msg = utf8.decode(splitted_data[4]);
-        //obj.dxcallsign = item.dxcallsign;
-        //obj.dxgrid = item.dxgrid;
-        //obj.timestamp = item.timestamp;
-        item.status = 'null';
-
-
-        // check if message not exists in database.
-        // this might cause big cpu load of file is getting too big
-        /*        
-        if(!JSON.stringify(db.get("messages")).includes(item.uuid)){
-            console.log("new message: " + item);
-            db.get("messages").push(item).save();
-        }
-        */
-        
-
-        db.put({
-          _id: item.uuid,
-          timestamp: item.timestamp,
-          uuid: item.uuid,
-          dxcallsign: item.dxcallsign,
-          dxgrid: item.dxgrid,
-          msg: item.msg,
-          checksum: item.checksum,
-          type : "received",
-          command : item.command,
-          status : item.status
-        }).then(function (response) {
-          // handle response
-          console.log("new database entry");
-          console.log(response);
-     
-        }).catch(function (err) {
-          console.log(err);
+    db.get(arg.uuid, {
+        attachments: true
+    }).then(function(doc) {
+        return db.put({
+            _id: arg.uuid,
+            _rev: doc._rev,
+            timestamp: doc.timestamp,
+            dxcallsign: doc.dxcallsign,
+            dxgrid: doc.dxgrid,
+            msg: doc.msg,
+            checksum: doc.checksum,
+            type: "transmit",
+            status: arg.status,
+            uuid: doc.uuid
         });
-
-
-
-
-        db.get(item.uuid).then(function (doc) {
-          // handle doc
-          
-          // timestamp
-          update_chat(doc);
-        }).catch(function (err) {
-          console.log(err);
+    }).then(function(response) {
+        // handle response
+        db.get(arg.uuid, [{
+            attachments: true
+        }]).then(function(doc) {
+            // handle doc
+            update_chat(doc);
+        }).catch(function(err) {
+            console.log(err);
         });
-
-console.log("...................................")
-return
-
+    }).catch(function(err) {
+        console.log(err);
     });
-
 });
-
-
+ipcRenderer.on('action-new-msg-received', (event, arg) => {
+    console.log(arg.data)
+    var new_msg = arg.data;
+    new_msg.forEach(function(item) {
+        console.log(item)
+        let obj = new Object();
+        if (item.type == 'ping') {
+            obj.timestamp = item.timestamp;
+            obj.dxcallsign = item.dxcallsign;
+            obj.dxgrid = item.dxgrid;
+            obj.uuid = item.uuid;
+            obj.command = 'ping';
+            obj.checksum = 'null';
+            obj.msg = 'null';
+            obj.status = item.status;
+            obj.snr = item.snr;
+            obj.type = item.type;
+        } else if (item.type == 'beacon') {
+            obj.timestamp = item.timestamp;
+            obj.dxcallsign = item.dxcallsign;
+            obj.dxgrid = item.dxgrid;
+            obj.uuid = item.uuid;
+            obj.command = 'beacon';
+            obj.checksum = 'null';
+            obj.msg = 'null';
+            obj.status = item.status;
+            obj.snr = item.snr;
+            obj.type = item.type;
+        } else if (item.arq == 'received') {
+            var encoded_data = atob(item.data);
+            var splitted_data = encoded_data.split(split_char);
+            console.log(splitted_data)
+            //console.log(utf8.decode(splitted_data[3]));
+            // check if message
+            console.log(splitted_data[0])
+            obj.timestamp = item.timestamp;
+            obj.dxcallsign = item.dxcallsign;
+            obj.dxgrid = item.dxgrid;
+            //obj.uuid = item.uuid;
+            obj.command = splitted_data[1];
+            obj.checksum = splitted_data[2];
+            // convert message to unicode from utf8 because of emojis
+            obj.uuid = utf8.decode(splitted_data[3]);
+            obj.msg = utf8.decode(splitted_data[4]);
+            obj.status = 'null';
+            obj.snr = 'null';
+            obj.type = 'received';
+            obj.filename = utf8.decode(splitted_data[5]);
+            obj.filetype = utf8.decode(splitted_data[6]);
+            obj.file = utf8.decode(splitted_data[7]);
+            
+            try{
+            //var file = btoa(obj.file)
+            } catch (error) {
+            
+            }
+            
+            db.put({
+                _id: obj.uuid,
+                timestamp: obj.timestamp,
+                uuid: obj.uuid,
+                dxcallsign: obj.dxcallsign,
+                dxgrid: obj.dxgrid,
+                msg: obj.msg,
+                checksum: obj.checksum,
+                type: obj.type,
+                command: obj.command,
+                status: obj.status,
+                snr: obj.snr,
+                _attachments: {
+                    [obj.filename]: {
+                        content_type: obj.filetype,
+                        data: new Buffer(obj.file)
+                    }
+                }
+            }).then(function(response) {
+                // handle response
+                console.log("new database entry");
+                console.log(response);
+            }).catch(function(err) {
+                console.log(err);
+            });
+            db.get(item.uuid, {
+                attachments: true
+            }).then(function(doc) {
+                // handle doc
+                // timestamp
+                console.log(doc)
+                update_chat(doc);
+            }).catch(function(err) {
+                console.log(err);
+            });
+        }
+    });
+});
 // Update chat list
 update_chat = function(obj) {
-        
-console.log(obj);
-        var dxcallsign = obj.dxcallsign;
-        var timestamp = dateFormat.format(obj.timestamp * 1000);
-        var dxgrid = obj.dxgrid;
-    
+    //console.log(obj);
+    var dxcallsign = obj.dxcallsign;
+    var timestamp = dateFormat.format(obj.timestamp * 1000);
+    var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
+    var dxgrid = obj.dxgrid;
+    if (typeof(obj._attachments) !== 'undefined') {
+        //var filename = obj._attachments;
+        var filename = Object.keys(obj._attachments)[0]
+        var filetype = filename.split('.')[1]
+        var filesize = filename.length + " Bytes";
+        var fileheader = `
+        <div class="card-header text-end p-0 mb-0">
+       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+                    
+                    <span class="badge bg-secondary text-white p-1">${filename}</span>
+                    <span class="badge bg-secondary text-white p-1">${filesize}</span>
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 3rem; color: black;"></i> 
+                            
+                            <button type="button btn-sm" id="save-file-msg-${obj._id}" class="btn btn-light"><i class="bi bi-box-arrow-in-down" style="font-size: 0.9rem; color: black;"></i></button>
+                            
+
+                        </p>
+       
+       
+       
+        </div>
+        `;
+    } else {
+        var filename = ''
+        var fileheader = ''
+    }
     // CALLSIGN LIST
-    if(!(document.getElementById('chat-' + dxcallsign + '-list'))){
+    if (!(document.getElementById('chat-' + dxcallsign + '-list'))) {
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 border-1 mb-2" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
                       <div class="d-flex w-100 justify-content-between">
@@ -321,80 +338,196 @@ console.log(obj);
 
             `;
         document.getElementById('list-tab').insertAdjacentHTML("beforeend", new_callsign);
-              
         var message_area = `
             <div class="tab-pane fade" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>  
             `;
-        document.getElementById('nav-tabContent').insertAdjacentHTML("beforeend", message_area); 
-        
+        document.getElementById('nav-tabContent').insertAdjacentHTML("beforeend", message_area);
         // create eventlistener for listening on clicking on a callsign
         document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
             document.getElementById('chatModuleDxCall').value = dxcallsign;
-            
             // scroll to bottom    
             var element = document.getElementById("message-container");
-            element.scrollTo(0,element.scrollHeight);  
-        
-            });   
-        
+            element.scrollTo(0, element.scrollHeight);
+        });
     }
-    
- 
-    
     // APPEND MESSAGES TO CALLSIGN
-
-            if (obj.status == 'transmit'){
-                var message_class = 'card text-right border-primary bg-primary';
-            }else if (obj.status == 'transmitting'){
-                var message_class = 'card text-right border-warning bg-warning';
-            }else if (obj.status == 'failed'){
-                var message_class = 'card text-right border-danger bg-danger';
-            }else if (obj.status == 'success'){
-                var message_class = 'card text-right border-success bg-success';   
-            } else {
-                var message_class = 'card text-right border-secondary bg-secondary';
-            }   
-            
-    
-    if(!(document.getElementById('msg-' + obj._id))){
-        if (obj.type == 'received'){
+    if (obj.status == 'transmit') {
+        var status = '<i class="bi bi-arrow-left"></i>';
+    } else if (obj.status == 'transmitting') {
+        var status = '<i class="bi bi-arrow-left-right"></i>';
+    } else if (obj.status == 'failed') {
+        var status = '<i class="bi bi-x-square"></i>';
+    } else if (obj.status == 'success') {
+        var status = '<i class="bi bi-check-square"></i>';
+    } else {
+        var status = '<i class="bi bi-question-square"></i>';
+    }
+    if (!(document.getElementById('msg-' + obj._id))) {
+        if (obj.type == 'ping') {
+            var new_message = `
+                <div class="mt-3 p-1 rounded mb-0 w-100 bg-secondary" id="msg-${obj._id}">         
+                    <p class="font-monospace text-small text-white mb-0 text-break">PING ACK - snr: ${obj.snr} - ${timestampShort}     </p>
+                </div>
+            `;
+        }
+        if (obj.type == 'beacon') {
+            var new_message = `
+                <div class="mt-3 p-1 rounded mb-0 w-100 bg-info" id="msg-${obj._id}">         
+                    <p class="font-monospace text-small text-white mb-0 text-break">BEACON - snr: ${obj.snr} - ${timestampShort}     </p>
+                </div>
+            `;
+        }
+        if (obj.type == 'received') {
             var new_message = `
                     <div class="mt-3 mb-0 w-75" id="msg-${obj._id}">            
-                    <p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>
+                    <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
-                      <div class="card-body">
-                        <p class="card-text text-break text-wrap">${obj.msg}</p>
+                      ${fileheader}
+                      <div class="card-body p-0">
+                        <p class="card-text p-2 mb-0 text-break text-wrap">${obj.msg}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
+                            <span class="badge bg-light text-muted">${timestamp}</span>  
+                            
+                        </p>
                       </div>
                     </div>
                 </div>
                 `;
         }
-        
-        if (obj.type == 'transmit'){
-        
-
+        if (obj.type == 'transmit') {
             var new_message = `
                 <div class="ml-auto mt-3 mb-0 w-75" style="margin-left: auto;">
-                    <p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p> 
-                    <div class="${message_class}" id="msg-${obj._id}">
-                      <div class="card-body">
-                        <p class="card-text text-white text-break text-wrap">${obj.msg}</p>
+                    <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
+                    <div class="card rounded" id="msg-${obj._id}">
+                    ${fileheader}
+                      <div class="card-body p-0 text-right bg-primary">
+                        <p class="card-text p-2 mb-0 text-white text-break text-wrap">${obj.msg}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
+                            <span class="badge bg-light text-dark">${timestamp}</span>  
+                            <span class="badge bg-light text-dark">${status}</span>
 
+                            <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-light"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
+                            
+                        </p>
                       </div>
                     </div>
+                    
                 </div>
-                `;                
-        }    
-        
-
-    var id = "chat-" + obj.dxcallsign
-    document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
-    var element = document.getElementById("message-container");
-    element.scrollTo(0,element.scrollHeight);
-    } else if(document.getElementById('msg-' + obj._id)) {
-            id = "msg-" + obj._id;
-            document.getElementById(id).className = message_class;
-        }   
+                `;
+        }
+        // CHECK CHECK CHECK --> This could be done better
+        var id = "chat-" + obj.dxcallsign
+        document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
+        var element = document.getElementById("message-container");
+        element.scrollTo(0, element.scrollHeight);
+    } else if (document.getElementById('msg-' + obj._id)) {
+        id = "msg-" + obj._id;
+        //document.getElementById(id).className = message_class;
+    }
+    // CREATE SAVE TO FOLDER EVENT LISTENER
+    if ((document.getElementById('save-file-msg-' + obj._id))) {
+        document.getElementById('save-file-msg-' + obj._id).addEventListener("click", () => {
+            saveFileToFilder(obj._id)
+        });
+    }
+    // CREATE RESEND MSG EVENT LISTENER
+    if ((document.getElementById('retransmit-msg-' + obj._id))) {
+        document.getElementById('retransmit-msg-' + obj._id).addEventListener("click", () => {
+            db.get(obj._id, {
+                attachments: true
+            }).then(function(doc) {
+                // handle doc
+                console.log(doc)
+                var filename = Object.keys(obj._attachments)[0]
+                var filetype = Object.keys(obj._attachments)[0].content_type
+                var file = Object.keys(obj._attachments)[0].data
+                var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
+                let Data = {
+                    command: doc.command,
+                    dxcallsign: doc.dxcallsign,
+                    mode: doc.mode,
+                    frames: doc.frames,
+                    data: data_with_attachment,
+                    checksum: doc.checksum,
+                    uuid: doc.uuid
+                };
+                ipcRenderer.send('run-tnc-command', Data);
+            }).catch(function(err) {
+                console.log(err);
+            });
+        });
+    };
 }
 
+function getObjByID(id) {
+    /*      
+        {
+    "timestamp": 1648139683,
+    "dxcallsign": "DN2LS-0",
+    "dxgrid": "NULL",
+    "msg": "",
+    "checksum": "NULL",
+    "type": "transmit",
+    "status": "transmit",
+    "uuid": "5b72a46c-49cf-40d6-8936-a64c95bc3da7",
+    "_attachments": {
+        "CMakeLists.txt": {
+            "content_type": "text/plain",
+            "digest": "md5-Cdk6Ol6uuJ7Gj5lin9o4SQ==",
+            "length": 7802,
+            "revpos": 1,
+            "stub": true
+        }
+    },
+    "_id": "5b72a46c-49cf-40d6-8936-a64c95bc3da7",
+    "_rev": "1-6df2d7227c4f89f8a3a2b4978661dd79"
+}
+**/
+db.get(id, {
+        attachments: true
+    }).then(function(doc) {
+        return obj
+    }).catch(function(err) {
+        console.log(err);
+        return false
+    });
+}
 
+function saveFileToFilder(id) {
+    db.get(id,{attachments: true}).then(function(obj) {
+        console.log(obj)
+        console.log(Object.keys(obj._attachments)[0].content_type)
+        var filename = Object.keys(obj._attachments)[0]
+        var filetype = filename.content_type
+        var file = Object.keys(obj._attachments)[0].data
+ 
+
+db.getAttachment(id, filename).then(function (data) {
+  // handle result
+  console.log(data)
+  
+  
+  
+  let Data = {
+            file: data,
+            filename: filename,
+            filetype: filetype,
+        }
+        console.log(Data)
+        ipcRenderer.send('save-file-to-folder', Data);
+    }).catch(function(err) {
+        console.log(err);
+        return false
+    });
+  
+  
+  
+  
+}).catch(function (err) {
+  console.log(err);
+});
+
+
+        
+        
+}
