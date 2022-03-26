@@ -1459,7 +1459,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             document.getElementById("hamlib_deviceport").innerHTML = "";
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['description'];
+                option.text = arg.serial_devices[i]['port'] + ' -- ' + arg.serial_devices[i]['description'];
                 option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
                 if(config.deviceport == option.value){
