@@ -487,9 +487,12 @@ ipcMain.on('select-file',(event,data)=>{
 console.log(filepath.filePaths[0])
 
   try {
-  fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
-  //fs.readFile(filepath.filePaths[0], function (err, data) {
+  //fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
+  fs.readFile(filepath.filePaths[0], 'binary', function (err, data) {
+  
+  console.log(data.length)
 
+    console.log(data)
 
   var filename = path.basename(filepath.filePaths[0])
   var mimeType = mime.getType(filename)
@@ -506,19 +509,28 @@ console.log(filepath.filePaths[0])
 
 //save file to folder
 ipcMain.on('save-file-to-folder',(event,data)=>{
+
+       console.log(data.file)
         
-       console.log(data)
-        
-        dialog.showSaveDialog({defaultPath: path.join(__dirname, '../')}).then(filepath => {
+        dialog.showSaveDialog({defaultPath: data.filename}).then(filepath => {
 
         console.log(filepath.filePath)
+        console.log(data.file)        
 
-  try {
-  fs.writeFile(filepath.filePath, data.file,  function (err, data) {
-    })
-  } catch (err) {
-    console.log(err);
-  }
+              try {
+              
+                let buffer = Buffer.from(data.file);
+                let arraybuffer = Uint8Array.from(buffer);
+                console.log(arraybuffer)
+               fs.writeFile(filepath.filePath, data.file, 'binary', function (err, data) {
+                //fs.writeFile(filepath.filePath, arraybuffer,  function (err, data) {
+              //fs.writeFile(filepath.filePath, arraybuffer, 'binary', function(err) {
+              //fs.writeFile(filepath.filePath, new Uint8Array(Buffer.from(data.file)),  function (err, data) {
+              //fs.writeFile(filepath.filePath, Buffer.from(data.file),  function (err, data) {
+                })
+              } catch (err) {
+                console.log(err);
+              }
 
       });  
       

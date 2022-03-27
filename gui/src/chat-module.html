@@ -32,7 +32,7 @@
 
 <div class="container-fluid">
   <div class="row h-100">
-    <div class="col-4 p-2">
+    <div class="col-4 p-2 bg-light">
       <! ------Chats area ---------------------------------------------------------------------->
           
         <div class="list-group" id="list-tab" role="tablist">       
@@ -52,7 +52,24 @@
         </div>
        <!-- </div>-->
         
-        
+          <div class="container-fluid mt-4 p-0">
+    
+    <div class="input-group bottom-0 w-100">
+    <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
+            <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
+            
+            <button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button"><i class="bi bi-emoji-smile"></i></button>
+            
+             <!--<input class="form-control" type="file" id="selectFiles" style="display: none;">-->
+            <button class="btn btn-sm btn-primary me-2" style="width: 3rem" id="selectFilesButton" type="button"><i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i></button>
+            
+            
+            
+            <button class="btn btn-sm btn-secondary me-2" style="width: 5rem" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
+   
+        </div>
+    
+  </div>
       
     </div>
   </div>
@@ -60,28 +77,28 @@
 
   
   
-  
+ <!-- 
   <nav class="navbar fixed-bottom navbar-light bg-light">
   <div class="container-fluid">
     
     <div class="input-group bottom-0 w-100">
     <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
             <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
+            
             <button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button"><i class="bi bi-emoji-smile"></i></button>
-            <button class="btn btn-sm btn-primary me-2" style="width: 3rem" id="selectFiles" type="button"><i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i></button>
+            
+             <input class="form-control" type="file" id="selectFiles" style="display: none;">
+            <button class="btn btn-sm btn-primary me-2" style="width: 3rem" id="selectFilesButton" type="button"><i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i></button>
+            
+            
+            
             <button class="btn btn-sm btn-secondary me-2" style="width: 5rem" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
-            
-            
-            
-            
-            
-      
-            
-            
+   
         </div>
     
   </div>
 </nav>
+-->
   
   
   

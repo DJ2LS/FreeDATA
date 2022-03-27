@@ -83,24 +83,37 @@ window.addEventListener('DOMContentLoaded', () => {
             element.style.display = "none";
         }
     })
-    document.getElementById("selectFiles").addEventListener("click", () => {
+    
+    
+
+    document.getElementById("selectFilesButton").addEventListener("click", () => {
+        //document.getElementById('selectFiles').click();
         ipcRenderer.send('select-file', {
             title: 'Title',
         });
     })
+
+
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
         document.getElementById('emojipickercontainer').style.display = "none";
         var dxcallsign = document.getElementById('chatModuleDxCall').value;
         dxcallsign = dxcallsign.toUpperCase();
         var chatmessage = document.getElementById('chatModuleMessage').value;
+
+
+        console.log(file);
+        console.log(filename);
+        console.log(filetype); 
+        
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
-        document.getElementById('selectFiles').innerHTML = `
+        
+        document.getElementById('selectFilesButton').innerHTML = `
     <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i> 
     `;
         var uuid = uuidv4();
         
-        console.log(chatmessage)
+        console.log(data_with_attachment)
         let Data = {
             command: "send_message",
             dxcallsign: dxcallsign,
@@ -111,6 +124,7 @@ window.addEventListener('DOMContentLoaded', () => {
             uuid: uuid
         };
         ipcRenderer.send('run-tnc-command', Data);
+        
         db.post({
             _id: uuid,
             timestamp: Math.floor(Date.now() / 1000),
@@ -124,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
             _attachments: {
                 [filename]: {
                     content_type: filetype,
-                    data: new Buffer(file)
+                    data: btoa(file)
                 }
             }
         }).then(function(response) {
@@ -153,16 +167,19 @@ window.addEventListener('DOMContentLoaded', () => {
     file = '';
     filename = '';
 });
+
+
+
+
 ipcRenderer.on('return-selected-files', (event, arg) => {
     filetype = arg.mime;
     file = arg.data;
     filename = arg.filename;
-    document.getElementById('selectFiles').innerHTML = `
+    document.getElementById('selectFilesButton').innerHTML = `
     <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i>
      <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
         <span class="visually-hidden">New file selected</span>
      </span>   
-    
     `;
 });
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
@@ -181,7 +198,8 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
             checksum: doc.checksum,
             type: "transmit",
             status: arg.status,
-            uuid: doc.uuid
+            uuid: doc.uuid,
+            _attachments: doc._attachments
         });
     }).then(function(response) {
         // handle response
@@ -214,7 +232,36 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
+
+            db.put({
+                _id: obj.uuid,
+                timestamp: obj.timestamp,
+                uuid: obj.uuid,
+                dxcallsign: obj.dxcallsign,
+                dxgrid: obj.dxgrid,
+                msg: obj.msg,
+                checksum: obj.checksum,
+                type: obj.type,
+                command: obj.command,
+                status: obj.status,
+                snr: obj.snr,
+            }).then(function(response) {
+                console.log("new database entry");
+                console.log(response);
+            }).catch(function(err) {
+                console.log(err);
+            });
+            db.get(item.uuid, {
+                attachments: true
+            }).then(function(doc) {
+                console.log(doc)
+                update_chat(doc);
+            }).catch(function(err) {
+                console.log(err);
+            });
+            
         } else if (item.type == 'beacon') {
+
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -225,17 +272,40 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
+
+            db.put({
+                _id: obj.uuid,
+                timestamp: obj.timestamp,
+                uuid: obj.uuid,
+                dxcallsign: obj.dxcallsign,
+                dxgrid: obj.dxgrid,
+                msg: obj.msg,
+                checksum: obj.checksum,
+                type: obj.type,
+                command: obj.command,
+                status: obj.status,
+                snr: obj.snr,
+            }).then(function(response) {
+                console.log("new database entry");
+                console.log(response);
+            }).catch(function(err) {
+                console.log(err);
+            });
+            db.get(item.uuid, {
+                attachments: true
+            }).then(function(doc) {
+                console.log(doc)
+                update_chat(doc);
+            }).catch(function(err) {
+                console.log(err);
+            });
+            
         } else if (item.arq == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
-            console.log(splitted_data)
-            //console.log(utf8.decode(splitted_data[3]));
-            // check if message
-            console.log(splitted_data[0])
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
-            //obj.uuid = item.uuid;
             obj.command = splitted_data[1];
             obj.checksum = splitted_data[2];
             // convert message to unicode from utf8 because of emojis
@@ -246,13 +316,8 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.type = 'received';
             obj.filename = utf8.decode(splitted_data[5]);
             obj.filetype = utf8.decode(splitted_data[6]);
-            obj.file = utf8.decode(splitted_data[7]);
+            obj.file = btoa(utf8.decode(splitted_data[7]));
             
-            try{
-            //var file = btoa(obj.file)
-            } catch (error) {
-            
-            }
             
             db.put({
                 _id: obj.uuid,
@@ -269,11 +334,10 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
                 _attachments: {
                     [obj.filename]: {
                         content_type: obj.filetype,
-                        data: new Buffer(obj.file)
+                        data: obj.file
                     }
                 }
             }).then(function(response) {
-                // handle response
                 console.log("new database entry");
                 console.log(response);
             }).catch(function(err) {
@@ -282,8 +346,6 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             db.get(item.uuid, {
                 attachments: true
             }).then(function(doc) {
-                // handle doc
-                // timestamp
                 console.log(doc)
                 update_chat(doc);
             }).catch(function(err) {
@@ -299,32 +361,33 @@ update_chat = function(obj) {
     var timestamp = dateFormat.format(obj.timestamp * 1000);
     var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
     var dxgrid = obj.dxgrid;
-    if (typeof(obj._attachments) !== 'undefined') {
+    try{
+        console.log(Object.keys(obj._attachments)[0].length)
+    if (typeof(obj._attachments) !== 'undefined' && Object.keys(obj._attachments)[0].length > 0) {
         //var filename = obj._attachments;
         var filename = Object.keys(obj._attachments)[0]
         var filetype = filename.split('.')[1]
-        var filesize = filename.length + " Bytes";
+        var filesize = obj._attachments[filename]["length"] + " Bytes";
         var fileheader = `
-        <div class="card-header text-end p-0 mb-0">
+        <div class="card-header text-end p-0 mb-0 hover-overlay" id="save-file-msg-${obj._id}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     
                     <span class="badge bg-secondary text-white p-1">${filename}</span>
                     <span class="badge bg-secondary text-white p-1">${filesize}</span>
                             <i class="bi bi-filetype-${filetype}" style="font-size: 3rem; color: black;"></i> 
-                            
-                            <button type="button btn-sm" id="save-file-msg-${obj._id}" class="btn btn-light"><i class="bi bi-box-arrow-in-down" style="font-size: 0.9rem; color: black;"></i></button>
-                            
-
                         </p>
-       
-       
-       
         </div>
         `;
     } else {
         var filename = ''
         var fileheader = ''
     }
+    
+     } catch {
+        console.log("error with database parsing...")
+    }
+    
+    
     // CALLSIGN LIST
     if (!(document.getElementById('chat-' + dxcallsign + '-list'))) {
         var new_callsign = `
@@ -362,6 +425,8 @@ update_chat = function(obj) {
     } else {
         var status = '<i class="bi bi-question-square"></i>';
     }
+    
+
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
@@ -371,6 +436,7 @@ update_chat = function(obj) {
             `;
         }
         if (obj.type == 'beacon') {
+       
             var new_message = `
                 <div class="mt-3 p-1 rounded mb-0 w-100 bg-info" id="msg-${obj._id}">         
                     <p class="font-monospace text-small text-white mb-0 text-break">BEACON - snr: ${obj.snr} - ${timestampShort}     </p>
@@ -403,10 +469,10 @@ update_chat = function(obj) {
                       <div class="card-body p-0 text-right bg-primary">
                         <p class="card-text p-2 mb-0 text-white text-break text-wrap">${obj.msg}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
-                            <span class="badge bg-light text-dark">${timestamp}</span>  
+                            <span class="text-light" style="font-size: 0.7rem;">${timestamp}</span>  
                             <span class="badge bg-light text-dark">${status}</span>
 
-                            <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-light"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
+                            <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
                             
                         </p>
                       </div>
@@ -427,8 +493,15 @@ update_chat = function(obj) {
     // CREATE SAVE TO FOLDER EVENT LISTENER
     if ((document.getElementById('save-file-msg-' + obj._id))) {
         document.getElementById('save-file-msg-' + obj._id).addEventListener("click", () => {
-            saveFileToFilder(obj._id)
+            saveFileToFolder(obj._id)
         });
+        document.getElementById('save-file-msg-' + obj._id).addEventListener("mouseover", () => {
+            document.getElementById('save-file-msg-' + obj._id).style.backgroundColor = "rgba(0,0,0,.1)";
+        });
+        document.getElementById('save-file-msg-' + obj._id).addEventListener("mouseleave", () => {
+            document.getElementById('save-file-msg-' + obj._id).style.backgroundColor = "rgba(0,0,0,.03)";
+        });
+
     }
     // CREATE RESEND MSG EVENT LISTENER
     if ((document.getElementById('retransmit-msg-' + obj._id))) {
@@ -438,20 +511,32 @@ update_chat = function(obj) {
             }).then(function(doc) {
                 // handle doc
                 console.log(doc)
+                
                 var filename = Object.keys(obj._attachments)[0]
-                var filetype = Object.keys(obj._attachments)[0].content_type
-                var file = Object.keys(obj._attachments)[0].data
+                var filetype = obj._attachments[filename]["content_type"]
+                //var file = atob(obj._attachments[filename]["data"])
+
+                db.getAttachment(obj._id, filename).then(function (data) {
+                console.log(data)
+                var file = atob(data)
+               
                 var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
                 let Data = {
-                    command: doc.command,
+                    command: "send_message",
                     dxcallsign: doc.dxcallsign,
-                    mode: doc.mode,
-                    frames: doc.frames,
+                    mode: 255,
+                    frames: 1,
                     data: data_with_attachment,
                     checksum: doc.checksum,
                     uuid: doc.uuid
                 };
+                console.log(Data)
                 ipcRenderer.send('run-tnc-command', Data);
+                });
+                
+                
+                
+                
             }).catch(function(err) {
                 console.log(err);
             });
@@ -483,29 +568,32 @@ function getObjByID(id) {
     "_rev": "1-6df2d7227c4f89f8a3a2b4978661dd79"
 }
 **/
-db.get(id, {
-        attachments: true
-    }).then(function(doc) {
-        return obj
-    }).catch(function(err) {
-        console.log(err);
-        return false
-    });
-}
+    db.get(id, {
+            attachments: true
+        }).then(function(doc) {
+            return obj
+        }).catch(function(err) {
+            console.log(err);
+            return false
+        });
+    }
 
-function saveFileToFilder(id) {
+function saveFileToFolder(id) {
     db.get(id,{attachments: true}).then(function(obj) {
         console.log(obj)
         console.log(Object.keys(obj._attachments)[0].content_type)
         var filename = Object.keys(obj._attachments)[0]
         var filetype = filename.content_type
-        var file = Object.keys(obj._attachments)[0].data
- 
+        var file = filename.data
+        console.log(file)
+        console.log(filename.data)
 
 db.getAttachment(id, filename).then(function (data) {
   // handle result
-  console.log(data)
+  console.log(data.length)
   
+  //data = new Blob([data.buffer], { type: 'image/png' } /* (1) */) 
+  console.log(data)
   
   
   let Data = {
