@@ -32,6 +32,7 @@ const split_char = '\0;'
 var filetype = '';
 var file = '';
 var filename = '';
+var callsign_counter = 0
 var chatDB = path.join(configFolder, 'chatDB')
 // ---- MessageDB
 var PouchDB = require('pouchdb');
@@ -390,8 +391,14 @@ update_chat = function(obj) {
     
     // CALLSIGN LIST
     if (!(document.getElementById('chat-' + dxcallsign + '-list'))) {
+        // increment callsign counter
+        callsign_counter++;
+        
+        if (callsign_counter == 1){
+            var callsign_selected = 'active show'
+        }
         var new_callsign = `
-            <a class="list-group-item list-group-item-action rounded-4 border-1 mb-2" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
+            <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
                       <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1">${dxcallsign}</h5>
                         <small>${dxgrid}</small>
@@ -402,7 +409,7 @@ update_chat = function(obj) {
             `;
         document.getElementById('list-tab').insertAdjacentHTML("beforeend", new_callsign);
         var message_area = `
-            <div class="tab-pane fade" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>  
+            <div class="tab-pane fade ${callsign_selected}" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>  
             `;
         document.getElementById('nav-tabContent').insertAdjacentHTML("beforeend", message_area);
         // create eventlistener for listening on clicking on a callsign
@@ -414,38 +421,40 @@ update_chat = function(obj) {
         });
     }
     // APPEND MESSAGES TO CALLSIGN
+    
+    
     if (obj.status == 'transmit') {
-        var status = '<i class="bi bi-arrow-left"></i>';
+        var status = '<i class="bi bi-check" style="font-size:1rem;"></i>';
     } else if (obj.status == 'transmitting') {
-        var status = '<i class="bi bi-arrow-left-right"></i>';
+        var status = '<i class="bi bi-arrow-left-right" style="font-size:1rem;"></i>';
     } else if (obj.status == 'failed') {
-        var status = '<i class="bi bi-x-square"></i>';
+        var status = '<i class="bi bi-exclamation-circle" style="font-size:1rem;"></i>';
     } else if (obj.status == 'success') {
-        var status = '<i class="bi bi-check-square"></i>';
+        var status = '<i class="bi bi-check-all" style="font-size:1rem;"></i>';
     } else {
-        var status = '<i class="bi bi-question-square"></i>';
+        var status = '<i class="bi bi-question" style="font-size:1rem;"></i>';
     }
     
 
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
-                <div class="mt-3 p-1 rounded mb-0 w-100 bg-secondary" id="msg-${obj._id}">         
-                    <p class="font-monospace text-small text-white mb-0 text-break">PING ACK - snr: ${obj.snr} - ${timestampShort}     </p>
+                <div class="m-1 p-0 rounded-pill w-100  bg-secondary" id="msg-${obj._id}">         
+                    <p class="font-monospace text-small text-white mb-0 text-break"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestampShort}     </p>
                 </div>
             `;
         }
         if (obj.type == 'beacon') {
        
             var new_message = `
-                <div class="mt-3 p-1 rounded mb-0 w-100 bg-info" id="msg-${obj._id}">         
-                    <p class="font-monospace text-small text-white mb-0 text-break">BEACON - snr: ${obj.snr} - ${timestampShort}     </p>
+                <div class="m-1 p-0 rounded-pill w-100  bg-info" id="msg-${obj._id}">         
+                    <p class="font-monospace text-small text-white text-break"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestampShort}     </p>
                 </div>
             `;
         }
         if (obj.type == 'received') {
             var new_message = `
-                    <div class="mt-3 mb-0 w-75" id="msg-${obj._id}">            
+                    <div class="mt-3   rounded-3 mb-0 w-75" id="msg-${obj._id}">            
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
@@ -461,16 +470,17 @@ update_chat = function(obj) {
                 `;
         }
         if (obj.type == 'transmit') {
+
             var new_message = `
-                <div class="ml-auto mt-3 mb-0 w-75" style="margin-left: auto;">
+                <div class="ml-auto  rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
-                    <div class="card rounded" id="msg-${obj._id}">
+                    <div class="card" id="msg-${obj._id}">
                     ${fileheader}
                       <div class="card-body p-0 text-right bg-primary">
                         <p class="card-text p-2 mb-0 text-white text-break text-wrap">${obj.msg}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
-                            <span class="text-light" style="font-size: 0.7rem;">${timestamp}</span>  
-                            <span class="badge bg-light text-dark">${status}</span>
+                            <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>  
+                            <span class=" text-white" style="font-size:0.8rem;">${status}</span>
 
                             <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
                             
