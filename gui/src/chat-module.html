@@ -40,8 +40,41 @@
 
     </div>
     <div class="col-8 border vh-100 ">
+   
+      <! ------ chat navbar ---------------------------------------------------------------------->   
+<div class="container-fluid m-2 p-0">
+    
+    <div class="input-group bottom-0">
+  
+            <button class="btn btn-sm btn-secondary me-2" id="ping" type="button">Ping</button>
+
+             
+       <button id="chatSettingsDropDown" type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+      <i class="bi bi-three-dots-vertical"></i>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
+      <li><a class="dropdown-item bg-danger text-white" id="delete_selected_chat" href="#">Delete chat</a></li>
+
+    </ul>
+        
+        </div>
+
+
+ 
+    
+  </div>
+   
       <! ------messages area ---------------------------------------------------------------------->
-        <div class="container overflow-auto" id="message-container" style="height: 90%">
+        <div class="container overflow-auto" id="message-container" style="height: calc(100% - 105px);">
+
+
+
+
+  
+  
+  
+
+
 
          <div class="tab-content" id="nav-tabContent">
         </div>       
@@ -51,11 +84,10 @@
 
         </div>
        <!-- </div>-->
-        
-          <div class="container-fluid mt-4 p-0">
+          <div class="container-fluid mt-2 p-0">
     
     <div class="input-group bottom-0 w-100">
-    <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase" id="chatModuleDxCall" placeholder="DX CALL"></input>
+    <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>
             <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
             
             <button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button"><i class="bi bi-emoji-smile"></i></button>

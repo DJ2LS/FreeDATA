@@ -8,7 +8,7 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-) 
 """
 
-VERSION = '0.2.1-alpha'
+VERSION = '0.3.0-alpha'
 
 # DAEMON
 DAEMONPORT = 3001
@@ -73,7 +73,7 @@ AUDIO_INPUT_DEVICES = []
 AUDIO_OUTPUT_DEVICES = []
 AUDIO_INPUT_DEVICE = -2
 AUDIO_OUTPUT_DEVICE = -2
-BUFFER_OVERFLOW_COUNTER = [0,0,0]
+BUFFER_OVERFLOW_COUNTER = [0,0,0,0,0]
 
 AUDIO_RMS = 0
 FFT = [0]

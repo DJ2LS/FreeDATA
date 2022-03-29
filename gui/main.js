@@ -181,10 +181,10 @@ function createWindow() {
     win.loadFile('src/index.html')
     
     chat = new BrowserWindow({
-        height: 900,
-        width: 600,
+        height: 600,
+        width: 1000,
         show: false,
-        parent: win,
+        //parent: win,
         webPreferences: {
             preload: require.resolve('./preload-chat.js'),
             nodeIntegration: true,
@@ -200,7 +200,7 @@ function createWindow() {
         height: 900,
         width: 600,
         show: false,
-        parent: win,
+        //parent: win,
         webPreferences: {
             preload: require.resolve('./preload-log.js'),
             nodeIntegration: true,

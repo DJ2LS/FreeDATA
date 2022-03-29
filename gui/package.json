@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.2.0-alpha.1",
+  "version": "0.3.0-alpha.1",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -28,14 +28,14 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
-    "bootstrap": "^5.1.0",
+    "bootstrap": "^5.1.3",
     "bootstrap-icons": "^1.8.1",
     "bootswatch": "^5.1.3",
-    "chart.js": "^3.5.1",
-    "chartjs-plugin-annotation": "^1.0.2",
+    "chart.js": "^3.7.1",
+    "chartjs-plugin-annotation": "^1.4.0",
     "electron-log": "^4.4.6",
     "electron-updater": "^5.0.0",
-    "emoji-picker-element": "^1.11.0",
+    "emoji-picker-element": "^1.11.1",
     "emoji-picker-element-data": "^1.3.0",
     "mime": "^3.0.0",
     "pouchdb": "^7.2.2",
@@ -45,7 +45,7 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "electron": "^17.0.0",
+    "electron": "^18.0.0",
     "electron-builder": "^22.14.13"
   },
   "build": {

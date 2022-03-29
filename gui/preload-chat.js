@@ -29,10 +29,13 @@ const dateFormatShort = new Intl.DateTimeFormat('en-GB', {
 // split character
 const split_char = '\0;'
 // global for our selected file we want to transmit
+// ----------------- some chat globals
 var filetype = '';
 var file = '';
 var filename = '';
-var callsign_counter = 0
+var callsign_counter = 0;
+var selected_callsign = '';
+// -----------------------------------
 var chatDB = path.join(configFolder, 'chatDB')
 // ---- MessageDB
 var PouchDB = require('pouchdb');
@@ -84,15 +87,50 @@ window.addEventListener('DOMContentLoaded', () => {
             element.style.display = "none";
         }
     })
-    
-    
-
+    document.getElementById("delete_selected_chat").addEventListener("click", () => {
+        db.find({
+            selector: {
+                dxcallsign: selected_callsign
+            }
+        }).then(function(result) {
+            // handle result
+            if (typeof(result) !== 'undefined') {
+                result.docs.forEach(function(item) {
+                    console.log(item)
+                    db.get(item._id).then(function(doc) {
+                        return db.remove(doc);
+                    });
+                    location.reload();
+                    
+                });
+            }
+        }).catch(function(err) {
+            console.log(err);
+        });
+    })
     document.getElementById("selectFilesButton").addEventListener("click", () => {
         //document.getElementById('selectFiles').click();
         ipcRenderer.send('select-file', {
             title: 'Title',
-        });
+        }); 
+    })    
+    
+    document.getElementById("ping").addEventListener("click", () => {
+        ipcRenderer.send('run-tnc-command', {
+            command: 'ping', dxcallsign: selected_callsign
+        }); 
     })
+    
+    
+    document.addEventListener("keyup", function(event) {
+    // Number 13 == Enter
+        if (event.keyCode === 13) {
+            // Cancel the default action, if needed
+            event.preventDefault();
+            // Trigger the button element with a click
+            document.getElementById("sendMessage").click();
+        }
+    }); 
 
 
     // SEND MSG
@@ -101,19 +139,14 @@ window.addEventListener('DOMContentLoaded', () => {
         var dxcallsign = document.getElementById('chatModuleDxCall').value;
         dxcallsign = dxcallsign.toUpperCase();
         var chatmessage = document.getElementById('chatModuleMessage').value;
-
-
         console.log(file);
         console.log(filename);
-        console.log(filetype); 
-        
+        console.log(filetype);
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
-        
         document.getElementById('selectFilesButton').innerHTML = `
     <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i> 
     `;
         var uuid = uuidv4();
-        
         console.log(data_with_attachment)
         let Data = {
             command: "send_message",
@@ -125,7 +158,6 @@ window.addEventListener('DOMContentLoaded', () => {
             uuid: uuid
         };
         ipcRenderer.send('run-tnc-command', Data);
-        
         db.post({
             _id: uuid,
             timestamp: Math.floor(Date.now() / 1000),
@@ -168,10 +200,6 @@ window.addEventListener('DOMContentLoaded', () => {
     file = '';
     filename = '';
 });
-
-
-
-
 ipcRenderer.on('return-selected-files', (event, arg) => {
     filetype = arg.mime;
     file = arg.data;
@@ -233,7 +261,6 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
-
             db.put({
                 _id: obj.uuid,
                 timestamp: obj.timestamp,
@@ -257,12 +284,11 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).then(function(doc) {
                 console.log(doc)
                 update_chat(doc);
+
             }).catch(function(err) {
                 console.log(err);
             });
-            
         } else if (item.type == 'beacon') {
-
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -273,7 +299,6 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
-
             db.put({
                 _id: obj.uuid,
                 timestamp: obj.timestamp,
@@ -295,12 +320,11 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             db.get(item.uuid, {
                 attachments: true
             }).then(function(doc) {
-                console.log(doc)
+                console.log(doc);
                 update_chat(doc);
             }).catch(function(err) {
                 console.log(err);
             });
-            
         } else if (item.arq == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
@@ -318,8 +342,6 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.filename = utf8.decode(splitted_data[5]);
             obj.filetype = utf8.decode(splitted_data[6]);
             obj.file = btoa(utf8.decode(splitted_data[7]));
-            
-            
             db.put({
                 _id: obj.uuid,
                 timestamp: obj.timestamp,
@@ -344,16 +366,17 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
-            db.get(item.uuid, {
+            db.get(obj.uuid, {
                 attachments: true
             }).then(function(doc) {
-                console.log(doc)
+                console.log(doc);
                 update_chat(doc);
             }).catch(function(err) {
                 console.log(err);
             });
         }
     });
+    //window.location = window.location;
 });
 // Update chat list
 update_chat = function(obj) {
@@ -362,14 +385,14 @@ update_chat = function(obj) {
     var timestamp = dateFormat.format(obj.timestamp * 1000);
     var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
     var dxgrid = obj.dxgrid;
-    try{
+    try {
         console.log(Object.keys(obj._attachments)[0].length)
-    if (typeof(obj._attachments) !== 'undefined' && Object.keys(obj._attachments)[0].length > 0) {
-        //var filename = obj._attachments;
-        var filename = Object.keys(obj._attachments)[0]
-        var filetype = filename.split('.')[1]
-        var filesize = obj._attachments[filename]["length"] + " Bytes";
-        var fileheader = `
+        if (typeof(obj._attachments) !== 'undefined' && Object.keys(obj._attachments)[0].length > 0) {
+            //var filename = obj._attachments;
+            var filename = Object.keys(obj._attachments)[0]
+            var filetype = filename.split('.')[1]
+            var filesize = obj._attachments[filename]["length"] + " Bytes";
+            var fileheader = `
         <div class="card-header text-end p-0 mb-0 hover-overlay" id="save-file-msg-${obj._id}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     
@@ -379,23 +402,21 @@ update_chat = function(obj) {
                         </p>
         </div>
         `;
-    } else {
-        var filename = ''
-        var fileheader = ''
-    }
-    
-     } catch {
+        } else {
+            var filename = ''
+            var fileheader = ''
+        }
+    } catch {
         console.log("error with database parsing...")
     }
-    
-    
     // CALLSIGN LIST
     if (!(document.getElementById('chat-' + dxcallsign + '-list'))) {
         // increment callsign counter
         callsign_counter++;
-        
-        if (callsign_counter == 1){
+        if (callsign_counter == 1) {
             var callsign_selected = 'active show'
+            document.getElementById('chatModuleDxCall').value = dxcallsign;
+            selected_callsign = dxcallsign;
         }
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
@@ -415,14 +436,13 @@ update_chat = function(obj) {
         // create eventlistener for listening on clicking on a callsign
         document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
             document.getElementById('chatModuleDxCall').value = dxcallsign;
+            selected_callsign = dxcallsign;
             // scroll to bottom    
             var element = document.getElementById("message-container");
             element.scrollTo(0, element.scrollHeight);
         });
     }
     // APPEND MESSAGES TO CALLSIGN
-    
-    
     if (obj.status == 'transmit') {
         var status = '<i class="bi bi-check" style="font-size:1rem;"></i>';
     } else if (obj.status == 'transmitting') {
@@ -434,8 +454,6 @@ update_chat = function(obj) {
     } else {
         var status = '<i class="bi bi-question" style="font-size:1rem;"></i>';
     }
-    
-
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
@@ -445,7 +463,6 @@ update_chat = function(obj) {
             `;
         }
         if (obj.type == 'beacon') {
-       
             var new_message = `
                 <div class="m-1 p-0 rounded-pill w-100  bg-info" id="msg-${obj._id}">         
                     <p class="font-monospace text-small text-white text-break"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestampShort}     </p>
@@ -470,7 +487,6 @@ update_chat = function(obj) {
                 `;
         }
         if (obj.type == 'transmit') {
-
             var new_message = `
                 <div class="ml-auto  rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
@@ -511,47 +527,47 @@ update_chat = function(obj) {
         document.getElementById('save-file-msg-' + obj._id).addEventListener("mouseleave", () => {
             document.getElementById('save-file-msg-' + obj._id).style.backgroundColor = "rgba(0,0,0,.03)";
         });
-
     }
     // CREATE RESEND MSG EVENT LISTENER
-    if ((document.getElementById('retransmit-msg-' + obj._id))) {
+    // check if element exists and if we already created NOT created an event listener
+    if (document.getElementById('retransmit-msg-' + obj._id) && !document.getElementById('retransmit-msg-' + obj._id).hasAttribute('listenerOnClick')) {
+
         document.getElementById('retransmit-msg-' + obj._id).addEventListener("click", () => {
+            // set Attribute to determine if we already created an EventListener for this element
+            document.getElementById('retransmit-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
+        
+        
             db.get(obj._id, {
                 attachments: true
             }).then(function(doc) {
                 // handle doc
                 console.log(doc)
-                
                 var filename = Object.keys(obj._attachments)[0]
                 var filetype = obj._attachments[filename]["content_type"]
                 //var file = atob(obj._attachments[filename]["data"])
-
-                db.getAttachment(obj._id, filename).then(function (data) {
-                console.log(data)
-                var file = atob(data)
-               
-                var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
-                let Data = {
-                    command: "send_message",
-                    dxcallsign: doc.dxcallsign,
-                    mode: 255,
-                    frames: 1,
-                    data: data_with_attachment,
-                    checksum: doc.checksum,
-                    uuid: doc.uuid
-                };
-                console.log(Data)
-                ipcRenderer.send('run-tnc-command', Data);
+                db.getAttachment(obj._id, filename).then(function(data) {
+                    console.log(data)
+                    var file = atob(data)
+                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
+                    let Data = {
+                        command: "send_message",
+                        dxcallsign: doc.dxcallsign,
+                        mode: 255,
+                        frames: 1,
+                        data: data_with_attachment,
+                        checksum: doc.checksum,
+                        uuid: doc.uuid
+                    };
+                    console.log(Data)
+                    ipcRenderer.send('run-tnc-command', Data);
                 });
-                
-                
-                
-                
             }).catch(function(err) {
                 console.log(err);
             });
         });
+
     };
+    //window.location = window.location
 }
 
 function getObjByID(id) {
@@ -579,17 +595,19 @@ function getObjByID(id) {
 }
 **/
     db.get(id, {
-            attachments: true
-        }).then(function(doc) {
-            return obj
-        }).catch(function(err) {
-            console.log(err);
-            return false
-        });
-    }
+        attachments: true
+    }).then(function(doc) {
+        return obj
+    }).catch(function(err) {
+        console.log(err);
+        return false
+    });
+}
 
 function saveFileToFolder(id) {
-    db.get(id,{attachments: true}).then(function(obj) {
+    db.get(id, {
+        attachments: true
+    }).then(function(obj) {
         console.log(obj)
         console.log(Object.keys(obj._attachments)[0].content_type)
         var filename = Object.keys(obj._attachments)[0]
@@ -597,35 +615,23 @@ function saveFileToFolder(id) {
         var file = filename.data
         console.log(file)
         console.log(filename.data)
-
-db.getAttachment(id, filename).then(function (data) {
-  // handle result
-  console.log(data.length)
-  
-  //data = new Blob([data.buffer], { type: 'image/png' } /* (1) */) 
-  console.log(data)
-  
-  
-  let Data = {
-            file: data,
-            filename: filename,
-            filetype: filetype,
-        }
-        console.log(Data)
-        ipcRenderer.send('save-file-to-folder', Data);
+        db.getAttachment(id, filename).then(function(data) {
+            // handle result
+            console.log(data.length)
+            //data = new Blob([data.buffer], { type: 'image/png' } /* (1) */) 
+            console.log(data)
+            let Data = {
+                file: data,
+                filename: filename,
+                filetype: filetype,
+            }
+            console.log(Data)
+            ipcRenderer.send('save-file-to-folder', Data);
+        }).catch(function(err) {
+            console.log(err);
+            return false
+        });
     }).catch(function(err) {
         console.log(err);
-        return false
     });
-  
-  
-  
-  
-}).catch(function (err) {
-  console.log(err);
-});
-
-
-        
-        
 }
