@@ -42,6 +42,7 @@ jobs:
           pip3 install pyserial
           pip3 install numpy
           pip3 install structlog
+          pip3 install sounddevice
 
 
       #- name: Build Hamlib Python Binding
