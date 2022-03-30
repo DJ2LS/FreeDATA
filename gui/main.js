@@ -213,8 +213,12 @@ function createWindow() {
 
     // Emitted when the window is closed.
     logViewer.on('close', function(evt) {
+        if (logViewer !== null){
         evt.preventDefault();
         logViewer.hide();
+        } else {
+        this.close()
+        }
     })
 
 
