@@ -163,9 +163,10 @@ class RF():
                                          output_device_index=static.AUDIO_OUTPUT_DEVICE,
                                          stream_callback=self.audio_callback
                                          )
-            '''
-            self.stream = sd.RawStream(channels=1, dtype='int16', callback=self.callback, device=static.AUDIO_OUTPUT_DEVICE, samplerate = self.AUDIO_SAMPLE_RATE_RX, blocksize=4800)
-            self.stream.start()   
+            ''' 
+            
+            self.stream = sd.RawStream(channels=1, dtype='int16', callback=self.callback, device=(static.AUDIO_INPUT_DEVICE, static.AUDIO_OUTPUT_DEVICE), samplerate = self.AUDIO_SAMPLE_RATE_RX, blocksize=4800)
+            
             
             atexit.register(self.stream.stop) 
             
@@ -178,6 +179,7 @@ class RF():
         try:                        
             structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
             #self.audio_stream.start_stream()
+            self.stream.start()   
 
         except Exception as e:
             structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
