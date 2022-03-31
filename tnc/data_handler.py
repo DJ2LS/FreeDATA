@@ -1430,7 +1430,10 @@ class DATA():
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
-        modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        if static.ENABLE_FSK:
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        else:
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
@@ -1467,7 +1470,11 @@ class DATA():
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
-        modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        
+        if static.ENABLE_FSK:
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        else:
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
@@ -1556,7 +1563,13 @@ class DATA():
                         txbuffer = [beacon_frame]
 
                         static.TRANSMITTING = True
-                        modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+
+                        if static.ENABLE_FSK:
+                            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+                        else:
+                            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                                        
+                        
                         # wait while transmitting
                         while static.TRANSMITTING:
                             time.sleep(0.01)
@@ -1606,7 +1619,11 @@ class DATA():
         txbuffer = [cq_frame]
         print(txbuffer)
         static.TRANSMITTING = True
-        modem.MODEM_TRANSMIT_QUEUE.put([14,2,500,txbuffer])
+
+        if static.ENABLE_FSK:
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',2,500,txbuffer])
+        else:
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)

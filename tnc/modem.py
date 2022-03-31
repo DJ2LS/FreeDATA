@@ -40,6 +40,7 @@ RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 RECEIVE_FSK_LDPC_1 = False
 
+
 class RF():
     """ """
 
@@ -274,14 +275,14 @@ class RF():
 
             # avoid buffer overflow by filling only if buffer not full and selected datachannel mode
             if not self.fsk_ldpc_buffer_0.nbuffer+length_x > self.fsk_ldpc_buffer_0.size:
-                #if RECEIVE_FSK_LDPC_0:                
+                if static.ENABLE_FSK:                
                     self.fsk_ldpc_buffer_0.push(x)
             else:
                 static.BUFFER_OVERFLOW_COUNTER[3] += 1
 
             # avoid buffer overflow by filling only if buffer not full and selected datachannel mode
             if not self.fsk_ldpc_buffer_1.nbuffer+length_x > self.fsk_ldpc_buffer_1.size:
-                if RECEIVE_FSK_LDPC_1:                
+                if RECEIVE_FSK_LDPC_1 and static.ENABLE_FSK:                
                     self.fsk_ldpc_buffer_1.push(x)
             else:
                 static.BUFFER_OVERFLOW_COUNTER[4] += 1
@@ -481,7 +482,7 @@ class RF():
     def audio_fsk_ldpc_0(self):                
         """ """
         nbytes_fsk_ldpc_0 = 0
-        while self.stream.active:
+        while self.stream.active and static.ENABLE_FSK:
             threading.Event().wait(0.01)
             while self.fsk_ldpc_buffer_0.nbuffer >= self.fsk_ldpc_nin_0:
                 # demodulate audio    
@@ -496,7 +497,7 @@ class RF():
     def audio_fsk_ldpc_1(self):                
         """ """
         nbytes_fsk_ldpc_1 = 0
-        while self.stream.active:
+        while self.stream.active and static.ENABLE_FSK:
             threading.Event().wait(0.01)
             while self.fsk_ldpc_buffer_1.nbuffer >= self.fsk_ldpc_nin_1:
                 # demodulate audio    

@@ -488,9 +488,11 @@ def process_daemon_commands(data):
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
             enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
             enable_fft = str(received_json["parameter"][0]["enable_fft"])
+            enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
             low_bandwith_mode = str(received_json["parameter"][0]["low_bandwith_mode"])
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
+            
 
             DAEMON_QUEUE.put(['STARTTNC', \
                                     mycall, \
@@ -512,7 +514,8 @@ def process_daemon_commands(data):
                                     enable_fft, \
                                     low_bandwith_mode, \
                                     tuning_range_fmin, \
-                                    tuning_range_fmax \
+                                    tuning_range_fmax, \
+                                    enable_fsk \
                                     ])
             command_response("start_tnc", True)
             

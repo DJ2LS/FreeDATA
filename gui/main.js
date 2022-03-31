@@ -67,6 +67,7 @@ const configDefaultSettings = '{\
                   "rigctld_ip" : "127.0.0.1",\
                   "enable_scatter" : "False",\
                   "enable_fft" : "False",\
+                  "enable_fsk" : "False",\
                   "low_bandwith_mode" : "False",\
                   "theme" : "default",\
                   "screen_height" : 430,\

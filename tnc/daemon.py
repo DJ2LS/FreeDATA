@@ -209,13 +209,17 @@ class DAEMON():
                     if data[18] == 'True':
                         options.append('--500hz')
 
+                                         
                     options.append('--tuning_range_fmin')
                     options.append(data[19])
                     
                     options.append('--tuning_range_fmax')
                     options.append(data[20])
 
-                    
+                    if data[21] == 'True':
+                        options.append('--fsk')
+                        
+                                            
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
                     try:

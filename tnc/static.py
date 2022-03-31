@@ -66,6 +66,7 @@ SNR = 0
 FREQ_OFFSET = 0
 SCATTER = []
 ENABLE_SCATTER = False
+ENABLE_FSK = False
 # ---------------------------------
 
 # Audio Defaults
