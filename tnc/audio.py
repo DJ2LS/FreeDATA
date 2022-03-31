@@ -96,7 +96,6 @@ def fetch_audio_devices(input_devices, output_devices):
     sd._terminate()
     sd._initialize()
         
-        
     devices = sd.query_devices(device=None, kind=None)
     index = 0
     for device in devices:
@@ -108,6 +107,7 @@ def fetch_audio_devices(input_devices, output_devices):
             #maxOutputChannels = p.get_device_info_by_host_api_device_index(0, i).get('maxOutputChannels')
             #name = p.get_device_info_by_host_api_device_index(0, i).get('name')
             name = device["name"]
+            
             maxOutputChannels = device["max_output_channels"]
             maxInputChannels = device["max_input_channels"]
 

@@ -229,9 +229,14 @@ function createWindow() {
 
     // Emitted when the window is closed.
     win.on('closed', function() {
+        console.log("closing all windows.....")
+        /*
         win = null;
         chat = null;
         logViewer = null;
+        */
+        close_all();
+        
     })
     
     
@@ -357,52 +362,10 @@ app.whenReady().then(() => {
     })
 })
 
+
 app.on('window-all-closed', () => {
-    
-    
-    // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
-    try {
-        daemonProcess.kill();
-    } catch (e) {   
-        mainLog.error(e)
-    }
-    
+    close_all();
 
-    mainLog.warn('closing tnc');
-    
-    if(os.platform()=='win32' || os.platform()=='win64'){
-        exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
-    }
-    
-    if(os.platform()=='linux'){
-        
-        exec('pkill', ['-9', 'freedata-tnc'])
-        
-        // on macOS we need to kill the daemon as well. If we are not doing this, 
-        // the daemon wont startup again because the socket is already in use
-        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
-        exec('pkill', ['-9', 'freedata-daemon'])        
-    }
-
-    if(os.platform()=='darwin'){
-
-        exec('pkill', ['-9', 'freedata-tnc'])
-        
-        // on macOS we need to kill the daemon as well. If we are not doing this, 
-        // the daemon wont startup again because the socket is already in use
-        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
-        exec('pkill', ['-9', 'freedata-daemon']) 
-        
-    }
-        
-    /*
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-    */
-    mainLog.warn('quitting app');
-    app.quit();
-    
 })
 
 // IPC HANDLER
@@ -608,5 +571,59 @@ autoUpdater.on('error', (error) => {
 });
 
 
+
+
+function close_all() {
+
+    // function for closing the application with closing all used processes
+
+    // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
+    try {
+        daemonProcess.kill();
+    } catch (e) {   
+        mainLog.error(e)
+    }
+    
+
+    mainLog.warn('closing tnc');
+    
+    if(os.platform()=='win32' || os.platform()=='win64'){
+        exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
+    }
+    
+    if(os.platform()=='linux'){
+        
+        exec('pkill', ['-9', 'freedata-tnc'])
+        
+        // on macOS we need to kill the daemon as well. If we are not doing this, 
+        // the daemon wont startup again because the socket is already in use
+        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
+        exec('pkill', ['-9', 'freedata-daemon'])        
+    }
+
+    if(os.platform()=='darwin'){
+
+        exec('pkill', ['-9', 'freedata-tnc'])
+        
+        // on macOS we need to kill the daemon as well. If we are not doing this, 
+        // the daemon wont startup again because the socket is already in use
+        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
+        exec('pkill', ['-9', 'freedata-daemon']) 
+        
+    }
+        
+    /*
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+    */
+    mainLog.warn('quitting app');
+    
+    win.destroy();
+    chat.destroy();
+    logViewer.destroy();
+    
+    app.quit();
+}
 
 
