@@ -161,6 +161,12 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
     document.getElementById("tuning_range_fmax").value = config.tuning_range_fmax;
     
+    
+    // Update TX Audio Level
+    document.getElementById("audioLevelTXvalue").innerHTML = config.tx_audio_level;
+    document.getElementById("audioLevelTX").value = config.tx_audio_level;    
+    
+    
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
         document.getElementById("waterfall-scatter-switch2").checked = false;
@@ -378,14 +384,35 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             });
         
     
-
+    // on change tnc port
     document.getElementById("tnc_port").addEventListener("change", () => {
         config.tnc_port = document.getElementById("tnc_port").value;
         config.daemon_port = parseInt(document.getElementById("tnc_port").value) + 1;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     });
+    
+    // on change audio TX Level
+    document.getElementById("audioLevelTX").addEventListener("change", () => {
+        var tx_audio_level = document.getElementById("audioLevelTX").value;
+        document.getElementById("audioLevelTXvalue").innerHTML = tx_audio_level;
+        config.tx_audio_level = tx_audio_level;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
+            let Data = {
+                command: "set_tx_audio_level",
+                tx_audio_level: tx_audio_level
+            };
+            ipcRenderer.send('run-tnc-command', Data); 
+
+    });
+    document.getElementById("sendTestFrame").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "send_test_frame"
+            };
+            ipcRenderer.send('run-tnc-command', Data);        
+    });
     // saveMyCall button clicked
     document.getElementById("saveMyCall").addEventListener("click", () => {
         callsign = document.getElementById("myCall").value;
@@ -644,7 +671,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             var radiocontrol = 'disabled';
         }     
 
-
+        var tx_audio_level = document.getElementById("audioLevelTX").value;
 
         
         config.radiocontrol = radiocontrol;
@@ -668,6 +695,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.enable_fft = enable_fft;
         config.enable_fsk = enable_fsk;
         config.low_bandwith_mode = low_bandwith_mode;
+        config.tx_audio_level = tx_audio_level;
         
  
         
@@ -688,7 +716,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level);
         
         
     })
@@ -1782,6 +1810,14 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'stop_transmission') {
         sock.stopTransmission();
     }
+    if (arg.command == 'set_tx_audio_level') {
+        sock.setTxAudioLevel(arg.tx_audio_level);
+    }
+    if (arg.command == 'send_test_frame') {
+        sock.sendTestFrame();
+    }    
+                  
+    
 
 });
 

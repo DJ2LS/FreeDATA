@@ -218,6 +218,10 @@ class DAEMON():
 
                     if data[21] == 'True':
                         options.append('--fsk')
+
+                    options.append('--tx-audio-level')
+                    options.append(data[22])                        
+                       
                         
                                             
                     # try running tnc from binary, else run from source

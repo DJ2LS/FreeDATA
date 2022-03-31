@@ -71,7 +71,8 @@ if __name__ == '__main__':
     PARSER.add_argument('--500hz', dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )") 
     PARSER.add_argument('--fsk', dest="enable_fsk", action="store_true", help="Enable FSK mode for ping, beacon and CQ") 
     PARSER.add_argument('--tuning_range_fmin', dest="tuning_range_fmin", choices=[-50.0, -100.0, -150.0, -200.0, -250.0], default=-50.0, help="Tuning range fmin", type=float)  
-    PARSER.add_argument('--tuning_range_fmax', dest="tuning_range_fmax", choices=[50.0, 100.0, 150.0, 200.0, 250.0], default=50.0, help="Tuning range fmax", type=float)  
+    PARSER.add_argument('--tuning_range_fmax', dest="tuning_range_fmax", choices=[50.0, 100.0, 150.0, 200.0, 250.0], default=50.0, help="Tuning range fmax", type=float)
+    PARSER.add_argument('--tx-audio-level', dest="tx_audio_level", default=50, help="Set the tx audio level at an early stage", type=int)  
     
        
     ARGS = PARSER.parse_args()
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     static.LOW_BANDWITH_MODE = ARGS.low_bandwith_mode    
     static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin    
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax                
-        
+    static.TX_AUDIO_LEVEL = ARGS.tx_audio_level     
         
 
         

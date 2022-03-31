@@ -193,6 +193,26 @@ def process_tnc_commands(data):
 
         # convert data to json object
         received_json = json.loads(data)
+        # SET TX AUDIO LEVEL  -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "tx_audio_level":
+            try:
+                static.TX_AUDIO_LEVEL = int(received_json["value"])
+                command_response("tx_audio_level", True)
+                
+            except Exception as e:  
+                command_response("tx_audio_level", False)      
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+
+
+        # TRANSMIT SINE WAVE  -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
+            try:
+                data_handler.DATA_QUEUE_TRANSMIT.put(['SEND_TEST_FRAME'])
+                command_response("send_test_frame", True)
+            except Exception as e:    
+                command_response("send_test_frame", False)    
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+
         # CQ CQ CQ -----------------------------------------------------
         if received_json["command"] == "cqcqcq":
             try:
@@ -492,7 +512,7 @@ def process_daemon_commands(data):
             low_bandwith_mode = str(received_json["parameter"][0]["low_bandwith_mode"])
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
-            
+            tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
 
             DAEMON_QUEUE.put(['STARTTNC', \
                                     mycall, \
@@ -515,7 +535,8 @@ def process_daemon_commands(data):
                                     low_bandwith_mode, \
                                     tuning_range_fmin, \
                                     tuning_range_fmax, \
-                                    enable_fsk \
+                                    enable_fsk, \
+                                    tx_audio_level \
                                     ])
             command_response("start_tnc", True)
             

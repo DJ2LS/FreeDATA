@@ -209,7 +209,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level) {
     var json_command = JSON.stringify({
         type: 'set',
         command: 'start_tnc',
@@ -234,7 +234,8 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
             enable_fsk: enable_fsk,
             low_bandwith_mode : low_bandwith_mode,
             tuning_range_fmin : tuning_range_fmin,
-            tuning_range_fmax : tuning_range_fmax
+            tuning_range_fmax : tuning_range_fmax,
+            tx_audio_level : tx_audio_level
         }]
     })
 

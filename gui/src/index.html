@@ -802,7 +802,7 @@
 				<div class="col-5">
 					<div class="card text-dark mb-1">
 						<div class="card-header p-1"><i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i> <strong>AUDIO LEVEL</strong>
-						<!--<button type="button" id="audioModalButton" data-bs-toggle="modal" data-bs-target="#audioModal" class="btn btn-sm btn-secondary">Tune</button>-->
+						<button type="button" id="audioModalButton" data-bs-toggle="modal" data-bs-target="#audioModal" class="btn btn-sm btn-secondary">Tune</button>
 						
 						
 						</div>
@@ -1173,10 +1173,24 @@
 			<div class="modal-content">
 				<div class="modal-header">
 					<h5 class="modal-title">Audio tuning</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					<button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-				...
+
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Test-Frame</span>
+                        <button type="button" id="sendTestFrame" class="btn btn-danger">Transmit</button>
+					</div>
+				
+				
+					<div class="input-group  input-group-sm mb-1"> 
+					    <span class="input-group-text" id="basic-addon1">TX Level</span>
+					    <span class="input-group-text" id="audioLevelTXvalue">---</span>
+					    <span class="input-group-text w-75" id="basic-addon1">
+                        <input type="range" class="form-range" min="0" max="200" step="1" id="audioLevelTX"></span>
+					</div>				
+				
+				
+				
 				</div>	
 			</div>
 		</div>

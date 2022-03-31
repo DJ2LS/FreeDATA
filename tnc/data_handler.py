@@ -163,6 +163,9 @@ class DATA():
                 # [0] DX CALLSIGN
                 self.close_session()
 
+            elif data[0] == 'SEND_TEST_FRAME':
+                # [0] DX CALLSIGN
+                self.send_test_frame()
             else:
                 # wrong command
                 print(f"wrong command {data}")
@@ -1943,3 +1946,8 @@ class DATA():
                 time.sleep(1)
                 self.transmit_session_heartbeat()
                 time.sleep(2)
+                
+                
+                
+    def send_test_frame(self):
+        modem.MODEM_TRANSMIT_QUEUE.put([12,1,0,[bytearray(126)]])       

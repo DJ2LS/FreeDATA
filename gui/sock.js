@@ -365,6 +365,14 @@ exports.sendCQ = function() {
     writeTncCommand(command)
 }
 
+// Set AUDIO Level
+exports.setTxAudioLevel = function(value) {
+    command = '{"type" : "set", "command" : "tx_audio_level", "value" : "'+ value +'"}'
+    writeTncCommand(command)
+}
+
+
+
 // Send File
 exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, checksum) {
 
@@ -445,5 +453,11 @@ exports.connectARQ = function(dxcallsign) {
 // CLOSE ARQ SESSION
 exports.disconnectARQ = function() {
     command = '{"type" : "arq", "command" : "disconnect"}'
+    writeTncCommand(command)
+}
+
+// SEND SINE
+exports.sendTestFrame = function() {
+    command = '{"type" : "set", "command" : "send_test_frame"}'
     writeTncCommand(command)
 }

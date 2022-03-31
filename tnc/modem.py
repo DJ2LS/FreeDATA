@@ -216,11 +216,12 @@ class RF():
         audio_thread_datac3 = threading.Thread(target=self.audio_datac3, name="AUDIO_THREAD DATAC3",daemon=True)
         audio_thread_datac3.start()
         
-        audio_thread_fsk_ldpc0 = threading.Thread(target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0",daemon=True)
-        audio_thread_fsk_ldpc0.start()
+        if static.ENABLE_FSK:
+            audio_thread_fsk_ldpc0 = threading.Thread(target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0",daemon=True)
+            audio_thread_fsk_ldpc0.start()
 
-        audio_thread_fsk_ldpc1 = threading.Thread(target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1",daemon=True)
-        audio_thread_fsk_ldpc1.start()
+            audio_thread_fsk_ldpc1 = threading.Thread(target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1",daemon=True)
+            audio_thread_fsk_ldpc1.start()
                         
         hamlib_thread = threading.Thread(target=self.update_rig_data, name="HAMLIB_THREAD",daemon=True)
         hamlib_thread.start()
@@ -382,6 +383,7 @@ class RF():
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
                 txbuffer += bytes(mod_out)
                 
+                
             
             # append postamble to txbuffer          
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
@@ -393,6 +395,7 @@ class RF():
             
             # resample up to 48k (resampler works on np.int16)
             x = np.frombuffer(txbuffer, dtype=np.int16)
+            x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
             txbuffer_48k = self.resampler.resample8_to_48(x)
 
             # explicitly lock our usage of mod_out_queue if needed
@@ -411,6 +414,7 @@ class RF():
 
                     #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
                 self.modoutqueue.append(c)
+
                 
 
         # Release our mod_out_lock so we can use the queue 
@@ -516,9 +520,10 @@ class RF():
         """ """
         while True:
             data = self.modem_transmit_queue.get()
+            
             self.transmit(mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3])
             #self.modem_transmit_queue.task_done()            
-            
+
                       
            
     # worker for FIFO queue for processing received frames           
@@ -620,7 +625,8 @@ class RF():
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWITH = self.hamlib.get_bandwith()
-    
+
+      
     def calculate_fft(self):
         """ """
         # channel_busy_delay counter
@@ -723,4 +729,10 @@ def get_bytes_per_frame(mode):
 
     # get number of bytes per frame for mode
     return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
+ 
+ 
+def set_audio_volume(datalist, volume):
+    data = np.fromstring(datalist, np.int16) * (volume / 100.)
+    return data.astype(np.int16)
     
+     

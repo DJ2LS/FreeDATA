@@ -70,6 +70,7 @@ ENABLE_FSK = False
 # ---------------------------------
 
 # Audio Defaults
+TX_AUDIO_LEVEL = 50
 AUDIO_INPUT_DEVICES = []
 AUDIO_OUTPUT_DEVICES = []
 AUDIO_INPUT_DEVICE = -2
