@@ -2,3 +2,5 @@ tnc/__pycache__
 tnc/daemon.log
 tnc/tnc.log
 gui/node_modules
+tnc/build
+tnc/dist

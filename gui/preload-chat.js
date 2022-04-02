@@ -133,11 +133,47 @@ window.addEventListener('DOMContentLoaded', () => {
     }); 
 
 
+
+    // NEW CHAT
+    
+
+    document.getElementById("createNewChatButton").addEventListener("click", () => {
+        var dxcallsign = document.getElementById('chatModuleNewDxCall').value;
+        var uuid = uuidv4()
+db.post({
+            
+            _id: uuid,
+            timestamp: Math.floor(Date.now() / 1000),
+            dxcallsign: dxcallsign.toUpperCase(),
+            dxgrid: '---',
+            msg: 'NULL',
+            checksum: 'NULL',
+            type: 'newchat',
+            status: 'NULL',
+            uuid: uuid
+            
+        }).then(function(response) {
+            // handle response
+            console.log("new database entry");
+            console.log(response);
+        }).catch(function(err) {
+            console.log(err);
+        });
+        db.get(uuid, [{
+            attachments: true
+        }]).then(function(doc) {
+            // handle doc
+            update_chat(doc)
+        }).catch(function(err) {
+            console.log(err);
+        });
+    });
+    
     // SEND MSG
     document.getElementById("sendMessage").addEventListener("click", () => {
         document.getElementById('emojipickercontainer').style.display = "none";
-        var dxcallsign = document.getElementById('chatModuleDxCall').value;
-        dxcallsign = dxcallsign.toUpperCase();
+        
+        var dxcallsign = selected_callsign.toUpperCase();
         var chatmessage = document.getElementById('chatModuleMessage').value;
         console.log(file);
         console.log(filename);
@@ -261,6 +297,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
+            
             db.put({
                 _id: obj.uuid,
                 timestamp: obj.timestamp,
@@ -279,6 +316,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
+            
             db.get(item.uuid, {
                 attachments: true
             }).then(function(doc) {
@@ -299,6 +337,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.status = item.status;
             obj.snr = item.snr;
             obj.type = item.type;
+            
             db.put({
                 _id: obj.uuid,
                 timestamp: obj.timestamp,
@@ -317,6 +356,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
+            
             db.get(item.uuid, {
                 attachments: true
             }).then(function(doc) {
@@ -366,6 +406,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
+            
             db.get(obj.uuid, {
                 attachments: true
             }).then(function(doc) {
@@ -415,12 +456,18 @@ update_chat = function(obj) {
         callsign_counter++;
         if (callsign_counter == 1) {
             var callsign_selected = 'active show'
-            document.getElementById('chatModuleDxCall').value = dxcallsign;
+            //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
         }
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
+                      
+                     
+                      
                       <div class="d-flex w-100 justify-content-between">
+                          <div class="rounded-circle p-0">
+                            <i class="bi bi-person-circle p-1" style="font-size:2rem;"></i>
+                          </div>
                         <h5 class="mb-1">${dxcallsign}</h5>
                         <small>${dxgrid}</small>
                       </div>
@@ -435,7 +482,7 @@ update_chat = function(obj) {
         document.getElementById('nav-tabContent').insertAdjacentHTML("beforeend", message_area);
         // create eventlistener for listening on clicking on a callsign
         document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
-            document.getElementById('chatModuleDxCall').value = dxcallsign;
+            //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
             // scroll to bottom    
             var element = document.getElementById("message-container");
@@ -457,18 +504,30 @@ update_chat = function(obj) {
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
-                <div class="m-1 p-0 rounded-pill w-100  bg-secondary" id="msg-${obj._id}">         
-                    <p class="font-monospace text-small text-white mb-0 text-break"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestampShort}     </p>
+                <div class="m-1 p-0 rounded-pill w-100 bg-secondary bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-white mb-0 text-break"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
                 </div>
             `;
         }
         if (obj.type == 'beacon') {
             var new_message = `
-                <div class="m-1 p-0 rounded-pill w-100  bg-info" id="msg-${obj._id}">         
-                    <p class="font-monospace text-small text-white text-break"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestampShort}     </p>
+                <div class="m-1 p-0 rounded-pill w-100 bg-info bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-white text-break"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
                 </div>
             `;
         }
+        
+        if (obj.type == 'newchat') {
+            var new_message = `
+                <div class="m-1 p-0 rounded-pill w-100 bg-light bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-dark text-break"><i class="m-3 bi bi-file-earmark-plus"></i> new chat openend - ${timestamp}     </p>
+                </div>
+            `;
+        }
+        
+        
+        
+        
         if (obj.type == 'received') {
             var new_message = `
                     <div class="mt-3   rounded-3 mb-0 w-75" id="msg-${obj._id}">            
@@ -510,14 +569,20 @@ update_chat = function(obj) {
         // CHECK CHECK CHECK --> This could be done better
         var id = "chat-" + obj.dxcallsign
         document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
+        
         var element = document.getElementById("message-container");
         element.scrollTo(0, element.scrollHeight);
+        
     } else if (document.getElementById('msg-' + obj._id)) {
         id = "msg-" + obj._id;
         //document.getElementById(id).className = message_class;
     }
     // CREATE SAVE TO FOLDER EVENT LISTENER
-    if ((document.getElementById('save-file-msg-' + obj._id))) {
+    if (document.getElementById('save-file-msg-' + obj._id) && !document.getElementById('save-file-msg-' + obj._id).hasAttribute('listenerOnClick')) {
+    
+        // set Attribute to determine if we already created an EventListener for this element
+        document.getElementById('save-file-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
+        
         document.getElementById('save-file-msg-' + obj._id).addEventListener("click", () => {
             saveFileToFolder(obj._id)
         });

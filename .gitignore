@@ -4,3 +4,5 @@ tnc/codec2
 # temporary test artifacts
 **/build
 **/Testing
+
+package-lock.json

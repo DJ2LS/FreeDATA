@@ -33,8 +33,25 @@
 <div class="container-fluid">
   <div class="row h-100">
     <div class="col-4 p-2 bg-light">
-      <! ------Chats area ---------------------------------------------------------------------->
+     <! ------Chats area ---------------------------------------------------------------------->
           
+          
+          
+          
+          
+          
+                    <div class="container-fluid m-0 p-0">
+    
+    <div class="input-group bottom-0 m-0 w-100">
+    <input class="form-control w-50" maxlength="9" style="text-transform:uppercase;" id="chatModuleNewDxCall" placeholder="DX CALL"></input>
+            <button class="btn btn-sm btn-success w-50" id="createNewChatButton" type="button">Open a new chat</button>
+   
+        </div>
+    
+  </div>
+      
+     <hr class="m-2">     
+   
         <div class="list-group" id="list-tab" role="tablist">       
         </div>
 
@@ -63,6 +80,8 @@
  
     
   </div>
+  
+  <hr class="m-0">
    
       <! ------messages area ---------------------------------------------------------------------->
         <div class="container overflow-auto" id="message-container" style="height: calc(100% - 105px);">
@@ -87,7 +106,7 @@
           <div class="container-fluid mt-2 p-0">
     
     <div class="input-group bottom-0 w-100">
-    <input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>
+    <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
             <input class="form-control" id="chatModuleMessage" placeholder="Message"></input>
             
             <button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button"><i class="bi bi-emoji-smile"></i></button>

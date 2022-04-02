@@ -287,9 +287,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     // direct
     document.getElementById("radio-control-switch1").addEventListener("click", () => {
-        document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
+        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
         document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        document.getElementById("radio-control-rigctl").style.display = 'none';
+        //document.getElementById("radio-control-rigctl").style.display = 'none';
         document.getElementById("radio-control-rigctld").style.display = 'none';  
 
         document.getElementById("radio-control-direct").style.display = 'block';

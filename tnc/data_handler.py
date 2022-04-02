@@ -61,7 +61,7 @@ class DATA():
         self.data_frame_bof                  =   b'BOF'      # 2 bytes for the BOF End of File indicator in a data frame
         self.data_frame_eof                  =   b'EOF'      # 2 bytes for the EOF End of File indicator in a data frame
 
-        self.rx_n_max_retries_per_burst = 30
+        self.rx_n_max_retries_per_burst = 50
         self.n_retries_per_burst = 0
         
         self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel ope ner
@@ -94,7 +94,7 @@ class DATA():
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
 
-        self.transmission_timeout = 90 # transmission timeout in seconds
+        self.transmission_timeout = 360 # transmission timeout in seconds
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",daemon=True)
         worker_thread_transmit.start()
@@ -1626,7 +1626,7 @@ class DATA():
         if static.ENABLE_FSK:
             modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',2,500,txbuffer])
         else:
-            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+            modem.MODEM_TRANSMIT_QUEUE.put([14,2,500,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
