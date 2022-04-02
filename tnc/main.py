@@ -84,7 +84,6 @@ if __name__ == '__main__':
     mycallsign = helpers.callsign_to_bytes(mycallsign)
     static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
     static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
-    print(static.MYCALLSIGN)
     
     static.SSID_LIST = ARGS.ssid_list
       
@@ -111,7 +110,6 @@ if __name__ == '__main__':
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax                
     static.TX_AUDIO_LEVEL = ARGS.tx_audio_level     
         
-
         
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

@@ -116,7 +116,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 chunk = self.request.recv(1024)
                 data += chunk
                 
-                print(data)
                 if chunk == b'':
                     #print("connection broken. Closing...")
                     self.connection_alive = False
@@ -175,7 +174,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         try:
             CONNECTED_CLIENTS.remove(self.request)
         except:
-            print("client connection already removed from client list")
+            structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list", client=self.request)
 
 
 def process_tnc_commands(data):
@@ -193,6 +192,7 @@ def process_tnc_commands(data):
 
         # convert data to json object
         received_json = json.loads(data)
+        structlog.get_logger("structlog").debug("[SCK] CMD", command=received_json)
         # SET TX AUDIO LEVEL  -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "tx_audio_level":
             try:
@@ -297,10 +297,7 @@ def process_tnc_commands(data):
                                 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
-            
-            print(received_json)
-            
-            
+
             static.BEACON_PAUSE = True
             try:    
                 if not static.ARQ_SESSION:
@@ -454,7 +451,7 @@ def process_daemon_commands(data):
     """
     # convert data to json object
     received_json = json.loads(data)
-    
+    structlog.get_logger("structlog").debug("[SCK] CMD", command=received_json)
     if received_json["type"] == 'set' and received_json["command"] == 'mycallsign':
         try:
             callsign = received_json["parameter"]
@@ -513,6 +510,10 @@ def process_daemon_commands(data):
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
+
+            # print some debugging parameters
+            for item in received_json["parameter"][0]:
+                structlog.get_logger("structlog").debug("[DMN] TNC Startup Config : " + item, value=received_json["parameter"][0][item])
 
             DAEMON_QUEUE.put(['STARTTNC', \
                                     mycall, \
@@ -620,7 +621,7 @@ def send_daemon_state():
 
         return jsondata
     except Exception as e:
-        print(e)
+        structlog.get_logger("structlog").warning("[SCK] error", e=e)
         return None
         
 def command_response(command, status):

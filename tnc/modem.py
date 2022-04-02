@@ -328,7 +328,6 @@ class RF():
         
         # open codec2 instance       
         self.MODE = mode
-        print(self.MODE)
         if self.MODE == 'FSK_LDPC_0' or self.MODE == 200:
             freedv = cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC, ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)), c_void_p)
         elif self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
@@ -342,7 +341,6 @@ class RF():
         # get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
         payload_bytes_per_frame = bytes_per_frame -2
-        print(bytes_per_frame)
         # init buffer for data
         n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
         mod_out = create_string_buffer(n_tx_modem_samples * 2)
@@ -360,12 +358,16 @@ class RF():
         data_delay = int(self.MODEM_SAMPLE_RATE*(data_delay_mseconds/1000))
         mod_out_silence = create_string_buffer(data_delay*2)
         txbuffer = bytes(mod_out_silence) 
+        
+        structlog.get_logger("structlog").debug("TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame)
 
         for i in range(1,repeats+1):
-            # write preamble to txbuffer
-            codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-            txbuffer += bytes(mod_out_preamble)
-                           
+
+            # codec2 fsk preamble may be broken - at least it sounds like that so we are disabling it for testing        
+            if not self.MODE == 'FSK_LDPC_0' or self.MODE == 200 or self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
+                # write preamble to txbuffer
+                codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+                txbuffer += bytes(mod_out_preamble)
             # create modulaton for n frames in list
             for n in range(0,len(frames)):
 

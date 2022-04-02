@@ -1433,6 +1433,7 @@ class DATA():
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
+        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
             modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
         else:
@@ -1473,7 +1474,7 @@ class DATA():
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
-        
+        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
             modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
         else:
@@ -1566,7 +1567,7 @@ class DATA():
                         txbuffer = [beacon_frame]
 
                         static.TRANSMITTING = True
-
+                        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
                         if static.ENABLE_FSK:
                             modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
                         else:
@@ -1622,7 +1623,7 @@ class DATA():
         txbuffer = [cq_frame]
         print(txbuffer)
         static.TRANSMITTING = True
-
+        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
             modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',2,500,txbuffer])
         else:

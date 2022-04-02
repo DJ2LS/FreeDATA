@@ -26,6 +26,12 @@ const dateFormatShort = new Intl.DateTimeFormat('en-GB', {
     second: 'numeric',
     hour12: false,
 });
+
+const dateFormatHours = new Intl.DateTimeFormat('en-GB', {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: false,
+});
 // split character
 const split_char = '\0;'
 // global for our selected file we want to transmit
@@ -146,10 +152,10 @@ db.post({
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign.toUpperCase(),
             dxgrid: '---',
-            msg: 'NULL',
-            checksum: 'NULL',
+            msg: 'null',
+            checksum: 'null',
             type: 'newchat',
-            status: 'NULL',
+            status: 'null',
             uuid: uuid
             
         }).then(function(response) {
@@ -198,9 +204,9 @@ db.post({
             _id: uuid,
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign,
-            dxgrid: 'NULL',
+            dxgrid: 'null',
             msg: chatmessage,
-            checksum: 'NULL',
+            checksum: 'null',
             type: "transmit",
             status: 'transmit',
             uuid: uuid,
@@ -425,7 +431,21 @@ update_chat = function(obj) {
     var dxcallsign = obj.dxcallsign;
     var timestamp = dateFormat.format(obj.timestamp * 1000);
     var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
+    var timestampHours = dateFormatHours.format(obj.timestamp * 1000);
+
     var dxgrid = obj.dxgrid;
+    
+    // define shortmessage
+    if (obj.msg == 'null' || obj.msg == 'NULL'){
+        var shortmsg = obj.type;
+    } else {
+        var shortmsg = obj.msg;
+        var maxlength = 45;
+        var shortmsg = shortmsg.length > maxlength ? shortmsg.substring(0, maxlength - 3) + "..." : shortmsg;
+
+        
+        
+    }
     try {
         console.log(Object.keys(obj._attachments)[0].length)
         if (typeof(obj._attachments) !== 'undefined' && Object.keys(obj._attachments)[0].length > 0) {
@@ -459,6 +479,12 @@ update_chat = function(obj) {
             //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
         }
+        
+
+        
+        
+        
+        
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
                       
@@ -468,10 +494,13 @@ update_chat = function(obj) {
                           <div class="rounded-circle p-0">
                             <i class="bi bi-person-circle p-1" style="font-size:2rem;"></i>
                           </div>
+
                         <h5 class="mb-1">${dxcallsign}</h5>
-                        <small>${dxgrid}</small>
+                        <span class="badge bg-secondary text-white p-1 h-100" id="chat-${dxcallsign}-list-dxgrid"><small>${dxgrid}</small></span>                        
+                        <span style="font-size:0.8rem;" id="chat-${dxcallsign}-list-time">${timestampHours}</span>
+                        <span class="position-absolute m-2 bottom-0 end-0" style="font-size:0.8rem;" id="chat-${dxcallsign}-list-shortmsg">${shortmsg}</span>
                       </div>
-                      <!--<p class="mb-1">JN48ea</p>-->
+
                   </a>
 
             `;
@@ -488,6 +517,20 @@ update_chat = function(obj) {
             var element = document.getElementById("message-container");
             element.scrollTo(0, element.scrollHeight);
         });
+    
+    // if callsign entry already exists - update
+    } else {
+    
+        // gridsquare - update only on receive
+        if (obj.type !== 'transmit'){
+            document.getElementById('chat-' + dxcallsign +'-list-dxgrid').innerHTML = dxgrid;
+        }
+        // time
+        document.getElementById('chat-' + dxcallsign +'-list-time').innerHTML = timestampHours;
+        // short message
+        document.getElementById('chat-' + dxcallsign +'-list-shortmsg').innerHTML = shortmsg;
+
+        
     }
     // APPEND MESSAGES TO CALLSIGN
     if (obj.status == 'transmit') {
@@ -640,9 +683,9 @@ function getObjByID(id) {
         {
     "timestamp": 1648139683,
     "dxcallsign": "DN2LS-0",
-    "dxgrid": "NULL",
+    "dxgrid": "null",
     "msg": "",
-    "checksum": "NULL",
+    "checksum": "null",
     "type": "transmit",
     "status": "transmit",
     "uuid": "5b72a46c-49cf-40d6-8936-a64c95bc3da7",
