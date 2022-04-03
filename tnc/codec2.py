@@ -188,8 +188,8 @@ api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 4
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1150 # 1250 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 100 #200
+api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400 # 1150 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120 #200
 api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'H_128_256_5'.encode('utf-8')   # code word
 
 # --------------- 4 H_256_512_4, 7 bytes

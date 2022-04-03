@@ -386,10 +386,12 @@ class RF():
                 txbuffer += bytes(mod_out)
                 
                 
-            
+            # codec2 fsk preamble may be broken - at least it sounds like that so we are disabling it for testing        
+            if not self.MODE == 'FSK_LDPC_0' or self.MODE == 200 or self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
+                # write preamble to txbuffer
+                codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+                txbuffer += bytes(mod_out_postamble)
             # append postamble to txbuffer          
-            codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-            txbuffer += bytes(mod_out_postamble)
             # add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE*(repeat_delay/1000))
             mod_out_silence = create_string_buffer(samples_delay*2)

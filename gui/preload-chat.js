@@ -42,6 +42,7 @@ var filename = '';
 var callsign_counter = 0;
 var selected_callsign = '';
 // -----------------------------------
+
 var chatDB = path.join(configFolder, 'chatDB')
 // ---- MessageDB
 var PouchDB = require('pouchdb');
@@ -80,6 +81,18 @@ db.find({
 });
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
+
+
+    // theme selector
+    if(config.theme != 'default'){
+        var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
+        document.getElementById("bootstrap_theme").href = theme_path;
+    } else {    
+        var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+        document.getElementById("bootstrap_theme").href = theme_path;
+    }
+
+
     document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {
         document.getElementById('chatModuleMessage').setRangeText(event.detail.emoji.unicode)
         console.log(event.detail);
@@ -130,7 +143,7 @@ window.addEventListener('DOMContentLoaded', () => {
     
     document.addEventListener("keyup", function(event) {
     // Number 13 == Enter
-        if (event.keyCode === 13) {
+        if (event.keyCode === 13 && !event.shiftKey) {
             // Cancel the default action, if needed
             event.preventDefault();
             // Trigger the button element with a click
@@ -185,9 +198,9 @@ db.post({
         console.log(filename);
         console.log(filetype);
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
-        document.getElementById('selectFilesButton').innerHTML = `
-    <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i> 
-    `;
+        
+        
+        document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
         console.log(data_with_attachment)
         let Data = {
@@ -247,8 +260,7 @@ ipcRenderer.on('return-selected-files', (event, arg) => {
     file = arg.data;
     filename = arg.filename;
     document.getElementById('selectFilesButton').innerHTML = `
-    <i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i>
-     <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle">
+     <span class="position-absolute top-0 start-85 translate-middle p-2 bg-danger border border-light rounded-circle">
         <span class="visually-hidden">New file selected</span>
      </span>   
     `;
@@ -440,7 +452,7 @@ update_chat = function(obj) {
         var shortmsg = obj.type;
     } else {
         var shortmsg = obj.msg;
-        var maxlength = 45;
+        var maxlength = 40;
         var shortmsg = shortmsg.length > maxlength ? shortmsg.substring(0, maxlength - 3) + "..." : shortmsg;
 
         
@@ -569,6 +581,8 @@ update_chat = function(obj) {
         }
         
         
+        // CHECK FOR NEW LINE AND REPLACE WITH <br>
+        var message_html = obj.msg.replace('\n', "<br>");
         
         
         if (obj.type == 'received') {
@@ -578,7 +592,7 @@ update_chat = function(obj) {
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
                       <div class="card-body p-0">
-                        <p class="card-text p-2 mb-0 text-break text-wrap">${obj.msg}</p>
+                        <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
                             <span class="badge bg-light text-muted">${timestamp}</span>  
                             
@@ -588,14 +602,17 @@ update_chat = function(obj) {
                 </div>
                 `;
         }
+        
+        
+           
         if (obj.type == 'transmit') {
             var new_message = `
-                <div class="ml-auto  rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
+                <div class="ml-auto rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
-                    <div class="card" id="msg-${obj._id}">
+                    <div class="card border-primary" id="msg-${obj._id}">
                     ${fileheader}
                       <div class="card-body p-0 text-right bg-primary">
-                        <p class="card-text p-2 mb-0 text-white text-break text-wrap">${obj.msg}</p>
+                        <p class="card-text p-2 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>  
                             <span class=" text-white" style="font-size:0.8rem;">${status}</span>

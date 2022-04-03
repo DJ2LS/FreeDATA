@@ -2,6 +2,7 @@
 body { 
     padding-right: 0px !important;
     overflow-y: hidden !important;
+    overflow-x: hidden !important;
 }
 
 /*Progress bars with centered text*/
@@ -15,3 +16,10 @@ body {
     width: 100%;
     color: black;
 }
+
+
+/* hide scrollbar in callsign list */
+#callsignlist::-webkit-scrollbar {
+  display: none;
+}
+
