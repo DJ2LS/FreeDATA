@@ -202,6 +202,9 @@ class DATA():
 
 
 
+        print(f"self.n_retries_per_burst = {self.n_retries_per_burst}")
+
+
         #if bytes(bytes_out[1:3]) == self.mycallsign_CRC or bytes(bytes_out[2:4]) == self.mycallsign_CRC or frametype == 200 or frametype == 250:
         if helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3])) or helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4])) or frametype == 200 or frametype == 250:
         
@@ -470,7 +473,10 @@ class DATA():
                 # wait while transmitting
                 while static.TRANSMITTING:
                     time.sleep(0.01)
+                # reset n retries per burst counter
+                self.n_retries_per_burst = 0
                 
+                # calculate statistics
                 self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))   
 
         
@@ -887,7 +893,10 @@ class DATA():
             self.speed_level= int.from_bytes(bytes(data_in[6:7]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
             print(self.speed_level)
+            # reset burst nack counter 
             self.burst_nack_counter = 0
+            # reset n retries per burst counter
+            self.n_retries_per_burst = 0
     # signalling frames received
     def burst_nack_received(self, data_in:bytes):
         """
