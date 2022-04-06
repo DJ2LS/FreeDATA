@@ -336,8 +336,7 @@ class RF():
         else:
             freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
 
-    
-        
+ 
         # get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
         payload_bytes_per_frame = bytes_per_frame -2
@@ -360,9 +359,8 @@ class RF():
         txbuffer = bytes(mod_out_silence) 
         
         structlog.get_logger("structlog").debug("TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame)
-
-        for i in range(1,repeats+1):
-
+        
+        for i in range(0,repeats):
             # codec2 fsk preamble may be broken - at least it sounds like that so we are disabling it for testing        
             if not self.MODE == 'FSK_LDPC_0' or self.MODE == 200 or self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
                 # write preamble to txbuffer
@@ -370,7 +368,6 @@ class RF():
                 txbuffer += bytes(mod_out_preamble)
             # create modulaton for n frames in list
             for n in range(0,len(frames)):
-
                 # create buffer for data
                 buffer = bytearray(payload_bytes_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
                 buffer[:len(frames[n])] = frames[n] # set buffersize to length of data which will be send
@@ -397,27 +394,27 @@ class RF():
             mod_out_silence = create_string_buffer(samples_delay*2)
             txbuffer += bytes(mod_out_silence)
             
-            # resample up to 48k (resampler works on np.int16)
-            x = np.frombuffer(txbuffer, dtype=np.int16)
-            x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
-            txbuffer_48k = self.resampler.resample8_to_48(x)
+        # resample up to 48k (resampler works on np.int16)
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
+        txbuffer_48k = self.resampler.resample8_to_48(x)
 
-            # explicitly lock our usage of mod_out_queue if needed
-            # deaktivated for testing purposes
-            self.mod_out_locked = False
+        # explicitly lock our usage of mod_out_queue if needed
+        # deaktivated for testing purposes
+        self.mod_out_locked = False
 
 
-            chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX #4800
-            chunk = [txbuffer_48k[i:i+chunk_length] for i in range(0, len(txbuffer_48k), chunk_length)]
-            for c in chunk:
+        chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX #4800
+        chunk = [txbuffer_48k[i:i+chunk_length] for i in range(0, len(txbuffer_48k), chunk_length)]
+        for c in chunk:
 
-                if len(c) < chunk_length:
-                    delta = chunk_length - len(c)
-                    delta_zeros = np.zeros(delta, dtype=np.int16)
-                    c = np.append(c, delta_zeros)
+            if len(c) < chunk_length:
+                delta = chunk_length - len(c)
+                delta_zeros = np.zeros(delta, dtype=np.int16)
+                c = np.append(c, delta_zeros)
 
-                    #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
-                self.modoutqueue.append(c)
+                #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
+            self.modoutqueue.append(c)
 
                 
 

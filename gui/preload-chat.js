@@ -6,6 +6,7 @@ const {
     v4: uuidv4
 } = require('uuid');
 const utf8 = require('utf8');
+const blobUtil = require('blob-util')
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -198,7 +199,7 @@ db.post({
         console.log(filename);
         console.log(filetype);
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
-        
+
         
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
@@ -249,6 +250,13 @@ db.post({
         element.scrollTo(0, element.scrollHeight);
         // clear input
         document.getElementById('chatModuleMessage').value = ''
+                
+        // after adding file data to our attachment varible, delete it from global 
+        filetype = '';
+        file = '';
+        filename = '';
+        
+        
     })
     // cleanup after transmission
     filetype = '';
@@ -476,8 +484,8 @@ update_chat = function(obj) {
         </div>
         `;
         } else {
-            var filename = ''
-            var fileheader = ''
+            var filename = '';
+            var fileheader = '';
         }
     } catch {
         console.log("error with database parsing...")
@@ -582,7 +590,7 @@ update_chat = function(obj) {
         
         
         // CHECK FOR NEW LINE AND REPLACE WITH <br>
-        var message_html = obj.msg.replace('\n', "<br>");
+        var message_html = obj.msg.replaceAll(/\n/g, "<br>");
         
         
         if (obj.type == 'received') {
@@ -635,6 +643,9 @@ update_chat = function(obj) {
         
     } else if (document.getElementById('msg-' + obj._id)) {
         id = "msg-" + obj._id;
+        console.log("element already exists......")
+        
+        
         //document.getElementById(id).className = message_class;
     }
     // CREATE SAVE TO FOLDER EVENT LISTENER
@@ -667,12 +678,30 @@ update_chat = function(obj) {
             }).then(function(doc) {
                 // handle doc
                 console.log(doc)
+
+
+
+
                 var filename = Object.keys(obj._attachments)[0]
-                var filetype = obj._attachments[filename]["content_type"]
+                var filetype = filename.content_type
+ 
+                console.log(filename)
+                console.log(filetype)
+                var file = obj._attachments[filename].data
+                console.log(file)
+                console.log(Object.keys(obj._attachments)[0].data)
+                
                 //var file = atob(obj._attachments[filename]["data"])
                 db.getAttachment(obj._id, filename).then(function(data) {
-                    console.log(data)
-                    var file = atob(data)
+
+                    var file = blobUtil.arrayBufferToBinaryString(data)
+                    
+                    // converting back to blob for debugging
+                    // length must be equal of file size
+                    var blob = blobUtil.binaryStringToBlob(file);
+                    console.log(blob)
+                    
+                                      
                     var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
                     let Data = {
                         command: "send_message",
@@ -684,7 +713,8 @@ update_chat = function(obj) {
                         uuid: doc.uuid
                     };
                     console.log(Data)
-                    ipcRenderer.send('run-tnc-command', Data);
+                    ipcRenderer.send('run-tnc-command', Data);  
+
                 });
             }).catch(function(err) {
                 console.log(err);

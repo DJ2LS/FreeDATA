@@ -591,7 +591,7 @@ class DATA():
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
                 txbuffer = [ack_frame]
                 static.TRANSMITTING = True
-                modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+                modem.MODEM_TRANSMIT_QUEUE.put([14,3,100,txbuffer])
                 # wait while transmitting
                 while static.TRANSMITTING:
                     time.sleep(0.01)
@@ -1634,9 +1634,9 @@ class DATA():
         static.TRANSMITTING = True
         structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',2,500,txbuffer])
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',3,500,txbuffer])
         else:
-            modem.MODEM_TRANSMIT_QUEUE.put([14,2,500,txbuffer])
+            modem.MODEM_TRANSMIT_QUEUE.put([14,3,500,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
