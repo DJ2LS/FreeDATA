@@ -227,6 +227,8 @@ client.on('data', function(socketdata) {
                 let state = {
                     status: data['status'],
                     uuid: data['uuid'],
+                    percent: data['percent'],
+                    bytesperminute: data['bytesperminute'],
                 };
             ipcRenderer.send('request-update-transmission-status', state);                
                 

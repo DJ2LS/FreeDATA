@@ -668,7 +668,7 @@ class DATA():
         frame_total_size = len(data_out).to_bytes(4, byteorder='big')
         static.INFO.append("ARQ;TRANSMITTING")
         
-        jsondata = {"arq":"transmission", "status" :"transmitting", "uuid" : self.transmission_uuid}
+        jsondata = {"arq":"transmission", "status" :"transmitting", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
                 
@@ -831,15 +831,20 @@ class DATA():
             # update buffer position
             bufferposition = bufferposition_end
 
-        #     # update stats
+            # update stats
             self.calculate_transfer_rate_tx(tx_start_of_transmission, bufferposition_end, len(data_out)) 
+            
+            jsondata = {"arq":"transmission", "status" :"transmitting", "uuid" : self.transmission_uuid, "percent" :            static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
+            json_data_out = json.dumps(jsondata)
+            sock.SOCKET_QUEUE.put(json_data_out)
+            
             #GOING TO NEXT ITERATION
             
 
         if self.data_frame_ack_received:
         
             static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
-            jsondata = {"arq":"transmission", "status" :"success", "uuid" : self.transmission_uuid}
+            jsondata = {"arq":"transmission", "status" :"success", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
             json_data_out = json.dumps(jsondata)
             sock.SOCKET_QUEUE.put(json_data_out)
         
@@ -849,7 +854,7 @@ class DATA():
                 
         else:
             static.INFO.append("ARQ;TRANSMITTING;FAILED")
-            jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid}
+            jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
             json_data_out = json.dumps(jsondata)
             sock.SOCKET_QUEUE.put(json_data_out)
             
@@ -945,7 +950,7 @@ class DATA():
         """
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
-        jsondata = {"arq":"transmission", "status" : "failed", "uuid" : self.transmission_uuid}
+        jsondata = {"arq":"transmission", "status" : "failed", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)        
         self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
@@ -1281,7 +1286,7 @@ class DATA():
                 if not static.ARQ_STATE and attempt == self.data_channel_max_retries:
                     static.INFO.append("DATACHANNEL;FAILED")
                     print(self.transmission_uuid)
-                    jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid}
+                    jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
                     json_data_out = json.dumps(jsondata)
                     sock.SOCKET_QUEUE.put(json_data_out)
                     

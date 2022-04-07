@@ -52,7 +52,7 @@ var db = new PouchDB(chatDB);
 var dxcallsigns = new Set();
 db.createIndex({
     index: {
-        fields: ['timestamp', 'uuid', 'dxcallsign', 'dxgrid', 'msg', 'checksum', 'type', 'command', 'status', '_attachments']
+        fields: ['timestamp', 'uuid', 'dxcallsign', 'dxgrid', 'msg', 'checksum', 'type', 'command', 'status', 'percent', 'bytesperminute', '_attachments']
     }
 }).then(function(result) {
     // handle result
@@ -289,6 +289,8 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
             checksum: doc.checksum,
             type: "transmit",
             status: arg.status,
+            percent: arg.percent,
+            bytesperminute: arg.bytesperminute,
             uuid: doc.uuid,
             _attachments: doc._attachments
         });
@@ -474,7 +476,7 @@ update_chat = function(obj) {
             var filetype = filename.split('.')[1]
             var filesize = obj._attachments[filename]["length"] + " Bytes";
             var fileheader = `
-        <div class="card-header text-end p-0 mb-0 hover-overlay" id="save-file-msg-${obj._id}">
+        <div class="card-header border-0 text-end p-0 mb-0 hover-overlay" id="save-file-msg-${obj._id}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     
                     <span class="badge bg-secondary text-white p-1">${filename}</span>
@@ -533,9 +535,13 @@ update_chat = function(obj) {
         document.getElementById('chat-' + dxcallsign + '-list').addEventListener('click', function() {
             //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
+
             // scroll to bottom    
             var element = document.getElementById("message-container");
+            console.log(element.scrollHeight)
             element.scrollTo(0, element.scrollHeight);
+
+
         });
     
     // if callsign entry already exists - update
@@ -553,17 +559,7 @@ update_chat = function(obj) {
         
     }
     // APPEND MESSAGES TO CALLSIGN
-    if (obj.status == 'transmit') {
-        var status = '<i class="bi bi-check" style="font-size:1rem;"></i>';
-    } else if (obj.status == 'transmitting') {
-        var status = '<i class="bi bi-arrow-left-right" style="font-size:1rem;"></i>';
-    } else if (obj.status == 'failed') {
-        var status = '<i class="bi bi-exclamation-circle" style="font-size:1rem;"></i>';
-    } else if (obj.status == 'success') {
-        var status = '<i class="bi bi-check-all" style="font-size:1rem;"></i>';
-    } else {
-        var status = '<i class="bi bi-question" style="font-size:1rem;"></i>';
-    }
+    
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
@@ -599,6 +595,7 @@ update_chat = function(obj) {
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
+                                            
                       <div class="card-body p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
@@ -614,20 +611,28 @@ update_chat = function(obj) {
         
            
         if (obj.type == 'transmit') {
+        
+            console.log('msg-' + obj._id + '-status')
             var new_message = `
                 <div class="ml-auto rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
                     <div class="card border-primary" id="msg-${obj._id}">
                     ${fileheader}
+                    
                       <div class="card-body p-0 text-right bg-primary">
                         <p class="card-text p-2 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
-                            <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>  
-                            <span class=" text-white" style="font-size:0.8rem;">${status}</span>
+                            <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
+                            <span class="text-light" id="msg-${obj._id}-bytesperminute" style="font-size: 0.7rem;">${obj.bytesperminute} Bytes/min</span>  
+                            <span class="text-white" id="msg-${obj._id}-status" style="font-size:0.8rem;">${get_icon_for_state(obj.status)}</span>
 
                             <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
                             
                         </p>
+                        
+                       <div class="progress p-0 m-0 rounded-0 rounded-bottom" style="height: 3px;">
+                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
                       </div>
                     </div>
                     
@@ -639,11 +644,32 @@ update_chat = function(obj) {
         document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
         
         var element = document.getElementById("message-container");
-        element.scrollTo(0, element.scrollHeight);
-        
+        console.log(element.scrollHeight)
+
+
     } else if (document.getElementById('msg-' + obj._id)) {
-        id = "msg-" + obj._id;
         console.log("element already exists......")
+        console.log(obj)
+        console.log(document.getElementById('msg-' + obj._id + '-progress').getAttribute("aria-valuenow"))
+
+        
+        document.getElementById('msg-' + obj._id + '-status').innerHTML = get_icon_for_state(obj.status);
+        document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
+        document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
+        
+        if (obj.percent >= 100){
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
+        } else {       
+            document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
+            document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-animated");
+        }
+        
+        
+        document.getElementById('msg-' + obj._id + '-bytesperminute').innerHTML = obj.bytesperminute + ' Bytes/min';
+        
+        
+        
         
         
         //document.getElementById(id).className = message_class;
@@ -665,13 +691,16 @@ update_chat = function(obj) {
         });
     }
     // CREATE RESEND MSG EVENT LISTENER
+    
     // check if element exists and if we already created NOT created an event listener
     if (document.getElementById('retransmit-msg-' + obj._id) && !document.getElementById('retransmit-msg-' + obj._id).hasAttribute('listenerOnClick')) {
 
+        // set Attribute to determine if we already created an EventListener for this element
+        document.getElementById('retransmit-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
+
         document.getElementById('retransmit-msg-' + obj._id).addEventListener("click", () => {
-            // set Attribute to determine if we already created an EventListener for this element
-            document.getElementById('retransmit-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
-        
+            
+
         
             db.get(obj._id, {
                 attachments: true
@@ -790,3 +819,20 @@ function saveFileToFolder(id) {
         console.log(err);
     });
 }
+
+
+// function for setting an ICON to the correspinding state
+function get_icon_for_state(state) {
+    if (state == 'transmit') {
+        var status_icon = '<i class="bi bi-check" style="font-size:1rem;"></i>';
+    } else if (state == 'transmitting') {
+        var status_icon = '<i class="bi bi-arrow-left-right" style="font-size:0.8rem;"></i>';
+    } else if (state == 'failed') {
+        var status_icon = '<i class="bi bi-exclamation-circle" style="font-size:1rem;"></i>';
+    } else if (state == 'success') {
+        var status_icon = '<i class="bi bi-check-all" style="font-size:1rem;"></i>';
+    } else {
+        var status_icon = '<i class="bi bi-question" style="font-size:1rem;"></i>';
+    }
+    return status_icon;
+};    
