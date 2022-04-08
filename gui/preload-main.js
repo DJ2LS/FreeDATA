@@ -163,8 +163,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     
     // Update TX Audio Level
-    document.getElementById("audioLevelTXvalue").innerHTML = config.tx_audio_level;
-    document.getElementById("audioLevelTX").value = config.tx_audio_level;    
+    document.getElementById("audioLevelTXvalue").innerHTML = parseInt(config.tx_audio_level);
+    document.getElementById("audioLevelTX").value = parseInt(config.tx_audio_level);    
     
     
     if (config.spectrum == 'waterfall') {
@@ -394,7 +394,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     // on change audio TX Level
     document.getElementById("audioLevelTX").addEventListener("change", () => {
-        var tx_audio_level = document.getElementById("audioLevelTX").value;
+        var tx_audio_level = parseInt(document.getElementById("audioLevelTX").value);
         document.getElementById("audioLevelTXvalue").innerHTML = tx_audio_level;
         config.tx_audio_level = tx_audio_level;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -1103,9 +1103,11 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("beaconInterval").disabled = false;
     }
     // RMS
-    document.getElementById("rms_level").setAttribute("aria-valuenow", arg.rms_level);
-    document.getElementById("rms_level").setAttribute("style", "width:" + arg.rms_level + "%;");
-
+    /*
+    var rms_level = Math.round((arg.rms_level/60) * 100)
+    document.getElementById("rms_level").setAttribute("aria-valuenow", rms_level);
+    document.getElementById("rms_level").setAttribute("style", "width:" + rms_level + "%;");
+    */
 
     // SET FREQUENCY
     document.getElementById("frequency").innerHTML = arg.frequency;

@@ -464,9 +464,7 @@ update_chat = function(obj) {
         var shortmsg = obj.msg;
         var maxlength = 40;
         var shortmsg = shortmsg.length > maxlength ? shortmsg.substring(0, maxlength - 3) + "..." : shortmsg;
-
-        
-        
+  
     }
     try {
         console.log(Object.keys(obj._attachments)[0].length)
@@ -501,12 +499,7 @@ update_chat = function(obj) {
             //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
         }
-        
-
-        
-        
-        
-        
+ 
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
                       
@@ -630,8 +623,8 @@ update_chat = function(obj) {
                             
                         </p>
                         
-                       <div class="progress p-0 m-0 rounded-0 rounded-bottom" style="height: 3px;">
-                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100"></div>
+                       <div class="progress p-0 m-0 rounded-0 rounded-bottom" style="height: 10px;">
+                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">${obj.percent} %</div>
                             </div>
                       </div>
                     </div>
@@ -654,12 +647,16 @@ update_chat = function(obj) {
 
         
         document.getElementById('msg-' + obj._id + '-status').innerHTML = get_icon_for_state(obj.status);
+        
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
+        document.getElementById('msg-' + obj._id + '-progress').innerHTML = obj.percent + "%";
+        
         
         if (obj.percent >= 100){
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
+            document.getElementById('msg-' + obj._id + '-progress').innerHTML = '';
         } else {       
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-animated");

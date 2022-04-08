@@ -1680,12 +1680,15 @@ class DATA():
             if static.TOTAL_BYTES == 0:
                 static.TOTAL_BYTES = 1
             static.ARQ_TRANSMISSION_PERCENT = int((receivedbytes*static.ARQ_COMPRESSION_FACTOR / (static.TOTAL_BYTES)) * 100)
-
+            if static.ARQ_TRANSMISSION_PERCENT > 100:
+                static.ARQ_TRANSMISSION_PERCENT = 100
+                
             transmissiontime = time.time() - self.rx_start_of_transmission
             
             if receivedbytes > 0:
                 static.ARQ_BITS_PER_SECOND = int((receivedbytes*8) / transmissiontime)
                 static.ARQ_BYTES_PER_MINUTE = int((receivedbytes) / (transmissiontime/60))
+                 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0  
@@ -1727,6 +1730,9 @@ class DATA():
         try:
             static.ARQ_TRANSMISSION_PERCENT = int((sentbytes / tx_buffer_length) * 100)
             
+            if static.ARQ_TRANSMISSION_PERCENT > 100:
+                static.ARQ_TRANSMISSION_PERCENT = 100
+                            
             transmissiontime = time.time() - tx_start_of_transmission
 
             if sentbytes > 0:

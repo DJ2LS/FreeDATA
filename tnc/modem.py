@@ -246,12 +246,12 @@ class RF():
         Returns:
 
         """        
-
+        
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)    
 
         length_x = len(x)
-               
+           
         # avoid decoding when transmitting to reduce CPU
         if not static.TRANSMITTING:
             # avoid buffer overflow by filling only if buffer not full
@@ -291,11 +291,11 @@ class RF():
         if len(self.modoutqueue) <= 0 or self.mod_out_locked:                                
         #if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
-            self.fft_data = bytes(x)
+            self.fft_data = x
             
         else:
             data_out48k = self.modoutqueue.popleft()
-            self.fft_data = bytes(data_out48k)
+            self.fft_data = data_out48k
         
         try:
             outdata[:] = data_out48k[:frames]     
@@ -397,6 +397,7 @@ class RF():
         # resample up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
+
         txbuffer_48k = self.resampler.resample8_to_48(x)
 
         # explicitly lock our usage of mod_out_queue if needed
@@ -636,21 +637,16 @@ class RF():
         while True:
             #time.sleep(0.01)
             threading.Event().wait(0.01)
-            # WE NEED TO OPTIMIZE THIS!
-            if len(self.fft_data) >= 128:
+            # WE NEED TO OPTIMIZE THIS!  
             
-                data_in = self.fft_data
-                
-                # delete fft_buffer
-                self.fft_data = bytes()                    
-
+            if len(self.fft_data) >= 128:
+                  
                 # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
-                audio_data = np.fromstring(data_in, np.int16)
                 # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
                 # and make sure it's not imaginary
 
                 try:
-                    fftarray = np.fft.rfft(audio_data)
+                    fftarray = np.fft.rfft(self.fft_data)
 
                     # set value 0 to 1 to avoid division by zero
                     fftarray[fftarray == 0] = 1
@@ -658,11 +654,17 @@ class RF():
                     
                     # get average of dfft
                     avg = np.mean(dfft)
+
+
                     # detect signals which are higher than the average + 10 ( +10 smoothes the output )
                     # data higher than the average must be a signal. Therefore we are setting it to 100 so it will be highlighted
                     # have to do this when we are not transmittig so our own sending data will not affect this too much
                     if not static.TRANSMITTING:
-                        dfft[dfft>avg+10] = 100
+                        dfft[dfft>avg+10] = 100    
+                        
+                        # calculate audio max value
+                        #static.AUDIO_RMS = np.amax(self.fft_data) 
+                          
                     
                     # check for signals higher than average by checking for "100"
                     # if we have a signal, increment our channel_busy delay counter so we have a smoother state toggle
