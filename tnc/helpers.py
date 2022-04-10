@@ -252,4 +252,4 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
             print(call_with_ssid)
             return [True, bytes(call_with_ssid)]
     
-    return False
+    return [False, ""]
