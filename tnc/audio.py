@@ -3,8 +3,9 @@ import json
 import sys
 import multiprocessing
 import sounddevice as sd
+import atexit
 
-
+atexit.register(sd._terminate)
 
 def get_audio_devices():
 

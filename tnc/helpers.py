@@ -227,7 +227,7 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         [True, Callsign + SSID]
         False
     """
-    
+
     crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
     
     try:
@@ -236,8 +236,12 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         
     except:
         callsign = callsign
-        
+    
+    print(static.SSID_LIST)
     for ssid in static.SSID_LIST:
+        print(ssid)    
+    for ssid in static.SSID_LIST:
+    #for ssid in range(0,254):
         call_with_ssid = bytearray(callsign)        
         call_with_ssid.extend('-'.encode('utf-8'))
         call_with_ssid.extend(str(ssid).encode('utf-8'))

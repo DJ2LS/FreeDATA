@@ -473,19 +473,43 @@ update_chat = function(obj) {
             var filename = Object.keys(obj._attachments)[0]
             var filetype = filename.split('.')[1]
             var filesize = obj._attachments[filename]["length"] + " Bytes";
+            
             var fileheader = `
-        <div class="card-header border-0 text-end p-0 mb-0 hover-overlay" id="save-file-msg-${obj._id}">
+        <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
-                    
-                    <span class="badge bg-secondary text-white p-1">${filename}</span>
-                    <span class="badge bg-secondary text-white p-1">${filesize}</span>
-                            <i class="bi bi-filetype-${filetype}" style="font-size: 3rem; color: black;"></i> 
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i> 
                         </p>
         </div>
+        <hr class="m-0 p-0">
         `;
+        
+        var controlarea_transmit = `
+        <div class="ms-auto" id="msg-${obj._id}-control-area">
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+             </div>
+
+        `;
+
+        var controlarea_receive = `
+        
+             <div class="me-auto" id="msg-${obj._id}-control-area">
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+             </div>
+
+        `;        
+        
         } else {
             var filename = '';
             var fileheader = '';
+            var controlarea_transmit = `
+<div class="ms-auto" id="msg-${obj._id}-control-area">
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+             </div>
+        `;
+                    var controlarea_receive = '';
         }
     } catch {
         console.log("error with database parsing...")
@@ -502,8 +526,6 @@ update_chat = function(obj) {
  
         var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
-                      
-                     
                       
                       <div class="d-flex w-100 justify-content-between">
                           <div class="rounded-circle p-0">
@@ -556,23 +578,24 @@ update_chat = function(obj) {
     if (!(document.getElementById('msg-' + obj._id))) {
         if (obj.type == 'ping') {
             var new_message = `
-                <div class="m-1 p-0 rounded-pill w-100 bg-secondary bg-gradient" id="msg-${obj._id}">         
-                    <p class="text-small text-white mb-0 text-break"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
+                <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
+                    
                 </div>
             `;
         }
         if (obj.type == 'beacon') {
             var new_message = `
-                <div class="m-1 p-0 rounded-pill w-100 bg-info bg-gradient" id="msg-${obj._id}">         
-                    <p class="text-small text-white text-break"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
+                <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
                 </div>
             `;
         }
         
         if (obj.type == 'newchat') {
             var new_message = `
-                <div class="m-1 p-0 rounded-pill w-100 bg-light bg-gradient" id="msg-${obj._id}">         
-                    <p class="text-small text-dark text-break"><i class="m-3 bi bi-file-earmark-plus"></i> new chat openend - ${timestamp}     </p>
+                <div class="p-0 rounded m-auto mt-1 w-50 bg-light bg-gradient" id="msg-${obj._id}">         
+                    <p class="text-small text-dark text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-file-earmark-plus"></i> new chat openend - ${timestamp}     </p>
                 </div>
             `;
         }
@@ -584,7 +607,9 @@ update_chat = function(obj) {
         
         if (obj.type == 'received') {
             var new_message = `
-                    <div class="mt-3   rounded-3 mb-0 w-75" id="msg-${obj._id}">            
+             <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
+    
+                    <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">            
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
@@ -598,6 +623,13 @@ update_chat = function(obj) {
                       </div>
                     </div>
                 </div>
+                
+                
+                
+                  ${controlarea_receive}
+                
+                
+                </div>
                 `;
         }
         
@@ -607,29 +639,38 @@ update_chat = function(obj) {
         
             console.log('msg-' + obj._id + '-status')
             var new_message = `
-                <div class="ml-auto rounded-3 mt-3 mb-0 w-75" style="margin-left: auto;">
+
+            <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
+            
+            ${controlarea_transmit}
+               
+            <div class="rounded-3 mt-2 mb-0" style="max-width: 75%;" > <!-- w-100 style="margin-left: auto;"-->
+
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
-                    <div class="card border-primary" id="msg-${obj._id}">
+                    <div class="card border-primary  bg-primary" id="msg-${obj._id}">
                     ${fileheader}
                     
                       <div class="card-body p-0 text-right bg-primary">
-                        <p class="card-text p-2 mb-0 text-white text-break text-wrap">${message_html}</p>
+                        <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
-                            <span class="text-light" id="msg-${obj._id}-bytesperminute" style="font-size: 0.7rem;">${obj.bytesperminute} Bytes/min</span>  
+                            
                             <span class="text-white" id="msg-${obj._id}-status" style="font-size:0.8rem;">${get_icon_for_state(obj.status)}</span>
 
-                            <button type="button" id="retransmit-msg-${obj._id}" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>
+                            <!--<button type="button" id="retransmit-msg-${obj._id}" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>-->
                             
                         </p>
                         
                        <div class="progress p-0 m-0 rounded-0 rounded-bottom" style="height: 10px;">
-                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">${obj.percent} %</div>
+                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">${obj.percent} % - ${obj.bytesperminute} Bpm</div>
                             </div>
                       </div>
                     </div>
                     
                 </div>
+                
+                </div>
+
                 `;
         }
         // CHECK CHECK CHECK --> This could be done better
@@ -638,6 +679,8 @@ update_chat = function(obj) {
         
         var element = document.getElementById("message-container");
         console.log(element.scrollHeight)
+
+
 
 
     } else if (document.getElementById('msg-' + obj._id)) {
@@ -650,7 +693,8 @@ update_chat = function(obj) {
         
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
-        document.getElementById('msg-' + obj._id + '-progress').innerHTML = obj.percent + "%";
+        document.getElementById('msg-' + obj._id + '-progress').innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
+        
         
         
         if (obj.percent >= 100){
@@ -671,6 +715,10 @@ update_chat = function(obj) {
         
         //document.getElementById(id).className = message_class;
     }
+    
+    
+    
+    
     // CREATE SAVE TO FOLDER EVENT LISTENER
     if (document.getElementById('save-file-msg-' + obj._id) && !document.getElementById('save-file-msg-' + obj._id).hasAttribute('listenerOnClick')) {
     
@@ -680,12 +728,8 @@ update_chat = function(obj) {
         document.getElementById('save-file-msg-' + obj._id).addEventListener("click", () => {
             saveFileToFolder(obj._id)
         });
-        document.getElementById('save-file-msg-' + obj._id).addEventListener("mouseover", () => {
-            document.getElementById('save-file-msg-' + obj._id).style.backgroundColor = "rgba(0,0,0,.1)";
-        });
-        document.getElementById('save-file-msg-' + obj._id).addEventListener("mouseleave", () => {
-            document.getElementById('save-file-msg-' + obj._id).style.backgroundColor = "rgba(0,0,0,.03)";
-        });
+        
+        
     }
     // CREATE RESEND MSG EVENT LISTENER
     

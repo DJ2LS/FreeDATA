@@ -50,7 +50,7 @@ if __name__ == '__main__':
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA TNC')
     PARSER.add_argument('--mycall', dest="mycall", default="AA0AA", help="My callsign", type=str)
-    PARSER.add_argument('--ssid', dest="ssid_list", nargs='*', default=[0,5], help="SSID list we are responding to", type=str)
+    PARSER.add_argument('--ssid', dest="ssid_list", nargs='*', default=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15], help="SSID list we are responding to", type=str)
     PARSER.add_argument('--mygrid', dest="mygrid", default="JN12AA", help="My gridsquare", type=str) 
     PARSER.add_argument('--rx', dest="audio_input_device", default=0, help="listening sound card", type=int)
     PARSER.add_argument('--tx', dest="audio_output_device", default=0, help="transmitting sound card", type=int)
