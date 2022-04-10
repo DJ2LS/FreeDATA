@@ -1056,7 +1056,7 @@ class DATA():
                 timeout = time.time() + 3    
                 while time.time() < timeout:    
                     time.sleep(0.01)
-                    # break if data channel is openend    
+                    # break if data channel is opened    
                     if static.ARQ_SESSION:
                         # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
                         break
@@ -1277,7 +1277,7 @@ class DATA():
                 timeout = time.time() + 3    
                 while time.time() < timeout:    
                     time.sleep(0.01)
-                    # break if data channel is openend    
+                    # break if data channel is opened    
                     if static.ARQ_STATE:
                         break
                 if static.ARQ_STATE:

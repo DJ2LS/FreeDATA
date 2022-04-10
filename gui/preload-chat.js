@@ -595,7 +595,7 @@ update_chat = function(obj) {
         if (obj.type == 'newchat') {
             var new_message = `
                 <div class="p-0 rounded m-auto mt-1 w-50 bg-light bg-gradient" id="msg-${obj._id}">         
-                    <p class="text-small text-dark text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-file-earmark-plus"></i> new chat openend - ${timestamp}     </p>
+                    <p class="text-small text-dark text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-file-earmark-plus"></i> new chat opened - ${timestamp}     </p>
                 </div>
             `;
         }

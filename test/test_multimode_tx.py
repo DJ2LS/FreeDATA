@@ -141,7 +141,7 @@ for m in modes:
             #print(f"time: {timeneeded} buffer: {len(txbuffer)}", file=sys.stderr)  
        
             
-# and at last check if we had an openend pyaudio instance and close it
+# and at last check if we had an opened pyaudio instance and close it
 if AUDIO_OUTPUT_DEVICE != -1: 
     time.sleep(stream_tx.get_output_latency())
     stream_tx.stop_stream()
