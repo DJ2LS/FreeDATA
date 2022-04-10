@@ -206,7 +206,9 @@ class DATA():
 
 
         #if bytes(bytes_out[1:3]) == self.mycallsign_CRC or bytes(bytes_out[2:4]) == self.mycallsign_CRC or frametype == 200 or frametype == 250:
-        if helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3])) or helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4])) or frametype == 200 or frametype == 250:
+        _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3]))
+        _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4]))
+        if _valid1 or _valid2 or frametype in [200, 210, 250]:
         
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
@@ -360,12 +362,17 @@ class DATA():
         # get received crc for different mycall ssids
         self.received_mycall_crc = data_in[2:4]  
         
-        # check if callsign ssid override
-        mycallsign = helpers.check_callsign(self.mycallsign, self.received_mycall_crc)[1] 
-        print(mycallsign)
-        
-        
         global TESTMODE
+        
+        # check if callsign ssid override
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, self.received_mycall_crc)
+        print(mycallsign)
+        if not valid:
+            # ARQ data packet not for me.
+            if not TESTMODE:
+                self.arq_cleanup()        
+            return
+        
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE != 'BUSY':
             return
@@ -569,7 +576,12 @@ class DATA():
                 
  
                 # check if callsign ssid override
-                mycallsign = helpers.check_callsign(self.mycallsign, self.received_mycall_crc)[1] 
+                valid, mycallsign = helpers.check_callsign(self.mycallsign, self.received_mycall_crc)
+                if not valid:
+                    # ARQ data packet not for me.
+                    if not TESTMODE:
+                        self.arq_cleanup()        
+                    return
                 
                 base64_data = base64.b64encode(data_frame)
                 base64_data = base64_data.decode("utf-8")
@@ -1341,7 +1353,12 @@ class DATA():
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         # check if callsign ssid override
-        mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])[1] 
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
+        if not valid:
+            # ARQ connect packet not for me.
+            if not TESTMODE:
+                self.arq_cleanup()        
+            return
             
         structlog.get_logger("structlog").info("[TNC] ARQ | DATA | RX | [" + str(mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", bandwith="wide")
            
@@ -1475,7 +1492,10 @@ class DATA():
         static.INFO.append("PING;RECEIVING")
 
         # check if callsign ssid override
-        mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])[1]        
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
+        if not valid:
+            # PING packet not for me.
+            return
         
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
 
