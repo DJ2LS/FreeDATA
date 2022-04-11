@@ -3,33 +3,32 @@
 import structlog
 
 hamlib_version = 0
-
-
+               
 class radio:
     """ """
-
     def __init__(self):
         pass
 
-    def open_rig(self, **kwargs):
+ 
+    def open_rig(self, **kwargs):    
         """
 
         Args:
-          **kwargs:
+          **kwargs: 
 
         Returns:
 
         """
         return True
-
+            
     def get_frequency(self):
         """ """
         return None
-
+        
     def get_mode(self):
         """ """
         return None
-
+    
     def get_bandwith(self):
         """ """
         return None
@@ -38,28 +37,29 @@ class radio:
         """
 
         Args:
-          mode:
+          mode: 
 
         Returns:
 
         """
         return None
-
+      
     def get_ptt(self):
         """ """
         return None
-
-    def set_ptt(self, state):
+                  
+    def set_ptt(self, state): 
         """
 
         Args:
-          state:
+          state: 
 
         Returns:
 
         """
         return state
-
+        
     def close_rig(self):
         """ """
         return
+

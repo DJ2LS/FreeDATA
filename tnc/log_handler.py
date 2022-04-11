@@ -3,7 +3,7 @@ def setup_logging(filename):
     """
 
     Args:
-      filename:
+      filename: 
 
     Returns:
 
@@ -20,8 +20,7 @@ def setup_logging(filename):
         timestamper,
     ]
 
-    logging.config.dictConfig(
-        {
+    logging.config.dictConfig({
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
@@ -45,7 +44,7 @@ def setup_logging(filename):
                 "file": {
                     "level": "DEBUG",
                     "class": "logging.handlers.WatchedFileHandler",
-                    "filename": filename + ".log",
+                    "filename": filename + '.log',
                     "formatter": "plain",
                 },
             },
@@ -55,9 +54,8 @@ def setup_logging(filename):
                     "level": "DEBUG",
                     "propagate": True,
                 },
-            },
-        }
-    )
+            }
+    })
     structlog.configure(
         processors=[
             structlog.stdlib.add_log_level,
