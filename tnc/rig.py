@@ -197,7 +197,7 @@ class radio:
                     help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
                     structlog.get_logger("structlog").error("[RIG] HELP:", check = help_url)
             except:
-                structlog.get_logger("structlog").info("[RIG] Hamlib device openend", status='SUCCESS')
+                structlog.get_logger("structlog").info("[RIG] Hamlib device opened", status='SUCCESS')
 
 
             # set ptt to false if ptt is stuck for some reason

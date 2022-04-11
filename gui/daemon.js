@@ -85,7 +85,7 @@ daemon.on('end', function(data) {
 writeDaemonCommand = function(command) {
 
     // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
-    // if socket openend, we are able to run commands
+    // if socket opened, we are able to run commands
     if (daemon.readyState == 'open') {
         //uiMain.setDAEMONconnection('open')
         daemon.write(command + '\n');

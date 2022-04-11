@@ -33,7 +33,7 @@ class DATA():
 
     def __init__(self):
     
-        self.mycallsign = static.MYCALLSIGN # inital set of mycallsign. Will be overwritten later
+        self.mycallsign = static.MYCALLSIGN # initial callsign. Will be overwritten later
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
@@ -267,7 +267,7 @@ class DATA():
                 structlog.get_logger("structlog").debug("PING RECEIVED....")
                 # = self.get_frequency_offset(freedv)
                 # we need to fix this later
-                frequency_offset = 0
+                frequency_offset = "0"
                 #print("Freq-Offset: " + str(frequency_offset))
                 self.received_ping(bytes_out[:-2], frequency_offset)
                 
@@ -1068,7 +1068,7 @@ class DATA():
                 timeout = time.time() + 3    
                 while time.time() < timeout:    
                     time.sleep(0.01)
-                    # break if data channel is openend    
+                    # break if data channel is opened    
                     if static.ARQ_SESSION:
                         # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
                         break
@@ -1289,7 +1289,7 @@ class DATA():
                 timeout = time.time() + 3    
                 while time.time() < timeout:    
                     time.sleep(0.01)
-                    # break if data channel is openend    
+                    # break if data channel is opened    
                     if static.ARQ_STATE:
                         break
                 if static.ARQ_STATE:
