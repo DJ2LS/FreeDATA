@@ -38,7 +38,7 @@ def signal_handler(sig, frame):
     Returns: system exit
 
     """
-    print('Closing tnc...')
+    print('Closing TNC...')
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
     

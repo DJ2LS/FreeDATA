@@ -23,7 +23,7 @@
 	<nav class="navbar bg-light fixed-top mt-0 mb-1 pb-1 pt-1 shadow-sm">
 		<div class="container-fluid mt-0">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
-				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Select a local or a remote location of your tnc daemon. Normally local is the preferred option.">
+				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option.">
 					<input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch1" autocomplete="off" checked>
 					<label class="btn btn-sm btn-outline-secondary" for="local-remote-switch1">
 					<i class="bi bi-pc-display-horizontal" style="font-size: 1rem; color: black;"></i>
@@ -43,7 +43,7 @@
 						
 					</button>
 				</div>
-				<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Start or stop the tnc process. Please set your audio and radio settings first!">
+				<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Start or stop the TNC process. Please set your audio and radio settings first!">
 					<button type="button" id="startTNC" class="btn btn-sm btn-success">
 						<i class="bi bi-play-fill" style="font-size: 1rem; color: white;"></i>
 						
@@ -173,7 +173,7 @@
 				<!-- RECEIVING BEACON -->
 				<div class="toast align-items-center text-white bg-primary border-0" id="toastBEACONreceiving" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">Receiving a beacons signal!</div>
+						<div class="toast-body">Receiving a beacon signal!</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
@@ -222,7 +222,7 @@
 				<!-- DATACHANNEL RECEIVED OPENER -->
 				<div class="toast align-items-center text-white bg-secondary border-0" id="toastDATACHANNELreceivedopener" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">INCOMMING FILE TRANSMISSION</div>
+						<div class="toast-body">INCOMING FILE TRANSMISSION</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
@@ -243,14 +243,14 @@
 				<!-- ARQ RECEIVING SUCCESS -->
 				<div class="toast align-items-center text-white bg-success border-0" id="toastARQreceivingsuccess" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">FILE SUCCESSFULL RECEIVED!</div>
+						<div class="toast-body">FILE SUCCESSFULLY RECEIVED!</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
 				<!-- ARQ RECEIVING FAILED -->
 				<div class="toast align-items-center text-white bg-danger border-0" id="toastARQreceivingfailed" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">FILE NOT SUCCESSFULL RECEIVED!</div>
+						<div class="toast-body">FILE NOT SUCCESSFULLY RECEIVED!</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
@@ -325,7 +325,7 @@
 								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong>rigctld</strong>
 								</label>
 							</div>
-							<div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a ptt device">
+							<div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a PTT device">
 								<button type="button" id="advancedHamlibSettingsButton" data-bs-toggle="modal" data-bs-target="#advancedHamlibSettingsModal" class="btn btn-sm btn-secondary">
 									<i class="bi bi-sliders" style="font-size: 0.8rem; color: black;"></i>
 								</button>
@@ -770,12 +770,9 @@
 							</div>
 							<div class="form-check form-switch form-check-inline">
 								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
-								<label class="form-check-label" for="500HzModeSwitch">500Hz</label>
+								<label class="form-check-label" for="500HzModeSwitch">500Hz (HF)</label>
 							</div>
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
-								<label class="form-check-label" for="fskModeSwitch">FSK</label>
-							</div>
+							
 							
 							<!--<button class="btn btn-secondary btn-sm" id="python_version" type="button" disabled>Python</button>-->
 							<!--<button class="btn btn-secondary btn-sm" id="node_version" type="button" disabled>Node</button>-->
@@ -852,7 +849,7 @@
 									</div>
 								</div>
 								<div class="col-md-auto">
-									<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Start or stop the Beacon mode. You can also set the interval. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is openend, the beacon pauses.">
+									<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Start or stop the Beacon mode. You can also set the interval. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses.">
 										<button type="button" id="startBeacon" class="btn btn-sm btn-success">
 											<i class="bi bi-arrow-clockwise" style="font-size: 0.8rem; color: white;"></i>
 										</button>
@@ -1195,8 +1192,6 @@
                         <input type="range" class="form-range" min="0" max="250" step="1" id="audioLevelTX"></span>
 					</div>				
 				
-				
-				
 				</div>	
 			</div>
 		</div>
@@ -1280,6 +1275,19 @@
 						</select>	
 						</div>
                       					
+					
+									
+				    <div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable FSK mode</label>
+			            <label class="input-group-text">
+				            <div class="form-check form-switch form-check-inline ms-2">
+						        <input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
+						        <label class="form-check-label" for="fskModeSwitch">not available, yet</label>
+					        </div>
+					    </label>
+				    </div>
+					
+					
 					
 				</div>
 			</div>
