@@ -316,3 +316,45 @@ def decode_grid(b_code_word:bytes):
     grid = chr(int(int_first)+65) + chr(int(int_sec)+65) + grid
 
     return grid
+
+
+
+def encode_call(call, bytes_length=6):
+    """
+    @Auther: DB1UJ
+    Args:
+        call:string: ham radio call sign [A-Z,0-9]
+        bytes_length:int: number of output bytes, have to fit 6 bits/sign, standard 6 bytes
+
+    Returns:
+        bytes_length bytes (standard 6) contains 6 bits/sign encoded 8 char call sign (only upper letters + numbers)
+    """
+    out_code_word = int(0)
+
+    call = call.upper() # upper case to be save
+
+    for x in call:
+        int_val = ord(x)-48 # -48 reduce bits, begin with first number utf8 table
+        out_code_word = out_code_word << 6 # shift left 6 bit, making space for a new char
+        out_code_word = out_code_word | (int_val & 0b111111) # bit OR adds the new char, masked with AND 0b111111
+
+    return out_code_word.to_bytes(length=bytes_length, byteorder='big')
+
+def decode_call(b_code_word:bytes):
+    """
+    @Auther: DB1UJ
+    Args:
+        b_code_word:bytes: 6 bytes with 6 bits/sign valid data char signs LSB
+
+    Returns:
+        call:str: upper case ham radio call sign [A-Z,0-9]
+    """
+    code_word = int.from_bytes(b_code_word, byteorder='big', signed=False)
+
+    call = str()
+    while code_word != 0:
+        call  = chr((code_word & 0b111111)+48) + call
+        code_word = code_word >> 6
+
+    return call
+
