@@ -258,6 +258,7 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
 
 def encode_grid(grid):
     """
+    @auther: DB1UJ
     Args:
       grid:string: maidenhead QTH locater [a-r][a-r][0-9][0-9][a-x][a-x]
     Returns:
@@ -270,7 +271,7 @@ def encode_grid(grid):
     int_first = ord(grid[0])-65 # -65 offset for 'A' become zero, utf8 table
     int_sec   = ord(grid[1])-65 # -65 offset for 'A' become zero, utf8 table
 
-    int_val = (int_first * 18) + int_sec # encode for modulo devisioni, 2 numbers in 1
+    int_val = (int_first * 18) + int_sec # encode for modulo devision, 2 numbers in 1
 
     out_code_word = (int_val & 0b111111111) # only 9 bit LSB A - R * A - R is needed
     out_code_word = out_code_word << 9 # shift 9 bit left having space next bits, letter A-R * A-R
@@ -290,6 +291,7 @@ def encode_grid(grid):
 
 def decode_grid(b_code_word:bytes):
     """
+    @auther: DB1UJ
     Args:
       b_code_word:bytes: 4 bytes with 26 bit valid data LSB
     Returns:
