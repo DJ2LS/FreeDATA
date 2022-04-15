@@ -124,7 +124,7 @@ class DATA():
             if data[0] == 'CQ':
                 # [0] CQ
                 self.transmit_cq()
-                
+
             elif data[0] == 'STOP':
                 # [0] STOP
                 self.stop_transmission()
@@ -208,7 +208,7 @@ class DATA():
         #if bytes(bytes_out[1:3]) == self.mycallsign_CRC or bytes(bytes_out[2:4]) == self.mycallsign_CRC or frametype == 200 or frametype == 250:
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4]))
-        if _valid1 or _valid2 or frametype in [200, 210, 250, 251]:
+        if _valid1 or _valid2 or frametype in [200, 201, 210, 250]:
         
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
@@ -258,6 +258,12 @@ class DATA():
             elif frametype == 200:
                 structlog.get_logger("structlog").debug("CQ RECEIVED....")
                 self.received_cq(bytes_out[:-2])
+
+            # QRV FRAME
+            elif frametype == 201:
+                structlog.get_logger("structlog").debug("QRV RECEIVED!")
+                self.received_qrv(bytes_out[:-2])
+
 
             # PING FRAME
             elif frametype == 210:
@@ -314,11 +320,6 @@ class DATA():
             elif frametype == 250:
                 structlog.get_logger("structlog").debug("BEACON RECEIVED")
                 self.received_beacon(bytes_out[:-2])
-
-            # this is outdated and we may remove it
-            elif frametype == 251:
-                structlog.get_logger("structlog").debug("BEACON REPLY!")
-                self.received_beacon_reply(bytes_out[:-2])
 
             # TESTFRAMES
             elif frametype == 255:
@@ -1631,54 +1632,6 @@ class DATA():
         structlog.get_logger("structlog").info("[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
-        # TODO: Add configuration option to enable responding to beacons.
-        # Sleep a random amount of time before responding to make it more likely to be
-        # heard when many stations respond. Each DATAC0 frame is 0.44 sec (44ms) in
-        # duration, plus an offset for TX->RX at the beacon station, set the wait
-        # interval to be 6ms + (50ms * random).
-        time.sleep(randrange(6, 506, 50) / 100.0)
-        static.INFO.append("BEACON;SENDING")
-        structlog.get_logger("structlog").info("[TNC] Sending beacon response!", interval=self.beacon_interval)
-
-        beacon_frame = bytearray(14)
-        beacon_frame[:1]   = bytes([251])
-        beacon_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
-        beacon_frame[9:13] = static.MYGRID[:4]
-        txbuffer = [beacon_frame]
-
-        static.TRANSMITTING = True
-        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
-        if static.ENABLE_FSK:
-            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
-        else:
-            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
-
-        # wait while transmitting
-        while static.TRANSMITTING:
-            time.sleep(0.01)
-
-    def received_beacon_reply(self, data_in:bytes):
-        """
-        Called if we receive a beacon reply
-        Args:
-          data_in:bytes:
-
-        Returns:
-
-        """
-        # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
-        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
-
-        jsondata = {"type" : "breply", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
-
-        static.INFO.append("BREPLY;RECEIVING")
-        structlog.get_logger("structlog").info("[TNC] BEACON REPLY RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
-        helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BREPLY', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
-
-
 
     def transmit_cq(self):
         """
@@ -1697,9 +1650,9 @@ class DATA():
         static.TRANSMITTING = True
         structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',3,500,txbuffer])
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
         else:
-            modem.MODEM_TRANSMIT_QUEUE.put([14,3,500,txbuffer])
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)
@@ -1721,6 +1674,68 @@ class DATA():
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign, dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+        # TODO: Add configuration option to enable responding to CQ.
+        self.transmit_qrv()
+
+
+    def transmit_qrv(self):
+        """
+        Called if we send a QRV frame
+        Args:
+          data_in:bytes:
+
+        Returns:
+            Nothing
+        """
+        # Sleep a random amount of time before responding to make it more likely to be
+        # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
+        # duration, plus overhead. Set the wait interval to be random between 0 and 2s
+        # in 0.5s increments. If the maximum time is "too long,"" the user may believe the
+        # UI / TNC has frozen because this sleep blocks all other activity.
+        time.sleep(randrange(0, 20, 5) / 10.0)
+        static.INFO.append("QRV;SENDING")
+        structlog.get_logger("structlog").info("[TNC] Sending QRV!")
+
+        qrv_frame       = bytearray(14)
+        qrv_frame[:1]   = bytes([201])
+        qrv_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
+        qrv_frame[9:13] = static.MYGRID[:4]
+        txbuffer        = [qrv_frame]
+
+        static.TRANSMITTING = True
+        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
+        if static.ENABLE_FSK:
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        else:
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)
+
+
+    def received_qrv(self, data_in:bytes):
+        """
+        Called if we receive a QRV frame
+        Args:
+          data_in:bytes:
+
+        Returns:
+
+        """
+        # here we add the received station to the heard stations buffer
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
+
+        jsondata = {"type" : "qrv", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
+        json_data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(json_data_out)
+
+        static.INFO.append("QRV;RECEIVING")
+        structlog.get_logger("structlog").info("[TNC] QRV RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
+        helpers.add_to_heard_stations(dxcallsign,dxgrid, 'QRV', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
 
     # ------------ CALUCLATE TRANSFER RATES
     def calculate_transfer_rate_rx(self, rx_start_of_transmission:float, receivedbytes:int) -> list:
