@@ -214,9 +214,6 @@ class DATA():
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
-            #frequency_offset = self.get_frequency_offset(freedv)
-            #print("Freq-Offset: " + str(frequency_offset))
-            
             if 50 >= frametype >= 10:
                 # get snr of received data
                 #snr = self.calculate_snr(freedv)
@@ -265,26 +262,12 @@ class DATA():
             # PING FRAME
             elif frametype == 210:
                 structlog.get_logger("structlog").debug("PING RECEIVED....")
-                # = self.get_frequency_offset(freedv)
-                # we need to fix this later
-                # frequency_offset = 0
-                #print("Freq-Offset: " + str(frequency_offset))
                 self.received_ping(bytes_out[:-2])
                 
 
             # PING ACK
             elif frametype == 211:
                 structlog.get_logger("structlog").debug("PING ACK RECEIVED....")
-                # early detection of frequency offset
-                #frequency_offset = int.from_bytes(bytes(bytes_out[9:11]), "big", signed=True)
-                #print("Freq-Offset: " + str(frequency_offset))
-                #current_frequency = self.my_rig.get_freq()
-                #corrected_frequency = current_frequency + frequency_offset
-                # temporarely disabled this feature, beacuse it may cause some confusion.
-                # we also have problems if we are operating at band bordes like 7.000Mhz
-                # If we get a corrected frequency less 7.000 Mhz, Ham Radio devices will not transmit...
-                #self.my_rig.set_vfo(Hamlib.RIG_VFO_A)
-                #self.my_rig.set_freq(Hamlib.RIG_VFO_A, corrected_frequency)
                 self.received_ping_ack(bytes_out[:-2])
 
 
@@ -1503,7 +1486,7 @@ class DATA():
         ping_frame[1:3] = static.DXCALLSIGN_CRC
         ping_frame[3:5] = static.MYCALLSIGN_CRC
         ping_frame[5:11] = static.MYGRID
-        ping_frame[11:13] = bytes([0,0]) # frequency_offset.to_bytes(2, byteorder='big', signed=True)
+        ping_frame[11:13] = bytes([0,0])
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
