@@ -1686,9 +1686,8 @@ class DATA():
         # Sleep a random amount of time before responding to make it more likely to be
         # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
         # duration, plus overhead. Set the wait interval to be random between 0 and 2s
-        # in 0.5s increments. If the maximum time is "too long,"" the user may believe the
-        # UI / TNC has frozen because this sleep blocks all other activity.
-        time.sleep(randrange(0, 20, 5) / 10.0)
+        # in 0.5s increments.
+        helpers.wait(randrange(0, 20, 5) / 10.0)
         static.INFO.append("QRV;SENDING")
         structlog.get_logger("structlog").info("[TNC] Sending QRV!")
 
