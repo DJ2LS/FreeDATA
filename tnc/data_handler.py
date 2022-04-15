@@ -267,9 +267,9 @@ class DATA():
                 structlog.get_logger("structlog").debug("PING RECEIVED....")
                 # = self.get_frequency_offset(freedv)
                 # we need to fix this later
-                frequency_offset = "0"
+                # frequency_offset = 0
                 #print("Freq-Offset: " + str(frequency_offset))
-                self.received_ping(bytes_out[:-2], frequency_offset)
+                self.received_ping(bytes_out[:-2])
                 
 
             # PING ACK
@@ -1473,13 +1473,12 @@ class DATA():
         while static.TRANSMITTING:
             time.sleep(0.01)
             
-    def received_ping(self, data_in:bytes, frequency_offset:str):
+    def received_ping(self, data_in:bytes):
         """
         Called if we received a ping
 
         Args:
           data_in:bytes: 
-          frequency_offset:str: 
 
         Returns:
 
@@ -1504,7 +1503,7 @@ class DATA():
         ping_frame[1:3] = static.DXCALLSIGN_CRC
         ping_frame[3:5] = static.MYCALLSIGN_CRC
         ping_frame[5:11] = static.MYGRID
-        ping_frame[11:13] = frequency_offset.to_bytes(2, byteorder='big', signed=True)
+        ping_frame[11:13] = bytes([0,0]) # frequency_offset.to_bytes(2, byteorder='big', signed=True)
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
