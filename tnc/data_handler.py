@@ -1495,6 +1495,10 @@ class DATA():
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
         if not valid:
             # PING packet not for me.
+            valid, _ = helpers.check_callsign(bytes(), data_in[1:3])
+            if valid:
+                structlog.get_logger("structlog").info("[TNC] PING HEARD [" + "(NOCALL)" + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
+            # Either way, skip the remainder of received_ping.
             return
         
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
