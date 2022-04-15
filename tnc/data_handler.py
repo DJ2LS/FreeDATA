@@ -208,7 +208,7 @@ class DATA():
         #if bytes(bytes_out[1:3]) == self.mycallsign_CRC or bytes(bytes_out[2:4]) == self.mycallsign_CRC or frametype == 200 or frametype == 250:
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4]))
-        if _valid1 or _valid2 or frametype in [200, 210, 250]:
+        if _valid1 or _valid2 or frametype in [200, 210, 250, 251]:
         
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
@@ -314,6 +314,11 @@ class DATA():
             elif frametype == 250:
                 structlog.get_logger("structlog").debug("BEACON RECEIVED")
                 self.received_beacon(bytes_out[:-2])
+
+            # this is outdated and we may remove it
+            elif frametype == 251:
+                structlog.get_logger("structlog").debug("BEACON REPLY!")
+                self.received_beacon_reply(bytes_out[:-2])
 
             # TESTFRAMES
             elif frametype == 255:
@@ -1477,6 +1482,11 @@ class DATA():
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
         if not valid:
             # PING packet not for me.
+            # But is it a "NO-CALL" PING? Check against an 'empty' callsign.
+            valid, _ = helpers.check_callsign(bytes(), data_in[1:3])
+            if valid:
+                structlog.get_logger("structlog").info("[TNC] PING HEARD [" + "(NOCALL)" + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
+            # Either way, skip the remainder of received_ping.
             return
         
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
@@ -1609,7 +1619,7 @@ class DATA():
         Returns:
 
         """
-    # here we add the received station to the heard stations buffer
+        # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
 
@@ -1620,6 +1630,53 @@ class DATA():
         static.INFO.append("BEACON;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+        # TODO: Add configuration option to enable responding to beacons.
+        # Sleep a random amount of time before responding to make it more likely to be
+        # heard when many stations respond. Each DATAC0 frame is 0.44 sec (44ms) in
+        # duration, plus an offset for TX->RX at the beacon station, set the wait
+        # interval to be 6ms + (50ms * random).
+        time.sleep(randrange(6, 506, 50) / 100.0)
+        static.INFO.append("BEACON;SENDING")
+        structlog.get_logger("structlog").info("[TNC] Sending beacon response!", interval=self.beacon_interval)
+
+        beacon_frame = bytearray(14)
+        beacon_frame[:1]   = bytes([251])
+        beacon_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
+        beacon_frame[9:13] = static.MYGRID[:4]
+        txbuffer = [beacon_frame]
+
+        static.TRANSMITTING = True
+        structlog.get_logger("structlog").info("ENABLE FSK", state=static.ENABLE_FSK)
+        if static.ENABLE_FSK:
+            modem.MODEM_TRANSMIT_QUEUE.put(['FSK_LDPC_0',1,0,txbuffer])
+        else:
+            modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])
+
+        # wait while transmitting
+        while static.TRANSMITTING:
+            time.sleep(0.01)
+
+    def received_beacon_reply(self, data_in:bytes):
+        """
+        Called if we receive a beacon reply
+        Args:
+          data_in:bytes:
+
+        Returns:
+
+        """
+        # here we add the received station to the heard stations buffer
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
+
+        jsondata = {"type" : "breply", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
+        json_data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(json_data_out)
+
+        static.INFO.append("BREPLY;RECEIVING")
+        structlog.get_logger("structlog").info("[TNC] BEACON REPLY RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
+        helpers.add_to_heard_stations(dxcallsign,dxgrid, 'BREPLY', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
 
 
