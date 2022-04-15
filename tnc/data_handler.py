@@ -1486,7 +1486,6 @@ class DATA():
         ping_frame[1:3] = static.DXCALLSIGN_CRC
         ping_frame[3:5] = static.MYCALLSIGN_CRC
         ping_frame[5:11] = static.MYGRID
-        ping_frame[11:13] = bytes([0,0])
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
