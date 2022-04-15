@@ -187,7 +187,8 @@ if nread_exceptions:
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
 frx.close()
 
-# and at last check if we had an opened pyaudio instance and close it
+# and at last check if we had an openend pyaudio instance and close it
 if AUDIO_INPUT_DEVICE != -1: 
     stream_rx.close()
     p.terminate()
+
