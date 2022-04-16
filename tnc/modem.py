@@ -663,7 +663,7 @@ class RF():
                         dfft[dfft>avg+10] = 100    
                         
                         # calculate audio max value
-                        #static.AUDIO_RMS = np.amax(self.fft_data) 
+                        # static.AUDIO_RMS = np.amax(self.fft_data) 
                           
                     
                     # check for signals higher than average by checking for "100"
@@ -688,7 +688,8 @@ class RF():
                     dfft = np.around(dfft, 0)
                     dfftlist = dfft.tolist()
                     
-                    static.FFT = dfftlist[0:320] #200 --> bandwith 3000    
+                    static.FFT = dfftlist[0:320] #320 --> bandwith 3000
+
 
                 except:
                     

@@ -236,10 +236,7 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         
     except:
         callsign = callsign
-    
-    print(static.SSID_LIST)
-    for ssid in static.SSID_LIST:
-        print(ssid)    
+       
     for ssid in static.SSID_LIST:
     #for ssid in range(0,254):
         call_with_ssid = bytearray(callsign)        

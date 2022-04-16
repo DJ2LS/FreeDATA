@@ -355,7 +355,6 @@ class DATA():
         
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, self.received_mycall_crc)
-        print(mycallsign)
         if not valid:
             # ARQ data packet not for me.
             if not TESTMODE:
