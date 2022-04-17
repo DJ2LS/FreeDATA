@@ -1116,7 +1116,7 @@ class DATA():
         txbuffer = [disconnection_frame]                
         static.TRANSMITTING = True
                         
-        modem.MODEM_TRANSMIT_QUEUE.put([14,2,250,txbuffer])                
+        modem.MODEM_TRANSMIT_QUEUE.put([14,4,250,txbuffer])                
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)          
@@ -1637,7 +1637,7 @@ class DATA():
         cq_frame       = bytearray(14)
         cq_frame[:1]   = bytes([200])
         cq_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
-        cq_frame[9:13] = static.MYGRID[:4]
+        cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("utf-8"))
         
         txbuffer = [cq_frame]
         print(txbuffer)
@@ -1665,7 +1665,7 @@ class DATA():
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         print(dxcallsign)
-        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
+        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "utf-8")
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign, dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
@@ -1694,7 +1694,7 @@ class DATA():
         qrv_frame       = bytearray(14)
         qrv_frame[:1]   = bytes([201])
         qrv_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
-        qrv_frame[9:13] = static.MYGRID[:4]
+        qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("utf-8"))
         txbuffer        = [qrv_frame]
 
         static.TRANSMITTING = True
@@ -1720,7 +1720,7 @@ class DATA():
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
+        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "utf-8")
 
         jsondata = {"type" : "qrv", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
         json_data_out = json.dumps(jsondata)
