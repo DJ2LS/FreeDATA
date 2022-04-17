@@ -1037,7 +1037,7 @@ class DATA():
         connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:13]   = helpers.callsign_to_bytes(self.mycallsign)
+        connection_frame[5:11]   = helpers.callsign_to_bytes(self.mycallsign)
         
         
         while not static.ARQ_SESSION:
@@ -1085,7 +1085,7 @@ class DATA():
         self.arq_session_last_received = int(time.time())
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
         
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         structlog.get_logger("structlog").info("SESSION [" + str(self.mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
@@ -1111,7 +1111,7 @@ class DATA():
         disconnection_frame[:1]    = frametype
         disconnection_frame[1:3] = static.DXCALLSIGN_CRC
         disconnection_frame[3:5] = static.MYCALLSIGN_CRC
-        disconnection_frame[5:13]   = helpers.callsign_to_bytes(self.mycallsign)
+        disconnection_frame[5:11]   = helpers.callsign_to_bytes(self.mycallsign)
         
         txbuffer = [disconnection_frame]                
         static.TRANSMITTING = True
@@ -1259,14 +1259,14 @@ class DATA():
         connection_frame[:1]    = frametype
         connection_frame[1:3] = static.DXCALLSIGN_CRC
         connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:13]   = helpers.callsign_to_bytes(mycallsign)
+        connection_frame[5:11]   = helpers.callsign_to_bytes(mycallsign)
         connection_frame[13:14] = bytes([n_frames_per_burst])                    
         
         while not static.ARQ_STATE:
             time.sleep(0.01)
             for attempt in range(1,self.data_channel_max_retries+1):
                 static.INFO.append("DATACHANNEL;OPENING")
-                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(helpers.callsign_to_bytes(mycallsign), 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(self.data_channel_max_retries))                
+                structlog.get_logger("structlog").info("[TNC] ARQ | DATA | TX | [" + str(mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", attempt=str(attempt) + "/" + str(self.data_channel_max_retries))                
                 txbuffer = [connection_frame]                
                 static.TRANSMITTING = True
                 modem.MODEM_TRANSMIT_QUEUE.put([14,1,0,txbuffer])                
@@ -1315,7 +1315,7 @@ class DATA():
         self.is_IRS = True        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
 
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
@@ -1448,7 +1448,7 @@ class DATA():
         ping_frame[:1]  = bytes([210])
         ping_frame[1:3] = static.DXCALLSIGN_CRC
         ping_frame[3:5] = static.MYCALLSIGN_CRC
-        ping_frame[5:13] = helpers.callsign_to_bytes(self.mycallsign)
+        ping_frame[5:11] = helpers.callsign_to_bytes(self.mycallsign)
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
@@ -1473,7 +1473,7 @@ class DATA():
         """
 
         static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:13]))
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
         helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         static.INFO.append("PING;RECEIVING")
@@ -1582,7 +1582,7 @@ class DATA():
                         
                         beacon_frame = bytearray(14)
                         beacon_frame[:1]   = bytes([250])
-                        beacon_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
+                        beacon_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[9:13] = static.MYGRID[:4]
                         txbuffer = [beacon_frame]
 
@@ -1615,7 +1615,7 @@ class DATA():
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
 
         jsondata = {"type" : "beacon", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
@@ -1636,7 +1636,7 @@ class DATA():
         
         cq_frame       = bytearray(14)
         cq_frame[:1]   = bytes([200])
-        cq_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
+        cq_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[9:13] = static.MYGRID[:4]
         
         txbuffer = [cq_frame]
@@ -1663,7 +1663,8 @@ class DATA():
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        print(dxcallsign)
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
@@ -1692,7 +1693,7 @@ class DATA():
 
         qrv_frame       = bytearray(14)
         qrv_frame[:1]   = bytes([201])
-        qrv_frame[1:9]  = helpers.callsign_to_bytes(self.mycallsign)
+        qrv_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[9:13] = static.MYGRID[:4]
         txbuffer        = [qrv_frame]
 
@@ -1718,7 +1719,7 @@ class DATA():
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:9]))
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
 
         jsondata = {"type" : "qrv", "status" : "received",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'), "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
