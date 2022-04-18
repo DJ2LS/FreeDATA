@@ -538,8 +538,8 @@ autoUpdater.on('update-downloaded', (info) => {
   // we need to call this at this point. 
   // if an update is available and we are force closing the app
   // the entire screen crashes...
-  mainLog.info('quit application and install update');
-  autoUpdater.quitAndInstall();
+  //mainLog.info('quit application and install update');
+  //autoUpdater.quitAndInstall();
 
   
 });

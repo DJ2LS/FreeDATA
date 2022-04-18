@@ -757,22 +757,13 @@
 				<div class="col">
 					<div class="card text-dark mb-0">
 						<div class="card-header p-1">
-							<i class="bi bi-sliders2" style="font-size: 1rem; color: black;"></i> <strong>TNC SETTINGS</strong>
+							<i class="bi bi-sliders2" style="font-size: 1rem; color: black;"></i> <strong>Auto-Updater</strong>
 						</div>
 						<div class="card-body p-2 mb-1">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="fftSwitch">
-								<label class="form-check-label" for="fftSwitch">Waterfall</label>
-							</div>
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="scatterSwitch">
-								<label class="form-check-label" for="scatterSwitch">Scatter</label>
-							</div>
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
-								<label class="form-check-label" for="500HzModeSwitch">500Hz (HF)</label>
-							</div>
-							
+							<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>							
+							<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
+							<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
+							<button class="btn btn-primary btn-sm" id="update_and_install" type="button"  style="display:none;">Install & Restart</button>
 							
 							<!--<button class="btn btn-secondary btn-sm" id="python_version" type="button" disabled>Python</button>-->
 							<!--<button class="btn btn-secondary btn-sm" id="node_version" type="button" disabled>Node</button>-->
@@ -1320,6 +1311,36 @@
 					        </div>
 					    </label>
 				    </div>
+				    
+<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable Waterfall data</label>
+			            <label class="input-group-text">				    
+<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="fftSwitch">
+								<label class="form-check-label" for="fftSwitch">Waterfall</label>
+							</div>
+					    </label>
+				    </div>							
+							<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable Scatter diagram data</label>
+			            <label class="input-group-text">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="scatterSwitch">
+								<label class="form-check-label" for="scatterSwitch">Scatter</label>
+							</div>
+					    </label>
+				    </div>							
+							<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable 500Hz mode</label>
+			            <label class="input-group-text">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
+								<label class="form-check-label" for="500HzModeSwitch">500Hz</label>
+							</div>				    
+					    </label>
+				    </div>				    
+				    
+				    
 					
 					
 					

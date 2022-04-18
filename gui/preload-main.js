@@ -156,6 +156,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     // Update channel selector
     document.getElementById("update_channel_selector").value = config.update_channel;
+    document.getElementById("updater_channel").innerHTML = config.update_channel;
 
     // Update tuning range fmin fmax
     document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
@@ -193,7 +194,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
         document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
         //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+        document.getElementById("radio-control-rigctld").style.display = 'none';
 
         document.getElementById("radio-control-direct").style.display = 'block';
         document.getElementById("radio-control-direct").style.visibility = 'visible';
@@ -1855,12 +1856,23 @@ ipcRenderer.on('action-updater', (event, arg) => {
             ); // Returns a Bootstrap toast instance
             toast.show();
             document.title = "FreeDATA by DJ2LS" + ' - v' + arg.version;
+            document.getElementById("updater_status").innerHTML = "checking for update..."
+            document.getElementById("updater_status").setAttribute("class") = "btn btn-secondary btn-sm"
+            document.getElementById("update_and_install").style.display = 'none';
         }   
         if (arg.status == "update-downloaded"){
             var toast = bootstrap.Toast.getOrCreateInstance(
                 document.getElementById('toastUpdateDownloaded')            
             ); // Returns a Bootstrap toast instance
             toast.show();
+            document.getElementById("updater_status").innerHTML = "update downloaded..."
+            document.getElementById("updater_status").setAttribute("class") = "btn btn-secondary btn-sm"
+            document.getElementById("update_and_install").style.display = 'block';
+            
+            // HERE WE NEED TO RUN THIS SOMEHOW...
+            //mainLog.info('quit application and install update');
+            //autoUpdater.quitAndInstall();
+            
         }   
         if (arg.status == "update-not-available"){
             bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
@@ -1868,6 +1880,9 @@ ipcRenderer.on('action-updater', (event, arg) => {
                 document.getElementById('toastUpdateNotAvailable')            
             ); // Returns a Bootstrap toast instance
             toast.show();
+            document.getElementById("updater_status").innerHTML = "update not available"
+            document.getElementById("updater_status").setAttribute("class") = "btn btn-secondary btn-sm"
+            document.getElementById("update_and_install").style.display = 'none';
         }   
         if (arg.status == "update-available"){
         
@@ -1876,15 +1891,21 @@ ipcRenderer.on('action-updater', (event, arg) => {
                 document.getElementById('toastUpdateAvailable')            
             ); // Returns a Bootstrap toast instance
             toast.show();
+            document.getElementById("updater_status").innerHTML = "update available..."
+            document.getElementById("updater_status").setAttribute("class") = "btn btn-secondary btn-sm"
+            document.getElementById("update_and_install").style.display = 'block';
+
         }    
+
         
         if (arg.status == "error"){
             var toast = bootstrap.Toast.getOrCreateInstance(
                 document.getElementById('toastUpdateNotChecking')            
             ); // Returns a Bootstrap toast instance
             toast.show();
-
-            
+            document.getElementById("updater_status").innerHTML = "update error..."
+            document.getElementById("updater_status").setAttribute("class") = "btn btn-danger btn-sm"
+            document.getElementById("update_and_install").style.display = 'none';            
         }          
         
         
