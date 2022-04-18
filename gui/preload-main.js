@@ -110,8 +110,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
-    document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
-    document.getElementById("fskModeSwitch").value = config.enable_fsk; 
+    //document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
+    //document.getElementById("fskModeSwitch").value = config.enable_fsk; 
+    //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
        
@@ -139,6 +140,12 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         document.getElementById("fskModeSwitch").checked = true;
     } else {
         document.getElementById("fskModeSwitch").checked = false;
+    }  
+    
+    if(config.respond_to_cq == 'True'){
+        document.getElementById("respondCQSwitch").checked = true;
+    } else {
+        document.getElementById("respondCQSwitch").checked = false;
     }  
     // theme selector
 
@@ -509,6 +516,17 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    
+    // enable response to cq clicked
+    document.getElementById("respondCQSwitch").addEventListener("click", () => {
+        if(document.getElementById("respondCQSwitch").checked == true){
+            config.respond_to_cq = "True";       
+        } else {
+            config.respond_to_cq = "False";       
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });    
+    
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -630,6 +648,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         } else {
             var enable_fsk = "False";
         }        
+
+        if (document.getElementById("respondCQSwitch").checked == true){
+            var respond_to_cq = "True";
+        } else {
+            var respond_to_cq = "False";
+        } 
+
        
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
@@ -697,9 +722,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.enable_fsk = enable_fsk;
         config.low_bandwith_mode = low_bandwith_mode;
         config.tx_audio_level = tx_audio_level;
-        
- 
-        
+        config.respond_to_cq = respond_to_cq;
+
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
 
@@ -717,7 +741,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq);
         
         
     })

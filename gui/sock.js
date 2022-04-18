@@ -80,7 +80,7 @@ client.on('error', function(data) {
     ipcRenderer.send('request-update-tnc-state', Data);
     ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
     client.destroy();
-    setTimeout(connectTNC, 500)
+    setTimeout(connectTNC, 1500)
     // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
 
 });

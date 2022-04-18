@@ -67,6 +67,7 @@ FREQ_OFFSET = 0
 SCATTER = []
 ENABLE_SCATTER = False
 ENABLE_FSK = False
+RESPOND_TO_CQ = False
 # ---------------------------------
 
 # Audio Defaults

@@ -1670,8 +1670,8 @@ class DATA():
         structlog.get_logger("structlog").info("[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "]["+ str(dxgrid, 'utf-8') +"] ", snr=static.SNR)
         helpers.add_to_heard_stations(dxcallsign, dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
-        # TODO: Add configuration option to enable responding to CQ.
-        self.transmit_qrv()
+        if static.RESPOND_TO_CQ:
+            self.transmit_qrv()
 
 
     def transmit_qrv(self):

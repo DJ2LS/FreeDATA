@@ -86,8 +86,8 @@
 				</button>			
 				</span>
 				<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
-				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary"><strong>Settings </strong>
-				     <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
+				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary">
+				    <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
 					    
 				    </button>
 			    </span>
@@ -322,7 +322,7 @@
 								-->
 								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch3" autocomplete="off">
 								
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong><i class="bi bi-ethernet"></i></strong>
+								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong>rigctld</strong>
 								</label>
 							</div>
 							<div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a PTT device">
@@ -690,7 +690,7 @@
 							</div>
 							-->
 							<div id="radio-control-rigctld">
-								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">Rigctld IP</span>
+								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">IP</span>
 									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">:</span>
 									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
 								</div>
@@ -757,11 +757,9 @@
 				<div class="col">
 					<div class="card text-dark mb-0">
 						<div class="card-header p-1">
-
-							<i class="bi bi-cloud-download" style="font-size: 1rem; color: black;"></i> <strong>Auto-Updater</strong>
+							<i class="bi bi-sliders2" style="font-size: 1rem; color: black;"></i> <strong>Auto-Updater</strong>
 						</div>
 						<div class="card-body p-2 mb-1">
-							<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>							
 							<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
 							<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
 							<button class="btn btn-primary btn-sm" id="update_and_install" type="button"  style="display:none;">Install & Restart</button>
@@ -1231,12 +1229,12 @@
 		<div class="modal-dialog modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Settings</h5>
+					<h5 class="modal-title">App settings</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Theme</span>
-						<select class="form-select form-select-sm w-50" id="theme_selector">
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Theme</span>
+						<select class="form-select form-select-sm" id="theme_selector">
 							<option value="default">Default</option>
 							<option value="cerulean">Cerulean</option>
 							<option value="cosmo">Cosmo</option>
@@ -1266,8 +1264,8 @@
 						</select>
 					</div>
 					
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Update channel</span>
-						<select class="form-select form-select-sm w-50" id="update_channel_selector">
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Update channel</span>
+						<select class="form-select form-select-sm" id="update_channel_selector">
 							<option value="latest">stable</option>
 							<option value="beta">beta</option>
 							<option value="alpha">alpha</option>
@@ -1275,13 +1273,13 @@
 					</div>
 
 					<div class="input-group  input-group-sm mb-1">
-					  <label class="input-group-text w-50" for="inputGroupFile02">Received files folder</label>
-                      <input type="text" class="form-control w-50" id="received_files_folder">
+					  <label class="input-group-text" for="inputGroupFile02">Received files folder</label>
+                      <input type="text" class="form-control" id="received_files_folder">
 					</div>
 
 
 					<div class="input-group  input-group-sm mb-1">
-					  <label class="input-group-text w-25">Tuning range</label>
+					  <label class="input-group-text">Tuning range</label>
                       <label class="input-group-text">fmin</label>
 						<select class="form-select form-select-sm" id="tuning_range_fmin">
 							<option value="-50.0">-50.0</option>
@@ -1304,8 +1302,8 @@
 					
 									
 				    <div class="input-group  input-group-sm mb-1"> 
-				        <label class="input-group-text w-50">Enable FSK mode</label>
-			            <label class="input-group-text bg-white w-50">
+				        <label class="input-group-text">Enable FSK mode</label>
+			            <label class="input-group-text">
 				            <div class="form-check form-switch form-check-inline ms-2">
 						        <input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
 						        <label class="form-check-label" for="fskModeSwitch">not available, yet</label>
@@ -1314,41 +1312,33 @@
 				    </div>
 				    
 <div class="input-group  input-group-sm mb-1"> 
-				        <label class="input-group-text w-50">Enable Waterfall data</label>
-			            <label class="input-group-text bg-white w-50">				    
+				        <label class="input-group-text">Enable Waterfall data</label>
+			            <label class="input-group-text">				    
 <div class="form-check form-switch form-check-inline">
 								<input class="form-check-input" type="checkbox" id="fftSwitch">
 								<label class="form-check-label" for="fftSwitch">Waterfall</label>
 							</div>
 					    </label>
 				    </div>							
-							<div class="input-group input-group-sm mb-1"> 
-				        <label class="input-group-text w-50">Enable Scatter diagram data</label>
-			            <label class="input-group-text bg-white w-50">
+							<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable Scatter diagram data</label>
+			            <label class="input-group-text">
 							<div class="form-check form-switch form-check-inline">
 								<input class="form-check-input" type="checkbox" id="scatterSwitch">
 								<label class="form-check-label" for="scatterSwitch">Scatter</label>
 							</div>
 					    </label>
 				    </div>							
-					<div class="input-group  input-group-sm mb-1"> 
-				        <label class="input-group-text w-50">Enable 500Hz mode</label>
-			            <label class="input-group-text bg-white w-50">
+							<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text">Enable 500Hz mode</label>
+			            <label class="input-group-text">
 							<div class="form-check form-switch form-check-inline">
 								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
 								<label class="form-check-label" for="500HzModeSwitch">500Hz</label>
 							</div>				    
 					    </label>
 				    </div>				    
-				    <div class="input-group  input-group-sm mb-1"> 
-				        <label class="input-group-text w-50">Respond to CQ</label>
-			            <label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="respondCQSwitch">
-								<label class="form-check-label" for="respondCQSwitch">QRV</label>
-							</div>				    
-					    </label>
-				    </div>
+				    
 				    
 					
 					

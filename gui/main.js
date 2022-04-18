@@ -76,7 +76,8 @@ const configDefaultSettings = '{\
                   "beacon_interval" : 5,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
-                  "tuning_range_fmax" : "50.0"\
+                  "tuning_range_fmax" : "50.0",\
+                  "respond_to_cq" : "True" \
                   }';
 
 if (!fs.existsSync(configPath)) {

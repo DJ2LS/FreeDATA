@@ -537,7 +537,8 @@ def process_daemon_commands(data):
                                     tuning_range_fmin, \
                                     tuning_range_fmax, \
                                     enable_fsk, \
-                                    tx_audio_level \
+                                    tx_audio_level, \
+                                    respond_to_cq \
                                     ])
             command_response("start_tnc", True)
             
