@@ -194,8 +194,8 @@ class DATA():
 
         """
         # forward data only if broadcast or we are the receiver
-        # bytes_out[1:3] == callsign check for signalling frames, 
-        # bytes_out[2:4] == transmission
+        # bytes_out[1:4] == callsign check for signalling frames, 
+        # bytes_out[2:5] == transmission
         # we could also create an own function, which returns True.
         
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
@@ -204,10 +204,8 @@ class DATA():
 
         print(f"self.n_retries_per_burst = {self.n_retries_per_burst}")
 
-
-        #if bytes(bytes_out[1:3]) == self.mycallsign_CRC or bytes(bytes_out[2:4]) == self.mycallsign_CRC or frametype == 200 or frametype == 250:
-        _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:3]))
-        _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:4]))
+        _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
+        _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
         if _valid1 or _valid2 or frametype in [200, 201, 210, 250]:
         
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
@@ -349,7 +347,7 @@ class DATA():
         data_in = bytes(data_in)  
         
         # get received crc for different mycall ssids
-        self.received_mycall_crc = data_in[2:4]  
+        self.received_mycall_crc = data_in[2:5]  
         
         global TESTMODE
         
@@ -456,10 +454,10 @@ class DATA():
                 # create an ack frame
                 ack_frame = bytearray(14)
                 ack_frame[:1] = bytes([60])
-                ack_frame[1:3] = static.DXCALLSIGN_CRC
-                ack_frame[3:5] = static.MYCALLSIGN_CRC
-                ack_frame[5:6] = bytes([int(static.SNR)])
-                ack_frame[6:7] = bytes([int(self.speed_level)])
+                ack_frame[1:4] = static.DXCALLSIGN_CRC
+                ack_frame[4:7] = static.MYCALLSIGN_CRC
+                ack_frame[7:8] = bytes([int(static.SNR)])
+                ack_frame[8:9] = bytes([int(self.speed_level)])
                 # and transmit it
                 txbuffer = [ack_frame]
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING ACK")
@@ -494,9 +492,9 @@ class DATA():
             # then create a repeat frame 
             rpt_frame       = bytearray(14)
             rpt_frame[:1]   = bytes([62])
-            rpt_frame[1:3] = static.DXCALLSIGN_CRC
-            rpt_frame[3:5] = static.MYCALLSIGN_CRC
-            rpt_frame[5:11]  = missing_frames
+            rpt_frame[1:4] = static.DXCALLSIGN_CRC
+            rpt_frame[4:7] = static.MYCALLSIGN_CRC
+            rpt_frame[7:13]  = missing_frames
 
             # and transmit it
             txbuffer = [rpt_frame]
@@ -583,10 +581,10 @@ class DATA():
                 # BUILDING ACK FRAME FOR DATA FRAME
                 ack_frame       = bytearray(14)
                 ack_frame[:1]   = bytes([61])
-                ack_frame[1:3] = static.DXCALLSIGN_CRC
-                ack_frame[3:5] = static.MYCALLSIGN_CRC
-                ack_frame[5:6] = bytes([int(snr)])
-                ack_frame[6:7] = bytes([int(self.speed_level)])
+                ack_frame[1:4] = static.DXCALLSIGN_CRC
+                ack_frame[4:7] = static.MYCALLSIGN_CRC
+                ack_frame[7:8] = bytes([int(snr)])
+                ack_frame[8:9] = bytes([int(self.speed_level)])
                 # TRANSMIT ACK FRAME FOR BURST
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | SENDING DATA FRAME ACK", snr=static.SNR, crc=data_frame_crc.hex())
                 txbuffer = [ack_frame]
@@ -607,10 +605,10 @@ class DATA():
                 # BUILDING NACK FRAME FOR DATA FRAME
                 nack_frame       = bytearray(14)
                 nack_frame[:1]   = bytes([63])
-                nack_frame[1:3] = static.DXCALLSIGN_CRC
-                nack_frame[3:5] = static.MYCALLSIGN_CRC  
-                nack_frame[5:6] = bytes([int(snr)])
-                nack_frame[6:7] = bytes([int(self.speed_level)])
+                nack_frame[1:4] = static.DXCALLSIGN_CRC
+                nack_frame[4:7] = static.MYCALLSIGN_CRC  
+                nack_frame[7:8] = bytes([int(snr)])
+                nack_frame[8:9] = bytes([int(self.speed_level)])
                                 
                 # TRANSMIT NACK FRAME FOR BURST
                 txbuffer = [nack_frame]
@@ -754,8 +752,8 @@ class DATA():
                 arqheader = bytearray()
                 arqheader[:1] = bytes([10]) #bytes([10 + i])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST]) 
-                arqheader[2:4] = static.DXCALLSIGN_CRC
-                arqheader[4:6] = static.MYCALLSIGN_CRC
+                arqheader[2:5] = static.DXCALLSIGN_CRC
+                arqheader[5:8] = static.MYCALLSIGN_CRC
                     
                 bufferposition_end = (bufferposition + payload_per_frame - len(arqheader))           
 
@@ -1035,9 +1033,9 @@ class DATA():
     
         connection_frame        = bytearray(14)
         connection_frame[:1]    = frametype
-        connection_frame[1:3] = static.DXCALLSIGN_CRC
-        connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:11]   = helpers.callsign_to_bytes(self.mycallsign)
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[7:13]   = helpers.callsign_to_bytes(self.mycallsign)
         
         
         while not static.ARQ_SESSION:
@@ -1084,8 +1082,8 @@ class DATA():
 
         self.arq_session_last_received = int(time.time())
 
-        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
+        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         structlog.get_logger("structlog").info("SESSION [" + str(self.mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
@@ -1109,9 +1107,9 @@ class DATA():
     
         disconnection_frame        = bytearray(14)
         disconnection_frame[:1]    = frametype
-        disconnection_frame[1:3] = static.DXCALLSIGN_CRC
-        disconnection_frame[3:5] = static.MYCALLSIGN_CRC
-        disconnection_frame[5:11]   = helpers.callsign_to_bytes(self.mycallsign)
+        disconnection_frame[1:4] = static.DXCALLSIGN_CRC
+        disconnection_frame[4:7] = static.MYCALLSIGN_CRC
+        disconnection_frame[7:13]   = helpers.callsign_to_bytes(self.mycallsign)
         
         txbuffer = [disconnection_frame]                
         static.TRANSMITTING = True
@@ -1147,8 +1145,8 @@ class DATA():
     
         connection_frame        = bytearray(14)
         connection_frame[:1]    = frametype
-        connection_frame[1:3] = static.DXCALLSIGN_CRC
-        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
 
         
         txbuffer = [connection_frame]                
@@ -1257,9 +1255,9 @@ class DATA():
             
         connection_frame        = bytearray(14)
         connection_frame[:1]    = frametype
-        connection_frame[1:3] = static.DXCALLSIGN_CRC
-        connection_frame[3:5] = static.MYCALLSIGN_CRC
-        connection_frame[5:11]   = helpers.callsign_to_bytes(mycallsign)
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[7:13]   = helpers.callsign_to_bytes(mycallsign)
         connection_frame[13:14] = bytes([n_frames_per_burst])                    
         
         while not static.ARQ_STATE:
@@ -1314,8 +1312,8 @@ class DATA():
         self.arq_file_transfer = True
         self.is_IRS = True        
         static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
-        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
+        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
 
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")    
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
@@ -1341,7 +1339,7 @@ class DATA():
         helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if not valid:
             # ARQ connect packet not for me.
             if not TESTMODE:
@@ -1367,8 +1365,8 @@ class DATA():
         
         connection_frame = bytearray(14)
         connection_frame[:1] = frametype
-        connection_frame[1:3] = static.DXCALLSIGN_CRC
-        connection_frame[3:5] = static.MYCALLSIGN_CRC
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION]) #crc8 of version for checking protocol version    
 
         txbuffer = [connection_frame]
@@ -1397,7 +1395,6 @@ class DATA():
         protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
         if protocol_version == static.ARQ_PROTOCOL_VERSION:
             static.INFO.append("DATACHANNEL;OPEN")
-            #static.DXCALLSIGN_CRC = bytes(data_in[3:5])
             frametype = int.from_bytes(bytes(data_in[:1]), "big")  
                 
             if frametype == 228:
@@ -1439,16 +1436,16 @@ class DATA():
 
         """
         static.DXCALLSIGN = dxcallsign
-        static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
                 
         static.INFO.append("PING;SENDING")
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(self.mycallsign, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]" )
 
         ping_frame      = bytearray(14)
         ping_frame[:1]  = bytes([210])
-        ping_frame[1:3] = static.DXCALLSIGN_CRC
-        ping_frame[3:5] = static.MYCALLSIGN_CRC
-        ping_frame[5:11] = helpers.callsign_to_bytes(self.mycallsign)
+        ping_frame[1:4] = static.DXCALLSIGN_CRC
+        ping_frame[4:7] = static.MYCALLSIGN_CRC
+        ping_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
@@ -1472,25 +1469,26 @@ class DATA():
 
         """
 
-        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[5:11]))
+        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
         
         static.INFO.append("PING;RECEIVING")
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:3])
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if not valid:
             # PING packet not for me.
+            print("ping not for me...")
             return
         
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
 
         ping_frame      = bytearray(14)
         ping_frame[:1]  = bytes([211])
-        ping_frame[1:3] = static.DXCALLSIGN_CRC
-        ping_frame[3:5] = static.MYCALLSIGN_CRC
-        ping_frame[5:11] = static.MYGRID
+        ping_frame[1:4] = static.DXCALLSIGN_CRC
+        ping_frame[4:7] = static.MYCALLSIGN_CRC
+        ping_frame[7:13] = static.MYGRID
 
         txbuffer = [ping_frame]
         static.TRANSMITTING = True
@@ -1513,8 +1511,8 @@ class DATA():
 
         """
 
-        static.DXCALLSIGN_CRC = bytes(data_in[3:5])
-        static.DXGRID = bytes(data_in[5:11]).rstrip(b'\x00')
+        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+        static.DXGRID = bytes(data_in[7:13]).rstrip(b'\x00')
         
         jsondata = {"type" : "ping", "status" : "ack",  "uuid" : str(uuid.uuid4()),  "timestamp": int(time.time()), "mycallsign" : str(self.mycallsign, 'utf-8'), "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "snr": str(static.SNR)}
         json_data_out = json.dumps(jsondata)
@@ -1535,8 +1533,8 @@ class DATA():
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
         stop_frame      = bytearray(14)
         stop_frame[:1]  = bytes([249])
-        stop_frame[1:3] = static.DXCALLSIGN_CRC
-        stop_frame[3:5] = static.MYCALLSIGN_CRC
+        stop_frame[1:4] = static.DXCALLSIGN_CRC
+        stop_frame[4:7] = static.MYCALLSIGN_CRC
 
         txbuffer = [stop_frame]
         static.TRANSMITTING = True
@@ -1968,10 +1966,10 @@ class DATA():
                 # BUILDING NACK FRAME FOR DATA FRAME
                 burst_nack_frame       = bytearray(14)
                 burst_nack_frame[:1]   = bytes([64])
-                burst_nack_frame[1:3] = static.DXCALLSIGN_CRC
-                burst_nack_frame[3:5] = static.MYCALLSIGN_CRC  
-                burst_nack_frame[5:6] = bytes([0])
-                burst_nack_frame[6:7] = bytes([int(self.speed_level)])
+                burst_nack_frame[1:4] = static.DXCALLSIGN_CRC
+                burst_nack_frame[4:7] = static.MYCALLSIGN_CRC  
+                burst_nack_frame[7:8] = bytes([0])
+                burst_nack_frame[8:9] = bytes([int(self.speed_level)])
                                 
                 # TRANSMIT NACK FRAME FOR BURST
                 txbuffer = [burst_nack_frame]

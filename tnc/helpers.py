@@ -261,7 +261,7 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         False
     """
     
-    
+    print(callsign)
     try:
         callsign = callsign.split(b'-')
         callsign = callsign[0] # we want the callsign without SSID
@@ -270,12 +270,11 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         callsign = callsign
        
     for ssid in static.SSID_LIST:
-    #for ssid in range(0,254):
         call_with_ssid = bytearray(callsign)        
         call_with_ssid.extend('-'.encode('utf-8'))
         call_with_ssid.extend(str(ssid).encode('utf-8'))
 
-        callsign_crc = get_crc_16(call_with_ssid)
+        callsign_crc = get_crc_24(call_with_ssid)
 
         if callsign_crc == crc_to_check:
             print(call_with_ssid)

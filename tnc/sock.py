@@ -277,7 +277,7 @@ def process_tnc_commands(data):
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
                 
                 static.DXCALLSIGN = dxcallsign
-                static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
                                 
                 data_handler.DATA_QUEUE_TRANSMIT.put(['CONNECT', dxcallsign])
                 command_response("connect", True)
@@ -308,11 +308,11 @@ def process_tnc_commands(data):
                     dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
                     static.DXCALLSIGN = dxcallsign
-                    static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
                     command_response("send_raw", True)
                 else:
                     dxcallsign = static.DXCALLSIGN
-                    static.DXCALLSIGN_CRC = helpers.get_crc_16(static.DXCALLSIGN)
+                    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
                     
                 mode = int(received_json["parameter"][0]["mode"])
@@ -461,7 +461,7 @@ def process_daemon_commands(data):
                 structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
             else:
                 static.MYCALLSIGN = bytes(callsign, 'utf-8')
-                static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)
+                static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
                 command_response("mycallsign", True)
                 structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
@@ -510,6 +510,8 @@ def process_daemon_commands(data):
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
+            respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
+
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:

@@ -84,7 +84,7 @@ if __name__ == '__main__':
     mycallsign = bytes(ARGS.mycall.upper(), 'utf-8')
     mycallsign = helpers.callsign_to_bytes(mycallsign)
     static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
+    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)  
     
     static.SSID_LIST = ARGS.ssid_list
       
