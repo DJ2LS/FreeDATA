@@ -17,12 +17,15 @@ const config = require(configPath);
 var daemon = new net.Socket();
 var socketchunk = ''; // Current message, per connection.
 
+// global to keep track of daemon connection error emissions
+var daemonShowConnectStateError = 1
+
 setTimeout(connectDAEMON, 500)
 
 function connectDAEMON() {
-
-
-    daemonLog.info('connecting to daemon');
+    if (daemonShowConnectStateError == 1) {
+        daemonLog.info('connecting to daemon');
+    }
 
     //clear message buffer after reconnecting or inital connection
     socketchunk = '';
@@ -38,25 +41,30 @@ function connectDAEMON() {
 }
 
 daemon.on('connect', function(err) {
-
     daemonLog.info('daemon connection established');
     let Data = {
         daemon_connection: daemon.readyState,
     };
     ipcRenderer.send('request-update-daemon-connection', Data);
 
+    daemonShowConnectStateError = 1
 })
 
 daemon.on('error', function(err) {
-    daemonLog.error('daemon connection error');
-    daemonLog.error(err)
+    if (daemonShowConnectStateError == 1) {
+        daemonLog.error('daemon connection error');
+        daemonLog.info('Make sure the daemon is started.');
+        daemonLog.info('Run "python daemon.py" in the tnc directory.');
+        daemonLog.debug(err)
+        
+        daemonShowConnectStateError = 0
+    }
+    setTimeout(connectDAEMON, 500)
     daemon.destroy();
-    setTimeout(connectDAEMON, 1000)
     let Data = {
         daemon_connection: daemon.readyState,
     };
     ipcRenderer.send('request-update-daemon-connection', Data);
-
 });
 
 /*
