@@ -1541,6 +1541,7 @@ class DATA():
         stop_frame[:1]  = bytes([249])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
         stop_frame[4:7] = static.MYCALLSIGN_CRC
+        stop_frame[7:13]   = helpers.callsign_to_bytes(self.mycallsign)
 
         txbuffer = [stop_frame]
         static.TRANSMITTING = True
