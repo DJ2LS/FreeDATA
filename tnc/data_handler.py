@@ -1009,8 +1009,8 @@ class DATA():
             time.sleep(0.01)
             static.ARQ_SESSION_STATE = 'connecting'
 
-        if static.ARQ_SESSION:
-            static.ARQ_SESSION_STATE = 'connected'
+        if static.ARQ_SESSION and static.ARQ_SESSION_STATE == 'connected':
+            # static.ARQ_SESSION_STATE = 'connected'
             return True
         else:
             static.ARQ_SESSION_STATE = 'failed'
@@ -1057,15 +1057,18 @@ class DATA():
                     # break if data channel is opened    
                     if static.ARQ_SESSION:
                         # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
-                        break
-                if static.ARQ_SESSION:
-                    break
-        
-        
-                if not static.ARQ_SESSION and attempt == self.session_connect_max_retries:
-                    if not TESTMODE:
-                        self.arq_cleanup()
-                    return False
+                        return True
+                # if static.ARQ_SESSION:
+                #     break
+
+            # Session connect timeout, send close_session frame to
+            # attempt to cleanup the far-side, if it received the
+            # open_session frame and can still hear us.
+            if not static.ARQ_SESSION:
+                # if not TESTMODE:
+                #     self.arq_cleanup()
+                self.close_session()
+                return False
                                 
                 
     def received_session_opener(self, data_in:bytes):
@@ -1137,9 +1140,9 @@ class DATA():
     def transmit_session_heartbeat(self):
         """ """
 
-        static.ARQ_SESSION = True
-        static.TNC_STATE = 'BUSY'
-        static.ARQ_SESSION_STATE = 'connected'
+        # static.ARQ_SESSION = True
+        # static.TNC_STATE = 'BUSY'
+        # static.ARQ_SESSION_STATE = 'connected'
 
         frametype = bytes([222])
     
@@ -1292,7 +1295,10 @@ class DATA():
                     self.datachannel_timeout = True
                     if not TESTMODE:
                         self.arq_cleanup()
-                    
+
+                    # attempt to cleanup the far-side, if it received the
+                    # open_session frame and can still hear us.
+                    self.close_session()
                     return False
                     #sys.exit() # close thread and so connection attempts
 
@@ -1942,7 +1948,7 @@ class DATA():
         """
       
         # IRS SIDE        
-        if static.ARQ_STATE and static.TNC_STATE == 'BUSY' and self.is_IRS:
+        if static.ARQ_STATE and static.ARQ_SESSION_STATE == 'connected' and static.TNC_STATE == 'BUSY' and self.is_IRS:
             if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
                 #print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
                 pass
@@ -2028,7 +2034,7 @@ class DATA():
         """
         while 1:
             time.sleep(0.01)
-            if static.ARQ_SESSION and self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
+            if static.ARQ_SESSION and self.IS_ARQ_SESSION_MASTER and static.ARQ_SESSION_STATE == "connected" and not self.arq_file_transfer:
                 time.sleep(1)
                 self.transmit_session_heartbeat()
                 time.sleep(2)
