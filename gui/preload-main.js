@@ -155,17 +155,17 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
         var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
         document.getElementById("theme_selector").value = config.theme;
-        document.getElementById("bootstrap_theme").href = theme_path;
+        document.getElementById("bootstrap_theme").href = escape(theme_path);
     } else {    
         var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
         document.getElementById("theme_selector").value = 'default';
-        document.getElementById("bootstrap_theme").href = theme_path;
+        document.getElementById("bootstrap_theme").href = escape(theme_path);
     }
     
 
     // Update channel selector
     document.getElementById("update_channel_selector").value = config.update_channel;
-    document.getElementById("updater_channel").innerHTML = config.update_channel;
+    document.getElementById("updater_channel").innerHTML = escape(config.update_channel);
 
     // Update tuning range fmin fmax
     document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
@@ -577,7 +577,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }
         
         //update path to css file
-        document.getElementById("bootstrap_theme").href = theme_path
+        document.getElementById("bootstrap_theme").href = escape(theme_path)
         
         config.theme = theme;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
