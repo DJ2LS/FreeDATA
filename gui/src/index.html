@@ -97,61 +97,7 @@
 	<div id="blurdiv" style="-webkit-Filter: blur(0px)">
 		<!--beginn of blur div -->
 		<!-------------------------------- MAIN AREA ---------------->
-		<!-------------------------------- UPDATE TOASTS ---------------->
-		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
-			<div class="toast-container position-absolute top-0 start-0 end-0 p-3">
-				<!-- CHECKING FOR UPDATE -->
-				<div class="toast align-items-center text-white bg-secondary border-0" id="toastUpdateChecking" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body"><i class="bi bi-search" style="font-size: 1rem; color: white;"></i> Checking for update</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				<!-- DOWNLOAD PROGRESS -->
-				<div class="toast align-items-center bg-white" id="toastUpdateProgress" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="false" data-bs-autohide="false">
-					<!--<div class="d-flex"> -->
-					<div class="toast-header"> <strong class="me-auto">Downloading...</strong>
-						<small><span id="toastUpdateProgressSpeed"></span></small>
-					</div>
-					<div class="toast-body w-100">
-						<div class="progress">
-							<div class="progress-bar" style="width: 75%" role="progressbar" id="toastUpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="toastUpdateProgressInfo"></span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- DOWNLOADED -->
-				<div class="toast bg-white" role="alert" data-bs-autohide="false" id="toastUpdateDownloaded" aria-live="assertive" aria-atomic="true">
-					<div class="toast-header"> <strong class="me-auto">    Update ready...</strong>
-					</div>
-					<div class="toast-body">App is going to restart automatically...</div>
-				</div>
-				<!-- UPDATE AVAILABLE -->
-				
-				<div class="toast align-items-center text-white bg-primary border-0" data-bs-autohide="false" id="toastUpdateAvailable" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body"> <i class="bi bi-activity" style="font-size: 1rem; color: white;"></i> Preparing for download...</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				
-				
-				<!-- UPDATE NOT AVAILABLE -->
-				<div class="toast align-items-center text-white bg-success border-0" id="toastUpdateNotAvailable" role="alert" aria-live="assertive" aria-atomic="true"data-bs-delay="1500">
-					<div class="d-flex">
-						<div class="toast-body"> <i class="bi bi-activity" style="font-size: 1rem; color: white;"></i> Up to date!</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				<!-- NOT CHECKING FOR UPDATE -->
-				<div class="toast align-items-center text-white bg-warning border-0" id="toastUpdateNotChecking" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body">Update not available - Please try again later!</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-			</div>
-		</div>
+		
 		<!-------------------------------- INFO TOASTS ---------------->
 		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
 			<div class="toast-container position-absolute top-0 end-0 p-3">
@@ -756,31 +702,25 @@
 				</div>
 				<div class="col">
 					<div class="card text-dark mb-0">
-						<div class="card-header p-1">
+						<div class="card-header p-1 d-flex">
 
-							<i class="bi bi-cloud-download" style="font-size: 1rem; color: black;"></i> <strong>Auto-Updater</strong>
+							<i class="bi bi-cloud-download ms-1 me-1" style="font-size: 1rem; color: black;"></i> <strong>UPDATER</strong>
+							
+							<div class="progress w-75 ms-1 m-1">
+							<div class="progress-bar" style="width: 0%" role="progressbar" id="UpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="UpdateProgressInfo"></span>
+							</div>
+						</div>
+							
+							
+							
 						</div>
 						<div class="card-body p-2 mb-1">
 							<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>							
 							<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
 							<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
-							<button class="btn btn-primary btn-sm" id="update_and_install" type="button"  style="display:none;">Install & Restart</button>
+							<button class="btn btn-primary btn-sm" id="update_and_install" type="button" style="display:none;">Install & Restart</button>
 							
-							<!--<button class="btn btn-secondary btn-sm" id="python_version" type="button" disabled>Python</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="node_version" type="button" disabled>Node</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="hamlib_version" type="button" disabled>Hamlib</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="operating_system" type="button" disabled>OS</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="cpu_load_button" type="button" disabled>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu" viewBox="0 0 16 16">
-									<path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
-								</svg> <span id="cpu_load">---</span>
-							</button>
-							<button class="btn btn-secondary btn-sm" id="ram_load_button" type="button" disabled>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-memory" viewBox="0 0 16 16">
-									<path d="M1 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.586a1 1 0 0 0 .707-.293l.353-.353a.5.5 0 0 1 .708 0l.353.353a1 1 0 0 0 .707.293H15a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H1Zm.5 1h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm5 0h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm4.5.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4ZM2 10v2H1v-2h1Zm2 0v2H3v-2h1Zm2 0v2H5v-2h1Zm3 0v2H8v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Z" />
-								</svg> <span id="ram_load">---</span>	
-							</button>
-							-->
+							
 						</div>
 					</div>
 				</div>

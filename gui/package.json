@@ -46,12 +46,13 @@
     "uuid": "^8.3.2"
   },
   "devDependencies": {
-    "electron": "^18.0.4",
-    "electron-builder": "^22.5.1"
+    "electron": "^18.1.0",
+    "electron-builder": "^23.0.3"
   },
   "build": {
     "productName": "FreeDATA",
     "appId": "app.freedata",
+    "npmRebuild" : "false",
     "directories": {
       "buildResources": "src/img",
       "output": "dist"
@@ -93,3 +94,4 @@
     ]
   }
 }
+
