@@ -86,6 +86,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     ssid = callsign_and_ssid[1];
     
     document.getElementById("myCall").value = callsign;
+    document.title = document.title + ' - Call: ' + config.mycall;
+    
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
     
@@ -427,6 +429,11 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         ssid = document.getElementById("myCallSSID").value;
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
+        
+        // split document title by looking for Call then split and update it
+        var documentTitle = document.title.split('Call:')
+        document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
+              
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
@@ -1876,7 +1883,7 @@ ipcRenderer.on('action-updater', (event, arg) => {
 
         if (arg.status == "checking-for-update"){
 
-            document.title = "FreeDATA by DJ2LS" + ' - v' + arg.version;
+            document.title = document.title + ' - v' + arg.version;
             document.getElementById("updater_status").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
             
              
