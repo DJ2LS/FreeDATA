@@ -1114,7 +1114,7 @@ class DATA():
         txbuffer = [disconnection_frame]                
         static.TRANSMITTING = True
                         
-        modem.MODEM_TRANSMIT_QUEUE.put([14,4,250,txbuffer])                
+        modem.MODEM_TRANSMIT_QUEUE.put([14,5,250,txbuffer])                
         # wait while transmitting
         while static.TRANSMITTING:
             time.sleep(0.01)          

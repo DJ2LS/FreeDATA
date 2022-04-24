@@ -403,6 +403,11 @@ class RF():
         # explicitly lock our usage of mod_out_queue if needed
         # deaktivated for testing purposes
         self.mod_out_locked = False
+        
+        
+        # -------------------------------
+        
+        
 
 
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX #4800
