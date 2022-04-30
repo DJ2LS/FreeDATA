@@ -1906,7 +1906,7 @@ ipcRenderer.on('action-updater', (event, arg) => {
             
         }   
         if (arg.status == "update-not-available"){
-            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
+            //bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
 
             document.getElementById("updater_status").innerHTML = '<i class="bi bi-check2-square ms-1 me-1" style="color: white;"></i>';
             document.getElementById("updater_status").className = "btn btn-success btn-sm";
@@ -1914,7 +1914,7 @@ ipcRenderer.on('action-updater', (event, arg) => {
         }   
         if (arg.status == "update-available"){
         
-            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
+            //bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
 
             document.getElementById("updater_status").innerHTML = "update available...";
             document.getElementById("updater_status").className = "btn btn-warning btn-sm";
