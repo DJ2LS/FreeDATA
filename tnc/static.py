@@ -8,7 +8,7 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-) 
 """
 
-VERSION = '0.3.4-alpha'
+VERSION = '0.4.0-alpha'
 
 # DAEMON
 DAEMONPORT = 3001
@@ -67,6 +67,7 @@ FREQ_OFFSET = 0
 SCATTER = []
 ENABLE_SCATTER = False
 ENABLE_FSK = False
+RESPOND_TO_CQ = False
 # ---------------------------------
 
 # Audio Defaults
@@ -83,7 +84,7 @@ ENABLE_FFT = False
 CHANNEL_BUSY = None
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION = 0
+ARQ_PROTOCOL_VERSION = 1
 
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST = 0

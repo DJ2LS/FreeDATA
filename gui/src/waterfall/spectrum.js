@@ -383,7 +383,7 @@ Spectrum.prototype.onKeypress = function(e) {
 
 function Spectrum(id, options) {
     // Handle options
-    this.centerHz = (options && options.centerHz) ? options.centerHz : 0;
+    this.centerHz = (options && options.centerHz) ? options.centerHz : 1500;
     this.spanHz = (options && options.spanHz) ? options.spanHz : 0;
     this.wf_size = (options && options.wf_size) ? options.wf_size : 0;
     this.wf_rows = (options && options.wf_rows) ? options.wf_rows : 1024;

@@ -21,11 +21,14 @@ var socketchunk = ''; // Current message, per connection.
 // split character
 const split_char = '\0;'
 
-// globals for getting new data only if available so we are saving bandwith
+// globals for getting new data only if available so we are saving bandwidth
 var rxBufferLengthTnc = 0
 var rxBufferLengthGui = 0
 var rxMsgBufferLengthTnc = 0
 var rxMsgBufferLengthGui = 0
+
+// global to keep track of TNC connection error emissions
+var tncShowConnectStateError = 1
 
 // network connection Timeout
 setTimeout(connectTNC, 2000)
@@ -60,12 +63,20 @@ client.on('connect', function(data) {
     // also update tnc connection state
     ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});   
     
-    
+    tncShowConnectStateError = 1
 })
 
 client.on('error', function(data) {
-    socketLog.error('TNC connection error');
-    socketLog.error(data);
+    if (tncShowConnectStateError == 1) {
+        socketLog.error('TNC connection error');
+        socketLog.info('TNC is started by the GUI process.');
+        socketLog.debug(data);
+        // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
+        
+        tncShowConnectStateError = 0
+    }
+    setTimeout(connectTNC, 500)
+    client.destroy();
     let Data = {
         tnc_connection: client.readyState,
         busy_state: "-",
@@ -79,10 +90,6 @@ client.on('error', function(data) {
     };
     ipcRenderer.send('request-update-tnc-state', Data);
     ipcRenderer.send('request-update-tnc-connection', {tnc_connection : client.readyState});
-    client.destroy();
-    setTimeout(connectTNC, 500)
-    // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
-
 });
 
 /*

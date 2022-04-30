@@ -66,6 +66,28 @@ def get_crc_16(data):
     crc_data = crc_data.to_bytes(2, byteorder='big')
     return crc_data
 
+def get_crc_24(data):
+    """Author: DJ2LS
+    
+    Get the CRC24-OPENPGP of a byte string
+    https://github.com/GardenTools/CrcEngine#examples
+    
+    param: data = bytes()
+
+    Args:
+      data: 
+
+    Returns:
+
+    """
+    crc_algorithm = crcengine.create(0x864cfb, 24, 0xb704ce, ref_in=False,
+                               ref_out=False, xor_out=0,
+                               name='crc-24-openpgp')    
+    crc_data = crc_algorithm(data)
+    crc_data = crc_data.to_bytes(3, byteorder='big')
+    return crc_data
+    
+    
 def get_crc_32(data):
     """Author: DJ2LS
     
@@ -163,21 +185,28 @@ def callsign_to_bytes(callsign):
     except:
         ssid = 0
         
-    callsign = callsign[0]
-    
-    bytestring = bytearray(8)
-    bytestring[:len(callsign)] = callsign
-    bytestring[7:8] = bytes([ssid])
+    #callsign = callsign[0] 
+    #bytestring = bytearray(8)
+    #bytestring[:len(callsign)] = callsign
+    #bytestring[7:8] = bytes([ssid])
 
-    return bytes(bytestring) 
+    # ---- callsign with encoding always 6 bytes long
+    callsign = callsign[0].decode("utf-8")
+    ssid = bytes([ssid]).decode("utf-8")
+    return encode_call(callsign + ssid)
+
+
+    #return bytes(bytestring) 
     
 def bytes_to_callsign(bytestring):
     """
+    Convert our callsign, received by a frame to a callsign in a human readable format
 
     Args:
       bytestring: 
 
     Returns:
+        bytes
 
     """
 
@@ -200,7 +229,7 @@ def bytes_to_callsign(bytestring):
     #-15 generic additional station, digi, mobile, wx, etc
         
     # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )    
-
+    '''
     callsign = bytes(bytestring[:7])
     callsign = callsign.rstrip(b'\x00')
     ssid = int.from_bytes(bytes(bytestring[7:8]), "big")
@@ -211,7 +240,11 @@ def bytes_to_callsign(bytestring):
     callsign = callsign.encode('utf-8')
     
     return bytes(callsign) 
-
+    '''
+    decoded = decode_call(bytestring)
+    callsign = decoded[:-1]
+    ssid = ord(bytes(decoded[-1], "utf-8"))
+    return bytes(callsign + "-" + str(ssid), "utf-8")
 
 
 
@@ -227,9 +260,8 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         [True, Callsign + SSID]
         False
     """
-
-    crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc16 library
     
+    print(callsign)
     try:
         callsign = callsign.split(b'-')
         callsign = callsign[0] # we want the callsign without SSID
@@ -238,12 +270,11 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         callsign = callsign
        
     for ssid in static.SSID_LIST:
-    #for ssid in range(0,254):
         call_with_ssid = bytearray(callsign)        
         call_with_ssid.extend('-'.encode('utf-8'))
         call_with_ssid.extend(str(ssid).encode('utf-8'))
 
-        callsign_crc = get_crc_16(call_with_ssid)
+        callsign_crc = get_crc_24(call_with_ssid)
 
         if callsign_crc == crc_to_check:
             print(call_with_ssid)
@@ -328,7 +359,7 @@ def encode_call(call):
     out_code_word = int(0)
 
     call = call.upper() # upper case to be save
-
+    
     for x in call:
         int_val = ord(x)-48 # -48 reduce bits, begin with first number utf8 table
         out_code_word = out_code_word << 6 # shift left 6 bit, making space for a new char
@@ -355,6 +386,7 @@ def decode_call(b_code_word:bytes):
     while code_word != 0:
         call  = chr((code_word & 0b111111)+48) + call
         code_word = code_word >> 6
+
     call = call[0:-1] + ssid # remove the last char from call and replace with SSID
 
     return call

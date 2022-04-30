@@ -70,6 +70,7 @@ if __name__ == '__main__':
     PARSER.add_argument('--fft', dest="send_fft", action="store_true", help="Send fft information via network") 
     PARSER.add_argument('--500hz', dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )") 
     PARSER.add_argument('--fsk', dest="enable_fsk", action="store_true", help="Enable FSK mode for ping, beacon and CQ") 
+    PARSER.add_argument('--qrv', dest="enable_respond_to_cq", action="store_true", help="Enable sending a QRV frame if CQ received") 
     PARSER.add_argument('--tuning_range_fmin', dest="tuning_range_fmin", choices=[-50.0, -100.0, -150.0, -200.0, -250.0], default=-50.0, help="Tuning range fmin", type=float)  
     PARSER.add_argument('--tuning_range_fmax', dest="tuning_range_fmax", choices=[50.0, 100.0, 150.0, 200.0, 250.0], default=50.0, help="Tuning range fmax", type=float)
     PARSER.add_argument('--tx-audio-level', dest="tx_audio_level", default=50, help="Set the tx audio level at an early stage", type=int)  
@@ -83,7 +84,7 @@ if __name__ == '__main__':
     mycallsign = bytes(ARGS.mycall.upper(), 'utf-8')
     mycallsign = helpers.callsign_to_bytes(mycallsign)
     static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_16(static.MYCALLSIGN)  
+    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)  
     
     static.SSID_LIST = ARGS.ssid_list
       
@@ -109,7 +110,7 @@ if __name__ == '__main__':
     static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin    
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax                
     static.TX_AUDIO_LEVEL = ARGS.tx_audio_level     
-        
+    static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq            
         
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock     

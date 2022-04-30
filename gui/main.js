@@ -76,7 +76,8 @@ const configDefaultSettings = '{\
                   "beacon_interval" : 5,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
-                  "tuning_range_fmax" : "50.0"\
+                  "tuning_range_fmax" : "50.0",\
+                  "respond_to_cq" : "True" \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -506,6 +507,13 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
       
 });
 
+
+//restart and install udpate
+ipcMain.on('request-restart-and-install',(event,data)=>{
+    close_sub_processes()
+    autoUpdater.quitAndInstall();
+});
+
 // LISTENER FOR UPDATER EVENTS
 autoUpdater.on('update-available', (info) => {
   mainLog.info('update available');
@@ -538,8 +546,8 @@ autoUpdater.on('update-downloaded', (info) => {
   // we need to call this at this point. 
   // if an update is available and we are force closing the app
   // the entire screen crashes...
-  mainLog.info('quit application and install update');
-  autoUpdater.quitAndInstall();
+  //mainLog.info('quit application and install update');
+  //autoUpdater.quitAndInstall();
 
   
 });
@@ -573,10 +581,8 @@ autoUpdater.on('error', (error) => {
 
 
 
-
-function close_all() {
-
-    // function for closing the application with closing all used processes
+function close_sub_processes(){
+    mainLog.warn('closing sub processes');
 
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
@@ -618,6 +624,16 @@ function close_all() {
         app.quit();
     }
     */
+
+};
+
+
+function close_all() {
+
+    // function for closing the application with closing all used processes
+
+    close_sub_processes();
+    
     mainLog.warn('quitting app');
     
     win.destroy();

@@ -86,6 +86,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     ssid = callsign_and_ssid[1];
     
     document.getElementById("myCall").value = callsign;
+    document.title = document.title + ' - Call: ' + config.mycall;
+    
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
     
@@ -110,8 +112,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
-    document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
-    document.getElementById("fskModeSwitch").value = config.enable_fsk; 
+    //document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
+    //document.getElementById("fskModeSwitch").value = config.enable_fsk; 
+    //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
        
@@ -140,22 +143,29 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     } else {
         document.getElementById("fskModeSwitch").checked = false;
     }  
+    
+    if(config.respond_to_cq == 'True'){
+        document.getElementById("respondCQSwitch").checked = true;
+    } else {
+        document.getElementById("respondCQSwitch").checked = false;
+    }  
     // theme selector
 
     if(config.theme != 'default'){
 
         var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
         document.getElementById("theme_selector").value = config.theme;
-        document.getElementById("bootstrap_theme").href = theme_path;
+        document.getElementById("bootstrap_theme").href = escape(theme_path);
     } else {    
         var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
         document.getElementById("theme_selector").value = 'default';
-        document.getElementById("bootstrap_theme").href = theme_path;
+        document.getElementById("bootstrap_theme").href = escape(theme_path);
     }
     
 
     // Update channel selector
     document.getElementById("update_channel_selector").value = config.update_channel;
+    document.getElementById("updater_channel").innerHTML = escape(config.update_channel);
 
     // Update tuning range fmin fmax
     document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
@@ -193,7 +203,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
         document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
         //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+        document.getElementById("radio-control-rigctld").style.display = 'none';
 
         document.getElementById("radio-control-direct").style.display = 'block';
         document.getElementById("radio-control-direct").style.visibility = 'visible';
@@ -419,6 +429,11 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         ssid = document.getElementById("myCallSSID").value;
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
+        
+        // split document title by looking for Call then split and update it
+        var documentTitle = document.title.split('Call:')
+        document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
+              
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
@@ -450,6 +465,11 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     
     
+
+    // close app, update and restart
+    document.getElementById("update_and_install").addEventListener("click", () => {
+        ipcRenderer.send('request-restart-and-install');
+    });
     
     // open arq session
     document.getElementById("openARQSession").addEventListener("click", () => {
@@ -508,6 +528,17 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    
+    // enable response to cq clicked
+    document.getElementById("respondCQSwitch").addEventListener("click", () => {
+        if(document.getElementById("respondCQSwitch").checked == true){
+            config.respond_to_cq = "True";       
+        } else {
+            config.respond_to_cq = "False";       
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });    
+    
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -546,7 +577,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }
         
         //update path to css file
-        document.getElementById("bootstrap_theme").href = theme_path
+        document.getElementById("bootstrap_theme").href = escape(theme_path)
         
         config.theme = theme;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -629,6 +660,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         } else {
             var enable_fsk = "False";
         }        
+
+        if (document.getElementById("respondCQSwitch").checked == true){
+            var respond_to_cq = "True";
+        } else {
+            var respond_to_cq = "False";
+        } 
+
        
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
@@ -696,9 +734,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.enable_fsk = enable_fsk;
         config.low_bandwith_mode = low_bandwith_mode;
         config.tx_audio_level = tx_audio_level;
-        
- 
-        
+        config.respond_to_cq = respond_to_cq;
+
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
 
@@ -716,7 +753,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq);
         
         
     })
@@ -1828,63 +1865,69 @@ ipcRenderer.on('action-updater', (event, arg) => {
 
         if (arg.status == "download-progress"){
         
-            bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateAvailable')).hide(); // close our update available notification
+            var progressinfo = '(' 
+                + Math.round(arg.progress.transferred/1024) 
+                + 'kB /' 
+                + Math.round(arg.progress.total/1024) 
+                + 'kB)' 
+                + ' @ ' 
+                + Math.round(arg.progress.bytesPerSecond/1024) 
+                + "kByte/s";; 
+            document.getElementById("UpdateProgressInfo").innerHTML = progressinfo;            
             
-            
-            var progressinfo = '(' + Math.round(arg.progress.transferred/1024) + 'kB /' + Math.round(arg.progress.total/1024) + 'kB)'; 
-            document.getElementById("toastUpdateProgressInfo").innerHTML = progressinfo;            
-            document.getElementById("toastUpdateProgressSpeed").innerHTML = Math.round(arg.progress.bytesPerSecond/1024) + "kByte/s";
-            
-            document.getElementById("toastUpdateProgressBar").setAttribute("aria-valuenow", arg.progress.percent)
-            document.getElementById("toastUpdateProgressBar").setAttribute("style", "width:" + arg.progress.percent + "%;")
+            document.getElementById("UpdateProgressBar").setAttribute("aria-valuenow", arg.progress.percent)
+            document.getElementById("UpdateProgressBar").setAttribute("style", "width:" + arg.progress.percent + "%;")
          
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateProgress')             
-            ); // Returns a Bootstrap toast instance
             
-
-            let showing = document.getElementById("toastUpdateProgress").getAttribute("class").includes("showing");
-            if(!showing){
-                toast.show();                
-            }
         }   
 
         if (arg.status == "checking-for-update"){
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateChecking')     
-            ); // Returns a Bootstrap toast instance
-            toast.show();
-            document.title = "FreeDATA by DJ2LS" + ' - v' + arg.version;
+
+            document.title = document.title + ' - v' + arg.version;
+            document.getElementById("updater_status").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+            
+             
+            
+            
+            
+            document.getElementById("updater_status").className = "btn btn-secondary btn-sm";
+            document.getElementById("update_and_install").style.display = 'none';
         }   
         if (arg.status == "update-downloaded"){
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateDownloaded')            
-            ); // Returns a Bootstrap toast instance
-            toast.show();
+
+            
+            document.getElementById("update_and_install").removeAttribute("style");
+            document.getElementById("updater_status").innerHTML = '<i class="bi bi-cloud-download ms-1 me-1" style="color: white;"></i>';
+            document.getElementById("updater_status").className = "btn btn-success btn-sm";
+            
+            // HERE WE NEED TO RUN THIS SOMEHOW...
+            //mainLog.info('quit application and install update');
+            //autoUpdater.quitAndInstall();
+            
         }   
         if (arg.status == "update-not-available"){
             bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateNotAvailable')            
-            ); // Returns a Bootstrap toast instance
-            toast.show();
+
+            document.getElementById("updater_status").innerHTML = '<i class="bi bi-check2-square ms-1 me-1" style="color: white;"></i>';
+            document.getElementById("updater_status").className = "btn btn-success btn-sm";
+            document.getElementById("update_and_install").style.display = 'none';
         }   
         if (arg.status == "update-available"){
         
             bootstrap.Toast.getOrCreateInstance(document.getElementById('toastUpdateChecking')).hide();
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateAvailable')            
-            ); // Returns a Bootstrap toast instance
-            toast.show();
+
+            document.getElementById("updater_status").innerHTML = "update available...";
+            document.getElementById("updater_status").className = "btn btn-warning btn-sm";
+            document.getElementById("update_and_install").style.display = 'none';
+
         }    
+
         
         if (arg.status == "error"){
-            var toast = bootstrap.Toast.getOrCreateInstance(
-                document.getElementById('toastUpdateNotChecking')            
-            ); // Returns a Bootstrap toast instance
-            toast.show();
-
-            
+ 
+            document.getElementById("updater_status").innerHTML = '<i class="bi bi-exclamation-square ms-1 me-1" style="color: white;"></i>';
+            document.getElementById("updater_status").className = "btn btn-danger btn-sm";
+            document.getElementById("update_and_install").style.display = 'none';            
         }          
         
         

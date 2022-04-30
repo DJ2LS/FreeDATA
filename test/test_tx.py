@@ -5,7 +5,7 @@
 import ctypes
 from ctypes import *
 import pathlib
-import pyaudio
+import sounddevice as sd
 import time
 import argparse
 import sys
@@ -29,9 +29,13 @@ parser.add_argument('--testframes', dest="TESTFRAMES", action="store_true", defa
 args = parser.parse_args()
 
 if args.LIST:
-    p = pyaudio.PyAudio()
-    for dev in range(0,p.get_device_count()):
-        print("audiodev: ", dev, p.get_device_info_by_index(dev)["name"])
+    
+    devices = sd.query_devices(device=None, kind=None)
+    index = 0
+    for device in devices:
+        print(f"{index} {device['name']}")
+        index += 1
+    sd._terminate()
     quit()
 
 N_BURSTS = args.N_BURSTS
@@ -49,31 +53,31 @@ assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_OUTPUT_DEVICE != -1: 
-    p = pyaudio.PyAudio()
     # auto search for loopback devices
     if AUDIO_OUTPUT_DEVICE == -2:
         loopback_list = []
-        for dev in range(0,p.get_device_count()):
-            if 'Loopback: PCM' in p.get_device_info_by_index(dev)["name"]:
-                loopback_list.append(dev)
-        if len(loopback_list) >= 2:
-            AUDIO_OUTPUT_DEVICE = loopback_list[1] #0  = RX   1 = TX
+ 
+        devices = sd.query_devices(device=None, kind=None)
+        index = 0
+        
+        for device in devices:
+            if 'Loopback: PCM' in device['name']:
+                print(index)
+                loopback_list.append(index)
+            index += 1
+                
+        if len(loopback_list) >= 1:
+            AUDIO_OUTPUT_DEVICE = loopback_list[len(loopback_list)-1] #0  = RX   1 = TX
             print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
         else:
+            print("not enough audio loopback devices ready...")
+            print("you should wait about 30 seconds...")
+            sd._terminate()
             quit()        
-    print(f"AUDIO OUTPUT DEVICE: {AUDIO_OUTPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_OUTPUT_DEVICE)['name']} \
-            AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_TX}", file=sys.stderr)
+    print(f"AUDIO OUTPUT DEVICE: {AUDIO_OUTPUT_DEVICE}", file=sys.stderr)
 
-    # pyaudio init
-    stream_tx = p.open(format=pyaudio.paInt16,
-                            channels=1,
-                            rate=AUDIO_SAMPLE_RATE_TX,
-                            frames_per_buffer=AUDIO_FRAMES_PER_BUFFER, #n_nom_modem_samples
-                            output=True,
-                            output_device_index=AUDIO_OUTPUT_DEVICE
-                            )      
-                                
-                                
+    # audio stream init
+    stream_tx = sd.RawStream(channels=1, dtype='int16', device=(0, AUDIO_OUTPUT_DEVICE), samplerate = AUDIO_SAMPLE_RATE_TX, blocksize=4800)                    
 resampler = codec2.resampler()
 
 # data binary string
@@ -155,18 +159,17 @@ for i in range(1,N_BURSTS+1):
     
     # check if we want to use an audio device or stdout
     if AUDIO_OUTPUT_DEVICE != -1:
-        # Gotcha: we have to convert from np.int16 to Python "bytes"
-        stream_tx.write(txbuffer_48k.tobytes())
+        stream_tx.start()
+        stream_tx.write(txbuffer_48k)
     else:
         # print data to terminal for piping the output to other programs
         sys.stdout.buffer.write(txbuffer_48k)    
         sys.stdout.flush()
 
 
-# and at last check if we had an opened pyaudio instance and close it
+# and at last check if we had an opened audio instance and close it
 if AUDIO_OUTPUT_DEVICE != -1:
-    time.sleep(stream_tx.get_output_latency())
-    stream_tx.stop_stream()
-    stream_tx.close()
-    p.terminate()
+    sd._terminate()
+
+
 

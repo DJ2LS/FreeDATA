@@ -138,6 +138,9 @@ class DAEMON():
                 # data[18] low_bandwith_mode
                 # data[19] tuning_range_fmin
                 # data[20] tuning_range_fmax
+                # data[21] enable FSK
+                # data[22] tx-audio-level
+                # data[23] respond_to_cq
                 
                 if data[0] == 'STARTTNC':
                     structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -222,7 +225,10 @@ class DAEMON():
 
                     options.append('--tx-audio-level')
                     options.append(data[22])                        
-                       
+                    
+                    if data[23] == 'True':      
+                        options.append('--qrv')
+
                         
                                             
                     # try running tnc from binary, else run from source

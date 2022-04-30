@@ -86,8 +86,8 @@
 				</button>			
 				</span>
 				<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
-				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary">
-				    <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
+				    <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary"><strong>Settings </strong>
+				     <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
 					    
 				    </button>
 			    </span>
@@ -97,61 +97,7 @@
 	<div id="blurdiv" style="-webkit-Filter: blur(0px)">
 		<!--beginn of blur div -->
 		<!-------------------------------- MAIN AREA ---------------->
-		<!-------------------------------- UPDATE TOASTS ---------------->
-		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
-			<div class="toast-container position-absolute top-0 start-0 end-0 p-3">
-				<!-- CHECKING FOR UPDATE -->
-				<div class="toast align-items-center text-white bg-secondary border-0" id="toastUpdateChecking" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body"><i class="bi bi-search" style="font-size: 1rem; color: white;"></i> Checking for update</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				<!-- DOWNLOAD PROGRESS -->
-				<div class="toast align-items-center bg-white" id="toastUpdateProgress" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="false" data-bs-autohide="false">
-					<!--<div class="d-flex"> -->
-					<div class="toast-header"> <strong class="me-auto">Downloading...</strong>
-						<small><span id="toastUpdateProgressSpeed"></span></small>
-					</div>
-					<div class="toast-body w-100">
-						<div class="progress">
-							<div class="progress-bar" style="width: 75%" role="progressbar" id="toastUpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="toastUpdateProgressInfo"></span>
-							</div>
-						</div>
-					</div>
-				</div>
-				<!-- DOWNLOADED -->
-				<div class="toast bg-white" role="alert" data-bs-autohide="false" id="toastUpdateDownloaded" aria-live="assertive" aria-atomic="true">
-					<div class="toast-header"> <strong class="me-auto">    Update ready...</strong>
-					</div>
-					<div class="toast-body">App is going to restart automatically...</div>
-				</div>
-				<!-- UPDATE AVAILABLE -->
-				
-				<div class="toast align-items-center text-white bg-primary border-0" data-bs-autohide="false" id="toastUpdateAvailable" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body"> <i class="bi bi-activity" style="font-size: 1rem; color: white;"></i> Preparing for download...</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				
-				
-				<!-- UPDATE NOT AVAILABLE -->
-				<div class="toast align-items-center text-white bg-success border-0" id="toastUpdateNotAvailable" role="alert" aria-live="assertive" aria-atomic="true"data-bs-delay="1500">
-					<div class="d-flex">
-						<div class="toast-body"> <i class="bi bi-activity" style="font-size: 1rem; color: white;"></i> Up to date!</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-				<!-- NOT CHECKING FOR UPDATE -->
-				<div class="toast align-items-center text-white bg-warning border-0" id="toastUpdateNotChecking" role="alert" aria-live="assertive" aria-atomic="true">
-					<div class="d-flex">
-						<div class="toast-body">Update not available - Please try again later!</div>
-						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-					</div>
-				</div>
-			</div>
-		</div>
+		
 		<!-------------------------------- INFO TOASTS ---------------->
 		<div aria-live="polite" aria-atomic="true" class="position-relative" style="z-index: 500">
 			<div class="toast-container position-absolute top-0 end-0 p-3">
@@ -286,7 +232,7 @@
 							<i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i><strong>AUDIO</strong>
 						</div>
 						<div class="card-body p-2 mb-1">
-							<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+							<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
                               <i class="bi bi-mic-fill" style="font-size: 1rem; color: black;"></i>
                            </span>
 								<select class="form-select form-select-sm" id="audio_input_selectbox" aria-label=".form-select-sm">
@@ -322,7 +268,7 @@
 								-->
 								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch3" autocomplete="off">
 								
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong>rigctld</strong>
+								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong><i class="bi bi-ethernet"></i></strong>
 								</label>
 							</div>
 							<div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a PTT device">
@@ -690,7 +636,7 @@
 							</div>
 							-->
 							<div id="radio-control-rigctld">
-								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">IP</span>
+								<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">Rigctld IP</span>
 									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">:</span>
 									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
 								</div>
@@ -756,39 +702,25 @@
 				</div>
 				<div class="col">
 					<div class="card text-dark mb-0">
-						<div class="card-header p-1">
-							<i class="bi bi-sliders2" style="font-size: 1rem; color: black;"></i> <strong>TNC SETTINGS</strong>
+						<div class="card-header p-1 d-flex">
+
+							<i class="bi bi-cloud-download ms-1 me-1" style="font-size: 1rem; color: black;"></i> <strong>UPDATER</strong>
+							
+							<div class="progress w-75 ms-1 m-1">
+							<div class="progress-bar" style="width: 0%" role="progressbar" id="UpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="UpdateProgressInfo"></span>
+							</div>
+						</div>
+							
+							
+							
 						</div>
 						<div class="card-body p-2 mb-1">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="fftSwitch">
-								<label class="form-check-label" for="fftSwitch">Waterfall</label>
-							</div>
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="scatterSwitch">
-								<label class="form-check-label" for="scatterSwitch">Scatter</label>
-							</div>
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
-								<label class="form-check-label" for="500HzModeSwitch">500Hz (HF)</label>
-							</div>
+							<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>							
+							<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
+							<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
+							<button class="btn btn-primary btn-sm" id="update_and_install" type="button" style="display:none;">Install & Restart</button>
 							
 							
-							<!--<button class="btn btn-secondary btn-sm" id="python_version" type="button" disabled>Python</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="node_version" type="button" disabled>Node</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="hamlib_version" type="button" disabled>Hamlib</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="operating_system" type="button" disabled>OS</button>-->
-							<!--<button class="btn btn-secondary btn-sm" id="cpu_load_button" type="button" disabled>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cpu" viewBox="0 0 16 16">
-									<path d="M5 0a.5.5 0 0 1 .5.5V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2h1V.5a.5.5 0 0 1 1 0V2A2.5 2.5 0 0 1 14 4.5h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14v1h1.5a.5.5 0 0 1 0 1H14a2.5 2.5 0 0 1-2.5 2.5v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14h-1v1.5a.5.5 0 0 1-1 0V14A2.5 2.5 0 0 1 2 11.5H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2v-1H.5a.5.5 0 0 1 0-1H2A2.5 2.5 0 0 1 4.5 2V.5A.5.5 0 0 1 5 0zm-.5 3A1.5 1.5 0 0 0 3 4.5v7A1.5 1.5 0 0 0 4.5 13h7a1.5 1.5 0 0 0 1.5-1.5v-7A1.5 1.5 0 0 0 11.5 3h-7zM5 6.5A1.5 1.5 0 0 1 6.5 5h3A1.5 1.5 0 0 1 11 6.5v3A1.5 1.5 0 0 1 9.5 11h-3A1.5 1.5 0 0 1 5 9.5v-3zM6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z" />
-								</svg> <span id="cpu_load">---</span>
-							</button>
-							<button class="btn btn-secondary btn-sm" id="ram_load_button" type="button" disabled>
-								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-memory" viewBox="0 0 16 16">
-									<path d="M1 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h4.586a1 1 0 0 0 .707-.293l.353-.353a.5.5 0 0 1 .708 0l.353.353a1 1 0 0 0 .707.293H15a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H1Zm.5 1h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm5 0h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4a.5.5 0 0 1 .5-.5Zm4.5.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-4ZM2 10v2H1v-2h1Zm2 0v2H3v-2h1Zm2 0v2H5v-2h1Zm3 0v2H8v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Zm2 0v2h-1v-2h1Z" />
-								</svg> <span id="ram_load">---</span>	
-							</button>
-							-->
 						</div>
 					</div>
 				</div>
@@ -1239,12 +1171,12 @@
 		<div class="modal-dialog modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">App settings</h5>
+					<h5 class="modal-title">Settings</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Theme</span>
-						<select class="form-select form-select-sm" id="theme_selector">
+					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Theme</span>
+						<select class="form-select form-select-sm w-50" id="theme_selector">
 							<option value="default">Default</option>
 							<option value="cerulean">Cerulean</option>
 							<option value="cosmo">Cosmo</option>
@@ -1274,8 +1206,8 @@
 						</select>
 					</div>
 					
-					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Update channel</span>
-						<select class="form-select form-select-sm" id="update_channel_selector">
+					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Update channel</span>
+						<select class="form-select form-select-sm w-50" id="update_channel_selector">
 							<option value="latest">stable</option>
 							<option value="beta">beta</option>
 							<option value="alpha">alpha</option>
@@ -1283,13 +1215,13 @@
 					</div>
 
 					<div class="input-group  input-group-sm mb-1">
-					  <label class="input-group-text" for="inputGroupFile02">Received files folder</label>
-                      <input type="text" class="form-control" id="received_files_folder">
+					  <label class="input-group-text w-50" for="inputGroupFile02">Received files folder</label>
+                      <input type="text" class="form-control w-50" id="received_files_folder">
 					</div>
 
 
 					<div class="input-group  input-group-sm mb-1">
-					  <label class="input-group-text">Tuning range</label>
+					  <label class="input-group-text w-25">Tuning range</label>
                       <label class="input-group-text">fmin</label>
 						<select class="form-select form-select-sm" id="tuning_range_fmin">
 							<option value="-50.0">-50.0</option>
@@ -1312,14 +1244,52 @@
 					
 									
 				    <div class="input-group  input-group-sm mb-1"> 
-				        <label class="input-group-text">Enable FSK mode</label>
-			            <label class="input-group-text">
+				        <label class="input-group-text w-50">Enable FSK mode</label>
+			            <label class="input-group-text bg-white w-50">
 				            <div class="form-check form-switch form-check-inline ms-2">
 						        <input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
 						        <label class="form-check-label" for="fskModeSwitch">not available, yet</label>
 					        </div>
 					    </label>
 				    </div>
+				    
+<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text w-50">Enable Waterfall data</label>
+			            <label class="input-group-text bg-white w-50">				    
+<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="fftSwitch">
+								<label class="form-check-label" for="fftSwitch">Waterfall</label>
+							</div>
+					    </label>
+				    </div>							
+							<div class="input-group input-group-sm mb-1"> 
+				        <label class="input-group-text w-50">Enable Scatter diagram data</label>
+			            <label class="input-group-text bg-white w-50">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="scatterSwitch">
+								<label class="form-check-label" for="scatterSwitch">Scatter</label>
+							</div>
+					    </label>
+				    </div>							
+					<div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text w-50">Enable 500Hz mode</label>
+			            <label class="input-group-text bg-white w-50">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
+								<label class="form-check-label" for="500HzModeSwitch">500Hz</label>
+							</div>				    
+					    </label>
+				    </div>				    
+				    <div class="input-group  input-group-sm mb-1"> 
+				        <label class="input-group-text w-50">Respond to CQ</label>
+			            <label class="input-group-text bg-white w-50">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="respondCQSwitch">
+								<label class="form-check-label" for="respondCQSwitch">QRV</label>
+							</div>				    
+					    </label>
+				    </div>
+				    
 					
 					
 					
