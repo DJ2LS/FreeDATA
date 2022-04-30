@@ -1127,14 +1127,16 @@ class DATA():
         
     def received_session_close(self):
         """ """
-        static.ARQ_SESSION_STATE = 'disconnected'
-        helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
-        structlog.get_logger("structlog").info("SESSION [" + str(self.mycallsign, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
-        static.INFO.append("ARQ;SESSION;CLOSE")
+        # TODO: we need to check for dx stations crc as well so we are only accept frames from a station we are connected to
+        if static.ARQ_SESSION:
+            static.ARQ_SESSION_STATE = 'disconnected'
+            helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+            structlog.get_logger("structlog").info("SESSION [" + str(self.mycallsign, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
+            static.INFO.append("ARQ;SESSION;CLOSE")
 
-        self.IS_ARQ_SESSION_MASTER = False
-        static.ARQ_SESSION = False
-        self.arq_cleanup()
+            self.IS_ARQ_SESSION_MASTER = False
+            static.ARQ_SESSION = False
+            self.arq_cleanup()
 
 
     def transmit_session_heartbeat(self):
@@ -1172,17 +1174,20 @@ class DATA():
         Returns:
 
         """
-        structlog.get_logger("structlog").debug("received session heartbeat")
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'SESSION-HB', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
-
-        self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
         
-        static.ARQ_SESSION = True
-        static.ARQ_SESSION_STATE = 'connected'
-        static.TNC_STATE = 'BUSY'
-        self.data_channel_last_received = int(time.time())
-        if static.ARQ_SESSION and not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
-            self.transmit_session_heartbeat()
+        # TODO: we need to check for dx stations crc as well so we are only accept frames from a station we are connected to
+        if static.ARQ_SESSION:
+            structlog.get_logger("structlog").debug("received session heartbeat")
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'SESSION-HB', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
+
+            self.arq_session_last_received = int(time.time()) # we need to update our timeout timestamp
+            
+            static.ARQ_SESSION = True
+            static.ARQ_SESSION_STATE = 'connected'
+            static.TNC_STATE = 'BUSY'
+            self.data_channel_last_received = int(time.time())
+            if not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
+                self.transmit_session_heartbeat()
 
     # ############################################################################################################
     # ARQ DATA CHANNEL HANDLER
