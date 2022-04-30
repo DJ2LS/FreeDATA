@@ -510,7 +510,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
 
 //restart and install udpate
 ipcMain.on('request-restart-and-install',(event,data)=>{
-    close_sub_binaries()
+    close_sub_processes()
     autoUpdater.quitAndInstall();
 });
 
@@ -581,8 +581,8 @@ autoUpdater.on('error', (error) => {
 
 
 
-function close_sub_binaries(){
-    mainLog.warn('closing sub binaries');
+function close_sub_processes(){
+    mainLog.warn('closing sub processes');
 
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
@@ -632,7 +632,7 @@ function close_all() {
 
     // function for closing the application with closing all used processes
 
-    close_sub_binaries();
+    close_sub_processes();
     
     mainLog.warn('quitting app');
     

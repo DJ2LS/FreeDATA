@@ -9,7 +9,7 @@ Created on Wed Dec 23 07:04:24 2020
 import ctypes
 from ctypes import *
 import pathlib
-import pyaudio
+import sounddevice as sd
 import sys
 import logging
 import time
@@ -35,9 +35,13 @@ parser.add_argument('--list', dest="LIST", action="store_true", help="list audio
 args = parser.parse_args()
 
 if args.LIST:
-    p = pyaudio.PyAudio()
-    for dev in range(0,p.get_device_count()):
-        print("audiodev: ", dev, p.get_device_info_by_index(dev)["name"])
+    
+    devices = sd.query_devices(device=None, kind=None)
+    index = 0
+    for device in devices:
+        print(f"{index} {device['name']}")
+        index += 1
+    sd._terminate()
     quit()
    
 N_BURSTS = args.N_BURSTS
@@ -57,30 +61,34 @@ assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
 # check if we want to use an audio device then do an pyaudio init
 if AUDIO_INPUT_DEVICE != -1: 
-    p = pyaudio.PyAudio()
     # auto search for loopback devices
     if AUDIO_INPUT_DEVICE == -2:
         loopback_list = []
-        for dev in range(0,p.get_device_count()):
-            if 'Loopback: PCM' in p.get_device_info_by_index(dev)["name"]:
-                loopback_list.append(dev)
-        if len(loopback_list) >= 2:
+ 
+        devices = sd.query_devices(device=None, kind=None)
+        index = 0
+        
+        for device in devices:
+            if 'Loopback: PCM' in device['name']:
+                print(index)
+                loopback_list.append(index)
+            index += 1
+                
+        if len(loopback_list) >= 1:
             AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX   1 = TX
-            print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
+            print(f"loopback_list tx: {loopback_list}", file=sys.stderr)
         else:
-            quit()
-            
-    print(f"AUDIO INPUT DEVICE: {AUDIO_INPUT_DEVICE} DEVICE: {p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['name']}  \
-            AUDIO SAMPLE RATE: {AUDIO_SAMPLE_RATE_RX}", file=sys.stderr)
-    stream_rx = p.open(format=pyaudio.paInt16, 
-                            channels=1,
-                            rate=AUDIO_SAMPLE_RATE_RX,
-                            frames_per_buffer=AUDIO_FRAMES_PER_BUFFER,
-                            input=True,
-                            input_device_index=AUDIO_INPUT_DEVICE
-                            ) 
+            print("not enough audio loopback devices ready...")
+            print("you should wait about 30 seconds...")
 
-      
+            sd._terminate()
+            quit()        
+    print(f"AUDIO INPUT DEVICE: {AUDIO_INPUT_DEVICE}", file=sys.stderr)
+
+    # audio stream init
+    stream_rx = sd.RawStream(channels=1, dtype='int16', device=AUDIO_INPUT_DEVICE, samplerate = AUDIO_SAMPLE_RATE_RX, blocksize=4800)
+    stream_rx.start()
+             
 # ----------------------------------------------------------------
               
 # DATA CHANNEL INITIALISATION
@@ -122,19 +130,22 @@ nin = codec2.api.freedv_nin(freedv)
 while receive and time.time() < timeout:
     if AUDIO_INPUT_DEVICE != -1:
         try:
-            data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+            #data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+            data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER) 
         except OSError as err:
             print(err, file=sys.stderr)
-            if str(err).find("Input overflowed") != -1:
-                nread_exceptions += 1
-            if str(err).find("Stream closed") != -1:
-                print("Ending...")
-                receive = False
+            #if str(err).find("Input overflowed") != -1:
+            #    nread_exceptions += 1
+            #if str(err).find("Stream closed") != -1:
+            #    print("Ending...")
+            #    receive = False
     else:
         data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER*2)
     
     # insert samples in buffer
     x = np.frombuffer(data_in48k, dtype=np.int16)
+    #print(x)
+    #x = data_in48k
     x.tofile(frx)    
     if len(x) != AUDIO_FRAMES_PER_BUFFER:
         receive = False
@@ -187,8 +198,9 @@ if nread_exceptions:
 print(f"RECEIVED BURSTS: {rx_bursts} RECEIVED FRAMES: {rx_total_frames} RX_ERRORS: {rx_errors}", file=sys.stderr)
 frx.close()
 
-# and at last check if we had an opened pyaudio instance and close it
-if AUDIO_INPUT_DEVICE != -1: 
-    stream_rx.close()
-    p.terminate()
+
+# and at last check if we had an opened audio instance and close it
+if AUDIO_INPUT_DEVICE != -1:
+    sd._terminate()
+
 
