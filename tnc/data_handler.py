@@ -385,7 +385,9 @@ class DATA():
             static.RX_BURST_BUFFER = [None] * RX_N_FRAMES_PER_BURST   
 
         # append data to rx burst buffer
-        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[6:] # [frame_type][n_frames_per_burst][CRC16][CRC16]
+        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[8:] # [frame_type][n_frames_per_burst][CRC24][CRC24]
+        
+        
         
         structlog.get_logger("structlog").debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
         
@@ -543,9 +545,11 @@ class DATA():
             static.TOTAL_BYTES = frame_length
             # 8:9 = compression factor
 
+
             data_frame = payload[9:]
 
             data_frame_crc_received = helpers.get_crc_32(data_frame)
+            
             # check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
                 structlog.get_logger("structlog").info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
@@ -688,6 +692,9 @@ class DATA():
 
         # append a crc and beginn and end of file indicators
         frame_payload_crc = helpers.get_crc_32(data_out)
+        structlog.get_logger("structlog").debug("frame payload crc", crc=frame_payload_crc)
+        
+        
         # data_out = self.data_frame_bof + frame_payload_crc + data_out + self.data_frame_eof
         data_out = self.data_frame_bof + frame_payload_crc + frame_total_size + compression_factor + data_out + self.data_frame_eof
         
