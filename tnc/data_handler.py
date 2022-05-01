@@ -1130,7 +1130,15 @@ class DATA():
             time.sleep(0.01)          
 
     def received_session_close(self, data_in:bytes):
-        """ """
+        """
+        Closes the session when a close session frame is received and
+        the DXCALLSIGN_CRC matches the remote station participating in the session.
+
+        Args:
+          data_in:bytes: 
+
+        Returns:
+        """
         # Close the session if the DXCALLSIGN_CRC matches the station in static.
         if helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7])):
             static.ARQ_SESSION_STATE = 'disconnected'
