@@ -592,38 +592,29 @@ function close_sub_processes(){
     }
     
 
-    mainLog.warn('closing tnc');
+    mainLog.warn('closing tnc and daemon');
+    try {
     
-    if(os.platform()=='win32' || os.platform()=='win64'){
-        exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
-    }
-    
-    if(os.platform()=='linux'){
+        if(os.platform()=='win32' || os.platform()=='win64'){
+            exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
+            exec('Taskkill', ['/IM', 'freedata-daemon.exe', '/F'])
+        }
         
-        exec('pkill', ['-9', 'freedata-tnc'])
-        
-        // on macOS we need to kill the daemon as well. If we are not doing this, 
-        // the daemon wont startup again because the socket is already in use
-        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
-        exec('pkill', ['-9', 'freedata-daemon'])        
-    }
+        if(os.platform()=='linux'){
+            
+            exec('pkill', ['-9', 'freedata-tnc'])
+            exec('pkill', ['-9', 'freedata-daemon'])        
+        }
 
-    if(os.platform()=='darwin'){
+        if(os.platform()=='darwin'){
 
-        exec('pkill', ['-9', 'freedata-tnc'])
-        
-        // on macOS we need to kill the daemon as well. If we are not doing this, 
-        // the daemon wont startup again because the socket is already in use
-        //for some reason killing the daemon is killing our screen on Ubuntu..it seems theres another "daemon" out there...
-        exec('pkill', ['-9', 'freedata-daemon']) 
-        
+            exec('pkill', ['-9', 'freedata-tnc'])
+            exec('pkill', ['-9', 'freedata-daemon']) 
+            
+        }
+    } catch (e) {
+        mainLog.error(e)
     }
-        
-    /*
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-    */
 
 };
 
