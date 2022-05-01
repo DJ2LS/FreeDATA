@@ -1132,7 +1132,7 @@ class DATA():
     def received_session_close(self, data_in:bytes):
         """ """
         # Close the session if the DXCALLSIGN_CRC matches the station in static.
-        if static.DXCALLSIGN_CRC == bytes(data_in[4:7]):
+        if helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7])):
             static.ARQ_SESSION_STATE = 'disconnected'
             helpers.add_to_heard_stations(static.DXCALLSIGN,static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             structlog.get_logger("structlog").info("SESSION [" + str(self.mycallsign, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
@@ -1178,8 +1178,8 @@ class DATA():
 
         """
         
-        # TODO: we need to check for dx stations crc as well so we are only accept frames from a station we are connected to
-        if static.ARQ_SESSION:
+        # Accept session data if the DXCALLSIGN_CRC matches the station in static.
+        if helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7])):
             structlog.get_logger("structlog").debug("received session heartbeat")
             helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'SESSION-HB', static.SNR, static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
