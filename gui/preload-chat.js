@@ -638,6 +638,15 @@ update_chat = function(obj) {
         if (obj.type == 'transmit') {
         
             console.log('msg-' + obj._id + '-status')
+            
+            
+        if (obj.status == 'failed'){
+            var progressbar_bg = 'bg-danger';
+        } else {
+            var progressbar_bg = 'bg-primary';
+        }
+            
+            
             var new_message = `
 
             <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
@@ -661,8 +670,19 @@ update_chat = function(obj) {
                             
                         </p>
                         
-                       <div class="progress p-0 m-0 rounded-0 rounded-bottom" style="height: 10px;">
-                            <div class="progress-bar bg-primary p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">${obj.percent} % - ${obj.bytesperminute} Bpm</div>
+                       <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
+                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
+							 </div>
+							 
+
+							<p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${obj._id}-progress-information">
+							    ${obj.percent} % - ${obj.bytesperminute} Bpm
+							    
+							</p>
+
+                            
+                            
+                           
                             </div>
                       </div>
                     </div>
@@ -693,7 +713,7 @@ update_chat = function(obj) {
         
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
-        document.getElementById('msg-' + obj._id + '-progress').innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
+        document.getElementById('msg-' + obj._id + '-progress-information').innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
         
         
         
@@ -706,10 +726,13 @@ update_chat = function(obj) {
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-animated");
         }
         
-        
-        document.getElementById('msg-' + obj._id + '-bytesperminute').innerHTML = obj.bytesperminute + ' Bytes/min';
-        
-        
+       
+        if (obj.status == 'failed'){
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("bg-primary");
+            document.getElementById('msg-' + obj._id + '-progress').classList.add("bg-danger");
+        }
         
         
         

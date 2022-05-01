@@ -346,7 +346,13 @@ app.whenReady().then(() => {
         // send info to log only if log screen available
         // it seems an error occurs when updating
         if (logViewer !== null && logViewer !== ''){
-            logViewer.webContents.send('action-update-log', arg);
+            try{
+                logViewer.webContents.send('action-update-log', arg);
+            } catch (e) {
+                // empty for keeping error stuff silent
+                // this is important to avoid error messages if we are going to close the app while
+                // an logging information will be pushed to the logger
+            }
         }
       
     });
