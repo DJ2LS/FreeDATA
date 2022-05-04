@@ -20,16 +20,10 @@ import threading
 import time
 from collections import deque
 
-import numpy as np
 import sounddevice as sd
 import structlog
 import ujson as json
 
-import audio
-import codec2
-import data_handler
-import helpers
-import log_handler
 import sock
 import static
 
@@ -168,6 +162,10 @@ class RF():
 
             mkfifo_read_callback_thread = threading.Thread(target=self.mkfifo_read_callback, name="MKFIFO READ CALLBACK THREAD",daemon=True)
             mkfifo_read_callback_thread.start()
+
+            mkfifo_read_callback_thread = threading.Thread(target=self.mkfifo_read_callback, name="MKFIFO READ CALLBACK THREAD",daemon=True)
+            mkfifo_read_callback_thread.start()
+
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
