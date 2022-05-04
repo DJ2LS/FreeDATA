@@ -29,6 +29,9 @@ import sounddevice as sd
 
 from collections import deque
 
+TESTMODE = False
+RXCHANNEL = ''
+TXCHANNEL = ''
 
 # init FIFO queue to store received frames in
 MODEM_RECEIVED_QUEUE = queue.Queue()
@@ -127,64 +130,48 @@ class RF():
         self.fsk_ldpc_nin_0 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_0)        
         self.fsk_ldpc_nin_1 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_1)        
         # --------------------------------------------CREATE PYAUDIO INSTANCE
-        
-        '''
-        try:
-        # we need to "try" this, because sometimes libasound.so isn't in the default place                   
-            # try to supress error messages
-            with audio.noalsaerr(): # https://github.com/DJ2LS/FreeDATA/issues/22
-                self.p = audio.pyaudio.PyAudio()
-        # else do it the default way
-        except:
-            self.p = audio.pyaudio.PyAudio()
-        atexit.register(self.p.terminate)
+        if not TESTMODE:
+            try:
+
+                self.stream = sd.RawStream(channels=1, dtype='int16', callback=self.callback, device=(static.AUDIO_INPUT_DEVICE, static.AUDIO_OUTPUT_DEVICE), samplerate = self.AUDIO_SAMPLE_RATE_RX, blocksize=4800)
+                atexit.register(self.stream.stop) 
+                structlog.get_logger("structlog").info("opened audio devices")
+               
+            except Exception as e:
+                structlog.get_logger("structlog").error("can't open audio device. Exit", e=e)
+                os._exit(1)
                 
-        # --------------------------------------------OPEN RX AUDIO CHANNEL
-        # optional auto selection of loopback device if using in testmode
-        if static.AUDIO_INPUT_DEVICE == -2:
-            loopback_list = []
-            for dev in range(0,self.p.get_device_count()):
-                if 'Loopback: PCM' in self.p.get_device_info_by_index(dev)["name"]:
-                    loopback_list.append(dev)
-            if len(loopback_list) >= 2:
-                static.AUDIO_INPUT_DEVICE = loopback_list[0] #0  = RX
-                static.AUDIO_OUTPUT_DEVICE = loopback_list[1] #1 = TX
-                print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
+            try:                        
+                structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
+                #self.audio_stream.start_stream()
+                self.stream.start()   
+
+            except Exception as e:
+                structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
+
+        else:
         
-        ''' 
-        try:
-            '''
-            self.audio_stream = self.p.open(format=audio.pyaudio.paInt16,
-                                         channels=self.AUDIO_CHANNELS,
-                                         rate=self.AUDIO_SAMPLE_RATE_RX,
-                                         frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER_RX,
-                                         input=True,
-                                         output=True,
-                                         input_device_index=static.AUDIO_INPUT_DEVICE,
-                                         output_device_index=static.AUDIO_OUTPUT_DEVICE,
-                                         stream_callback=self.audio_callback
-                                         )
-            ''' 
-            
-            self.stream = sd.RawStream(channels=1, dtype='int16', callback=self.callback, device=(static.AUDIO_INPUT_DEVICE, static.AUDIO_OUTPUT_DEVICE), samplerate = self.AUDIO_SAMPLE_RATE_RX, blocksize=4800)
-            
-            
-            atexit.register(self.stream.stop) 
-            
-            structlog.get_logger("structlog").info("opened audio devices")
-           
-        except Exception as e:
-            structlog.get_logger("structlog").error("can't open audio device. Exit", e=e)
-            os._exit(1)
-            
-        try:                        
-            structlog.get_logger("structlog").debug("[TNC] starting pyaudio callback")
-            #self.audio_stream.start_stream()
-            self.stream.start()   
+            # create a stream object for simulating audio stream
+            class Object(object):
+                pass
+            self.stream = Object()
+            self.stream.active = True
+        
+            # create mkfifo buffer
+            try:
+                
+                os.mkfifo(RXCHANNEL)
+                os.mkfifo(TXCHANNEL)
+            except:
+                pass
+                
+            mkfifo_write_callback_thread = threading.Thread(target=self.mkfifo_write_callback, name="MKFIFO WRITE CALLBACK THREAD",daemon=True)
+            mkfifo_write_callback_thread.start()
 
-        except Exception as e:
-            structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
-
+            mkfifo_read_callback_thread = threading.Thread(target=self.mkfifo_read_callback, name="MKFIFO READ CALLBACK THREAD",daemon=True)
+            mkfifo_read_callback_thread.start()
+            
+            
         # --------------------------------------------INIT AND OPEN HAMLIB
         # check how we want to control the radio
         if static.HAMLIB_RADIOCONTROL == 'direct':
@@ -200,7 +187,7 @@ class RF():
 
         
         self.hamlib = rig.radio()
-        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE, rigctld_ip = static.HAMLIB_RGICTLD_IP, rigctld_port = static.HAMLIB_RGICTLD_PORT)
+        self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE, rigctld_ip = static.HAMLIB_RIGCTLD_IP, rigctld_port = static.HAMLIB_RIGCTLD_PORT)
 
         # --------------------------------------------START DECODER THREAD
         if static.ENABLE_FFT:
@@ -231,9 +218,57 @@ class RF():
         
         worker_transmit = threading.Thread(target=self.worker_transmit, name="WORKER_THREAD",daemon=True)
         worker_transmit.start()
-        
+
     # --------------------------------------------------------------------------------------------------------
-    #def audio_callback(self, data_in48k, frame_count, time_info, status):
+    def mkfifo_read_callback(self):
+        while 1:
+
+            time.sleep(0.01)
+            # -----read            
+            data_in48k = bytes()
+            with open(RXCHANNEL, 'rb') as fifo:
+                for line in fifo:
+                    
+                    data_in48k += line
+                    
+                    while len(data_in48k) >= 48:
+                        x = np.frombuffer(data_in48k[:48], dtype=np.int16)
+                        x = self.resampler.resample48_to_8(x)           
+                        data_in48k = data_in48k[48:]
+                        
+                        length_x = len(x)
+                        if not self.datac0_buffer.nbuffer+length_x > self.datac0_buffer.size:
+                            self.datac0_buffer.push(x)
+
+                        if not self.datac1_buffer.nbuffer+length_x > self.datac1_buffer.size:
+                            if RECEIVE_DATAC1:
+                                self.datac1_buffer.push(x)
+
+                        if not self.datac3_buffer.nbuffer+length_x > self.datac3_buffer.size:
+                            if RECEIVE_DATAC3:
+                                self.datac3_buffer.push(x)
+                            
+                                                        
+            
+    def mkfifo_write_callback(self):
+        while 1:
+            time.sleep(0.01)
+
+            # -----write 
+            if len(self.modoutqueue) <= 0 or self.mod_out_locked:                                
+                #data_out48k = np.zeros(self.AUDIO_FRAMES_PER_BUFFER_RX, dtype=np.int16)
+                pass
+                
+            else:
+                data_out48k = self.modoutqueue.popleft()
+                #print(len(data_out48k))
+            
+                fifo_write = open(TXCHANNEL, 'wb')
+                fifo_write.write(data_out48k)
+                fifo_write.flush() 
+   
+                
+    # --------------------------------------------------------------------------------------------------------
     def callback(self, data_in48k, outdata, frames, time, status):
         """
 
