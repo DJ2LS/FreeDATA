@@ -244,6 +244,10 @@ class RF:
             )
             mkfifo_read_callback_thread.start()
 
+            mkfifo_read_callback_thread = threading.Thread(target=self.mkfifo_read_callback, name="MKFIFO READ CALLBACK THREAD",daemon=True)
+            mkfifo_read_callback_thread.start()
+
+
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
         if static.HAMLIB_RADIOCONTROL == "direct":
