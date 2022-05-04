@@ -2,8 +2,11 @@
 Tests for the FreeDATA TNC state machine.
 """
 
+import sys
+
 import data_handler
 import helpers
+import pytest
 import static
 
 
@@ -43,6 +46,12 @@ def t_create_session_close(mycall: str, dxcall: str) -> bytearray:
 
 
 def print_frame(data: bytearray):
+    """
+    Pretty-print the provided frame.
+
+    :param data: Frame to be output
+    :type data: bytearray
+    """
     print(f"Type   : {int(data[0])}")
     print(f"DXCRC  : {bytes(data[1:4])}")
     print(f"CallCRC: {bytes(data[4:7])}")
@@ -50,51 +59,18 @@ def print_frame(data: bytearray):
 
 
 def t_tsh():
+    """Replacement function for transmit_session_heartbeat"""
     print("In transmit_session_heartbeat")
 
 
-def test_0():
+def test_valid_disconnect():
     """
     Execute test to validate that receiving a session open frame sets the correct machine
     state.
     """
-    t_callsign_bytes = helpers.callsign_to_bytes("AA1AA-0")
-    t_callsign = helpers.bytes_to_callsign(t_callsign_bytes)
-    t_callsign_crc = helpers.get_crc_24(t_callsign)
-    print(f"{t_callsign=}")
-    print(f"{t_callsign_crc=}")
+    # Set the SSIDs we'll use for this test.
+    static.SSID_LIST = [0]
 
-    mycallsign_bytes = helpers.callsign_to_bytes("AA9AA-0")
-    mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
-    mycallsign_crc = helpers.get_crc_24(mycallsign)
-    print(f"{mycallsign=}")
-    print(f"{mycallsign_crc=}")
-
-    dxcallsign_bytes = helpers.callsign_to_bytes("ZZ9ZZ-0")
-    dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
-    dxcallsign_crc = helpers.get_crc_24(dxcallsign)
-    print(f"{dxcallsign=}")
-    print(f"{dxcallsign_crc=}")
-
-    assert (
-        helpers.check_callsign(t_callsign, t_callsign_crc)[0] is True
-    ), f"{helpers.check_callsign(t_callsign, t_callsign_crc)[0]=}"
-    assert (
-        helpers.check_callsign(mycallsign, mycallsign_crc)[0] is True
-    ), f"{helpers.check_callsign(mycallsign, mycallsign_crc)[0]=}"
-    assert (
-        helpers.check_callsign(dxcallsign, dxcallsign_crc)[0] is True
-    ), f"{helpers.check_callsign(dxcallsign, dxcallsign_crc)[0]=}"
-    assert (
-        helpers.check_callsign(mycallsign, dxcallsign_crc)[0] is False
-    ), f"{helpers.check_callsign(mycallsign, dxcallsign_crc)[0]=}"
-
-
-def test_1():
-    """
-    Execute test to validate that receiving a session open frame sets the correct machine
-    state.
-    """
     # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes("AA1AA-0")
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
@@ -126,23 +102,22 @@ def test_1():
     print_frame(close_frame)
     tnc.received_session_close(close_frame)
 
-    assert (
-        helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
-    ), f"{static.MYCALLSIGN} != AA1AA-0"
-    assert (
-        helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
-    ), f"{static.DXCALLSIGN} != AA9AA-0"
+    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
+    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
 
-    # assert static.ARQ_SESSION is False
-    # assert static.TNC_STATE == "IDLE"
-    # assert static.ARQ_SESSION_STATE == "disconnected"
+    assert static.ARQ_SESSION is False
+    assert static.TNC_STATE == "IDLE"
+    assert static.ARQ_SESSION_STATE == "disconnected"
 
 
-def test_2():
+def test_foreign_disconnect():
     """
     Execute test to validate that receiving a session open frame sets the correct machine
     state.
     """
+    # Set the SSIDs we'll use for this test.
+    static.SSID_LIST = [0]
+
     # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes("AA1AA-0")
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
@@ -165,59 +140,41 @@ def test_2():
     print_frame(create_frame)
     tnc.received_session_opener(create_frame)
 
-    assert (
-        helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
-    ), f"{static.MYCALLSIGN} != AA1AA-0"
-    assert (
-        helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
-    ), f"{static.DXCALLSIGN} != AA9AA-0"
+    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
+    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
 
     assert static.ARQ_SESSION is True
     assert static.TNC_STATE == "BUSY"
     assert static.ARQ_SESSION_STATE == "connecting"
 
     foreigncall_bytes = helpers.callsign_to_bytes("ZZ0ZZ-0")
-    # foreigncall = helpers.bytes_to_callsign(foreigncall_bytes)
+    foreigncall = helpers.bytes_to_callsign(foreigncall_bytes)
 
-    close_frame = t_create_session_close("ZZ0ZZ-0", "ZZ9ZZ-0")
+    close_frame = t_create_session_close("ZZ0ZZ-0", "ZZ0ZZ-0")
     print_frame(close_frame)
     assert (
         helpers.check_callsign(static.DXCALLSIGN, bytes(close_frame[4:7]))[0] is False
-    ), "Callsign matches DX checksum."
-    # assert (
-    #     helpers.check_callsign(foreigncall_bytes, bytes(close_frame[4:7]))[0] is True
-    # ), "Callsign doesn't match checksum."
+    )
+
+    assert helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
     tnc.received_session_close(close_frame)
 
     assert helpers.callsign_to_bytes(static.MYCALLSIGN) == helpers.callsign_to_bytes(
         "AA1AA-0"
-    ), f"{static.MYCALLSIGN} != AA1AA-0"
+    )
     assert helpers.callsign_to_bytes(static.DXCALLSIGN) == helpers.callsign_to_bytes(
         "AA9AA-0"
-    ), f"{static.DXCALLSIGN} != AA9AA-0"
+    )
 
     assert static.ARQ_SESSION is True
     assert static.TNC_STATE == "BUSY"
     assert static.ARQ_SESSION_STATE == "connecting"
 
 
-def run_test():
-    """
-    Execute tests
-    """
-    total = 0
-    try:
-        test_0()
-    except AssertionError:
-        total += 1
-    print("========================================================================")
-    test_1()
-    print("========================================================================")
-    test_2()
-    print("========================================================================")
-
-    print(f"errors: {total}")
-
-
 if __name__ == "__main__":
-    run_test()
+    # Run pytest with the current script as the filename.
+    ecode = pytest.main(["-v", sys.argv[0]])
+    if ecode == 0:
+        print("errors: 0")
+    else:
+        print(ecode)
