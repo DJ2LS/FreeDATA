@@ -21,11 +21,10 @@ parser.add_argument('--CQ', dest="CQ", action="store_true")
 parser.add_argument('--PING', dest="PING", action="store_true")
 parser.add_argument('--RAW', dest="RAW", action="store_true")
 
-
 args = parser.parse_args()
-ISS = args.IRS
-IRS = args.IRS
 
+ISS = args.ISS
+IRS = args.IRS
 
 CQ = args.CQ
 PING = args.PING
@@ -35,7 +34,6 @@ RAW = args.RAW
 data_handler.TESTMODE = True
 modem.TESTMODE = True
 static.HAMLIB_RADIOCONTROL = 'disabled'
-
 
 if ISS:
     modem.RXCHANNEL = "hfchannel1"
