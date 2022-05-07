@@ -25,14 +25,16 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
     :type bursts: str
     :param frames_per_burst: Number of frames transmitted per burst
     :type frames_per_burst: str
+    :param testframes: Number of test frames to transmit
+    :type testframes: str
     """
+
     # Facilitate running from main directory as well as inside test/
     tx_side = "test_tx.py"
-    rx_side = "test_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
         tx_side = os.path.join("test", tx_side)
-        rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."
+    rx_side = "freedv_data_raw_rx"
 
     with subprocess.Popen(
         args=[
@@ -43,9 +45,9 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
             "--delay",
             "500",
             "--framesperburst",
-            str(frames_per_burst),
+            f"{frames_per_burst}",
             "--bursts",
-            str(bursts),
+            f"{bursts}",
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -53,33 +55,60 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
 
         with subprocess.Popen(
             args=[
-                "python3",
-                rx_side,
-                "--mode",
-                mode,
-                "--framesperburst",
-                str(frames_per_burst),
-                "--bursts",
-                str(bursts),
-                "--timeout",
-                "20",
+                "sox",
+                "-t",
+                ".s16",
+                "-r",
+                "48000",
+                "-c",
+                "1",
+                "-",
+                "-t",
+                ".s16",
+                "-r",
+                "8000",
+                "-c",
+                "1",
+                "-",
             ],
             stdin=transmit.stdout,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
-        ) as receive:
-            assert receive.stdout
-            lastline = "".join(
-                [
-                    str(line, "UTF-8")
-                    for line in receive.stdout.readlines()
-                    if "RECEIVED " in str(line, "UTF-8")
-                ]
-            )
-            assert f"RECEIVED BURSTS: {bursts}" in lastline
-            assert f"RECEIVED FRAMES: {frames_per_burst * bursts}" in lastline
-            assert "RX_ERRORS: 0" in lastline
-            print(lastline)
+        ) as sox_filter:
+
+            with subprocess.Popen(
+                args=[
+                    rx_side,
+                    mode,
+                    "-",
+                    "-",
+                    "--framesperburst",
+                    str(frames_per_burst),
+                ],
+                stdin=sox_filter.stdout,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            ) as receive:
+
+                with subprocess.Popen(
+                    args=[
+                        "hexdump",
+                        "-C",
+                    ],
+                    stdin=receive.stdout,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                ) as hexdump:
+                    assert hexdump.stdout
+                    lastline = "".join(
+                        [
+                            str(line, "UTF-8")
+                            for line in hexdump.stdout.readlines()
+                            if "HELLO" in str(line, "UTF-8")
+                        ]
+                    )
+                    assert "HELLO WORLD!" in lastline
+                    print(lastline)
 
 
 if __name__ == "__main__":
