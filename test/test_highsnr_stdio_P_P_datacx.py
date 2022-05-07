@@ -5,44 +5,39 @@ Tests for the FreeDATA TNC state machine.
 # pylint: disable=global-statement, invalid-name, unused-import
 
 import os
-from re import sub
 import subprocess
 import sys
 
 import pytest
 
-# Replacing:
-#   python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-#   python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
-# with python-controlled subprocesses.
-
-BURSTS = os.environ["BURSTS"]
-FRAMESPERBURST = os.environ["FRAMESPERBURST"]
+BURSTS = int(os.environ["BURSTS"])
+FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
 
 
-def test_HighSNR_P_P_Multi():
+@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+@pytest.mark.parametrize("mode", ['datac0', 'datac1', 'datac3'])
+def test_HighSNR_P_P_DATAC0(bursts: int, frames_per_burst: int, mode: str):
     """
-    Execute test a high signal-to-noise ratio path.
+    Test a high signal-to-noise ratio path with DATAC0.
 
-    :param mycall: Callsign of the near station
-    :type mycall: str
-    :param dxcall: Callsign of the far station
-    :type dxcall: str
-    :return: Bytearray of the requested frame
-    :rtype: bytearray
+    :param bursts: Number of bursts
+    :type bursts: str
+    :param frames_per_burst: Number of frames transmitted per burst
+    :type frames_per_burst: str
     """
     with subprocess.Popen(
         args=[
             "python3",
             "test_tx.py",
             "--mode",
-            "datac0",
+            mode,
             "--delay",
             "500",
             "--framesperburst",
-            FRAMESPERBURST,
+            str(frames_per_burst),
             "--bursts",
-            BURSTS,
+            str(bursts),
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
@@ -53,11 +48,11 @@ def test_HighSNR_P_P_Multi():
                 "python3",
                 "test_rx.py",
                 "--mode",
-                "datac0",
+                mode,
                 "--framesperburst",
-                FRAMESPERBURST,
+                str(frames_per_burst),
                 "--bursts",
-                BURSTS,
+                str(bursts),
                 "--timeout",
                 "20",
             ],
@@ -65,6 +60,7 @@ def test_HighSNR_P_P_Multi():
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
         ) as receive:
+            assert receive.stdout
             lastline = "".join(
                 [
                     str(line, "UTF-8")
@@ -72,8 +68,8 @@ def test_HighSNR_P_P_Multi():
                     if "RECEIVED " in str(line, "UTF-8")
                 ]
             )
-            assert f"RECEIVED BURSTS: {BURSTS}" in lastline
-            assert f"RECEIVED FRAMES: {int(FRAMESPERBURST) * int(BURSTS)}" in lastline
+            assert f"RECEIVED BURSTS: {bursts}" in lastline
+            assert f"RECEIVED FRAMES: {frames_per_burst * bursts}" in lastline
             assert "RX_ERRORS: 0" in lastline
             print(lastline)
 

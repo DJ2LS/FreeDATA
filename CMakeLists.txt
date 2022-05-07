@@ -60,15 +60,15 @@ add_test(NAME py_highsnr_stdio_P_P_multi
                         python3 test_highsnr_stdio_P_P_multi.py")
         set_tests_properties(py_highsnr_stdio_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
 
-add_test(NAME py_highsnr_stdio_P_P_datac0
+add_test(NAME py_highsnr_stdio_P_P_datacx
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         export PYTHONPATH=../tnc;
                         export BURSTS=${BURSTS};
                         export FRAMESPERBURST=${FRAMESPERBURST};
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_highsnr_stdio_P_P_datac0.py")
-        set_tests_properties(py_highsnr_stdio_P_P_datac0 PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
+                        python3 test_highsnr_stdio_P_P_datacx.py")
+        set_tests_properties(py_highsnr_stdio_P_P_datacx PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
 add_test(NAME highsnr_stdio_P_C_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
