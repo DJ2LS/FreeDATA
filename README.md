@@ -1,5 +1,5 @@
 # FreeDATA
-My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application. 
+My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application.
 
 [mailing-list](https://groups.io/g/freedata)
 
@@ -29,4 +29,42 @@ Download the latest developer release from the releases section, unpack it and j
 
 ## Installation
 Please check the [wiki](https://wiki.freedata.app) for installation instructions
+
+## Code Unit Tests
+The following tests cover some TNC functionality and the interface to codec2:
+1. Name: audio_buffer
+   Tests the thread safety of the audio buffer routines.
+2. Name: resampler
+   Tests FreeDATA audio resampling from 48KHz to 8KHz.
+3. Name: tnc_state_machine
+   Tests TNC transitions between states.
+4. Name: helper_routines
+   Tests various helper routines.
+5. Name: py_highsnr_stdio_P_P_multi
+   Tests a high signal-to-noise ratio (good quality) audio path using multiple codecs. (Pure python.)
+6. Name: py_highsnr_stdio_P_P_datacx
+   Tests a high signal-to-noise ratio audio path using multiple individual codecs.  (Pure python.)
+7. Name: highsnr_stdio_P_C_single
+   Tests compatibility with FreeDATA's transmit and freedv's raw data receive.
+8. Name: highsnr_stdio_C_P_single
+   Tests compatibility with freedv's raw data transmit and FreeDATA's receive.
+9. Name: highsnr_stdio_P_P_single
+   Tests a high signal-to-noise ratio audio path using multiple codecs. (Requires POSIX system.)
+10. Name: highsnr_stdio_P_P_multi
+    Tests a high signal-to-noise ratio audio path using multiple codecs. (Requires POSIX system.)
+
+The following tests can not currently be run with Github's pipeline as they require the ALSA dummy device
+kernel module to be installed. They also do not perform reliably. These tests are slowly being
+replaced with equivalent pipeline-compatible tests.
+11. Name: highsnr_virtual1_P_P_single_alsa
+    Tests a high signal-to-noise ratio audio path using a single codec directly over an ALSA dummy device.
+12. Name: highsnr_virtual2_P_P_single
+    Tests a high signal-to-noise ratio audio path using a single codec over an ALSA dummy device.
+13. Name: highsnr_virtual3_P_P_multi
+    Tests a high signal-to-noise ratio audio path using multiple codecs over an ALSA dummy device.
+14. Name: highsnr_virtual4_P_P_single_callback
+15. Name: highsnr_virtual4_P_P_single_callback_outside
+16. Name: highsnr_virtual5_P_P_multi_callback
+17. Name: highsnr_virtual5_P_P_multi_callback_outside
+18. Name: highsnr_ARQ_short
 
