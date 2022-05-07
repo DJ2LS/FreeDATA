@@ -24,15 +24,31 @@ set(TESTFRAMES 3)
 
 add_test(NAME audio_buffer
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_audiobuffer.py")
          set_tests_properties(audio_buffer PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
        
 add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 t48_8_short.py")
         set_tests_properties(resampler PROPERTIES PASS_REGULAR_EXPRESSION "PASS")
+
+add_test(NAME tnc_state_machine
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        python3 test_tnc_states.py")
+         set_tests_properties(tnc_state_machine PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+
+add_test(NAME helper_routines
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        python3 test_helpers.py")
+         set_tests_properties(helper_routines PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME highsnr_stdio_P_C_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
@@ -67,20 +83,6 @@ add_test(NAME highsnr_stdio_P_P_multi
                         python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
         set_tests_properties(highsnr_stdio_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
-
-add_test(NAME tnc_state_machine
-         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
-                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_tnc_states.py")
-         set_tests_properties(tnc_state_machine PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
-
-add_test(NAME helper_routines
-         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
-                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_helpers.py")
-         set_tests_properties(helper_routines PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 # These tests can't run on GitHub actions as we don't have a virtual sound card
 if(NOT DEFINED ENV{GITHUB_RUN_ID})
