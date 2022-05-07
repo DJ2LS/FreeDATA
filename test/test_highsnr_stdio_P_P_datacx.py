@@ -16,7 +16,7 @@ FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
 
 @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
-@pytest.mark.parametrize("mode", ['datac0', 'datac1', 'datac3'])
+@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
 def test_HighSNR_P_P_DATAC0(bursts: int, frames_per_burst: int, mode: str):
     """
     Test a high signal-to-noise ratio path with DATAC0.
@@ -26,10 +26,18 @@ def test_HighSNR_P_P_DATAC0(bursts: int, frames_per_burst: int, mode: str):
     :param frames_per_burst: Number of frames transmitted per burst
     :type frames_per_burst: str
     """
+    # Facilitate running from main directory as well as inside test/
+    tx_side = "test_tx.py"
+    rx_side = "test_rx.py"
+    if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
+        tx_side = os.path.join("test", tx_side)
+        rx_side = os.path.join("test", rx_side)
+        os.environ["PYTHONPATH"] += ":."
+
     with subprocess.Popen(
         args=[
             "python3",
-            "test_tx.py",
+            tx_side,
             "--mode",
             mode,
             "--delay",
@@ -46,7 +54,7 @@ def test_HighSNR_P_P_DATAC0(bursts: int, frames_per_burst: int, mode: str):
         with subprocess.Popen(
             args=[
                 "python3",
-                "test_rx.py",
+                rx_side,
                 "--mode",
                 mode,
                 "--framesperburst",

@@ -25,10 +25,18 @@ def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
     :param frames_per_burst: Number of frames transmitted per burst
     :type frames_per_burst: int
     """
+    # Facilitate running from main directory as well as inside test/
+    tx_side = "test_multimode_tx.py"
+    rx_side = "test_multimode_rx.py"
+    if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
+        tx_side = os.path.join("test", tx_side)
+        rx_side = os.path.join("test", rx_side)
+        os.environ["PYTHONPATH"] += ":."
+
     with subprocess.Popen(
         args=[
             "python3",
-            "test_multimode_tx.py",
+            tx_side,
             "--delay",
             "500",
             "--framesperburst",
@@ -43,7 +51,7 @@ def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
         with subprocess.Popen(
             args=[
                 "python3",
-                "test_multimode_rx.py",
+                rx_side,
                 "--framesperburst",
                 str(frames_per_burst),
                 "--bursts",
