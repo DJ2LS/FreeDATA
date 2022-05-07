@@ -108,7 +108,7 @@ def test_valid_disconnect(mycall: str, dxcall: str):
     # Set the SSIDs we'll use for this test.
     static.SSID_LIST = [0, 1, 2, 3, 4]
 
-    # set up the static parameters for the connection.
+    # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
     static.MYCALLSIGN = mycallsign
@@ -161,7 +161,7 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
     :return: Bytearray of the requested frame
     :rtype: bytearray
     """
-    # set up the static parameters for the connection.
+    # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
     static.MYCALLSIGN = mycallsign
