@@ -33,7 +33,7 @@ add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         export PYTHONPATH=../tnc;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 t48_8_short.py")
+                        python3 test_resample_48_8.py")
         set_tests_properties(resampler PROPERTIES PASS_REGULAR_EXPRESSION "PASS")
 
 add_test(NAME tnc_state_machine
