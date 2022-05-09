@@ -4,11 +4,11 @@ import structlog
 
 hamlib_version = 0
 
+
 class radio:
     """ """
     def __init__(self):
         pass
-
 
     def open_rig(self, **kwargs):
         """
@@ -62,4 +62,3 @@ class radio:
     def close_rig(self):
         """ """
         return
-

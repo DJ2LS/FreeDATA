@@ -18,10 +18,10 @@ import os
 # set global hamlib version
 hamlib_version = 0
 
+
 class radio:
     """ """
     def __init__(self):
-
         self.devicename = ''
         self.devicenumber = ''
         self.deviceport = ''
@@ -51,7 +51,6 @@ class radio:
         Returns:
 
         """
-
         self.devicename = devicename
         self.deviceport = deviceport
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
@@ -61,8 +60,7 @@ class radio:
         self.stop_bits = stop_bits
         self.handshake = handshake
 
-
-         # check if we are running in a pyinstaller environment
+        # check if we are running in a pyinstaller environment
         try:
             app_path = sys._MEIPASS
         except:
@@ -85,9 +83,6 @@ class radio:
             self.deviceport = '/dev/ttyUSB0'
 
         print(self.devicenumber, self.deviceport, self.serialspeed)
-
-
-
 
         # select precompiled executable for win32/win64 rigctl
         # this is really a hack...somewhen we need a native hamlib integration for windows
@@ -116,7 +111,6 @@ class radio:
         except:
             return False
 
-
     def get_mode(self):
         """ """
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
@@ -125,7 +119,6 @@ class radio:
             return 'PKTUSB'
         except:
             return False
-
 
     def get_bandwith(self):
         """ """

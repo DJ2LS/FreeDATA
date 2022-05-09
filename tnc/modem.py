@@ -40,7 +40,6 @@ RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 RECEIVE_FSK_LDPC_1 = False
 
-
 class RF():
     """ """
 
@@ -48,7 +47,6 @@ class RF():
 
         self.sampler_avg = 0
         self.buffer_avg = 0
-
 
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
@@ -107,7 +105,6 @@ class RF():
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,1)
         self.datac3_buffer = codec2.audio_buffer(2*self.AUDIO_FRAMES_PER_BUFFER_RX)
 
-
         self.fsk_ldpc_freedv_0 = cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC, ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)), c_void_p)
         self.fsk_ldpc_bytes_per_frame_0 = int(codec2.api.freedv_get_bits_per_modem_frame(self.fsk_ldpc_freedv_0)/8)
         self.fsk_ldpc_bytes_out_0 = create_string_buffer(self.fsk_ldpc_bytes_per_frame_0)
@@ -147,7 +144,6 @@ class RF():
                 structlog.get_logger("structlog").error("[TNC] starting pyaudio callback failed", e=e)
 
         else:
-
             # create a stream object for simulating audio stream
             class Object(object):
                 pass
@@ -168,7 +164,6 @@ class RF():
             mkfifo_read_callback_thread = threading.Thread(target=self.mkfifo_read_callback, name="MKFIFO READ CALLBACK THREAD",daemon=True)
             mkfifo_read_callback_thread.start()
 
-
         # --------------------------------------------INIT AND OPEN HAMLIB
         # check how we want to control the radio
         if static.HAMLIB_RADIOCONTROL == 'direct':
@@ -181,7 +176,6 @@ class RF():
             import rigdummy as rig
         else:
             import rigdummy as rig
-
 
         self.hamlib = rig.radio()
         self.hamlib.open_rig(devicename=static.HAMLIB_DEVICE_NAME, deviceport=static.HAMLIB_DEVICE_PORT, hamlib_ptt_type=static.HAMLIB_PTT_TYPE, serialspeed=static.HAMLIB_SERIAL_SPEED, pttport=static.HAMLIB_PTT_PORT, data_bits=static.HAMLIB_DATA_BITS, stop_bits=static.HAMLIB_STOP_BITS, handshake=static.HAMLIB_HANDSHAKE, rigctld_ip = static.HAMLIB_RGICTLD_IP, rigctld_port = static.HAMLIB_RGICTLD_PORT)
@@ -219,7 +213,6 @@ class RF():
     # --------------------------------------------------------------------------------------------------------
     def mkfifo_read_callback(self):
         while 1:
-
             time.sleep(0.01)
             # -----read
             data_in48k = bytes()
@@ -245,8 +238,6 @@ class RF():
                             if RECEIVE_DATAC3:
                                 self.datac3_buffer.push(x)
 
-
-
     def mkfifo_write_callback(self):
         while 1:
             time.sleep(0.01)
@@ -264,7 +255,6 @@ class RF():
                 fifo_write.write(data_out48k)
                 fifo_write.flush()
 
-
     # --------------------------------------------------------------------------------------------------------
     #def audio_callback(self, data_in48k, frame_count, time_info, status):
     def callback(self, data_in48k, outdata, frames, time, status):
@@ -279,7 +269,6 @@ class RF():
         Returns:
 
         """
-
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
 
@@ -358,17 +347,14 @@ class RF():
         data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(data_out)
 
-
         # open codec2 instance
         self.MODE = mode
         if self.MODE == 'FSK_LDPC_0' or self.MODE == 200:
             freedv = cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC, ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)), c_void_p)
         elif self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
             freedv = cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC, ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV)), c_void_p)
-
         else:
             freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
-
 
         # get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
@@ -415,7 +401,6 @@ class RF():
                 codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer
                 txbuffer += bytes(mod_out)
 
-
             # codec2 fsk preamble may be broken - at least it sounds like that so we are disabling it for testing
             if not self.MODE == 'FSK_LDPC_0' or self.MODE == 200 or self.MODE == 'FSK_LDPC_1' or self.MODE == 201:
                 # write preamble to txbuffer
@@ -437,11 +422,7 @@ class RF():
         # deaktivated for testing purposes
         self.mod_out_locked = False
 
-
         # -------------------------------
-
-
-
 
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX #4800
         chunk = [txbuffer_48k[i:i+chunk_length] for i in range(0, len(txbuffer_48k), chunk_length)]
@@ -454,8 +435,6 @@ class RF():
 
                 #structlog.get_logger("structlog").debug("[TNC] mod out shorter than audio buffer", delta=delta)
             self.modoutqueue.append(c)
-
-
 
         # Release our mod_out_lock so we can use the queue
         self.mod_out_locked = False
@@ -553,8 +532,6 @@ class RF():
                     #self.get_scatter(self.fsk_ldpc_freedv_1)
                     self.calculate_snr(self.fsk_ldpc_freedv_1)
 
-
-
     # worker for FIFO queue for processing received frames
     def worker_transmit(self):
         """ """
@@ -563,8 +540,6 @@ class RF():
 
             self.transmit(mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3])
             #self.modem_transmit_queue.task_done()
-
-
 
     # worker for FIFO queue for processing received frames
     def worker_received(self):
@@ -576,7 +551,6 @@ class RF():
             # data[2] = bytes_per_frame
             data_handler.DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2]])
             self.modem_received_queue.task_done()
-
 
     def get_frequency_offset(self, freedv):
         """
@@ -593,7 +567,6 @@ class RF():
         offset = round(modemStats.foff) * (-1)
         static.FREQ_OFFSET = offset
         return offset
-
 
     def get_scatter(self, freedv):
         """
@@ -629,7 +602,6 @@ class RF():
                 scatterdata_small = scatterdata[::10]
                 static.SCATTER = scatterdata_small
 
-
     def calculate_snr(self, freedv):
         """
 
@@ -639,7 +611,6 @@ class RF():
         Returns:
 
         """
-
         try:
             modem_stats_snr = c_float()
             modem_stats_sync = c_int()
@@ -666,7 +637,6 @@ class RF():
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWITH = self.hamlib.get_bandwith()
 
-
     def calculate_fft(self):
         """ """
         # channel_busy_delay counter
@@ -678,7 +648,6 @@ class RF():
             # WE NEED TO OPTIMIZE THIS!
 
             if len(self.fft_data) >= 128:
-
                 # https://gist.github.com/ZWMiller/53232427efc5088007cab6feee7c6e4c
                 # Fast Fourier Transform, 10*log10(abs) is to scale it to dB
                 # and make sure it's not imaginary
@@ -693,7 +662,6 @@ class RF():
                     # get average of dfft
                     avg = np.mean(dfft)
 
-
                     # detect signals which are higher than the average + 10 ( +10 smoothes the output )
                     # data higher than the average must be a signal. Therefore we are setting it to 100 so it will be highlighted
                     # have to do this when we are not transmittig so our own sending data will not affect this too much
@@ -702,7 +670,6 @@ class RF():
 
                         # calculate audio max value
                         # static.AUDIO_RMS = np.amax(self.fft_data)
-
 
                     # check for signals higher than average by checking for "100"
                     # if we have a signal, increment our channel_busy delay counter so we have a smoother state toggle
@@ -728,9 +695,7 @@ class RF():
 
                     static.FFT = dfftlist[0:320] #320 --> bandwith 3000
 
-
                 except:
-
                     structlog.get_logger("structlog").debug("[TNC] Setting fft=0")
                     # else 0
                     static.FFT = [0]
@@ -749,8 +714,6 @@ class RF():
         codec2.api.freedv_set_frames_per_burst(self.datac1_freedv,n_frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv,n_frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0,n_frames_per_burst)
-
-
 
 def get_bytes_per_frame(mode):
     """
@@ -772,9 +735,6 @@ def get_bytes_per_frame(mode):
     # get number of bytes per frame for mode
     return int(codec2.api.freedv_get_bits_per_modem_frame(freedv)/8)
 
-
 def set_audio_volume(datalist, volume):
     data = np.fromstring(datalist, np.int16) * (volume / 100.)
     return data.astype(np.int16)
-
-

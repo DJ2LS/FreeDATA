@@ -42,10 +42,6 @@ CONNECTED_CLIENTS = set()
 CLOSE_SIGNAL = False
 
 
-
-
-
-
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
     the socket handler base class
@@ -53,10 +49,8 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
-
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
-
 
     def send_to_client(self):
         """
@@ -66,10 +60,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         """
         tempdata = b''
         while self.connection_alive and not CLOSE_SIGNAL:
-
             # send tnc state as network stream
             # check server port against daemon port and send corresponding data
-
             if self.server.server_address[1] == static.PORT and not static.TNCSTARTED:
                 data = send_tnc_state()
                 if data != tempdata:
@@ -81,7 +73,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     tempdata = data
                     SOCKET_QUEUE.put(data)
                 time.sleep(0.5)
-
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
@@ -120,7 +111,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     #print("connection broken. Closing...")
                     self.connection_alive = False
 
-
                 if data.startswith(b'{') and data.endswith(b'}\n'):
                     # split data by \n if we have multiple commands in socket buffer
                     data = data.split(b'\n')
@@ -141,19 +131,16 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # and which one can be processed during a running transmission
                         time.sleep(3)
 
-
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
             except Exception as e:
                 structlog.get_logger("structlog").info("[SCK] Connection closed", ip=self.client_address[0], port=self.client_address[1], e=e)
                 self.connection_alive = False
 
-
     def handle(self):
         """
         socket handler
         """
-
         CONNECTED_CLIENTS.add(self.request)
 
         structlog.get_logger("structlog").debug("[SCK] Client connected", ip=self.client_address[0], port=self.client_address[1])
@@ -165,8 +152,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
             time.sleep(1)
-
-
 
     def finish(self):
         """ """
@@ -189,7 +174,6 @@ def process_tnc_commands(data):
     """
     # we need to do some error handling in case of socket timeout or decoding issue
     try:
-
         # convert data to json object
         received_json = json.loads(data)
         structlog.get_logger("structlog").debug("[SCK] CMD", command=received_json)
@@ -202,7 +186,6 @@ def process_tnc_commands(data):
             except Exception as e:
                 command_response("tx_audio_level", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
-
 
         # TRANSMIT SINE WAVE  -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
@@ -222,6 +205,7 @@ def process_tnc_commands(data):
             except Exception as e:
                 command_response("cqcqcq", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+
         # START_BEACON -----------------------------------------------------
         if received_json["command"] == "start_beacon":
             try:
@@ -262,7 +246,6 @@ def process_tnc_commands(data):
                 command_response("ping", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
-
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "connect":
             static.BEACON_PAUSE = True
@@ -297,7 +280,6 @@ def process_tnc_commands(data):
 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
-
             static.BEACON_PAUSE = True
             try:
                 if not static.ARQ_SESSION:
@@ -313,7 +295,6 @@ def process_tnc_commands(data):
                 else:
                     dxcallsign = static.DXCALLSIGN
                     static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-
 
                 mode = int(received_json["parameter"][0]["mode"])
                 n_frames = int(received_json["parameter"][0]["n_frames"])
@@ -335,14 +316,12 @@ def process_tnc_commands(data):
                     binarydata = base64.b64decode(base64data)
 
                     data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid, mycallsign])
-
                 else:
                     raise TypeError
+
             except Exception as e:
                 command_response("send_raw", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
-
-
 
         # STOP TRANSMISSION ----------------------------------------------------------
         if received_json["type"] == 'arq' and received_json["command"] == "stop_transmission":
@@ -356,7 +335,6 @@ def process_tnc_commands(data):
             except Exception as e:
                 command_response("stop_transmission", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
-
 
         if received_json["type"] == 'get' and received_json["command"] == 'rx_buffer':
             try:
@@ -380,7 +358,6 @@ def process_tnc_commands(data):
                 command_response("rx_buffer", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
-
         if received_json["type"] == 'set' and received_json["command"] == 'del_rx_buffer':
             try:
                 static.RX_BUFFER = []
@@ -397,7 +374,6 @@ def send_tnc_state():
     """
     send the tnc state to network
     """
-
     encoding = 'utf-8'
 
     output = {
@@ -438,7 +414,6 @@ def send_tnc_state():
     jsondata = json.dumps(output)
     return jsondata
 
-
 def process_daemon_commands(data):
     """
     process daemon commands
@@ -469,7 +444,6 @@ def process_daemon_commands(data):
             command_response("mycallsign", False)
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
-
     if received_json["type"] == 'set' and received_json["command"] == 'mygrid':
         try:
             mygrid = received_json["parameter"]
@@ -484,9 +458,7 @@ def process_daemon_commands(data):
             command_response("mygrid", False)
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
-
     if received_json["type"] == 'set' and received_json["command"] == 'start_tnc' and not static.TNCSTARTED:
-
         try:
             mycall = str(received_json["parameter"][0]["mycall"])
             mygrid = str(received_json["parameter"][0]["mygrid"])
@@ -511,7 +483,6 @@ def process_daemon_commands(data):
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
             respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
-
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
@@ -549,7 +520,6 @@ def process_daemon_commands(data):
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
     if received_json["type"] == 'get' and received_json["command"] == 'test_hamlib':
-
         try:
             devicename = str(received_json["parameter"][0]["devicename"])
             deviceport = str(received_json["parameter"][0]["deviceport"])
@@ -618,7 +588,6 @@ def send_daemon_state():
             output["daemon_state"].append({"status": "running"})
         else:
             output["daemon_state"].append({"status": "stopped"})
-
 
         jsondata = json.dumps(output)
 
