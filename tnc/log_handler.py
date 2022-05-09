@@ -3,7 +3,7 @@ def setup_logging(filename):
     """
 
     Args:
-      filename: 
+      filename:
 
     Returns:
 

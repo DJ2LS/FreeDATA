@@ -5,7 +5,7 @@ Created on Wed Dec 23 11:13:57 2020
 
 @author: DJ2LS
 Here we are saving application wide variables and stats, which have to be accessed everywhere.
-Not nice, suggestions are appreciated :-) 
+Not nice, suggestions are appreciated :-)
 """
 
 VERSION = '0.4.0-alpha'
@@ -55,7 +55,7 @@ HAMLIB_HANDSHAKE = 'None'
 HAMLIB_RADIOCONTROL = 'direct'
 HAMLIB_RIGCTLD_IP = '127.0.0.1'
 HAMLIB_RIGCTLD_PORT = '4532'
-    
+
 HAMLIB_FREQUENCY = 0
 HAMLIB_MODE = ''
 HAMLIB_BANDWITH = 0
@@ -122,4 +122,4 @@ INFO = []
 
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN = -50.0
-TUNING_RANGE_FMAX = 50.0 
+TUNING_RANGE_FMAX = 50.0

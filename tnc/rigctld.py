@@ -15,7 +15,7 @@ hamlib_version = 0
 
 class radio():
     """rotctld (hamlib) communication class"""
-    # Note: This is a massive hack. 
+    # Note: This is a massive hack.
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """ Open a connection to rotctld, and test it for validity """
@@ -31,31 +31,31 @@ class radio():
         """
 
         Args:
-          devicename: 
-          deviceport: 
-          hamlib_ptt_type: 
-          serialspeed: 
-          pttport: 
-          data_bits: 
-          stop_bits: 
-          handshake: 
-          rigctld_ip: 
-          rigctld_port: 
+          devicename:
+          deviceport:
+          hamlib_ptt_type:
+          serialspeed:
+          pttport:
+          data_bits:
+          stop_bits:
+          handshake:
+          rigctld_ip:
+          rigctld_port:
 
         Returns:
 
         """
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
-        
-       
+
+
         if self.connect():
             logging.debug(f"Rigctl intialized")
             return True
         else:
             structlog.get_logger("structlog").error("[RIGCTLD] Can't connect to rigctld!", ip=self.hostname, port=self.port)
             return False
-            
+
     def connect(self):
         """Connect to rigctld instance"""
         if not self.connected:
@@ -69,7 +69,7 @@ class radio():
                 self.close_rig()
                 structlog.get_logger("structlog").warning("[RIGCTLD] Connection to rigctld refused! Reconnect...", ip=self.hostname, port=self.port, e=e)
                 return False
-    
+
     def close_rig(self):
         """ """
         self.sock.close()
@@ -81,7 +81,7 @@ class radio():
             and return the return value.
 
         Args:
-          command: 
+          command:
 
         Returns:
 
@@ -99,7 +99,7 @@ class radio():
                 structlog.get_logger("structlog").warning("[RIGCTLD] No command response!", command=command, ip=self.hostname, port=self.port)
                 self.connected = False
         else:
-            
+
             # reconnecting....
             time.sleep(0.5)
             self.connect()
@@ -111,7 +111,7 @@ class radio():
             data = self.send_command(b"m")
             data = data.split(b'\n')
             mode = data[0]
-            return mode.decode("utf-8")       
+            return mode.decode("utf-8")
         except:
             0
     def get_bandwith(self):
@@ -123,7 +123,7 @@ class radio():
             return bandwith.decode("utf-8")
         except:
             return 0
-        
+
     def get_frequency(self):
         """ """
         try:
@@ -131,19 +131,19 @@ class radio():
             return frequency.decode("utf-8")
         except:
             return 0
-        
+
     def get_ptt(self):
         """ """
         try:
             return self.send_command(b"t")
         except:
             return False
-        
+
     def set_ptt(self, state):
         """
 
         Args:
-          state: 
+          state:
 
         Returns:
 
@@ -153,6 +153,6 @@ class radio():
                  self.send_command(b"T 1")
             else:
                  self.send_command(b"T 0")
-            return state        
+            return state
         except:
             return False

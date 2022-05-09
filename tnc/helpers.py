@@ -16,7 +16,7 @@ def wait(seconds):
     """
 
     Args:
-      seconds: 
+      seconds:
 
     Returns:
 
@@ -26,18 +26,18 @@ def wait(seconds):
     while time.time() < timeout:
         time.sleep(0.01)
     return True
-    
-    
+
+
 
 def get_crc_8(data):
     """Author: DJ2LS
-    
+
     Get the CRC8 of a byte string
-    
+
     param: data = bytes()
 
     Args:
-      data: 
+      data:
 
     Returns:
 
@@ -50,13 +50,13 @@ def get_crc_8(data):
 
 def get_crc_16(data):
     """Author: DJ2LS
-    
+
     Get the CRC16 of a byte string
-    
+
     param: data = bytes()
 
     Args:
-      data: 
+      data:
 
     Returns:
 
@@ -68,35 +68,35 @@ def get_crc_16(data):
 
 def get_crc_24(data):
     """Author: DJ2LS
-    
+
     Get the CRC24-OPENPGP of a byte string
     https://github.com/GardenTools/CrcEngine#examples
-    
+
     param: data = bytes()
 
     Args:
-      data: 
+      data:
 
     Returns:
 
     """
     crc_algorithm = crcengine.create(0x864cfb, 24, 0xb704ce, ref_in=False,
                                ref_out=False, xor_out=0,
-                               name='crc-24-openpgp')    
+                               name='crc-24-openpgp')
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(3, byteorder='big')
     return crc_data
-    
-    
+
+
 def get_crc_32(data):
     """Author: DJ2LS
-    
+
     Get the CRC32 of a byte string
-    
+
     param: data = bytes()
 
     Args:
-      data: 
+      data:
 
     Returns:
 
@@ -111,12 +111,12 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
 
     Args:
-      dxcallsign: 
-      dxgrid: 
-      datatype: 
-      snr: 
-      offset: 
-      frequency: 
+      dxcallsign:
+      dxgrid:
+      datatype:
+      snr:
+      offset:
+      frequency:
 
     Returns:
 
@@ -149,7 +149,7 @@ def callsign_to_bytes(callsign):
     """
 
     Args:
-      callsign: 
+      callsign:
 
     Returns:
 
@@ -171,21 +171,21 @@ def callsign_to_bytes(callsign):
     #-13 Weather stations
     #-14 Truckers or generally full time drivers
     #-15 generic additional station, digi, mobile, wx, etc
-    
+
     # try converting to bytestring if possible type string
-    try:    
-        callsign = bytes(callsign, 'utf-8')       
+    try:
+        callsign = bytes(callsign, 'utf-8')
     except:
         pass
 
-    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign ) 
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )
     callsign = callsign.split(b'-')
     try:
         ssid = int(callsign[1])
     except:
         ssid = 0
-        
-    #callsign = callsign[0] 
+
+    #callsign = callsign[0]
     #bytestring = bytearray(8)
     #bytestring[:len(callsign)] = callsign
     #bytestring[7:8] = bytes([ssid])
@@ -196,14 +196,14 @@ def callsign_to_bytes(callsign):
     return encode_call(callsign + ssid)
 
 
-    #return bytes(bytestring) 
-    
+    #return bytes(bytestring)
+
 def bytes_to_callsign(bytestring):
     """
     Convert our callsign, received by a frame to a callsign in a human readable format
 
     Args:
-      bytestring: 
+      bytestring:
 
     Returns:
         bytes
@@ -227,8 +227,8 @@ def bytes_to_callsign(bytestring):
     #-13 Weather stations
     #-14 Truckers or generally full time drivers
     #-15 generic additional station, digi, mobile, wx, etc
-        
-    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )    
+
+    # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )
     '''
     callsign = bytes(bytestring[:7])
     callsign = callsign.rstrip(b'\x00')
@@ -238,8 +238,8 @@ def bytes_to_callsign(bytestring):
     callsign = callsign.decode('utf-8')
     callsign = callsign + str(ssid)
     callsign = callsign.encode('utf-8')
-    
-    return bytes(callsign) 
+
+    return bytes(callsign)
     '''
     decoded = decode_call(bytestring)
     callsign = decoded[:-1]
@@ -254,23 +254,23 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
 
     Args:
       callsign: Callsign which we want to check
-      crc_to_check: The CRC which we want the callsign to check against 
+      crc_to_check: The CRC which we want the callsign to check against
 
     Returns:
         [True, Callsign + SSID]
         False
     """
-    
+
     print(callsign)
     try:
         callsign = callsign.split(b'-')
         callsign = callsign[0] # we want the callsign without SSID
-        
+
     except:
         callsign = callsign
-       
+
     for ssid in static.SSID_LIST:
-        call_with_ssid = bytearray(callsign)        
+        call_with_ssid = bytearray(callsign)
         call_with_ssid.extend('-'.encode('utf-8'))
         call_with_ssid.extend(str(ssid).encode('utf-8'))
 
@@ -279,7 +279,7 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         if callsign_crc == crc_to_check:
             print(call_with_ssid)
             return [True, bytes(call_with_ssid)]
-    
+
     return [False, ""]
 
 
@@ -327,7 +327,7 @@ def decode_grid(b_code_word:bytes):
     """
     code_word = int.from_bytes(b_code_word, byteorder='big', signed=False)
 
-    grid = chr((code_word & 0b11111) + 65) 
+    grid = chr((code_word & 0b11111) + 65)
     code_word = code_word >> 5
 
     grid = chr((code_word & 0b11111) + 65) + grid
@@ -359,7 +359,7 @@ def encode_call(call):
     out_code_word = int(0)
 
     call = call.upper() # upper case to be save
-    
+
     for x in call:
         int_val = ord(x)-48 # -48 reduce bits, begin with first number utf8 table
         out_code_word = out_code_word << 6 # shift left 6 bit, making space for a new char
