@@ -112,7 +112,6 @@ def get_crc_32(data: bytes) -> bytes:
     crc_data = crc_data.to_bytes(4, byteorder="big")
     return crc_data
 
-
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
 
@@ -161,7 +160,6 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                     ]
                 )
                 break
-
 
 #    for idx, item in enumerate(static.HEARD_STATIONS):
 #        if dxcallsign in item:
@@ -317,7 +315,6 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
 
     return [False, ""]
 
-
 def encode_grid(grid):
     """
     @author: DB1UJ
@@ -380,7 +377,6 @@ def decode_grid(b_code_word: bytes):
     grid = chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
 
     return grid
-
 
 def encode_call(call):
     """

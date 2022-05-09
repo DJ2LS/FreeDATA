@@ -25,7 +25,6 @@ import structlog
 
 log = structlog.get_logger("main")
 
-
 def signal_handler(sig, frame):
     """
     a signal handler, which closes the network/socket when closing the application
