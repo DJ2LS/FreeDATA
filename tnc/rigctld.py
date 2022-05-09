@@ -5,6 +5,7 @@ import log_handler
 import logging
 import time
 import static
+
 # class taken from darsidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
@@ -12,6 +13,7 @@ import static
 
 # set global hamlib version
 hamlib_version = 0
+
 
 class radio():
     """rotctld (hamlib) communication class"""
@@ -48,7 +50,6 @@ class radio():
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
 
-
         if self.connect():
             logging.debug(f"Rigctl intialized")
             return True
@@ -74,7 +75,6 @@ class radio():
         """ """
         self.sock.close()
         self.connected = False
-
 
     def send_command(self, command):
         """Send a command to the connected rotctld instance,
@@ -104,7 +104,6 @@ class radio():
             time.sleep(0.5)
             self.connect()
 
-
     def get_mode(self):
         """ """
         try:
@@ -114,6 +113,7 @@ class radio():
             return mode.decode("utf-8")
         except:
             0
+
     def get_bandwith(self):
         """ """
         try:

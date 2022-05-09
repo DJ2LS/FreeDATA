@@ -8,7 +8,6 @@ def setup_logging(filename):
     Returns:
 
     """
-
     import logging.config
     import structlog
 

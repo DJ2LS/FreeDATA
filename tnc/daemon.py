@@ -8,7 +8,6 @@ Author: DJ2LS, January 2022
 daemon for providing basic information for the tnc like audio or serial devices
 
 """
-
 import argparse
 import threading
 import socketserver
@@ -49,7 +48,6 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 
-
 class DAEMON():
     """
     daemon class
@@ -70,8 +68,6 @@ class DAEMON():
         worker = threading.Thread(target=self.worker, name="WORKER", daemon=True)
         worker.start()
 
-
-
     def update_audio_devices(self):
         """
         update audio devices and set to static
@@ -84,7 +80,6 @@ class DAEMON():
             except Exception as e:
                 print(e)
             time.sleep(1)
-
 
     def update_serial_devices(self):
         """
@@ -115,7 +110,6 @@ class DAEMON():
         """
         while 1:
             try:
-
                 data = self.daemon_queue.get()
 
                 # data[1] mycall
@@ -168,7 +162,6 @@ class DAEMON():
                     # disabled mode
 
                     if data[13] != 'disabled':
-
                         options.append('--devicename')
                         options.append(data[5])
 
@@ -212,7 +205,6 @@ class DAEMON():
                     if data[18] == 'True':
                         options.append('--500hz')
 
-
                     options.append('--tuning_range_fmin')
                     options.append(data[19])
 
@@ -228,8 +220,6 @@ class DAEMON():
 
                     if data[23] == 'True':
                         options.append('--qrv')
-
-
 
                     # try running tnc from binary, else run from source
                     # this helps running the tnc in a developer environment
@@ -282,7 +272,6 @@ class DAEMON():
                 # data[10] rigctld_ip
                 # data[11] rigctld_port
                 if data[0] == 'TEST_HAMLIB':
-
                     devicename = data[1]
                     deviceport = data[2]
                     serialspeed = data[3]
@@ -294,8 +283,6 @@ class DAEMON():
                     radiocontrol = data[9]
                     rigctld_ip = data[10]
                     rigctld_port = data[11]
-
-
 
                     # check how we want to control the radio
                     if radiocontrol == 'direct':
@@ -334,12 +321,9 @@ class DAEMON():
             except Exception as e:
                 print(e)
 
-
-
 if __name__ == '__main__':
     # we need to run this on windows for multiprocessing support
     multiprocessing.freeze_support()
-
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA Daemon')
@@ -347,7 +331,6 @@ if __name__ == '__main__':
     ARGS = PARSER.parse_args()
 
     static.DAEMONPORT = ARGS.socket_port
-
 
     try:
         if sys.platform == 'linux':
@@ -377,8 +360,8 @@ if __name__ == '__main__':
     except Exception as e:
         structlog.get_logger("structlog").error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=e)
         os._exit(1)
-    daemon = DAEMON()
 
+    daemon = DAEMON()
 
     structlog.get_logger("structlog").info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
     while True:

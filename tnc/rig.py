@@ -7,7 +7,6 @@ import atexit
 import subprocess
 import os
 
-
 # set global hamlib version
 hamlib_version = 0
 
@@ -18,7 +17,6 @@ try:
 except:
     app_path = os.path.abspath(".")
 sys.path.append(app_path)
-
 
 # try importing hamlib
 try:
@@ -76,7 +74,6 @@ except Exception as e:
 class radio:
     """ """
     def __init__(self):
-
         self.devicename = ''
         self.devicenumber = ''
         self.deviceport = ''
@@ -106,7 +103,6 @@ class radio:
         Returns:
 
         """
-
         self.devicename = devicename
         self.deviceport = str(deviceport)
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
@@ -115,7 +111,6 @@ class radio:
         self.data_bits = str(data_bits)
         self.stop_bits = str(stop_bits)
         self.handshake = str(handshake)
-
 
         # try to init hamlib
         try:
@@ -128,7 +123,6 @@ class radio:
                 structlog.get_logger("structlog").error("[RIG] Hamlib: rig not supported...")
                 self.devicenumber = 0
 
-
             self.my_rig = Hamlib.Rig(self.devicenumber)
             self.my_rig.set_conf("rig_pathname", self.deviceport)
             self.my_rig.set_conf("retry", "5")
@@ -138,9 +132,6 @@ class radio:
             self.my_rig.set_conf("data_bits", self.data_bits)
             self.my_rig.set_conf("ptt_pathname", self.pttport)
 
-
-
-
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
                 self.my_rig.set_conf("ptt_type", 'RIG')
@@ -148,7 +139,6 @@ class radio:
             elif self.hamlib_ptt_type == 'USB':
                 self.hamlib_ptt_type = Hamlib.RIG_PORT_USB
                 self.my_rig.set_conf("ptt_type", 'USB')
-
 
             elif self.hamlib_ptt_type == 'DTR-H':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_SERIAL_DTR
@@ -182,7 +172,6 @@ class radio:
 
             structlog.get_logger("structlog").info("[RIG] Opening...", device=self.devicenumber, path=self.my_rig.get_conf("rig_pathname"), serial_speed=self.my_rig.get_conf("serial_speed"), serial_handshake=self.my_rig.get_conf("serial_handshake"), stop_bits=self.my_rig.get_conf("stop_bits"), data_bits=self.my_rig.get_conf("data_bits"), ptt_pathname=self.my_rig.get_conf("ptt_pathname"))
 
-
             self.my_rig.open()
             atexit.register(self.my_rig.close)
 
@@ -198,7 +187,6 @@ class radio:
                     structlog.get_logger("structlog").error("[RIG] HELP:", check = help_url)
             except:
                 structlog.get_logger("structlog").info("[RIG] Hamlib device opened", status='SUCCESS')
-
 
             # set ptt to false if ptt is stuck for some reason
             self.set_ptt(False)

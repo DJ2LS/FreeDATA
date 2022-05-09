@@ -8,9 +8,6 @@ import atexit
 atexit.register(sd._terminate)
 
 def get_audio_devices():
-
-
-
     """
     return list of input and output audio devices in own process to avoid crashes of portaudio on raspberry pi
 
@@ -47,7 +44,6 @@ def fetch_audio_devices(input_devices, output_devices):
     Returns:
 
     """
-
     devices = sd.query_devices(device=None, kind=None)
     index = 0
     for device in devices:
@@ -70,4 +66,3 @@ def fetch_audio_devices(input_devices, output_devices):
         if maxOutputChannels > 0:
             output_devices.append({"id": index, "name": str(name)})
         index += 1
-

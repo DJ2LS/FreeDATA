@@ -5,12 +5,9 @@ Created on Fri Dec 25 21:25:14 2020
 
 @author: DJ2LS
 """
-
 import time
 import crcengine
 import static
-
-
 
 def wait(seconds):
     """
@@ -26,8 +23,6 @@ def wait(seconds):
     while time.time() < timeout:
         time.sleep(0.01)
     return True
-
-
 
 def get_crc_8(data):
     """Author: DJ2LS
@@ -46,7 +41,6 @@ def get_crc_8(data):
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(1, byteorder='big')
     return crc_data
-
 
 def get_crc_16(data):
     """Author: DJ2LS
@@ -87,7 +81,6 @@ def get_crc_24(data):
     crc_data = crc_data.to_bytes(3, byteorder='big')
     return crc_data
 
-
 def get_crc_32(data):
     """Author: DJ2LS
 
@@ -105,7 +98,6 @@ def get_crc_32(data):
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(4, byteorder='big')
     return crc_data
-
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
@@ -137,13 +129,10 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
                 break
 
-
 #    for idx, item in enumerate(static.HEARD_STATIONS):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
-
-
 
 def callsign_to_bytes(callsign):
     """
@@ -195,7 +184,6 @@ def callsign_to_bytes(callsign):
     ssid = bytes([ssid]).decode("utf-8")
     return encode_call(callsign + ssid)
 
-
     #return bytes(bytestring)
 
 def bytes_to_callsign(bytestring):
@@ -209,7 +197,6 @@ def bytes_to_callsign(bytestring):
         bytes
 
     """
-
     # http://www.aprs.org/aprs11/SSIDs.txt
     #-0 Your primary station usually fixed and message capable
     #-1 generic additional station, digi, mobile, wx, etc
@@ -246,8 +233,6 @@ def bytes_to_callsign(bytestring):
     ssid = ord(bytes(decoded[-1], "utf-8"))
     return bytes(callsign + "-" + str(ssid), "utf-8")
 
-
-
 def check_callsign(callsign:bytes, crc_to_check:bytes):
     """
     Funktion to check a crc against a callsign to calculate the ssid by generating crc until we got it
@@ -260,7 +245,6 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
         [True, Callsign + SSID]
         False
     """
-
     print(callsign)
     try:
         callsign = callsign.split(b'-')
@@ -281,8 +265,6 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
             return [True, bytes(call_with_ssid)]
 
     return [False, ""]
-
-
 
 def encode_grid(grid):
     """
@@ -345,8 +327,6 @@ def decode_grid(b_code_word:bytes):
 
     return grid
 
-
-
 def encode_call(call):
     """
     @auther: DB1UJ
@@ -390,4 +370,3 @@ def decode_call(b_code_word:bytes):
     call = call[0:-1] + ssid # remove the last char from call and replace with SSID
 
     return call
-

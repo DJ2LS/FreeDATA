@@ -63,12 +63,10 @@ if sys.platform == 'linux':
     files.append('libcodec2.so')
 elif sys.platform == 'darwin':
     files = glob.glob('**/*libcodec2*.dylib',recursive=True)
-
 elif sys.platform == 'win32' or sys.platform == 'win64':
     files = glob.glob('**\*libcodec2*.dll',recursive=True)
 else:
     files = []
-
 
 for file in files:
     try:
@@ -78,14 +76,10 @@ for file in files:
     except Exception as e:
         structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=e)
 
-
 # quit module if codec2 cant be loaded
 if not 'api' in locals():
     structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded", path=file)
     os._exit(1)
-
-
-
 
 # ctypes function init
 
@@ -211,6 +205,7 @@ MODEM_STATS_EYE_IND_MAX =  160
 MODEM_STATS_NSPEC =        512
 MODEM_STATS_MAX_F_HZ =     4000
 MODEM_STATS_MAX_F_EST =    4
+
 # modem stats structure
 class MODEMSTATS(ctypes.Structure):
     """ """
@@ -232,8 +227,6 @@ class MODEMSTATS(ctypes.Structure):
         ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)), # How many samples in the eye diagram
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
-
-
 
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
@@ -275,6 +268,7 @@ class audio_buffer:
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
         self.mutex = Lock()
+
     def push(self,samples):
         """
         Push new data to buffer
@@ -291,6 +285,7 @@ class audio_buffer:
         self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
         self.nbuffer += len(samples)
         self.mutex.release()
+
     def pop(self,size):
         """
         get data from buffer in size of NIN
@@ -327,7 +322,6 @@ class resampler:
         structlog.get_logger("structlog").debug("[C2 ] create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
-
 
     def resample48_to_8(self,in48):
         """

@@ -6,11 +6,7 @@ Created on Tue Dec 22 16:58:45 2020
 @author: DJ2LS
 
 main module for running the tnc
-
-
 """
-
-
 import argparse
 import threading
 import static
@@ -25,7 +21,6 @@ import os
 import signal
 import time
 import multiprocessing
-
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
@@ -74,7 +69,6 @@ if __name__ == '__main__':
     PARSER.add_argument('--tuning_range_fmin', dest="tuning_range_fmin", choices=[-50.0, -100.0, -150.0, -200.0, -250.0], default=-50.0, help="Tuning range fmin", type=float)
     PARSER.add_argument('--tuning_range_fmax', dest="tuning_range_fmax", choices=[50.0, 100.0, 150.0, 200.0, 250.0], default=50.0, help="Tuning range fmax", type=float)
     PARSER.add_argument('--tx-audio-level', dest="tx_audio_level", default=50, help="Set the tx audio level at an early stage", type=int)
-
 
     ARGS = PARSER.parse_args()
 
@@ -132,8 +126,6 @@ if __name__ == '__main__':
     except:
            structlog.get_logger("structlog").error("[DMN] logger init error")
 
-
-
     structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version=static.VERSION)
 
     # start data handler
@@ -141,7 +133,6 @@ if __name__ == '__main__':
 
     # start modem
     modem = modem.RF()
-
 
     # --------------------------------------------START CMD SERVER
 

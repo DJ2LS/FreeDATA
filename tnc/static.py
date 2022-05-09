@@ -15,7 +15,6 @@ DAEMONPORT = 3001
 TNCSTARTED = False
 TNCPROCESS = 0
 
-
 # Operator Defaults
 MYCALLSIGN = b'AA0AA'
 MYCALLSIGN_CRC = b'A'
@@ -38,7 +37,6 @@ SOCKET_TIMEOUT = 1 # seconds
 # ---------------------------------
 SERIAL_DEVICES = []
 # ---------------------------------
-
 
 PTT_STATE = False
 TRANSMITTING = False
@@ -95,7 +93,6 @@ ARQ_COMPRESSION_FACTOR = 0
 ARQ_TRANSMISSION_PERCENT = 0
 ARQ_SPEED_LEVEL = 0
 TOTAL_BYTES = 0
-
 
 #CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 TNC_STATE = 'IDLE'
