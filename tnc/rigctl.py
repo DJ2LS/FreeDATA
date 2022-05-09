@@ -18,7 +18,6 @@ import structlog
 # set global hamlib version
 hamlib_version = 0
 
-
 class radio:
     """ """
 

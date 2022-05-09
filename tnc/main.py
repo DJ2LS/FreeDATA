@@ -40,7 +40,6 @@ def signal_handler(sig, frame):
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
 
-
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":

@@ -1564,7 +1564,6 @@ class DATA:
         if 230 <= mode <= 240:
             self.log.debug("[TNC] Requesting manual mode --> not yet implemented ")
             frametype = bytes([mode])
-
         connection_frame = bytearray(14)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
