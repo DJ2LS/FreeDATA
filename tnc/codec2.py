@@ -30,7 +30,7 @@ def freedv_get_mode_value_by_name(mode):
     """
     get the codec2 mode by entering its string
     Args:
-      mode: 
+      mode:
 
     Returns: int
 
@@ -42,14 +42,14 @@ def freedv_get_mode_name_by_value(mode):
     """
     get the codec2 mode name as string
     Args:
-      mode: 
+      mode:
 
     Returns: string
 
     """
     return FREEDV_MODE(mode).name
-    
-    
+
+
 # check if we are running in a pyinstaller environment
 try:
     app_path = sys._MEIPASS
@@ -63,12 +63,12 @@ if sys.platform == 'linux':
     files.append('libcodec2.so')
 elif sys.platform == 'darwin':
     files = glob.glob('**/*libcodec2*.dylib',recursive=True)
-    
+
 elif sys.platform == 'win32' or sys.platform == 'win64':
     files = glob.glob('**\*libcodec2*.dll',recursive=True)
 else:
     files = []
-    
+
 
 for file in files:
     try:
@@ -79,15 +79,15 @@ for file in files:
         structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=e)
 
 
-# quit module if codec2 cant be loaded    
+# quit module if codec2 cant be loaded
 if not 'api' in locals():
     structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded", path=file)
     os._exit(1)
 
 
 
-    
-# ctypes function init        
+
+# ctypes function init
 
 #api.freedv_set_tuning_range.restype = c_int
 #api.freedv_set_tuning_range.argype = [c_void_p, c_float, c_float]
@@ -121,24 +121,24 @@ api.freedv_get_n_max_modem_samples.restype = c_int
 
 api.freedv_set_frames_per_burst.argtype = [c_void_p, c_int]
 api.freedv_set_frames_per_burst.restype = c_void_p
-      
+
 api.freedv_get_rx_status.argtype = [c_void_p]
-api.freedv_get_rx_status.restype = c_int  
+api.freedv_get_rx_status.restype = c_int
 
 api.freedv_get_modem_stats.argtype = [c_void_p, c_void_p, c_void_p]
 api.freedv_get_modem_stats.restype = c_int
 
 api.freedv_get_n_tx_postamble_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_postamble_modem_samples.restype = c_int 
+api.freedv_get_n_tx_postamble_modem_samples.restype = c_int
 
 api.freedv_get_n_tx_preamble_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_preamble_modem_samples.restype = c_int 
+api.freedv_get_n_tx_preamble_modem_samples.restype = c_int
 
 api.freedv_get_n_tx_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_modem_samples.restype = c_int 
+api.freedv_get_n_tx_modem_samples.restype = c_int
 
 api.freedv_get_n_max_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_max_modem_samples.restype = c_int 
+api.freedv_get_n_max_modem_samples.restype = c_int
 
 api.FREEDV_FS_8000 = 8000
 api.FREEDV_MODE_DATAC1 = 10
@@ -152,13 +152,13 @@ api.FREEDV_MODE_FSK_LDPC = 9
 class ADVANCED(ctypes.Structure):
     """ """
     _fields_ = [
-        ("interleave_frames", ctypes.c_int),    
+        ("interleave_frames", ctypes.c_int),
         ("M", ctypes.c_int),
         ("Rs", ctypes.c_int),
         ("Fs", ctypes.c_int),
-        ("first_tone", ctypes.c_int),        
-        ("tone_spacing", ctypes.c_int),        
-        ("codename", ctypes.c_char_p),                              
+        ("first_tone", ctypes.c_int),
+        ("tone_spacing", ctypes.c_int),
+        ("codename", ctypes.c_char_p),
     ]
 
 '''
@@ -232,9 +232,9 @@ class MODEMSTATS(ctypes.Structure):
         ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)), # How many samples in the eye diagram
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
-    
-    
-    
+
+
+
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
 api.FREEDV_RX_SYNC       = 0x2       # demodulator has sync
@@ -264,7 +264,7 @@ api.rx_sync_flags_to_text = [
 class audio_buffer:
     """
     thread safe audio buffer, which fits to needs of codec2
-    
+
     made by David Rowe, VK5DGR
     """
     # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
@@ -280,7 +280,7 @@ class audio_buffer:
         Push new data to buffer
 
         Args:
-          samples: 
+          samples:
 
         Returns:
 
@@ -295,7 +295,7 @@ class audio_buffer:
         """
         get data from buffer in size of NIN
         Args:
-          size: 
+          size:
 
         Returns:
 
@@ -306,7 +306,7 @@ class audio_buffer:
         self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
         assert self.nbuffer >= 0
         self.mutex.release()
-        
+
 # resampler ---------------------------------------------------------
 
 api.FDMDV_OS_48         = int(6)                                       # oversampling rate
@@ -327,8 +327,8 @@ class resampler:
         structlog.get_logger("structlog").debug("[C2 ] create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
-        
-        
+
+
     def resample48_to_8(self,in48):
         """
         audio resampler integration from codec2

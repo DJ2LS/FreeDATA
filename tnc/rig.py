@@ -20,17 +20,17 @@ except:
 sys.path.append(app_path)
 
 
-# try importing hamlib    
+# try importing hamlib
 try:
     # get python version
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 
     # installation path for Ubuntu 20.04 LTS python modules
     #sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
-    
+
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
-    
+
     # installation path for Suse
     sys.path.append('/usr/local/lib64/python'+ python_version +'/site-packages')
 
@@ -41,14 +41,14 @@ try:
     sys.path.append('/usr/local/lib/python3.8/site-packages')
     sys.path.append('/usr/local/lib/python3.9/site-packages')
     sys.path.append('/usr/local/lib/python3.10/site-packages')
-    
+
     sys.path.append('lib/hamlib/linux/python3.8/site-packages')
     import Hamlib
-            
+
     # https://stackoverflow.com/a/4703409
-    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)    
+    hamlib_version = re.findall(r"[-+]?\d*\.?\d+|\d+", Hamlib.cvar.hamlib_version)
     hamlib_version = float(hamlib_version[0])
-            
+
     min_hamlib_version = 4.1
     if hamlib_version > min_hamlib_version:
         structlog.get_logger("structlog").info("[RIG] Hamlib found", version=hamlib_version)
@@ -68,15 +68,15 @@ except Exception as e:
         else:
             raise Exception
     except Exception as e:
-        structlog.get_logger("structlog").critical("[RIG] HAMLIB NOT INSTALLED", error=e)   
+        structlog.get_logger("structlog").critical("[RIG] HAMLIB NOT INSTALLED", error=e)
         hamlib_version = 0
         sys.exit()
- 
-        
+
+
 class radio:
     """ """
     def __init__(self):
-    
+
         self.devicename = ''
         self.devicenumber = ''
         self.deviceport = ''
@@ -87,26 +87,26 @@ class radio:
         self.data_bits = ''
         self.stop_bits = ''
         self.handshake = ''
- 
-    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_port, rigctld_ip):    
+
+    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_port, rigctld_ip):
         """
 
         Args:
-          devicename: 
-          deviceport: 
-          hamlib_ptt_type: 
-          serialspeed: 
-          pttport: 
-          data_bits: 
-          stop_bits: 
-          handshake: 
-          rigctld_port: 
-          rigctld_ip: 
+          devicename:
+          deviceport:
+          hamlib_ptt_type:
+          serialspeed:
+          pttport:
+          data_bits:
+          stop_bits:
+          handshake:
+          rigctld_port:
+          rigctld_ip:
 
         Returns:
 
         """
-        
+
         self.devicename = devicename
         self.deviceport = str(deviceport)
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
@@ -115,8 +115,8 @@ class radio:
         self.data_bits = str(data_bits)
         self.stop_bits = str(stop_bits)
         self.handshake = str(handshake)
-        
-                
+
+
         # try to init hamlib
         try:
             Hamlib.rig_set_debug(Hamlib.RIG_DEBUG_NONE)
@@ -127,8 +127,8 @@ class radio:
             except:
                 structlog.get_logger("structlog").error("[RIG] Hamlib: rig not supported...")
                 self.devicenumber = 0
-            
-            
+
+
             self.my_rig = Hamlib.Rig(self.devicenumber)
             self.my_rig.set_conf("rig_pathname", self.deviceport)
             self.my_rig.set_conf("retry", "5")
@@ -137,10 +137,10 @@ class radio:
             self.my_rig.set_conf("stop_bits", self.stop_bits)
             self.my_rig.set_conf("data_bits", self.data_bits)
             self.my_rig.set_conf("ptt_pathname", self.pttport)
-                 
 
-                                        
-                        
+
+
+
             if self.hamlib_ptt_type == 'RIG':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_RIG
                 self.my_rig.set_conf("ptt_type", 'RIG')
@@ -176,7 +176,7 @@ class radio:
 
             elif self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
-                
+
             else: #self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
@@ -185,13 +185,13 @@ class radio:
 
             self.my_rig.open()
             atexit.register(self.my_rig.close)
-            
+
             try:
                 # lets determine the error message when opening rig
                 error = str(Hamlib.rigerror(my_rig.error_status)).splitlines()
                 error = error[1].split('err=')
                 error = error[1]
-                            
+
                 if error == 'Permission denied':
                     structlog.get_logger("structlog").error("[RIG] Hamlib has no permissions", e = error)
                     help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
@@ -212,16 +212,16 @@ class radio:
         except Exception as e:
             structlog.get_logger("structlog").error("[RIG] Hamlib - can't open rig", error=e, e=sys.exc_info()[0])
             return False
-            
+
     def get_frequency(self):
         """ """
         return int(self.my_rig.get_freq())
-        
+
     def get_mode(self):
         """ """
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
         return Hamlib.rig_strrmode(hamlib_mode)
-    
+
     def get_bandwith(self):
         """ """
         (hamlib_mode, bandwith) = self.my_rig.get_mode()
@@ -230,16 +230,16 @@ class radio:
     # not needed yet beacuse of some possible problems
     #def set_mode(self, mode):
     #    return 0
-      
+
     def get_ptt(self):
         """ """
         return self.my_rig.get_ptt()
-                  
+
     def set_ptt(self, state):
         """
 
         Args:
-          state: 
+          state:
 
         Returns:
 
@@ -249,7 +249,7 @@ class radio:
         else:
             self.my_rig.set_ptt(Hamlib.RIG_VFO_CURR, 0)
         return state
-        
+
     def close_rig(self):
         """ """
         self.my_rig.close()
