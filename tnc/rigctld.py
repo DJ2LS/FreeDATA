@@ -1,22 +1,24 @@
 #!/usr/bin/env python3
-import socket
-import structlog
-import log_handler
-import logging
-import time
-import static
-
 # class taken from darsidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
 # modified and adjusted to FreeDATA needs by DJ2LS
+
+import logging
+import socket
+import time
+
+import structlog
+
+import log_handler
+import static
 
 # set global hamlib version
 hamlib_version = 0
 
 
 class radio():
-    """rotctld (hamlib) communication class"""
+    """rigctld (hamlib) communication class"""
     # Note: This is a massive hack.
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
@@ -51,11 +53,11 @@ class radio():
         self.port = int(rigctld_port)
 
         if self.connect():
-            logging.debug(f"Rigctl intialized")
+            logging.debug("Rigctl intialized")
             return True
-        else:
-            structlog.get_logger("structlog").error("[RIGCTLD] Can't connect to rigctld!", ip=self.hostname, port=self.port)
-            return False
+
+        structlog.get_logger("structlog").error("[RIGCTLD] Can't connect to rigctld!", ip=self.hostname, port=self.port)
+        return False
 
     def connect(self):
         """Connect to rigctld instance"""
@@ -112,7 +114,7 @@ class radio():
             mode = data[0]
             return mode.decode("utf-8")
         except:
-            0
+            return 0
 
     def get_bandwith(self):
         """ """

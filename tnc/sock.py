@@ -19,21 +19,25 @@ Created on Fri Dec 25 21:25:14 2020
             # "data" : "..."
 
 """
+import atexit
+import base64
+import logging
+import os
+import queue
 import socketserver
+import sys
 import threading
-import ujson as json
 import time
-import static
+
+import psutil
+import structlog
+import ujson as json
+
+import audio
 import data_handler
 import helpers
-import sys
-import os
-import logging, structlog, log_handler
-import queue
-import psutil
-import audio
-import base64
-import atexit
+import log_handler
+import static
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -51,12 +55,12 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
+    connection_alive = False
 
     def send_to_client(self):
         """
         function called by socket handler
         send data to a network client if available
-
         """
         tempdata = b''
         while self.connection_alive and not CLOSE_SIGNAL:
@@ -85,8 +89,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     try:
                         client.send(sock_data)
                     except Exception as e:
-                        print("connection lost...")
-                        print(e)
+                        # print("connection lost...")
+                        structlog.get_logger("structlog").info("[SCK] Connection lost", e=e)
                         self.connection_alive = False
 
             # we want to transmit scatter data only once to reduce network traffic
@@ -160,7 +164,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             CONNECTED_CLIENTS.remove(self.request)
         except:
             structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list", client=self.request)
-
 
 def process_tnc_commands(data):
     """
@@ -318,7 +321,6 @@ def process_tnc_commands(data):
                     data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid, mycallsign])
                 else:
                     raise TypeError
-
             except Exception as e:
                 command_response("send_raw", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
@@ -343,7 +345,7 @@ def process_tnc_commands(data):
                     "data-array": [],
                 }
 
-                for i in range(0, len(static.RX_BUFFER)):
+                for i in range(len(static.RX_BUFFER)):
                     #print(static.RX_BUFFER[i][4])
                     #rawdata = json.loads(static.RX_BUFFER[i][4])
                     base64_data = static.RX_BUFFER[i][4]
@@ -408,11 +410,17 @@ def send_tnc_state():
     }
 
     # add heard stations to heard stations object
-    for i in range(0, len(static.HEARD_STATIONS)):
-        output["stations"].append({"dxcallsign": str(static.HEARD_STATIONS[i][0], 'utf-8'), "dxgrid": str(static.HEARD_STATIONS[i][1], 'utf-8'),"timestamp": static.HEARD_STATIONS[i][2], "datatype": static.HEARD_STATIONS[i][3], "snr": static.HEARD_STATIONS[i][4], "offset": static.HEARD_STATIONS[i][5], "frequency": static.HEARD_STATIONS[i][6]})
+    for heard in static.HEARD_STATIONS:
+        output["stations"].append({
+            "dxcallsign": str(heard[0], 'utf-8'),
+            "dxgrid": str(heard[1], 'utf-8'),
+            "timestamp": heard[2],
+            "datatype": heard[3],
+            "snr": heard[4],
+            "offset": heard[5],
+            "frequency": heard[6]})
 
-    jsondata = json.dumps(output)
-    return jsondata
+    return json.dumps(output)
 
 def process_daemon_commands(data):
     """
@@ -488,30 +496,30 @@ def process_daemon_commands(data):
             for item in received_json["parameter"][0]:
                 structlog.get_logger("structlog").debug("[DMN] TNC Startup Config : " + item, value=received_json["parameter"][0][item])
 
-            DAEMON_QUEUE.put(['STARTTNC', \
-                                    mycall, \
-                                    mygrid, \
-                                    rx_audio, \
-                                    tx_audio, \
-                                    devicename, \
-                                    deviceport, \
-                                    serialspeed, \
-                                    pttprotocol, \
-                                    pttport, \
-                                    data_bits, \
-                                    stop_bits, \
-                                    handshake, \
-                                    radiocontrol, \
-                                    rigctld_ip, \
-                                    rigctld_port, \
-                                    enable_scatter, \
-                                    enable_fft, \
-                                    low_bandwith_mode, \
-                                    tuning_range_fmin, \
-                                    tuning_range_fmax, \
-                                    enable_fsk, \
-                                    tx_audio_level, \
-                                    respond_to_cq \
+            DAEMON_QUEUE.put(['STARTTNC',
+                                    mycall,
+                                    mygrid,
+                                    rx_audio,
+                                    tx_audio,
+                                    devicename,
+                                    deviceport,
+                                    serialspeed,
+                                    pttprotocol,
+                                    pttport,
+                                    data_bits,
+                                    stop_bits,
+                                    handshake,
+                                    radiocontrol,
+                                    rigctld_ip,
+                                    rigctld_port,
+                                    enable_scatter,
+                                    enable_fft,
+                                    low_bandwith_mode,
+                                    tuning_range_fmin,
+                                    tuning_range_fmax,
+                                    enable_fsk,
+                                    tx_audio_level,
+                                    respond_to_cq,
                                     ])
             command_response("start_tnc", True)
 
@@ -533,18 +541,18 @@ def process_daemon_commands(data):
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
 
-            DAEMON_QUEUE.put(['TEST_HAMLIB', \
-                                    devicename, \
-                                    deviceport, \
-                                    serialspeed, \
-                                    pttprotocol, \
-                                    pttport, \
-                                    data_bits, \
-                                    stop_bits, \
-                                    handshake, \
-                                    radiocontrol, \
-                                    rigctld_ip, \
-                                    rigctld_port \
+            DAEMON_QUEUE.put(['TEST_HAMLIB',
+                                    devicename,
+                                    deviceport,
+                                    serialspeed,
+                                    pttprotocol,
+                                    pttport,
+                                    data_bits,
+                                    stop_bits,
+                                    handshake,
+                                    radiocontrol,
+                                    rigctld_ip,
+                                    rigctld_port,
                                     ])
             command_response("test_hamlib", True)
         except Exception as e:
@@ -569,7 +577,7 @@ def send_daemon_state():
     send the daemon state to network
     """
     try:
-        python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+        python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"
 
         output = {
             'command': 'daemon_state',
@@ -597,11 +605,7 @@ def send_daemon_state():
         return None
 
 def command_response(command, status):
-    if status:
-        status = "OK"
-    else:
-        status = "Failed"
-
-    jsondata = {"command_response": command, "status" : status}
+    s_status = "OK" if status else "Failed"
+    jsondata = {"command_response": command, "status" : s_status}
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)

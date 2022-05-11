@@ -8,19 +8,21 @@ Created on Tue Dec 22 16:58:45 2020
 main module for running the tnc
 """
 import argparse
-import threading
-import static
-import socketserver
-import helpers
-import data_handler
-import structlog
-import log_handler
-import modem
-import sys
+import multiprocessing
 import os
 import signal
+import socketserver
+import sys
+import threading
 import time
-import multiprocessing
+
+import structlog
+
+import data_handler
+import helpers
+import log_handler
+import modem
+import static
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
@@ -95,8 +97,8 @@ if __name__ == '__main__':
     static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
     static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
     static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
-    static.HAMLIB_RGICTLD_IP = ARGS.rigctld_ip
-    static.HAMLIB_RGICTLD_PORT = str(ARGS.rigctld_port)
+    static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
+    static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
     static.ENABLE_SCATTER = ARGS.send_scatter
     static.ENABLE_FFT = ARGS.send_fft
     static.ENABLE_FSK = ARGS.enable_fsk
@@ -117,14 +119,14 @@ if __name__ == '__main__':
         if sys.platform == 'darwin':
             logging_path = os.getenv("HOME") + '/Library/' + 'Application Support/' + 'FreeDATA/' + 'tnc'
 
-        if sys.platform == 'win32' or sys.platform == 'win64':
+        if sys.platform in ['win32', 'win64']:
             logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'tnc'
 
         if not os.path.exists(logging_path):
             os.makedirs(logging_path)
         log_handler.setup_logging(logging_path)
-    except:
-           structlog.get_logger("structlog").error("[DMN] logger init error")
+    except Exception as e:
+           structlog.get_logger("structlog").error("[DMN] logger init error", exception=e)
 
     structlog.get_logger("structlog").info("[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version=static.VERSION)
 
@@ -135,7 +137,6 @@ if __name__ == '__main__':
     modem = modem.RF()
 
     # --------------------------------------------START CMD SERVER
-
     try:
         structlog.get_logger("structlog").info("[TNC] Starting TCP/IP socket", port=static.PORT)
         # https://stackoverflow.com/a/16641793
@@ -148,6 +149,6 @@ if __name__ == '__main__':
 
     except Exception as e:
         structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=e)
-        os._exit(1)
+        sys.exit(1)
     while 1:
         time.sleep(1)

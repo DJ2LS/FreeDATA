@@ -12,11 +12,10 @@ hamlib_version = 0
 
 # append local search path
 # check if we are running in a pyinstaller environment
-try:
-    app_path = sys._MEIPASS
-except:
-    app_path = os.path.abspath(".")
-sys.path.append(app_path)
+if hasattr(sys, "_MEIPASS"):
+    sys.path.append(getattr(sys, "_MEIPASS"))
+else:
+    sys.path.append(os.path.abspath("."))
 
 # try importing hamlib
 try:

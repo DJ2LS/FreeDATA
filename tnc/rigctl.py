@@ -2,17 +2,18 @@
 # Intially created by Franco Spinelli, IW2DHW, 01/2022
 # Updated by DJ2LS
 #
-#
 # versione mia di rig.py per gestire Ft897D tramite rigctl e senza
 # fare alcun riferimento alla configurazione
 #
 # e' una pezza clamorosa ma serve per poter provare on-air il modem
 #
-import subprocess
-import structlog
-import time
-import sys
 import os
+import subprocess
+import sys
+import time
+
+import structlog
+
 # for rig_model -> rig_number only
 
 # set global hamlib version
@@ -60,23 +61,22 @@ class radio:
         self.stop_bits = stop_bits
         self.handshake = handshake
 
-        # check if we are running in a pyinstaller environment
-        try:
-            app_path = sys._MEIPASS
-        except:
-            app_path = os.path.abspath(".")
-        sys.path.append(app_path)
+         # check if we are running in a pyinstaller environment
+        if hasattr(sys, "_MEIPASS"):
+            sys.path.append(getattr(sys, "_MEIPASS"))
+        else:
+            sys.path.append(os.path.abspath("."))
 
         # get devicenumber by looking for deviceobject in Hamlib module
         try:
             import Hamlib
             self.devicenumber = int(getattr(Hamlib, self.devicename))
-        except:
+        except Exception as e:
             if int(self.devicename):
                 self.devicenumber = int(self.devicename)
             else:
                 self.devicenumber = 6 #dummy
-                structlog.get_logger("structlog").warning("[RIGCTL] RADIO NOT FOUND USING DUMMY!", error=e)
+                structlog.get_logger("structlog").warning("[RIGCTL] Radio not found. Using DUMMY!", error=e)
 
         # set deviceport to dummy port, if we selected dummy model
         if self.devicenumber == 1 or self.devicenumber == 6:
@@ -86,7 +86,7 @@ class radio:
 
         # select precompiled executable for win32/win64 rigctl
         # this is really a hack...somewhen we need a native hamlib integration for windows
-        if sys.platform == 'win32' or sys.platform == 'win64':
+        if sys.platform in ['win32', 'win64']:
             self.cmd = app_path + 'lib\\hamlib\\'+sys.platform+'\\rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
 
         else:

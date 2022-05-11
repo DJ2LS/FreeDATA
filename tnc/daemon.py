@@ -8,53 +8,57 @@ Author: DJ2LS, January 2022
 daemon for providing basic information for the tnc like audio or serial devices
 
 """
+# pylint: disable=invalid-name, line-too-long, c-extension-no-member
+# pylint: disable=import-outside-toplevel
+
 import argparse
-import threading
-import socketserver
-import time
-import sys
-import subprocess
-import ujson as json
-import psutil
-import serial.tools.list_ports
-import static
-import crcengine
-import re
-import structlog
-import log_handler
-import helpers
+import atexit
+import multiprocessing
 import os
 import queue
-import audio
-import sock
-import atexit
+import re
 import signal
-import multiprocessing
+import socketserver
+import subprocess
+import sys
+import threading
+import time
+
+import crcengine
+import psutil
+import serial.tools.list_ports
+import structlog
+import ujson as json
+
+import audio
+import helpers
+import log_handler
+import sock
+import static
+
 
 # signal handler for closing aplication
 def signal_handler(sig, frame):
     """
-    signal handler for closing the network socket on app exit
+    Signal handler for closing the network socket on app exit
     Args:
       sig:
       frame:
 
     Returns: system exit
-
     """
     print('Closing daemon...')
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
-signal.signal(signal.SIGINT, signal_handler)
 
+signal.signal(signal.SIGINT, signal_handler)
 
 class DAEMON():
     """
-    daemon class
+    Daemon class
 
     """
     def __init__(self):
-
         # load crc engine
         self.crc_algorithm = crcengine.new('crc16-ccitt-false')  # load crc8 library
 
@@ -70,20 +74,20 @@ class DAEMON():
 
     def update_audio_devices(self):
         """
-        update audio devices and set to static
+        Update audio devices and set to static
         """
         while 1:
             try:
                 if not static.TNCSTARTED:
-
                     static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
             except Exception as e:
-                print(e)
+                structlog.get_logger("structlog").error("[DMN] update_audio_devices: Exception gathering audio devices:", e=e)
+                # print(e)
             time.sleep(1)
 
     def update_serial_devices(self):
         """
-        update serial devices and set to static
+        Update serial devices and set to static
         """
         while 1:
             try:
@@ -91,22 +95,22 @@ class DAEMON():
                 serial_devices = []
                 ports = serial.tools.list_ports.comports()
                 for port, desc, hwid in ports:
-
                     # calculate hex of hwid if we have unique names
                     crc_hwid = self.crc_algorithm(bytes(hwid, encoding='utf-8'))
                     crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
                     crc_hwid = crc_hwid.hex()
-                    description = desc + ' [' + crc_hwid + ']'
+                    description = f"{desc} [{crc_hwid}]"
                     serial_devices.append({"port": str(port), "description": str(description) })
 
                 static.SERIAL_DEVICES = serial_devices
                 time.sleep(1)
             except Exception as e:
-                print(e)
+                structlog.get_logger("structlog").error("[DMN] update_serial_devices: Exception gathering serial devices:", e=e)
+                # print(e)
 
     def worker(self):
         """
-        a worker for the received commands
+        Worker to handle the received commands
         """
         while 1:
             try:
@@ -221,13 +225,13 @@ class DAEMON():
                     if data[23] == 'True':
                         options.append('--qrv')
 
-                    # try running tnc from binary, else run from source
-                    # this helps running the tnc in a developer environment
+                    # Try running tnc from binary, else run from source
+                    # This helps running the tnc in a developer environment
                     try:
                         command = []
-                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                        if sys.platform in ['linux', 'darwin']:
                             command.append('./freedata-tnc')
-                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                        elif sys.platform in ['win32', 'win64']:
                             command.append('freedata-tnc.exe')
 
                         command += options
@@ -236,11 +240,12 @@ class DAEMON():
                         atexit.register(p.kill)
 
                         structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
-                    except:
+                    except FileNotFoundError as e:
+                        structlog.get_logger("structlog").error("[DMN] worker: Exception:", e=e)
                         command = []
-                        if sys.platform == 'linux' or sys.platform == 'darwin':
+                        if sys.platform in ['linux', 'darwin']:
                             command.append('python3')
-                        elif sys.platform == 'win32' or sys.platform == 'win64':
+                        elif sys.platform in ['win32', 'win64']:
                             command.append('python')
 
                         command.append('main.py')
@@ -295,7 +300,9 @@ class DAEMON():
                         import rigdummy as rig
 
                     hamlib = rig.radio()
-                    hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol, serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits, handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
+                    hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol,
+                        serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits,
+                        handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
 
                     hamlib_version = rig.hamlib_version
 
@@ -303,13 +310,13 @@ class DAEMON():
                     pttstate = hamlib.get_ptt()
 
                     if pttstate:
-                        structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status = 'SUCCESS')
+                        structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status='SUCCESS')
                         response = {'command': 'test_hamlib', 'result': 'SUCCESS'}
                     elif not pttstate:
-                        structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status = 'NO SUCCESS')
+                        structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status='NO SUCCESS')
                         response = {'command': 'test_hamlib', 'result': 'NOSUCCESS'}
                     else:
-                        structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status = 'FAILED')
+                        structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status='FAILED')
                         response = {'command': 'test_hamlib', 'result': 'FAILED'}
 
                     hamlib.set_ptt(False)
@@ -319,7 +326,8 @@ class DAEMON():
                     sock.SOCKET_QUEUE.put(jsondata)
 
             except Exception as e:
-                print(e)
+                structlog.get_logger("structlog").error("[DMN] worker: Exception: ", e=e)
+                # print(e)
 
 if __name__ == '__main__':
     # we need to run this on windows for multiprocessing support
@@ -327,7 +335,7 @@ if __name__ == '__main__':
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description='FreeDATA Daemon')
-    PARSER.add_argument('--port', dest="socket_port",default=3001, help="Socket port  in the range of 1024-65536", type=int)
+    PARSER.add_argument('--port', dest="socket_port", default=3001, help="Socket port in the range of 1024-65536", type=int)
     ARGS = PARSER.parse_args()
 
     static.DAEMONPORT = ARGS.socket_port
@@ -339,14 +347,14 @@ if __name__ == '__main__':
         if sys.platform == 'darwin':
             logging_path = os.getenv("HOME") + '/Library/' + 'Application Support/' + 'FreeDATA/' + 'daemon'
 
-        if sys.platform == 'win32' or sys.platform == 'win64':
+        if sys.platform in ['win32', 'win64']:
             logging_path = os.getenv('APPDATA') + '/' + 'FreeDATA/' + 'daemon'
 
         if not os.path.exists(logging_path):
             os.makedirs(logging_path)
         log_handler.setup_logging(logging_path)
-    except:
-       structlog.get_logger("structlog").error("[DMN] logger init error")
+    except Exception as e:
+       structlog.get_logger("structlog").error("[DMN] logger init error", exception=e)
 
     try:
         structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
@@ -359,8 +367,7 @@ if __name__ == '__main__':
 
     except Exception as e:
         structlog.get_logger("structlog").error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=e)
-        os._exit(1)
-
+        sys.exit(1)
     daemon = DAEMON()
 
     structlog.get_logger("structlog").info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
