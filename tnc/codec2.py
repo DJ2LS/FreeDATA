@@ -1,73 +1,77 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# pylint: disable=invalid-name, line-too-long, c-extension-no-member
+# pylint: disable=import-outside-toplevel
+
 import ctypes
-from ctypes import *
-import sys
-import os
-from enum import Enum
-import numpy as np
-from threading import Lock
 import glob
+import os
+import sys
+from enum import Enum
+from threading import Lock
+
+import numpy as np
 import structlog
 
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
     """
-    enum for codec2 modes and names
+    Enumeration for codec2 modes and names
     """
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
-    fsk_ldpc = 9
-    datac0 = 14
-    datac1 = 10
-    datac3 = 12
-    allmodes = 255
+    fsk_ldpc   = 9
+    datac0     = 14
+    datac1     = 10
+    datac3     = 12
+    allmodes   = 255
 
-# function for returning the mode value
-def freedv_get_mode_value_by_name(mode):
+
+# Function for returning the mode value
+def freedv_get_mode_value_by_name(mode: str) -> int:
     """
-    get the codec2 mode by entering its string
+    Get the codec2 mode by entering its string
+
     Args:
-      mode:
+        mode:
 
-    Returns: int
-
+    Returns:
+        int
     """
     return FREEDV_MODE[mode].value
 
-# function for returning the mode name
-def freedv_get_mode_name_by_value(mode):
+# Function for returning the mode name
+def freedv_get_mode_name_by_value(mode: int) -> str:
     """
     get the codec2 mode name as string
     Args:
-      mode:
+        mode:
 
-    Returns: string
-
+    Returns:
+        string
     """
     return FREEDV_MODE(mode).name
 
-
-# check if we are running in a pyinstaller environment
-try:
-    app_path = sys._MEIPASS
-except:
-    app_path = os.path.abspath(".")
-sys.path.append(app_path)
+# Check if we are running in a pyinstaller environment
+if hasattr(sys, "_MEIPASS"):
+    sys.path.append(getattr(sys, "_MEIPASS"))
+else:
+    sys.path.append(os.path.abspath("."))
 
 structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
 if sys.platform == 'linux':
-    files = glob.glob('**/*libcodec2*',recursive=True)
+    files = glob.glob(r'**/*libcodec2*',recursive=True)
     files.append('libcodec2.so')
 elif sys.platform == 'darwin':
-    files = glob.glob('**/*libcodec2*.dylib',recursive=True)
-elif sys.platform == 'win32' or sys.platform == 'win64':
-    files = glob.glob('**\*libcodec2*.dll',recursive=True)
+    files = glob.glob(r'**/*libcodec2*.dylib',recursive=True)
+elif sys.platform in ['win32', 'win64']:
+    files = glob.glob(r'**\*libcodec2*.dll',recursive=True)
 else:
     files = []
 
+api = None
 for file in files:
     try:
         api = ctypes.CDLL(file)
@@ -76,73 +80,73 @@ for file in files:
     except Exception as e:
         structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=e)
 
-# quit module if codec2 cant be loaded
-if not 'api' in locals():
-    structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded", path=file)
-    os._exit(1)
+# Quit module if codec2 cant be loaded
+if api is None or 'api' not in locals():
+    structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded")
+    sys.exit(1)
 
 # ctypes function init
 
-#api.freedv_set_tuning_range.restype = c_int
-#api.freedv_set_tuning_range.argype = [c_void_p, c_float, c_float]
+#api.freedv_set_tuning_range.restype = ctypes.c_int
+#api.freedv_set_tuning_range.argype = [ctypes.c_void_p, ctypes.c_float, ctypes.c_float]
 
-api.freedv_open.argype = [c_int]
-api.freedv_open.restype = c_void_p
+api.freedv_open.argype = [ctypes.c_int]
+api.freedv_open.restype = ctypes.c_void_p
 
-api.freedv_open_advanced.argtype = [c_int, c_void_p]
-api.freedv_open_advanced.restype = c_void_p
+api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]
+api.freedv_open_advanced.restype = ctypes.c_void_p
 
-api.freedv_get_bits_per_modem_frame.argtype = [c_void_p]
-api.freedv_get_bits_per_modem_frame.restype = c_int
+api.freedv_get_bits_per_modem_frame.argtype = [ctypes.c_void_p]
+api.freedv_get_bits_per_modem_frame.restype = ctypes.c_int
 
-api.freedv_nin.argtype = [c_void_p]
-api.freedv_nin.restype = c_int
+api.freedv_nin.argtype = [ctypes.c_void_p]
+api.freedv_nin.restype = ctypes.c_int
 
-api.freedv_rawdatarx.argtype = [c_void_p, c_char_p, c_char_p]
-api.freedv_rawdatarx.restype = c_int
+api.freedv_rawdatarx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+api.freedv_rawdatarx.restype = ctypes.c_int
 
-api.freedv_rawdatatx.argtype = [c_void_p, c_char_p, c_char_p]
-api.freedv_rawdatatx.restype = c_int
+api.freedv_rawdatatx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+api.freedv_rawdatatx.restype = ctypes.c_int
 
-api.freedv_rawdatapostambletx.argtype = [c_void_p, c_char_p, c_char_p]
-api.freedv_rawdatapostambletx.restype = c_int
+api.freedv_rawdatapostambletx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+api.freedv_rawdatapostambletx.restype = ctypes.c_int
 
-api.freedv_rawdatapreambletx.argtype = [c_void_p, c_char_p, c_char_p]
-api.freedv_rawdatapreambletx.restype = c_int
+api.freedv_rawdatapreambletx.argtype = [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_char_p]
+api.freedv_rawdatapreambletx.restype = ctypes.c_int
 
-api.freedv_get_n_max_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_max_modem_samples.restype = c_int
+api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]
+api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
-api.freedv_set_frames_per_burst.argtype = [c_void_p, c_int]
-api.freedv_set_frames_per_burst.restype = c_void_p
+api.freedv_set_frames_per_burst.argtype = [ctypes.c_void_p, ctypes.c_int]
+api.freedv_set_frames_per_burst.restype = ctypes.c_void_p
 
-api.freedv_get_rx_status.argtype = [c_void_p]
-api.freedv_get_rx_status.restype = c_int
+api.freedv_get_rx_status.argtype = [ctypes.c_void_p]
+api.freedv_get_rx_status.restype = ctypes.c_int
 
-api.freedv_get_modem_stats.argtype = [c_void_p, c_void_p, c_void_p]
-api.freedv_get_modem_stats.restype = c_int
+api.freedv_get_modem_stats.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_void_p]
+api.freedv_get_modem_stats.restype = ctypes.c_int
 
-api.freedv_get_n_tx_postamble_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_postamble_modem_samples.restype = c_int
+api.freedv_get_n_tx_postamble_modem_samples.argtype = [ctypes.c_void_p]
+api.freedv_get_n_tx_postamble_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_tx_preamble_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_preamble_modem_samples.restype = c_int
+api.freedv_get_n_tx_preamble_modem_samples.argtype = [ctypes.c_void_p]
+api.freedv_get_n_tx_preamble_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_tx_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_tx_modem_samples.restype = c_int
+api.freedv_get_n_tx_modem_samples.argtype = [ctypes.c_void_p]
+api.freedv_get_n_tx_modem_samples.restype = ctypes.c_int
 
-api.freedv_get_n_max_modem_samples.argtype = [c_void_p]
-api.freedv_get_n_max_modem_samples.restype = c_int
+api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]
+api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
-api.FREEDV_FS_8000 = 8000
-api.FREEDV_MODE_DATAC1 = 10
-api.FREEDV_MODE_DATAC3 = 12
-api.FREEDV_MODE_DATAC0 = 14
+api.FREEDV_FS_8000       = 8000
+api.FREEDV_MODE_DATAC1   = 10
+api.FREEDV_MODE_DATAC3   = 12
+api.FREEDV_MODE_DATAC0   = 14
 api.FREEDV_MODE_FSK_LDPC = 9
 
 # -------------------------------- FSK LDPC MODE SETTINGS
 
-# advanced structure for fsk modes
+# Advanced structure for fsk modes
 class ADVANCED(ctypes.Structure):
     """ """
     _fields_ = [
@@ -197,16 +201,15 @@ api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
 api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = 'H_256_512_4'.encode('utf-8')   # code word
 
 # ------- MODEM STATS STRUCTURES
-
-MODEM_STATS_NC_MAX =       50+1
-MODEM_STATS_NR_MAX =       160
-MODEM_STATS_ET_MAX =       8
+MODEM_STATS_NC_MAX      =  50 + 1
+MODEM_STATS_NR_MAX      =  160
+MODEM_STATS_ET_MAX      =  8
 MODEM_STATS_EYE_IND_MAX =  160
-MODEM_STATS_NSPEC =        512
-MODEM_STATS_MAX_F_HZ =     4000
-MODEM_STATS_MAX_F_EST =    4
+MODEM_STATS_NSPEC       =  512
+MODEM_STATS_MAX_F_HZ    =  4000
+MODEM_STATS_MAX_F_EST   =  4
 
-# modem stats structure
+# Modem stats structure
 class MODEMSTATS(ctypes.Structure):
     """ """
     _fields_ = [
@@ -252,18 +255,17 @@ api.rx_sync_flags_to_text = [
     "EBS-",
     "EBST"]
 
-# audio buffer ---------------------------------------------------------
-
+# Audio buffer ---------------------------------------------------------
 class audio_buffer:
     """
-    thread safe audio buffer, which fits to needs of codec2
+    Thread safe audio buffer, which fits to needs of codec2
 
     made by David Rowe, VK5DGR
     """
-    # a buffer of int16 samples, using a fixed length numpy array self.buffer for storage
+    # A buffer of int16 samples, using a fixed length numpy array self.buffer for storage
     # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
-        structlog.get_logger("structlog").debug("[C2 ] creating audio buffer", size=size)
+        structlog.get_logger("structlog").debug("[C2 ] Creating audio buffer", size=size)
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
@@ -274,13 +276,13 @@ class audio_buffer:
         Push new data to buffer
 
         Args:
-          samples:
+            samples:
 
         Returns:
-
+            Nothing
         """
         self.mutex.acquire()
-        # add samples at the end of the buffer
+        # Add samples at the end of the buffer
         assert self.nbuffer+len(samples) <= self.size
         self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
         self.nbuffer += len(samples)
@@ -293,89 +295,89 @@ class audio_buffer:
           size:
 
         Returns:
-
+            Nothing
         """
         self.mutex.acquire()
-        # remove samples from the start of the buffer
-        self.nbuffer -= size;
+        # Remove samples from the start of the buffer
+        self.nbuffer -= size
         self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
         assert self.nbuffer >= 0
         self.mutex.release()
 
-# resampler ---------------------------------------------------------
+# Resampler ---------------------------------------------------------
 
-api.FDMDV_OS_48         = int(6)                                       # oversampling rate
-api.FDMDV_OS_TAPS_48K   = int(48)                                      # number of OS filter taps at 48kHz
-api.FDMDV_OS_TAPS_48_8K = int(api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48)   # number of OS filter taps at 8kHz
-api.fdmdv_8_to_48_short.argtype = [c_void_p, c_void_p, c_int]
-api.fdmdv_48_to_8_short.argtype = [c_void_p, c_void_p, c_int]
+api.FDMDV_OS_48         = int(6)                                      # oversampling rate
+api.FDMDV_OS_TAPS_48K   = int(48)                                     # number of OS filter taps at 48kHz
+api.FDMDV_OS_TAPS_48_8K = int(api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48)  # number of OS filter taps at 8kHz
+api.fdmdv_8_to_48_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
+api.fdmdv_48_to_8_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
 
 class resampler:
     """
-    resampler class
+    Re-sampler class
     """
-    # resample an array of variable length, we just store the filter memories here
+    # Re-sample an array of variable length, we just store the filter memories here
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K
 
     def __init__(self):
-        structlog.get_logger("structlog").debug("[C2 ] create 48<->8 kHz resampler")
+        structlog.get_logger("structlog").debug("[C2 ] Create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
 
-    def resample48_to_8(self,in48):
+    def resample48_to_8(self, in48):
         """
-        audio resampler integration from codec2
-        downsample audio from 48000Hz to 8000Hz
+        Audio resampler integration from codec2
+        Downsample audio from 48000Hz to 8000Hz
         Args:
-          in48: input data as np.int16
+            in48: input data as np.int16
 
-        Returns: downsampled 8000Hz data as np.int16
-
+        Returns:
+            Downsampled 8000Hz data as np.int16
         """
         assert in48.dtype == np.int16
-        # length of input vector must be an integer multiple of api.FDMDV_OS_48
-        assert(len(in48) % api.FDMDV_OS_48 == 0)
+        # Length of input vector must be an integer multiple of api.FDMDV_OS_48
+        assert len(in48) % api.FDMDV_OS_48 == 0
 
-        # concat filter memory and input samples
+        # Concatenate filter memory and input samples
         in48_mem = np.zeros(self.MEM48+len(in48), dtype=np.int16)
         in48_mem[:self.MEM48] = self.filter_mem48
         in48_mem[self.MEM48:] = in48
 
         # In C: pin48=&in48_mem[MEM48]
-        pin48 = byref(np.ctypeslib.as_ctypes(in48_mem), 2*self.MEM48)
+        pin48 = ctypes.byref(np.ctypeslib.as_ctypes(in48_mem), 2 * self.MEM48)
         n8 = int(len(in48) / api.FDMDV_OS_48)
         out8 = np.zeros(n8, dtype=np.int16)
-        api.fdmdv_48_to_8_short(out8.ctypes, pin48, n8);
+        api.fdmdv_48_to_8_short(out8.ctypes, pin48, n8)
 
-        # store memory for next time
+        # Store memory for next time
         self.filter_mem48 = in48_mem[:self.MEM48]
 
         return out8
 
-    def resample8_to_48(self,in8):
+    def resample8_to_48(self, in8):
         """
-        audio resampler integration from codec2
-        resample audio from 8000Hz to 48000Hz
+        Audio resampler integration from codec2
+        Re-sample audio from 8000Hz to 48000Hz
         Args:
-          in8: input data as np.int16
+            in8: input data as np.int16
 
-        Returns: 48000Hz audio as np.int16
-
+        Returns:
+            48000Hz audio as np.int16
         """
         assert in8.dtype == np.int16
 
-        # concat filter memory and input samples
+        # Concatenate filter memory and input samples
         in8_mem = np.zeros(self.MEM8+len(in8), dtype=np.int16)
         in8_mem[:self.MEM8] = self.filter_mem8
         in8_mem[self.MEM8:] = in8
 
         # In C: pin8=&in8_mem[MEM8]
-        pin8 = byref(np.ctypeslib.as_ctypes(in8_mem), 2*self.MEM8)
+        pin8 = ctypes.byref(np.ctypeslib.as_ctypes(in8_mem), 2 * self.MEM8)
         out48 = np.zeros(api.FDMDV_OS_48*len(in8), dtype=np.int16)
         api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8));
 
-        # store memory for next time
+        # Store memory for next time
         self.filter_mem8 = in8_mem[:self.MEM8]
 
         return out48

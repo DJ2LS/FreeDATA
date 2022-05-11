@@ -1,9 +1,10 @@
 
-import json
-import sys
-import multiprocessing
-import sounddevice as sd
 import atexit
+import json
+import multiprocessing
+import sys
+
+import sounddevice as sd
 
 atexit.register(sd._terminate)
 
@@ -23,7 +24,6 @@ def get_audio_devices():
     sd._initialize()
 
     with multiprocessing.Manager() as manager:
-
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
         #print(multiprocessing.get_start_method())
@@ -45,8 +45,7 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
-    index = 0
-    for device in devices:
+    for index, device in enumerate(devices):
     #for i in range(0, p.get_device_count()):
         # we need to do a try exception, beacuse for windows theres no audio device range
         try:
@@ -62,7 +61,6 @@ def fetch_audio_devices(input_devices, output_devices):
             name = ''
 
         if maxInputChannels > 0:
-            input_devices.append({"id": index, "name": str(name)})
+            input_devices.append({"id": index, "name": name})
         if maxOutputChannels > 0:
-            output_devices.append({"id": index, "name": str(name)})
-        index += 1
+            output_devices.append({"id": index, "name": name})
