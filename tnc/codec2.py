@@ -60,7 +60,6 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     """
     return FREEDV_MODE(mode).name
 
-
 # Check if we are running in a pyinstaller environment
 if hasattr(sys, "_MEIPASS"):
     sys.path.append(getattr(sys, "_MEIPASS"))
@@ -337,7 +336,6 @@ class resampler:
     """
     Re-sampler class
     """
-
     # Re-sample an array of variable length, we just store the filter memories here
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K

@@ -7,6 +7,8 @@ Created on Fri Dec 25 21:25:14 2020
 import time
 
 import crcengine
+import structlog
+
 import static
 import structlog
 
@@ -27,7 +29,6 @@ def wait(seconds: float) -> bool:
         time.sleep(0.01)
     return True
 
-
 def get_crc_8(data) -> bytes:
     """Author: DJ2LS
 
@@ -46,7 +47,6 @@ def get_crc_8(data) -> bytes:
     crc_data = crc_data.to_bytes(1, byteorder="big")
     return crc_data
 
-
 def get_crc_16(data) -> bytes:
     """Author: DJ2LS
 
@@ -64,7 +64,6 @@ def get_crc_16(data) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder="big")
     return crc_data
-
 
 def get_crc_24(data) -> bytes:
     """Author: DJ2LS
@@ -92,7 +91,6 @@ def get_crc_24(data) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(3, byteorder="big")
     return crc_data
-
 
 def get_crc_32(data: bytes) -> bytes:
     """Author: DJ2LS
@@ -165,7 +163,6 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
-
 
 def callsign_to_bytes(callsign) -> bytes:
     """

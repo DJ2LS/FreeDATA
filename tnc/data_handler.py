@@ -1392,7 +1392,8 @@ class DATA:
 
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
-        self.arq_cleanup()
+        if not TESTMODE:
+            self.arq_cleanup()
 
         self.send_disconnect_frame()
 
@@ -2080,6 +2081,11 @@ class DATA:
     def transmit_cq(self) -> None:
         """
         Transmit a CQ
+        Args:
+            Nothing
+
+        Returns:
+            Nothing
         """
         self.log.info("[TNC] CQ CQ CQ")
         self.send_data_to_socket_queue(
@@ -2266,11 +2272,11 @@ class DATA:
         """
         # reset ARQ statistics
         static.ARQ_BYTES_PER_MINUTE_BURST = 0
-        static.ARQ_BYTES_PER_MINUTE = 0
-        static.ARQ_BITS_PER_SECOND_BURST = 0
-        static.ARQ_BITS_PER_SECOND = 0
-        static.ARQ_TRANSMISSION_PERCENT = 0
-        static.TOTAL_BYTES = 0
+        static.ARQ_BYTES_PER_MINUTE       = 0
+        static.ARQ_BITS_PER_SECOND_BURST  = 0
+        static.ARQ_BITS_PER_SECOND        = 0
+        static.ARQ_TRANSMISSION_PERCENT   = 0
+        static.TOTAL_BYTES                = 0
 
     def calculate_transfer_rate_tx(
         self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int

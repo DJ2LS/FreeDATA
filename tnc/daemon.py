@@ -49,6 +49,7 @@ def signal_handler(sig, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+signal.signal(signal.SIGINT, signal_handler)
 
 class DAEMON:
     """

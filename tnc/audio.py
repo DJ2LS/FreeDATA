@@ -50,7 +50,7 @@ def fetch_audio_devices(input_devices, output_devices):
     """
     devices = sd.query_devices(device=None, kind=None)
     for index, device in enumerate(devices):
-        # Use a try/except block beacuse Windows doesn't have an audio device range
+        # Use a try/except block because Windows doesn't have an audio device range
         try:
             name = device["name"]
 

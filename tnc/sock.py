@@ -49,6 +49,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
+    connection_alive = False
 
     connection_alive = False
     log = structlog.get_logger("ThreadedTCPRequestHandler")
@@ -181,7 +182,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 "[SCK] client connection already removed from client list",
                 client=self.request,
             )
-
 
 def process_tnc_commands(data):
     """
