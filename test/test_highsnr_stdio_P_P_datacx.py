@@ -10,8 +10,14 @@ import sys
 
 import pytest
 
-BURSTS = int(os.environ["BURSTS"])
-FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+try:
+    BURSTS = int(os.environ["BURSTS"])
+    FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+    TESTFRAMES = int(os.environ["TESTFRAMES"])
+except KeyError:
+    BURSTS = 1
+    FRAMESPERBURST = 1
+    TESTFRAMES = 3
 
 
 @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])

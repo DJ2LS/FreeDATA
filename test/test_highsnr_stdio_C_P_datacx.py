@@ -10,16 +10,23 @@ import sys
 
 import pytest
 
-BURSTS = int(os.environ["BURSTS"])
-FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
-TESTFRAMES = int(os.environ["TESTFRAMES"])
+try:
+    BURSTS = int(os.environ["BURSTS"])
+    FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+    TESTFRAMES = int(os.environ["TESTFRAMES"])
+except KeyError:
+    BURSTS = 1
+    FRAMESPERBURST = 1
+    TESTFRAMES = 3
 
 
 @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
 @pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
 @pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
-def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, testframes: int, mode: str):
+def test_HighSNR_P_P_DATACx(
+    bursts: int, frames_per_burst: int, testframes: int, mode: str
+):
     """
     Test a high signal-to-noise ratio path with DATAC0.
 
