@@ -1,5 +1,5 @@
 """
-Tests for the FreeDATA TNC state machine.
+Test the FreeDATA end-to-end audio using pipes.
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import

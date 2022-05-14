@@ -1,17 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import argparse
 import sys
+import time
+
 sys.path.insert(0,'..')
 sys.path.insert(0,'../tnc')
 import data_handler
-import argparse
-import codec2
+import helpers
 import modem
 import static
-import time
-import helpers
-
 
 parser = argparse.ArgumentParser(description='ARQ TEST')
 parser.add_argument('--ISS', dest="ISS", action="store_true")
@@ -44,7 +43,7 @@ if ISS:
     static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
     static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
     static.MYGRID = bytes('AA12aa', 'utf-8')
-    static.SSID_LIST = [0,1,2,3,4,5,6,7,8,9]
+    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     # set dx dxcallsign
     dxcallsign = b'DN2LS-0'
@@ -52,7 +51,6 @@ if ISS:
     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
     static.DXCALLSIGN = dxcallsign
     static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-
 
 if IRS:
     modem.RXCHANNEL = "hfchannel2"
@@ -90,12 +88,12 @@ if RAW:
 
 # transmit CQ
 if CQ:
-    for i in range(0,4):
+    for _ in range(4):
         data_handler.DATA_QUEUE_TRANSMIT.put(['CQ'])
 
 # transmit PING
 if PING:
-    for i in range(0,4):
+    for _ in range(4):
         data_handler.DATA_QUEUE_TRANSMIT.put(['PING', b'DN2LS-2'])
 
 while 1:
