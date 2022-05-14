@@ -25,7 +25,7 @@ except KeyError:
 @pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
 def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
     """
-    Test a high signal-to-noise ratio path with DATAC0.
+    Test a high signal-to-noise ratio path with Codec2 modes.
 
     :param bursts: Number of bursts
     :type bursts: str

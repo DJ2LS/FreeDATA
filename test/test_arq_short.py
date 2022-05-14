@@ -33,8 +33,9 @@ def test_highsnr_arq_short(freedv_mode: str, n_frames_per_burst: int):
         t_frames = frames[:]
         static.TRANSMITTING = False
 
-    # enable testmode
+    # Enable testmode
     modem.TESTMODE = True
+    # Set some inner variables so the modules don't throw exceptions.
     modem.RXCHANNEL = "/tmp/rxpipe"
     modem.TXCHANNEL = "/tmp/txpipe"
     data_handler.TESTMODE = True
@@ -57,6 +58,8 @@ def test_highsnr_arq_short(freedv_mode: str, n_frames_per_burst: int):
         ["ARQ_FILE", bytes_out, mode, n_frames_per_burst]
     )
 
+    # This test isn't complete yet, or is obsolete.
+    assert False
 
 if __name__ == "__main__":
     # Run pytest with the current script as the filename.

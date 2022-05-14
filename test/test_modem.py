@@ -1,5 +1,5 @@
 """
-Tests for the FreeDATA TNC state machine.
+Tests for the FreeDATA modem.
 """
 
 import multiprocessing
