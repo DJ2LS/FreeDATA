@@ -21,18 +21,18 @@ import numpy as np
 sys.path.insert(0,'..')
 from tnc import codec2
 
-#--------------------------------------------GET PARAMETER INPUTS  
+#--------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='FreeDATA audio test')
 parser.add_argument('--bursts', dest="N_BURSTS", default=1, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=1, type=int)
 parser.add_argument('--delay', dest="DELAY_BETWEEN_BURSTS", default=500, type=int)
 parser.add_argument('--mode', dest="FREEDV_MODE", type=str, choices=['datac0', 'datac1', 'datac3'])
 parser.add_argument('--audiodev', dest="AUDIO_OUTPUT_DEVICE", default=-1, type=int,
-                    help="audio device number to use, use -2 to automatically select a loopback device")  
-parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
-parser.add_argument('--testframes', dest="TESTFRAMES", action="store_true", default=False, help="generate testframes")  
+                    help="audio device number to use, use -2 to automatically select a loopback device")
+parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")
+parser.add_argument('--testframes', dest="TESTFRAMES", action="store_true", default=False, help="generate testframes")
 
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 
 if args.LIST:
     p = pyaudio.PyAudio()
@@ -60,14 +60,14 @@ class Test():
         # make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_TX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
-        
+
         self.transmit = True
 
         self.resampler = codec2.resampler()
-        
-        
+
+
         # check if we want to use an audio device then do an pyaudio init
-        if self.AUDIO_OUTPUT_DEVICE != -1: 
+        if self.AUDIO_OUTPUT_DEVICE != -1:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
             if self.AUDIO_OUTPUT_DEVICE == -2:
@@ -80,11 +80,11 @@ class Test():
                     print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
                 else:
                     quit()
-                    
+
             print(f"AUDIO OUTPUT DEVICE: {self.AUDIO_OUTPUT_DEVICE} DEVICE: {self.p.get_device_info_by_index(self.AUDIO_OUTPUT_DEVICE)['name']}  \
                     AUDIO SAMPLE RATE: {self.AUDIO_SAMPLE_RATE_TX}", file=sys.stderr)
-            
-            self.stream_tx = self.p.open(format=pyaudio.paInt16, 
+
+            self.stream_tx = self.p.open(format=pyaudio.paInt16,
                                     channels=1,
                                     rate=self.AUDIO_SAMPLE_RATE_TX,
                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,
@@ -92,23 +92,23 @@ class Test():
                                     output=True,
                                     output_device_index=self.AUDIO_OUTPUT_DEVICE,
                                     stream_callback=self.callback
-                                    ) 
+                                    )
 
-        # open codec2 instance        
+        # open codec2 instance
         self.freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
-        
+
         # get number of bytes per frame for mode
         self.bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.freedv)/8)
-        
+
         self.bytes_out = create_string_buffer(self.bytes_per_frame)
-        
+
         codec2.api.freedv_set_frames_per_burst(self.freedv,self.N_FRAMES_PER_BURST)
-        
-        
+
+
         # Copy received 48 kHz to a file.  Listen to this file with:
         #   aplay -r 48000 -f S16_LE rx48_callback.raw
         # Corruption of this file is a good way to detect audio card issues
-        self.ftx = open("tx48_callback.raw", mode='wb')    
+        self.ftx = open("tx48_callback.raw", mode='wb')
 
         # data binary string
         if args.TESTFRAMES:
@@ -116,23 +116,23 @@ class Test():
             self.data_out[:1]   = bytes([255])
             self.data_out[1:2]  = bytes([1])
             self.data_out[2:]  = b'HELLO WORLD'
-            
+
         else:
             self.data_out = b'HELLO WORLD!'
 
-           
+
     def callback(self, data_in48k, frame_count, time_info, status):
-        
+
         data_out48k = self.dataqueue.get()
         return (data_out48k, pyaudio.paContinue)
 
     def run_audio(self):
-        try:                        
+        try:
             print(f"starting pyaudio callback", file=sys.stderr)
             self.stream_tx.start_stream()
         except Exception as e:
-            print(f"pyAudio error: {e}", file=sys.stderr) 
-           
+            print(f"pyAudio error: {e}", file=sys.stderr)
+
         sheeps = 0
         while self.transmit:
             time.sleep(1)
@@ -140,16 +140,16 @@ class Test():
             print(f"counting sheeps...{sheeps}")
 
 
-        
+
         self.ftx.close()
 
         # close pyaudio instance
         self.stream_tx.close()
         self.p.terminate()
-     
+
     def create_modulation(self):
-    
-        # open codec2 instance        
+
+        # open codec2 instance
         freedv = cast(codec2.api.freedv_open(self.MODE), c_void_p)
 
         # get number of bytes per frame for mode
@@ -172,11 +172,11 @@ class Test():
         buffer = bytearray(payload_bytes_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
         buffer[:len(self.data_out)] = self.data_out # set buffersize to length of data which will be send
 
-        # create crc for data frame - we are using the crc function shipped with codec2 to avoid 
+        # create crc for data frame - we are using the crc function shipped with codec2 to avoid
         # crc algorithm incompatibilities
         crc = ctypes.c_ushort(codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))     # generate CRC16
         crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
-        buffer += crc        # append crc16 to buffer    
+        buffer += crc        # append crc16 to buffer
 
         print(f"TOTAL BURSTS: {self.N_BURSTS} TOTAL FRAMES_PER_BURST: {self.N_FRAMES_PER_BURST}", file=sys.stderr)
 
@@ -190,13 +190,13 @@ class Test():
             for n in range(1,self.N_FRAMES_PER_BURST+1):
 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-                codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer 
+                codec2.api.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and save it into mod_out pointer
 
                 txbuffer += bytes(mod_out)
-                
+
                 print(f" GENERATING TX BURST: {i}/{self.N_BURSTS} FRAME: {n}/{self.N_FRAMES_PER_BURST}", file=sys.stderr)
-            
-            # append postamble to txbuffer          
+
+            # append postamble to txbuffer
             codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
             txbuffer += bytes(mod_out_postamble)
 
@@ -222,8 +222,8 @@ class Test():
                     c += bytes(self.AUDIO_FRAMES_PER_BUFFER*2 - len(c))
                 self.dataqueue.put(c)
 
-              
-        
+
+
 test = Test()
 test.create_modulation()
-test.run_audio()        
+test.run_audio()

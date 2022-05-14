@@ -20,17 +20,16 @@ import numpy as np
 sys.path.insert(0,'..')
 from tnc import codec2
 
-#--------------------------------------------GET PARAMETER INPUTS  
+#--------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='FreeDATA audio test')
 parser.add_argument('--bursts', dest="N_BURSTS", default=1, type=int)
 parser.add_argument('--framesperburst', dest="N_FRAMES_PER_BURST", default=1, type=int)
-parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")  
-parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true") 
-parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")  
-parser.add_argument('--timeout', dest="TIMEOUT", default=10, type=int, help="Timeout (seconds) before test ends")  
+parser.add_argument('--audiodev', dest="AUDIO_INPUT_DEVICE", default=-1, type=int, help="audio device number to use")
+parser.add_argument('--debug', dest="DEBUGGING_MODE", action="store_true")
+parser.add_argument('--list', dest="LIST", action="store_true", help="list audio devices by number and exit")
+parser.add_argument('--timeout', dest="TIMEOUT", default=10, type=int, help="Timeout (seconds) before test ends")
 
-
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 
 if args.LIST:
     p = pyaudio.PyAudio()
@@ -57,7 +56,7 @@ class Test():
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
         # check if we want to use an audio device then do an pyaudio init
-        if self.AUDIO_INPUT_DEVICE != -1: 
+        if self.AUDIO_INPUT_DEVICE != -1:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
             if self.AUDIO_INPUT_DEVICE == -2:
@@ -70,11 +69,11 @@ class Test():
                     print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
                 else:
                     quit()
-                    
+
             print(f"AUDIO INPUT DEVICE: {self.AUDIO_INPUT_DEVICE} DEVICE: {self.p.get_device_info_by_index(self.AUDIO_INPUT_DEVICE)['name']}  \
                     AUDIO SAMPLE RATE: {self.AUDIO_SAMPLE_RATE_RX}", file=sys.stderr)
-            
-            self.stream_rx = self.p.open(format=pyaudio.paInt16, 
+
+            self.stream_rx = self.p.open(format=pyaudio.paInt16,
                                     channels=1,
                                     rate=self.AUDIO_SAMPLE_RATE_RX,
                                     frames_per_buffer=self.AUDIO_FRAMES_PER_BUFFER,
@@ -82,11 +81,11 @@ class Test():
                                     output=False,
                                     input_device_index=self.AUDIO_INPUT_DEVICE,
                                     stream_callback=self.callback
-                                    ) 
+                                    )
 
 
 
-        # open codec2 instance        
+        # open codec2 instance
         self.datac0_freedv = cast(codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), c_void_p)
         self.datac0_bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv)/8)
         self.datac0_bytes_out = create_string_buffer(self.datac0_bytes_per_frame)
@@ -125,34 +124,34 @@ class Test():
         self.timeout = time.time() + self.TIMEOUT
         self.receive = True
         self.resampler = codec2.resampler()
-        
+
         # Copy received 48 kHz to a file.  Listen to this file with:
         #   aplay -r 48000 -f S16_LE rx48_callback.raw
         # Corruption of this file is a good way to detect audio card issues
-        self.frx = open("rx48_callback_multimode.raw", mode='wb')    
-        
-        
-        # initial nin values        
-        self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)               
-        self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)               
+        self.frx = open("rx48_callback_multimode.raw", mode='wb')
+
+
+        # initial nin values
+        self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
+        self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
         self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-           
-           
+
+
     def callback(self, data_in48k, frame_count, time_info, status):
-        
+
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x.tofile(self.frx)
-        x = self.resampler.resample48_to_8(x)    
+        x = self.resampler.resample48_to_8(x)
 
         self.datac0_buffer.push(x)
         self.datac1_buffer.push(x)
         self.datac3_buffer.push(x)
-    
-    
 
-            
+
+
+
         return (None, pyaudio.paContinue)
-    
+
     def print_stats(self):
         if self.DEBUGGING_MODE:
             self.datac0_rxstatus = codec2.api.freedv_get_rx_status(self.datac0_freedv)
@@ -160,25 +159,25 @@ class Test():
 
             self.datac1_rxstatus = codec2.api.freedv_get_rx_status(self.datac1_freedv)
             self.datac1_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac1_rxstatus]
-            
+
             self.datac3_rxstatus = codec2.api.freedv_get_rx_status(self.datac3_freedv)
             self.datac3_rxstatus = codec2.api.rx_sync_flags_to_text[self.datac3_rxstatus]
 
             print("NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s" % \
                   (self.datac0_nin, self.datac0_rxstatus, self.datac1_nin, self.datac1_rxstatus, self.datac3_nin, self.datac3_rxstatus),
                   file=sys.stderr)
-                  
-              
+
+
     def run_audio(self):
-        try:                        
+        try:
             print(f"starting pyaudio callback", file=sys.stderr)
             self.stream_rx.start_stream()
         except Exception as e:
-            print(f"pyAudio error: {e}", file=sys.stderr) 
-           
+            print(f"pyAudio error: {e}", file=sys.stderr)
+
 
         while self.receive and time.time() < self.timeout:
-            while self.datac0_buffer.nbuffer >= self.datac0_nin:        
+            while self.datac0_buffer.nbuffer >= self.datac0_nin:
                 # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(self.datac0_freedv, self.datac0_bytes_out, self.datac0_buffer.buffer.ctypes)
                 self.datac0_buffer.pop(self.datac0_nin)
@@ -192,7 +191,7 @@ class Test():
                         self.rx_bursts_datac0 = self.rx_bursts_datac0 + 1
                 self.print_stats()
 
-               
+
             while self.datac1_buffer.nbuffer >= self.datac1_nin:
                 # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(self.datac1_freedv, self.datac1_bytes_out, self.datac1_buffer.buffer.ctypes)
@@ -206,9 +205,9 @@ class Test():
                         self.rx_frames_datac1 = 0
                         self.rx_bursts_datac1 = self.rx_bursts_datac1 + 1
                 self.print_stats()
-                            
+
             while self.datac3_buffer.nbuffer >= self.datac3_nin:
-                # demodulate audio    
+                # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(self.datac3_freedv, self.datac3_bytes_out, self.datac3_buffer.buffer.ctypes)
                 self.datac3_buffer.pop(self.datac3_nin)
                 self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
@@ -218,16 +217,16 @@ class Test():
 
                     if self.rx_frames_datac3 == self.N_FRAMES_PER_BURST:
                         self.rx_frames_datac3 = 0
-                        self.rx_bursts_datac3 = self.rx_bursts_datac3 + 1   
+                        self.rx_bursts_datac3 = self.rx_bursts_datac3 + 1
                 self.print_stats()
 
             if (self.rx_bursts_datac0 and self.rx_bursts_datac1 and self.rx_bursts_datac3) == self.N_BURSTS:
-                self.receive = False 
+                self.receive = False
 
 
         if time.time() >= self.timeout:
             print("TIMEOUT REACHED")
-                
+
         if self.nread_exceptions:
             print("nread_exceptions %d - receive audio lost! Consider increasing Pyaudio frames_per_buffer..." %  \
                   self.nread_exceptions, file=sys.stderr)
@@ -238,7 +237,7 @@ class Test():
         # cloese pyaudio instance
         self.stream_rx.close()
         self.p.terminate()
-        
-        
+
+
 test = Test()
-test.run_audio()        
+test.run_audio()

@@ -20,7 +20,7 @@ parser.add_argument('--CQ', dest="CQ", action="store_true")
 parser.add_argument('--PING', dest="PING", action="store_true")
 parser.add_argument('--RAW', dest="RAW", action="store_true")
 
-args = parser.parse_args()
+args, _ = parser.parse_known_args()
 
 ISS = args.ISS
 IRS = args.IRS
