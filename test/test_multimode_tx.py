@@ -180,8 +180,7 @@ def parse_arguments():
         help="list audio devices by number and exit",
     )
 
-    args, _ = parser.parse_known_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":

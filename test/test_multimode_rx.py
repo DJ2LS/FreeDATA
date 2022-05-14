@@ -234,8 +234,7 @@ def parse_arguments():
         help="Timeout (seconds) before test ends",
     )
 
-    args, _ = parser.parse_known_args()
-    return args
+    return parser.parse_args()
 
 
 if __name__ == "__main__":
