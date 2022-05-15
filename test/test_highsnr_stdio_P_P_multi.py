@@ -1,5 +1,5 @@
 """
-Test the FreeDATA end-to-end audio using pipes.
+Tests a high signal-to-noise ratio path with multiple codec2 data formats.
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import
