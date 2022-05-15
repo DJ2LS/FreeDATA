@@ -6,10 +6,9 @@ import multiprocessing
 import sys
 import time
 
-import helpers
-import modem
 import pytest
-import static
+
+from tnc import helpers, modem, static
 
 
 def print_frame(data: bytearray):
@@ -99,9 +98,6 @@ def t_modem():
     modem.TESTMODE = True
     static.HAMLIB_RADIOCONTROL = "disabled"
 
-    # modem.structlog.get_logger = None
-    # modem.codec2.structlog.get_logger = None
-
     def t_tx_dummy(mode, repeats, repeat_delay, frames):
         """Replacement function for transmit"""
         print(f"t_tx_dummy: In transmit({mode}, {repeats}, {repeat_delay}, {frames})")
@@ -120,20 +116,24 @@ def t_modem():
 
     txbuffer = t_create_start_session("AA9AA", "DC2EJ")
 
+    # Start the transmission
     static.TRANSMITTING = True
     modem.MODEM_TRANSMIT_QUEUE.put([14, 5, 250, txbuffer])
     while static.TRANSMITTING:
         time.sleep(0.1)
 
+    # Check that the contents were transferred correctly.
     assert t_mode == 14
     assert t_repeats == 5
     assert t_repeat_delay == 250
     assert t_frames == txbuffer
 
 
-def test_modem():
+def test_modem_queue():
     proc = multiprocessing.Process(target=t_modem, args=())
+    # print("Starting threads.")
     proc.start()
+
     # print("Terminating threads.")
     proc.terminate()
     proc.join()
@@ -141,7 +141,7 @@ def test_modem():
 
 if __name__ == "__main__":
     # Run pytest with the current script as the filename.
-    ecode = pytest.main(["-v", sys.argv[0]])
+    ecode = pytest.main(["-v", "-s", sys.argv[0]])
     if ecode == 0:
         print("errors: 0")
     else:
