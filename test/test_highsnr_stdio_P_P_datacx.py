@@ -1,5 +1,5 @@
 """
-Tests for the FreeDATA TNC state machine.
+Tests a high signal-to-noise ratio path with codec2 data formats.
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import
