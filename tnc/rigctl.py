@@ -2,26 +2,27 @@
 # Intially created by Franco Spinelli, IW2DHW, 01/2022
 # Updated by DJ2LS
 #
-#
 # versione mia di rig.py per gestire Ft897D tramite rigctl e senza
 # fare alcun riferimento alla configurazione
 #
 # e' una pezza clamorosa ma serve per poter provare on-air il modem
 #
-import subprocess
-import structlog
-import time
-import sys
 import os
+import subprocess
+import sys
+import time
+
+import structlog
+
 # for rig_model -> rig_number only
 
 # set global hamlib version
 hamlib_version = 0
-               
+
+
 class radio:
     """ """
     def __init__(self):
-    
         self.devicename = ''
         self.devicenumber = ''
         self.deviceport = ''
@@ -32,26 +33,25 @@ class radio:
         self.data_bits = ''
         self.stop_bits = ''
         self.handshake = ''
- 
-    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):    
+
+    def open_rig(self, devicename, deviceport, hamlib_ptt_type, serialspeed, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port):
         """
 
         Args:
-          devicename: 
-          deviceport: 
-          hamlib_ptt_type: 
-          serialspeed: 
-          pttport: 
-          data_bits: 
-          stop_bits: 
-          handshake: 
-          rigctld_ip: 
-          rigctld_port: 
+          devicename:
+          deviceport:
+          hamlib_ptt_type:
+          serialspeed:
+          pttport:
+          data_bits:
+          stop_bits:
+          handshake:
+          rigctld_ip:
+          rigctld_port:
 
         Returns:
 
         """
-        
         self.devicename = devicename
         self.deviceport = deviceport
         self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
@@ -60,50 +60,45 @@ class radio:
         self.data_bits = data_bits
         self.stop_bits = stop_bits
         self.handshake = handshake
- 
- 
+
          # check if we are running in a pyinstaller environment
-        try:
-            app_path = sys._MEIPASS
-        except:
-            app_path = os.path.abspath(".")
-        sys.path.append(app_path)            
-        
+        if hasattr(sys, "_MEIPASS"):
+            sys.path.append(getattr(sys, "_MEIPASS"))
+        else:
+            sys.path.append(os.path.abspath("."))
+
         # get devicenumber by looking for deviceobject in Hamlib module
         try:
             import Hamlib
             self.devicenumber = int(getattr(Hamlib, self.devicename))
-        except:
+        except Exception as e:
             if int(self.devicename):
                 self.devicenumber = int(self.devicename)
             else:
                 self.devicenumber = 6 #dummy
-                structlog.get_logger("structlog").warning("[RIGCTL] RADIO NOT FOUND USING DUMMY!", error=e)   
-        
+                structlog.get_logger("structlog").warning("[RIGCTL] Radio not found. Using DUMMY!", error=e)
+
         # set deviceport to dummy port, if we selected dummy model
         if self.devicenumber == 1 or self.devicenumber == 6:
             self.deviceport = '/dev/ttyUSB0'
-            
+
         print(self.devicenumber, self.deviceport, self.serialspeed)
-
-
-
 
         # select precompiled executable for win32/win64 rigctl
         # this is really a hack...somewhen we need a native hamlib integration for windows
-        if sys.platform == 'win32' or sys.platform == 'win64':
+        if sys.platform in ['win32', 'win64']:
             self.cmd = app_path + 'lib\\hamlib\\'+sys.platform+'\\rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
- 
+
         else:
             self.cmd = 'rigctl -m %d -r %s -s %d ' % (int(self.devicenumber), self.deviceport, int(self.serialspeed))
 
         # eseguo semplicemente rigctl con il solo comando T 1 o T 0 per
-        # il set e t per il get        
+        # il set e t per il get
 
         # set ptt to false if ptt is stuck for some reason
         self.set_ptt(False)
         return True
-            
+
     def get_frequency(self):
         """ """
         cmd = self.cmd + ' f'
@@ -116,7 +111,6 @@ class radio:
         except:
             return False
 
-        
     def get_mode(self):
         """ """
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
@@ -126,7 +120,6 @@ class radio:
         except:
             return False
 
-    
     def get_bandwith(self):
         """ """
         #(hamlib_mode, bandwith) = self.my_rig.get_mode()
@@ -141,18 +134,18 @@ class radio:
         """
 
         Args:
-          mode: 
+          mode:
 
         Returns:
 
         """
         # non usata
         return 0
-      
+
     def get_ptt(self):
         """ """
         cmd = self.cmd + ' t'
-        sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)  
+        sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         time.sleep(0.5)
         status = sw_proc.communicate()[0]
 
@@ -160,12 +153,12 @@ class radio:
             return status
         except:
             return False
-                  
+
     def set_ptt(self, state):
         """
 
         Args:
-          state: 
+          state:
 
         Returns:
 
@@ -178,12 +171,12 @@ class radio:
             cmd = cmd + '0'
         print('set_ptt', cmd)
 
-        sw_proc = subprocess.Popen(cmd, shell=True, text=True)  
+        sw_proc = subprocess.Popen(cmd, shell=True, text=True)
         try:
             return state
         except:
             return False
-        
+
     def close_rig(self):
         """ """
         #self.my_rig.close()

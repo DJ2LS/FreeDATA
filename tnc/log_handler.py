@@ -3,12 +3,11 @@ def setup_logging(filename):
     """
 
     Args:
-      filename: 
+      filename:
 
     Returns:
 
     """
-
     import logging.config
     import structlog
 
