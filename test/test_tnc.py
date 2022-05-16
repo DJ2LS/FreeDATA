@@ -22,8 +22,8 @@ import test_tnc_ISS as iss
 )
 def test_tnc(command):
 
-    iss_proc = multiprocessing.Process(target=iss.test_arq_iss, args=[command])
-    irs_proc = multiprocessing.Process(target=irs.test_arq_irs, args=[command])
+    iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command])
+    irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command])
     # print("Starting threads.")
     iss_proc.start()
     irs_proc.start()

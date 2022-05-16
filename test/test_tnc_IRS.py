@@ -36,7 +36,7 @@ def irs_arq_cleanup():
     IRS_original_arq_cleanup()
 
 
-def test_arq_irs(*args):
+def t_arq_irs(*args):
     # pylint: disable=global-statement
     global IRS_original_arq_cleanup, MESSAGE
 

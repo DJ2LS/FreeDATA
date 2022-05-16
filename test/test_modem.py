@@ -8,7 +8,11 @@ import time
 
 import pytest
 
-from tnc import helpers, modem, static
+sys.path.insert(0, "..")
+sys.path.insert(0, "../tnc")
+import helpers
+import modem
+import static
 
 
 def print_frame(data: bytearray):
@@ -95,7 +99,10 @@ def t_modem():
     t_mode = t_repeats = t_repeat_delay = 0
     t_frames = []
 
+    # enable testmode
     modem.TESTMODE = True
+    modem.RXCHANNEL = "/tmp/hfchannel1"
+    modem.TXCHANNEL = "/tmp/hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
 
     def t_tx_dummy(mode, repeats, repeat_delay, frames):
@@ -134,9 +141,14 @@ def test_modem_queue():
     # print("Starting threads.")
     proc.start()
 
+    time.sleep(0.5)
+
     # print("Terminating threads.")
     proc.terminate()
     proc.join()
+
+    # print(f"\n{proc.exitcode=}")
+    assert proc.exitcode == 0
 
 
 if __name__ == "__main__":
