@@ -1,105 +1,55 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import argparse
+import multiprocessing
+import os
 import sys
 import time
 
-sys.path.insert(0, "..")
-sys.path.insert(0, "../tnc")
-import data_handler
-import helpers
-import modem
-import static
+import pytest
+import test_tnc_IRS as irs
+import test_tnc_ISS as iss
 
-parser = argparse.ArgumentParser(description="ARQ TEST")
-parser.add_argument("--ISS", dest="ISS", action="store_true")
-parser.add_argument("--IRS", dest="IRS", action="store_true")
+# These do not update static.INFO.
+#  "CONNECT", "SEND_TEST_FRAME"
+@pytest.mark.parametrize(
+    "command",
+    [
+        "CQ",
+        "PING",
+        "BEACON",
+    ],
+)
+def test_tnc(command):
 
-parser.add_argument("--CQ", dest="CQ", action="store_true")
-parser.add_argument("--PING", dest="PING", action="store_true")
-parser.add_argument("--RAW", dest="RAW", action="store_true")
+    iss_proc = multiprocessing.Process(target=iss.test_arq_iss, args=[command])
+    irs_proc = multiprocessing.Process(target=irs.test_arq_irs, args=[command])
+    # print("Starting threads.")
+    iss_proc.start()
+    irs_proc.start()
 
-args, _ = parser.parse_known_args()
+    time.sleep(12)
 
-if not (args.CQ or args.PING or args.RAW or args.ISS or args.IRS):
-    print("No arguments provided.")
-    print("Exiting.")
-    sys.exit()
+    # print("Terminating threads.")
+    irs_proc.terminate()
+    iss_proc.terminate()
+    irs_proc.join()
+    iss_proc.join()
 
-ISS = args.ISS
-IRS = args.IRS
+    for idx in range(2):
+        try:
+            os.unlink(f"/tmp/hfchannel{idx+1}")
+        except FileNotFoundError as fnfe:
+            print(f"Unlinking pipe: {fnfe}")
 
-CQ = args.CQ
-PING = args.PING
-RAW = args.RAW
+    assert iss_proc.exitcode == 0, f"Transmit side failed test. {iss_proc}"
+    assert irs_proc.exitcode == 0, f"Receive side failed test. {irs_proc}"
 
-# ------ initialize TNC with test mode
-data_handler.TESTMODE = True
-modem.TESTMODE = True
-static.HAMLIB_RADIOCONTROL = "disabled"
 
-if ISS:
-    modem.RXCHANNEL = "hfchannel1"
-    modem.TXCHANNEL = "hfchannel2"
-
-    mycallsign = bytes("DJ2LS-2", "utf-8")
-    mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-    # set dx dxcallsign
-    dxcallsign = b"DN2LS-0"
-    dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-    dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-
-if IRS:
-    modem.RXCHANNEL = "hfchannel2"
-    modem.TXCHANNEL = "hfchannel1"
-
-    mycallsign = bytes("DN2LS-2", "utf-8")
-    mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.RESPOND_TO_CQ = True
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-# start data handler
-data_handler.DATA()
-
-# start modem
-modem = modem.RF()
-
-# transmit RAW File
-if RAW:
-    bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/plain;base64,MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=","crc":"123123123"}'
-
-    # add command to data qeue
-    """
-    data[0] == 'ARQ_RAW':
-        # [0] ARQ_RAW
-        # [1] DATA_OUT bytes
-        # [2] MODE int
-        # [3] N_FRAMES_PER_BURST int
-        # [4] self.transmission_uuid str
-        # [5] mycallsign with ssid
-    """
-    # data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', bytes_out, 255, n_frames_per_burst, '123', b'DJ2LS-0'])
-
-# transmit CQ
-if CQ:
-    for _ in range(4):
-        data_handler.DATA_QUEUE_TRANSMIT.put(["CQ"])
-
-# transmit PING
-if PING:
-    for _ in range(4):
-        data_handler.DATA_QUEUE_TRANSMIT.put(["PING", b"DN2LS-2"])
-
-while 1:
-    time.sleep(0.01)
+if __name__ == "__main__":
+    # Run pytest with the current script as the filename.
+    ecode = pytest.main(["-s", "-v", sys.argv[0]])
+    if ecode == 0:
+        print("errors: 0")
+    else:
+        print(ecode)
