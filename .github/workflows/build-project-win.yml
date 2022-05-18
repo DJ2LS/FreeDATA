@@ -3,7 +3,7 @@ on:
   push:
     tags:
      - 'v*'
-    
+
 jobs:
 
   build_windows_release:
@@ -22,19 +22,19 @@ jobs:
         uses: actions/checkout@v2
         with:
             ref: main
-          
+
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9  
-          
+          python-version: 3.9
+
       - name: Install Python dependencies
         if: matrix.os == 'windows-latest'
         run: |
           python -m pip install --upgrade pip
           pip install psutil
           pip install crcengine
-          pip install pyinstaller
+          pip install 'pyinstaller<5.1'
           pip install ujson
           pip install pyserial
           pip install numpy
@@ -43,30 +43,30 @@ jobs:
           pip install sounddevice
           # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-      
-          
+
+
       - name: Install Pyaudio
         if: matrix.os == 'windows-latest'
         working-directory: tnc/lib/pyaudio/windows
         run: |
           pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-                 
+
 
       - name: Build Windows Daemon and TNC
         if: matrix.os == 'windows-latest'
         working-directory: tnc
-        run: |      
+        run: |
           pyinstaller freedata.spec
-            
+
       - name: Copy TNC to GUI
         shell: bash
-        run: |          
-          cp -R ./tnc/dist/tnc ./gui/tnc          
-          
+        run: |
+          cp -R ./tnc/dist/tnc ./gui/tnc
+
       - name: LIST ALL FILES
         shell: bash
         run: |
-          ls -R  
+          ls -R
 
       - name: Archive TNC
         uses: thedoctor0/zip-release@master
@@ -75,7 +75,7 @@ jobs:
             filename: '${{ matrix.zip_name }}.zip'
             directory: ./tnc/dist/tnc
             path: .
-            #exclusions: '*.git* /*node_modules/* .editorconfig'   
+            #exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: LIST ALL FILES
         shell: bash
@@ -85,25 +85,25 @@ jobs:
 
 
 
-          
+
       #- name: Build codec2
       #  shell: bash
       #  run: |
       #    choco install ninja cmake
       #    ninja --version
-      #    cmake --version      
-          
+      #    cmake --version
+
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
-          node-version: 16         
-     
-      - name: Release TNC         
+          node-version: 16
+
+      - name: Release TNC
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-                    
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -113,5 +113,5 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
-          
+
 
