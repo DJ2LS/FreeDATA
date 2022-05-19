@@ -51,7 +51,7 @@ class radio():
         """
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
-
+        
         if self.connect():
             logging.debug("Rigctl intialized")
             return True
