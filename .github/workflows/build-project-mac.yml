@@ -3,7 +3,7 @@ on:
   push:
     tags:
      - 'v*'
-    
+
 jobs:
   build_linux_release:
     name: Build macOS release
@@ -21,21 +21,21 @@ jobs:
         uses: actions/checkout@v2
         with:
             ref: main
-          
+
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9     
-                
-        
-          
+          python-version: 3.9
+
+
+
       - name: Install macOS dependencies
         if: matrix.os == 'macos-10.15'
         run: |
           python -m pip install --upgrade pip
           pip3 install psutil
           pip3 install crcengine
-          pip3 install pyinstaller
+          pip3 install 'pyinstaller<5.1'
           pip3 install ujson
           pip3 install pyserial
           pip3 install numpy
@@ -57,20 +57,20 @@ jobs:
           cd codec2 && mkdir build_mac && cd build_mac
           cmake ../
           make
-          
-          
+
+
       - name: Build macOS pyinstaller
         if: matrix.os == 'macos-10.15'
         working-directory: tnc
-        run: |      
+        run: |
           pyinstaller freedata.spec
-       
+
       - name: LIST ALL FILES
         shell: bash
         run: |
-          ls -R   
+          ls -R
 
-          
+
       - name: Compress
         shell: bash
         run: |
@@ -85,25 +85,25 @@ jobs:
           path: ./tnc/dist/compressed/*
 
 
-          
-          
+
+
       - name: Copy TNC to GUI
         if: matrix.os == 'macos-10.15'
-        run: |          
+        run: |
           cp -R ./tnc/dist/tnc ./gui/tnc
-          ls -R        
+          ls -R
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
         with:
           node-version: 16
 
-      - name: Release TNC         
+      - name: Release TNC
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip          
-     
+          files: ./tnc/dist/compressed/${{ matrix.zip_name }}.zip
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -113,6 +113,6 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
-          
 
-                         
+
+
