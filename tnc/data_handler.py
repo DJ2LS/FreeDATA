@@ -550,7 +550,7 @@ class DATA:
                                                     frame=RX_N_FRAME_OF_BURST, frames=RX_N_FRAMES_PER_BURST)
 
         # We have a BOF and EOF flag in our data. If we received both we received our frame.
-        # In case of loosing data but we received already a BOF and EOF we need to make sure, we
+        # In case of loosing data, but we received already a BOF and EOF we need to make sure, we
         # received the complete last burst by checking it for Nones
         bof_position = static.RX_FRAME_BUFFER.find(self.data_frame_bof)
         eof_position = static.RX_FRAME_BUFFER.find(self.data_frame_eof)
@@ -900,8 +900,8 @@ class DATA:
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             self.burst_ack = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time())  # we need to update our timeout timestamp
-            self.burst_ack_snr = int.from_bytes(bytes(data_in[5:6]), "big")
-            self.speed_level = int.from_bytes(bytes(data_in[6:7]), "big")
+            self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
+            self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
             structlog.get_logger("structlog").debug("[TNC] burst_ack_received:", speed_level=self.speed_level)
             # print(self.speed_level)
@@ -1917,7 +1917,7 @@ class DATA:
         # TODO: We need to redesign this part for cleaner state handling
         if not static.ARQ_STATE or static.ARQ_SESSION_STATE != 'connected' or static.TNC_STATE != 'BUSY' or not self.is_IRS:
             # return only if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
-            if not static.ARQ_STATE and static.ARQ_SESSION_STATE == 'disconnected':
+            if not static.ARQ_STATE and static.ARQ_SESSION_STATE == 'disconnected' or not self.is_IRS:
                 return
         # we want to reach this state only if connected ( == return above not called )
         if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
