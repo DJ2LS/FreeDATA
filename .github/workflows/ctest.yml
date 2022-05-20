@@ -11,26 +11,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Install packages
-      shell: bash
-      run: |
-           sudo apt-get update
-           sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio
-           pip3 install psutil crcengine ujson pyserial numpy structlog miniaudio sounddevice pytest
+      - name: Install packages
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio
+          pip3 install psutil crcengine ujson pyserial numpy structlog miniaudio sounddevice pytest
 
-    - name: Build codec2
-      shell: bash
-      run: |
-           git clone https://github.com/drowe67/codec2.git
-           cd codec2 && git checkout dr-tnc && git pull
-           mkdir -p build_linux && cd build_linux && cmake .. && make
+      - name: Build codec2
+        shell: bash
+        run: |
+          git clone https://github.com/drowe67/codec2.git
+          cd codec2 && git checkout v1.0.3 && git pull
+          mkdir -p build_linux && cd build_linux && cmake .. && make
 
-    - name: run ctests
-      shell: bash
-      working-directory: ${{github.workspace}}
-      run: |
-           mkdir build && cd build
-           cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
-           ctest --output-on-failure
+      - name: run ctests
+        shell: bash
+        working-directory: ${{github.workspace}}
+        run: |
+          mkdir build && cd build
+          cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
+          ctest --output-on-failure

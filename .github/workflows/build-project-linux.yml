@@ -2,7 +2,7 @@ name: Linux
 on:
   push:
     tags:
-     - 'v*'
+      - "v*"
 
 jobs:
   build_linux_release:
@@ -20,14 +20,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-            ref: main
+          ref: main
 
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
-
-
 
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-20.04'
@@ -44,7 +42,6 @@ jobs:
           pip3 install structlog
           pip3 install sounddevice
 
-
       #- name: Build Hamlib Python Binding
       #  if: matrix.os == 'ubuntu-latest'
       #  working-directory: tnc
@@ -58,18 +55,14 @@ jobs:
       #    make
       #    make install
 
-
-
-
       - name: Build codec2 Linux
         if: matrix.os == 'ubuntu-20.04'
         working-directory: tnc
         run: |
           git clone https://github.com/drowe67/codec2.git
-          cd codec2 && mkdir build_linux && cd build_linux
+          cd codec2 && git checkout v1.0.3 && mkdir build_linux && cd build_linux
           cmake ../
           make
-
 
       - name: Build Linux Daemon
         if: matrix.os == 'ubuntu-20.04'
@@ -81,7 +74,6 @@ jobs:
         shell: bash
         run: |
           ls -R
-
 
       - name: Compress Linux
         shell: bash
@@ -95,8 +87,6 @@ jobs:
         with:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
-
-
 
       - name: Copy TNC to GUI Linux
         if: matrix.os == 'ubuntu-20.04'
@@ -124,6 +114,3 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
-
-
-
