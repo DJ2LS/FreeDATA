@@ -1915,10 +1915,9 @@ class DATA:
         """
         # IRS SIDE
         # TODO: We need to redesign this part for cleaner state handling
-        if not static.ARQ_STATE or static.ARQ_SESSION_STATE != 'connected' or static.TNC_STATE != 'BUSY' or not self.is_IRS:
-            # return only if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
-            if not static.ARQ_STATE and static.ARQ_SESSION_STATE == 'disconnected' or not self.is_IRS:
-                return
+        # return only if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
+        if not static.ARQ_STATE and static.ARQ_SESSION_STATE != 'connected' or not self.is_IRS:
+            return
         # we want to reach this state only if connected ( == return above not called )
         if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
