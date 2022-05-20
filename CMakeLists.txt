@@ -102,7 +102,7 @@ add_test(NAME highsnr_stdio_P_C_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        python3 util_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         sox -t .s16 -r 48000 -c 1 - -t .s16 -r 8000 -c 1 - |
                         freedv_data_raw_rx datac0 - - --framesperburst ${FRAMESPERBURST} | hexdump -C")
         set_tests_properties(highsnr_stdio_P_C_single PROPERTIES PASS_REGULAR_EXPRESSION "HELLO WORLD")
@@ -113,23 +113,23 @@ add_test(NAME highsnr_stdio_C_P_single
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         freedv_data_raw_tx datac0 --testframes ${TESTFRAMES} --bursts ${BURSTS} --framesperburst ${FRAMESPERBURST} /dev/zero - |
                         sox -t .s16 -r 8000 -c 1 - -t .s16 -r 48000 -c 1 - |
-                        python3 test_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+                        python3 util_rx.py --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(highsnr_stdio_C_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
 add_test(NAME highsnr_stdio_P_P_single
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-                        python3 test_rx.py --debug --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
+                        python3 util_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        python3 util_rx.py --debug --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(highsnr_stdio_P_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
 
 add_test(NAME highsnr_stdio_P_P_multi
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-                        python3 test_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
+                        python3 util_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
+                        python3 util_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
         set_tests_properties(highsnr_stdio_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
 
 # These tests can't run on GitHub actions as we don't have a virtual sound card
@@ -200,9 +200,6 @@ add_test(NAME highsnr_ARQ_short
                         python3 test_arq_short.py")
 
        set_tests_properties(highsnr_ARQ_short PROPERTIES PASS_REGULAR_EXPRESSION "ARQ | TX | DATA TRANSMITTED!")
-
-
-
 
 endif()
 

@@ -13,8 +13,8 @@ import structlog
 sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 sys.path.insert(0, "test")
-import test_tnc_IRS as irs
-import test_tnc_ISS as iss
+import util_tnc_IRS as irs
+import util_tnc_ISS as iss
 
 
 # These do not update static.INFO.

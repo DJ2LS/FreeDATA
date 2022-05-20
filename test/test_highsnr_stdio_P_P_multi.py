@@ -32,8 +32,8 @@ def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
     :type frames_per_burst: int
     """
     # Facilitate running from main directory as well as inside test/
-    tx_side = "test_multimode_tx.py"
-    rx_side = "test_multimode_rx.py"
+    tx_side = "util_multimode_tx.py"
+    rx_side = "util_multimode_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
         tx_side = os.path.join("test", tx_side)
         rx_side = os.path.join("test", rx_side)

@@ -24,7 +24,7 @@ except KeyError:
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
 @pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
 @pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
-def test_HighSNR_P_P_DATACx(
+def test_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str
 ):
     """
@@ -40,7 +40,7 @@ def test_HighSNR_P_P_DATACx(
     tx_side = "freedv_data_raw_tx"
 
     # Facilitate running from main directory as well as inside test/
-    rx_side = "test_rx.py"
+    rx_side = "util_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", rx_side)):
         rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."

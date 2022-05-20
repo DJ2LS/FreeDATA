@@ -13,7 +13,7 @@ sys.path.insert(0, "..")
 from tnc import codec2
 
 
-def test_tx():
+def util_tx():
     args = parse_arguments()
 
     if args.LIST:
@@ -215,4 +215,4 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    test_tx()
+    util_tx()

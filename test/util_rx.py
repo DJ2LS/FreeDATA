@@ -14,20 +14,22 @@ import time
 import numpy as np
 import sounddevice as sd
 
+# pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
+sys.path.insert(0, "../tnc")
 from tnc import codec2
 
 
-def test_rx():
+def util_rx():
     args = parse_arguments()
 
     if args.LIST:
 
         devices = sd.query_devices(device=None, kind=None)
-        index = 0
-        for device in devices:
+        for index, device in enumerate(devices):
             print(f"{index} {device['name']}")
             index += 1
+        # pylint: disable=protected-access
         sd._terminate()
         sys.exit()
 
@@ -244,4 +246,4 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    test_rx()
+    util_rx()

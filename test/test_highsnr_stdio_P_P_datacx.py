@@ -33,8 +33,8 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
     :type frames_per_burst: str
     """
     # Facilitate running from main directory as well as inside test/
-    tx_side = "test_tx.py"
-    rx_side = "test_rx.py"
+    tx_side = "util_tx.py"
+    rx_side = "util_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
         tx_side = os.path.join("test", tx_side)
         rx_side = os.path.join("test", rx_side)
