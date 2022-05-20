@@ -24,7 +24,7 @@ jobs:
         shell: bash
         run: |
           git clone https://github.com/drowe67/codec2.git
-          cd codec2 && git checkout v1.0.3 && git pull
+          cd codec2 && git fetch --all && git checkout v1.0.3
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
       - name: run ctests
