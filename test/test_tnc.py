@@ -7,19 +7,18 @@ import sys
 import time
 
 import pytest
+
+# pylint: disable=wrong-import-position
+sys.path.insert(0, "..")
+sys.path.insert(0, "../tnc")
+sys.path.insert(0, "test")
 import test_tnc_IRS as irs
 import test_tnc_ISS as iss
 
+
 # These do not update static.INFO.
 #  "CONNECT", "SEND_TEST_FRAME"
-@pytest.mark.parametrize(
-    "command",
-    [
-        "CQ",
-        "PING",
-        "BEACON",
-    ],
-)
+@pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])
 def test_tnc(command):
 
     iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command])
