@@ -8,6 +8,7 @@ import time
 
 import pytest
 
+# pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 import helpers
@@ -86,11 +87,6 @@ def t_create_start_session(mycall: str, dxcall: str) -> bytearray:
     return t_create_frame(221, mycall, dxcall)
 
 
-def t_tsh_dummy():
-    """Replacement function for transmit"""
-    print("In t_tsh_dummy")
-
-
 def t_modem():
     """
     Execute test to validate that receiving a session open frame sets the correct machine
@@ -98,12 +94,6 @@ def t_modem():
     """
     t_mode = t_repeats = t_repeat_delay = 0
     t_frames = []
-
-    # enable testmode
-    modem.TESTMODE = True
-    modem.RXCHANNEL = "/tmp/hfchannel1"
-    modem.TXCHANNEL = "/tmp/hfchannel2"
-    static.HAMLIB_RADIOCONTROL = "disabled"
 
     def t_tx_dummy(mode, repeats, repeat_delay, frames):
         """Replacement function for transmit"""
@@ -114,6 +104,12 @@ def t_modem():
         t_repeat_delay = repeat_delay
         t_frames = frames[:]
         static.TRANSMITTING = False
+
+    # enable testmode
+    modem.TESTMODE = True
+    modem.RXCHANNEL = "/tmp/hfchannel1"
+    modem.TXCHANNEL = "/tmp/hfchannel2"
+    static.HAMLIB_RADIOCONTROL = "disabled"
 
     # Create the modem
     local_modem = modem.RF()
