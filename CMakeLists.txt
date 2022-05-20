@@ -28,7 +28,7 @@ add_test(NAME audio_buffer
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_audiobuffer.py")
          set_tests_properties(audio_buffer PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
-       
+
 add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         export PYTHONPATH=../tnc;
@@ -42,6 +42,13 @@ add_test(NAME tnc_state_machine
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_tnc_states.py")
          set_tests_properties(tnc_state_machine PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+
+add_test(NAME tnc_irs_iss
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        python3 test_tnc.py")
+         set_tests_properties(tnc_irs_iss PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME helper_routines
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
@@ -116,7 +123,7 @@ add_test(NAME highsnr_stdio_P_P_single
                         python3 test_tx.py --mode datac0 --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
                         python3 test_rx.py --debug --mode datac0 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS}")
         set_tests_properties(highsnr_stdio_P_P_single PROPERTIES PASS_REGULAR_EXPRESSION "RECEIVED BURSTS: ${BURSTS} RECEIVED FRAMES: ${FRAMESPERBURST}")
-        
+
 add_test(NAME highsnr_stdio_P_P_multi
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
@@ -183,7 +190,7 @@ add_test(NAME highsnr_virtual5_P_P_multi_callback_outside
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         ./test_virtual4b.sh")
        set_tests_properties(highsnr_virtual5_P_P_multi_callback_outside PROPERTIES PASS_REGULAR_EXPRESSION "DATAC0: 2/4 DATAC1: 2/4 DATAC3: 2/4")
-       
+
 # ARQ test short
 
 add_test(NAME highsnr_ARQ_short
@@ -191,11 +198,11 @@ add_test(NAME highsnr_ARQ_short
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_arq_short.py")
-                        
+
        set_tests_properties(highsnr_ARQ_short PROPERTIES PASS_REGULAR_EXPRESSION "ARQ | TX | DATA TRANSMITTED!")
-       
-       
-       
-              
+
+
+
+
 endif()
-       
+
