@@ -2,7 +2,7 @@ name: macOS
 on:
   push:
     tags:
-     - 'v*'
+      - "v*"
 
 jobs:
   build_linux_release:
@@ -20,14 +20,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-            ref: main
+          ref: main
 
       - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-
-
 
       - name: Install macOS dependencies
         if: matrix.os == 'macos-10.15'
@@ -45,19 +43,17 @@ jobs:
       - name: Install Portaudio
         if: matrix.os == 'macos-10.15'
         run: |
-            brew install portaudio
-            pip3 install pyaudio
-
+          brew install portaudio
+          pip3 install pyaudio
 
       - name: Build codec2 macOS
         if: matrix.os == 'macos-10.15'
         working-directory: tnc
         run: |
           git clone https://github.com/drowe67/codec2.git
-          cd codec2 && mkdir build_mac && cd build_mac
+          cd codec2 && git checkout master && mkdir build_mac && cd build_mac
           cmake ../
           make
-
 
       - name: Build macOS pyinstaller
         if: matrix.os == 'macos-10.15'
@@ -69,7 +65,6 @@ jobs:
         shell: bash
         run: |
           ls -R
-
 
       - name: Compress
         shell: bash
@@ -83,9 +78,6 @@ jobs:
         with:
           name: tnc-artifact
           path: ./tnc/dist/compressed/*
-
-
-
 
       - name: Copy TNC to GUI
         if: matrix.os == 'macos-10.15'
@@ -113,6 +105,3 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
-
-
-

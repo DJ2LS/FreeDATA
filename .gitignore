@@ -6,3 +6,4 @@ tnc/codec2
 **/Testing
 
 package-lock.json
+.DS_Store
