@@ -390,7 +390,7 @@ def send_tnc_state():
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),
-        "bandwith": str(static.HAMLIB_BANDWITH),
+        "bandwith": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
         "scatter": static.SCATTER,

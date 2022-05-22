@@ -819,13 +819,13 @@ class RF:
         Side-effect: sets
           - static.HAMLIB_FREQUENCY
           - static.HAMLIB_MODE
-          - static.HAMLIB_BANDWITH
+          - static.HAMLIB_BANDWIDTH
         """
         while True:
             threading.Event().wait(0.5)
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
-            static.HAMLIB_BANDWITH = self.hamlib.get_bandwith()
+            static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwith()
 
     def calculate_fft(self):
         """

@@ -56,7 +56,7 @@ HAMLIB_RIGCTLD_PORT = '4532'
 
 HAMLIB_FREQUENCY = 0
 HAMLIB_MODE = ''
-HAMLIB_BANDWITH = 0
+HAMLIB_BANDWIDTH = 0
 # -------------------------
 # FreeDV Defaults
 
