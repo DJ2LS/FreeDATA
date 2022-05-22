@@ -351,25 +351,16 @@ class RF:
                         data_in48k = data_in48k[48:]
 
                         length_x = len(x)
-                        if (
-                            not self.datac0_buffer.nbuffer + length_x
-                            > self.datac0_buffer.size
-                        ):
-                            self.datac0_buffer.push(x)
-
-                        if (
-                            not self.datac1_buffer.nbuffer + length_x
-                            > self.datac1_buffer.size
-                            and RECEIVE_DATAC1
-                        ):
-                            self.datac1_buffer.push(x)
-
-                        if (
-                            not self.datac3_buffer.nbuffer + length_x
-                            > self.datac3_buffer.size
-                            and RECEIVE_DATAC3
-                        ):
-                            self.datac3_buffer.push(x)
+                        for data_buffer, receive in [
+                            (self.datac0_buffer, True),
+                            (self.datac1_buffer, RECEIVE_DATAC1),
+                            (self.datac3_buffer, RECEIVE_DATAC3),
+                        ]:
+                            if (
+                                not data_buffer.nbuffer + length_x > data_buffer.size
+                                and receive
+                            ):
+                                data_buffer.push(x)
 
     def mkfifo_write_callback(self):
         """Support testing by writing the audio data to a pipe."""
