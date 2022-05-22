@@ -47,7 +47,6 @@ def freedv_get_mode_value_by_name(mode: str) -> int:
     return FREEDV_MODE[mode.lower()].value
 
 
-
 # Function for returning the mode name
 def freedv_get_mode_name_by_value(mode: int) -> str:
     """
@@ -59,6 +58,7 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
         string
     """
     return FREEDV_MODE(mode).name
+
 
 # Check if we are running in a pyinstaller environment
 if hasattr(sys, "_MEIPASS"):
@@ -149,7 +149,6 @@ api.FREEDV_MODE_DATAC1 = 10  # type: ignore
 api.FREEDV_MODE_DATAC3 = 12  # type: ignore
 api.FREEDV_MODE_DATAC0 = 14  # type: ignore
 api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
-
 
 # -------------------------------- FSK LDPC MODE SETTINGS
 
@@ -267,7 +266,6 @@ api.rx_sync_flags_to_text = [  # type: ignore
     "EBST",
 ]
 
-
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:
     """
@@ -331,11 +329,11 @@ api.fdmdv_8_to_48_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_in
 api.fdmdv_48_to_8_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
 
 
-
 class resampler:
     """
     Re-sampler class
     """
+
     # Re-sample an array of variable length, we just store the filter memories here
     MEM8 = api.FDMDV_OS_TAPS_48_8K
     MEM48 = api.FDMDV_OS_TAPS_48K
