@@ -30,4 +30,3 @@ Download the latest developer release from the releases section, unpack it and j
 ## Installation
 Please check the [wiki](https://wiki.freedata.app) for installation instructions
 
-

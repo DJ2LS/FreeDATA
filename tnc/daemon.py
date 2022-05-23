@@ -191,7 +191,7 @@ class DAEMON:
                         options.append('--radiocontrol')
                         options.append(data[13])
 
-                        if data[13] != 'rigctld':
+                        if data[13] == 'rigctld':
                             options.append('--rigctld_ip')
                             options.append(data[14])
 

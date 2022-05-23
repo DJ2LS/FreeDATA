@@ -1,4 +1,52 @@
 
+# Unit Test Menu
+
+The following `CTest` tests cover some TNC functionality and the interface to codec2:
+1. Name: `audio_buffer`
+   Tests the thread safety of the audio buffer routines.
+1. Name: `resampler`
+   Tests FreeDATA audio resampling from 48KHz to 8KHz.
+1. Name: `tnc_state_machine`
+   Tests TNC transitions between states.
+1. Name: `helper_routines`
+   Tests various helper routines.
+1. Name: `py_highsnr_stdio_P_P_multi`
+   Tests a high signal-to-noise ratio (good quality) audio path using multiple codecs. (Pure python.)
+1. Name: `py_highsnr_stdio_P_P_datacx`
+   Tests a high signal-to-noise ratio audio path using multiple individual codecs.
+1. Name: `py_highsnr_stdio_P_C_datacx`
+   Tests a high signal-to-noise ratio audio path using multiple individual codecs.
+1. Name: `py_highsnr_stdio_C_P_datacx`
+   Tests a high signal-to-noise ratio audio path using multiple individual codecs.
+1. Name: `highsnr_stdio_P_C_single`
+   Tests compatibility with FreeDATA's transmit and freedv's raw data receive.
+1. Name: `highsnr_stdio_C_P_single`
+   Tests compatibility with freedv's raw data transmit and FreeDATA's receive.
+1. Name: `highsnr_stdio_P_P_single`
+   Tests a high signal-to-noise ratio audio path using multiple codecs. (Requires POSIX system.)
+1. Name: `highsnr_stdio_P_P_multi`
+   Tests a high signal-to-noise ratio audio path using multiple codecs. (Requires POSIX system.)
+
+The following tests can not currently be run with GitHub's pipeline as they require the ALSA dummy device
+kernel module to be installed. They also do not perform reliably. These tests are slowly being
+replaced with equivalent pipeline-compatible tests.
+1. Name: `highsnr_virtual1_P_P_single_alsa`
+   Tests a high signal-to-noise ratio audio path using a single codec directly over an ALSA dummy device.
+1. Name: `highsnr_virtual2_P_P_single`
+   Tests a high signal-to-noise ratio audio path using a single codec over an ALSA dummy device.
+   **Not functional** due to an incompatibility between the two scripts in the way they determine audio devices.
+1. Name: `highsnr_virtual3_P_P_multi`
+   Tests a high signal-to-noise ratio audio path using multiple codecs over an ALSA dummy device.
+1. Name: `highsnr_virtual4_P_P_single_callback`
+   **Not functional** due to an incompatibility between the two scripts in the way they determine audio devices.
+1. Name: `highsnr_virtual4_P_P_single_callback_outside`
+   **Not functional** due to an incompatibility between the two scripts in the way they determine audio devices.
+1. Name: `highsnr_virtual5_P_P_multi_callback`
+1. Name: `highsnr_virtual5_P_P_multi_callback_outside`
+1. Name: `highsnr_ARQ_short`
+   **Not functional**, it is an obsolete or not yet completed test.
+
+
 # Instructions
 
 1. Install:
@@ -58,7 +106,7 @@ The virtual audio devices are great for testing, but they are also a little bit 
 
 1. Create virtual audio devices. Note: This command needs to be run again after every reboot
    ```
-   sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2 
+   sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2
    ```
 
 1. Check if devices have been created
@@ -81,7 +129,7 @@ The virtual audio devices are great for testing, but they are also a little bit 
       Sub-Geräte: 1/1
       Sub-Gerät #0: subdevice #0
    ```
-   
+
 1. Determine the audio device number you would like to use:
    ```
    python3 test_rx.py --list

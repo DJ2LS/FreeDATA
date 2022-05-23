@@ -647,8 +647,8 @@ class RF:
 
             snr = round(modem_stats_snr, 1)
             structlog.get_logger("structlog").info("[MDM] calculate_snr: ", snr=snr)
-            # print(snr)
-            static.SNR = np.clip(snr, 0, 255)  # limit to max value of 255
+            # static.SNR = np.clip(snr, 0, 255)  # limit to max value of 255
+            static.SNR = np.clip(snr, -128, 128)  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
         except Exception as e:
             structlog.get_logger("structlog").error(f"[MDM] calculate_snr: Exception: {e}")

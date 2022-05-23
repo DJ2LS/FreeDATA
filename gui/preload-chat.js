@@ -511,8 +511,9 @@ update_chat = function(obj) {
         `;
                     var controlarea_receive = '';
         }
-    } catch {
+    } catch (err) {
         console.log("error with database parsing...")
+        console.log(err)
     }
     // CALLSIGN LIST
     if (!(document.getElementById('chat-' + dxcallsign + '-list'))) {
