@@ -230,7 +230,6 @@ def callsign_to_bytes(callsign) -> bytes:
     return encode_call(callsign + ssid)
     # return bytes(bytestring)
 
-
 def bytes_to_callsign(bytestring: bytes) -> bytes:
     """
     Convert our callsign, received by a frame to a callsign in a human readable format

@@ -47,6 +47,7 @@ def freedv_get_mode_value_by_name(mode: str) -> int:
     return FREEDV_MODE[mode.lower()].value
 
 
+
 # Function for returning the mode name
 def freedv_get_mode_name_by_value(mode: int) -> str:
     """
@@ -330,6 +331,7 @@ api.FDMDV_OS_TAPS_48K = 48  # type: ignore
 api.FDMDV_OS_TAPS_48_8K = api.FDMDV_OS_TAPS_48K // api.FDMDV_OS_48  # type: ignore
 api.fdmdv_8_to_48_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
 api.fdmdv_48_to_8_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]  # type: ignore
+
 
 
 class resampler:
