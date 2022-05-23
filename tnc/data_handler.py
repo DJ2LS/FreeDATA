@@ -1392,8 +1392,7 @@ class DATA:
 
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
-        if not TESTMODE:
-            self.arq_cleanup()
+        self.arq_cleanup()
 
         self.send_disconnect_frame()
 
@@ -2119,7 +2118,6 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
-
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
             freedata="tnc-message",
