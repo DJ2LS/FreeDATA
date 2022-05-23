@@ -700,7 +700,6 @@ def send_daemon_state():
             output["daemon_state"].append({"status": "stopped"})
 
         return json.dumps(output)
-
     except Exception as err:
         log.warning("[SCK] error", e=err)
         return None
