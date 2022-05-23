@@ -24,7 +24,7 @@ class radio():
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """ Open a connection to rotctld, and test it for validity """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #self.sock.settimeout(timeout)
+        # self.sock.settimeout(timeout)
 
         self.connected = False
         self.hostname = hostname
@@ -63,7 +63,7 @@ class radio():
         """Connect to rigctld instance"""
         if not self.connected:
             try:
-                self.connection = socket.create_connection((self.hostname,self.port))
+                self.connection = socket.create_connection((self.hostname, self.port))
                 self.connected = True
                 structlog.get_logger("structlog").info("[RIGCTLD] Connected to rigctld!", ip=self.hostname, port=self.port)
                 return True

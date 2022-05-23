@@ -21,22 +21,19 @@ Created on Fri Dec 25 21:25:14 2020
 """
 import atexit
 import base64
-import logging
-import os
+
 import queue
 import socketserver
 import sys
 import threading
 import time
 
-import psutil
 import structlog
 import ujson as json
 
-import audio
 import data_handler
 import helpers
-import log_handler
+
 import static
 
 SOCKET_QUEUE = queue.Queue()
@@ -81,10 +78,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
                 sock_data = bytes(data, 'utf-8')
-                sock_data += b'\n' # append line limiter
+                sock_data += b'\n'  # append line limiter
 
                 # send data to all clients
-                #try:
+                # try:
                 for client in CONNECTED_CLIENTS:
                     try:
                         client.send(sock_data)
@@ -97,7 +94,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             static.SCATTER = []
             # we want to display INFO messages only once
             static.INFO = []
-            #self.request.sendall(sock_data)
+            # self.request.sendall(sock_data)
             time.sleep(0.15)
 
     def receive_from_client(self):
@@ -112,7 +109,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 data += chunk
 
                 if chunk == b'':
-                    #print("connection broken. Closing...")
+                    # print("connection broken. Closing...")
                     self.connection_alive = False
 
                 if data.startswith(b'{') and data.endswith(b'}\n'):
@@ -138,7 +135,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
             except Exception as e:
-                structlog.get_logger("structlog").info("[SCK] Connection closed", ip=self.client_address[0], port=self.client_address[1], e=e)
+                structlog.get_logger("structlog").info("[SCK] Connection closed", ip=self.client_address[0],
+                                                       port=self.client_address[1], e=e)
                 self.connection_alive = False
 
     def handle(self):
@@ -147,11 +145,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         """
         CONNECTED_CLIENTS.add(self.request)
 
-        structlog.get_logger("structlog").debug("[SCK] Client connected", ip=self.client_address[0], port=self.client_address[1])
+        structlog.get_logger("structlog").debug("[SCK] Client connected", ip=self.client_address[0],
+                                                port=self.client_address[1])
         self.connection_alive = True
 
-        self.sendThread = threading.Thread(target=self.send_to_client, args=[],daemon=True).start()
-        self.receiveThread = threading.Thread(target=self.receive_from_client, args=[],daemon=True).start()
+        self.sendThread = threading.Thread(target=self.send_to_client, args=[], daemon=True).start()
+        self.receiveThread = threading.Thread(target=self.receive_from_client, args=[], daemon=True).start()
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
@@ -159,11 +158,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def finish(self):
         """ """
-        structlog.get_logger("structlog").warning("[SCK] Closing client socket", ip=self.client_address[0], port=self.client_address[1])
+        structlog.get_logger("structlog").warning("[SCK] Closing client socket", ip=self.client_address[0],
+                                                  port=self.client_address[1])
         try:
             CONNECTED_CLIENTS.remove(self.request)
         except:
-            structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list", client=self.request)
+            structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list",
+                                                      client=self.request)
+
 
 def process_tnc_commands(data):
     """
@@ -346,13 +348,15 @@ def process_tnc_commands(data):
                 }
 
                 for i in range(len(static.RX_BUFFER)):
-                    #print(static.RX_BUFFER[i][4])
-                    #rawdata = json.loads(static.RX_BUFFER[i][4])
+                    # print(static.RX_BUFFER[i][4])
+                    # rawdata = json.loads(static.RX_BUFFER[i][4])
                     base64_data = static.RX_BUFFER[i][4]
-                    output["data-array"].append({"uuid": static.RX_BUFFER[i][0],"timestamp": static.RX_BUFFER[i][1], "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'), "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'),  "data": base64_data})
+                    output["data-array"].append({"uuid": static.RX_BUFFER[i][0], "timestamp": static.RX_BUFFER[i][1],
+                                                 "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'),
+                                                 "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": base64_data})
 
                 jsondata = json.dumps(output)
-                #self.request.sendall(bytes(jsondata, encoding))
+                # self.request.sendall(bytes(jsondata, encoding))
                 SOCKET_QUEUE.put(jsondata)
                 command_response("rx_buffer", True)
 
@@ -368,9 +372,10 @@ def process_tnc_commands(data):
                 command_response("del_rx_buffer", False)
                 structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
-    # exception, if JSON cant be decoded
+    # exception, if JSON can't be decoded
     except Exception as e:
         structlog.get_logger("structlog").error("[TNC] JSON decoding error", e=e)
+
 
 def send_tnc_state():
     """
@@ -401,8 +406,8 @@ def send_tnc_state():
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
         "total_bytes": str(static.TOTAL_BYTES),
-        "info" : static.INFO,
-        "beacon_state" : str(static.BEACON_STATE),
+        "info": static.INFO,
+        "beacon_state": str(static.BEACON_STATE),
         "stations": [],
         "mycallsign": str(static.MYCALLSIGN, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
@@ -421,6 +426,7 @@ def send_tnc_state():
             "frequency": heard[6]})
 
     return json.dumps(output)
+
 
 def process_daemon_commands(data):
     """
@@ -441,13 +447,15 @@ def process_daemon_commands(data):
 
             if bytes(callsign, 'utf-8') == b'':
                 self.request.sendall(b'INVALID CALLSIGN')
-                structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
+                structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN,
+                                                          crc=static.MYCALLSIGN_CRC)
             else:
                 static.MYCALLSIGN = bytes(callsign, 'utf-8')
                 static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
                 command_response("mycallsign", True)
-                structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN, crc=static.MYCALLSIGN_CRC)
+                structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN,
+                                                       crc=static.MYCALLSIGN_CRC)
         except Exception as e:
             command_response("mycallsign", False)
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
@@ -494,33 +502,34 @@ def process_daemon_commands(data):
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
-                structlog.get_logger("structlog").debug("[DMN] TNC Startup Config : " + item, value=received_json["parameter"][0][item])
+                structlog.get_logger("structlog").debug("[DMN] TNC Startup Config : " + item,
+                                                        value=received_json["parameter"][0][item])
 
             DAEMON_QUEUE.put(['STARTTNC',
-                                    mycall,
-                                    mygrid,
-                                    rx_audio,
-                                    tx_audio,
-                                    devicename,
-                                    deviceport,
-                                    serialspeed,
-                                    pttprotocol,
-                                    pttport,
-                                    data_bits,
-                                    stop_bits,
-                                    handshake,
-                                    radiocontrol,
-                                    rigctld_ip,
-                                    rigctld_port,
-                                    enable_scatter,
-                                    enable_fft,
-                                    low_bandwith_mode,
-                                    tuning_range_fmin,
-                                    tuning_range_fmax,
-                                    enable_fsk,
-                                    tx_audio_level,
-                                    respond_to_cq,
-                                    ])
+                              mycall,
+                              mygrid,
+                              rx_audio,
+                              tx_audio,
+                              devicename,
+                              deviceport,
+                              serialspeed,
+                              pttprotocol,
+                              pttport,
+                              data_bits,
+                              stop_bits,
+                              handshake,
+                              radiocontrol,
+                              rigctld_ip,
+                              rigctld_port,
+                              enable_scatter,
+                              enable_fft,
+                              low_bandwith_mode,
+                              tuning_range_fmin,
+                              tuning_range_fmax,
+                              enable_fsk,
+                              tx_audio_level,
+                              respond_to_cq,
+                              ])
             command_response("start_tnc", True)
 
         except Exception as e:
@@ -542,18 +551,18 @@ def process_daemon_commands(data):
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
 
             DAEMON_QUEUE.put(['TEST_HAMLIB',
-                                    devicename,
-                                    deviceport,
-                                    serialspeed,
-                                    pttprotocol,
-                                    pttport,
-                                    data_bits,
-                                    stop_bits,
-                                    handshake,
-                                    radiocontrol,
-                                    rigctld_ip,
-                                    rigctld_port,
-                                    ])
+                              devicename,
+                              deviceport,
+                              serialspeed,
+                              pttprotocol,
+                              pttport,
+                              data_bits,
+                              stop_bits,
+                              handshake,
+                              radiocontrol,
+                              rigctld_ip,
+                              rigctld_port,
+                              ])
             command_response("test_hamlib", True)
         except Exception as e:
             command_response("test_hamlib", False)
@@ -572,6 +581,7 @@ def process_daemon_commands(data):
             command_response("stop_tnc", False)
             structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
 
+
 def send_daemon_state():
     """
     send the daemon state to network
@@ -587,10 +597,10 @@ def send_daemon_state():
             'input_devices': static.AUDIO_INPUT_DEVICES,
             'output_devices': static.AUDIO_OUTPUT_DEVICES,
             'serial_devices': static.SERIAL_DEVICES,
-            #'cpu': str(psutil.cpu_percent()),
-            #'ram': str(psutil.virtual_memory().percent),
+            # 'cpu': str(psutil.cpu_percent()),
+            # 'ram': str(psutil.virtual_memory().percent),
             'version': '0.1'
-            }
+        }
 
         if static.TNCSTARTED:
             output["daemon_state"].append({"status": "running"})
@@ -604,8 +614,9 @@ def send_daemon_state():
         structlog.get_logger("structlog").warning("[SCK] error", e=e)
         return None
 
+
 def command_response(command, status):
     s_status = "OK" if status else "Failed"
-    jsondata = {"command_response": command, "status" : s_status}
+    jsondata = {"command_response": command, "status": s_status}
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)

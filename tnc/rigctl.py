@@ -54,14 +54,14 @@ class radio:
         """
         self.devicename = devicename
         self.deviceport = deviceport
-        self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
+        self.serialspeed = str(serialspeed)  # we need to ensure this is a str, otherwise set_conf functions are crashing
         self.hamlib_ptt_type = hamlib_ptt_type
         self.pttport = pttport
         self.data_bits = data_bits
         self.stop_bits = stop_bits
         self.handshake = handshake
 
-         # check if we are running in a pyinstaller environment
+        # check if we are running in a pyinstaller environment
         if hasattr(sys, "_MEIPASS"):
             sys.path.append(getattr(sys, "_MEIPASS"))
         else:
@@ -75,7 +75,7 @@ class radio:
             if int(self.devicename):
                 self.devicenumber = int(self.devicename)
             else:
-                self.devicenumber = 6 #dummy
+                self.devicenumber = 6  # dummy
                 structlog.get_logger("structlog").warning("[RIGCTL] Radio not found. Using DUMMY!", error=e)
 
         # set deviceport to dummy port, if we selected dummy model
@@ -179,5 +179,5 @@ class radio:
 
     def close_rig(self):
         """ """
-        #self.my_rig.close()
+        # self.my_rig.close()
         return

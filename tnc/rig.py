@@ -23,13 +23,13 @@ try:
     python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
 
     # installation path for Ubuntu 20.04 LTS python modules
-    #sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
+    # sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
 
     # installation path for Ubuntu 20.10 +
     sys.path.append('/usr/local/lib/')
 
     # installation path for Suse
-    sys.path.append('/usr/local/lib64/python'+ python_version +'/site-packages')
+    sys.path.append('/usr/local/lib64/python' + python_version + '/site-packages')
 
     # everything else... not nice, but an attempt to see how its running within app bundle
     # this is not needed as python will be shipped with app bundle
@@ -55,7 +55,7 @@ except Exception as e:
     structlog.get_logger("structlog").warning("[RIG] Python Hamlib binding not found", error=e)
     try:
         structlog.get_logger("structlog").warning("[RIG] Trying to open rigctl")
-        rigctl = subprocess.Popen("rigctl -V",shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        rigctl = subprocess.Popen("rigctl -V", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         hamlib_version = rigctl.stdout.readline()
         hamlib_version = hamlib_version.split(' ')
 
@@ -166,7 +166,7 @@ class radio:
             elif self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
-            else: #self.hamlib_ptt_type == 'RIG_PTT_NONE':
+            else:  # self.hamlib_ptt_type == 'RIG_PTT_NONE':
                 self.hamlib_ptt_type = Hamlib.RIG_PTT_NONE
 
             structlog.get_logger("structlog").info("[RIG] Opening...", device=self.devicenumber, path=self.my_rig.get_conf("rig_pathname"), serial_speed=self.my_rig.get_conf("serial_speed"), serial_handshake=self.my_rig.get_conf("serial_handshake"), stop_bits=self.my_rig.get_conf("stop_bits"), data_bits=self.my_rig.get_conf("data_bits"), ptt_pathname=self.my_rig.get_conf("ptt_pathname"))
@@ -192,7 +192,7 @@ class radio:
 
             # set rig mode to USB
             # temporarly outcommented because of possible problems.
-            #self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
+            # self.my_rig.set_mode(Hamlib.RIG_MODE_USB)
             # self.my_rig.set_mode(Hamlib.RIG_MODE_PKTUSB)
             return True
 
@@ -215,7 +215,7 @@ class radio:
         return bandwith
 
     # not needed yet beacuse of some possible problems
-    #def set_mode(self, mode):
+    # def set_mode(self, mode):
     #    return 0
 
     def get_ptt(self):

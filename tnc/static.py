@@ -25,7 +25,7 @@ DXCALLSIGN_CRC = b'A'
 MYGRID = b''
 DXGRID = b''
 
-SSID_LIST = [] # ssid list we are responding to
+SSID_LIST = []  # ssid list we are responding to
 
 LOW_BANDWITH_MODE = False
 # ---------------------------------
@@ -33,7 +33,7 @@ LOW_BANDWITH_MODE = False
 # Server Defaults
 HOST = "0.0.0.0"
 PORT = 3000
-SOCKET_TIMEOUT = 1 # seconds
+SOCKET_TIMEOUT = 1  # seconds
 # ---------------------------------
 SERIAL_DEVICES = []
 # ---------------------------------
@@ -74,7 +74,7 @@ AUDIO_INPUT_DEVICES = []
 AUDIO_OUTPUT_DEVICES = []
 AUDIO_INPUT_DEVICE = -2
 AUDIO_OUTPUT_DEVICE = -2
-BUFFER_OVERFLOW_COUNTER = [0,0,0,0,0]
+BUFFER_OVERFLOW_COUNTER = [0, 0, 0, 0, 0]
 
 AUDIO_RMS = 0
 FFT = [0]
@@ -94,11 +94,11 @@ ARQ_TRANSMISSION_PERCENT = 0
 ARQ_SPEED_LEVEL = 0
 TOTAL_BYTES = 0
 
-#CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+# CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 TNC_STATE = 'IDLE'
 ARQ_STATE = False
 ARQ_SESSION = False
-ARQ_SESSION_STATE = 'disconnected' # disconnected, connecting, connected, disconnecting, failed
+ARQ_SESSION_STATE = 'disconnected'  # disconnected, connecting, connected, disconnecting, failed
 
 # BEACON STATE
 BEACON_STATE = False
@@ -109,9 +109,9 @@ RX_BUFFER = []
 RX_MSG_BUFFER = []
 RX_BURST_BUFFER = []
 RX_FRAME_BUFFER = b''
-#RX_BUFFER_SIZE = 0
+# RX_BUFFER_SIZE = 0
 
-# ------- HEARD STATIOS BUFFER
+# ------- HEARD STATIONS BUFFER
 HEARD_STATIONS = []
 
 # ------- INFO MESSAGE BUFFER
