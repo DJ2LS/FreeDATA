@@ -89,7 +89,6 @@ class DAEMON:
         """
         while 1:
             try:
-                #print("update serial")
                 serial_devices = []
                 ports = serial.tools.list_ports.comports()
                 for port, desc, hwid in ports:
@@ -212,7 +211,6 @@ class DAEMON:
 
                     options.append('--tuning_range_fmax')
                     options.append(data[20])
-
 
                     # overriding FSK mode
                     # if data[21] == 'True':

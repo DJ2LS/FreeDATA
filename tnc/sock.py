@@ -504,7 +504,6 @@ def process_daemon_commands(data):
             for item in received_json["parameter"][0]:
                 structlog.get_logger("structlog").debug(f"[DMN] TNC Startup Config : {item}", value=received_json["parameter"][0][item])
 
-
             DAEMON_QUEUE.put(['STARTTNC',
                               mycall,
                               mygrid,

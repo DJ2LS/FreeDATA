@@ -61,6 +61,7 @@ def test_highsnr_arq_short(freedv_mode: str, n_frames_per_burst: int):
     # This test isn't complete yet, or is obsolete.
     assert False
 
+
 if __name__ == "__main__":
     # Run pytest with the current script as the filename.
     ecode = pytest.main(["-v", sys.argv[0]])

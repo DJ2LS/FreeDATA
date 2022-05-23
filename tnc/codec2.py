@@ -265,7 +265,7 @@ api.rx_sync_flags_to_text = [
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:
     """
-    Thread safe audio buffer, which fits to needs of codec2
+    Thread safe audio buffer, which fits to need of codec2
 
     made by David Rowe, VK5DGR
     """

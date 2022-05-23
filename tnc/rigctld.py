@@ -152,9 +152,9 @@ class radio():
         """
         try:
             if state:
-                 self.send_command(b"T 1")
+                self.send_command(b"T 1")
             else:
-                 self.send_command(b"T 0")
+                self.send_command(b"T 0")
             return state
         except Exception:
             return False

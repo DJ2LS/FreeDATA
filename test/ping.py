@@ -188,7 +188,7 @@ for i in range(N_BURSTS):
         )  # use this if CRC16 checksum is required ( DATA1-3)
         buffer[
             : len(data_out)
-        ] = data_out  # set buffersize to length of data which will be send
+        ] = data_out  # set buffer size to length of data which will be sent
 
         crc = ctypes.c_ushort(
             c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame)

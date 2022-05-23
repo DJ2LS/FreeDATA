@@ -53,7 +53,6 @@ class DATA:
 
         self.received_mycall_crc = b''  # Received my callsign crc if we received a crc for another ssid
 
-
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received ack frames
         self.burst_ack = False  # if we received an acknowledge frame for a burst
@@ -75,7 +74,6 @@ class DATA:
 
         self.mode_list_low_bw = [14, 12]
         self.time_list_low_bw = [3, 7]
-
 
         self.mode_list_high_bw = [14, 12, 10]  # mode list of available modes,each mode will be used 2 times per level
         self.time_list_high_bw = [3, 7, 8, 30]  # list for time to wait for corresponding mode in seconds
@@ -102,7 +100,6 @@ class DATA:
         self.rx_frame_eof_received = False
 
         self.transmission_timeout = 360  # transmission timeout in seconds
-
 
         worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",
                                                   daemon=True)
@@ -815,7 +812,6 @@ class DATA:
 
                 # once we received a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack:
-
                     self.burst_ack = False  # reset ack state
                     self.tx_n_retry_of_burst = 0  # reset retries
                     break  # break retry loop

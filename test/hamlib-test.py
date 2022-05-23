@@ -18,6 +18,7 @@ class DEBUGLEVEL(Enum):
     RIG_DEBUG_TRACE = 5
     RIG_DEBUG_CACHE = 6
 
+
 class RETCODE(Enum):
     RIG_OK = 0
     RIG_EINVAL = 1
@@ -38,12 +39,8 @@ class RETCODE(Enum):
     RIG_EVFO = 16
     RIG_EDOM = 17
 
-
-
-
 libname = pathlib.Path("../tnc/lib/hamlib/linux/libhamlib.so")
 hamlib = ctypes.CDLL(libname)
-
 
 class SERIAL(ctypes.Structure):
     _fields_ = [
@@ -53,17 +50,20 @@ class SERIAL(ctypes.Structure):
         ("parity", ctypes.c_int),
         ("handshake", ctypes.c_void_p),
     ]
-    
+
+
 class PARM(ctypes.Structure):
     _fields_ = [
         ("serial", SERIAL),
     ]
-    
+
+
 class TYPE(ctypes.Structure):
     _fields_ = [
         ("rig", ctypes.c_void_p),
     ]
-    
+
+
 class MYPORT(ctypes.Structure):
     _fields_ = [
         ("pathname", ctypes.c_char),
@@ -74,15 +74,13 @@ class MYPORT(ctypes.Structure):
     ]
 
 
-hamlib.rig_set_debug(9) #6
-myrig_model = 3085 #3085 = ICOM 6 = DUMMY
+hamlib.rig_set_debug(9)  # 6
+myrig_model = 3085  # 3085 = ICOM 6 = DUMMY
 
 myport = MYPORT()
 myport.parm.serial.data_bits = 7
 myport.parm.serial.stop_bits = 2
 myport.parm.serial.rate = 9600
-
-
 
 rig = hamlib.rig_init(myrig_model)
 
@@ -111,15 +109,11 @@ print(retcode)
 '''
 retcode = hamlib.rig_open(rig)
 print(retcode)
-
-
 hamlib.rig_close(rig)
 '''
 
-
-
-#riginfo = create_string_buffer(1024)
-#retcode = hamlib.rig_get_rig_info(rig, riginfo, 1024);
+# riginfo = create_string_buffer(1024)
+# retcode = hamlib.rig_get_rig_info(rig, riginfo, 1024);
 
 '''
 char riginfo[1024];

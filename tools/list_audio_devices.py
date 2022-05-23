@@ -13,12 +13,5 @@ def list_audio_devices():
         
     for line in devices:
         print(line) 
-        
 
-        
-        
-        
-        
-        
-        
 list_audio_devices()

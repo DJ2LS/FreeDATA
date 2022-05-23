@@ -77,7 +77,7 @@ class Test:
 
         self.resampler = codec2.resampler()
 
-        # check if we want to use an audio device then do an pyaudio init
+        # check if we want to use an audio device then do a pyaudio init
         if self.AUDIO_OUTPUT_DEVICE != -1:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
@@ -189,7 +189,7 @@ class Test:
             payload_per_frame = bytes_per_frame - 2
 
             buffer = bytearray(payload_per_frame)
-            # set buffersize to length of data which will be send
+            # set buffer size to length of data which will be sent
             buffer[: len(self.data_out)] = self.data_out
 
             crc = ctypes.c_ushort(

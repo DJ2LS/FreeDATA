@@ -31,7 +31,7 @@ try:
     # installation path for Suse
     sys.path.append(f'/usr/local/lib64/python{python_version}/site-packages')
 
-    # everything else... not nice, but an attempt to see how its running within app bundle
+    # everything else... not nice, but an attempt to see how it's running within app bundle
     # this is not needed as python will be shipped with app bundle
     sys.path.append('/usr/local/lib/python3.6/site-packages')
     sys.path.append('/usr/local/lib/python3.7/site-packages')
@@ -106,7 +106,7 @@ class radio:
         """
         self.devicename = devicename
         self.deviceport = str(deviceport)
-        self.serialspeed = str(serialspeed) # we need to ensure this is a str, otherwise set_conf functions are crashing
+        self.serialspeed = str(serialspeed)  # we need to ensure this is a str, otherwise set_conf functions are crashing
         self.hamlib_ptt_type = str(hamlib_ptt_type)
         self.pttport = str(pttport)
         self.data_bits = str(data_bits)

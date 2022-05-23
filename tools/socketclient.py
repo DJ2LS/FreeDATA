@@ -11,8 +11,10 @@ import sys
 import argparse
 import random
 
-#https://www.askpython.com/python/examples/generate-random-strings-in-python
+
 def create_string(length):
+    # https://www.askpython.com/python/examples/generate-random-strings-in-python
+
     random_string = ''
     for _ in range(length):
     # Considering only upper and lowercase letters
@@ -25,39 +27,27 @@ def create_string(length):
     print("STR:" + str(random_string))
     
     return random_string
-    
-    
-    
-    
 
-#--------------------------------------------GET PARAMETER INPUTS  
+
+# --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--port', dest="socket_port", default=9000, help="Set the port, the socket is listening on.", type=int) 
-#parser.add_argument('--data', dest="data", default=False, help="data", type=str)
+# parser.add_argument('--data', dest="data", default=False, help="data", type=str)
 parser.add_argument('--random', dest="datalength", default=False, help="data", type=int)
 
-
-
-
 args = parser.parse_args()
-
 
 data = create_string(args.datalength)
 data = bytes("ARQ:DATA:" + "" + data + "" + "\n", "utf-8")
 
-
-
-#print(data)
-
-
 HOST, PORT = "localhost", args.socket_port
-#data = args.data
+# data = args.data
 
 # Create a socket (SOCK_STREAM means a TCP socket)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     # Connect to server and send data
     sock.connect((HOST, PORT))
-    #sock.sendall(bytes(data + "\n", "utf-8"))
+    # sock.sendall(bytes(data + "\n", "utf-8"))
     sock.sendall(data)
     # Receive data from the server and shut down
     received = str(sock.recv(1024), "utf-8")

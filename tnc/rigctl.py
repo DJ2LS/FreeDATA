@@ -105,7 +105,7 @@ class radio:
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         time.sleep(0.5)
         freq = sw_proc.communicate()[0]
-        #print('get_frequency', freq, sw_proc.communicate())
+        # print('get_frequency', freq, sw_proc.communicate())
         try:
             return int(freq)
         except Exception:
@@ -113,8 +113,8 @@ class radio:
 
     def get_mode(self):
         """ """
-        #(hamlib_mode, bandwith) = self.my_rig.get_mode()
-        #return Hamlib.rig_strrmode(hamlib_mode)
+        # (hamlib_mode, bandwith) = self.my_rig.get_mode()
+        # return Hamlib.rig_strrmode(hamlib_mode)
         try:
             return 'PKTUSB'
         except Exception:
@@ -122,7 +122,7 @@ class radio:
 
     def get_bandwith(self):
         """ """
-        #(hamlib_mode, bandwith) = self.my_rig.get_mode()
+        # (hamlib_mode, bandwith) = self.my_rig.get_mode()
         bandwith = 2700
 
         try:
