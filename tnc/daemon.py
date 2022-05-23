@@ -227,7 +227,6 @@ class DAEMON:
                     options.append("--tuning_range_fmax")
                     options.append(data[20])
 
-
                     # overriding FSK mode
                     # if data[21] == "True":
                     #    options.append("--fsk")
