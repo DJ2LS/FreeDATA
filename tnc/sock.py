@@ -162,9 +162,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                                                   port=self.client_address[1])
         try:
             CONNECTED_CLIENTS.remove(self.request)
-        except:
+        except Exception as e:
             structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list",
-                                                      client=self.request)
+                                                      client=self.request, e=e)
 
 
 def process_tnc_commands(data):
@@ -308,13 +308,13 @@ def process_tnc_commands(data):
                 # check if specific callsign is set with different SSID than the TNC is initialized
                 try:
                     mycallsign = received_json["parameter"][0]["mycallsign"]
-                except:
+                except Exception:
                     mycallsign = static.MYCALLSIGN
 
                 # check if transmission uuid provided else set no-uuid
                 try:
                     arq_uuid = received_json["uuid"]
-                except:
+                except Exception:
                     arq_uuid = 'no-uuid'
 
                 if not len(base64data) % 4:
@@ -502,8 +502,8 @@ def process_daemon_commands(data):
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
-                structlog.get_logger("structlog").debug("[DMN] TNC Startup Config : " + item,
-                                                        value=received_json["parameter"][0][item])
+                structlog.get_logger("structlog").debug(f"[DMN] TNC Startup Config : {item}", value=received_json["parameter"][0][item])
+
 
             DAEMON_QUEUE.put(['STARTTNC',
                               mycall,
@@ -607,9 +607,8 @@ def send_daemon_state():
         else:
             output["daemon_state"].append({"status": "stopped"})
 
-        jsondata = json.dumps(output)
+        return json.dumps(output)
 
-        return jsondata
     except Exception as e:
         structlog.get_logger("structlog").warning("[SCK] error", e=e)
         return None

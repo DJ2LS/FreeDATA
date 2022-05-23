@@ -79,7 +79,7 @@ class radio:
                 structlog.get_logger("structlog").warning("[RIGCTL] Radio not found. Using DUMMY!", error=e)
 
         # set deviceport to dummy port, if we selected dummy model
-        if self.devicenumber == 1 or self.devicenumber == 6:
+        if self.devicenumber in {1, 6}:
             self.deviceport = '/dev/ttyUSB0'
 
         print(self.devicenumber, self.deviceport, self.serialspeed)
@@ -101,14 +101,14 @@ class radio:
 
     def get_frequency(self):
         """ """
-        cmd = self.cmd + ' f'
+        cmd = f'{self.cmd} f'
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         time.sleep(0.5)
         freq = sw_proc.communicate()[0]
         #print('get_frequency', freq, sw_proc.communicate())
         try:
             return int(freq)
-        except:
+        except Exception:
             return False
 
     def get_mode(self):
@@ -117,7 +117,7 @@ class radio:
         #return Hamlib.rig_strrmode(hamlib_mode)
         try:
             return 'PKTUSB'
-        except:
+        except Exception:
             return False
 
     def get_bandwith(self):
@@ -127,7 +127,7 @@ class radio:
 
         try:
             return bandwith
-        except:
+        except Exception:
             return False
 
     def set_mode(self, mode):
@@ -144,14 +144,14 @@ class radio:
 
     def get_ptt(self):
         """ """
-        cmd = self.cmd + ' t'
+        cmd = f'{self.cmd} t'
         sw_proc = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
         time.sleep(0.5)
         status = sw_proc.communicate()[0]
 
         try:
             return status
-        except:
+        except Exception:
             return False
 
     def set_ptt(self, state):
@@ -163,18 +163,15 @@ class radio:
         Returns:
 
         """
-        cmd = self.cmd + ' T '
+        cmd = f'{self.cmd} T '
         print('set_ptt', state)
-        if state:
-            cmd = cmd + '1'
-        else:
-            cmd = cmd + '0'
+        cmd = f'{cmd}1' if state else f'{cmd}0'
         print('set_ptt', cmd)
 
         sw_proc = subprocess.Popen(cmd, shell=True, text=True)
         try:
             return state
-        except:
+        except Exception:
             return False
 
     def close_rig(self):

@@ -20,7 +20,7 @@ else:
 # try importing hamlib
 try:
     # get python version
-    python_version = str(sys.version_info[0]) + "." + str(sys.version_info[1])
+    python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"
 
     # installation path for Ubuntu 20.04 LTS python modules
     # sys.path.append('/usr/local/lib/python'+ python_version +'/site-packages')
@@ -29,7 +29,7 @@ try:
     sys.path.append('/usr/local/lib/')
 
     # installation path for Suse
-    sys.path.append('/usr/local/lib64/python' + python_version + '/site-packages')
+    sys.path.append(f'/usr/local/lib64/python{python_version}/site-packages')
 
     # everything else... not nice, but an attempt to see how its running within app bundle
     # this is not needed as python will be shipped with app bundle
@@ -53,19 +53,21 @@ try:
         structlog.get_logger("structlog").warning("[RIG] Hamlib outdated", found=hamlib_version, recommend=min_hamlib_version)
 except Exception as e:
     structlog.get_logger("structlog").warning("[RIG] Python Hamlib binding not found", error=e)
+
     try:
         structlog.get_logger("structlog").warning("[RIG] Trying to open rigctl")
         rigctl = subprocess.Popen("rigctl -V", shell=True, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+
         hamlib_version = rigctl.stdout.readline()
         hamlib_version = hamlib_version.split(' ')
+        if hamlib_version[1] != 'Hamlib':
+            raise Exception from e
+        structlog.get_logger("structlog").warning("[RIG] Rigctl found! Please try using this", version=hamlib_version[2])
 
-        if hamlib_version[1] == 'Hamlib':
-            structlog.get_logger("structlog").warning("[RIG] Rigctl found! Please try using this", version=hamlib_version[2])
-            sys.exit()
-        else:
-            raise Exception
+        sys.exit()
     except Exception as e:
         structlog.get_logger("structlog").critical("[RIG] HAMLIB NOT INSTALLED", error=e)
+
         hamlib_version = 0
         sys.exit()
 
@@ -118,7 +120,7 @@ class radio:
             # get devicenumber by looking for deviceobject in Hamlib module
             try:
                 self.devicenumber = int(getattr(Hamlib, self.devicename))
-            except:
+            except Exception:
                 structlog.get_logger("structlog").error("[RIG] Hamlib: rig not supported...")
                 self.devicenumber = 0
 
@@ -184,7 +186,7 @@ class radio:
                     structlog.get_logger("structlog").error("[RIG] Hamlib has no permissions", e = error)
                     help_url = 'https://github.com/DJ2LS/FreeDATA/wiki/UBUNTU-Manual-installation#1-permissions'
                     structlog.get_logger("structlog").error("[RIG] HELP:", check = help_url)
-            except:
+            except Exception:
                 structlog.get_logger("structlog").info("[RIG] Hamlib device opened", status='SUCCESS')
 
             # set ptt to false if ptt is stuck for some reason

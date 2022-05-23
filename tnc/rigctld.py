@@ -91,13 +91,13 @@ class radio():
         if self.connected:
             try:
                 self.connection.sendall(command+b'\n')
-            except:
+            except Exception:
                 structlog.get_logger("structlog").warning("[RIGCTLD] Command not executed!", command=command, ip=self.hostname, port=self.port)
                 self.connected = False
 
             try:
                 return self.connection.recv(1024)
-            except:
+            except Exception:
                 structlog.get_logger("structlog").warning("[RIGCTLD] No command response!", command=command, ip=self.hostname, port=self.port)
                 self.connected = False
         else:
@@ -113,7 +113,7 @@ class radio():
             data = data.split(b'\n')
             mode = data[0]
             return mode.decode("utf-8")
-        except:
+        except Exception:
             return 0
 
     def get_bandwith(self):
@@ -123,7 +123,7 @@ class radio():
             data = data.split(b'\n')
             bandwith = data[1]
             return bandwith.decode("utf-8")
-        except:
+        except Exception:
             return 0
 
     def get_frequency(self):
@@ -131,14 +131,14 @@ class radio():
         try:
             frequency = self.send_command(b"f")
             return frequency.decode("utf-8")
-        except:
+        except Exception:
             return 0
 
     def get_ptt(self):
         """ """
         try:
             return self.send_command(b"t")
-        except:
+        except Exception:
             return False
 
     def set_ptt(self, state):
@@ -156,5 +156,5 @@ class radio():
             else:
                  self.send_command(b"T 0")
             return state
-        except:
+        except Exception:
             return False

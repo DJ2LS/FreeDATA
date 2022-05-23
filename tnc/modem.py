@@ -300,33 +300,29 @@ class RF:
                 static.BUFFER_OVERFLOW_COUNTER[0] += 1
 
             # Avoid buffer overflow by filling only if buffer not full and selected datachannel mode
-            if not self.datac1_buffer.nbuffer + length_x > self.datac1_buffer.size:
-                if RECEIVE_DATAC1:
-                    self.datac1_buffer.push(x)
-            else:
+            if self.datac1_buffer.nbuffer + length_x > self.datac1_buffer.size:
                 static.BUFFER_OVERFLOW_COUNTER[1] += 1
 
+            elif RECEIVE_DATAC1:
+                self.datac1_buffer.push(x)
             # Avoid buffer overflow by filling only if buffer not full and selected datachannel mode
-            if not self.datac3_buffer.nbuffer + length_x > self.datac3_buffer.size:
-                if RECEIVE_DATAC3:
-                    self.datac3_buffer.push(x)
-            else:
+            if self.datac3_buffer.nbuffer + length_x > self.datac3_buffer.size:
                 static.BUFFER_OVERFLOW_COUNTER[2] += 1
 
+            elif RECEIVE_DATAC3:
+                self.datac3_buffer.push(x)
             # Avoid buffer overflow by filling only if buffer not full and selected datachannel mode
-            if not self.fsk_ldpc_buffer_0.nbuffer + length_x > self.fsk_ldpc_buffer_0.size:
-                if static.ENABLE_FSK:
-                    self.fsk_ldpc_buffer_0.push(x)
-            else:
+            if self.fsk_ldpc_buffer_0.nbuffer + length_x > self.fsk_ldpc_buffer_0.size:
                 static.BUFFER_OVERFLOW_COUNTER[3] += 1
 
+            elif static.ENABLE_FSK:
+                self.fsk_ldpc_buffer_0.push(x)
             # Avoid buffer overflow by filling only if buffer not full and selected datachannel mode
-            if not self.fsk_ldpc_buffer_1.nbuffer + length_x > self.fsk_ldpc_buffer_1.size:
-                if RECEIVE_FSK_LDPC_1 and static.ENABLE_FSK:
-                    self.fsk_ldpc_buffer_1.push(x)
-            else:
+            if self.fsk_ldpc_buffer_1.nbuffer + length_x > self.fsk_ldpc_buffer_1.size:
                 static.BUFFER_OVERFLOW_COUNTER[4] += 1
 
+            elif RECEIVE_FSK_LDPC_1 and static.ENABLE_FSK:
+                self.fsk_ldpc_buffer_1.push(x)
         if len(self.modoutqueue) <= 0 or self.mod_out_locked:
 
             data_out48k = np.zeros(frames, dtype=np.int16)
