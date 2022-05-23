@@ -506,7 +506,7 @@ class DATA:
         static.ARQ_STATE = True
         static.INFO.append("ARQ;RECEIVING")
 
-        # Update the timeout timestamp
+        # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
         # Extract some important data from the frame
@@ -598,10 +598,10 @@ class DATA:
                 self.frame_received_counter += 1
                 if self.frame_received_counter >= 2:
                     self.frame_received_counter = 0
-                    self.speed_level += 1
-                    if self.speed_level >= len(self.mode_list):
-                        self.speed_level = len(self.mode_list) - 1
-                        static.ARQ_SPEED_LEVEL = self.speed_level
+                    self.speed_level = min(
+                        self.speed_level + 1, len(self.mode_list) - 1
+                    )
+                    static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
@@ -655,9 +655,8 @@ class DATA:
             frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
             compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
-            compression_factor = np.clip(
-                compression_factor, 0, 255
-            )  # limit to max value of 255
+            # limit to max value of 255
+            compression_factor = np.clip(compression_factor, 0, 255)
             static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
             self.calculate_transfer_rate_rx(
                 self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
@@ -765,7 +764,7 @@ class DATA:
                 self.log.info("[TNC] ARQ | RX | Sending NACK")
                 self.send_burst_nack_frame(snr)
 
-            # Update timeout timestamp
+            # Update arq_session timestamp
             self.arq_session_last_received = int(time.time())
 
             # Finally cleanup our buffers and states,
@@ -852,7 +851,6 @@ class DATA:
             and not self.data_frame_ack_received
             and static.ARQ_STATE
         ):
-
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for self.tx_n_retry_of_burst in range(TX_N_MAX_RETRIES_PER_BURST):
                 # AUTO MODE SELECTION
@@ -936,10 +934,6 @@ class DATA:
                 )
 
                 self.enqueue_frame_for_tx(bytearray(tempbuffer), c2_mode=data_mode)
-
-                # wait while transmitting
-                while static.TRANSMITTING:
-                    time.sleep(0.01)
 
                 # After transmission finished, wait for an ACK or RPT frame
                 # burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
@@ -1081,7 +1075,7 @@ class DATA:
             )
             # Force data loops of TNC to stop and continue with next frame
             self.burst_ack = True
-            # Update our timeout timestamp
+            # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
             self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
@@ -1116,12 +1110,10 @@ class DATA:
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
             )
-            self.burst_nack = (
-                True  # Force data loops of TNC to stop and continue with next frame
-            )
-            self.data_channel_last_received = int(
-                time.time()
-            )  # we need to update our timeout timestamp
+            # Force data loops of TNC to stop and continue with next frame
+            self.burst_nack = True
+            # Update data_channel timestamp
+            self.data_channel_last_received = int(time.time())
             self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
@@ -1140,15 +1132,11 @@ class DATA:
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
             )
-            self.data_frame_ack_received = (
-                True  # Force data loops of TNC to stop and continue with next frame
-            )
-            self.data_channel_last_received = int(
-                time.time()
-            )  # we need to update our timeout timestamp
-            self.arq_session_last_received = int(
-                time.time()
-            )  # we need to update our timeout timestamp
+            # Force data loops of TNC to stop and continue with next frame
+            self.data_frame_ack_received = True
+            # Update arq_session and data_channel timestamp
+            self.data_channel_last_received = int(time.time())
+            self.arq_session_last_received = int(time.time())
 
     def frame_nack_received(self, data_in: bytes):  # pylint: disable=unused-argument
         """
@@ -1176,7 +1164,7 @@ class DATA:
         }
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
-        # Update the timeout timestamp
+        # Update data_channel timestamp
         self.arq_session_last_received = int(time.time())
 
         self.arq_cleanup()
@@ -1201,9 +1189,8 @@ class DATA:
             )
 
             self.rpt_request_received = True
-            self.data_channel_last_received = int(
-                time.time()
-            )  # we need to update our timeout timestamp
+            # Update data_channel timestamp
+            self.data_channel_last_received = int(time.time())
             self.rpt_request_buffer = []
 
             missing_area = bytes(data_in[3:12])  # 1:9
@@ -1271,14 +1258,14 @@ class DATA:
 
         while not static.ARQ_SESSION:
             time.sleep(0.01)
-            for attempt in range(1, self.session_connect_max_retries + 1):
+            for attempt in range(self.session_connect_max_retries):
                 self.log.info(
                     "[TNC] SESSION ["
                     + str(self.mycallsign, "UTF-8")
                     + "]>>?<<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    a=attempt,
+                    a=attempt + 1,
                     state=static.ARQ_SESSION_STATE,
                 )
 
@@ -1314,7 +1301,7 @@ class DATA:
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION_STATE = "connecting"
 
-        # Update the timeout timestamp
+        # Update arq_session timestamp
         self.arq_session_last_received = int(time.time())
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
@@ -1516,7 +1503,7 @@ class DATA:
         """
         self.is_IRS = False
 
-        # Update the timeout timestamp
+        # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
         if static.LOW_BANDWITH_MODE and mode == 255:
@@ -1586,7 +1573,7 @@ class DATA:
             self.datachannel_timeout = True
             self.arq_cleanup()
 
-            # attempt to cleanup the far-side, if it received the
+            # Attempt to cleanup the far-side, if it received the
             # open_session frame and can still hear us.
             self.close_session()
             return False
@@ -1659,7 +1646,7 @@ class DATA:
 
         self.reset_statistics()
 
-        # Update the timeout timestamp
+        # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
         # Select the frame type based on the mode we are in
@@ -1674,9 +1661,8 @@ class DATA:
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
-        connection_frame[13:14] = bytes(
-            [static.ARQ_PROTOCOL_VERSION]
-        )  # crc8 of version for checking protocol version
+        # For checking protocol version on the receiving side
+        connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
         self.enqueue_frame_for_tx(connection_frame)
 
@@ -1693,7 +1679,7 @@ class DATA:
         # set start of transmission for our statistics
         self.rx_start_of_transmission = time.time()
 
-        # Update the timeout timestamp
+        # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
@@ -1712,14 +1698,13 @@ class DATA:
                 self.received_low_bandwidth_mode = True
                 self.mode_list = self.mode_list_low_bw
                 self.time_list = self.time_list_low_bw
-                self.speed_level = len(self.mode_list) - 1
                 self.log.debug("[TNC] low bandwidth mode", modes=self.mode_list)
             else:
                 self.received_low_bandwidth_mode = False
                 self.mode_list = self.mode_list_high_bw
                 self.time_list = self.time_list_high_bw
-                self.speed_level = len(self.mode_list) - 1
                 self.log.debug("[TNC] high bandwidth mode", modes=self.mode_list)
+            self.speed_level = len(self.mode_list) - 1
 
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
@@ -1741,6 +1726,7 @@ class DATA:
 
             # as soon as we set ARQ_STATE to DATA, transmission starts
             static.ARQ_STATE = True
+            # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
         else:
             static.TNC_STATE = "IDLE"
@@ -1815,7 +1801,6 @@ class DATA:
         if not valid:
             # PING packet not for me.
             self.log.debug("[TNC] received_ping: ping not for this station.")
-            # print("ping not for me...")
             return
 
         self.log.info(
@@ -1965,7 +1950,6 @@ class DATA:
 
         except Exception as e:
             self.log.debug("[TNC] run_beacon: ", exception=e)
-            # print(e)
 
     def received_beacon(self, data_in: bytes) -> None:
         """
@@ -2043,7 +2027,7 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
-        # print(dxcallsign)
+
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         static.INFO.append("CQ;RECEIVING")
         self.log.info(
@@ -2225,12 +2209,8 @@ class DATA:
             transmissiontime = time.time() - tx_start_of_transmission
 
             if sentbytes > 0:
-                static.ARQ_BITS_PER_SECOND = int(
-                    (sentbytes * 8) / transmissiontime
-                )  # Bits per Second
-                static.ARQ_BYTES_PER_MINUTE = int(
-                    (sentbytes) / (transmissiontime / 60)
-                )  # Bytes per Minute
+                static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)
+                static.ARQ_BYTES_PER_MINUTE = int((sentbytes) / (transmissiontime / 60))
 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
@@ -2380,22 +2360,17 @@ class DATA:
             self.frame_received_counter = 0
             self.burst_nack_counter += 1
             if self.burst_nack_counter >= 2:
-                self.speed_level -= 1
-                # print(self.burst_nack_counter)
-                # print(self.speed_level)
-                static.ARQ_SPEED_LEVEL = self.speed_level
                 self.burst_nack_counter = 0
-            if self.speed_level <= 0:
-                self.speed_level = 0
+                self.speed_level = max(self.speed_level - 1, 0)
                 static.ARQ_SPEED_LEVEL = self.speed_level
 
             # Update modes we are listening to
             self.set_listening_modes(self.mode_list[self.speed_level])
 
-            self.send_burst_nack_frame_watchdog(
-                0
-            )  # Why not pass `snr` or `static.SNR`?
+            # Why not pass `snr` or `static.SNR`?
+            self.send_burst_nack_frame_watchdog(0)
 
+            # Update data_channel timestamp
             self.data_channel_last_received = time.time()
             self.n_retries_per_burst += 1
         else:
@@ -2422,6 +2397,7 @@ class DATA:
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 # pass
             else:
+                # Clear the timeout timestamp
                 self.data_channel_last_received = 0
                 self.log.info(
                     "[TNC] DATA ["
@@ -2458,7 +2434,7 @@ class DATA:
 
     def heartbeat(self) -> None:
         """
-        heartbeat thread which auto resumes the heartbeat signal within a arq session
+        Heartbeat thread which auto resumes the heartbeat signal within an arq session
         """
         while 1:
             time.sleep(0.01)
@@ -2473,5 +2449,5 @@ class DATA:
                 time.sleep(2)
 
     def send_test_frame(self) -> None:
-        """Send a test frame (type 12) frame"""
+        """Send a test (type 12) frame"""
         self.enqueue_frame_for_tx(frame_to_tx=bytearray(126), c2_mode=12)
