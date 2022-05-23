@@ -27,6 +27,7 @@ def wait(seconds: float) -> bool:
         time.sleep(0.01)
     return True
 
+
 def get_crc_8(data) -> bytes:
     """Author: DJ2LS
 
@@ -45,6 +46,7 @@ def get_crc_8(data) -> bytes:
     crc_data = crc_data.to_bytes(1, byteorder='big')
     return crc_data
 
+
 def get_crc_16(data) -> bytes:
     """Author: DJ2LS
 
@@ -62,6 +64,7 @@ def get_crc_16(data) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder='big')
     return crc_data
+
 
 def get_crc_24(data) -> bytes:
     """Author: DJ2LS
@@ -84,6 +87,7 @@ def get_crc_24(data) -> bytes:
     crc_data = crc_data.to_bytes(3, byteorder='big')
     return crc_data
 
+
 def get_crc_32(data: bytes) -> bytes:
     """Author: DJ2LS
 
@@ -101,6 +105,7 @@ def get_crc_32(data: bytes) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(4, byteorder='big')
     return crc_data
+
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
@@ -136,6 +141,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
 
+
 def callsign_to_bytes(callsign) -> bytes:
     """
 
@@ -146,22 +152,22 @@ def callsign_to_bytes(callsign) -> bytes:
 
     """
     # http://www.aprs.org/aprs11/SSIDs.txt
-    #-0 Your primary station usually fixed and message capable
-    #-1 generic additional station, digi, mobile, wx, etc
-    #-2 generic additional station, digi, mobile, wx, etc
-    #-3 generic additional station, digi, mobile, wx, etc
-    #-4 generic additional station, digi, mobile, wx, etc
-    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
-    #-6 Special activity, Satellite ops, camping or 6 meters, etc
-    #-7 walkie talkies, HT's or other human portable
-    #-8 boats, sailboats, RV's or second main mobile
-    #-9 Primary Mobile (usually message capable)
-    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
-    #-11 balloons, aircraft, spacecraft, etc
-    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
-    #-13 Weather stations
-    #-14 Truckers or generally full time drivers
-    #-15 generic additional station, digi, mobile, wx, etc
+    # -0 Your primary station usually fixed and message capable
+    # -1 generic additional station, digi, mobile, wx, etc
+    # -2 generic additional station, digi, mobile, wx, etc
+    # -3 generic additional station, digi, mobile, wx, etc
+    # -4 generic additional station, digi, mobile, wx, etc
+    # -5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    # -6 Special activity, Satellite ops, camping or 6 meters, etc
+    # -7 walkie talkies, HT's or other human portable
+    # -8 boats, sailboats, RV's or second main mobile
+    # -9 Primary Mobile (usually message capable)
+    # -10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    # -11 balloons, aircraft, spacecraft, etc
+    # -12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    # -13 Weather stations
+    # -14 Truckers or generally full time drivers
+    # -15 generic additional station, digi, mobile, wx, etc
 
     # Try converting to bytestring if possible type string
     try:
@@ -178,16 +184,16 @@ def callsign_to_bytes(callsign) -> bytes:
     except IndexError as e:
         structlog.get_logger("structlog").debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=e)
 
-    #callsign = callsign[0]
-    #bytestring = bytearray(8)
-    #bytestring[:len(callsign)] = callsign
-    #bytestring[7:8] = bytes([ssid])
+    # callsign = callsign[0]
+    # bytestring = bytearray(8)
+    # bytestring[:len(callsign)] = callsign
+    # bytestring[7:8] = bytes([ssid])
 
     # ---- callsign with encoding always 6 bytes long
     callsign = callsign[0].decode("utf-8")
     ssid = bytes([ssid]).decode("utf-8")
     return encode_call(callsign + ssid)
-    #return bytes(bytestring)
+    # return bytes(bytestring)
 
 def bytes_to_callsign(bytestring: bytes) -> bytes:
     """
@@ -200,22 +206,22 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
         bytes
     """
     # http://www.aprs.org/aprs11/SSIDs.txt
-    #-0 Your primary station usually fixed and message capable
-    #-1 generic additional station, digi, mobile, wx, etc
-    #-2 generic additional station, digi, mobile, wx, etc
-    #-3 generic additional station, digi, mobile, wx, etc
-    #-4 generic additional station, digi, mobile, wx, etc
-    #-5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
-    #-6 Special activity, Satellite ops, camping or 6 meters, etc
-    #-7 walkie talkies, HT's or other human portable
-    #-8 boats, sailboats, RV's or second main mobile
-    #-9 Primary Mobile (usually message capable)
-    #-10 internet, Igates, echolink, winlink, AVRS, APRN, etc
-    #-11 balloons, aircraft, spacecraft, etc
-    #-12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
-    #-13 Weather stations
-    #-14 Truckers or generally full time drivers
-    #-15 generic additional station, digi, mobile, wx, etc
+    # -0 Your primary station usually fixed and message capable
+    # -1 generic additional station, digi, mobile, wx, etc
+    # -2 generic additional station, digi, mobile, wx, etc
+    # -3 generic additional station, digi, mobile, wx, etc
+    # -4 generic additional station, digi, mobile, wx, etc
+    # -5 Other networks (Dstar, Iphones, Androids, Blackberry's etc)
+    # -6 Special activity, Satellite ops, camping or 6 meters, etc
+    # -7 walkie talkies, HT's or other human portable
+    # -8 boats, sailboats, RV's or second main mobile
+    # -9 Primary Mobile (usually message capable)
+    # -10 internet, Igates, echolink, winlink, AVRS, APRN, etc
+    # -11 balloons, aircraft, spacecraft, etc
+    # -12 APRStt, DTMF, RFID, devices, one-way trackers*, etc
+    # -13 Weather stations
+    # -14 Truckers or generally full time drivers
+    # -15 generic additional station, digi, mobile, wx, etc
 
     # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )
     '''
@@ -234,6 +240,7 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     callsign = decoded[:-1]
     ssid = ord(bytes(decoded[-1], "utf-8"))
     return bytes(f"{callsign}-{ssid}", "utf-8")
+
 
 def check_callsign(callsign:bytes, crc_to_check:bytes):
     """
@@ -270,9 +277,10 @@ def check_callsign(callsign:bytes, crc_to_check:bytes):
 
     return [False, ""]
 
+
 def encode_grid(grid):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         grid:string: maidenhead QTH locater [a-r][a-r][0-9][0-9][a-x][a-x]
     Returns:
@@ -282,30 +290,30 @@ def encode_grid(grid):
 
     grid = grid.upper() # upper case to be save
 
-    int_first = ord(grid[0]) - 65 # -65 offset for 'A' become zero, utf8 table
-    int_sec   = ord(grid[1]) - 65 # -65 offset for 'A' become zero, utf8 table
+    int_first = ord(grid[0]) - 65  # -65 offset for 'A' become zero, utf8 table
+    int_sec = ord(grid[1]) - 65  # -65 offset for 'A' become zero, utf8 table
 
     int_val = (int_first * 18) + int_sec # encode for modulo devision, 2 numbers in 1
 
     out_code_word = (int_val & 0b111111111) # only 9 bit LSB A - R * A - R is needed
-    out_code_word <<= 9 # shift 9 bit left having space next bits, letter A-R * A-R
+    out_code_word <<= 9  # shift 9 bit left having space next bits, letter A-R * A-R
 
-    int_val = int(grid[2:4]) # number string to number int, highest value 99
+    int_val = int(grid[2:4])  # number string to number int, highest value 99
     out_code_word |= (int_val & 0b1111111) # using bit OR to add new value
-    out_code_word <<= 7 # shift 7 bit left having space next bits, letter A-X
+    out_code_word <<= 7  # shift 7 bit left having space next bits, letter A-X
 
-    int_val = ord(grid[4]) - 65 # -65 offset for 'A' become zero, utf8 table
+    int_val = ord(grid[4]) - 65  # -65 offset for 'A' become zero, utf8 table
     out_code_word |= (int_val & 0b11111) # using bit OR to add new value
-    out_code_word <<= 5 # shift 5 bit left having space next bits, letter A-X
+    out_code_word <<= 5  # shift 5 bit left having space next bits, letter A-X
 
-    int_val = ord(grid[5]) - 65 # -65 offset for 'A' become zero, utf8 table
+    int_val = ord(grid[5]) - 65  # -65 offset for 'A' become zero, utf8 table
     out_code_word |= (int_val & 0b11111) # using bit OR to add new value
 
     return out_code_word.to_bytes(length=4, byteorder='big')
 
 def decode_grid(b_code_word:bytes):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         b_code_word:bytes: 4 bytes with 26 bit valid data LSB
     Returns:
@@ -334,7 +342,7 @@ def decode_grid(b_code_word:bytes):
 
 def encode_call(call):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         call:string: ham radio call sign [A-Z,0-9], last char SSID 0-63
 
@@ -346,18 +354,19 @@ def encode_call(call):
     call = call.upper() # upper case to be save
 
     for x in call:
-        int_val = ord(x) - 48 # -48 reduce bits, begin with first number utf8 table
-        out_code_word <<= 6 # shift left 6 bit, making space for a new char
-        out_code_word |= (int_val & 0b111111) # bit OR adds the new char, masked with AND 0b111111
-    out_code_word >>= 6 # clean last char
-    out_code_word <<= 6 # make clean space
-    out_code_word |= (ord(call[-1]) & 0b111111) # add the SSID uncoded only 0 - 63
+        int_val = ord(x) - 48  # -48 reduce bits, begin with first number utf8 table
+        out_code_word <<= 6  # shift left 6 bit, making space for a new char
+        out_code_word |= (int_val & 0b111111)  # bit OR adds the new char, masked with AND 0b111111
+    out_code_word >>= 6  # clean last char
+    out_code_word <<= 6  # make clean space
+    out_code_word |= (ord(call[-1]) & 0b111111)  # add the SSID uncoded only 0 - 63
 
     return out_code_word.to_bytes(length=6, byteorder='big')
 
+
 def decode_call(b_code_word:bytes):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         b_code_word:bytes: 6 bytes with 6 bits/sign valid data char signs LSB
 
@@ -365,13 +374,13 @@ def decode_call(b_code_word:bytes):
         call:str: upper case ham radio call sign [A-Z,0-9] + binary SSID
     """
     code_word = int.from_bytes(b_code_word, byteorder='big', signed=False)
-    ssid = chr(code_word & 0b111111) # save the uncoded binary SSID
+    ssid = chr(code_word & 0b111111)  # save the uncoded binary SSID
 
     call = str()
     while code_word != 0:
         call = chr((code_word & 0b111111)+48) + call
         code_word >>= 6
 
-    call = call[:-1] + ssid # remove the last char from call and replace with SSID
+    call = call[:-1] + ssid  # remove the last char from call and replace with SSID
 
     return call

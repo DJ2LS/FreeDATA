@@ -8,9 +8,7 @@ Created on Sun Dec 27 20:43:40 2020
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel
 
-import asyncio
 import base64
-import logging
 import queue
 import sys
 import threading
@@ -25,7 +23,6 @@ import ujson as json
 
 import codec2
 import helpers
-import log_handler
 import modem
 import sock
 import static
@@ -39,7 +36,7 @@ DATA_QUEUE_RECEIVED = queue.Queue()
 class DATA():
     """ Terminal Node Controller for FreeDATA """
     def __init__(self):
-        self.mycallsign = static.MYCALLSIGN # initial callsign. Will be overwritten later
+        self.mycallsign = static.MYCALLSIGN  # initial callsign. Will be overwritten later
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
@@ -56,19 +53,19 @@ class DATA():
         self.received_mycall_crc = b''  # Received my callsign crc if we received a crc for another ssid
 
         self.data_channel_last_received = 0.0     # time of last "live sign" of a frame
-        self.burst_ack_snr              = 0       # SNR from received ack frames
-        self.burst_ack                  = False   # if we received an acknowledge frame for a burst
-        self.data_frame_ack_received    = False   # if we received an acknowledge frame for a data frame
-        self.rpt_request_received       = False   # if we received an request for repeater frames
-        self.rpt_request_buffer         = []      # requested frames, saved in a list
-        self.rx_start_of_transmission   = 0       # time of transmission start
-        self.data_frame_bof             = b'BOF'  # 2 bytes for the BOF End of File indicator in a data frame
-        self.data_frame_eof             = b'EOF'  # 2 bytes for the EOF End of File indicator in a data frame
+        self.burst_ack_snr = 0       # SNR from received ack frames
+        self.burst_ack = False   # if we received an acknowledge frame for a burst
+        self.data_frame_ack_received = False   # if we received an acknowledge frame for a data frame
+        self.rpt_request_received = False   # if we received an request for repeater frames
+        self.rpt_request_buffer = []      # requested frames, saved in a list
+        self.rx_start_of_transmission = 0       # time of transmission start
+        self.data_frame_bof = b'BOF'  # 2 bytes for the BOF End of File indicator in a data frame
+        self.data_frame_eof = b'EOF'  # 2 bytes for the EOF End of File indicator in a data frame
 
         self.rx_n_max_retries_per_burst = 50
         self.n_retries_per_burst = 0
 
-        self.received_low_bandwith_mode = False # indicator if we recevied a low bandwith mode channel opener
+        self.received_low_bandwith_mode = False  # indicator if we recevied a low bandwith mode channel opener
 
         self.data_channel_max_retries = 5
         self.datachannel_timeout = False
@@ -76,19 +73,19 @@ class DATA():
         self.mode_list_low_bw = [14, 12]
         self.time_list_low_bw = [3, 7]
 
-        self.mode_list_high_bw = [14, 12, 10] #201 = FSK mode list of available modes, each mode will be used 2times per speed level
-        self.time_list_high_bw = [3, 7, 8, 30] # list for time to wait for correspinding mode in seconds
+        self.mode_list_high_bw = [14, 12, 10]  # 201 = FSK mode list of available modes, each mode will be used 2times per speed level
+        self.time_list_high_bw = [3, 7, 8, 30]  # list for time to wait for correspinding mode in seconds
 
         # mode list for selecting between low bandwith ( 500Hz ) and normal modes with higher bandwith
         if static.LOW_BANDWITH_MODE:
-            self.mode_list = self.mode_list_low_bw # mode list of available modes, each mode will be used 2times per speed level
-            self.time_list = self.time_list_low_bw # list for time to wait for correspinding mode in seconds
+            self.mode_list = self.mode_list_low_bw  # mode list of available modes, each mode will be used 2times per speed level
+            self.time_list = self.time_list_low_bw  # list for time to wait for correspinding mode in seconds
 
         else:
-            self.mode_list = self.mode_list_high_bw # mode list of available modes, each mode will be used 2times per speed level
-            self.time_list = self.time_list_high_bw # list for time to wait for correspinding mode in seconds
+            self.mode_list = self.mode_list_high_bw  # mode list of available modes, each mode will be used 2times per speed level
+            self.time_list = self.time_list_high_bw  # list for time to wait for correspinding mode in seconds
 
-        self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
+        self.speed_level = len(self.mode_list) - 1  # speed level for selecting mode
         static.ARQ_SPEED_LEVEL = self.speed_level
 
         self.is_IRS = False
@@ -101,21 +98,21 @@ class DATA():
 
         self.transmission_timeout = 360  # transmission timeout in seconds
 
-        worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit",daemon=True)
+        worker_thread_transmit = threading.Thread(target=self.worker_transmit, name="worker thread transmit", daemon=True)
         worker_thread_transmit.start()
 
-        worker_thread_receive = threading.Thread(target=self.worker_receive, name="worker thread receive",daemon=True)
+        worker_thread_receive = threading.Thread(target=self.worker_receive, name="worker thread receive", daemon=True)
         worker_thread_receive.start()
 
         # START THE THREAD FOR THE TIMEOUT WATCHDOG
-        watchdog_thread = threading.Thread(target=self.watchdog, name="watchdog",daemon=True)
+        watchdog_thread = threading.Thread(target=self.watchdog, name="watchdog", daemon=True)
         watchdog_thread.start()
 
-        arq_session_thread = threading.Thread(target=self.heartbeat, name="watchdog",daemon=True)
+        arq_session_thread = threading.Thread(target=self.heartbeat, name="watchdog", daemon=True)
         arq_session_thread.start()
 
         self.beacon_interval = 0
-        self.beacon_thread = threading.Thread(target=self.run_beacon, name="watchdog",daemon=True)
+        self.beacon_thread = threading.Thread(target=self.run_beacon, name="watchdog", daemon=True)
         self.beacon_thread.start()
 
     def worker_transmit(self):
@@ -204,7 +201,7 @@ class DATA():
 
             if 50 >= frametype >= 10:
                 # get snr of received data
-                #snr = self.calculate_snr(freedv)
+                # snr = self.calculate_snr(freedv)
                 # we need to find a way of fixing this because after moving to class system this doesn't work anymore
                 snr = static.SNR
                 structlog.get_logger("structlog").debug("[TNC] RX SNR", snr=snr)
@@ -212,7 +209,7 @@ class DATA():
                 self.arq_data_received(bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv)
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
-                #if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
+                # if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
                 #    structlog.get_logger("structlog").debug(f"[TNC] LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                 #    self.c_lib.freedv_set_sync(freedv, 0)
 
@@ -339,8 +336,8 @@ class DATA():
 
     def send_burst_ack_frame(self, snr):
         """ Build and send ACK frame for burst DATA frame """
-        ack_frame      = bytearray(14)
-        ack_frame[:1]  = bytes([60])
+        ack_frame = bytearray(14)
+        ack_frame[:1] = bytes([60])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
@@ -351,8 +348,8 @@ class DATA():
 
     def send_data_ack_frame(self, snr):
         """ Build and send ACK frame for received DATA frame """
-        ack_frame      = bytearray(14)
-        ack_frame[:1]  = bytes([61])
+        ack_frame = bytearray(14)
+        ack_frame[:1] = bytes([61])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
@@ -362,21 +359,21 @@ class DATA():
         self.enqueue_frame_for_tx(ack_frame, copies=3, repeat_delay=100)
 
     def send_retransmit_request_frame(self, freedv):
-        # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
+        # check where a None is in our burst buffer and do frame+1, because lists start at 0
         missing_frames = [frame + 1 for frame, element in enumerate(static.RX_BURST_BUFFER) if element is None]
 
         # set n frames per burst to modem
-        # this is an idea so its not getting lost....
+        # this is an idea, so it's not getting lost....
         # we need to work on this
         codec2.api.freedv_set_frames_per_burst(freedv,len(missing_frames))
 
         # TODO: Trim `missing_frames` bytesarray to [7:13] (6) frames, if it's larger.
 
         # then create a repeat frame
-        rpt_frame       = bytearray(14)
-        rpt_frame[:1]   = bytes([62])
-        rpt_frame[1:4]  = static.DXCALLSIGN_CRC
-        rpt_frame[4:7]  = static.MYCALLSIGN_CRC
+        rpt_frame = bytearray(14)
+        rpt_frame[:1] = bytes([62])
+        rpt_frame[1:4] = static.DXCALLSIGN_CRC
+        rpt_frame[4:7] = static.MYCALLSIGN_CRC
         rpt_frame[7:13] = missing_frames
 
         structlog.get_logger("structlog").info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
@@ -385,8 +382,8 @@ class DATA():
 
     def send_burst_nack_frame(self, snr=0):
         """ Build and send NACK frame for received DATA frame """
-        nack_frame      = bytearray(14)
-        nack_frame[:1]  = bytes([63])
+        nack_frame = bytearray(14)
+        nack_frame[:1] = bytes([63])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
@@ -397,8 +394,8 @@ class DATA():
 
     def send_burst_nack_frame_watchdog(self, snr=0):
         """ Build and send NACK frame for watchdog timeout """
-        nack_frame      = bytearray(14)
-        nack_frame[:1]  = bytes([64])
+        nack_frame = bytearray(14)
+        nack_frame[:1] = bytes([64])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
@@ -409,10 +406,10 @@ class DATA():
 
     def send_disconnect_frame(self):
         """ Build and send a disconnect frame """
-        disconnection_frame       = bytearray(14)
-        disconnection_frame[:1]   = bytes([223])
-        disconnection_frame[1:4]  = static.DXCALLSIGN_CRC
-        disconnection_frame[4:7]  = static.MYCALLSIGN_CRC
+        disconnection_frame = bytearray(14)
+        disconnection_frame[:1] = bytes([223])
+        disconnection_frame[1:4] = static.DXCALLSIGN_CRC
+        disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=250)
@@ -464,7 +461,7 @@ class DATA():
             static.RX_BURST_BUFFER = [None] * RX_N_FRAMES_PER_BURST
 
         # Append data to rx burst buffer
-        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[8:] # [frame_type][n_frames_per_burst][CRC24][CRC24]
+        static.RX_BURST_BUFFER[RX_N_FRAME_OF_BURST] = data_in[8:]  # [frame_type][n_frames_per_burst][CRC24][CRC24]
 
         structlog.get_logger("structlog").debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
 
@@ -477,7 +474,7 @@ class DATA():
             # the temp burst buffer is needed for checking, if we already recevied data
             temp_burst_buffer = b''
             for value in static.RX_BURST_BUFFER:
-                #static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
+                # static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
                 temp_burst_buffer += bytes(value)
 
             # if frame buffer ends not with the current frame, we are going to append new data
@@ -490,7 +487,7 @@ class DATA():
                 # Here we are going to search for our data in the last received bytes.
                 # This reduces the chance we will lose the entire frame in the case of signalling frame loss
 
-                # static.RX_FRAME_BUFFER --> exisitng data
+                # static.RX_FRAME_BUFFER --> existing data
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
                 search_area = 510
@@ -504,7 +501,7 @@ class DATA():
                     static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[:search_position + get_position]
                     static.RX_FRAME_BUFFER += temp_burst_buffer
                     structlog.get_logger("structlog").warning("[TNC] ARQ | RX | replacing existing buffer data", area=search_area, pos=get_position)
-                # if we dont find data n this range, we really have new data and going to replace it
+                # if we don't find data n this range, we really have new data and going to replace it
                 else:
                     static.RX_FRAME_BUFFER += temp_burst_buffer
                     structlog.get_logger("structlog").debug("[TNC] ARQ | RX | appending data to buffer")
@@ -558,10 +555,10 @@ class DATA():
         if bof_position >=0:
 
             payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
-            frame_length = int.from_bytes(payload[4:8], "big") #4:8 4bytes
+            frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
-            compression_factor = int.from_bytes(payload[8:9], "big") #4:8 4bytes
-            compression_factor = np.clip(compression_factor, 0, 255) #limit to max value of 255
+            compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
+            compression_factor = np.clip(compression_factor, 0, 255)  # limit to max value of 255
             static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
             self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
 
@@ -574,9 +571,9 @@ class DATA():
             # Extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[bof_position+len(self.data_frame_bof):eof_position]
             # Get the data frame crc
-            data_frame_crc = payload[:4] #0:4 4bytes
+            data_frame_crc = payload[:4]  # 0:4 4bytes
             # Get the data frame length
-            frame_length = int.from_bytes(payload[4:8], "big") #4:8 4bytes
+            frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
             # 8:9 = compression factor
 
@@ -609,7 +606,6 @@ class DATA():
                 jsondata = {"arq":"received", "uuid" : uniqueid,  "timestamp": timestamp, "mycallsign" : str(mycallsign, 'utf-8'), "dxcallsign": str(static.DXCALLSIGN, 'utf-8'), "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
                 json_data_out = json.dumps(jsondata)
                 structlog.get_logger("structlog").debug("[TNC] arq_data_received:", jsondata=jsondata)
-                # print(jsondata)
                 sock.SOCKET_QUEUE.put(json_data_out)
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
 
@@ -652,19 +648,19 @@ class DATA():
         self.speed_level = len(self.mode_list) - 1    # speed level for selecting mode
         static.ARQ_SPEED_LEVEL = self.speed_level
 
-        TX_N_SENT_BYTES                 = 0                     # already sent bytes per data frame
-        self.tx_n_retry_of_burst        = 0                     # retries we already sent data
-        TX_N_MAX_RETRIES_PER_BURST      = 50                    # max amount of retries we sent before frame is lost
-        TX_N_FRAMES_PER_BURST           = n_frames_per_burst    # amount of n frames per burst
+        TX_N_SENT_BYTES = 0  # already sent bytes per data frame
+        self.tx_n_retry_of_burst = 0  # retries we already sent data
+        TX_N_MAX_RETRIES_PER_BURST = 50  # max amount of retries we sent before frame is lost
+        TX_N_FRAMES_PER_BURST = n_frames_per_burst  # amount of n frames per burst
         TX_BUFFER = []  # our buffer for appending new data
 
         # TIMEOUTS
-        BURST_ACK_TIMEOUT_SECONDS       =   3.0        # timeout for burst  acknowledges
-        DATA_FRAME_ACK_TIMEOUT_SECONDS  =   3.0        # timeout for data frame acknowledges
-        RPT_ACK_TIMEOUT_SECONDS         =   3.0        # timeout for rpt frame acknowledges
+        BURST_ACK_TIMEOUT_SECONDS = 3.0  # timeout for burst  acknowledges
+        DATA_FRAME_ACK_TIMEOUT_SECONDS = 3.0  # timeout for data frame acknowledges
+        RPT_ACK_TIMEOUT_SECONDS = 3.0  # timeout for rpt frame acknowledges
 
         # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
-        #static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
+        # static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
         static.TOTAL_BYTES = len(data_out)
         frame_total_size = len(data_out).to_bytes(4, byteorder='big')
         static.INFO.append("ARQ;TRANSMITTING")
@@ -710,10 +706,10 @@ class DATA():
                     structlog.get_logger("structlog").debug("[TNC] FIXED MODE:", mode=data_mode)
                 else:
                     # we are doing a modulo check of transmission retries of the actual burst
-                    # every 2nd retry which failes, decreases speedlevel by 1.
+                    # every 2nd retry which fails, decreases speedlevel by 1.
                     # as soon as we received an ACK for the current burst, speed_level will increase
                     # by 1.
-                    # the can be optimised by checking the optimal speed level for the current conditions
+                    # They can be optimised by checking the optimal speed level for the current conditions
                     '''
                     if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
                         self.speed_level -= 1
@@ -721,7 +717,7 @@ class DATA():
                             self.speed_level = 0
                     '''
 
-                    #if self.tx_n_retry_of_burst <= 1:
+                    # if self.tx_n_retry_of_burst <= 1:
                     #    self.speed_level += 1
                     #    if self.speed_level >= len(self.mode_list)-1:
                     #        self.speed_level = len(self.mode_list)-1
@@ -746,8 +742,8 @@ class DATA():
                 # TODO: this part needs a complete rewrite!
                 # TX_N_FRAMES_PER_BURST = 1 is working
 
-                arqheader      = bytearray()
-                arqheader[:1]  = bytes([10]) #bytes([10 + i])
+                arqheader = bytearray()
+                arqheader[:1] = bytes([10])  # bytes([10 + i])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST])
                 arqheader[2:5] = static.DXCALLSIGN_CRC
                 arqheader[5:8] = static.MYCALLSIGN_CRC
@@ -790,7 +786,7 @@ class DATA():
                 while not self.burst_ack and not self.burst_nack and not self.rpt_request_received and not self.data_frame_ack_received and time.time() < burstacktimeout and static.ARQ_STATE:
                     time.sleep(0.01)
                 '''
-                #burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
+                # burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
                 while (static.ARQ_STATE and not
                         (self.burst_ack or self.burst_nack or
                         self.rpt_request_received or self.data_frame_ack_received)):
@@ -800,22 +796,22 @@ class DATA():
                 if self.burst_ack:
                     self.burst_ack = False # reset ack state
                     self.tx_n_retry_of_burst = 0 # reset retries
-                    break #break retry loop
+                    break  # break retry loop
 
                 if self.burst_nack:
-                    self.burst_nack = False #reset nack state
+                    self.burst_nack = False  # reset nack state
 
                 # not yet implemented
                 if self.rpt_request_received:
                     pass
 
                 if self.data_frame_ack_received:
-                    break #break retry loop
+                    break  # break retry loop
 
                 # we need this part for leaving the repeat loop
                 # static.ARQ_STATE == 'DATA' --> when stopping transmission manually
                 if not static.ARQ_STATE:
-                    #print("not ready for data...leaving loop....")
+                    # print("not ready for data...leaving loop....")
                     break
 
                 self.calculate_transfer_rate_tx(tx_start_of_transmission, bufferposition_end, len(data_out))
@@ -832,7 +828,7 @@ class DATA():
             json_data_out = json.dumps(jsondata)
             sock.SOCKET_QUEUE.put(json_data_out)
 
-            #GOING TO NEXT ITERATION
+            # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
             static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
@@ -870,8 +866,8 @@ class DATA():
 
         """
         # increase speed level if we received a burst ack
-        #self.speed_level += 1
-        #if self.speed_level >= len(self.mode_list)-1:
+        # self.speed_level += 1
+        # if self.speed_level >= len(self.mode_list)-1:
         #     self.speed_level = len(self.mode_list)-1
 
         # only process data if we are in ARQ and BUSY state
@@ -900,8 +896,8 @@ class DATA():
 
         """
         # increase speed level if we received a burst ack
-        #self.speed_level += 1
-        #if self.speed_level >= len(self.mode_list)-1:
+        # self.speed_level += 1
+        # if self.speed_level >= len(self.mode_list)-1:
         #     self.speed_level = len(self.mode_list)-1
 
         # only process data if we are in ARQ and BUSY state
@@ -980,7 +976,7 @@ class DATA():
         Returns:
 
         """
-        # das hier müssen wir checken. Sollte vielleicht in INIT!!!
+        # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         structlog.get_logger("structlog").info("[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]", state=static.ARQ_SESSION_STATE)
 
@@ -1010,10 +1006,10 @@ class DATA():
         self.IS_ARQ_SESSION_MASTER = True
         static.ARQ_SESSION_STATE = 'connecting'
 
-        connection_frame       = bytearray(14)
-        connection_frame[:1]   = bytes([221])
-        connection_frame[1:4]  = static.DXCALLSIGN_CRC
-        connection_frame[4:7]  = static.MYCALLSIGN_CRC
+        connection_frame = bytearray(14)
+        connection_frame[:1] = bytes([221])
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         while not static.ARQ_SESSION:
@@ -1028,7 +1024,6 @@ class DATA():
                     time.sleep(0.01)
                     # break if data channel is opened
                     if static.ARQ_SESSION:
-                        # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
                         return True
                 # if static.ARQ_SESSION:
                 #     break
@@ -1205,11 +1200,11 @@ class DATA():
             structlog.get_logger("structlog").debug("[TNC] Requesting manual mode --> not yet implemented ")
             frametype = bytes([mode])
 
-        connection_frame        = bytearray(14)
-        connection_frame[:1]    = frametype
-        connection_frame[1:4]   = static.DXCALLSIGN_CRC
-        connection_frame[4:7]   = static.MYCALLSIGN_CRC
-        connection_frame[7:13]  = helpers.callsign_to_bytes(mycallsign)
+        connection_frame = bytearray(14)
+        connection_frame[:1] = frametype
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
         connection_frame[13:14] = bytes([n_frames_per_burst])
 
         while not static.ARQ_STATE:
@@ -1233,7 +1228,6 @@ class DATA():
                 if attempt == self.data_channel_max_retries:
                     static.INFO.append("DATACHANNEL;FAILED")
                     structlog.get_logger("structlog").debug("[TNC] arq_open_data_channel:", transmission_uuid=self.transmission_uuid)
-                    # print(self.transmission_uuid)
                     jsondata = {"arq":"transmission", "status" :"failed", "uuid" : self.transmission_uuid, "percent" : static.ARQ_TRANSMISSION_PERCENT, "bytesperminute" : static.ARQ_BYTES_PER_MINUTE}
                     json_data_out = json.dumps(jsondata)
                     sock.SOCKET_QUEUE.put(json_data_out)
@@ -1266,7 +1260,7 @@ class DATA():
 
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
-        #check if we received low bandwith mode
+        # check if we received low bandwith mode
         if frametype == 225:
             self.received_low_bandwith_mode = False
             self.mode_list = self.mode_list_high_bw
@@ -1310,11 +1304,11 @@ class DATA():
             frametype = bytes([226])
             structlog.get_logger("structlog").debug("[TNC] Responding with high bandwidth mode")
 
-        connection_frame        = bytearray(14)
-        connection_frame[:1]    = frametype
-        connection_frame[1:4]   = static.DXCALLSIGN_CRC
-        connection_frame[4:7]   = static.MYCALLSIGN_CRC
-        connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION]) #crc8 of version for checking protocol version
+        connection_frame = bytearray(14)
+        connection_frame[:1] = frametype
+        connection_frame[1:4] = static.DXCALLSIGN_CRC
+        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])  # crc8 of version for checking protocol version
 
         self.enqueue_frame_for_tx(connection_frame)
 
@@ -1380,10 +1374,10 @@ class DATA():
         static.INFO.append("PING;SENDING")
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(self.mycallsign, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]" )
 
-        ping_frame       = bytearray(14)
-        ping_frame[:1]   = bytes([210])
-        ping_frame[1:4]  = static.DXCALLSIGN_CRC
-        ping_frame[4:7]  = static.MYCALLSIGN_CRC
+        ping_frame = bytearray(14)
+        ping_frame[:1] = bytes([210])
+        ping_frame[1:4] = static.DXCALLSIGN_CRC
+        ping_frame[4:7] = static.MYCALLSIGN_CRC
         ping_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -1418,8 +1412,8 @@ class DATA():
 
         structlog.get_logger("structlog").info("[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]", snr=static.SNR )
 
-        ping_frame      = bytearray(14)
-        ping_frame[:1]  = bytes([211])
+        ping_frame = bytearray(14)
+        ping_frame[:1] = bytes([211])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
         ping_frame[7:13] = static.MYGRID
@@ -1458,11 +1452,11 @@ class DATA():
         Force a stop of the running transmission
         """
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
-        stop_frame      = bytearray(14)
-        stop_frame[:1]  = bytes([249])
+        stop_frame = bytearray(14)
+        stop_frame[:1] = bytes([249])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
         stop_frame[4:7] = static.MYCALLSIGN_CRC
-        stop_frame[7:13]   = helpers.callsign_to_bytes(self.mycallsign)
+        stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=250)
 
@@ -1486,7 +1480,7 @@ class DATA():
         """
         Controlling funktion for running a beacon
         Args:
-          interval:int:
+          self:
 
         Returns:
 
@@ -1551,9 +1545,9 @@ class DATA():
         structlog.get_logger("structlog").info("[TNC] CQ CQ CQ")
         static.INFO.append("CQ;SENDING")
 
-        cq_frame       = bytearray(14)
-        cq_frame[:1]   = bytes([200])
-        cq_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
+        cq_frame = bytearray(14)
+        cq_frame[:1] = bytes([200])
+        cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("utf-8"))
 
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -1602,9 +1596,9 @@ class DATA():
         static.INFO.append("QRV;SENDING")
         structlog.get_logger("structlog").info("[TNC] Sending QRV!")
 
-        qrv_frame       = bytearray(14)
-        qrv_frame[:1]   = bytes([201])
-        qrv_frame[1:7]  = helpers.callsign_to_bytes(self.mycallsign)
+        qrv_frame = bytearray(14)
+        qrv_frame[:1] = bytes([201])
+        qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("utf-8"))
 
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -1686,7 +1680,7 @@ class DATA():
 
     def calculate_transfer_rate_tx(self, tx_start_of_transmission:float, sentbytes:int, tx_buffer_length:int) -> list:
         """
-        Calcualte Transferrate for transmission
+        Calculate transfer rate for transmission
         Args:
           tx_start_of_transmission:float:
           sentbytes:int:
@@ -1701,8 +1695,8 @@ class DATA():
             transmissiontime = time.time() - tx_start_of_transmission
 
             if sentbytes > 0:
-                static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime) # Bits per Second
-                static.ARQ_BYTES_PER_MINUTE = int((sentbytes) / (transmissiontime / 60)) # Bytes per Minute
+                static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)  # Bits per Second
+                static.ARQ_BYTES_PER_MINUTE = int((sentbytes) / (transmissiontime / 60))  # Bytes per Minute
 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
@@ -1739,7 +1733,7 @@ class DATA():
         # reset modem receiving state to reduce cpu load
         modem.RECEIVE_DATAC1 = False
         modem.RECEIVE_DATAC3 = False
-        #modem.RECEIVE_FSK_LDPC_0 = False
+        # modem.RECEIVE_FSK_LDPC_0 = False
         modem.RECEIVE_FSK_LDPC_1 = False
 
         # reset buffer overflow counter
@@ -1842,8 +1836,8 @@ class DATA():
             self.burst_nack_counter += 1
             if self.burst_nack_counter >= 2:
                 self.speed_level -= 1
-                #print(self.burst_nack_counter)
-                #print(self.speed_level)
+                # print(self.burst_nack_counter)
+                # print(self.speed_level)
                 static.ARQ_SPEED_LEVEL = self.speed_level
                 self.burst_nack_counter = 0
             if self.speed_level <= 0:
@@ -1873,8 +1867,8 @@ class DATA():
             time.sleep(0.01)
             if self.data_channel_last_received + self.transmission_timeout > time.time():
                 time.sleep(0.01)
-                #print(self.data_channel_last_received + self.transmission_timeout - time.time())
-                #pass
+                # print(self.data_channel_last_received + self.transmission_timeout - time.time())
+                # pass
             else:
                 self.data_channel_last_received = 0
                 structlog.get_logger("structlog").info("[TNC] DATA [" + str(self.mycallsign, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")

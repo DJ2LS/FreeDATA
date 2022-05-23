@@ -1,12 +1,10 @@
 
 import atexit
-import json
 import multiprocessing
-import sys
-
 import sounddevice as sd
 
 atexit.register(sd._terminate)
+
 
 def get_audio_devices():
     """
@@ -14,9 +12,9 @@ def get_audio_devices():
 
     also uses a process data manager
     """
-    # we need to run this on windows for multiprocessing support
+    # we need to run this on Windows for multiprocessing support
     # multiprocessing.freeze_support()
-    #multiprocessing.get_context('spawn')
+    # multiprocessing.get_context('spawn')
 
     # we need to reset and initialize sounddevice before running the multiprocessing part.
     # If we are not doing this at this early point, not all devices will be displayed
@@ -26,12 +24,13 @@ def get_audio_devices():
     with multiprocessing.Manager() as manager:
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
-        #print(multiprocessing.get_start_method())
+        # print(multiprocessing.get_start_method())
         p = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
         p.start()
         p.join()
 
         return list(proxy_input_devices), list(proxy_output_devices)
+
 
 def fetch_audio_devices(input_devices, output_devices):
     """
@@ -39,28 +38,27 @@ def fetch_audio_devices(input_devices, output_devices):
 
     Args:
       input_devices: proxy variable for input devices
-      output_devices: proxy variable for outout devices
+      output_devices: proxy variable for output devices
 
     Returns:
 
     """
     devices = sd.query_devices(device=None, kind=None)
     for index, device in enumerate(devices):
-    #for i in range(0, p.get_device_count()):
-        # we need to do a try exception, beacuse for windows theres no audio device range
+        # we need to do a try exception, because for windows there's no audio device range
         try:
             name = device["name"]
 
-            maxOutputChannels = device["max_output_channels"]
-            maxInputChannels = device["max_input_channels"]
+            max_output_channels = device["max_output_channels"]
+            max_input_channels = device["max_input_channels"]
 
         except Exception as e:
             print(e)
-            maxInputChannels = 0
-            maxOutputChannels = 0
+            max_input_channels = 0
+            max_output_channels = 0
             name = ''
 
-        if maxInputChannels > 0:
+        if max_input_channels > 0:
             input_devices.append({"id": index, "name": name})
-        if maxOutputChannels > 0:
+        if max_output_channels > 0:
             output_devices.append({"id": index, "name": name})

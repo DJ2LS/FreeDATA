@@ -15,8 +15,6 @@ import argparse
 import atexit
 import multiprocessing
 import os
-import queue
-import re
 import signal
 import socketserver
 import subprocess
@@ -25,13 +23,11 @@ import threading
 import time
 
 import crcengine
-import psutil
 import serial.tools.list_ports
 import structlog
 import ujson as json
 
 import audio
-import helpers
 import log_handler
 import sock
 import static
@@ -51,9 +47,11 @@ def signal_handler(sig, frame):
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
 
+
 signal.signal(signal.SIGINT, signal_handler)
 
-class DAEMON():
+
+class DAEMON:
     """
     Daemon class
 
@@ -100,7 +98,7 @@ class DAEMON():
                     crc_hwid = crc_hwid.to_bytes(2, byteorder='big')
                     crc_hwid = crc_hwid.hex()
                     description = f"{desc} [{crc_hwid}]"
-                    serial_devices.append({"port": str(port), "description": str(description) })
+                    serial_devices.append({"port": str(port), "description": str(description)})
 
                 static.SERIAL_DEVICES = serial_devices
                 time.sleep(1)
@@ -215,8 +213,9 @@ class DAEMON():
                     options.append('--tuning_range_fmax')
                     options.append(data[20])
 
+
                     # overriding FSK mode
-                    #if data[21] == 'True':
+                    # if data[21] == 'True':
                     #    options.append('--fsk')
 
                     options.append('--tx-audio-level')
@@ -304,7 +303,7 @@ class DAEMON():
                         serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits,
                         handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
 
-                    hamlib_version = rig.hamlib_version
+                    # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)
                     pttstate = hamlib.get_ptt()
@@ -327,10 +326,10 @@ class DAEMON():
 
             except Exception as e:
                 structlog.get_logger("structlog").error("[DMN] worker: Exception: ", e=e)
-                # print(e)
+
 
 if __name__ == '__main__':
-    # we need to run this on windows for multiprocessing support
+    # we need to run this on Windows for multiprocessing support
     multiprocessing.freeze_support()
 
     # --------------------------------------------GET PARAMETER INPUTS
@@ -354,7 +353,7 @@ if __name__ == '__main__':
             os.makedirs(logging_path)
         log_handler.setup_logging(logging_path)
     except Exception as e:
-       structlog.get_logger("structlog").error("[DMN] logger init error", exception=e)
+        structlog.get_logger("structlog").error("[DMN] logger init error", exception=e)
 
     try:
         structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)

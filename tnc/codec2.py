@@ -22,11 +22,11 @@ class FREEDV_MODE(Enum):
     """
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
-    fsk_ldpc   = 9
-    datac0     = 14
-    datac1     = 10
-    datac3     = 12
-    allmodes   = 255
+    fsk_ldpc = 9
+    datac0 = 14
+    datac1 = 10
+    datac3 = 12
+    allmodes = 255
 
 
 # Function for returning the mode value
@@ -42,6 +42,7 @@ def freedv_get_mode_value_by_name(mode: str) -> int:
     """
     return FREEDV_MODE[mode].value
 
+
 # Function for returning the mode name
 def freedv_get_mode_name_by_value(mode: int) -> str:
     """
@@ -54,6 +55,7 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
     """
     return FREEDV_MODE(mode).name
 
+
 # Check if we are running in a pyinstaller environment
 if hasattr(sys, "_MEIPASS"):
     sys.path.append(getattr(sys, "_MEIPASS"))
@@ -62,12 +64,12 @@ else:
 
 structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
 if sys.platform == 'linux':
-    files = glob.glob(r'**/*libcodec2*',recursive=True)
+    files = glob.glob(r'**/*libcodec2*', recursive=True)
     files.append('libcodec2.so')
 elif sys.platform == 'darwin':
-    files = glob.glob(r'**/*libcodec2*.dylib',recursive=True)
+    files = glob.glob(r'**/*libcodec2*.dylib', recursive=True)
 elif sys.platform in ['win32', 'win64']:
-    files = glob.glob(r'**\*libcodec2*.dll',recursive=True)
+    files = glob.glob(r'**\*libcodec2*.dll', recursive=True)
 else:
     files = []
 
@@ -87,8 +89,8 @@ if api is None or 'api' not in locals():
 
 # ctypes function init
 
-#api.freedv_set_tuning_range.restype = ctypes.c_int
-#api.freedv_set_tuning_range.argype = [ctypes.c_void_p, ctypes.c_float, ctypes.c_float]
+# api.freedv_set_tuning_range.restype = ctypes.c_int
+# api.freedv_set_tuning_range.argype = [ctypes.c_void_p, ctypes.c_float, ctypes.c_float]
 
 api.freedv_open.argype = [ctypes.c_int]
 api.freedv_open.restype = ctypes.c_void_p
@@ -138,11 +140,12 @@ api.freedv_get_n_tx_modem_samples.restype = ctypes.c_int
 api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]
 api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
-api.FREEDV_FS_8000       = 8000
-api.FREEDV_MODE_DATAC1   = 10
-api.FREEDV_MODE_DATAC3   = 12
-api.FREEDV_MODE_DATAC0   = 14
+api.FREEDV_FS_8000 = 8000
+api.FREEDV_MODE_DATAC1 = 10
+api.FREEDV_MODE_DATAC3 = 12
+api.FREEDV_MODE_DATAC0 = 14
 api.FREEDV_MODE_FSK_LDPC = 9
+
 
 # -------------------------------- FSK LDPC MODE SETTINGS
 
@@ -158,6 +161,7 @@ class ADVANCED(ctypes.Structure):
         ("tone_spacing", ctypes.c_int),
         ("codename", ctypes.c_char_p),
     ]
+
 
 '''
 adv.interleave_frames = 0                       # max amplitude
@@ -186,9 +190,9 @@ api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 4
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400 # 1150 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120 #200
-api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'H_128_256_5'.encode('utf-8')   # code word
+api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400  # 1150 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120  # 200
+api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'H_128_256_5'.encode('utf-8')  # code word
 
 # --------------- 4 H_256_512_4, 7 bytes
 api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()
@@ -196,18 +200,19 @@ api.FREEDV_MODE_FSK_LDPC_1_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_1_ADV.M = 4
 api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250 # 1250 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250  # 1250 4fsk, 1500 2fsk
 api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = 'H_256_512_4'.encode('utf-8')   # code word
+api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = 'H_256_512_4'.encode('utf-8')  # code word
 
 # ------- MODEM STATS STRUCTURES
-MODEM_STATS_NC_MAX      =  50 + 1
-MODEM_STATS_NR_MAX      =  160
-MODEM_STATS_ET_MAX      =  8
-MODEM_STATS_EYE_IND_MAX =  160
-MODEM_STATS_NSPEC       =  512
-MODEM_STATS_MAX_F_HZ    =  4000
-MODEM_STATS_MAX_F_EST   =  4
+MODEM_STATS_NC_MAX = 50 + 1
+MODEM_STATS_NR_MAX = 160
+MODEM_STATS_ET_MAX = 8
+MODEM_STATS_EYE_IND_MAX = 160
+MODEM_STATS_NSPEC = 512
+MODEM_STATS_MAX_F_HZ = 4000
+MODEM_STATS_MAX_F_EST = 4
+
 
 # Modem stats structure
 class MODEMSTATS(ctypes.Structure):
@@ -215,7 +220,7 @@ class MODEMSTATS(ctypes.Structure):
     _fields_ = [
         ("Nc", ctypes.c_int),
         ("snr_est", ctypes.c_float),
-        ("rx_symbols", (ctypes.c_float * MODEM_STATS_NR_MAX)*MODEM_STATS_NC_MAX),
+        ("rx_symbols", (ctypes.c_float * MODEM_STATS_NR_MAX) * MODEM_STATS_NC_MAX),
         ("nr", ctypes.c_int),
         ("sync", ctypes.c_int),
         ("foff", ctypes.c_float),
@@ -225,17 +230,18 @@ class MODEMSTATS(ctypes.Structure):
         ("pre", ctypes.c_int),
         ("post", ctypes.c_int),
         ("uw_fails", ctypes.c_int),
-        ("neyetr", ctypes.c_int), # How many eye traces are plotted
-        ("neyesamp", ctypes.c_int), # How many samples in the eye diagram
-        ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)), # How many samples in the eye diagram
+        ("neyetr", ctypes.c_int),  # How many eye traces are plotted
+        ("neyesamp", ctypes.c_int),  # How many samples in the eye diagram
+        ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)),  # How many samples in the eye diagram
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
 
+
 # Return code flags for freedv_get_rx_status() function
-api.FREEDV_RX_TRIAL_SYNC = 0x1       # demodulator has trial sync
-api.FREEDV_RX_SYNC       = 0x2       # demodulator has sync
-api.FREEDV_RX_BITS       = 0x4       # data bits have been returned
-api.FREEDV_RX_BIT_ERRORS = 0x8       # FEC may not have corrected all bit errors (not all parity checks OK)
+api.FREEDV_RX_TRIAL_SYNC = 0x1  # demodulator has trial sync
+api.FREEDV_RX_SYNC = 0x2  # demodulator has sync
+api.FREEDV_RX_BITS = 0x4  # data bits have been returned
+api.FREEDV_RX_BIT_ERRORS = 0x8  # FEC may not have corrected all bit errors (not all parity checks OK)
 
 api.rx_sync_flags_to_text = [
     "----",
@@ -255,6 +261,7 @@ api.rx_sync_flags_to_text = [
     "EBS-",
     "EBST"]
 
+
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:
     """
@@ -262,6 +269,7 @@ class audio_buffer:
 
     made by David Rowe, VK5DGR
     """
+
     # A buffer of int16 samples, using a fixed length numpy array self.buffer for storage
     # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
@@ -271,7 +279,7 @@ class audio_buffer:
         self.nbuffer = 0
         self.mutex = Lock()
 
-    def push(self,samples):
+    def push(self, samples):
         """
         Push new data to buffer
 
@@ -283,12 +291,12 @@ class audio_buffer:
         """
         self.mutex.acquire()
         # Add samples at the end of the buffer
-        assert self.nbuffer+len(samples) <= self.size
-        self.buffer[self.nbuffer:self.nbuffer+len(samples)] = samples
+        assert self.nbuffer + len(samples) <= self.size
+        self.buffer[self.nbuffer:self.nbuffer + len(samples)] = samples
         self.nbuffer += len(samples)
         self.mutex.release()
 
-    def pop(self,size):
+    def pop(self, size):
         """
         get data from buffer in size of NIN
         Args:
@@ -300,17 +308,19 @@ class audio_buffer:
         self.mutex.acquire()
         # Remove samples from the start of the buffer
         self.nbuffer -= size
-        self.buffer[:self.nbuffer] = self.buffer[size:size+self.nbuffer]
+        self.buffer[:self.nbuffer] = self.buffer[size:size + self.nbuffer]
         assert self.nbuffer >= 0
         self.mutex.release()
 
+
 # Resampler ---------------------------------------------------------
 
-api.FDMDV_OS_48         = int(6)                                      # oversampling rate
-api.FDMDV_OS_TAPS_48K   = int(48)                                     # number of OS filter taps at 48kHz
-api.FDMDV_OS_TAPS_48_8K = int(api.FDMDV_OS_TAPS_48K/api.FDMDV_OS_48)  # number of OS filter taps at 8kHz
+api.FDMDV_OS_48 = 6  # oversampling rate
+api.FDMDV_OS_TAPS_48K = 48  # number of OS filter taps at 48kHz
+api.FDMDV_OS_TAPS_48_8K = api.FDMDV_OS_TAPS_48K // api.FDMDV_OS_48  # number of OS filter taps at 8kHz
 api.fdmdv_8_to_48_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
 api.fdmdv_48_to_8_short.argtype = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_int]
+
 
 class resampler:
     """
@@ -340,7 +350,7 @@ class resampler:
         assert len(in48) % api.FDMDV_OS_48 == 0
 
         # Concatenate filter memory and input samples
-        in48_mem = np.zeros(self.MEM48+len(in48), dtype=np.int16)
+        in48_mem = np.zeros(self.MEM48 + len(in48), dtype=np.int16)
         in48_mem[:self.MEM48] = self.filter_mem48
         in48_mem[self.MEM48:] = in48
 
@@ -368,14 +378,14 @@ class resampler:
         assert in8.dtype == np.int16
 
         # Concatenate filter memory and input samples
-        in8_mem = np.zeros(self.MEM8+len(in8), dtype=np.int16)
+        in8_mem = np.zeros(self.MEM8 + len(in8), dtype=np.int16)
         in8_mem[:self.MEM8] = self.filter_mem8
         in8_mem[self.MEM8:] = in8
 
         # In C: pin8=&in8_mem[MEM8]
         pin8 = ctypes.byref(np.ctypeslib.as_ctypes(in8_mem), 2 * self.MEM8)
-        out48 = np.zeros(api.FDMDV_OS_48*len(in8), dtype=np.int16)
-        api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8));
+        out48 = np.zeros(api.FDMDV_OS_48 * len(in8), dtype=np.int16)
+        api.fdmdv_8_to_48_short(out48.ctypes, pin8, len(in8))
 
         # Store memory for next time
         self.filter_mem8 = in8_mem[:self.MEM8]
