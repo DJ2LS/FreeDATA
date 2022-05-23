@@ -238,10 +238,7 @@ class MODEMSTATS(ctypes.Structure):
         ("uw_fails", ctypes.c_int),
         ("neyetr", ctypes.c_int),  # How many eye traces are plotted
         ("neyesamp", ctypes.c_int),  # How many samples in the eye diagram
-        (
-            "f_est",
-            (ctypes.c_float * MODEM_STATS_MAX_F_EST),
-        ),  # How many samples in the eye diagram
+        ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)),
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
 
