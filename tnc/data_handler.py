@@ -75,8 +75,8 @@ class DATA:
         self.rx_n_max_retries_per_burst = 50
         self.n_retries_per_burst = 0
 
-        # Flag to indicate if we recevied a low bandwith mode channel opener
-        self.received_low_bandwith_mode = False
+        # Flag to indicate if we recevied a low bandwidth mode channel opener
+        self.received_low_bandwidth_mode = False
 
         self.data_channel_max_retries = 5
         self.datachannel_timeout = False
@@ -1610,13 +1610,13 @@ class DATA:
 
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
-        # check if we received low bandwith mode
+        # check if we received low bandwidth mode
         if frametype == 225:
-            self.received_low_bandwith_mode = False
+            self.received_low_bandwidth_mode = False
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
         else:
-            self.received_low_bandwith_mode = True
+            self.received_low_bandwidth_mode = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
         self.speed_level = len(self.mode_list) - 1
@@ -1651,7 +1651,7 @@ class DATA:
             + "]>> <<["
             + str(static.DXCALLSIGN, "UTF-8")
             + "]",
-            bandwith="wide",
+            bandwidth="wide",
         )
 
         static.ARQ_STATE = True
@@ -1663,7 +1663,7 @@ class DATA:
         self.data_channel_last_received = int(time.time())
 
         # Select the frame type based on the mode we are in
-        if static.LOW_BANDWITH_MODE or self.received_low_bandwith_mode:
+        if static.LOW_BANDWITH_MODE or self.received_low_bandwidth_mode:
             frametype = bytes([228])
             self.log.debug("[TNC] Responding with low bandwidth mode")
         else:
@@ -1686,7 +1686,7 @@ class DATA:
             + "]>>|<<["
             + str(static.DXCALLSIGN, "UTF-8")
             + "]",
-            bandwith="wide",
+            bandwidth="wide",
             snr=static.SNR,
         )
 
@@ -1709,13 +1709,13 @@ class DATA:
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
             if frametype == 228:
-                self.received_low_bandwith_mode = True
+                self.received_low_bandwidth_mode = True
                 self.mode_list = self.mode_list_low_bw
                 self.time_list = self.time_list_low_bw
                 self.speed_level = len(self.mode_list) - 1
                 self.log.debug("[TNC] low bandwidth mode", modes=self.mode_list)
             else:
-                self.received_low_bandwith_mode = False
+                self.received_low_bandwidth_mode = False
                 self.mode_list = self.mode_list_high_bw
                 self.time_list = self.time_list_high_bw
                 self.speed_level = len(self.mode_list) - 1
@@ -2285,8 +2285,8 @@ class DATA:
         self.speed_level = len(self.mode_list) - 1
         static.ARQ_SPEED_LEVEL = self.speed_level
 
-        # low bandwith mode indicator
-        self.received_low_bandwith_mode = False
+        # low bandwidth mode indicator
+        self.received_low_bandwidth_mode = False
 
         # reset retry counter for rx channel / burst
         self.n_retries_per_burst = 0
