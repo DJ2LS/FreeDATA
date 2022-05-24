@@ -34,7 +34,6 @@ def test_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     :param testframes: Number of test frames to transmit
     :type testframes: str
     """
-
     # Facilitate running from main directory as well as inside test/
     tx_side = "util_tx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
