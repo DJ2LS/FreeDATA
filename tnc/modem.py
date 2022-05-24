@@ -397,7 +397,7 @@ class RF:
           status:
 
         """
-        structlog.get_logger("structlog").debug("[MDM] callback")
+        # structlog.get_logger("structlog").debug("[MDM] callback")
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
 
