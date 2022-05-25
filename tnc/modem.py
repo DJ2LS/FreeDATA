@@ -17,20 +17,19 @@ import threading
 import time
 from collections import deque
 
-import numpy as np
-import sounddevice as sd
-import structlog
-import ujson as json
-
 # import audio
 import codec2
 import data_handler
+import numpy as np
 import sock
+import sounddevice as sd
 import static
+import structlog
+import ujson as json
 
 TESTMODE = False
-RXCHANNEL = ''
-TXCHANNEL = ''
+RXCHANNEL = ""
+TXCHANNEL = ""
 
 # Initialize FIFO queue to store received frames
 MODEM_RECEIVED_QUEUE = queue.Queue()
@@ -114,7 +113,7 @@ class RF:
 
         self.fsk_ldpc_freedv_0 = ctypes.cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC,
                                                                              ctypes.byref(
-                                                                                 codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)),
+                                                                                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)),
                                              ctypes.c_void_p)
         self.fsk_ldpc_bytes_per_frame_0 = int(codec2.api.freedv_get_bits_per_modem_frame(self.fsk_ldpc_freedv_0) / 8)
         self.fsk_ldpc_bytes_out_0 = ctypes.create_string_buffer(self.fsk_ldpc_bytes_per_frame_0)
@@ -123,7 +122,7 @@ class RF:
 
         self.fsk_ldpc_freedv_1 = ctypes.cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC,
                                                                              ctypes.byref(
-                                                                                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV)),
+                                                                                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV)),
                                              ctypes.c_void_p)
         self.fsk_ldpc_bytes_per_frame_1 = int(codec2.api.freedv_get_bits_per_modem_frame(self.fsk_ldpc_freedv_1) / 8)
         self.fsk_ldpc_bytes_out_1 = ctypes.create_string_buffer(self.fsk_ldpc_bytes_per_frame_1)
@@ -139,14 +138,14 @@ class RF:
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE:
             try:
-                self.stream = sd.RawStream(channels=1, dtype='int16', callback=self.callback,
+                self.stream = sd.RawStream(channels=1, dtype="int16", callback=self.callback,
                                            device=(static.AUDIO_INPUT_DEVICE, static.AUDIO_OUTPUT_DEVICE),
                                            samplerate=self.AUDIO_SAMPLE_RATE_RX, blocksize=4800)
                 atexit.register(self.stream.stop)
                 structlog.get_logger("structlog").info("[MDM] init: opened audio devices")
 
-            except Exception as e:
-                structlog.get_logger("structlog").error("[MDM] init: can't open audio device. Exit", e=e)
+            except Exception as err:
+                structlog.get_logger("structlog").error("[MDM] init: can't open audio device. Exit", e=err)
                 sys.exit(1)
 
             try:
@@ -154,8 +153,8 @@ class RF:
                 # self.audio_stream.start_stream()
                 self.stream.start()
 
-            except Exception as e:
-                structlog.get_logger("structlog").error("[MDM] init: starting pyaudio callback failed", e=e)
+            except Exception as err:
+                structlog.get_logger("structlog").error("[MDM] init: starting pyaudio callback failed", e=err)
 
         else:
             # create a stream object for simulating audio stream
@@ -169,8 +168,8 @@ class RF:
             try:
                 os.mkfifo(RXCHANNEL)
                 os.mkfifo(TXCHANNEL)
-            except Exception as e:
-                structlog.get_logger("structlog").error(f"[MDM] init:mkfifo: Exception: {e}")
+            except Exception as err:
+                structlog.get_logger("structlog").error(f"[MDM] init:mkfifo: Exception: {err}")
 
             mkfifo_write_callback_thread = threading.Thread(target=self.mkfifo_write_callback,
                                                             name="MKFIFO WRITE CALLBACK THREAD", daemon=True)
@@ -182,13 +181,13 @@ class RF:
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
-        if static.HAMLIB_RADIOCONTROL == 'direct':
+        if static.HAMLIB_RADIOCONTROL == "direct":
             import rig
-        elif static.HAMLIB_RADIOCONTROL == 'rigctl':
+        elif static.HAMLIB_RADIOCONTROL == "rigctl":
             import rigctl as rig
-        elif static.HAMLIB_RADIOCONTROL == 'rigctld':
+        elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
-        elif static.HAMLIB_RADIOCONTROL == 'disabled':
+        elif static.HAMLIB_RADIOCONTROL == "disabled":
             import rigdummy as rig
         else:
             import rigdummy as rig
@@ -238,7 +237,7 @@ class RF:
             time.sleep(0.01)
             # -----read
             data_in48k = bytes()
-            with open(RXCHANNEL, 'rb') as fifo:
+            with open(RXCHANNEL, "rb") as fifo:
                 for line in fifo:
                     data_in48k += line
 
@@ -269,7 +268,7 @@ class RF:
             else:
                 data_out48k = self.modoutqueue.popleft()
 
-                fifo_write = open(TXCHANNEL, 'wb')
+                fifo_write = open(TXCHANNEL, "wb")
                 fifo_write.write(data_out48k)
                 fifo_write.flush()
 
@@ -389,7 +388,7 @@ class RF:
 
         for _ in range(repeats):
             # codec2 fsk preamble may be broken - at least it sounds like that so we are disabling it for testing
-            if self.MODE not in ['FSK_LDPC_0', 'FSK_LDPC_1', 200, 201]:
+            if self.MODE not in ["FSK_LDPC_0", "FSK_LDPC_1", 200, 201]:
                 # Write preamble to txbuffer
                 codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
                 txbuffer += bytes(mod_out_preamble)
@@ -404,7 +403,7 @@ class RF:
                 # CRC algorithm incompatibilities
                 crc = ctypes.c_ushort(
                     codec2.api.freedv_gen_crc16(bytes(buffer), payload_bytes_per_frame))  # Generate CRC16
-                crc = crc.value.to_bytes(2, byteorder='big')  # Convert crc to 2 byte hex string
+                crc = crc.value.to_bytes(2, byteorder="big")  # Convert crc to 2 byte hex string
                 buffer += crc  # Append crc16 to buffer
 
                 data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
@@ -412,7 +411,7 @@ class RF:
                 txbuffer += bytes(mod_out)
 
             # codec2 fsk postamble may be broken - at least it sounds like that so we are disabling it for testing
-            if self.MODE not in ['FSK_LDPC_0', 'FSK_LDPC_1', 200, 201]:
+            if self.MODE not in ["FSK_LDPC_0", "FSK_LDPC_1", 200, 201]:
                 # Write postamble to txbuffer
                 codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
                 # Append postamble to txbuffer
@@ -646,8 +645,8 @@ class RF:
             # static.SNR = np.clip(snr, 0, 255)  # limit to max value of 255
             static.SNR = np.clip(snr, -128, 128)  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
-        except Exception as e:
-            structlog.get_logger("structlog").error(f"[MDM] calculate_snr: Exception: {e}")
+        except Exception as err:
+            structlog.get_logger("structlog").error(f"[MDM] calculate_snr: Exception: {err}")
             static.SNR = 0
             return static.SNR
 
@@ -712,8 +711,8 @@ class RF:
                     dfftlist = dfft.tolist()
 
                     static.FFT = dfftlist[:320]  # 320 --> bandwidth 3000
-                except Exception as e:
-                    structlog.get_logger("structlog").error(f"[MDM] calculate_fft: Exception: {e}")
+                except Exception as err:
+                    structlog.get_logger("structlog").error(f"[MDM] calculate_fft: Exception: {err}")
                     structlog.get_logger("structlog").debug("[MDM] Setting fft=0")
                     # else 0
                     static.FFT = [0]
@@ -734,12 +733,12 @@ class RF:
 
 def open_codec2_instance(mode):
     """ Return a codec2 instance """
-    if mode in ['FSK_LDPC_0', 200]:
+    if mode in ["FSK_LDPC_0", 200]:
         return ctypes.cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC,
                                                            ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV)),
                            ctypes.c_void_p)
 
-    if mode in ['FSK_LDPC_1', 201]:
+    if mode in ["FSK_LDPC_1", 201]:
         return ctypes.cast(codec2.api.freedv_open_advanced(codec2.api.FREEDV_MODE_FSK_LDPC,
                                                            ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV)),
                            ctypes.c_void_p)

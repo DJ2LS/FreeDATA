@@ -63,13 +63,13 @@ else:
     sys.path.append(os.path.abspath("."))
 
 structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
-if sys.platform == 'linux':
-    files = glob.glob(r'**/*libcodec2*', recursive=True)
-    files.append('libcodec2.so')
-elif sys.platform == 'darwin':
-    files = glob.glob(r'**/*libcodec2*.dylib', recursive=True)
-elif sys.platform in ['win32', 'win64']:
-    files = glob.glob(r'**\*libcodec2*.dll', recursive=True)
+if sys.platform == "linux":
+    files = glob.glob(r"**/*libcodec2*", recursive=True)
+    files.append("libcodec2.so")
+elif sys.platform == "darwin":
+    files = glob.glob(r"**/*libcodec2*.dylib", recursive=True)
+elif sys.platform in ["win32", "win64"]:
+    files = glob.glob(r"**\*libcodec2*.dll", recursive=True)
 else:
     files = []
 
@@ -79,11 +79,11 @@ for file in files:
         api = ctypes.CDLL(file)
         structlog.get_logger("structlog").info("[C2 ] Libcodec2 loaded", path=file)
         break
-    except Exception as e:
-        structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=e)
+    except Exception as err:
+        structlog.get_logger("structlog").warning("[C2 ] Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
-if api is None or 'api' not in locals():
+if api is None or "api" not in locals():
     structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded")
     sys.exit(1)
 
@@ -163,14 +163,14 @@ class ADVANCED(ctypes.Structure):
     ]
 
 
-'''
+"""
 adv.interleave_frames = 0                       # max amplitude
 adv.M = 2                                       # number of fsk tones 2/4
 adv.Rs = 100                                    # symbol rate
 adv.Fs = 8000                                   # sample rate
 adv.first_tone = 1500                           # first tone freq
 adv.tone_spacing = 200                          # shift between tones
-adv.codename = 'H_128_256_5'.encode('utf-8')    # code word
+adv.codename = "H_128_256_5".encode("utf-8")    # code word
 
 HRA_112_112          rate 0.50 (224,112)    BPF: 14     not working
 HRA_56_56            rate 0.50 (112,56)     BPF: 7      not working
@@ -183,7 +183,7 @@ H_128_256_5          rate 0.50 (256,128)    BPF: 16     working
 H_4096_8192_3d       rate 0.50 (8192,4096)  BPF: 512    not working
 H_16200_9720         rate 0.60 (16200,9720) BPF: 1215   not working
 H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
-'''
+"""
 # --------------- 2 FSK H_128_256_5, 16 bytes
 api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()
 api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
@@ -192,7 +192,7 @@ api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
 api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400  # 1150 4fsk, 1500 2fsk
 api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120  # 200
-api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = 'H_128_256_5'.encode('utf-8')  # code word
+api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = "H_128_256_5".encode("utf-8")  # code word
 
 # --------------- 4 H_256_512_4, 7 bytes
 api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()
@@ -202,7 +202,7 @@ api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 100
 api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
 api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250  # 1250 4fsk, 1500 2fsk
 api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = 'H_256_512_4'.encode('utf-8')  # code word
+api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_256_512_4".encode("utf-8")  # code word
 
 # ------- MODEM STATS STRUCTURES
 MODEM_STATS_NC_MAX = 50 + 1

@@ -6,35 +6,31 @@ Created on Fri Dec 25 21:25:14 2020
 @author: DJ2LS
 
 # GET COMMANDS
-            # "command" : "..."
+    # "command" : "..."
 
-            # SET COMMANDS
-            # "command" : "..."
-            # "parameter" : " ..."
+    # SET COMMANDS
+    # "command" : "..."
+    # "parameter" : " ..."
 
-            # DATA COMMANDS
-            # "command" : "..."
-            # "type" : "..."
-            # "dxcallsign" : "..."
-            # "data" : "..."
-
+    # DATA COMMANDS
+    # "command" : "..."
+    # "type" : "..."
+    # "dxcallsign" : "..."
+    # "data" : "..."
 """
 import atexit
 import base64
-
 import queue
 import socketserver
 import sys
 import threading
 import time
 
-import structlog
-import ujson as json
-
 import data_handler
 import helpers
-
 import static
+import structlog
+import ujson as json
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -59,7 +55,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         function called by socket handler
         send data to a network client if available
         """
-        tempdata = b''
+        tempdata = b""
         while self.connection_alive and not CLOSE_SIGNAL:
             # send tnc state as network stream
             # check server port against daemon port and send corresponding data
@@ -77,17 +73,17 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
-                sock_data = bytes(data, 'utf-8')
-                sock_data += b'\n'  # append line limiter
+                sock_data = bytes(data, "utf-8")
+                sock_data += b"\n"  # append line limiter
 
                 # send data to all clients
                 # try:
                 for client in CONNECTED_CLIENTS:
                     try:
                         client.send(sock_data)
-                    except Exception as e:
+                    except Exception as err:
                         # print("connection lost...")
-                        structlog.get_logger("structlog").info("[SCK] Connection lost", e=e)
+                        structlog.get_logger("structlog").info("[SCK] Connection lost", e=err)
                         self.connection_alive = False
 
             # we want to transmit scatter data only once to reduce network traffic
@@ -108,15 +104,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 chunk = self.request.recv(1024)
                 data += chunk
 
-                if chunk == b'':
+                if chunk == b"":
                     # print("connection broken. Closing...")
                     self.connection_alive = False
 
-                if data.startswith(b'{') and data.endswith(b'}\n'):
+                if data.startswith(b"{") and data.endswith(b"}\n"):
                     # split data by \n if we have multiple commands in socket buffer
-                    data = data.split(b'\n')
+                    data = data.split(b"\n")
                     # remove empty data
-                    data.remove(b'')
+                    data.remove(b"")
 
                     # iterate thorugh data list
                     for commands in data:
@@ -134,9 +130,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
-            except Exception as e:
+            except Exception as err:
                 structlog.get_logger("structlog").info("[SCK] Connection closed", ip=self.client_address[0],
-                                                       port=self.client_address[1], e=e)
+                                                       port=self.client_address[1], e=err)
                 self.connection_alive = False
 
     def handle(self):
@@ -162,9 +158,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                                                   port=self.client_address[1])
         try:
             CONNECTED_CLIENTS.remove(self.request)
-        except Exception as e:
+        except Exception as err:
             structlog.get_logger("structlog").warning("[SCK] client connection already removed from client list",
-                                                      client=self.request, e=e)
+                                                      client=self.request, e=err)
 
 
 def process_tnc_commands(data):
@@ -188,53 +184,53 @@ def process_tnc_commands(data):
                 static.TX_AUDIO_LEVEL = int(received_json["value"])
                 command_response("tx_audio_level", True)
 
-            except Exception as e:
+            except Exception as err:
                 command_response("tx_audio_level", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # TRANSMIT SINE WAVE  -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(['SEND_TEST_FRAME'])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
                 command_response("send_test_frame", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("send_test_frame", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # CQ CQ CQ -----------------------------------------------------
         if received_json["command"] == "cqcqcq":
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(['CQ'])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["CQ"])
                 command_response("cqcqcq", True)
 
-            except Exception as e:
+            except Exception as err:
                 command_response("cqcqcq", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # START_BEACON -----------------------------------------------------
         if received_json["command"] == "start_beacon":
             try:
                 static.BEACON_STATE = True
                 interval = int(received_json["parameter"])
-                data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', interval, True])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["BEACON", interval, True])
                 command_response("start_beacon", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("start_beacon", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # STOP_BEACON -----------------------------------------------------
         if received_json["command"] == "stop_beacon":
             try:
                 structlog.get_logger("structlog").warning("[TNC] Stopping beacon!")
                 static.BEACON_STATE = False
-                data_handler.DATA_QUEUE_TRANSMIT.put(['BEACON', None, False])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["BEACON", None, False])
                 command_response("stop_beacon", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("stop_beacon", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # PING ----------------------------------------------------------
-        if received_json["type"] == 'ping' and received_json["command"] == "ping":
+        if received_json["type"] == "ping" and received_json["command"] == "ping":
             # send ping frame and wait for ACK
             try:
                 dxcallsign = received_json["dxcallsign"]
@@ -245,14 +241,14 @@ def process_tnc_commands(data):
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                data_handler.DATA_QUEUE_TRANSMIT.put(['PING', dxcallsign])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
                 command_response("ping", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("ping", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # CONNECT ----------------------------------------------------------
-        if received_json["type"] == 'arq' and received_json["command"] == "connect":
+        if received_json["type"] == "arq" and received_json["command"] == "connect":
             static.BEACON_PAUSE = True
             # send ping frame and wait for ACK
             try:
@@ -267,24 +263,24 @@ def process_tnc_commands(data):
                 static.DXCALLSIGN = dxcallsign
                 static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                data_handler.DATA_QUEUE_TRANSMIT.put(['CONNECT', dxcallsign])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
                 command_response("connect", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("connect", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # DISCONNECT ----------------------------------------------------------
-        if received_json["type"] == 'arq' and received_json["command"] == "disconnect":
+        if received_json["type"] == "arq" and received_json["command"] == "disconnect":
             # send ping frame and wait for ACK
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(['DISCONNECT'])
+                data_handler.DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
                 command_response("disconnect", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("disconnect", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # TRANSMIT RAW DATA -------------------------------------------
-        if received_json["type"] == 'arq' and received_json["command"] == "send_raw":
+        if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
             try:
                 if not static.ARQ_SESSION:
@@ -315,32 +311,32 @@ def process_tnc_commands(data):
                 try:
                     arq_uuid = received_json["uuid"]
                 except Exception:
-                    arq_uuid = 'no-uuid'
+                    arq_uuid = "no-uuid"
 
                 if not len(base64data) % 4:
                     binarydata = base64.b64decode(base64data)
 
-                    data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', binarydata, mode, n_frames, arq_uuid, mycallsign])
+                    data_handler.DATA_QUEUE_TRANSMIT.put(["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign])
                 else:
                     raise TypeError
-            except Exception as e:
+            except Exception as err:
                 command_response("send_raw", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
         # STOP TRANSMISSION ----------------------------------------------------------
-        if received_json["type"] == 'arq' and received_json["command"] == "stop_transmission":
+        if received_json["type"] == "arq" and received_json["command"] == "stop_transmission":
             try:
-                if static.TNC_STATE == 'BUSY' or static.ARQ_STATE:
-                    data_handler.DATA_QUEUE_TRANSMIT.put(['STOP'])
+                if static.TNC_STATE == "BUSY" or static.ARQ_STATE:
+                    data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
                 structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
-                static.TNC_STATE = 'IDLE'
+                static.TNC_STATE = "IDLE"
                 static.ARQ_STATE = False
                 command_response("stop_transmission", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("stop_transmission", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-        if received_json["type"] == 'get' and received_json["command"] == 'rx_buffer':
+        if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
             try:
                 output = {
                     "command": "rx_buffer",
@@ -352,36 +348,36 @@ def process_tnc_commands(data):
                     # rawdata = json.loads(static.RX_BUFFER[i][4])
                     base64_data = static.RX_BUFFER[i][4]
                     output["data-array"].append({"uuid": static.RX_BUFFER[i][0], "timestamp": static.RX_BUFFER[i][1],
-                                                 "dxcallsign": str(static.RX_BUFFER[i][2], 'utf-8'),
-                                                 "dxgrid": str(static.RX_BUFFER[i][3], 'utf-8'), "data": base64_data})
+                                                 "dxcallsign": str(static.RX_BUFFER[i][2], "utf-8"),
+                                                 "dxgrid": str(static.RX_BUFFER[i][3], "utf-8"), "data": base64_data})
 
                 jsondata = json.dumps(output)
                 # self.request.sendall(bytes(jsondata, encoding))
                 SOCKET_QUEUE.put(jsondata)
                 command_response("rx_buffer", True)
 
-            except Exception as e:
+            except Exception as err:
                 command_response("rx_buffer", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-        if received_json["type"] == 'set' and received_json["command"] == 'del_rx_buffer':
+        if received_json["type"] == "set" and received_json["command"] == "del_rx_buffer":
             try:
                 static.RX_BUFFER = []
                 command_response("del_rx_buffer", True)
-            except Exception as e:
+            except Exception as err:
                 command_response("del_rx_buffer", False)
-                structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+                structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
     # exception, if JSON can't be decoded
-    except Exception as e:
-        structlog.get_logger("structlog").error("[TNC] JSON decoding error", e=e)
+    except Exception as err:
+        structlog.get_logger("structlog").error("[TNC] JSON decoding error", e=err)
 
 
 def send_tnc_state():
     """
     send the tnc state to network
     """
-    encoding = 'utf-8'
+    encoding = "utf-8"
 
     output = {
         "command": "tnc_state",
@@ -417,8 +413,8 @@ def send_tnc_state():
     # add heard stations to heard stations object
     for heard in static.HEARD_STATIONS:
         output["stations"].append({
-            "dxcallsign": str(heard[0], 'utf-8'),
-            "dxgrid": str(heard[1], 'utf-8'),
+            "dxcallsign": str(heard[0], "utf-8"),
+            "dxgrid": str(heard[1], "utf-8"),
             "timestamp": heard[2],
             "datatype": heard[3],
             "snr": heard[4],
@@ -441,40 +437,40 @@ def process_daemon_commands(data):
     # convert data to json object
     received_json = json.loads(data)
     structlog.get_logger("structlog").debug("[SCK] CMD", command=received_json)
-    if received_json["type"] == 'set' and received_json["command"] == 'mycallsign':
+    if received_json["type"] == "set" and received_json["command"] == "mycallsign":
         try:
             callsign = received_json["parameter"]
 
-            if bytes(callsign, 'utf-8') == b'':
-                self.request.sendall(b'INVALID CALLSIGN')
+            if bytes(callsign, "utf-8") == b"":
+                self.request.sendall(b"INVALID CALLSIGN")
                 structlog.get_logger("structlog").warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN,
                                                           crc=static.MYCALLSIGN_CRC)
             else:
-                static.MYCALLSIGN = bytes(callsign, 'utf-8')
+                static.MYCALLSIGN = bytes(callsign, "utf-8")
                 static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
                 command_response("mycallsign", True)
                 structlog.get_logger("structlog").info("[DMN] SET MYCALL", call=static.MYCALLSIGN,
                                                        crc=static.MYCALLSIGN_CRC)
-        except Exception as e:
+        except Exception as err:
             command_response("mycallsign", False)
-            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-    if received_json["type"] == 'set' and received_json["command"] == 'mygrid':
+    if received_json["type"] == "set" and received_json["command"] == "mygrid":
         try:
             mygrid = received_json["parameter"]
 
-            if bytes(mygrid, 'utf-8') == b'':
-                self.request.sendall(b'INVALID GRID')
+            if bytes(mygrid, "utf-8") == b"":
+                self.request.sendall(b"INVALID GRID")
             else:
-                static.MYGRID = bytes(mygrid, 'utf-8')
+                static.MYGRID = bytes(mygrid, "utf-8")
                 structlog.get_logger("structlog").info("[SCK] SET MYGRID", grid=static.MYGRID)
                 command_response("mygrid", True)
-        except Exception as e:
+        except Exception as err:
             command_response("mygrid", False)
-            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-    if received_json["type"] == 'set' and received_json["command"] == 'start_tnc' and not static.TNCSTARTED:
+    if received_json["type"] == "set" and received_json["command"] == "start_tnc" and not static.TNCSTARTED:
         try:
             mycall = str(received_json["parameter"][0]["mycall"])
             mygrid = str(received_json["parameter"][0]["mygrid"])
@@ -504,7 +500,7 @@ def process_daemon_commands(data):
             for item in received_json["parameter"][0]:
                 structlog.get_logger("structlog").debug(f"[DMN] TNC Startup Config : {item}", value=received_json["parameter"][0][item])
 
-            DAEMON_QUEUE.put(['STARTTNC',
+            DAEMON_QUEUE.put(["STARTTNC",
                               mycall,
                               mygrid,
                               rx_audio,
@@ -531,11 +527,11 @@ def process_daemon_commands(data):
                               ])
             command_response("start_tnc", True)
 
-        except Exception as e:
+        except Exception as err:
             command_response("start_tnc", False)
-            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-    if received_json["type"] == 'get' and received_json["command"] == 'test_hamlib':
+    if received_json["type"] == "get" and received_json["command"] == "test_hamlib":
         try:
             devicename = str(received_json["parameter"][0]["devicename"])
             deviceport = str(received_json["parameter"][0]["deviceport"])
@@ -549,7 +545,7 @@ def process_daemon_commands(data):
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
 
-            DAEMON_QUEUE.put(['TEST_HAMLIB',
+            DAEMON_QUEUE.put(["TEST_HAMLIB",
                               devicename,
                               deviceport,
                               serialspeed,
@@ -563,11 +559,11 @@ def process_daemon_commands(data):
                               rigctld_port,
                               ])
             command_response("test_hamlib", True)
-        except Exception as e:
+        except Exception as err:
             command_response("test_hamlib", False)
-            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
-    if received_json["type"] == 'set' and received_json["command"] == 'stop_tnc':
+    if received_json["type"] == "set" and received_json["command"] == "stop_tnc":
         try:
             static.TNCPROCESS.kill()
             # unregister process from atexit to avoid process zombies
@@ -576,9 +572,9 @@ def process_daemon_commands(data):
             structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
             static.TNCSTARTED = False
             command_response("stop_tnc", True)
-        except Exception as e:
+        except Exception as err:
             command_response("stop_tnc", False)
-            structlog.get_logger("structlog").warning("[SCK] command execution error", e=e, command=received_json)
+            structlog.get_logger("structlog").warning("[SCK] command execution error", e=err, command=received_json)
 
 
 def send_daemon_state():
@@ -589,16 +585,16 @@ def send_daemon_state():
         python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"
 
         output = {
-            'command': 'daemon_state',
-            'daemon_state': [],
-            'python_version': str(python_version),
-            'hamlib_version': static.HAMLIB_VERSION,
-            'input_devices': static.AUDIO_INPUT_DEVICES,
-            'output_devices': static.AUDIO_OUTPUT_DEVICES,
-            'serial_devices': static.SERIAL_DEVICES,
-            # 'cpu': str(psutil.cpu_percent()),
-            # 'ram': str(psutil.virtual_memory().percent),
-            'version': '0.1'
+            "command": "daemon_state",
+            "daemon_state": [],
+            "python_version": str(python_version),
+            "hamlib_version": static.HAMLIB_VERSION,
+            "input_devices": static.AUDIO_INPUT_DEVICES,
+            "output_devices": static.AUDIO_OUTPUT_DEVICES,
+            "serial_devices": static.SERIAL_DEVICES,
+            # "cpu": str(psutil.cpu_percent()),
+            # "ram": str(psutil.virtual_memory().percent),
+            "version": "0.1"
         }
 
         if static.TNCSTARTED:
@@ -608,8 +604,8 @@ def send_daemon_state():
 
         return json.dumps(output)
 
-    except Exception as e:
-        structlog.get_logger("structlog").warning("[SCK] error", e=e)
+    except Exception as err:
+        structlog.get_logger("structlog").warning("[SCK] error", e=err)
         return None
 
 

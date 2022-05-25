@@ -8,10 +8,9 @@ import logging
 import socket
 import time
 
-import structlog
-
 import log_handler
 import static
+import structlog
 
 # set global hamlib version
 hamlib_version = 0
@@ -22,7 +21,7 @@ class radio():
     # Note: This is a massive hack.
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
-        """ Open a connection to rotctld, and test it for validity """
+        """ Open a connection to rigctld, and test it for validity """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.sock.settimeout(timeout)
 
@@ -51,7 +50,7 @@ class radio():
         """
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
-        
+
         if self.connect():
             logging.debug("Rigctl intialized")
             return True
@@ -67,10 +66,10 @@ class radio():
                 self.connected = True
                 structlog.get_logger("structlog").info("[RIGCTLD] Connected to rigctld!", ip=self.hostname, port=self.port)
                 return True
-            except Exception as e:
+            except Exception as err:
                 # ConnectionRefusedError: [Errno 111] Connection refused
                 self.close_rig()
-                structlog.get_logger("structlog").warning("[RIGCTLD] Connection to rigctld refused! Reconnect...", ip=self.hostname, port=self.port, e=e)
+                structlog.get_logger("structlog").warning("[RIGCTLD] Connection to rigctld refused! Reconnect...", ip=self.hostname, port=self.port, e=err)
                 return False
 
     def close_rig(self):
@@ -78,7 +77,7 @@ class radio():
         self.sock.close()
         self.connected = False
 
-    def send_command(self, command):
+    def send_command(self, command) -> bytes:
         """Send a command to the connected rotctld instance,
             and return the return value.
 
@@ -90,7 +89,7 @@ class radio():
         """
         if self.connected:
             try:
-                self.connection.sendall(command+b'\n')
+                self.connection.sendall(command + b"\n")
             except Exception:
                 structlog.get_logger("structlog").warning("[RIGCTLD] Command not executed!", command=command, ip=self.hostname, port=self.port)
                 self.connected = False
@@ -106,11 +105,13 @@ class radio():
             time.sleep(0.5)
             self.connect()
 
+        return b""
+
     def get_mode(self):
         """ """
         try:
             data = self.send_command(b"m")
-            data = data.split(b'\n')
+            data = data.split(b"\n")
             mode = data[0]
             return mode.decode("utf-8")
         except Exception:
@@ -120,7 +121,7 @@ class radio():
         """ """
         try:
             data = self.send_command(b"m")
-            data = data.split(b'\n')
+            data = data.split(b"\n")
             bandwith = data[1]
             return bandwith.decode("utf-8")
         except Exception:

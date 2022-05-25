@@ -7,6 +7,7 @@ hamlib_version = 0
 
 class radio:
     """ """
+
     def __init__(self):
         pass
 

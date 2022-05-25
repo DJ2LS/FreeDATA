@@ -17,15 +17,14 @@ import uuid
 import zlib
 from random import randrange
 
-import numpy as np
-import structlog
-import ujson as json
-
 import codec2
 import helpers
 import modem
+import numpy as np
 import sock
 import static
+import structlog
+import ujson as json
 
 TESTMODE = False
 
@@ -49,9 +48,9 @@ class DATA:
         self.arq_session_timeout = 30
         self.session_connect_max_retries = 3
 
-        self.transmission_uuid = ''
+        self.transmission_uuid = ""
 
-        self.received_mycall_crc = b''  # Received my callsign crc if we received a crc for another ssid
+        self.received_mycall_crc = b""  # Received my callsign crc if we received a crc for another ssid
 
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received ack frames
@@ -61,8 +60,8 @@ class DATA:
         self.rpt_request_buffer = []  # requested frames, saved in a list
         self.rx_start_of_transmission = 0  # time of transmission start
 
-        self.data_frame_bof = b'BOF'  # 2 bytes for the BOF End of File indicator in a data frame
-        self.data_frame_eof = b'EOF'  # 2 bytes for the EOF End of File indicator in a data frame
+        self.data_frame_bof = b"BOF"  # 2 bytes for the BOF End of File indicator in a data frame
+        self.data_frame_eof = b"EOF"  # 2 bytes for the EOF End of File indicator in a data frame
 
         self.rx_n_max_retries_per_burst = 50
         self.n_retries_per_burst = 0
@@ -125,17 +124,17 @@ class DATA:
             data = self.data_queue_transmit.get()
 
             # [0] == Command
-            if data[0] == 'CQ':
+            if data[0] == "CQ":
                 self.transmit_cq()
 
-            elif data[0] == 'STOP':
+            elif data[0] == "STOP":
                 self.stop_transmission()
 
-            elif data[0] == 'PING':
+            elif data[0] == "PING":
                 # [1] dxcallsign
                 self.transmit_ping(data[1])
 
-            elif data[0] == 'BEACON':
+            elif data[0] == "BEACON":
                 # [1] INTERVAL int
                 # [2] STATE bool
                 if data[2]:
@@ -144,7 +143,7 @@ class DATA:
                 else:
                     static.BEACON_STATE = False
 
-            elif data[0] == 'ARQ_RAW':
+            elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
                 # [2] MODE int
                 # [3] N_FRAMES_PER_BURST int
@@ -152,15 +151,15 @@ class DATA:
                 # [5] mycallsign with ssid
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
-            elif data[0] == 'CONNECT':
+            elif data[0] == "CONNECT":
                 # [1] DX CALLSIGN
                 self.arq_session_handler(data[1])
 
-            elif data[0] == 'DISCONNECT':
+            elif data[0] == "DISCONNECT":
                 # [1] DX CALLSIGN
                 self.close_session()
 
-            elif data[0] == 'SEND_TEST_FRAME':
+            elif data[0] == "SEND_TEST_FRAME":
                 # [1] DX CALLSIGN
                 self.send_test_frame()
             else:
@@ -442,12 +441,12 @@ class DATA:
             return
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not static.ARQ_STATE and static.TNC_STATE != 'BUSY':
+        if not static.ARQ_STATE and static.TNC_STATE != "BUSY":
             return
 
         self.arq_file_transfer = True
 
-        static.TNC_STATE = 'BUSY'
+        static.TNC_STATE = "BUSY"
         static.ARQ_STATE = True
         static.INFO.append("ARQ;RECEIVING")
         self.data_channel_last_received = int(time.time())
@@ -467,7 +466,7 @@ class DATA:
 
         structlog.get_logger("structlog").debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
 
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', snr, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", snr, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
         # Check if we received all frames in the burst by checking if burst buffer has no more "Nones"
@@ -475,7 +474,7 @@ class DATA:
         if None not in static.RX_BURST_BUFFER:
             # then iterate through burst buffer and stick the burst together
             # the temp burst buffer is needed for checking, if we already recevied data
-            temp_burst_buffer = b''
+            temp_burst_buffer = b""
             for value in static.RX_BURST_BUFFER:
                 # static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
                 temp_burst_buffer += bytes(value)
@@ -612,8 +611,8 @@ class DATA:
                 base64_data = base64.b64encode(data_frame).decode("utf-8")
                 static.RX_BUFFER.append([uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data])
                 jsondata = {"arq": "received", "uuid": uniqueid, "timestamp": timestamp,
-                            "mycallsign": str(mycallsign, 'utf-8'), "dxcallsign": str(static.DXCALLSIGN, 'utf-8'),
-                            "dxgrid": str(static.DXGRID, 'utf-8'), "data": base64_data}
+                            "mycallsign": str(mycallsign, "utf-8"), "dxcallsign": str(static.DXCALLSIGN, "utf-8"),
+                            "dxgrid": str(static.DXGRID, "utf-8"), "data": base64_data}
                 json_data_out = json.dumps(jsondata)
                 structlog.get_logger("structlog").debug("[TNC] arq_data_received:", jsondata=jsondata)
                 sock.SOCKET_QUEUE.put(json_data_out)
@@ -626,8 +625,8 @@ class DATA:
                 self.calculate_transfer_rate_rx(self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER))
 
                 structlog.get_logger("structlog").info("[TNC] | RX | DATACHANNEL [" +
-                                                       str(self.mycallsign, 'utf-8') + "]<< >>[" + str(
-                    static.DXCALLSIGN, 'utf-8') + "]", snr=snr)
+                                                       str(self.mycallsign, "utf-8") + "]<< >>[" + str(
+                    static.DXCALLSIGN, "utf-8") + "]", snr=snr)
 
             else:
                 static.INFO.append("ARQ;RECEIVING;FAILED")
@@ -677,7 +676,7 @@ class DATA:
         # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
         # static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
         static.TOTAL_BYTES = len(data_out)
-        frame_total_size = len(data_out).to_bytes(4, byteorder='big')
+        frame_total_size = len(data_out).to_bytes(4, byteorder="big")
         static.INFO.append("ARQ;TRANSMITTING")
 
         jsondata = {"arq": "transmission", "status": "transmitting", "uuid": self.transmission_uuid,
@@ -827,7 +826,7 @@ class DATA:
                     break  # break retry loop
 
                 # we need this part for leaving the repeat loop
-                # static.ARQ_STATE == 'DATA' --> when stopping transmission manually
+                # static.ARQ_STATE == "DATA" --> when stopping transmission manually
                 if not static.ARQ_STATE:
                     # print("not ready for data...leaving loop....")
                     break
@@ -899,7 +898,7 @@ class DATA:
 
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             self.burst_ack = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time())  # we need to update our timeout timestamp
@@ -930,7 +929,7 @@ class DATA:
 
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             self.burst_nack = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time())  # we need to update our timeout timestamp
@@ -945,7 +944,7 @@ class DATA:
         """ """
         # only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE:
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             self.data_frame_ack_received = True  # Force data loops of TNC to stop and continue with next frame
             self.data_channel_last_received = int(time.time())  # we need to update our timeout timestamp
@@ -960,7 +959,7 @@ class DATA:
         Returns:
 
         """
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
         jsondata = {"arq": "transmission", "status": "failed", "uuid": self.transmission_uuid,
@@ -982,8 +981,8 @@ class DATA:
 
         """
         # only process data if we are in ARQ and BUSY state
-        if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+        if static.ARQ_STATE and static.TNC_STATE == "BUSY":
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
             self.rpt_request_received = True
@@ -993,7 +992,7 @@ class DATA:
             missing_area = bytes(data_in[3:12])  # 1:9
 
             for i in range(0, 6, 2):
-                if not missing_area[i:i + 2].endswith(b'\x00\x00'):
+                if not missing_area[i:i + 2].endswith(b"\x00\x00"):
                     missing = missing_area[i:i + 2]
                     self.rpt_request_buffer.insert(0, missing)
 
@@ -1012,7 +1011,7 @@ class DATA:
         # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         structlog.get_logger("structlog").info(
-            "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]>> <<[" + str(static.DXCALLSIGN, "utf-8") + "]",
             state=static.ARQ_SESSION_STATE)
 
         self.open_session(callsign)
@@ -1020,13 +1019,13 @@ class DATA:
         # wait until data channel is open
         while not static.ARQ_SESSION and not self.arq_session_timeout:
             time.sleep(0.01)
-            static.ARQ_SESSION_STATE = 'connecting'
+            static.ARQ_SESSION_STATE = "connecting"
 
-        if static.ARQ_SESSION and static.ARQ_SESSION_STATE == 'connected':
-            # static.ARQ_SESSION_STATE = 'connected'
+        if static.ARQ_SESSION and static.ARQ_SESSION_STATE == "connected":
+            # static.ARQ_SESSION_STATE = "connected"
             return True
 
-        static.ARQ_SESSION_STATE = 'failed'
+        static.ARQ_SESSION_STATE = "failed"
         return False
 
     def open_session(self, callsign):
@@ -1039,7 +1038,7 @@ class DATA:
 
         """
         self.IS_ARQ_SESSION_MASTER = True
-        static.ARQ_SESSION_STATE = 'connecting'
+        static.ARQ_SESSION_STATE = "connecting"
 
         connection_frame = bytearray(14)
         connection_frame[:1] = bytes([221])
@@ -1051,8 +1050,8 @@ class DATA:
             time.sleep(0.01)
             for attempt in range(1, self.session_connect_max_retries + 1):
                 structlog.get_logger("structlog").info(
-                    "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]>>?<<[" + str(static.DXCALLSIGN,
-                                                                                        'utf-8') + "]", a=attempt,
+                    "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]>>?<<[" + str(static.DXCALLSIGN,
+                                                                                        "utf-8") + "]", a=attempt,
                     state=static.ARQ_SESSION_STATE)
 
                 self.enqueue_frame_for_tx(connection_frame)
@@ -1083,30 +1082,30 @@ class DATA:
 
         """
         self.IS_ARQ_SESSION_MASTER = False
-        static.ARQ_SESSION_STATE = 'connecting'
+        static.ARQ_SESSION_STATE = "connecting"
 
         self.arq_session_last_received = int(time.time())
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
 
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
         structlog.get_logger("structlog").info(
-            "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]>>|<<[" + str(static.DXCALLSIGN, "utf-8") + "]",
             state=static.ARQ_SESSION_STATE)
         static.ARQ_SESSION = True
-        static.TNC_STATE = 'BUSY'
+        static.TNC_STATE = "BUSY"
 
         self.transmit_session_heartbeat()
 
     def close_session(self):
         """ Close the ARQ session """
-        static.ARQ_SESSION_STATE = 'disconnecting'
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET,
+        static.ARQ_SESSION_STATE = "disconnecting"
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
         structlog.get_logger("structlog").info(
-            "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]<<X>>[" + str(static.DXCALLSIGN, "utf-8") + "]",
             state=static.ARQ_SESSION_STATE)
         static.INFO.append("ARQ;SESSION;CLOSE")
         self.IS_ARQ_SESSION_MASTER = False
@@ -1129,11 +1128,11 @@ class DATA:
         # Close the session if the DXCALLSIGN_CRC matches the station in static.
         _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
         if _valid_crc:
-            static.ARQ_SESSION_STATE = 'disconnected'
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+            static.ARQ_SESSION_STATE = "disconnected"
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
             structlog.get_logger("structlog").info(
-                "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]<<X>>[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+                "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]<<X>>[" + str(static.DXCALLSIGN, "utf-8") + "]",
                 state=static.ARQ_SESSION_STATE)
             static.INFO.append("ARQ;SESSION;CLOSE")
 
@@ -1144,8 +1143,8 @@ class DATA:
     def transmit_session_heartbeat(self):
         """ """
         # static.ARQ_SESSION = True
-        # static.TNC_STATE = 'BUSY'
-        # static.ARQ_SESSION_STATE = 'connected'
+        # static.TNC_STATE = "BUSY"
+        # static.ARQ_SESSION_STATE = "connected"
 
         connection_frame = bytearray(14)
         connection_frame[:1] = bytes([222])
@@ -1167,14 +1166,14 @@ class DATA:
         _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
         if _valid_crc:
             structlog.get_logger("structlog").debug("[TNC] Received session heartbeat")
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'SESSION-HB', static.SNR,
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "SESSION-HB", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
             self.arq_session_last_received = int(time.time())  # we need to update our timeout timestamp
 
             static.ARQ_SESSION = True
-            static.ARQ_SESSION_STATE = 'connected'
-            static.TNC_STATE = 'BUSY'
+            static.ARQ_SESSION_STATE = "connected"
+            static.TNC_STATE = "BUSY"
             self.data_channel_last_received = int(time.time())
             if not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
                 self.transmit_session_heartbeat()
@@ -1197,7 +1196,7 @@ class DATA:
         # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
 
-        static.TNC_STATE = 'BUSY'
+        static.TNC_STATE = "BUSY"
         self.arq_file_transfer = True
 
         self.transmission_uuid = transmission_uuid
@@ -1261,8 +1260,8 @@ class DATA:
             for attempt in range(1, self.data_channel_max_retries + 1):
                 static.INFO.append("DATACHANNEL;OPENING")
                 structlog.get_logger("structlog").info(
-                    "[TNC] ARQ | DATA | TX | [" + str(mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN,
-                                                                                             'utf-8') + "]",
+                    "[TNC] ARQ | DATA | TX | [" + str(mycallsign, "utf-8") + "]>> <<[" + str(static.DXCALLSIGN,
+                                                                                             "utf-8") + "]",
                     attempt=f"{str(attempt)}/{str(self.data_channel_max_retries)}")
 
                 self.enqueue_frame_for_tx(connection_frame)
@@ -1290,8 +1289,8 @@ class DATA:
                     sock.SOCKET_QUEUE.put(json_data_out)
 
                     structlog.get_logger("structlog").warning(
-                        "[TNC] ARQ | TX | DATA [" + str(mycallsign, 'utf-8') + "]>>X<<[" + str(static.DXCALLSIGN,
-                                                                                               'utf-8') + "]")
+                        "[TNC] ARQ | TX | DATA [" + str(mycallsign, "utf-8") + "]>>X<<[" + str(static.DXCALLSIGN,
+                                                                                               "utf-8") + "]")
                     self.datachannel_timeout = True
                     if not TESTMODE:
                         self.arq_cleanup()
@@ -1337,7 +1336,7 @@ class DATA:
         # updated modes we are listening to
         self.set_listening_modes(self.mode_list[self.speed_level])
 
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
         # check if callsign ssid override
@@ -1349,11 +1348,11 @@ class DATA:
             return
 
         structlog.get_logger("structlog").info(
-            "[TNC] ARQ | DATA | RX | [" + str(mycallsign, 'utf-8') + "]>> <<[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] ARQ | DATA | RX | [" + str(mycallsign, "utf-8") + "]>> <<[" + str(static.DXCALLSIGN, "utf-8") + "]",
             bandwith="wide")
 
         static.ARQ_STATE = True
-        static.TNC_STATE = 'BUSY'
+        static.TNC_STATE = "BUSY"
 
         self.reset_statistics()
 
@@ -1375,7 +1374,7 @@ class DATA:
         self.enqueue_frame_for_tx(connection_frame)
 
         structlog.get_logger("structlog").info(
-            "[TNC] ARQ | DATA | RX | [" + str(mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] ARQ | DATA | RX | [" + str(mycallsign, "utf-8") + "]>>|<<[" + str(static.DXCALLSIGN, "utf-8") + "]",
             bandwith="wide", snr=static.SNR)
 
         # set start of transmission for our statistics
@@ -1411,19 +1410,19 @@ class DATA:
                 self.speed_level = len(self.mode_list) - 1
                 structlog.get_logger("structlog").debug("[TNC] high bandwidth mode", modes=self.mode_list)
 
-            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'DATA-CHANNEL', static.SNR,
+            helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "DATA-CHANNEL", static.SNR,
                                           static.FREQ_OFFSET, static.HAMLIB_FREQUENCY)
 
             structlog.get_logger("structlog").info(
-                "[TNC] ARQ | DATA | TX | [" + str(self.mycallsign, 'utf-8') + "]>>|<<[" + str(static.DXCALLSIGN,
-                                                                                              'utf-8') + "]",
+                "[TNC] ARQ | DATA | TX | [" + str(self.mycallsign, "utf-8") + "]>>|<<[" + str(static.DXCALLSIGN,
+                                                                                              "utf-8") + "]",
                 snr=static.SNR)
 
             # as soon as we set ARQ_STATE to DATA, transmission starts
             static.ARQ_STATE = True
             self.data_channel_last_received = int(time.time())
         else:
-            static.TNC_STATE = 'IDLE'
+            static.TNC_STATE = "IDLE"
             static.ARQ_STATE = False
             static.INFO.append("PROTOCOL;VERSION_MISMATCH")
             structlog.get_logger("structlog").warning("[TNC] protocol version mismatch:", received=protocol_version,
@@ -1445,7 +1444,7 @@ class DATA:
 
         static.INFO.append("PING;SENDING")
         structlog.get_logger("structlog").info(
-            "[TNC] PING REQ [" + str(self.mycallsign, 'utf-8') + "] >>> [" + str(static.DXCALLSIGN, 'utf-8') + "]")
+            "[TNC] PING REQ [" + str(self.mycallsign, "utf-8") + "] >>> [" + str(static.DXCALLSIGN, "utf-8") + "]")
 
         ping_frame = bytearray(14)
         ping_frame[:1] = bytes([210])
@@ -1455,7 +1454,7 @@ class DATA:
 
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode='FSK_LDPC_0')
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0"))
         else:
             self.enqueue_frame_for_tx(ping_frame)
 
@@ -1471,7 +1470,7 @@ class DATA:
         """
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING', static.SNR, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "PING", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
         static.INFO.append("PING;RECEIVING")
@@ -1485,7 +1484,7 @@ class DATA:
             return
 
         structlog.get_logger("structlog").info(
-            "[TNC] PING REQ [" + str(mycallsign, 'utf-8') + "] <<< [" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] PING REQ [" + str(mycallsign, "utf-8") + "] <<< [" + str(static.DXCALLSIGN, "utf-8") + "]",
             snr=static.SNR)
 
         ping_frame = bytearray(14)
@@ -1496,7 +1495,7 @@ class DATA:
 
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode='FSK_LDPC_0')
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0"))
         else:
             self.enqueue_frame_for_tx(ping_frame)
 
@@ -1510,23 +1509,23 @@ class DATA:
 
         """
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-        static.DXGRID = bytes(data_in[7:13]).rstrip(b'\x00')
+        static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
         jsondata = {"type": "ping", "status": "ack", "uuid": str(uuid.uuid4()), "timestamp": int(time.time()),
-                    "mycallsign": str(self.mycallsign, 'utf-8'), "dxcallsign": str(static.DXCALLSIGN, 'utf-8'),
-                    "dxgrid": str(static.DXGRID, 'utf-8'), "snr": str(static.SNR)}
+                    "mycallsign": str(self.mycallsign, "utf-8"), "dxcallsign": str(static.DXCALLSIGN, "utf-8"),
+                    "dxgrid": str(static.DXGRID, "utf-8"), "snr": str(static.SNR)}
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
-        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, 'PING-ACK', static.SNR, static.FREQ_OFFSET,
+        helpers.add_to_heard_stations(static.DXCALLSIGN, static.DXGRID, "PING-ACK", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
         static.INFO.append("PING;RECEIVEDACK")
 
         structlog.get_logger("structlog").info(
-            "[TNC] PING ACK [" + str(self.mycallsign, 'utf-8') + "] >|< [" + str(static.DXCALLSIGN, 'utf-8') + "]",
+            "[TNC] PING ACK [" + str(self.mycallsign, "utf-8") + "] >|< [" + str(static.DXCALLSIGN, "utf-8") + "]",
             snr=static.SNR)
-        static.TNC_STATE = 'IDLE'
+        static.TNC_STATE = "IDLE"
 
     def stop_transmission(self):
         """
@@ -1541,7 +1540,7 @@ class DATA:
 
         self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=250)
 
-        static.TNC_STATE = 'IDLE'
+        static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
         static.INFO.append("TRANSMISSION;STOPPED")
         self.arq_cleanup()
@@ -1551,7 +1550,7 @@ class DATA:
         Received a transmission stop
         """
         structlog.get_logger("structlog").warning("[TNC] Stopping transmission!")
-        static.TNC_STATE = 'IDLE'
+        static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
         static.INFO.append("TRANSMISSION;STOPPED")
         self.arq_cleanup()
@@ -1582,7 +1581,7 @@ class DATA:
                         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
-                            self.enqueue_frame_for_tx(beacon_frame, c2_mode='FSK_LDPC_0')
+                            self.enqueue_frame_for_tx(beacon_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0"))
                         else:
                             self.enqueue_frame_for_tx(beacon_frame)
 
@@ -1590,8 +1589,8 @@ class DATA:
                     while time.time() < interval_timer and static.BEACON_STATE and not static.BEACON_PAUSE:
                         time.sleep(0.01)
 
-        except Exception as e:
-            structlog.get_logger("structlog").debug("[TNC] run_beacon: ", exception=e)
+        except Exception as err:
+            structlog.get_logger("structlog").debug("[TNC] run_beacon: ", exception=err)
             # print(e)
 
     def received_beacon(self, data_in: bytes):
@@ -1605,18 +1604,18 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[9:13]).rstrip(b'\x00')
+        dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
 
         jsondata = {"type": "beacon", "status": "received", "uuid": str(uuid.uuid4()), "timestamp": int(time.time()),
-                    "mycallsign": str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'),
-                    "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
+                    "mycallsign": str(self.mycallsign, "utf-8"), "dxcallsign": str(dxcallsign, "utf-8"),
+                    "dxgrid": str(dxgrid, "utf-8"), "snr": str(static.SNR)}
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
         static.INFO.append("BEACON;RECEIVING")
         structlog.get_logger("structlog").info(
-            "[TNC] BEACON RCVD [" + str(dxcallsign, 'utf-8') + "][" + str(dxgrid, 'utf-8') + "] ", snr=static.SNR)
-        helpers.add_to_heard_stations(dxcallsign, dxgrid, 'BEACON', static.SNR, static.FREQ_OFFSET,
+            "[TNC] BEACON RCVD [" + str(dxcallsign, "utf-8") + "][" + str(dxgrid, "utf-8") + "] ", snr=static.SNR)
+        helpers.add_to_heard_stations(dxcallsign, dxgrid, "BEACON", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
     def transmit_cq(self):
@@ -1640,7 +1639,7 @@ class DATA:
         structlog.get_logger("structlog").debug("[TNC] CQ Frame:", data=[cq_frame])
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(cq_frame, c2_mode='FSK_LDPC_0')
+            self.enqueue_frame_for_tx(cq_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0"))
         else:
             self.enqueue_frame_for_tx(cq_frame)
 
@@ -1660,8 +1659,8 @@ class DATA:
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "utf-8")
         static.INFO.append("CQ;RECEIVING")
         structlog.get_logger("structlog").info(
-            "[TNC] CQ RCVD [" + str(dxcallsign, 'utf-8') + "][" + str(dxgrid, 'utf-8') + "] ", snr=static.SNR)
-        helpers.add_to_heard_stations(dxcallsign, dxgrid, 'CQ CQ CQ', static.SNR, static.FREQ_OFFSET,
+            "[TNC] CQ RCVD [" + str(dxcallsign, "utf-8") + "][" + str(dxgrid, "utf-8") + "] ", snr=static.SNR)
+        helpers.add_to_heard_stations(dxcallsign, dxgrid, "CQ CQ CQ", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
         if static.RESPOND_TO_CQ:
@@ -1692,7 +1691,7 @@ class DATA:
         structlog.get_logger("structlog").info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(qrv_frame, c2_mode='FSK_LDPC_0')
+            self.enqueue_frame_for_tx(qrv_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0"))
         else:
             self.enqueue_frame_for_tx(qrv_frame)
 
@@ -1710,15 +1709,15 @@ class DATA:
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "utf-8")
 
         jsondata = {"type": "qrv", "status": "received", "uuid": str(uuid.uuid4()), "timestamp": int(time.time()),
-                    "mycallsign": str(self.mycallsign, 'utf-8'), "dxcallsign": str(dxcallsign, 'utf-8'),
-                    "dxgrid": str(dxgrid, 'utf-8'), "snr": str(static.SNR)}
+                    "mycallsign": str(self.mycallsign, "utf-8"), "dxcallsign": str(dxcallsign, "utf-8"),
+                    "dxgrid": str(dxgrid, "utf-8"), "snr": str(static.SNR)}
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
         static.INFO.append("QRV;RECEIVING")
         structlog.get_logger("structlog").info(
-            "[TNC] QRV RCVD [" + str(dxcallsign, 'utf-8') + "][" + str(dxgrid, 'utf-8') + "] ", snr=static.SNR)
-        helpers.add_to_heard_stations(dxcallsign, dxgrid, 'QRV', static.SNR, static.FREQ_OFFSET,
+            "[TNC] QRV RCVD [" + str(dxcallsign, "utf-8") + "][" + str(dxgrid, "utf-8") + "] ", snr=static.SNR)
+        helpers.add_to_heard_stations(dxcallsign, dxgrid, "QRV", static.SNR, static.FREQ_OFFSET,
                                       static.HAMLIB_FREQUENCY)
 
     # ------------ CALUCLATE TRANSFER RATES
@@ -1749,8 +1748,8 @@ class DATA:
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
-        except Exception as e:
-            structlog.get_logger("structlog").error(f"[TNC] calculate_transfer_rate_rx: Exception: {e}")
+        except Exception as err:
+            structlog.get_logger("structlog").error(f"[TNC] calculate_transfer_rate_rx: Exception: {err}")
             static.ARQ_TRANSMISSION_PERCENT = 0.0
             static.ARQ_BITS_PER_SECOND = 0
             static.ARQ_BYTES_PER_MINUTE = 0
@@ -1796,8 +1795,8 @@ class DATA:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
 
-        except Exception as e:
-            structlog.get_logger("structlog").error(f"[TNC] calculate_transfer_rate_tx: Exception: {e}")
+        except Exception as err:
+            structlog.get_logger("structlog").error(f"[TNC] calculate_transfer_rate_tx: Exception: {err}")
             static.ARQ_TRANSMISSION_PERCENT = 0.0
             static.ARQ_BITS_PER_SECOND = 0
             static.ARQ_BYTES_PER_MINUTE = 0
@@ -1813,7 +1812,7 @@ class DATA:
         """
         structlog.get_logger("structlog").debug("[TNC] arq_cleanup")
 
-        self.received_mycall_crc = b''
+        self.received_mycall_crc = b""
 
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
@@ -1821,7 +1820,7 @@ class DATA:
         self.rpt_request_received = False
         self.data_frame_ack_received = False
         static.RX_BURST_BUFFER = []
-        static.RX_FRAME_BUFFER = b''
+        static.RX_FRAME_BUFFER = b""
         self.burst_ack_snr = 255
 
         # reset modem receiving state to reduce cpu load
@@ -1847,7 +1846,7 @@ class DATA:
         self.n_retries_per_burst = 0
 
         if not static.ARQ_SESSION:
-            static.TNC_STATE = 'IDLE'
+            static.TNC_STATE = "IDLE"
 
         static.ARQ_STATE = False
         self.arq_file_transfer = False
@@ -1880,16 +1879,16 @@ class DATA:
         # set modes we want to listen to
         mode_name = codec2.freedv_get_mode_name_by_value(mode)
 
-        if mode_name == 'datac1':
+        if mode_name == "datac1":
             modem.RECEIVE_DATAC1 = True
             structlog.get_logger("structlog").debug("[TNC] Changing listening data mode", mode="datac1")
-        elif mode_name == 'datac3':
+        elif mode_name == "datac3":
             modem.RECEIVE_DATAC3 = True
             structlog.get_logger("structlog").debug("[TNC] Changing listening data mode", mode="datac3")
-        elif mode_name == 'fsk_ldpc_1':
+        elif mode_name == "fsk_ldpc_1":
             modem.RECEIVE_FSK_LDPC_1 = True
             structlog.get_logger("structlog").debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
-        elif mode_name == 'allmodes':
+        elif mode_name == "allmodes":
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_FSK_LDPC_1 = True
@@ -1920,7 +1919,7 @@ class DATA:
         # IRS SIDE
         # TODO: We need to redesign this part for cleaner state handling
         # return only if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
-        if not static.ARQ_STATE and static.ARQ_SESSION_STATE != 'connected' or not self.is_IRS:
+        if not static.ARQ_STATE and static.ARQ_SESSION_STATE != "connected" or not self.is_IRS:
             return
         # we want to reach this state only if connected ( == return above not called )
         if self.data_channel_last_received + self.time_list[self.speed_level] > time.time():
@@ -1960,7 +1959,7 @@ class DATA:
         DATA CHANNEL
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
-        if static.ARQ_STATE and static.TNC_STATE == 'BUSY':
+        if static.ARQ_STATE and static.TNC_STATE == "BUSY":
             time.sleep(0.01)
             if self.data_channel_last_received + self.transmission_timeout > time.time():
                 time.sleep(0.01)
@@ -1969,7 +1968,7 @@ class DATA:
             else:
                 self.data_channel_last_received = 0
                 structlog.get_logger("structlog").info(
-                    "[TNC] DATA [" + str(self.mycallsign, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN, 'utf-8') + "]")
+                    "[TNC] DATA [" + str(self.mycallsign, "utf-8") + "]<<T>>[" + str(static.DXCALLSIGN, "utf-8") + "]")
                 static.INFO.append("ARQ;RECEIVING;FAILED")
                 if not TESTMODE:
                     self.arq_cleanup()
@@ -1979,13 +1978,13 @@ class DATA:
         watchdog which checks if we are running into a connection timeout
         ARQ SESSION
         """
-        if static.ARQ_SESSION and static.TNC_STATE == 'BUSY' and not self.arq_file_transfer:
+        if static.ARQ_SESSION and static.TNC_STATE == "BUSY" and not self.arq_file_transfer:
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
                 time.sleep(0.01)
             else:
                 structlog.get_logger("structlog").info(
-                    "[TNC] SESSION [" + str(self.mycallsign, 'utf-8') + "]<<T>>[" + str(static.DXCALLSIGN,
-                                                                                        'utf-8') + "]")
+                    "[TNC] SESSION [" + str(self.mycallsign, "utf-8") + "]<<T>>[" + str(static.DXCALLSIGN,
+                                                                                        "utf-8") + "]")
                 static.INFO.append("ARQ;SESSION;TIMEOUT")
                 self.close_session()
 

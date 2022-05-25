@@ -1,6 +1,9 @@
-
+"""
+Gather information about audio devices.
+"""
 import atexit
 import multiprocessing
+
 import sounddevice as sd
 
 atexit.register(sd._terminate)
@@ -14,7 +17,7 @@ def get_audio_devices():
     """
     # we need to run this on Windows for multiprocessing support
     # multiprocessing.freeze_support()
-    # multiprocessing.get_context('spawn')
+    # multiprocessing.get_context("spawn")
 
     # we need to reset and initialize sounddevice before running the multiprocessing part.
     # If we are not doing this at this early point, not all devices will be displayed
@@ -25,9 +28,9 @@ def get_audio_devices():
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
         # print(multiprocessing.get_start_method())
-        p = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
-        p.start()
-        p.join()
+        proc = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
+        proc.start()
+        proc.join()
 
         return list(proxy_input_devices), list(proxy_output_devices)
 
@@ -52,11 +55,11 @@ def fetch_audio_devices(input_devices, output_devices):
             max_output_channels = device["max_output_channels"]
             max_input_channels = device["max_input_channels"]
 
-        except Exception as e:
-            print(e)
+        except Exception as err:
+            print(err)
             max_input_channels = 0
             max_output_channels = 0
-            name = ''
+            name = ""
 
         if max_input_channels > 0:
             input_devices.append({"id": index, "name": name})
