@@ -330,8 +330,8 @@ def encode_grid(grid):
 
     grid = grid.upper()  # upper case to be save
 
-    int_first = ord(grid[0]) - 65  # -65 offset for 'A' become zero, utf8 table
-    int_sec = ord(grid[1]) - 65  # -65 offset for 'A' become zero, utf8 table
+    int_first = ord(grid[0]) - 65  # -65 offset for "A" become zero, utf8 table
+    int_sec = ord(grid[1]) - 65  # -65 offset for "A" become zero, utf8 table
 
     int_val = (int_first * 18) + int_sec  # encode for modulo devision, 2 numbers in 1
 
