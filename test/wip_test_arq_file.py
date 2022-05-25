@@ -65,7 +65,8 @@ def analyze_results(station1: list, station2: list):
 # @pytest.mark.parametrize("n_frames_per_burst", [1, 2, 3])
 @pytest.mark.parametrize("freedv_mode", ["datac3"])
 @pytest.mark.parametrize("n_frames_per_burst", [2])
-def test_arq_short(freedv_mode: str, n_frames_per_burst: int):
+@pytest.mark.parametrize("lowbwmode", [False, True])
+def test_arq_short(freedv_mode: str, n_frames_per_burst: int, lowbwmode: bool):
     log = structlog.get_logger(__name__)
 
     s1_data = []
@@ -103,6 +104,7 @@ def test_arq_short(freedv_mode: str, n_frames_per_burst: int):
                 STATIONS[0],
                 STATIONS[1],
                 messages[0],
+                lowbwmode,
             ),
             daemon=True,
         ),
@@ -115,6 +117,7 @@ def test_arq_short(freedv_mode: str, n_frames_per_burst: int):
                 STATIONS[1],
                 STATIONS[0],
                 messages[0],
+                lowbwmode,
             ),
             daemon=True,
         ),

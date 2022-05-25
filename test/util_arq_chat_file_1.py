@@ -32,6 +32,7 @@ def t_highsnr_arq_short_station1(
     mycall: str,
     dxcall: str,
     message: str,
+    lowbwmode: bool,
 ):
     log = structlog.get_logger(__name__)
     orig_tx_func: object
@@ -70,10 +71,11 @@ def t_highsnr_arq_short_station1(
 
     # enable testmode
     data_handler.TESTMODE = True
-    modem.TESTMODE = True
     modem.RXCHANNEL = "/tmp/hfchannel1"
+    modem.TESTMODE = True
     modem.TXCHANNEL = "/tmp/hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
+    static.LOW_BANDWITH_MODE = lowbwmode
     static.MYGRID = bytes("AA12aa", "utf-8")
     static.RESPOND_TO_CQ = True
 
