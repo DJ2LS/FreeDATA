@@ -16,7 +16,6 @@ import sys
 import threading
 import time
 from collections import deque
-from typing import Union
 
 import codec2
 import data_handler
@@ -44,6 +43,8 @@ RECEIVE_FSK_LDPC_1 = False
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
+
+    log = structlog.get_logger(__name__)
 
     def __init__(self) -> None:
 
@@ -188,7 +189,7 @@ class RF:
         self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
         self.fsk_ldpc_nin_0 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_0)
         self.fsk_ldpc_nin_1 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_1)
-        # structlog.get_logger("structlog").debug("[MDM] RF: ",datac0_nin=self.datac0_nin)
+        # self.log.debug("[MDM] RF: ",datac0_nin=self.datac0_nin)
 
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE:
@@ -202,24 +203,24 @@ class RF:
                     blocksize=4800,
                 )
                 atexit.register(self.stream.stop)
-                structlog.get_logger("structlog").info(
+                self.log.info(
                     "[MDM] init: opened audio devices"
                 )
-            except Exception as e:
-                structlog.get_logger("structlog").error(
-                    "[MDM] init: can't open audio device. Exit", e=e
+            except Exception as err:
+                self.log.error(
+                    "[MDM] init: can't open audio device. Exit", e=err
                 )
                 sys.exit(1)
 
             try:
-                structlog.get_logger("structlog").debug(
+                self.log.debug(
                     "[MDM] init: starting pyaudio callback"
                 )
                 # self.audio_stream.start_stream()
                 self.stream.start()
-            except Exception as e:
-                structlog.get_logger("structlog").error(
-                    "[MDM] init: starting pyaudio callback failed", e=e
+            except Exception as err:
+                self.log.error(
+                    "[MDM] init: starting pyaudio callback failed", e=err
                 )
         else:
 
@@ -235,9 +236,9 @@ class RF:
             try:
                 os.mkfifo(RXCHANNEL)
                 os.mkfifo(TXCHANNEL)
-            except Exception as e:
-                structlog.get_logger("structlog").error(
-                    f"[MDM] init:mkfifo: Exception: {e}"
+            except Exception as err:
+                self.log.error(
+                    f"[MDM] init:mkfifo: Exception: {err}"
                 )
 
             mkfifo_write_callback_thread = threading.Thread(
@@ -247,7 +248,7 @@ class RF:
             )
             mkfifo_write_callback_thread.start()
 
-            structlog.get_logger("structlog").debug(
+            self.log.debug(
                 "[MDM] Starting mkfifo_read_callback"
             )
             mkfifo_read_callback_thread = threading.Thread(
@@ -320,7 +321,7 @@ class RF:
         )
         hamlib_thread.start()
 
-        # structlog.get_logger("structlog").debug("[MDM] Starting worker_receive")
+        # self.log.debug("[MDM] Starting worker_receive")
         worker_received = threading.Thread(
             target=self.worker_received, name="WORKER_THREAD", daemon=True
         )
@@ -397,7 +398,7 @@ class RF:
           status:
 
         """
-        # structlog.get_logger("structlog").debug("[MDM] callback")
+        # self.log.debug("[MDM] callback")
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
 
@@ -429,8 +430,10 @@ class RF:
 
         try:
             outdata[:] = data_out48k[:frames]
-        except IndexError as e:
-            structlog.get_logger("structlog").debug(f"[MDM] callback: IndexError: {e}")
+        except IndexError as err:
+            self.log.debug(
+                f"[MDM] callback: IndexError: {err}"
+            )
 
         # return (data_out48k, audio.pyaudio.paContinue)
 
@@ -447,7 +450,7 @@ class RF:
           frames:
 
         """
-        structlog.get_logger("structlog").debug("[MDM] transmit", mode=mode)
+        self.log.debug("[MDM] transmit", mode=mode)
         static.TRANSMITTING = True
         # Toggle ptt early to save some time and send ptt state via socket
         static.PTT_STATE = self.hamlib.set_ptt(True)
@@ -487,7 +490,7 @@ class RF:
         mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
         txbuffer = bytes(mod_out_silence)
 
-        structlog.get_logger("structlog").debug(
+        self.log.debug(
             "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame
         )
 
@@ -625,7 +628,7 @@ class RF:
                 audiobuffer.pop(nin)
                 nin = codec2.api.freedv_nin(freedv)
                 if nbytes == bytes_per_frame:
-                    structlog.get_logger("structlog").debug(
+                    self.log.debug(
                         "[MDM] [demod_audio] Pushing received data to received_queue"
                     )
                     self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
@@ -688,7 +691,7 @@ class RF:
         while True:
             data = self.modem_transmit_queue.get()
 
-            structlog.get_logger("structlog").debug(
+            self.log.debug(
                 "[MDM] worker_transmit", mode=data[0]
             )
             self.transmit(
@@ -700,7 +703,7 @@ class RF:
         """Worker for FIFO queue for processing received frames"""
         while True:
             data = self.modem_received_queue.get()
-            structlog.get_logger("structlog").debug(
+            self.log.debug(
                 "[MDM] worker_received: received data!"
             )
             # data[0] = bytes_out
@@ -783,15 +786,15 @@ class RF:
             modem_stats_sync = modem_stats_sync.value
 
             snr = round(modem_stats_snr, 1)
-            structlog.get_logger("structlog").info("[MDM] calculate_snr: ", snr=snr)
+            self.log.info("[MDM] calculate_snr: ", snr=snr)
             # static.SNR = np.clip(snr, 0, 255)  # limit to max value of 255
             static.SNR = np.clip(
                 snr, -128, 128
             )  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
-        except Exception as e:
-            structlog.get_logger("structlog").error(
-                f"[MDM] calculate_snr: Exception: {e}"
+        except Exception as err:
+            self.log.error(
+                f"[MDM] calculate_snr: Exception: {err}"
             )
             static.SNR = 0
             return static.SNR
@@ -813,7 +816,7 @@ class RF:
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
-        whether the channel is 'busy.'
+        whether the channel is "busy."
         """
         # Initialize channel_busy_delay counter
         channel_busy_delay = 0
@@ -870,11 +873,11 @@ class RF:
                     dfftlist = dfft.tolist()
 
                     static.FFT = dfftlist[:320]  # 320 --> bandwidth 3000
-                except Exception as e:
-                    structlog.get_logger("structlog").error(
-                        f"[MDM] calculate_fft: Exception: {e}"
+                except Exception as err:
+                    self.log.error(
+                        f"[MDM] calculate_fft: Exception: {err}"
                     )
-                    structlog.get_logger("structlog").debug("[MDM] Setting fft=0")
+                    self.log.debug("[MDM] Setting fft=0")
                     # else 0
                     static.FFT = [0]
 

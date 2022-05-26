@@ -81,7 +81,7 @@ class DATA:
         self.data_channel_max_retries = 5
         self.datachannel_timeout = False
 
-        # List of codec2 modes to use in 'low bandwidth' mode.
+        # List of codec2 modes to use in "low bandwidth" mode.
         self.mode_list_low_bw = [
             codec2.FREEDV_MODE.datac0.value,
             codec2.FREEDV_MODE.datac3.value,
@@ -89,7 +89,7 @@ class DATA:
         # List for time to wait for corresponding mode in seconds
         self.time_list_low_bw = [3, 7]
 
-        # List of codec2 modes to use in 'high bandwidth' mode.
+        # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
             codec2.FREEDV_MODE.datac0.value,
             codec2.FREEDV_MODE.datac3.value,
@@ -101,13 +101,13 @@ class DATA:
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
         if static.LOW_BANDWITH_MODE:
-            # List of codec2 modes to use in 'low bandwidth' mode.
+            # List of codec2 modes to use in "low bandwidth" mode.
             self.mode_list = self.mode_list_low_bw
             # list of times to wait for corresponding mode in seconds
             self.time_list = self.time_list_low_bw
 
         else:
-            # List of codec2 modes to use in 'high bandwidth' mode.
+            # List of codec2 modes to use in "high bandwidth" mode.
             self.mode_list = self.mode_list_high_bw
             # list of times to wait for corresponding mode in seconds
             self.time_list = self.time_list_high_bw
@@ -968,7 +968,7 @@ class DATA:
                     break  # break retry loop
 
                 # We need this part for leaving the repeat loop
-                # static.ARQ_STATE == 'DATA' --> when stopping transmission manually
+                # static.ARQ_STATE == "DATA" --> when stopping transmission manually
                 if not static.ARQ_STATE:
                     # print("not ready for data...leaving loop....")
                     break
@@ -1205,10 +1205,7 @@ class DATA:
     # ############################################################################################################
     def arq_session_handler(self) -> bool:
         """
-        Create a session with `callsign` and wait until the session is open.
-
-        Args:
-          callsign:
+        Create a session with `static.DXCALLSIGN` and wait until the session is open.
 
         Returns:
             True if the session was opened successfully
@@ -1233,7 +1230,7 @@ class DATA:
             static.ARQ_SESSION_STATE = "connecting"
 
         if static.ARQ_SESSION and static.ARQ_SESSION_STATE == "connected":
-            # static.ARQ_SESSION_STATE = 'connected'
+            # static.ARQ_SESSION_STATE = "connected"
             return True
 
         static.ARQ_SESSION_STATE = "failed"
@@ -1278,7 +1275,6 @@ class DATA:
                     time.sleep(0.01)
                     # Stop waiting if data channel is opened
                     if static.ARQ_SESSION:
-                        # eventuell einfach nur return true um die nächste break ebene zu vermeiden?
                         return True
 
             # Session connect timeout, send close_session frame to
@@ -1392,8 +1388,8 @@ class DATA:
     def transmit_session_heartbeat(self) -> None:
         """Send ARQ sesion heartbeat while connected"""
         # static.ARQ_SESSION = True
-        # static.TNC_STATE = 'BUSY'
-        # static.ARQ_SESSION_STATE = 'connected'
+        # static.TNC_STATE = "BUSY"
+        # static.ARQ_SESSION_STATE = "connected"
 
         connection_frame = bytearray(14)
         connection_frame[:1] = bytes([222])
@@ -1933,9 +1929,7 @@ class DATA:
                         if static.ENABLE_FSK:
                             self.enqueue_frame_for_tx(
                                 beacon_frame,
-                                c2_mode=codec2.freedv_get_mode_value_by_name(
-                                    "FSK_LDPC_0"
-                                ),
+                                c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
                             self.enqueue_frame_for_tx(beacon_frame)
@@ -2010,7 +2004,7 @@ class DATA:
 
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx(
-                cq_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0")
+                cq_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
             )
         else:
             self.enqueue_frame_for_tx(cq_frame)
@@ -2074,7 +2068,7 @@ class DATA:
 
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx(
-                qrv_frame, c2_mode=codec2.freedv_get_mode_value_by_name("FSK_LDPC_0")
+                qrv_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
             )
         else:
             self.enqueue_frame_for_tx(qrv_frame)
@@ -2299,18 +2293,16 @@ class DATA:
 
         """
         # set modes we want to listen to
-        mode_name = codec2.freedv_get_mode_name_by_value(mode)
-
-        if mode_name == "datac1":
+        if mode == codec2.FREEDV_MODE.datac1.value:
             modem.RECEIVE_DATAC1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="datac1")
-        elif mode_name == "datac3":
+        elif mode == codec2.FREEDV_MODE.datac3.value:
             modem.RECEIVE_DATAC3 = True
             self.log.debug("[TNC] Changing listening data mode", mode="datac3")
-        elif mode_name == "fsk_ldpc_1":
+        elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
-        elif mode_name == "allmodes":
+        elif mode == codec2.FREEDV_MODE.allmodes.value:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_FSK_LDPC_1 = True

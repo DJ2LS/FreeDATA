@@ -16,6 +16,7 @@ from threading import Lock
 import numpy as np
 import structlog
 
+log = structlog.get_logger(__file__)
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
@@ -65,7 +66,7 @@ if hasattr(sys, "_MEIPASS"):
 else:
     sys.path.append(os.path.abspath("."))
 
-structlog.get_logger("structlog").info("[C2 ] Searching for libcodec2...")
+log.info("[C2 ] Searching for libcodec2...")
 if sys.platform == "linux":
     files = glob.glob(r"**/*libcodec2*", recursive=True)
     files.append("libcodec2.so")
@@ -80,16 +81,14 @@ api = None
 for file in files:
     try:
         api = ctypes.CDLL(file)
-        structlog.get_logger("structlog").info("[C2 ] Libcodec2 loaded", path=file)
+        log.info("[C2 ] Libcodec2 loaded", path=file)
         break
-    except OSError as e:
-        structlog.get_logger("structlog").warning(
-            "[C2 ] Libcodec2 found but not loaded", path=file, e=e
-        )
+    except OSError as err:
+        log.warning("[C2 ] Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():
-    structlog.get_logger("structlog").critical("[C2 ] Libcodec2 not loaded")
+    log.critical("[C2 ] Libcodec2 not loaded - Exiting")
     sys.exit(1)
 
 # ctypes function init
@@ -271,7 +270,7 @@ api.rx_sync_flags_to_text = [  # type: ignore
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:
     """
-    Thread safe audio buffer, which fits to needs of codec2
+    Thread-safe audio buffer, which fits the needs of codec2
 
     made by David Rowe, VK5DGR
     """
@@ -279,9 +278,7 @@ class audio_buffer:
     # A buffer of int16 samples, using a fixed length numpy array self.buffer for storage
     # self.nbuffer is the current number of samples in the buffer
     def __init__(self, size):
-        structlog.get_logger("structlog").debug(
-            "[C2 ] Creating audio buffer", size=size
-        )
+        log.debug("[C2 ] Creating audio buffer", size=size)
         self.size = size
         self.buffer = np.zeros(size, dtype=np.int16)
         self.nbuffer = 0
@@ -343,7 +340,7 @@ class resampler:
     MEM48 = api.FDMDV_OS_TAPS_48K
 
     def __init__(self):
-        structlog.get_logger("structlog").debug("[C2 ] Create 48<->8 kHz resampler")
+        log.debug("[C2 ] Create 48<->8 kHz resampler")
         self.filter_mem8 = np.zeros(self.MEM8, dtype=np.int16)
         self.filter_mem48 = np.zeros(self.MEM48)
 
