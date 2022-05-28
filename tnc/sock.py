@@ -37,6 +37,8 @@ DAEMON_QUEUE = queue.Queue()
 CONNECTED_CLIENTS = set()
 CLOSE_SIGNAL = False
 
+log = structlog.get_logger("sock")
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
@@ -438,7 +440,6 @@ def process_tnc_commands(data):
         log.error("[TNC] JSON decoding error", e=err)
 
 
-
 def send_tnc_state():
     """
     send the tnc state to network
@@ -669,7 +670,6 @@ def process_daemon_commands(data):
         except Exception as err:
             command_response("stop_tnc", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
-
 
 
 def send_daemon_state():
