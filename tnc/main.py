@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     ARGS = PARSER.parse_args()
 
-    # additional step for beeing sure our callsign is correctly
+    # additional step for being sure our callsign is correctly
     # in case we are not getting a station ssid
     # then we are forcing a station ssid = 0
     mycallsign = bytes(ARGS.mycall.upper(), "utf-8")

@@ -57,7 +57,7 @@ class DATA:
         self.burst_ack_snr = 0  # SNR from received ack frames
         self.burst_ack = False  # if we received an acknowledge frame for a burst
         self.data_frame_ack_received = False  # if we received an acknowledge frame for a data frame
-        self.rpt_request_received = False  # if we received an request for repeater frames
+        self.rpt_request_received = False  # if we received a request for repeater frames
         self.rpt_request_buffer = []  # requested frames, saved in a list
         self.rx_start_of_transmission = 0  # time of transmission start
 
@@ -189,7 +189,7 @@ class DATA:
         """
         self.log.debug("[TNC] process_data:", n_retries_per_burst=self.n_retries_per_burst)
 
-        # forward data only if broadcast or we are the receiver
+        # forward data only if broadcast, or we are the receiver
         # bytes_out[1:4] == callsign check for signalling frames,
         # bytes_out[2:5] == transmission
         # we could also create an own function, which returns True.
@@ -480,7 +480,7 @@ class DATA:
                 temp_burst_buffer += bytes(value)
 
             # if frame buffer ends not with the current frame, we are going to append new data
-            # if data already exists, we received the frame correctly, but the ACK frame didnt receive its destination (ISS)
+            # if data already exists, we received the frame correctly, but the ACK frame didn't receive its destination (ISS)
             if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer):
                 self.log.info("[TNC] ARQ | RX | Frame already received - sending ACK again")
                 static.RX_BURST_BUFFER = []
@@ -505,12 +505,13 @@ class DATA:
 
                     self.log.warning("[TNC] ARQ | RX | replacing existing buffer data",
                         area=search_area, pos=get_position)
-                # if we dont find data n this range, we really have new data and going to replace it
+                # if we don't find data n this range, we really have new data and going to replace it
                 else:
                     static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.debug("[TNC] ARQ | RX | appending data to buffer")
 
-            # lets check if we didnt receive a BOF and EOF yet to avoid sending ack frames if we already received all data
+            # lets check if we didn't receive a BOF and EOF,yet
+            # to avoid sending ack frames, if we already received all data
             if (not self.rx_frame_bof_received and
                     not self.rx_frame_eof_received and
                     data_in.find(self.data_frame_eof) < 0):
@@ -698,7 +699,7 @@ class DATA:
         tx_start_of_transmission = time.time()
         self.calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
 
-        # Append a crc and the begin and end of file indicators
+        # Append a crc at the beginning and end of file indicators
         frame_payload_crc = helpers.get_crc_32(data_out)
         self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc)
 
@@ -771,7 +772,7 @@ class DATA:
                     frame = data_out[bufferposition:bufferposition_end]
                     frame = arqheader + frame
 
-                # this point shouldnt reached that often
+                # this point shouldn't reach that often
                 elif bufferposition > len(data_out):
                     break
 
@@ -1065,7 +1066,7 @@ class DATA:
                 #     break
 
             # Session connect timeout, send close_session frame to
-            # attempt to cleanup the far-side, if it received the
+            # attempt to clean up the far-side, if it received the
             # open_session frame and can still hear us.
             if not static.ARQ_SESSION:
                 self.close_session()
@@ -1203,14 +1204,14 @@ class DATA:
 
         self.transmission_uuid = transmission_uuid
 
-        # wait a moment for the case, an heartbeat is already on the way back to us
+        # wait a moment for the case, a heartbeat is already on the way back to us
         if static.ARQ_SESSION:
             time.sleep(0.5)
 
         self.datachannel_timeout = False
 
         # we need to compress data for gettin a compression factor.
-        # so we are compressing twice. This is not that nice and maybe theres another way
+        # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
         static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
 
@@ -1298,7 +1299,7 @@ class DATA:
                     if not TESTMODE:
                         self.arq_cleanup()
 
-                    # attempt to cleanup the far-side, if it received the
+                    # attempt to clean up the far-side, if it received the
                     # open_session frame and can still hear us.
                     self.close_session()
                     return False
