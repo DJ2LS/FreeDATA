@@ -222,7 +222,6 @@ class RF:
                 active = True
 
             self.stream = Object()
-            self.stream.active = True
 
             # Create mkfifo buffers
             try:
