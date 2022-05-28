@@ -32,7 +32,7 @@ try:
     # installation path for Suse
     sys.path.append(f"/usr/local/lib64/python{python_version}/site-packages")
 
-    # everything else... not nice, but an attempt to see how its running within app bundle
+    # everything else... not nice, but an attempt to see how it's running within app bundle
     # this is not needed as python will be shipped with app bundle
     sys.path.append("/usr/local/lib/python3.6/site-packages")
     sys.path.append("/usr/local/lib/python3.7/site-packages")
@@ -231,7 +231,7 @@ class radio:
             return True
 
         except Exception as err2:
-            mainlog.error(
+            self.log.error(
                 "[RIG] Hamlib - can't open rig", error=err2, e=sys.exc_info()[0]
             )
             return False
@@ -245,7 +245,7 @@ class radio:
         (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         return Hamlib.rig_strrmode(hamlib_mode)
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         return bandwidth

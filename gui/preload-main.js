@@ -112,7 +112,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
-    //document.getElementById("500HzModeSwitch").value = config.low_bandwith_mode; 
+    //document.getElementById("500HzModeSwitch").value = config.low_bandwidth_mode; 
     //document.getElementById("fskModeSwitch").value = config.enable_fsk; 
     //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
        
@@ -132,7 +132,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         document.getElementById("fftSwitch").checked = false;
     }
 
-    if(config.low_bandwith_mode == 'True'){
+    if(config.low_bandwidth_mode == 'True'){
         document.getElementById("500HzModeSwitch").checked = true;
     } else {
         document.getElementById("500HzModeSwitch").checked = false;
@@ -522,9 +522,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // enable 500z Switch clicked
     document.getElementById("500HzModeSwitch").addEventListener("click", () => {
         if(document.getElementById("500HzModeSwitch").checked == true){
-            config.low_bandwith_mode = "True";       
+            config.low_bandwidth_mode = "True";       
         } else {
-            config.low_bandwith_mode = "False";       
+            config.low_bandwidth_mode = "False";       
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -650,9 +650,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }
 
         if (document.getElementById("500HzModeSwitch").checked == true){
-            var low_bandwith_mode = "True";
+            var low_bandwidth_mode = "True";
         } else {
-            var low_bandwith_mode = "False";
+            var low_bandwidth_mode = "False";
         }
         
         if (document.getElementById("fskModeSwitch").checked == true){
@@ -732,7 +732,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.enable_scatter = enable_scatter;
         config.enable_fft = enable_fft;
         config.enable_fsk = enable_fsk;
-        config.low_bandwith_mode = low_bandwith_mode;
+        config.low_bandwidth_mode = low_bandwidth_mode;
         config.tx_audio_level = tx_audio_level;
         config.respond_to_cq = respond_to_cq;
 
@@ -753,7 +753,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwith_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq);
         
         
     })
@@ -1152,8 +1152,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // SET MODE
     document.getElementById("mode").innerHTML = arg.mode;
 
-    // SET BANDWITH
-    document.getElementById("bandwith").innerHTML = arg.bandwith;
+    // SET bandwidth
+    document.getElementById("bandwidth").innerHTML = arg.bandwidth;
 
     // SET BYTES PER MINUTE
     if (typeof(arg.arq_bytes_per_minute) == 'undefined') {

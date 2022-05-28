@@ -25,7 +25,6 @@ import structlog
 
 log = structlog.get_logger(__file__)
 
-# signal handler for closing aplication
 def signal_handler(sig, frame):
     """
     a signal handler, which closes the network/socket when closing the application
@@ -44,7 +43,7 @@ def signal_handler(sig, frame):
 signal.signal(signal.SIGINT, signal_handler)
 
 if __name__ == "__main__":
-    # we need to run this on windows for multiprocessing support
+    # This is for Windows multiprocessing support
     multiprocessing.freeze_support()
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description="FreeDATA TNC")
@@ -227,7 +226,7 @@ if __name__ == "__main__":
 
     ARGS = PARSER.parse_args()
 
-    # additional step for beeing sure our callsign is correctly
+    # additional step for being sure our callsign is correctly
     # in case we are not getting a station ssid
     # then we are forcing a station ssid = 0
     mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
@@ -255,7 +254,7 @@ if __name__ == "__main__":
     static.ENABLE_SCATTER = ARGS.send_scatter
     static.ENABLE_FFT = ARGS.send_fft
     static.ENABLE_FSK = ARGS.enable_fsk
-    static.LOW_BANDWITH_MODE = ARGS.low_bandwith_mode
+    static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
     static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
     static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
@@ -313,5 +312,5 @@ if __name__ == "__main__":
     except Exception as err:
         log.error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
         sys.exit(1)
-    while 1:
+    while True:
         time.sleep(1)

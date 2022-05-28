@@ -55,8 +55,7 @@ class DAEMON:
     Daemon class
 
     """
-
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("DAEMON")
 
     def __init__(self):
         # load crc engine
@@ -80,7 +79,7 @@ class DAEMON:
         """
         Update audio devices and set to static
         """
-        while 1:
+        while True:
             try:
                 if not static.TNCSTARTED:
                     (
@@ -92,16 +91,14 @@ class DAEMON:
                     "[DMN] update_audio_devices: Exception gathering audio devices:",
                     e=err1,
                 )
-                # print(e)
             time.sleep(1)
 
     def update_serial_devices(self):
         """
         Update serial devices and set to static
         """
-        while 1:
+        while True:
             try:
-                # print("update serial")
                 serial_devices = []
                 ports = serial.tools.list_ports.comports()
                 for port, desc, hwid in ports:
@@ -121,13 +118,12 @@ class DAEMON:
                     "[DMN] update_serial_devices: Exception gathering serial devices:",
                     e=err1,
                 )
-                # print(e)
 
     def worker(self):
         """
         Worker to handle the received commands
         """
-        while 1:
+        while True:
             try:
                 data = self.daemon_queue.get()
 
@@ -148,7 +144,7 @@ class DAEMON:
                 # data[15] rigctld_port
                 # data[16] send_scatter
                 # data[17] send_fft
-                # data[18] low_bandwith_mode
+                # data[18] low_bandwidth_mode
                 # data[19] tuning_range_fmin
                 # data[20] tuning_range_fmax
                 # data[21] enable FSK
@@ -250,9 +246,9 @@ class DAEMON:
                             command.append("freedata-tnc.exe")
 
                         command += options
-                        p = subprocess.Popen(command)
+                        proc = subprocess.Popen(command)
 
-                        atexit.register(p.kill)
+                        atexit.register(proc.kill)
 
                         self.log.info("[DMN] TNC started", path="binary")
                     except FileNotFoundError as err1:
@@ -265,12 +261,12 @@ class DAEMON:
 
                         command.append("main.py")
                         command += options
-                        p = subprocess.Popen(command)
-                        atexit.register(p.kill)
+                        proc = subprocess.Popen(command)
+                        atexit.register(proc.kill)
 
                         self.log.info("[DMN] TNC started", path="source")
 
-                    static.TNCPROCESS = p  # .pid
+                    static.TNCPROCESS = proc
                     static.TNCSTARTED = True
                 """
                 # WE HAVE THIS PART in SOCKET
@@ -328,7 +324,7 @@ class DAEMON:
                         rigctld_port=rigctld_port,
                     )
 
-                    hamlib_version = rig.hamlib_version
+                    # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)
                     pttstate = hamlib.get_ptt()
@@ -351,12 +347,11 @@ class DAEMON:
 
             except Exception as err1:
                 self.log.error("[DMN] worker: Exception: ", e=err1)
-                # print(e)
 
 
 if __name__ == "__main__":
     mainlog = structlog.get_logger(__file__)
-    # we need to run this on windows for multiprocessing support
+    # we need to run this on Windows for multiprocessing support
     multiprocessing.freeze_support()
 
     # --------------------------------------------GET PARAMETER INPUTS
@@ -365,7 +360,7 @@ if __name__ == "__main__":
         "--port",
         dest="socket_port",
         default=3001,
-        help="Socket port in the range of 1024-65536",
+        help="Socket port in the range of 1024-65535",
         type=int,
     )
     ARGS = PARSER.parse_args()

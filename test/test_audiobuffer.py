@@ -14,7 +14,7 @@ import numpy as np
 import pytest
 
 BUFFER_SZ = 1024
-N_MAX = 100  # write a repeating sequence of 0..N_MAX-1
+N_MAX = 100  # write a repeating sequence of 0....N_MAX-1
 WRITE_SZ = 10  # different read and write sized buffers
 READ_SZ = 8
 NTESTS = 10000

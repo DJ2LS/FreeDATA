@@ -150,6 +150,7 @@ api.FREEDV_MODE_DATAC3 = 12  # type: ignore
 api.FREEDV_MODE_DATAC0 = 14  # type: ignore
 api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
 
+
 # -------------------------------- FSK LDPC MODE SETTINGS
 
 
@@ -175,7 +176,7 @@ adv.Rs = 100                                    # symbol rate
 adv.Fs = 8000                                   # sample rate
 adv.first_tone = 1500                           # first tone freq
 adv.tone_spacing = 200                          # shift between tones
-adv.codename = 'H_128_256_5'.encode('utf-8')    # code word
+adv.codename = "H_128_256_5".encode("utf-8")    # code word
 
 HRA_112_112          rate 0.50 (224,112)    BPF: 14     not working
 HRA_56_56            rate 0.50 (112,56)     BPF: 7      not working
@@ -266,6 +267,7 @@ api.rx_sync_flags_to_text = [  # type: ignore
     "EBS-",
     "EBST",
 ]
+
 
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:

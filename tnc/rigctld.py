@@ -21,7 +21,7 @@ class radio:
     log = structlog.get_logger(__name__)
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
-        """Open a connection to rotctld, and test it for validity"""
+        """Open a connection to rigctld, and test it for validity"""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # self.sock.settimeout(timeout)
 
@@ -98,7 +98,7 @@ class radio:
         self.sock.close()
         self.connected = False
 
-    def send_command(self, command):
+    def send_command(self, command) -> bytes:
         """Send a command to the connected rotctld instance,
             and return the return value.
 
@@ -134,6 +134,8 @@ class radio:
             time.sleep(0.5)
             self.connect()
 
+        return b""
+
     def get_mode(self):
         """ """
         try:
@@ -144,13 +146,13 @@ class radio:
         except Exception:
             return 0
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            bandwith = data[1]
-            return bandwith.decode("utf-8")
+            bandwidth = data[1]
+            return bandwidth.decode("utf-8")
         except Exception:
             return 0
 

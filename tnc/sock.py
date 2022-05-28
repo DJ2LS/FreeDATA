@@ -5,18 +5,17 @@ Created on Fri Dec 25 21:25:14 2020
 @author: DJ2LS
 
 # GET COMMANDS
-            # "command" : "..."
+    # "command" : "..."
 
-            # SET COMMANDS
-            # "command" : "..."
-            # "parameter" : " ..."
+    # SET COMMANDS
+    # "command" : "..."
+    # "parameter" : " ..."
 
-            # DATA COMMANDS
-            # "command" : "..."
-            # "type" : "..."
-            # "dxcallsign" : "..."
-            # "data" : "..."
-
+    # DATA COMMANDS
+    # "command" : "..."
+    # "type" : "..."
+    # "dxcallsign" : "..."
+    # "data" : "..."
 """
 import atexit
 import base64
@@ -85,7 +84,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     try:
                         client.send(sock_data)
                     except Exception as err:
-                        # print("connection lost...")
                         self.log.info("[SCK] Connection lost", e=err)
                         self.connection_alive = False
 
@@ -157,10 +155,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
         self.sendThread = threading.Thread(
             target=self.send_to_client, args=[], daemon=True
-        ).start()
+        )
+        self.sendThread.start()
         self.receiveThread = threading.Thread(
             target=self.receive_from_client, args=[], daemon=True
-        ).start()
+        )
+        self.receiveThread.start()
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
@@ -192,7 +192,7 @@ def process_tnc_commands(data):
     Returns:
 
     """
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("process_tnc_commands")
 
     # we need to do some error handling in case of socket timeout or decoding issue
     try:
@@ -456,7 +456,7 @@ def send_tnc_state():
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),
-        "bandwith": str(static.HAMLIB_BANDWIDTH),
+        "bandwidth": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
         "scatter": static.SCATTER,
@@ -492,6 +492,9 @@ def send_tnc_state():
     return json.dumps(output)
 
 
+# This appears to have been taken out of a class, but is never called because
+# the `self.request.sendall` call is a syntax error as `self` is undefined and
+# we don't see errors in use.
 def process_daemon_commands(data):
     """
     process daemon commands
@@ -570,7 +573,9 @@ def process_daemon_commands(data):
             enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
             enable_fft = str(received_json["parameter"][0]["enable_fft"])
             enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
-            low_bandwith_mode = str(received_json["parameter"][0]["low_bandwith_mode"])
+            low_bandwidth_mode = str(
+                received_json["parameter"][0]["low_bandwidth_mode"]
+            )
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
@@ -603,7 +608,7 @@ def process_daemon_commands(data):
                     rigctld_port,
                     enable_scatter,
                     enable_fft,
-                    low_bandwith_mode,
+                    low_bandwidth_mode,
                     tuning_range_fmin,
                     tuning_range_fmax,
                     enable_fsk,
@@ -616,6 +621,7 @@ def process_daemon_commands(data):
         except Exception as err:
             command_response("start_tnc", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
+
     if received_json["type"] == "get" and received_json["command"] == "test_hamlib":
         try:
             devicename = str(received_json["parameter"][0]["devicename"])
@@ -692,9 +698,8 @@ def send_daemon_state():
         else:
             output["daemon_state"].append({"status": "stopped"})
 
-        jsondata = json.dumps(output)
+        return json.dumps(output)
 
-        return jsondata
     except Exception as err:
         log.warning("[SCK] error", e=err)
         return None

@@ -76,7 +76,7 @@ class Test:
             self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE
         ) == codec2.api.FDMDV_OS_48
 
-        # check if we want to use an audio device then do an pyaudio init
+        # check if we want to use an audio device then do a pyaudio init
         if self.AUDIO_INPUT_DEVICE != -1:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices

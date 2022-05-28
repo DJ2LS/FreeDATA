@@ -11,10 +11,7 @@ import sys
 import argparse
 import time
 
-
-
-
-#--------------------------------------------GET PARAMETER INPUTS  
+# --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--port', dest="socket_port", default=3000, help="Set the port, the socket is listening on.", type=int) 
 parser.add_argument('--data', dest="data", default=False, help="data", type=str)

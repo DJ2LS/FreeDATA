@@ -1,7 +1,8 @@
+"""
+Gather information about audio devices.
+"""
 import atexit
-import json
 import multiprocessing
-import sys
 
 import sounddevice as sd
 

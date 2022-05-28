@@ -82,7 +82,7 @@ class Test:
 
         self.resampler = codec2.resampler()
 
-        # check if we want to use an audio device then do an pyaudio init
+        # check if we want to use an audio device then do a pyaudio init
         if self.AUDIO_OUTPUT_DEVICE != -1:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
@@ -196,7 +196,7 @@ class Test:
         )  # use this if CRC16 checksum is required ( DATA1-3)
         buffer[
             : len(self.data_out)
-        ] = self.data_out  # set buffersize to length of data which will be send
+        ] = self.data_out  # set buffer size to length of data which will be sent
 
         # create crc for data frame - we are using the crc function shipped with codec2 to avoid
         # crc algorithm incompatibilities

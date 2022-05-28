@@ -44,10 +44,10 @@ RECEIVE_FSK_LDPC_1 = False
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
 
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("RF")
 
     def __init__(self) -> None:
-
+        """ """
         self.sampler_avg = 0
         self.buffer_avg = 0
 
@@ -203,25 +203,17 @@ class RF:
                     blocksize=4800,
                 )
                 atexit.register(self.stream.stop)
-                self.log.info(
-                    "[MDM] init: opened audio devices"
-                )
+                self.log.info("[MDM] init: opened audio devices")
             except Exception as err:
-                self.log.error(
-                    "[MDM] init: can't open audio device. Exit", e=err
-                )
+                self.log.error("[MDM] init: can't open audio device. Exit", e=err)
                 sys.exit(1)
 
             try:
-                self.log.debug(
-                    "[MDM] init: starting pyaudio callback"
-                )
+                self.log.debug("[MDM] init: starting pyaudio callback")
                 # self.audio_stream.start_stream()
                 self.stream.start()
             except Exception as err:
-                self.log.error(
-                    "[MDM] init: starting pyaudio callback failed", e=err
-                )
+                self.log.error("[MDM] init: starting pyaudio callback failed", e=err)
         else:
 
             class Object:
@@ -237,9 +229,7 @@ class RF:
                 os.mkfifo(RXCHANNEL)
                 os.mkfifo(TXCHANNEL)
             except Exception as err:
-                self.log.error(
-                    f"[MDM] init:mkfifo: Exception: {err}"
-                )
+                self.log.info(f"[MDM] init:mkfifo: Exception: {err}")
 
             mkfifo_write_callback_thread = threading.Thread(
                 target=self.mkfifo_write_callback,
@@ -248,9 +238,7 @@ class RF:
             )
             mkfifo_write_callback_thread.start()
 
-            self.log.debug(
-                "[MDM] Starting mkfifo_read_callback"
-            )
+            self.log.debug("[MDM] Starting mkfifo_read_callback")
             mkfifo_read_callback_thread = threading.Thread(
                 target=self.mkfifo_read_callback,
                 name="MKFIFO READ CALLBACK THREAD",
@@ -338,7 +326,7 @@ class RF:
         Support testing by reading the audio data from a pipe and
         depositing the data into the codec data buffers.
         """
-        while 1:
+        while True:
             time.sleep(0.01)
             # -----read
             data_in48k = bytes()
@@ -368,7 +356,7 @@ class RF:
 
     def mkfifo_write_callback(self) -> None:
         """Support testing by writing the audio data to a pipe."""
-        while 1:
+        while True:
             time.sleep(0.01)
 
             # -----write
@@ -431,9 +419,7 @@ class RF:
         try:
             outdata[:] = data_out48k[:frames]
         except IndexError as err:
-            self.log.debug(
-                f"[MDM] callback: IndexError: {err}"
-            )
+            self.log.debug(f"[MDM] callback: IndexError: {err}")
 
         # return (data_out48k, audio.pyaudio.paContinue)
 
@@ -568,6 +554,7 @@ class RF:
                 delta = chunk_length - len(c)
                 delta_zeros = np.zeros(delta, dtype=np.int16)
                 c = np.append(c, delta_zeros)
+                # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
 
             self.modoutqueue.append(c)
 
@@ -691,9 +678,7 @@ class RF:
         while True:
             data = self.modem_transmit_queue.get()
 
-            self.log.debug(
-                "[MDM] worker_transmit", mode=data[0]
-            )
+            self.log.debug("[MDM] worker_transmit", mode=data[0])
             self.transmit(
                 mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
             )
@@ -703,9 +688,7 @@ class RF:
         """Worker for FIFO queue for processing received frames"""
         while True:
             data = self.modem_received_queue.get()
-            self.log.debug(
-                "[MDM] worker_received: received data!"
-            )
+            self.log.debug("[MDM] worker_received: received data!")
             # data[0] = bytes_out
             # data[1] = freedv session
             # data[2] = bytes_per_frame
@@ -793,9 +776,7 @@ class RF:
             )  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
         except Exception as err:
-            self.log.error(
-                f"[MDM] calculate_snr: Exception: {err}"
-            )
+            self.log.error(f"[MDM] calculate_snr: Exception: {err}")
             static.SNR = 0
             return static.SNR
 
@@ -811,7 +792,7 @@ class RF:
             threading.Event().wait(0.5)
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
-            static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwith()
+            static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
 
     def calculate_fft(self) -> None:
         """
@@ -874,9 +855,7 @@ class RF:
 
                     static.FFT = dfftlist[:320]  # 320 --> bandwidth 3000
                 except Exception as err:
-                    self.log.error(
-                        f"[MDM] calculate_fft: Exception: {err}"
-                    )
+                    self.log.error(f"[MDM] calculate_fft: Exception: {err}")
                     self.log.debug("[MDM] Setting fft=0")
                     # else 0
                     static.FFT = [0]

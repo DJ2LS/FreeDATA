@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Dec 25 21:25:14 2020
@@ -255,13 +254,13 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     # we need to do this step to reduce the needed paypload by the callsign ( stripping "-" out of the callsign )
     """
     callsign = bytes(bytestring[:7])
-    callsign = callsign.rstrip(b'\x00')
+    callsign = callsign.rstrip(b"\x00")
     ssid = int.from_bytes(bytes(bytestring[7:8]), "big")
 
-    callsign = callsign + b'-'
-    callsign = callsign.decode('utf-8')
+    callsign = callsign + b"-"
+    callsign = callsign.decode("utf-8")
     callsign = callsign + str(ssid)
-    callsign = callsign.encode('utf-8')
+    callsign = callsign.encode("utf-8")
 
     return bytes(callsign)
     """
@@ -310,7 +309,7 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
 
 def encode_grid(grid):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         grid:string: maidenhead QTH locater [a-r][a-r][0-9][0-9][a-x][a-x]
     Returns:
@@ -344,7 +343,7 @@ def encode_grid(grid):
 
 def decode_grid(b_code_word: bytes):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         b_code_word:bytes: 4 bytes with 26 bit valid data LSB
     Returns:
@@ -374,7 +373,7 @@ def decode_grid(b_code_word: bytes):
 
 def encode_call(call):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         call:string: ham radio call sign [A-Z,0-9], last char SSID 0-63
 
@@ -401,7 +400,7 @@ def encode_call(call):
 
 def decode_call(b_code_word: bytes):
     """
-    @auther: DB1UJ
+    @author: DB1UJ
     Args:
         b_code_word:bytes: 6 bytes with 6 bits/sign valid data char signs LSB
 

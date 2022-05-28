@@ -93,7 +93,7 @@ def test_mm_tx():
         payload_per_frame = bytes_per_frame - 2
 
         buffer = bytearray(payload_per_frame)
-        # Set buffersize to length of data which will be send
+        # Set buffer size to length of data which will be sent
         buffer[: len(data_out)] = data_out
 
         # Generate CRC16

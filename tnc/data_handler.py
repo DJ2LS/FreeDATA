@@ -34,7 +34,7 @@ DATA_QUEUE_RECEIVED = queue.Queue()
 class DATA:
     """Terminal Node Controller for FreeDATA"""
 
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("DATA")
 
     def __init__(self) -> None:
         # Initial call sign. Will be overwritten later
@@ -76,7 +76,7 @@ class DATA:
         self.n_retries_per_burst = 0
 
         # Flag to indicate if we recevied a low bandwidth mode channel opener
-        self.received_low_bandwidth_mode = False
+        self.received_LOW_BANDWIDTH_MODE = False
 
         self.data_channel_max_retries = 5
         self.datachannel_timeout = False
@@ -100,7 +100,7 @@ class DATA:
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
-        if static.LOW_BANDWITH_MODE:
+        if static.LOW_BANDWIDTH_MODE:
             # List of codec2 modes to use in "low bandwidth" mode.
             self.mode_list = self.mode_list_low_bw
             # list of times to wait for corresponding mode in seconds
@@ -412,6 +412,7 @@ class DATA:
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
+        # FIXME: Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
         missing_frames = [
             frame + 1
             for frame, element in enumerate(static.RX_BURST_BUFFER)
@@ -419,7 +420,7 @@ class DATA:
         ]
 
         # set n frames per burst to modem
-        # this is an idea so its not getting lost....
+        # this is an idea, so it's not getting lost....
         # we need to work on this
         codec2.api.freedv_set_frames_per_burst(freedv, len(missing_frames))
 
@@ -436,7 +437,7 @@ class DATA:
         # Transmit frame
         self.enqueue_frame_for_tx(rpt_frame)
 
-    def send_burst_nack_frame(self, snr=0) -> None:
+    def send_burst_nack_frame(self, snr: float = 0) -> None:
         """Build and send NACK frame for received DATA frame"""
         nack_frame = bytearray(14)
         nack_frame[:1] = bytes([63])
@@ -448,7 +449,7 @@ class DATA:
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx(nack_frame)
 
-    def send_burst_nack_frame_watchdog(self, snr=0) -> None:
+    def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
         nack_frame = bytearray(14)
         nack_frame[:1] = bytes([64])
@@ -471,13 +472,13 @@ class DATA:
         self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=250)
 
     def arq_data_received(
-        self, data_in: bytes, bytes_per_frame: int, snr: int, freedv
+        self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
     ) -> None:
         """
         Args:
           data_in:bytes:
           bytes_per_frame:int:
-          snr:int:
+          snr:float:
           freedv:
 
         Returns:
@@ -559,7 +560,7 @@ class DATA:
                 # Here we are going to search for our data in the last received bytes.
                 # This reduces the chance we will lose the entire frame in the case of signalling frame loss
 
-                # static.RX_FRAME_BUFFER --> exisitng data
+                # static.RX_FRAME_BUFFER --> existing data
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
                 search_area = 510
@@ -582,12 +583,12 @@ class DATA:
                         area=search_area,
                         pos=get_position,
                     )
-                # if we dont find data n this range, we really have new data and going to replace it
+                # If we don't find data in this range, we really have new data and going to replace it
                 else:
                     static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.debug("[TNC] ARQ | RX | appending data to buffer")
 
-            # lets check if we didnt receive a BOF and EOF yet to avoid sending
+            # Check if we didn't receive a BOF and EOF yet to avoid sending
             # ack frames if we already received all data
             if (
                 not self.rx_frame_bof_received
@@ -623,6 +624,7 @@ class DATA:
             # Check if we received last frame of burst - this is an indicator for missed frames.
             # With this way of doing this, we always MUST receive the last
             # frame of a burst otherwise the entire burst is lost
+            # TODO: See if a timeout on the send side with re-transmit last burst would help.
             self.log.debug(
                 "[TNC] all frames in burst received:",
                 frame=RX_N_FRAME_OF_BURST,
@@ -648,6 +650,7 @@ class DATA:
         eof_position = static.RX_FRAME_BUFFER.find(self.data_frame_eof)
 
         # get total bytes per transmission information as soon we recevied a frame with a BOF
+
         if bof_position >= 0:
             payload = static.RX_FRAME_BUFFER[
                 bof_position + len(self.data_frame_bof) : eof_position
@@ -828,7 +831,7 @@ class DATA:
         tx_start_of_transmission = time.time()
         self.calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
 
-        # Append a crc and the begin and end of file indicators
+        # Append a crc at the beginning and end of file indicators
         frame_payload_crc = helpers.get_crc_32(data_out)
         self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc)
 
@@ -861,7 +864,7 @@ class DATA:
                     self.log.debug("[TNC] FIXED MODE:", mode=data_mode)
                 else:
                     # we are doing a modulo check of transmission retries of the actual burst
-                    # every 2nd retry which failes, decreases speedlevel by 1.
+                    # every 2nd retry which fails, decreases speedlevel by 1.
                     # as soon as we received an ACK for the current burst, speed_level will increase
                     # by 1.
                     # The intent is to optimize speed by adapting to the current RF conditions.
@@ -1200,9 +1203,9 @@ class DATA:
                     missing = missing_area[i : i + 2]
                     self.rpt_request_buffer.insert(0, missing)
 
-    # ############################################################################################################
+    ############################################################################################################
     # ARQ SESSION HANDLER
-    # ############################################################################################################
+    ############################################################################################################
     def arq_session_handler(self) -> bool:
         """
         Create a session with `static.DXCALLSIGN` and wait until the session is open.
@@ -1211,7 +1214,7 @@ class DATA:
             True if the session was opened successfully
             False if the session open request failed
         """
-        # das hier müssen wir checken. Sollte vielleicht in INIT!!!
+        # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         self.log.info(
             "[TNC] SESSION ["
@@ -1262,7 +1265,7 @@ class DATA:
                     + "]>>?<<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    a=attempt + 1,
+                    a=attempt + 1,  # Adjust for 0-based for user display
                     state=static.ARQ_SESSION_STATE,
                 )
 
@@ -1278,7 +1281,7 @@ class DATA:
                         return True
 
             # Session connect timeout, send close_session frame to
-            # attempt to cleanup the far-side, if it received the
+            # attempt to clean up the far-side, if it received the
             # open_session frame and can still hear us.
             if not static.ARQ_SESSION:
                 self.close_session()
@@ -1460,14 +1463,14 @@ class DATA:
 
         self.transmission_uuid = transmission_uuid
 
-        # wait a moment for the case, an heartbeat is already on the way back to us
+        # wait a moment for the case, a heartbeat is already on the way back to us
         if static.ARQ_SESSION:
             time.sleep(0.5)
 
         self.datachannel_timeout = False
 
         # we need to compress data for gettin a compression factor.
-        # so we are compressing twice. This is not that nice and maybe theres another way
+        # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
         static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
 
@@ -1502,7 +1505,7 @@ class DATA:
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
-        if static.LOW_BANDWITH_MODE and mode == 255:
+        if static.LOW_BANDWIDTH_MODE and mode == 255:
             frametype = bytes([227])
             self.log.debug("[TNC] Requesting low bandwidth mode")
 
@@ -1595,11 +1598,11 @@ class DATA:
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         # check if we received low bandwidth mode
         if frametype == 225:
-            self.received_low_bandwidth_mode = False
+            self.received_LOW_BANDWIDTH_MODE = False
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
         else:
-            self.received_low_bandwidth_mode = True
+            self.received_LOW_BANDWIDTH_MODE = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
         self.speed_level = len(self.mode_list) - 1
@@ -1645,8 +1648,8 @@ class DATA:
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
-        # Select the frame type based on the mode we are in
-        if static.LOW_BANDWITH_MODE or self.received_low_bandwidth_mode:
+        # Select the frame type based on the current TNC mode
+        if static.LOW_BANDWIDTH_MODE or self.received_LOW_BANDWIDTH_MODE:
             frametype = bytes([228])
             self.log.debug("[TNC] Responding with low bandwidth mode")
         else:
@@ -1691,12 +1694,12 @@ class DATA:
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
             if frametype == 228:
-                self.received_low_bandwidth_mode = True
+                self.received_LOW_BANDWIDTH_MODE = True
                 self.mode_list = self.mode_list_low_bw
                 self.time_list = self.time_list_low_bw
                 self.log.debug("[TNC] low bandwidth mode", modes=self.mode_list)
             else:
-                self.received_low_bandwidth_mode = False
+                self.received_LOW_BANDWIDTH_MODE = False
                 self.mode_list = self.mode_list_high_bw
                 self.time_list = self.time_list_high_bw
                 self.log.debug("[TNC] high bandwidth mode", modes=self.mode_list)
@@ -1728,6 +1731,7 @@ class DATA:
             static.TNC_STATE = "IDLE"
             static.ARQ_STATE = False
             static.INFO.append("PROTOCOL;VERSION_MISMATCH")
+            # TODO: We should display a message to this effect on the UI.
             self.log.warning(
                 "[TNC] protocol version mismatch:",
                 received=protocol_version,
@@ -1901,13 +1905,14 @@ class DATA:
         """
         Controlling function for running a beacon
         Args:
+
           self: arq class
 
         Returns:
 
         """
         try:
-            while 1:
+            while True:
                 time.sleep(0.5)
                 while static.BEACON_STATE:
                     if (
@@ -1942,8 +1947,8 @@ class DATA:
                     ):
                         time.sleep(0.01)
 
-        except Exception as e:
-            self.log.debug("[TNC] run_beacon: ", exception=e)
+        except Exception as err:
+            self.log.debug("[TNC] run_beacon: ", exception=err)
 
     def received_beacon(self, data_in: bytes) -> None:
         """
@@ -2156,8 +2161,8 @@ class DATA:
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
-        except Exception as e:
-            self.log.error(f"[TNC] calculate_transfer_rate_rx: Exception: {e}")
+        except Exception as err:
+            self.log.error(f"[TNC] calculate_transfer_rate_rx: Exception: {err}")
             static.ARQ_TRANSMISSION_PERCENT = 0.0
             static.ARQ_BITS_PER_SECOND = 0
             static.ARQ_BYTES_PER_MINUTE = 0
@@ -2184,7 +2189,7 @@ class DATA:
         self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int
     ) -> list:
         """
-        Calcualte Transferrate for transmission
+        Calculate transfer rate for transmission
         Args:
           tx_start_of_transmission:float:
           sentbytes:int:
@@ -2210,8 +2215,8 @@ class DATA:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
 
-        except Exception as e:
-            self.log.error(f"[TNC] calculate_transfer_rate_tx: Exception: {e}")
+        except Exception as err:
+            self.log.error(f"[TNC] calculate_transfer_rate_tx: Exception: {err}")
             static.ARQ_TRANSMISSION_PERCENT = 0.0
             static.ARQ_BITS_PER_SECOND = 0
             static.ARQ_BYTES_PER_MINUTE = 0
@@ -2260,7 +2265,7 @@ class DATA:
         static.ARQ_SPEED_LEVEL = self.speed_level
 
         # low bandwidth mode indicator
-        self.received_low_bandwidth_mode = False
+        self.received_LOW_BANDWIDTH_MODE = False
 
         # reset retry counter for rx channel / burst
         self.n_retries_per_burst = 0
@@ -2426,9 +2431,9 @@ class DATA:
 
     def heartbeat(self) -> None:
         """
-        Heartbeat thread which auto resumes the heartbeat signal within an arq session
+        Heartbeat thread which auto pauses and resumes the heartbeat signal when in an arq session
         """
-        while 1:
+        while True:
             time.sleep(0.01)
             if (
                 static.ARQ_SESSION

@@ -67,7 +67,7 @@ def test_mm_rx():
 
     resampler = codec2.resampler()
 
-    # check if we want to use an audio device then do an pyaudio init
+    # check if we want to use an audio device then do a pyaudio init
     if AUDIO_INPUT_DEVICE != -1:
         p_audio = pyaudio.PyAudio()
         # auto search for loopback devices
