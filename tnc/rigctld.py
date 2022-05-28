@@ -8,8 +8,6 @@ import logging
 import socket
 import time
 
-import log_handler
-import static
 import structlog
 
 # set global hamlib version

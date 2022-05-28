@@ -55,6 +55,8 @@ class DAEMON:
     Daemon class
 
     """
+    log = structlog.get_logger("DAEMON")
+
     def __init__(self):
         # load crc engine
         self.crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc8 library
@@ -73,12 +75,12 @@ class DAEMON:
         """
         Update audio devices and set to static
         """
-        while 1:
+        while True:
             try:
                 if not static.TNCSTARTED:
                     static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
             except Exception as err1:
-                structlog.get_logger("structlog").error("[DMN] update_audio_devices: Exception gathering audio devices:", e=err1)
+                self.log.error("[DMN] update_audio_devices: Exception gathering audio devices:", e=err1)
                 # print(e)
             time.sleep(1)
 
@@ -86,7 +88,7 @@ class DAEMON:
         """
         Update serial devices and set to static
         """
-        while 1:
+        while True:
             try:
                 serial_devices = []
                 ports = serial.tools.list_ports.comports()
@@ -101,14 +103,14 @@ class DAEMON:
                 static.SERIAL_DEVICES = serial_devices
                 time.sleep(1)
             except Exception as err1:
-                structlog.get_logger("structlog").error("[DMN] update_serial_devices: Exception gathering serial devices:", e=err1)
+                self.log.error("[DMN] update_serial_devices: Exception gathering serial devices:", e=err1)
                 # print(e)
 
     def worker(self):
         """
         Worker to handle the received commands
         """
-        while 1:
+        while True:
             try:
                 data = self.daemon_queue.get()
 
@@ -137,7 +139,7 @@ class DAEMON:
                 # data[23] respond_to_cq
 
                 if data[0] == "STARTTNC":
-                    structlog.get_logger("structlog").warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+                    self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
                     # list of parameters, necessary for running subprocess command as a list
                     options = []
@@ -231,13 +233,13 @@ class DAEMON:
                             command.append("freedata-tnc.exe")
 
                         command += options
-                        p = subprocess.Popen(command)
+                        proc = subprocess.Popen(command)
 
-                        atexit.register(p.kill)
+                        atexit.register(proc.kill)
 
-                        structlog.get_logger("structlog").info("[DMN] TNC started", path="binary")
+                        self.log.info("[DMN] TNC started", path="binary")
                     except FileNotFoundError as err1:
-                        structlog.get_logger("structlog").error("[DMN] worker: Exception:", e=err1)
+                        self.log.error("[DMN] worker: Exception:", e=err1)
                         command = []
                         if sys.platform in ["linux", "darwin"]:
                             command.append("python3")
@@ -246,18 +248,18 @@ class DAEMON:
 
                         command.append("main.py")
                         command += options
-                        p = subprocess.Popen(command)
-                        atexit.register(p.kill)
+                        proc = subprocess.Popen(command)
+                        atexit.register(proc.kill)
 
-                        structlog.get_logger("structlog").info("[DMN] TNC started", path="source")
+                        self.log.info("[DMN] TNC started", path="source")
 
-                    static.TNCPROCESS = p  # .pid
+                    static.TNCPROCESS = proc
                     static.TNCSTARTED = True
                 """
                 # WE HAVE THIS PART in SOCKET
                 if data[0] == "STOPTNC":
                         static.TNCPROCESS.kill()
-                        structlog.get_logger("structlog").warning("[DMN] Stopping TNC")
+                        self.log.warning("[DMN] Stopping TNC")
                         #os.kill(static.TNCPROCESS, signal.SIGKILL)
                         static.TNCSTARTED = False
                 """
@@ -306,13 +308,13 @@ class DAEMON:
                     pttstate = hamlib.get_ptt()
 
                     if pttstate:
-                        structlog.get_logger("structlog").info("[DMN] Hamlib PTT", status="SUCCESS")
+                        self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
                         response = {"command": "test_hamlib", "result": "SUCCESS"}
                     elif not pttstate:
-                        structlog.get_logger("structlog").warning("[DMN] Hamlib PTT", status="NO SUCCESS")
+                        self.log.warning("[DMN] Hamlib PTT", status="NO SUCCESS")
                         response = {"command": "test_hamlib", "result": "NOSUCCESS"}
                     else:
-                        structlog.get_logger("structlog").error("[DMN] Hamlib PTT", status="FAILED")
+                        self.log.error("[DMN] Hamlib PTT", status="FAILED")
                         response = {"command": "test_hamlib", "result": "FAILED"}
 
                     hamlib.set_ptt(False)
@@ -322,10 +324,11 @@ class DAEMON:
                     sock.SOCKET_QUEUE.put(jsondata)
 
             except Exception as err1:
-                structlog.get_logger("structlog").error("[DMN] worker: Exception: ", e=err1)
+                self.log.error("[DMN] worker: Exception: ", e=err1)
 
 
 if __name__ == "__main__":
+    mainlog = structlog.get_logger(__file__)
     # we need to run this on Windows for multiprocessing support
     multiprocessing.freeze_support()
 
@@ -350,10 +353,10 @@ if __name__ == "__main__":
             os.makedirs(logging_path)
         log_handler.setup_logging(logging_path)
     except Exception as err:
-        structlog.get_logger("structlog").error("[DMN] logger init error", exception=err)
+        mainlog.error("[DMN] logger init error", exception=err)
 
     try:
-        structlog.get_logger("structlog").info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
+        mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer((static.HOST, static.DAEMONPORT), sock.ThreadedTCPRequestHandler)
@@ -362,10 +365,10 @@ if __name__ == "__main__":
         server_thread.start()
 
     except Exception as err:
-        structlog.get_logger("structlog").error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=err)
+        mainlog.error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=err)
         sys.exit(1)
     daemon = DAEMON()
 
-    structlog.get_logger("structlog").info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
+    mainlog.info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
     while True:
         time.sleep(1)

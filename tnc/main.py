@@ -150,5 +150,5 @@ if __name__ == "__main__":
     except Exception as err:
         structlog.get_logger("structlog").error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
         sys.exit(1)
-    while 1:
+    while True:
         time.sleep(1)

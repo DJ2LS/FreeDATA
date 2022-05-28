@@ -6,10 +6,9 @@ Created on Fri Dec 11 21:53:35 2020
 @author: parallels
 """
 
-import socket
-import sys
 import argparse
 import random
+import socket
 
 
 def create_string(length):
@@ -24,14 +23,14 @@ def create_string(length):
         random_integer = random_integer - 32 if flip_bit == 1 else random_integer
     # Keep appending random characters using chr(x)
         random_string += (chr(random_integer))
-    print("STR:" + str(random_string))
-    
+    print(f"STR: {random_string!s}")
+
     return random_string
 
 
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
-parser.add_argument('--port', dest="socket_port", default=9000, help="Set the port, the socket is listening on.", type=int) 
+parser.add_argument('--port', dest="socket_port", default=9000, help="Set the port, the socket is listening on.", type=int)
 # parser.add_argument('--data', dest="data", default=False, help="data", type=str)
 parser.add_argument('--random', dest="datalength", default=False, help="data", type=int)
 
@@ -52,7 +51,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     # Receive data from the server and shut down
     received = str(sock.recv(1024), "utf-8")
 
-print("Sent:     {}".format(data))
-
-
-
+print(f"Sent:     {data}")

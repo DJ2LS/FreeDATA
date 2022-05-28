@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import structlog
-
 hamlib_version = 0
 
 
