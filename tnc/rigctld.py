@@ -115,13 +115,13 @@ class radio():
         except Exception:
             return 0
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            bandwith = data[1]
-            return bandwith.decode("utf-8")
+            bandwidth = data[1]
+            return bandwidth.decode("utf-8")
         except Exception:
             return 0
 

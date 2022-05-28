@@ -114,16 +114,16 @@ class radio:
 
     def get_mode(self):
         """ """
-        # (hamlib_mode, bandwith) = self.my_rig.get_mode()
+        # (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         # return Hamlib.rig_strrmode(hamlib_mode)
         try:
             return "PKTUSB"
         except Exception:
             return False
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
-        # (hamlib_mode, bandwith) = self.my_rig.get_mode()
+        # (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         bandwidth = 2700
 
         try:

@@ -212,7 +212,7 @@ class radio:
         (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         return Hamlib.rig_strrmode(hamlib_mode)
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         (hamlib_mode, bandwidth) = self.my_rig.get_mode()
         return bandwidth

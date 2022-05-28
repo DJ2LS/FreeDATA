@@ -131,7 +131,7 @@ class DAEMON:
                 # data[15] rigctld_port
                 # data[16] send_scatter
                 # data[17] send_fft
-                # data[18] low_bandwith_mode
+                # data[18] low_bandwidth_mode
                 # data[19] tuning_range_fmin
                 # data[20] tuning_range_fmax
                 # data[21] enable FSK

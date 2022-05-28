@@ -29,7 +29,7 @@ DXGRID: bytes = b""
 
 SSID_LIST: list = []  # ssid list we are responding to
 
-LOW_BANDWITH_MODE: bool = False
+LOW_BANDWIDTH_MODE: bool = False
 # ---------------------------------
 
 # Server Defaults
@@ -58,7 +58,7 @@ HAMLIB_RIGCTLD_PORT: str = "4532"
 
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
-HAMLIB_BANDWITH: int = 0
+HAMLIB_BANDWIDTH: int = 0
 # -------------------------
 # FreeDV Defaults
 

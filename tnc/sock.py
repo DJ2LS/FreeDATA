@@ -394,7 +394,7 @@ def send_tnc_state():
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),
-        "bandwith": str(static.HAMLIB_BANDWITH),
+        "bandwidth": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
         "scatter": static.SCATTER,
@@ -495,7 +495,7 @@ def process_daemon_commands(data):
             enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
             enable_fft = str(received_json["parameter"][0]["enable_fft"])
             enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
-            low_bandwith_mode = str(received_json["parameter"][0]["low_bandwith_mode"])
+            low_bandwidth_mode = str(received_json["parameter"][0]["low_bandwidth_mode"])
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
@@ -523,7 +523,7 @@ def process_daemon_commands(data):
                               rigctld_port,
                               enable_scatter,
                               enable_fft,
-                              low_bandwith_mode,
+                              low_bandwidth_mode,
                               tuning_range_fmin,
                               tuning_range_fmax,
                               enable_fsk,

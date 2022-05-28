@@ -28,7 +28,7 @@ class radio:
         """ """
         return None
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         return None
 

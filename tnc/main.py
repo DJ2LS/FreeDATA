@@ -65,7 +65,7 @@ if __name__ == "__main__":
     PARSER.add_argument("--rigctld_ip", dest="rigctld_ip", default="localhost", help="Set rigctld ip")
     PARSER.add_argument("--scatter", dest="send_scatter", action="store_true", help="Send scatter information via network")
     PARSER.add_argument("--fft", dest="send_fft", action="store_true", help="Send fft information via network")
-    PARSER.add_argument("--500hz", dest="low_bandwith_mode", action="store_true", help="Enable low bandwith mode ( 500 Hz only )")
+    PARSER.add_argument("--500hz", dest="low_bandwidth_mode", action="store_true", help="Enable low bandwidth mode ( 500 Hz only )")
     PARSER.add_argument("--fsk", dest="enable_fsk", action="store_true", help="Enable FSK mode for ping, beacon and CQ")
     PARSER.add_argument("--qrv", dest="enable_respond_to_cq", action="store_true", help="Enable sending a QRV frame if CQ received")
     PARSER.add_argument("--tuning_range_fmin", dest="tuning_range_fmin", choices=[-50.0, -100.0, -150.0, -200.0, -250.0], default=-50.0, help="Tuning range fmin", type=float)
@@ -102,7 +102,7 @@ if __name__ == "__main__":
     static.ENABLE_SCATTER = ARGS.send_scatter
     static.ENABLE_FFT = ARGS.send_fft
     static.ENABLE_FSK = ARGS.enable_fsk
-    static.LOW_BANDWITH_MODE = ARGS.low_bandwith_mode
+    static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
     static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
     static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
