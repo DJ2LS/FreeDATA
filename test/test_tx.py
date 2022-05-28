@@ -37,7 +37,7 @@ def test_tx():
     AUDIO_SAMPLE_RATE_TX = 48000
     assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
 
-    # check if we want to use an audio device then do an pyaudio init
+    # check if we want to use an audio device then do a pyaudio init
     if AUDIO_OUTPUT_DEVICE != -1:
         # auto search for loopback devices
         if AUDIO_OUTPUT_DEVICE == -2:
@@ -109,7 +109,7 @@ def test_tx():
     # Create buffer for data
     #   Use this if CRC16 checksum is required (DATA1-3)
     buffer = bytearray(payload_bytes_per_frame)
-    # set buffersize to length of data which will be send
+    # set buffer size to length of data which will be sent
     buffer[: len(data_out)] = data_out
 
     # Create CRC for data frame - we are using the CRC function shipped with codec2 to avoid

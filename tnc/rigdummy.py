@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 
-import structlog
-
 hamlib_version = 0
 
 
 class radio:
     """ """
+
     def __init__(self):
         pass
 
@@ -29,7 +28,7 @@ class radio:
         """ """
         return None
 
-    def get_bandwith(self):
+    def get_bandwidth(self):
         """ """
         return None
 

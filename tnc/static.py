@@ -8,115 +8,118 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-)
 """
 
-VERSION = '0.4.0-alpha'
+import subprocess
+
+VERSION = "0.4.0-alpha"
 
 # DAEMON
-DAEMONPORT = 3001
-TNCSTARTED = False
-TNCPROCESS = 0
+DAEMONPORT: int = 3001
+TNCSTARTED: bool = False
+TNCPROCESS: subprocess.Popen
 
 # Operator Defaults
-MYCALLSIGN = b'AA0AA'
-MYCALLSIGN_CRC = b'A'
+MYCALLSIGN: bytes = b"AA0AA"
+MYCALLSIGN_CRC: bytes = b"A"
 
-DXCALLSIGN = b'AA0AA'
-DXCALLSIGN_CRC = b'A'
+DXCALLSIGN: bytes = b"AA0AA"
+DXCALLSIGN_CRC: bytes = b"A"
 
-MYGRID = b''
-DXGRID = b''
+MYGRID: bytes = b""
+DXGRID: bytes = b""
 
-SSID_LIST = [] # ssid list we are responding to
+SSID_LIST: list = []  # ssid list we are responding to
 
-LOW_BANDWITH_MODE = False
+LOW_BANDWIDTH_MODE: bool = False
 # ---------------------------------
 
 # Server Defaults
-HOST = "0.0.0.0"
-PORT = 3000
-SOCKET_TIMEOUT = 1 # seconds
+HOST: str = "0.0.0.0"
+PORT: int = 3000
+SOCKET_TIMEOUT: int = 1  # seconds
 # ---------------------------------
-SERIAL_DEVICES = []
+SERIAL_DEVICES: list = []
 # ---------------------------------
 
-PTT_STATE = False
-TRANSMITTING = False
+PTT_STATE: bool = False
+TRANSMITTING: bool = False
 
-HAMLIB_VERSION = '0'
-HAMLIB_PTT_TYPE = 'RTS'
-HAMLIB_DEVICE_NAME = 'RIG_MODEL_DUMMY_NOVFO'
-HAMLIB_DEVICE_PORT = '/dev/ttyUSB0'
-HAMLIB_SERIAL_SPEED = '9600'
-HAMLIB_PTT_PORT = '/dev/ttyUSB0'
-HAMLIB_STOP_BITS = '1'
-HAMLIB_DATA_BITS = '8'
-HAMLIB_HANDSHAKE = 'None'
-HAMLIB_RADIOCONTROL = 'direct'
-HAMLIB_RIGCTLD_IP = '127.0.0.1'
-HAMLIB_RIGCTLD_PORT = '4532'
+HAMLIB_VERSION: str = "0"
+HAMLIB_PTT_TYPE: str = "RTS"
+HAMLIB_DEVICE_NAME: str = "RIG_MODEL_DUMMY_NOVFO"
+HAMLIB_DEVICE_PORT: str = "/dev/ttyUSB0"
+HAMLIB_SERIAL_SPEED: str = "9600"
+HAMLIB_PTT_PORT: str = "/dev/ttyUSB0"
+HAMLIB_STOP_BITS: str = "1"
+HAMLIB_DATA_BITS: str = "8"
+HAMLIB_HANDSHAKE: str = "None"
+HAMLIB_RADIOCONTROL: str = "direct"
+HAMLIB_RIGCTLD_IP: str = "127.0.0.1"
+HAMLIB_RIGCTLD_PORT: str = "4532"
 
-HAMLIB_FREQUENCY = 0
-HAMLIB_MODE = ''
-HAMLIB_BANDWITH = 0
+HAMLIB_FREQUENCY: int = 0
+HAMLIB_MODE: str = ""
+HAMLIB_BANDWIDTH: int = 0
 # -------------------------
 # FreeDV Defaults
 
-SNR = 0
-FREQ_OFFSET = 0
-SCATTER = []
-ENABLE_SCATTER = False
-ENABLE_FSK = False
-RESPOND_TO_CQ = False
+SNR: float = 0
+FREQ_OFFSET: float = 0
+SCATTER: list = []
+ENABLE_SCATTER: bool = False
+ENABLE_FSK: bool = False
+RESPOND_TO_CQ: bool = False
 # ---------------------------------
 
 # Audio Defaults
-TX_AUDIO_LEVEL = 50
-AUDIO_INPUT_DEVICES = []
-AUDIO_OUTPUT_DEVICES = []
-AUDIO_INPUT_DEVICE = -2
-AUDIO_OUTPUT_DEVICE = -2
-BUFFER_OVERFLOW_COUNTER = [0,0,0,0,0]
+TX_AUDIO_LEVEL: int = 50
+AUDIO_INPUT_DEVICES: list = []
+AUDIO_OUTPUT_DEVICES: list = []
+AUDIO_INPUT_DEVICE: int = -2
+AUDIO_OUTPUT_DEVICE: int = -2
+BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
-AUDIO_RMS = 0
-FFT = [0]
-ENABLE_FFT = False
-CHANNEL_BUSY = None
+AUDIO_RMS: int = 0
+FFT: list = [0]
+ENABLE_FFT: bool = False
+CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION = 1
+ARQ_PROTOCOL_VERSION: int = 1
 
 # ARQ statistics
-ARQ_BYTES_PER_MINUTE_BURST = 0
-ARQ_BYTES_PER_MINUTE = 0
-ARQ_BITS_PER_SECOND_BURST = 0
-ARQ_BITS_PER_SECOND = 0
-ARQ_COMPRESSION_FACTOR = 0
-ARQ_TRANSMISSION_PERCENT = 0
-ARQ_SPEED_LEVEL = 0
-TOTAL_BYTES = 0
+ARQ_BYTES_PER_MINUTE_BURST: int = 0
+ARQ_BYTES_PER_MINUTE: int = 0
+ARQ_BITS_PER_SECOND_BURST: int = 0
+ARQ_BITS_PER_SECOND: int = 0
+ARQ_COMPRESSION_FACTOR: int = 0
+ARQ_TRANSMISSION_PERCENT: int = 0
+ARQ_SPEED_LEVEL: int = 0
+TOTAL_BYTES: int = 0
 
-#CHANNEL_STATE = 'RECEIVING_SIGNALLING'
-TNC_STATE = 'IDLE'
-ARQ_STATE = False
-ARQ_SESSION = False
-ARQ_SESSION_STATE = 'disconnected' # disconnected, connecting, connected, disconnecting, failed
+# CHANNEL_STATE = 'RECEIVING_SIGNALLING'
+TNC_STATE: str = "IDLE"
+ARQ_STATE: bool = False
+ARQ_SESSION: bool = False
+# disconnected, connecting, connected, disconnecting, failed
+ARQ_SESSION_STATE: str = "disconnected"
 
 # BEACON STATE
-BEACON_STATE = False
-BEACON_PAUSE = False
+BEACON_STATE: bool = False
+BEACON_PAUSE: bool = False
 
 # ------- RX BUFFER
-RX_BUFFER = []
-RX_MSG_BUFFER = []
-RX_BURST_BUFFER = []
-RX_FRAME_BUFFER = b''
-#RX_BUFFER_SIZE = 0
+RX_BUFFER: list = []
+RX_MSG_BUFFER: list = []
+RX_BURST_BUFFER: list = []
+RX_FRAME_BUFFER: bytes = b""
+# RX_BUFFER_SIZE: int = 0
 
-# ------- HEARD STATIOS BUFFER
-HEARD_STATIONS = []
+# ------- HEARD STATIONS BUFFER
+HEARD_STATIONS: list = []
 
 # ------- INFO MESSAGE BUFFER
-INFO = []
+INFO: list = []
 
 # ------- CODEC2 SETTINGS
-TUNING_RANGE_FMIN = -50.0
-TUNING_RANGE_FMAX = 50.0
+TUNING_RANGE_FMIN: float = -50.0
+TUNING_RANGE_FMAX: float = 50.0

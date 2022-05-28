@@ -17,7 +17,7 @@ import threading
 import sys
 import argparse
 
-#--------------------------------------------GET PARAMETER INPUTS
+# --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--bursts', dest="N_BURSTS", default=0, type=int)
 parser.add_argument('--frames', dest="N_FRAMES_PER_BURST", default=0, type=int)
@@ -44,23 +44,23 @@ DEBUGGING_MODE = args.DEBUGGING_MODE
 AUDIO_FRAMES_PER_BUFFER = 2048
 MODEM_SAMPLE_RATE = 8000
 
-        #-------------------------------------------- LOAD FREEDV
+# -------------------------------------------- LOAD FREEDV
 libname = pathlib.Path().absolute() / "codec2/build_linux/src/libcodec2.so"
 c_lib = ctypes.CDLL(libname)
-     #--------------------------------------------CREATE PYAUDIO  INSTANCE
+# --------------------------------------------CREATE PYAUDIO  INSTANCE
 p = pyaudio.PyAudio()
-        #--------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
+# --------------------------------------------GET SUPPORTED SAMPLE RATES FROM SOUND DEVICE
 
-#AUDIO_SAMPLE_RATE_TX = int(p.get_device_info_by_index(AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
-#AUDIO_SAMPLE_RATE_RX = int(p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['defaultSampleRate'])
+# AUDIO_SAMPLE_RATE_TX = int(p.get_device_info_by_index(AUDIO_OUTPUT_DEVICE)['defaultSampleRate'])
+# AUDIO_SAMPLE_RATE_RX = int(p.get_device_info_by_index(AUDIO_INPUT_DEVICE)['defaultSampleRate'])
 AUDIO_SAMPLE_RATE_TX = 8000
 AUDIO_SAMPLE_RATE_RX = 8000
-        #--------------------------------------------OPEN AUDIO CHANNEL RX
+# --------------------------------------------OPEN AUDIO CHANNEL RX
 
 stream_tx = p.open(format=pyaudio.paInt16,
                             channels=1,
                             rate=AUDIO_SAMPLE_RATE_TX,
-                            frames_per_buffer=AUDIO_FRAMES_PER_BUFFER, #n_nom_modem_samples
+                            frames_per_buffer=AUDIO_FRAMES_PER_BUFFER,  # n_nom_modem_samples
                             output=True,
                             output_device_index=AUDIO_OUTPUT_DEVICE,
                             )
@@ -74,7 +74,7 @@ stream_rx = p.open(format=pyaudio.paInt16,
                             )
 
 
-    # GENERAL PARAMETERS
+# GENERAL PARAMETERS
 c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
 
 
@@ -93,26 +93,26 @@ def send_pong(burst,n_total_burst,frame,n_total_frame):
     bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
     payload_per_frame = bytes_per_frame -2
     n_nom_modem_samples = c_lib.freedv_get_n_nom_modem_samples(freedv)
-    n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(freedv) #get n_tx_modem_samples which defines the size of the modulation object # --> *2
+    n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(freedv)  # get n_tx_modem_samples which defines the size of the modulation object # --> *2
 
     mod_out = ctypes.c_short * n_tx_modem_samples
     mod_out = mod_out()
-    mod_out_preamble = ctypes.c_short * (1760*2) #1760 for mode 10,11,12 #4000 for mode 9
+    mod_out_preamble = ctypes.c_short * (1760*2)  # 1760 for mode 10,11,12 #4000 for mode 9
     mod_out_preamble = mod_out_preamble()
 
-    buffer = bytearray(payload_per_frame) # use this if CRC16 checksum is required ( DATA1-3)
-    buffer[:len(data_out)] = data_out # set buffersize to length of data which will be send
+    buffer = bytearray(payload_per_frame)  # use this if CRC16 checksum is required ( DATA1-3)
+    buffer[:len(data_out)] = data_out  # set buffer size to length of data which will be sent
 
     crc = ctypes.c_ushort(c_lib.freedv_gen_crc16(bytes(buffer), payload_per_frame))     # generate CRC16
-    crc = crc.value.to_bytes(2, byteorder='big') # convert crc to 2 byte hex string
-    buffer += crc        # append crc16 to buffer
+    crc = crc.value.to_bytes(2, byteorder='big')  # convert crc to 2 byte hex string
+    buffer += crc  # append crc16 to buffer
 
     c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble);
     txbuffer = bytearray()
     txbuffer += bytes(mod_out_preamble)
 
     data = (ctypes.c_ubyte * bytes_per_frame).from_buffer_copy(buffer)
-    c_lib.freedv_rawdatatx(freedv,mod_out,data) # modulate DATA and safe it into mod_out pointer
+    c_lib.freedv_rawdatatx(freedv,mod_out,data)  # modulate DATA and safe it into mod_out pointer
 
     txbuffer += bytes(mod_out)
     stream_tx.write(bytes(txbuffer))
@@ -126,30 +126,28 @@ def send_pong(burst,n_total_burst,frame,n_total_frame):
 freedv = c_lib.freedv_open(FREEDV_RX_MODE)
 bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv)/8)
 n_max_modem_samples = c_lib.freedv_get_n_max_modem_samples(freedv)
-bytes_out = (ctypes.c_ubyte * bytes_per_frame) #bytes_per_frame
-bytes_out = bytes_out() #get pointer from bytes_out
-
-
+bytes_out = (ctypes.c_ubyte * bytes_per_frame)  # bytes_per_frame
+bytes_out = bytes_out()  # get pointer from bytes_out
 
 receive = True
-while receive == True:
+while receive:
     time.sleep(0.01)
 
     data_in = b''
 
     nin = c_lib.freedv_nin(freedv)
     nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
-    if DEBUGGING_MODE == True:
+    if DEBUGGING_MODE:
         print("-----------------------------")
         print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
 
     data_in = stream_rx.read(nin_converted,  exception_on_overflow = False)
     data_in = data_in.rstrip(b'\x00')
 
-    c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in] # check if really neccessary
-    nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in) # demodulate audio
+    c_lib.freedv_rawdatarx.argtype = [ctypes.POINTER(ctypes.c_ubyte), bytes_out, data_in]  # check if really neccessary
+    nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
 
-    if DEBUGGING_MODE == True:
+    if DEBUGGING_MODE:
         print("SYNC: " + str(c_lib.freedv_get_rx_status(freedv)))
 
     if nbytes == bytes_per_frame:

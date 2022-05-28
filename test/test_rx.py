@@ -47,7 +47,7 @@ def test_rx():
     # make sure our resampler will work
     assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
 
-    # check if we want to use an audio device then do an pyaudio init
+    # check if we want to use an audio device then do a pyaudio init
     if AUDIO_INPUT_DEVICE != -1:
         # auto search for loopback devices
         if AUDIO_INPUT_DEVICE == -2:

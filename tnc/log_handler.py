@@ -1,3 +1,8 @@
+import logging.config
+
+import structlog
+
+
 # https://www.structlog.org/en/stable/standard-library.html
 def setup_logging(filename):
     """
@@ -8,8 +13,6 @@ def setup_logging(filename):
     Returns:
 
     """
-    import logging.config
-    import structlog
 
     timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S")
     pre_chain = [
@@ -19,7 +22,8 @@ def setup_logging(filename):
         timestamper,
     ]
 
-    logging.config.dictConfig({
+    logging.config.dictConfig(
+        {
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
@@ -43,7 +47,7 @@ def setup_logging(filename):
                 "file": {
                     "level": "DEBUG",
                     "class": "logging.handlers.WatchedFileHandler",
-                    "filename": filename + '.log',
+                    "filename": f"{filename}.log",
                     "formatter": "plain",
                 },
             },
@@ -53,8 +57,9 @@ def setup_logging(filename):
                     "level": "DEBUG",
                     "propagate": True,
                 },
-            }
-    })
+            },
+        }
+    )
     structlog.configure(
         processors=[
             structlog.stdlib.add_log_level,

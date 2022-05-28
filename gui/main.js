@@ -68,7 +68,7 @@ const configDefaultSettings = '{\
                   "enable_scatter" : "False",\
                   "enable_fft" : "False",\
                   "enable_fsk" : "False",\
-                  "low_bandwith_mode" : "False",\
+                  "low_bandwidth_mode" : "False",\
                   "theme" : "default",\
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
