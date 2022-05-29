@@ -290,6 +290,9 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
         # We want the callsign without SSID
         callsign = callsign.split(b"-")[0]
 
+    except IndexError:
+        # This is expected when `callsign` doesn't have a dash.
+        pass
     except Exception as err:
         log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
 
