@@ -19,6 +19,12 @@ except KeyError:
     FRAMESPERBURST = 1
     TESTFRAMES = 3
 
+# For some reason, sometimes, this test requires the current directory to be `test`.
+# Try to adapt dynamically. I still want to figure out why but as a workaround,
+# I'm not completely dissatisfied.
+if os.path.exists("test"):
+    os.chdir("test")
+
 
 @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
