@@ -199,8 +199,12 @@ def callsign_to_bytes(callsign) -> bytes:
     # Try converting to bytestring if possible type string
     try:
         callsign = bytes(callsign, "utf-8")
-    except TypeError as err:
-        log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
+    except TypeError:
+        # This is expected depending on the type of the `callsign` argument.
+        # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
+        pass
+    except Exception as err:
+        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
 
     # Need this step to reduce the needed payload by the callsign
     # (stripping "-" out of the callsign)
@@ -208,7 +212,11 @@ def callsign_to_bytes(callsign) -> bytes:
     ssid = 0
     try:
         ssid = int(callsign[1])
-    except IndexError as err:
+    except IndexError:
+        # This is expected when callsign doesn't have a dash.
+        # log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        pass
+    except Exception as err:
         log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
 
     # callsign = callsign[0]
