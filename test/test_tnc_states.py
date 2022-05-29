@@ -120,6 +120,7 @@ def test_valid_disconnect(mycall: str, dxcall: str):
 
     # Create the TNC
     tnc = data_handler.DATA()
+    tnc.arq_cleanup()
 
     # Replace the heartbeat transmit routine with our own, a No-Op.
     tnc.transmit_session_heartbeat = t_tsh_dummy
@@ -160,6 +161,9 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
     :return: Bytearray of the requested frame
     :rtype: bytearray
     """
+    # Set the SSIDs we'll use for this test.
+    static.SSID_LIST = [0, 1, 2, 3, 4]
+
     # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
@@ -173,6 +177,7 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
 
     # Create the TNC
     tnc = data_handler.DATA()
+    tnc.arq_cleanup()
 
     # Replace the heartbeat transmit routine with a No-Op.
     tnc.transmit_session_heartbeat = t_tsh_dummy
@@ -197,19 +202,21 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
     print_frame(close_frame)
     assert (
         helpers.check_callsign(static.DXCALLSIGN, bytes(close_frame[4:7]))[0] is False
-    )
+    ), f"{helpers.get_crc_24(static.DXCALLSIGN)} == {bytes(close_frame[4:7])} but should be not equal."
 
-    assert helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
+    assert (
+        helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
+    ), f"{helpers.get_crc_24(foreigncall)} != {bytes(close_frame[4:7])} but should be equal."
 
     # Send the non-associated session close frame to the TNC
     tnc.received_session_close(close_frame)
 
     assert helpers.callsign_to_bytes(static.MYCALLSIGN) == helpers.callsign_to_bytes(
         mycall
-    )
+    ), f"{static.MYCALLSIGN} != {mycall} but should equal."
     assert helpers.callsign_to_bytes(static.DXCALLSIGN) == helpers.callsign_to_bytes(
         dxcall
-    )
+    ), f"{static.DXCALLSIGN} != {dxcall} but should equal."
 
     assert static.ARQ_SESSION is True
     assert static.TNC_STATE == "BUSY"
