@@ -75,7 +75,7 @@ def t_highsnr_arq_short_station1(
     modem.TESTMODE = True
     modem.TXCHANNEL = "/tmp/hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
-    static.LOW_BANDWITH_MODE = lowbwmode
+    static.LOW_BANDWIDTH_MODE = lowbwmode
     static.MYGRID = bytes("AA12aa", "utf-8")
     static.RESPOND_TO_CQ = True
 

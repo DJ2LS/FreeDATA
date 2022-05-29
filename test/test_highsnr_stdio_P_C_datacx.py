@@ -4,6 +4,7 @@ Tests a high signal-to-noise ratio path with codec2 data formats using codec2 to
 
 # pylint: disable=global-statement, invalid-name, unused-import
 
+import glob
 import os
 import subprocess
 import sys
@@ -35,11 +36,23 @@ def test_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     :type testframes: str
     """
     # Facilitate running from main directory as well as inside test/
+    rx_side = "freedv_data_raw_rx"
+    _rxpath = (
+        os.path.join("..", "tnc")
+        if os.path.exists(os.path.join("..", "tnc"))
+        else "tnc"
+    )
+    _rxpaths = glob.glob(rf"{_rxpath}/**/{rx_side}", recursive=True)
+    for path in _rxpaths:
+        rx_side = path
+        break
+
     tx_side = "util_tx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
         tx_side = os.path.join("test", tx_side)
         os.environ["PYTHONPATH"] += ":."
-    rx_side = "freedv_data_raw_rx"
+
+    print(f"{tx_side=} / {rx_side=}")
 
     with subprocess.Popen(
         args=[

@@ -40,6 +40,8 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
         rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."
 
+    print(f"{tx_side=} / {rx_side=}")
+
     with subprocess.Popen(
         args=[
             "python3",
