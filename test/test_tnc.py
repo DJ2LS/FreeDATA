@@ -19,7 +19,7 @@ import util_tnc_ISS as iss
 # These do not update static.INFO:
 #   "CONNECT", "SEND_TEST_FRAME"
 # This test is currently a little inconsistent.
-@pytest.mark.flaky(reruns=3)
+@pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])
 def test_tnc(command):
 
