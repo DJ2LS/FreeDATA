@@ -936,7 +936,8 @@ class DATA:
                     retry=self.tx_n_retry_of_burst,
                 )
 
-                self.enqueue_frame_for_tx(bytearray(tempbuffer), c2_mode=data_mode)
+                for t_buf_item in tempbuffer:
+                    self.enqueue_frame_for_tx(t_buf_item, c2_mode=data_mode)
 
                 # After transmission finished, wait for an ACK or RPT frame
                 # burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
