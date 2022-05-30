@@ -386,6 +386,28 @@ class DATA:
         while static.TRANSMITTING:
             time.sleep(0.01)
 
+    def send_data_to_socket_queue(self, /, **kwargs):
+        """
+        Send information to the UI via JSON and the sock.SOCKET_QUEUE.
+
+        Args:
+          Dictionary containing the data to be sent, in the format:
+          key=value, for each item. E.g.:
+            self.send_data_to_socket_queue(
+                arq="received",
+                uuid=uniqueid,
+                timestamp=timestamp,
+                mycallsign=str(mycallsign, "UTF-8"),
+                dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+                dxgrid=str(static.DXGRID, "UTF-8"),
+                data=base64_data,
+            )
+        """
+        jsondata = kwargs
+        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=jsondata)
+        json_data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(json_data_out)
+
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
         ack_frame = bytearray(14)
@@ -720,18 +742,15 @@ class DATA:
                 static.RX_BUFFER.append(
                     [uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
                 )
-                jsondata = {
-                    "arq": "received",
-                    "uuid": uniqueid,
-                    "timestamp": timestamp,
-                    "mycallsign": str(mycallsign, "UTF-8"),
-                    "dxcallsign": str(static.DXCALLSIGN, "UTF-8"),
-                    "dxgrid": str(static.DXGRID, "UTF-8"),
-                    "data": base64_data,
-                }
-                json_data_out = json.dumps(jsondata)
-                self.log.debug("[TNC] arq_data_received:", jsondata=jsondata)
-                sock.SOCKET_QUEUE.put(json_data_out)
+                self.send_data_to_socket_queue(
+                    arq="received",
+                    uuid=uniqueid,
+                    timestamp=timestamp,
+                    mycallsign=str(mycallsign, "UTF-8"),
+                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+                    dxgrid=str(static.DXGRID, "UTF-8"),
+                    data=base64_data,
+                )
                 static.INFO.append("ARQ;RECEIVING;SUCCESS")
 
                 self.log.info(
@@ -807,15 +826,13 @@ class DATA:
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
         static.INFO.append("ARQ;TRANSMITTING")
 
-        jsondata = {
-            "arq": "transmission",
-            "status": "transmitting",
-            "uuid": self.transmission_uuid,
-            "percent": static.ARQ_TRANSMISSION_PERCENT,
-            "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-        }
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
+        self.send_data_to_socket_queue(
+            arq="transmission",
+            status="transmitting",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+        )
 
         self.log.info("[TNC] | TX | DATACHANNEL", mode=mode, Bytes=static.TOTAL_BYTES)
 
@@ -997,29 +1014,25 @@ class DATA:
                 tx_start_of_transmission, bufferposition_end, len(data_out)
             )
 
-            jsondata = {
-                "arq": "transmission",
-                "status": "transmitting",
-                "uuid": self.transmission_uuid,
-                "percent": static.ARQ_TRANSMISSION_PERCENT,
-                "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-            }
-            json_data_out = json.dumps(jsondata)
-            sock.SOCKET_QUEUE.put(json_data_out)
+            self.send_data_to_socket_queue(
+                arq="transmission",
+                status="transmitting",
+                uuid=self.transmission_uuid,
+                percent=static.ARQ_TRANSMISSION_PERCENT,
+                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            )
 
             # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
+            self.send_data_to_socket_queue(
+                arq="transmission",
+                status="success",
+                uuid=self.transmission_uuid,
+                percent=static.ARQ_TRANSMISSION_PERCENT,
+                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            )
             static.INFO.append("ARQ;TRANSMITTING;SUCCESS")
-            jsondata = {
-                "arq": "transmission",
-                "status": "success",
-                "uuid": self.transmission_uuid,
-                "percent": static.ARQ_TRANSMISSION_PERCENT,
-                "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-            }
-            json_data_out = json.dumps(jsondata)
-            sock.SOCKET_QUEUE.put(json_data_out)
 
             self.log.info(
                 "[TNC] ARQ | TX | DATA TRANSMITTED!",
@@ -1029,16 +1042,14 @@ class DATA:
             )
 
         else:
+            self.send_data_to_socket_queue(
+                arq="transmission",
+                status="failed",
+                uuid=self.transmission_uuid,
+                percent=static.ARQ_TRANSMISSION_PERCENT,
+                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            )
             static.INFO.append("ARQ;TRANSMITTING;FAILED")
-            jsondata = {
-                "arq": "transmission",
-                "status": "failed",
-                "uuid": self.transmission_uuid,
-                "percent": static.ARQ_TRANSMISSION_PERCENT,
-                "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-            }
-            json_data_out = json.dumps(jsondata)
-            sock.SOCKET_QUEUE.put(json_data_out)
 
             self.log.info(
                 "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
@@ -1158,16 +1169,14 @@ class DATA:
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
         )
+        self.send_data_to_socket_queue(
+            arq="transmission",
+            status="failed",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+        )
         static.INFO.append("ARQ;TRANSMITTING;FAILED")
-        jsondata = {
-            "arq": "transmission",
-            "status": "failed",
-            "uuid": self.transmission_uuid,
-            "percent": static.ARQ_TRANSMISSION_PERCENT,
-            "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-        }
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
         # Update data_channel timestamp
         self.arq_session_last_received = int(time.time())
 
@@ -1553,15 +1562,13 @@ class DATA:
                 "[TNC] arq_open_data_channel:", transmission_uuid=self.transmission_uuid
             )
 
-            jsondata = {
-                "arq": "transmission",
-                "status": "failed",
-                "uuid": self.transmission_uuid,
-                "percent": static.ARQ_TRANSMISSION_PERCENT,
-                "bytesperminute": static.ARQ_BYTES_PER_MINUTE,
-            }
-            json_data_out = json.dumps(jsondata)
-            sock.SOCKET_QUEUE.put(json_data_out)
+            self.send_data_to_socket_queue(
+                arq="transmission",
+                status="failed",
+                uuid=self.transmission_uuid,
+                percent=static.ARQ_TRANSMISSION_PERCENT,
+                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            )
 
             self.log.warning(
                 "[TNC] ARQ | TX | DATA ["
@@ -1839,18 +1846,16 @@ class DATA:
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
-        jsondata = {
-            "type": "ping",
-            "status": "ack",
-            "uuid": str(uuid.uuid4()),
-            "timestamp": int(time.time()),
-            "mycallsign": str(self.mycallsign, "UTF-8"),
-            "dxcallsign": str(static.DXCALLSIGN, "UTF-8"),
-            "dxgrid": str(static.DXGRID, "UTF-8"),
-            "snr": str(static.SNR),
-        }
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
+        self.send_data_to_socket_queue(
+            type="ping",
+            status="ack",
+            uuid=str(uuid.uuid4()),
+            timestamp=int(time.time()),
+            mycallsign=str(self.mycallsign, "UTF-8"),
+            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+            dxgrid=str(static.DXGRID, "UTF-8"),
+            snr=str(static.SNR),
+        )
 
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
@@ -1962,20 +1967,18 @@ class DATA:
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
 
-        jsondata = {
-            "type": "beacon",
-            "status": "received",
-            "uuid": str(uuid.uuid4()),
-            "timestamp": int(time.time()),
-            "mycallsign": str(self.mycallsign, "UTF-8"),
-            "dxcallsign": str(dxcallsign, "UTF-8"),
-            "dxgrid": str(dxgrid, "UTF-8"),
-            "snr": str(static.SNR),
-        }
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
-
+        self.send_data_to_socket_queue(
+            type="beacon",
+            status="received",
+            uuid=str(uuid.uuid4()),
+            timestamp=int(time.time()),
+            mycallsign=str(self.mycallsign, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxgrid=str(dxgrid, "UTF-8"),
+            snr=str(static.SNR),
+        )
         static.INFO.append("BEACON;RECEIVING")
+
         self.log.info(
             "[TNC] BEACON RCVD ["
             + str(dxcallsign, "UTF-8")
@@ -2090,20 +2093,18 @@ class DATA:
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
-        jsondata = {
-            "type": "qrv",
-            "status": "received",
-            "uuid": str(uuid.uuid4()),
-            "timestamp": int(time.time()),
-            "mycallsign": str(self.mycallsign, "UTF-8"),
-            "dxcallsign": str(dxcallsign, "UTF-8"),
-            "dxgrid": str(dxgrid, "UTF-8"),
-            "snr": str(static.SNR),
-        }
-        json_data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(json_data_out)
-
+        self.send_data_to_socket_queue(
+            type="qrv",
+            status="received",
+            uuid=str(uuid.uuid4()),
+            timestamp=int(time.time()),
+            mycallsign=str(self.mycallsign, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxgrid=str(dxgrid, "UTF-8"),
+            snr=str(static.SNR),
+        )
         static.INFO.append("QRV;RECEIVING")
+
         self.log.info(
             "[TNC] QRV RCVD ["
             + str(dxcallsign, "UTF-8")
