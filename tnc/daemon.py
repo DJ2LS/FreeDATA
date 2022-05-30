@@ -55,6 +55,7 @@ class DAEMON:
     Daemon class
 
     """
+
     log = structlog.get_logger("DAEMON")
 
     def __init__(self):
