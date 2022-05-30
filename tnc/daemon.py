@@ -314,12 +314,9 @@ class DAEMON:
                     if pttstate:
                         self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
                         response = {"command": "test_hamlib", "result": "SUCCESS"}
-                    elif not pttstate:
+                    else:
                         self.log.warning("[DMN] Hamlib PTT", status="NO SUCCESS")
                         response = {"command": "test_hamlib", "result": "NOSUCCESS"}
-                    else:
-                        self.log.error("[DMN] Hamlib PTT", status="FAILED")
-                        response = {"command": "test_hamlib", "result": "FAILED"}
 
                     hamlib.set_ptt(False)
                     hamlib.close_rig()
