@@ -78,16 +78,14 @@ def t_highsnr_arq_short_station1(
     static.LOW_BANDWIDTH_MODE = lowbwmode
     static.MYGRID = bytes("AA12aa", "utf-8")
     static.RESPOND_TO_CQ = True
-
-    mycallsign = bytes(mycall, "utf-8")
-    mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-    static.MYGRID = bytes("AA12aa", "utf-8")
     static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-    dxcallsign = bytes(dxcall, "utf-8")
-    dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+    mycallsign = helpers.callsign_to_bytes(mycall)
+    mycallsign = helpers.bytes_to_callsign(mycallsign)
+    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+
+    dxcallsign = helpers.callsign_to_bytes(dxcall)
     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
     static.DXCALLSIGN = dxcallsign
     static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
