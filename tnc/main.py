@@ -185,9 +185,9 @@ if __name__ == "__main__":
     )
     PARSER.add_argument(
         "--500hz",
-        dest="low_bandwith_mode",
+        dest="low_bandwidth_mode",
         action="store_true",
-        help="Enable low bandwith mode ( 500 Hz only )",
+        help="Enable low bandwidth mode ( 500 Hz only )",
     )
     PARSER.add_argument(
         "--fsk",

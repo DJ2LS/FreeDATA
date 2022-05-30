@@ -386,7 +386,7 @@ class DATA:
         while static.TRANSMITTING:
             time.sleep(0.01)
 
-    def send_data_to_socket_queue(self, /, **kwargs):
+    def send_data_to_socket_queue(self, /, **jsondata):
         """
         Send information to the UI via JSON and the sock.SOCKET_QUEUE.
 
@@ -403,7 +403,6 @@ class DATA:
                 data=base64_data,
             )
         """
-        jsondata = kwargs
         self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=jsondata)
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
