@@ -158,59 +158,43 @@ class DAEMON:
                     # list of parameters, necessary for running subprocess command as a list
                     options = []
 
-                    options.append("--port")
-                    options.append(str(static.DAEMONPORT - 1))
+                    options.append(("--port", str(static.DAEMONPORT - 1)))
 
-                    options.append("--mycall")
-                    options.append(data[1])
+                    options.append(("--mycall", data[1]))
 
-                    options.append("--mygrid")
-                    options.append(data[2])
+                    options.append(("--mygrid", data[2]))
 
-                    options.append("--rx")
-                    options.append(data[3])
+                    options.append(("--rx", data[3]))
 
-                    options.append("--tx")
-                    options.append(data[4])
+                    options.append(("--tx", data[4]))
 
                     # if radiocontrol != disabled
                     # this should hopefully avoid a ton of problems if we are just running in
                     # disabled mode
 
                     if data[13] != "disabled":
-                        options.append("--devicename")
-                        options.append(data[5])
+                        options.append(("--devicename", data[5]))
 
-                        options.append("--deviceport")
-                        options.append(data[6])
+                        options.append(("--deviceport", data[6]))
 
-                        options.append("--serialspeed")
-                        options.append(data[7])
+                        options.append(("--serialspeed", data[7]))
 
-                        options.append("--pttprotocol")
-                        options.append(data[8])
+                        options.append(("--pttprotocol", data[8]))
 
-                        options.append("--pttport")
-                        options.append(data[9])
+                        options.append(("--pttport", data[9]))
 
-                        options.append("--data_bits")
-                        options.append(data[10])
+                        options.append(("--data_bits", data[10]))
 
-                        options.append("--stop_bits")
-                        options.append(data[11])
+                        options.append(("--stop_bits", data[11]))
 
-                        options.append("--handshake")
-                        options.append(data[12])
+                        options.append(("--handshake", data[12]))
 
-                        options.append("--radiocontrol")
-                        options.append(data[13])
+                        options.append(("--radiocontrol", data[13]))
 
                         if data[13] == "rigctld":
-                            options.append("--rigctld_ip")
-                            options.append(data[14])
+                            options.append(("--rigctld_ip", data[14]))
 
-                            options.append("--rigctld_port")
-                            options.append(data[15])
+                            options.append(("--rigctld_port", data[15]))
 
                     if data[16] == "True":
                         options.append("--scatter")
@@ -221,18 +205,15 @@ class DAEMON:
                     if data[18] == "True":
                         options.append("--500hz")
 
-                    options.append("--tuning_range_fmin")
-                    options.append(data[19])
+                    options.append(("--tuning_range_fmin", data[19]))
 
-                    options.append("--tuning_range_fmax")
-                    options.append(data[20])
+                    options.append(("--tuning_range_fmax", data[20]))
 
                     # overriding FSK mode
                     # if data[21] == "True":
                     #    options.append("--fsk")
 
-                    options.append("--tx-audio-level")
-                    options.append(data[22])
+                    options.append(("--tx-audio-level", data[22]))
 
                     if data[23] == "True":
                         options.append("--qrv")
