@@ -59,7 +59,6 @@ class RF:
         self.AUDIO_FRAMES_PER_BUFFER_TX = 2400 * 2
 
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
-        self.AUDIO_CHUNKS = 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
 
@@ -923,18 +922,18 @@ def get_bytes_per_frame(mode: int) -> int:
 def set_audio_volume(datalist, volume: float) -> np.int16:
     """
     Scale values for the provided audio samples by volume,
-    `volume` is clipped to the range of 0-100
+    `volume` is clipped to the range of 0-200
 
     :param datalist: Audio samples to scale
     :type datalist: NDArray[np.int16]
-    :param volume: Percentage (0-100) to scale samples
+    :param volume: "Percentage" (0-200) to scale samples
     :type volume: float
     :return: Scaled audio samples
     :rtype: np.int16
     """
     # Clip volume provided to acceptable values
     volume = min(volume, 0.0)
-    volume = max(volume, 100.0)
+    volume = max(volume, 200.0)
 
     # Scale samples by the ratio of volume / 100.0
     data = np.fromstring(datalist, np.int16) * (volume / 100.0)  # type: ignore
