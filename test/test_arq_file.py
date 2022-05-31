@@ -20,8 +20,11 @@ sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 sys.path.insert(0, "test")
 import helpers
+import log_handler
 import util_arq_chat_file_1 as util1
 import util_arq_chat_file_2 as util2
+
+log_handler.setup_logging("/tmp/test")
 
 STATIONS = ["AA2BB", "ZZ9YY"]
 
@@ -35,7 +38,7 @@ def analyze_results(station1: list, station2: list):
     """Examine the information retrieved from the sub-processes."""
     # Data in these lists is either a series of bytes of received data,
     # or a bytearray of transmitted data from the station.
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("analyze_results")
 
     for s1, s2, text in [(station1, station2, "S1"), (station2, station1, "S2")]:
         for item in s1:
@@ -67,7 +70,7 @@ def analyze_results(station1: list, station2: list):
 @pytest.mark.parametrize("n_frames_per_burst", [2])
 @pytest.mark.parametrize("lowbwmode", [False, True])
 def test_arq_short(freedv_mode: str, n_frames_per_burst: int, lowbwmode: bool):
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("test_arq_short")
 
     s1_data = []
     s2_data = []

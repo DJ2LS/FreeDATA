@@ -34,7 +34,7 @@ def t_highsnr_arq_short_station1(
     message: str,
     lowbwmode: bool,
 ):
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("station1")
     orig_tx_func: object
     orig_rx_func: object
 
@@ -44,9 +44,10 @@ def t_highsnr_arq_short_station1(
 
         t_frames = frames
         parent_pipe.send(t_frames)
-        log.debug("S1 TX: ", frames=t_frames)
-        # frametype = int.from_bytes(t_frames[:1], "big")
-        # log.debug("S1 RX: ", frametype=frametype)
+        # log.info("S1 TX: ", frames=t_frames)
+        for item in t_frames:
+            frametype = int.from_bytes(item[:1], "big")
+            log.info("S1 TX: ", frametype=static.FRAME_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -63,7 +64,7 @@ def t_highsnr_arq_short_station1(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.debug("S1 RX: ", frametype=frametype)
+        log.info("S1 RX: ", frametype=static.FRAME_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -82,7 +83,7 @@ def t_highsnr_arq_short_station1(
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+    static.MYCALLSIGN = mycallsign
     static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
     dxcallsign = helpers.callsign_to_bytes(dxcall)
@@ -94,11 +95,13 @@ def t_highsnr_arq_short_station1(
     tnc = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
+    tnc.log = structlog.get_logger("station1_DATA")
 
     # Create the modem
     t_modem = modem.RF()
     orig_tx_func = modem.RF.transmit
     modem.RF.transmit = t_transmit
+    t_modem.log = structlog.get_logger("station1_RF")
 
     time.sleep(0.5)
 
@@ -114,7 +117,7 @@ def t_highsnr_arq_short_station1(
             {
                 "data": b64_str,
                 "dxcallsign": dxcall,
-                "mode": codec2.freedv_get_mode_value_by_name(freedv_mode),
+                "mode": codec2.FREEDV_MODE[freedv_mode].value,
                 "n_frames": 1,
             }
         ],
@@ -127,10 +130,16 @@ def t_highsnr_arq_short_station1(
     # time.sleep(0.5)
 
     # sock.process_tnc_commands(json.dumps(data))
-    time.sleep(19)
+    timeout = time.time() + 45
+    while "ARQ;TRANSMITTING;SUCCESS" not in static.INFO:
+        if time.time() > timeout:
+            log.warning("station1", first=True)
+            break
+        time.sleep(0.1)
 
     # Construct disconnect message to dxstation.
-    data = {"type": "ping", "command": "ping", "dxcallsign": dxcall}
+    # data = {"type": "ping", "command": "ping", "dxcallsign": dxcall}
+
     # data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     # sock.process_tnc_commands(json.dumps(data))
     # time.sleep(0.5)
@@ -138,12 +147,23 @@ def t_highsnr_arq_short_station1(
     # sock.process_tnc_commands(json.dumps(data))
     # time.sleep(0.5)
 
-    sock.process_tnc_commands(json.dumps(data))
+    # sock.process_tnc_commands(json.dumps(data))
+    # time.sleep(1)
+    # sock.process_tnc_commands(json.dumps(data))
+    # time.sleep(0.5)
 
-    time.sleep(1)
+    timeout = time.time() + 40
+    while static.ARQ_STATE and tnc.data_queue_transmit.queue:
+        if time.time() > timeout:
+            log.error("station1", TIMEOUT=True)
+            break
+        time.sleep(0.5)
+    log.info("station1", arq_state=pformat(static.ARQ_STATE))
 
-    log.debug("Info: ", info=static.INFO)
+    log.info("S1 DQT: ", info=pformat(tnc.data_queue_transmit.queue))
+    log.info("S1 DQR: ", info=pformat(tnc.data_queue_received.queue))
+    log.info("S1 Info: ", info=static.INFO)
     assert "DATACHANNEL;OPENING" in static.INFO
     assert "DATACHANNEL;OPEN" in static.INFO
-    # assert "ARQ;SESSION;CLOSE" in static.INFO
-    log.debug("station1: Exiting!")
+    assert "ARQ;TRANSMITTING;SUCCESS" in static.INFO
+    log.error("station1: Exiting!")

@@ -34,7 +34,7 @@ def t_highsnr_arq_short_station2(
     message: str,
     lowbwmode: bool,
 ):
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("station2")
     orig_tx_func: object
     orig_rx_func: object
 
@@ -44,9 +44,10 @@ def t_highsnr_arq_short_station2(
 
         t_frames = frames
         parent_pipe.send(t_frames)
-        log.debug("S2 TX: ", frames=t_frames)
-        # frametype = int.from_bytes(t_frames[:1], "big")
-        # log.debug("S2 RX: ", frametype=frametype)
+        # log.info("S2 TX: ", frames=t_frames)
+        for item in t_frames:
+            frametype = int.from_bytes(item[:1], "big")
+        log.info("S2 TX: ", frametype=static.FRAME_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -63,7 +64,7 @@ def t_highsnr_arq_short_station2(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.debug("S2 RX: ", frametype=frametype)
+        log.info("S2 RX: ", frametype=static.FRAME_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -82,7 +83,7 @@ def t_highsnr_arq_short_station2(
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+    static.MYCALLSIGN = mycallsign
     static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
     dxcallsign = helpers.callsign_to_bytes(dxcall)
@@ -94,16 +95,36 @@ def t_highsnr_arq_short_station2(
     tnc = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
+    tnc.log = structlog.get_logger("station2_DATA")
 
     # Create the modem
     t_modem = modem.RF()
     orig_tx_func = modem.RF.transmit
     modem.RF.transmit = t_transmit
+    t_modem.log = structlog.get_logger("station2_RF")
 
-    time.sleep(22)
+    timeout = time.time() + 45
+    while "ARQ;RECEIVING;SUCCESS" not in static.INFO or static.ARQ_STATE:
+        if time.time() > timeout:
+            log.error("station2", first=True)
+            break
+        time.sleep(0.5)
+    log.info("station2", arq_state=pformat(static.ARQ_STATE))
 
-    log.debug("Info: ", info=static.INFO)
+    # Allow enough time for this side to transmit the final ACK.
+    timeout = time.time() + 40
+    while static.ARQ_STATE:
+        if time.time() > timeout:
+            log.error("station2", TIMEOUT=True)
+            break
+        time.sleep(0.5)
+    log.info("station2", arq_state=pformat(static.ARQ_STATE))
+
+    log.info("S2 DQT: ", info=pformat(tnc.data_queue_transmit.queue))
+    log.info("S2 DQR: ", info=pformat(tnc.data_queue_received.queue))
+    log.info("S2 Info: ", info=static.INFO)
     assert "DATACHANNEL;RECEIVEDOPENER" in static.INFO
     # assert "QRV;SENDING" in static.INFO
     # assert "ARQ;SESSION;CLOSE" in static.INFO
-    log.debug("station2: Exiting!")
+    assert "ARQ;RECEIVING;SUCCESS" in static.INFO
+    log.error("station2: Exiting!")
