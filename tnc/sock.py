@@ -214,7 +214,7 @@ def process_tnc_commands(data):
                     "[SCK] command execution error", e=err, command=received_json
                 )
 
-        # TRANSMIT SINE WAVE  -----------------------------------------------------
+        # TRANSMIT TEST FRAME  ----------------------------------------------------
         if (
             received_json["type"] == "set"
             and received_json["command"] == "send_test_frame"
