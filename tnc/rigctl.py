@@ -22,7 +22,7 @@ hamlib_version = 0
 class radio:
     """ """
 
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("radio (rigctl)")
 
     def __init__(self):
         self.devicename = ""

@@ -6,7 +6,7 @@ import sys
 
 import structlog
 
-mainlog = structlog.get_logger(__file__)
+mainlog = structlog.get_logger("rig")
 
 # set global hamlib version
 hamlib_version = 0

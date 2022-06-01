@@ -10,7 +10,7 @@ import crcengine
 import static
 import structlog
 
-log = structlog.get_logger(__file__)
+log = structlog.get_logger("helpers")
 
 
 def wait(seconds: float) -> bool:

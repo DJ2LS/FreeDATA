@@ -50,7 +50,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
 
     connection_alive = False
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("ThreadedTCPRequestHandler")
 
     def send_to_client(self):
         """
@@ -505,7 +505,7 @@ def process_daemon_commands(data):
     Returns:
 
     """
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("process_daemon_commands")
 
     # convert data to json object
     received_json = json.loads(data)
@@ -675,7 +675,7 @@ def send_daemon_state():
     """
     send the daemon state to network
     """
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("send_daemon_state")
 
     try:
         python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"

@@ -18,7 +18,7 @@ class radio:
 
     # Note: This is a massive hack.
 
-    log = structlog.get_logger(__name__)
+    log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """Open a connection to rigctld, and test it for validity"""

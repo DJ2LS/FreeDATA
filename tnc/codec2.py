@@ -16,7 +16,7 @@ from threading import Lock
 import numpy as np
 import structlog
 
-log = structlog.get_logger(__file__)
+log = structlog.get_logger("codec2")
 
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):

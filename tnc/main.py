@@ -23,7 +23,7 @@ import modem
 import static
 import structlog
 
-log = structlog.get_logger(__file__)
+log = structlog.get_logger("main")
 
 
 def signal_handler(sig, frame):
