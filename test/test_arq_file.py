@@ -24,7 +24,7 @@ import log_handler
 import util_arq_chat_file_1 as util1
 import util_arq_chat_file_2 as util2
 
-log_handler.setup_logging("/tmp/test")
+log_handler.setup_logging(filename="", level="INFO")
 
 STATIONS = ["AA2BB", "ZZ9YY"]
 
@@ -51,13 +51,19 @@ def analyze_results(station1: list, station2: list):
             log.debug("analyze_results: callsigns:", call1=call1, call2=call2)
 
             if data in s2:
-                log.debug(f"analyze_results: {text} no CRC", _frame=frametype, data=data)
+                log.debug(
+                    f"analyze_results: {text} no CRC", _frame=frametype, data=data
+                )
             elif data + helpers.get_crc_16(data) in s2:
                 log.debug(f"analyze_results: {text} CRC16", _frame=frametype, data=data)
             elif data + helpers.get_crc_24(data) in s2:
                 log.debug(f"analyze_results: {text} CRC24", _frame=frametype, data=data)
             else:
-                log.debug(f"analyze_results: {text} not received:", _frame=frametype, data=data)
+                log.debug(
+                    f"analyze_results: {text} not received:",
+                    _frame=frametype,
+                    data=data,
+                )
 
     # log.debug("Everything")
     # log.debug("S1:", s1=pformat(s1))
