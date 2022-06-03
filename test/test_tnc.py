@@ -6,14 +6,14 @@ import os
 import sys
 import time
 
-import pytest
-
 # pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 sys.path.insert(0, "test")
-import util_tnc_IRS as irs
-import util_tnc_ISS as iss
+from test import util_tnc_IRS as irs
+from test import util_tnc_ISS as iss
+
+import pytest
 
 
 # These do not update static.INFO:
