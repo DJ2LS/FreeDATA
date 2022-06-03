@@ -93,7 +93,7 @@ def t_highsnr_arq_short_station2(
         # log.info("S2 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")
-        log.info("S2 TX: ", TX=static.FRAME_TYPE(frametype).name, frametypeno=frametype)
+            log.info("S2 TX: ", TX=frametype)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -116,7 +116,7 @@ def t_highsnr_arq_short_station2(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S2 RX: ", RX=static.FRAME_TYPE(frametype).name, frametypeno=frametype)
+        log.info("S2 RX: ", RX=frametype)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.

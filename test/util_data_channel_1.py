@@ -93,9 +93,7 @@ def t_highsnr_arq_short_station1(
         # log.info("S1 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")
-            log.info(
-                "S1 TX: ", TX=static.FRAME_TYPE(frametype).name, frametypeno=frametype
-            )
+            log.info("S1 TX: ", TX=frametype)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -112,7 +110,7 @@ def t_highsnr_arq_short_station1(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S1 RX: ", RX=static.FRAME_TYPE(frametype).name, frametypeno=frametype)
+        log.info("S1 RX: ", RX=frametype)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -127,7 +125,7 @@ def t_highsnr_arq_short_station1(
 
     # Construct message to dxstation.
     # Tests seem to work better when this side sends a 'dummy' frame first.
-    data = {"type": "ping", "command": "ping", "dxcallsign": 'BB4NN'}
+    data = {"type": "ping", "command": "ping", "dxcallsign": "BB4NN"}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
 
