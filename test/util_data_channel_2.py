@@ -132,7 +132,7 @@ def t_highsnr_arq_short_station2(
     # time.sleep(2)
 
     # This transaction should take less than 14 sec.
-    timeout = time.time() + 14
+    timeout = time.time() + 20
     while "ARQ;RECEIVING;SUCCESS" not in static.INFO or static.ARQ_STATE:
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
