@@ -191,6 +191,8 @@ def util_rx():
         if time.time() >= timeout:
             print("TIMEOUT REACHED")
 
+        time.sleep(0.01)
+
     if nread_exceptions:
         print(
             f"nread_exceptions {nread_exceptions:d} - receive audio lost! "
