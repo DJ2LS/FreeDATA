@@ -47,7 +47,7 @@ def util_rx():
     AUDIO_SAMPLE_RATE_RX = 48000
 
     # make sure our resampler will work
-    assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
+    assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
     # check if we want to use an audio device then do a pyaudio init
     if AUDIO_INPUT_DEVICE != -1:
@@ -125,7 +125,7 @@ def util_rx():
         if AUDIO_INPUT_DEVICE != -1:
             try:
                 # data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
-                data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)
+                data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)  # type: ignore
             except OSError as err:
                 print(err, file=sys.stderr)
                 # if str(err).find("Input overflowed") != -1:
@@ -137,7 +137,7 @@ def util_rx():
             data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER * 2)
 
         # insert samples in buffer
-        x = np.frombuffer(data_in48k, dtype=np.int16)
+        x = np.frombuffer(data_in48k, dtype=np.int16)  # type: ignore
         # print(x)
         # x = data_in48k
         x.tofile(frx)
@@ -165,7 +165,7 @@ def util_rx():
             if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
                 rx_errors = rx_errors + 1
             if DEBUGGING_MODE:
-                rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
+                rx_status = codec2.api.rx_sync_flags_to_text[rx_status]  # type: ignore
                 time_needed = time_end - time_start
 
                 print(
@@ -210,6 +210,7 @@ def util_rx():
     # and at last check if we had an opened audio instance and close it
     if AUDIO_INPUT_DEVICE != -1:
         sd._terminate()
+
 
 def parse_arguments():
     # --------------------------------------------GET PARAMETER INPUTS
