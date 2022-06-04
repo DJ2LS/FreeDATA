@@ -147,7 +147,7 @@ def t_highsnr_arq_short_station1(
     time.sleep(0.5)
 
     # This transaction should take less than 14 sec.
-    timeout = time.time() + 20
+    timeout = time.time() + 25
     while "ARQ;TRANSMITTING;SUCCESS" not in static.INFO:
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
@@ -159,7 +159,7 @@ def t_highsnr_arq_short_station1(
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
-    timeout = time.time() + 10
+    timeout = time.time() + 20
     while static.ARQ_STATE or tnc.data_queue_transmit.queue:
         if time.time() > timeout:
             log.error("station1", TIMEOUT=True)

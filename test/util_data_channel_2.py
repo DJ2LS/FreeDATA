@@ -132,7 +132,7 @@ def t_highsnr_arq_short_station2(
     # time.sleep(2)
 
     # This transaction should take less than 14 sec.
-    timeout = time.time() + 20
+    timeout = time.time() + 25
     while "ARQ;RECEIVING;SUCCESS" not in static.INFO or static.ARQ_STATE:
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
@@ -141,7 +141,7 @@ def t_highsnr_arq_short_station2(
     log.info("station2, first", arq_state=pformat(static.ARQ_STATE))
 
     # Allow enough time for this side to receive the disconnect frame.
-    timeout = time.time() + 10
+    timeout = time.time() + 20
     while "ARQ;SESSION;CLOSE" not in static.INFO:
         if time.time() > timeout:
             log.error("station2", TIMEOUT=True)
