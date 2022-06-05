@@ -865,11 +865,7 @@ class DATA:
         bufferposition = bufferposition_end = 0
 
         # Iterate through data_out buffer
-        while (
-            bufferposition < len(data_out)
-            and not self.data_frame_ack_received
-            and static.ARQ_STATE
-        ):
+        while not self.data_frame_ack_received and static.ARQ_STATE:
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for self.tx_n_retry_of_burst in range(TX_N_MAX_RETRIES_PER_BURST):
                 # AUTO MODE SELECTION
@@ -929,10 +925,6 @@ class DATA:
                     frame = data_out[bufferposition:bufferposition_end]
                     frame = arqheader + frame
 
-                # This point shouldn't reached that often
-                elif bufferposition > len(data_out):
-                    break
-
                 # Pad the last bytes of a frame
                 else:
                     extended_data_out = data_out[bufferposition:]
@@ -975,6 +967,9 @@ class DATA:
                 if self.burst_ack:
                     self.burst_ack = False  # reset ack state
                     self.tx_n_retry_of_burst = 0  # reset retries
+                    self.log.debug(
+                        "[TNC] arq_transmit: Received BURST ACK. Sending next chunk."
+                    )
                     break  # break retry loop
 
                 if self.burst_nack:
@@ -985,12 +980,18 @@ class DATA:
                     pass
 
                 if self.data_frame_ack_received:
+                    self.log.debug(
+                        "[TNC] arq_transmit: Received FRAME ACK. Sending next chunk."
+                    )
                     break  # break retry loop
 
                 # We need this part for leaving the repeat loop
                 # static.ARQ_STATE == "DATA" --> when stopping transmission manually
                 if not static.ARQ_STATE:
                     # print("not ready for data...leaving loop....")
+                    self.log.debug(
+                        "[TNC] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
+                    )
                     break
 
                 self.calculate_transfer_rate_tx(
@@ -1021,6 +1022,12 @@ class DATA:
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
             )
 
+            # Stay in the while loop until we receive a data_frame_ack. Otherwise
+            # the loop exits after sending the last frame only once and doesn't
+            # wait for an acknowledgement.
+            if self.data_frame_ack_received and bufferposition > len(data_out):
+                self.log.debug("[TNC] arq_tx: Last fragment sent and acknowledged.")
+                break
             # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
@@ -1060,12 +1067,13 @@ class DATA:
         self.arq_cleanup()
         if TESTMODE:
             # Quit after transmission
+            self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
             sys.exit(0)
 
     # signalling frames received
     def burst_ack_received(self, data_in: bytes):
         """
-        Received a NACK for a transmitted frame, keep track and
+        Received a ACK for a transmitted frame, keep track and
         make adjustments to speed level if needed.
 
         Args:
@@ -1087,7 +1095,7 @@ class DATA:
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
             )
-            # Force data loops of TNC to stop and continue with next frame
+            # Force data retry loops of TX TNC to stop and continue with next frame
             self.burst_ack = True
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -2234,6 +2242,7 @@ class DATA:
         Cleanup function which clears all ARQ states
         """
         if TESTMODE:
+            self.log.debug("[TNC] TESTMODE: arq_cleanup: Not performing cleanup.")
             return
 
         self.log.debug("[TNC] arq_cleanup")
