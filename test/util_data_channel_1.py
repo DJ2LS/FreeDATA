@@ -124,11 +124,6 @@ def t_highsnr_arq_short_station1(
     # time.sleep(0.5)
 
     # Construct message to dxstation.
-    # Tests seem to work better when this side sends a 'dummy' frame first.
-    data = {"type": "ping", "command": "ping", "dxcallsign": "BB4NN"}
-    sock.process_tnc_commands(json.dumps(data, indent=None))
-    time.sleep(0.5)
-
     b64_str = str(base64.b64encode(bytes(message, "UTF-8")), "UTF-8").strip()
     data = {
         "type": "arq",

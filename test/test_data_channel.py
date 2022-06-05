@@ -87,7 +87,8 @@ def analyze_results(station1: list, station2: list, call_list: list):
                 continue
             data = bytes(s1_item[0])
             frametypeno = int.from_bytes(data[:1], "big")
-            frametype = static.FRAME_TYPE(frametypeno).name
+            # frametype = static.FRAME_TYPE(frametypeno).name
+            frametype = str(frametypeno)
             s1_crc = helpers.decode_call(helpers.bytes_to_callsign(data[1:4]))
             s2_crc = helpers.decode_call(helpers.bytes_to_callsign(data[2:5]))
             log.info(
