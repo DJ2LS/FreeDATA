@@ -119,11 +119,6 @@ def t_highsnr_arq_short_station1(
     # Try to wait for the far-end to start up.
     # time.sleep(0.5)
 
-    # Add a frame to the TX queue at the beginning. This helps during testing so that
-    # the TNC is required to resend frames.
-    data = {"type": "ping", "command": "ping", "mycallsign": mycall, "dxcallsign": "BB5AA"}
-    sock.process_tnc_commands(json.dumps(data, indent=None))
-
     # Construct message to dxstation.
     b64_str = str(base64.b64encode(bytes(message, "UTF-8")), "UTF-8").strip()
     data = {
