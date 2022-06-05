@@ -9,8 +9,6 @@ Created on Wed Dec 23 07:04:24 2020
 import contextlib
 import multiprocessing
 import sys
-import test.util_data_channel_1 as util1
-import test.util_data_channel_2 as util2
 import threading
 import time
 import zlib
@@ -18,13 +16,14 @@ import zlib
 import helpers
 import log_handler
 import pytest
-import static
 import structlog
 
-# pylint: disable=wrong-import-position
-# sys.path.insert(0, "..")
-# sys.path.insert(0, "../tnc")
-# sys.path.insert(0, "test")
+try:
+    import util_data_channel_1 as util1
+    import util_data_channel_2 as util2
+except ImportError:
+    import test.util_data_channel_1 as util1
+    import test.util_data_channel_2 as util2
 
 log_handler.setup_logging(filename="", level="INFO")
 

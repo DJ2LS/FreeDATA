@@ -8,20 +8,16 @@ Created on Wed Dec 23 07:04:24 2020
 
 import base64
 import json
-import sys
 import time
 from pprint import pformat
 
-import structlog
-
-sys.path.insert(0, "..")
-sys.path.insert(0, "../tnc")
 import codec2
 import data_handler
 import helpers
 import modem
 import sock
 import static
+import structlog
 
 
 def t_setup(
@@ -92,7 +88,7 @@ def t_highsnr_arq_short_station1(
         parent_pipe.send(t_frames)
         # log.info("S1 TX: ", frames=t_frames)
         for item in t_frames:
-            frametype = int.from_bytes(item[:1], "big")
+            frametype = int.from_bytes(item[:1], "big")  # type: ignore
             log.info("S1 TX: ", TX=frametype)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
