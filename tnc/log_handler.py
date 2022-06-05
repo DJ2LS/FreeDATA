@@ -4,13 +4,13 @@ import structlog
 
 
 # https://www.structlog.org/en/stable/standard-library.html
-def setup_logging(filename):
+def setup_logging(filename: str = "", level: str = "DEBUG"):
     """
 
     Args:
       filename:
-
-    Returns:
+      level:str: Log level to output, possible values are:
+        "CRITICAL", "FATAL", "ERROR", "WARNING", "WARN", "INFO", "DEBUG"
 
     """
 
@@ -40,12 +40,12 @@ def setup_logging(filename):
             },
             "handlers": {
                 "default": {
-                    "level": "DEBUG",
+                    "level": level,
                     "class": "logging.StreamHandler",
                     "formatter": "colored",
                 },
                 "file": {
-                    "level": "DEBUG",
+                    "level": level,
                     "class": "logging.handlers.WatchedFileHandler",
                     "filename": f"{filename}.log",
                     "formatter": "plain",
@@ -53,8 +53,8 @@ def setup_logging(filename):
             },
             "loggers": {
                 "": {
-                    "handlers": ["default", "file"],
-                    "level": "DEBUG",
+                    "handlers": ["default", "file"] if filename else ["default"],
+                    "level": level,
                     "propagate": True,
                 },
             },

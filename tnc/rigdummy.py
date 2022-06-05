@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 hamlib_version = 0
 
 

@@ -7,6 +7,7 @@ import sys
 import time
 
 import pytest
+import structlog
 
 # pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
@@ -21,19 +22,28 @@ import test_tnc_ISS as iss
 @pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])
 def test_tnc(command):
 
-    iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command])
-    irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command])
-    # print("Starting threads.")
-    iss_proc.start()
-    irs_proc.start()
+    # This test is currently a little inconsistent.
+    iss_proc: multiprocessing.Process = None
+    irs_proc: multiprocessing.Process = None
+    for _ in range(3):
+        iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command])
+        irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command])
+        # print("Starting threads.")
+        iss_proc.start()
+        irs_proc.start()
 
-    time.sleep(12)
+        time.sleep(12)
 
-    # print("Terminating threads.")
-    irs_proc.terminate()
-    iss_proc.terminate()
-    irs_proc.join()
-    iss_proc.join()
+        # print("Terminating threads.")
+        irs_proc.terminate()
+        iss_proc.terminate()
+        irs_proc.join()
+        iss_proc.join()
+
+        if iss_proc.exitcode == 0 and irs_proc.exitcode == 0:
+            break
+
+        structlog.get_logger(__name__).error("Retrying.")
 
     for idx in range(2):
         try:

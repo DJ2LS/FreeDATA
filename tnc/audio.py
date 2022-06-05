@@ -28,7 +28,9 @@ def get_audio_devices():
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
         # print(multiprocessing.get_start_method())
-        proc = multiprocessing.Process(target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices))
+        proc = multiprocessing.Process(
+            target=fetch_audio_devices, args=(proxy_input_devices, proxy_output_devices)
+        )
         proc.start()
         proc.join()
 
@@ -48,7 +50,7 @@ def fetch_audio_devices(input_devices, output_devices):
     """
     devices = sd.query_devices(device=None, kind=None)
     for index, device in enumerate(devices):
-        # we need to do a try exception, because for windows there's no audio device range
+        # Use a try/except block beacuse Windows doesn't have an audio device range
         try:
             name = device["name"]
 

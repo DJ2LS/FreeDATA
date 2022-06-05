@@ -55,6 +55,7 @@ class DAEMON:
     Daemon class
 
     """
+
     log = structlog.get_logger("DAEMON")
 
     def __init__(self):
@@ -62,10 +63,14 @@ class DAEMON:
         self.crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc8 library
 
         self.daemon_queue = sock.DAEMON_QUEUE
-        update_audio_devices = threading.Thread(target=self.update_audio_devices, name="UPDATE_AUDIO_DEVICES", daemon=True)
+        update_audio_devices = threading.Thread(
+            target=self.update_audio_devices, name="UPDATE_AUDIO_DEVICES", daemon=True
+        )
         update_audio_devices.start()
 
-        update_serial_devices = threading.Thread(target=self.update_serial_devices, name="UPDATE_SERIAL_DEVICES", daemon=True)
+        update_serial_devices = threading.Thread(
+            target=self.update_serial_devices, name="UPDATE_SERIAL_DEVICES", daemon=True
+        )
         update_serial_devices.start()
 
         worker = threading.Thread(target=self.worker, name="WORKER", daemon=True)
@@ -78,10 +83,15 @@ class DAEMON:
         while True:
             try:
                 if not static.TNCSTARTED:
-                    static.AUDIO_INPUT_DEVICES, static.AUDIO_OUTPUT_DEVICES = audio.get_audio_devices()
+                    (
+                        static.AUDIO_INPUT_DEVICES,
+                        static.AUDIO_OUTPUT_DEVICES,
+                    ) = audio.get_audio_devices()
             except Exception as err1:
-                self.log.error("[DMN] update_audio_devices: Exception gathering audio devices:", e=err1)
-                # print(e)
+                self.log.error(
+                    "[DMN] update_audio_devices: Exception gathering audio devices:",
+                    e=err1,
+                )
             time.sleep(1)
 
     def update_serial_devices(self):
@@ -98,13 +108,17 @@ class DAEMON:
                     crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
                     crc_hwid = crc_hwid.hex()
                     description = f"{desc} [{crc_hwid}]"
-                    serial_devices.append({"port": str(port), "description": str(description)})
+                    serial_devices.append(
+                        {"port": str(port), "description": str(description)}
+                    )
 
                 static.SERIAL_DEVICES = serial_devices
                 time.sleep(1)
             except Exception as err1:
-                self.log.error("[DMN] update_serial_devices: Exception gathering serial devices:", e=err1)
-                # print(e)
+                self.log.error(
+                    "[DMN] update_serial_devices: Exception gathering serial devices:",
+                    e=err1,
+                )
 
     def worker(self):
         """
@@ -239,7 +253,7 @@ class DAEMON:
 
                         self.log.info("[DMN] TNC started", path="binary")
                     except FileNotFoundError as err1:
-                        self.log.error("[DMN] worker: Exception:", e=err1)
+                        self.log.info("[DMN] worker: ", e=err1)
                         command = []
                         if sys.platform in ["linux", "darwin"]:
                             command.append("python3")
@@ -298,9 +312,18 @@ class DAEMON:
                         import rigdummy as rig
 
                     hamlib = rig.radio()
-                    hamlib.open_rig(devicename=devicename, deviceport=deviceport, hamlib_ptt_type=pttprotocol,
-                        serialspeed=serialspeed, pttport=pttport, data_bits=data_bits, stop_bits=stop_bits,
-                        handshake=handshake, rigctld_ip=rigctld_ip, rigctld_port = rigctld_port)
+                    hamlib.open_rig(
+                        devicename=devicename,
+                        deviceport=deviceport,
+                        hamlib_ptt_type=pttprotocol,
+                        serialspeed=serialspeed,
+                        pttport=pttport,
+                        data_bits=data_bits,
+                        stop_bits=stop_bits,
+                        handshake=handshake,
+                        rigctld_ip=rigctld_ip,
+                        rigctld_port=rigctld_port,
+                    )
 
                     # hamlib_version = rig.hamlib_version
 
@@ -310,12 +333,9 @@ class DAEMON:
                     if pttstate:
                         self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
                         response = {"command": "test_hamlib", "result": "SUCCESS"}
-                    elif not pttstate:
+                    else:
                         self.log.warning("[DMN] Hamlib PTT", status="NO SUCCESS")
                         response = {"command": "test_hamlib", "result": "NOSUCCESS"}
-                    else:
-                        self.log.error("[DMN] Hamlib PTT", status="FAILED")
-                        response = {"command": "test_hamlib", "result": "FAILED"}
 
                     hamlib.set_ptt(False)
                     hamlib.close_rig()
@@ -334,7 +354,13 @@ if __name__ == "__main__":
 
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description="FreeDATA Daemon")
-    PARSER.add_argument("--port", dest="socket_port", default=3001, help="Socket port in the range of 1024-65536", type=int)
+    PARSER.add_argument(
+        "--port",
+        dest="socket_port",
+        default=3001,
+        help="Socket port in the range of 1024-65535",
+        type=int,
+    )
     ARGS = PARSER.parse_args()
 
     static.DAEMONPORT = ARGS.socket_port
@@ -344,7 +370,13 @@ if __name__ == "__main__":
             logging_path = os.getenv("HOME") + "/.config/" + "FreeDATA/" + "daemon"
 
         if sys.platform == "darwin":
-            logging_path = os.getenv("HOME") + "/Library/" + "Application Support/" + "FreeDATA/" + "daemon"
+            logging_path = (
+                os.getenv("HOME")
+                + "/Library/"
+                + "Application Support/"
+                + "FreeDATA/"
+                + "daemon"
+            )
 
         if sys.platform in ["win32", "win64"]:
             logging_path = os.getenv("APPDATA") + "/" + "FreeDATA/" + "daemon"
@@ -359,16 +391,25 @@ if __name__ == "__main__":
         mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
-        cmdserver = sock.ThreadedTCPServer((static.HOST, static.DAEMONPORT), sock.ThreadedTCPRequestHandler)
+        cmdserver = sock.ThreadedTCPServer(
+            (static.HOST, static.DAEMONPORT), sock.ThreadedTCPRequestHandler
+        )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
         server_thread.start()
 
     except Exception as err:
-        mainlog.error("[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=err)
+        mainlog.error(
+            "[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=err
+        )
         sys.exit(1)
     daemon = DAEMON()
 
-    mainlog.info("[DMN] Starting FreeDATA Daemon", author="DJ2LS", year="2022", version=static.VERSION)
+    mainlog.info(
+        "[DMN] Starting FreeDATA Daemon",
+        author="DJ2LS",
+        year="2022",
+        version=static.VERSION,
+    )
     while True:
         time.sleep(1)

@@ -10,6 +10,8 @@ import crcengine
 import static
 import structlog
 
+log = structlog.get_logger("helpers")
+
 
 def wait(seconds: float) -> bool:
     """
@@ -78,13 +80,15 @@ def get_crc_24(data) -> bytes:
     Returns:
         CRC-24 (OpenPGP) of the provided data as bytes
     """
-    crc_algorithm = crcengine.create(0x864cfb,
-                                     24,
-                                     0xb704ce,
-                                     ref_in=False,
-                                     ref_out=False,
-                                     xor_out=0,
-                                     name="crc-24-openpgp")
+    crc_algorithm = crcengine.create(
+        0x864CFB,
+        24,
+        0xB704CE,
+        ref_in=False,
+        ref_out=False,
+        xor_out=0,
+        name="crc-24-openpgp",
+    )
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(3, byteorder="big")
     return crc_data
@@ -125,17 +129,37 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
+        static.HEARD_STATIONS.append(
+            [dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency]
+        )
     # if not, we search and update
     else:
         for i in range(len(static.HEARD_STATIONS)):
             # Update callsign with new timestamp
             if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency]
+                static.HEARD_STATIONS[i] = [
+                    dxcallsign,
+                    dxgrid,
+                    int(time.time()),
+                    datatype,
+                    snr,
+                    offset,
+                    frequency,
+                ]
                 break
             # Insert if nothing found
             if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append([dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency])
+                static.HEARD_STATIONS.append(
+                    [
+                        dxcallsign,
+                        dxgrid,
+                        int(time.time()),
+                        datatype,
+                        snr,
+                        offset,
+                        frequency,
+                    ]
+                )
                 break
 
 
@@ -175,16 +199,25 @@ def callsign_to_bytes(callsign) -> bytes:
     # Try converting to bytestring if possible type string
     try:
         callsign = bytes(callsign, "utf-8")
-    except TypeError as err:
-        structlog.get_logger("structlog").debug("[HLP] callsign_to_bytes: Exception converting callsign to bytes:", e=err)
+    except TypeError:
+        # This is expected depending on the type of the `callsign` argument.
+        # log.debug("[HLP] callsign_to_bytes: Error converting callsign to bytes:", e=err)
+        pass
+    except Exception as err:
+        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
 
-    # Need this step to reduce the needed payload by the callsign (stripping "-" out of the callsign)
+    # Need this step to reduce the needed payload by the callsign
+    # (stripping "-" out of the callsign)
     callsign = callsign.split(b"-")
     ssid = 0
     try:
         ssid = int(callsign[1])
-    except IndexError as err:
-        structlog.get_logger("structlog").debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+    except IndexError:
+        # This is expected when callsign doesn't have a dash.
+        # log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
+        pass
+    except Exception as err:
+        log.debug("[HLP] callsign_to_bytes: Error callsign SSID to integer:", e=err)
 
     # callsign = callsign[0]
     # bytestring = bytearray(8)
@@ -247,7 +280,8 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
 
 def check_callsign(callsign: bytes, crc_to_check: bytes):
     """
-    Funktion to check a crc against a callsign to calculate the ssid by generating crc until we got it
+    Function to check a crc against a callsign to calculate the
+    ssid by generating crc until we find the correct SSID
 
     Args:
         callsign: Callsign which we want to check
@@ -258,13 +292,17 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
         False
     """
 
-    structlog.get_logger("structlog").debug("[HLP] check_callsign: Checking:", callsign=callsign)
+    # print(callsign)
+    log.debug("[HLP] check_callsign: Checking:", callsign=callsign)
     try:
         # We want the callsign without SSID
         callsign = callsign.split(b"-")[0]
 
+    except IndexError:
+        # This is expected when `callsign` doesn't have a dash.
+        pass
     except Exception as err:
-        structlog.get_logger("structlog").debug("[HLP] check_callsign: Error callsign SSIG to integer:", e=err)
+        log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
 
     for ssid in static.SSID_LIST:
         call_with_ssid = bytearray(callsign)
@@ -292,24 +330,24 @@ def encode_grid(grid):
 
     grid = grid.upper()  # upper case to be save
 
-    int_first = ord(grid[0]) - 65  # -65 offset for "A" become zero, utf8 table
-    int_sec = ord(grid[1]) - 65  # -65 offset for "A" become zero, utf8 table
+    int_first = ord(grid[0]) - 65  # -65 offset for 'A' become zero, utf8 table
+    int_sec = ord(grid[1]) - 65  # -65 offset for 'A' become zero, utf8 table
 
     int_val = (int_first * 18) + int_sec  # encode for modulo devision, 2 numbers in 1
 
-    out_code_word = (int_val & 0b111111111)  # only 9 bit LSB A - R * A - R is needed
+    out_code_word = int_val & 0b111111111  # only 9 bit LSB A - R * A - R is needed
     out_code_word <<= 9  # shift 9 bit left having space next bits, letter A-R * A-R
 
     int_val = int(grid[2:4])  # number string to number int, highest value 99
-    out_code_word |= (int_val & 0b1111111)  # using bit OR to add new value
+    out_code_word |= int_val & 0b1111111  # using bit OR to add new value
     out_code_word <<= 7  # shift 7 bit left having space next bits, letter A-X
 
-    int_val = ord(grid[4]) - 65  # -65 offset for "A" become zero, utf8 table
-    out_code_word |= (int_val & 0b11111)  # using bit OR to add new value
+    int_val = ord(grid[4]) - 65  # -65 offset for 'A' become zero, utf8 table
+    out_code_word |= int_val & 0b11111  # using bit OR to add new value
     out_code_word <<= 5  # shift 5 bit left having space next bits, letter A-X
 
-    int_val = ord(grid[5]) - 65  # -65 offset for "A" become zero, utf8 table
-    out_code_word |= (int_val & 0b11111)  # using bit OR to add new value
+    int_val = ord(grid[5]) - 65  # -65 offset for 'A' become zero, utf8 table
+    out_code_word |= int_val & 0b11111  # using bit OR to add new value
 
     return out_code_word.to_bytes(length=4, byteorder="big")
 
@@ -351,20 +389,22 @@ def encode_call(call):
         call:string: ham radio call sign [A-Z,0-9], last char SSID 0-63
 
     Returns:
-        6 bytes contains 6 bits/sign encoded 8 char call sign with binary SSID (only upper letters + numbers, SSID)
+        6 bytes contains 6 bits/sign encoded 8 char call sign with binary SSID
+        (only upper letters + numbers, SSID)
     """
     out_code_word = 0
 
     call = call.upper()  # upper case to be save
 
-    for x in call:
-        int_val = ord(x) - 48  # -48 reduce bits, begin with first number utf8 table
+    for char in call:
+        int_val = ord(char) - 48  # -48 reduce bits, begin with first number utf8 table
         out_code_word <<= 6  # shift left 6 bit, making space for a new char
-        out_code_word |= (int_val & 0b111111)  # bit OR adds the new char, masked with AND 0b111111
-
+        out_code_word |= (
+            int_val & 0b111111
+        )  # bit OR adds the new char, masked with AND 0b111111
     out_code_word >>= 6  # clean last char
     out_code_word <<= 6  # make clean space
-    out_code_word |= (ord(call[-1]) & 0b111111)  # add the SSID uncoded only 0 - 63
+    out_code_word |= ord(call[-1]) & 0b111111  # add the SSID uncoded only 0 - 63
 
     return out_code_word.to_bytes(length=6, byteorder="big")
 

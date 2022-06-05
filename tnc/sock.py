@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Fri Dec 25 21:25:14 2020
@@ -38,19 +37,20 @@ DAEMON_QUEUE = queue.Queue()
 CONNECTED_CLIENTS = set()
 CLOSE_SIGNAL = False
 
-log = structlog.get_logger("sock")
-
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
     the socket handler base class
     """
+
     pass
 
 
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
+
     connection_alive = False
+    log = structlog.get_logger("ThreadedTCPRequestHandler")
 
     def send_to_client(self):
         """
@@ -84,7 +84,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     try:
                         client.send(sock_data)
                     except Exception as err:
-                        log.info("[SCK] Connection lost", e=err)
+                        self.log.info("[SCK] Connection lost", e=err)
                         self.connection_alive = False
 
             # we want to transmit scatter data only once to reduce network traffic
@@ -132,8 +132,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
             except Exception as err:
-                log.info("[SCK] Connection closed", ip=self.client_address[0],
-                            port=self.client_address[1], e=err)
+                self.log.info(
+                    "[SCK] Connection closed",
+                    ip=self.client_address[0],
+                    port=self.client_address[1],
+                    e=err,
+                )
                 self.connection_alive = False
 
     def handle(self):
@@ -142,14 +146,21 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         """
         CONNECTED_CLIENTS.add(self.request)
 
-        log.debug("[SCK] Client connected", ip=self.client_address[0],
-                    port=self.client_address[1])
+        self.log.debug(
+            "[SCK] Client connected",
+            ip=self.client_address[0],
+            port=self.client_address[1],
+        )
         self.connection_alive = True
 
-        self.send_thread = threading.Thread(target=self.send_to_client, args=[], daemon=True)
-        self.send_thread.start()
-        self.receive_thread = threading.Thread(target=self.receive_from_client, args=[], daemon=True)
-        self.receive_thread.start()
+        self.sendThread = threading.Thread(
+            target=self.send_to_client, args=[], daemon=True
+        )
+        self.sendThread.start()
+        self.receiveThread = threading.Thread(
+            target=self.receive_from_client, args=[], daemon=True
+        )
+        self.receiveThread.start()
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
@@ -157,13 +168,18 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def finish(self):
         """ """
-        log.warning("[SCK] Closing client socket", ip=self.client_address[0],
-                    port=self.client_address[1])
+        self.log.warning(
+            "[SCK] Closing client socket",
+            ip=self.client_address[0],
+            port=self.client_address[1],
+        )
         try:
             CONNECTED_CLIENTS.remove(self.request)
-        except Exception as err:
-            log.warning("[SCK] client connection already removed from client list",
-                        client=self.request, e=err)
+        except Exception:
+            self.log.warning(
+                "[SCK] client connection already removed from client list",
+                client=self.request,
+            )
 
 
 def process_tnc_commands(data):
@@ -176,29 +192,41 @@ def process_tnc_commands(data):
     Returns:
 
     """
+    log = structlog.get_logger("process_tnc_commands")
+
     # we need to do some error handling in case of socket timeout or decoding issue
     try:
         # convert data to json object
         received_json = json.loads(data)
         log.debug("[SCK] CMD", command=received_json)
         # SET TX AUDIO LEVEL  -----------------------------------------------------
-        if received_json["type"] == "set" and received_json["command"] == "tx_audio_level":
+        if (
+            received_json["type"] == "set"
+            and received_json["command"] == "tx_audio_level"
+        ):
             try:
                 static.TX_AUDIO_LEVEL = int(received_json["value"])
                 command_response("tx_audio_level", True)
 
             except Exception as err:
                 command_response("tx_audio_level", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
-        # TRANSMIT SINE WAVE  -----------------------------------------------------
-        if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
+        # TRANSMIT TEST FRAME  ----------------------------------------------------
+        if (
+            received_json["type"] == "set"
+            and received_json["command"] == "send_test_frame"
+        ):
             try:
                 data_handler.DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
                 command_response("send_test_frame", True)
             except Exception as err:
                 command_response("send_test_frame", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # CQ CQ CQ -----------------------------------------------------
         if received_json["command"] == "cqcqcq":
@@ -208,7 +236,9 @@ def process_tnc_commands(data):
 
             except Exception as err:
                 command_response("cqcqcq", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # START_BEACON -----------------------------------------------------
         if received_json["command"] == "start_beacon":
@@ -219,7 +249,9 @@ def process_tnc_commands(data):
                 command_response("start_beacon", True)
             except Exception as err:
                 command_response("start_beacon", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # STOP_BEACON -----------------------------------------------------
         if received_json["command"] == "stop_beacon":
@@ -230,7 +262,9 @@ def process_tnc_commands(data):
                 command_response("stop_beacon", True)
             except Exception as err:
                 command_response("stop_beacon", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # PING ----------------------------------------------------------
         if received_json["type"] == "ping" and received_json["command"] == "ping":
@@ -248,7 +282,9 @@ def process_tnc_commands(data):
                 command_response("ping", True)
             except Exception as err:
                 command_response("ping", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "connect":
@@ -270,7 +306,9 @@ def process_tnc_commands(data):
                 command_response("connect", True)
             except Exception as err:
                 command_response("connect", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
@@ -280,7 +318,9 @@ def process_tnc_commands(data):
                 command_response("disconnect", True)
             except Exception as err:
                 command_response("disconnect", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
@@ -319,15 +359,22 @@ def process_tnc_commands(data):
                 if not len(base64data) % 4:
                     binarydata = base64.b64decode(base64data)
 
-                    data_handler.DATA_QUEUE_TRANSMIT.put(["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign])
+                    data_handler.DATA_QUEUE_TRANSMIT.put(
+                        ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                    )
                 else:
                     raise TypeError
             except Exception as err:
                 command_response("send_raw", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         # STOP TRANSMISSION ----------------------------------------------------------
-        if received_json["type"] == "arq" and received_json["command"] == "stop_transmission":
+        if (
+            received_json["type"] == "arq"
+            and received_json["command"] == "stop_transmission"
+        ):
             try:
                 if static.TNC_STATE == "BUSY" or static.ARQ_STATE:
                     data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
@@ -337,7 +384,9 @@ def process_tnc_commands(data):
                 command_response("stop_transmission", True)
             except Exception as err:
                 command_response("stop_transmission", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
         if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
             try:
@@ -350,9 +399,15 @@ def process_tnc_commands(data):
                     # print(static.RX_BUFFER[i][4])
                     # rawdata = json.loads(static.RX_BUFFER[i][4])
                     base64_data = static.RX_BUFFER[i][4]
-                    output["data-array"].append({"uuid": static.RX_BUFFER[i][0], "timestamp": static.RX_BUFFER[i][1],
-                                                 "dxcallsign": str(static.RX_BUFFER[i][2], "utf-8"),
-                                                 "dxgrid": str(static.RX_BUFFER[i][3], "utf-8"), "data": base64_data})
+                    output["data-array"].append(
+                        {
+                            "uuid": static.RX_BUFFER[i][0],
+                            "timestamp": static.RX_BUFFER[i][1],
+                            "dxcallsign": str(static.RX_BUFFER[i][2], "utf-8"),
+                            "dxgrid": str(static.RX_BUFFER[i][3], "utf-8"),
+                            "data": base64_data,
+                        }
+                    )
 
                 jsondata = json.dumps(output)
                 # self.request.sendall(bytes(jsondata, encoding))
@@ -361,17 +416,24 @@ def process_tnc_commands(data):
 
             except Exception as err:
                 command_response("rx_buffer", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
-        if received_json["type"] == "set" and received_json["command"] == "del_rx_buffer":
+        if (
+            received_json["type"] == "set"
+            and received_json["command"] == "del_rx_buffer"
+        ):
             try:
                 static.RX_BUFFER = []
                 command_response("del_rx_buffer", True)
             except Exception as err:
                 command_response("del_rx_buffer", False)
-                log.warning("[SCK] command execution error", e=err, command=received_json)
+                log.warning(
+                    "[SCK] command execution error", e=err, command=received_json
+                )
 
-    # exception, if JSON can't be decoded
+    # exception, if JSON cant be decoded
     except Exception as err:
         log.error("[TNC] JSON decoding error", e=err)
 
@@ -415,20 +477,24 @@ def send_tnc_state():
 
     # add heard stations to heard stations object
     for heard in static.HEARD_STATIONS:
-        output["stations"].append({
-            "dxcallsign": str(heard[0], "utf-8"),
-            "dxgrid": str(heard[1], "utf-8"),
-            "timestamp": heard[2],
-            "datatype": heard[3],
-            "snr": heard[4],
-            "offset": heard[5],
-            "frequency": heard[6]})
+        output["stations"].append(
+            {
+                "dxcallsign": str(heard[0], "utf-8"),
+                "dxgrid": str(heard[1], "utf-8"),
+                "timestamp": heard[2],
+                "datatype": heard[3],
+                "snr": heard[4],
+                "offset": heard[5],
+                "frequency": heard[6],
+            }
+        )
 
     return json.dumps(output)
 
 
-# This has apparently been taken out of a class, but is never called because
-# the `self.request.sendall` call is a syntax error as `self` is undefined.
+# This appears to have been taken out of a class, but is never called because
+# the `self.request.sendall` call is a syntax error as `self` is undefined and
+# we don't see errors in use.
 def process_daemon_commands(data):
     """
     process daemon commands
@@ -439,6 +505,8 @@ def process_daemon_commands(data):
     Returns:
 
     """
+    log = structlog.get_logger("process_daemon_commands")
+
     # convert data to json object
     received_json = json.loads(data)
     log.debug("[SCK] CMD", command=received_json)
@@ -448,15 +516,21 @@ def process_daemon_commands(data):
 
             if bytes(callsign, "utf-8") == b"":
                 self.request.sendall(b"INVALID CALLSIGN")
-                log.warning("[DMN] SET MYCALL FAILED", call=static.MYCALLSIGN,
-                            crc=static.MYCALLSIGN_CRC)
+                log.warning(
+                    "[DMN] SET MYCALL FAILED",
+                    call=static.MYCALLSIGN,
+                    crc=static.MYCALLSIGN_CRC,
+                )
             else:
                 static.MYCALLSIGN = bytes(callsign, "utf-8")
                 static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
                 command_response("mycallsign", True)
-                log.info("[DMN] SET MYCALL", call=static.MYCALLSIGN,
-                            crc=static.MYCALLSIGN_CRC)
+                log.info(
+                    "[DMN] SET MYCALL",
+                    call=static.MYCALLSIGN,
+                    crc=static.MYCALLSIGN_CRC,
+                )
         except Exception as err:
             command_response("mycallsign", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
@@ -475,7 +549,11 @@ def process_daemon_commands(data):
             command_response("mygrid", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
 
-    if received_json["type"] == "set" and received_json["command"] == "start_tnc" and not static.TNCSTARTED:
+    if (
+        received_json["type"] == "set"
+        and received_json["command"] == "start_tnc"
+        and not static.TNCSTARTED
+    ):
         try:
             mycall = str(received_json["parameter"][0]["mycall"])
             mygrid = str(received_json["parameter"][0]["mygrid"])
@@ -495,7 +573,9 @@ def process_daemon_commands(data):
             enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
             enable_fft = str(received_json["parameter"][0]["enable_fft"])
             enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
-            low_bandwidth_mode = str(received_json["parameter"][0]["low_bandwidth_mode"])
+            low_bandwidth_mode = str(
+                received_json["parameter"][0]["low_bandwidth_mode"]
+            )
             tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
@@ -503,33 +583,39 @@ def process_daemon_commands(data):
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
-                log.debug(f"[DMN] TNC Startup Config : {item}", value=received_json["parameter"][0][item])
+                log.debug(
+                    f"[DMN] TNC Startup Config : {item}",
+                    value=received_json["parameter"][0][item],
+                )
 
-            DAEMON_QUEUE.put(["STARTTNC",
-                              mycall,
-                              mygrid,
-                              rx_audio,
-                              tx_audio,
-                              devicename,
-                              deviceport,
-                              serialspeed,
-                              pttprotocol,
-                              pttport,
-                              data_bits,
-                              stop_bits,
-                              handshake,
-                              radiocontrol,
-                              rigctld_ip,
-                              rigctld_port,
-                              enable_scatter,
-                              enable_fft,
-                              low_bandwidth_mode,
-                              tuning_range_fmin,
-                              tuning_range_fmax,
-                              enable_fsk,
-                              tx_audio_level,
-                              respond_to_cq,
-                              ])
+            DAEMON_QUEUE.put(
+                [
+                    "STARTTNC",
+                    mycall,
+                    mygrid,
+                    rx_audio,
+                    tx_audio,
+                    devicename,
+                    deviceport,
+                    serialspeed,
+                    pttprotocol,
+                    pttport,
+                    data_bits,
+                    stop_bits,
+                    handshake,
+                    radiocontrol,
+                    rigctld_ip,
+                    rigctld_port,
+                    enable_scatter,
+                    enable_fft,
+                    low_bandwidth_mode,
+                    tuning_range_fmin,
+                    tuning_range_fmax,
+                    enable_fsk,
+                    tx_audio_level,
+                    respond_to_cq,
+                ]
+            )
             command_response("start_tnc", True)
 
         except Exception as err:
@@ -550,19 +636,22 @@ def process_daemon_commands(data):
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
 
-            DAEMON_QUEUE.put(["TEST_HAMLIB",
-                              devicename,
-                              deviceport,
-                              serialspeed,
-                              pttprotocol,
-                              pttport,
-                              data_bits,
-                              stop_bits,
-                              handshake,
-                              radiocontrol,
-                              rigctld_ip,
-                              rigctld_port,
-                              ])
+            DAEMON_QUEUE.put(
+                [
+                    "TEST_HAMLIB",
+                    devicename,
+                    deviceport,
+                    serialspeed,
+                    pttprotocol,
+                    pttport,
+                    data_bits,
+                    stop_bits,
+                    handshake,
+                    radiocontrol,
+                    rigctld_ip,
+                    rigctld_port,
+                ]
+            )
             command_response("test_hamlib", True)
         except Exception as err:
             command_response("test_hamlib", False)
@@ -586,6 +675,8 @@ def send_daemon_state():
     """
     send the daemon state to network
     """
+    log = structlog.get_logger("send_daemon_state")
+
     try:
         python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"
 
@@ -597,9 +688,9 @@ def send_daemon_state():
             "input_devices": static.AUDIO_INPUT_DEVICES,
             "output_devices": static.AUDIO_OUTPUT_DEVICES,
             "serial_devices": static.SERIAL_DEVICES,
-            # "cpu": str(psutil.cpu_percent()),
-            # "ram": str(psutil.virtual_memory().percent),
-            "version": "0.1"
+            #'cpu': str(psutil.cpu_percent()),
+            #'ram': str(psutil.virtual_memory().percent),
+            "version": "0.1",
         }
 
         if static.TNCSTARTED:
