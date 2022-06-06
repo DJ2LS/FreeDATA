@@ -394,6 +394,7 @@ class DATA:
           Dictionary containing the data to be sent, in the format:
           key=value, for each item. E.g.:
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="received",
                 status="success",
                 uuid=uniqueid,
@@ -743,6 +744,7 @@ class DATA:
                     [uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
                 )
                 self.send_data_to_socket_queue(
+                    freedata="tnc-message",
                     arq="transmission",
                     status="received",
                     uuid=uniqueid,
@@ -778,6 +780,7 @@ class DATA:
                 # static.INFO.append("ARQ;RECEIVING;FAILED")
 
                 self.send_data_to_socket_queue(
+                    freedata="tnc-message",
                     arq="transmission",
                     status="failed",
                     uuid=uniqueid,
@@ -835,6 +838,7 @@ class DATA:
         # static.INFO.append("ARQ;TRANSMITTING")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="transmission",
             status="transmitting",
             uuid=self.transmission_uuid,
@@ -1023,6 +1027,7 @@ class DATA:
             )
 
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="transmitting",
                 uuid=self.transmission_uuid,
@@ -1034,6 +1039,7 @@ class DATA:
 
         if self.data_frame_ack_received:
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="transmitted",
                 uuid=self.transmission_uuid,
@@ -1051,6 +1057,7 @@ class DATA:
 
         else:
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="failed",
                 uuid=self.transmission_uuid,
@@ -1178,6 +1185,7 @@ class DATA:
             static.HAMLIB_FREQUENCY,
         )
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="transmission",
             status="failed",
             uuid=self.transmission_uuid,
@@ -1367,6 +1375,7 @@ class DATA:
         # static.INFO.append("ARQ;SESSION;CLOSE")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="session",
             status="close",
         )
@@ -1409,6 +1418,7 @@ class DATA:
             # static.INFO.append("ARQ;SESSION;CLOSE")
 
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="session",
                 status="close",
             )
@@ -1559,6 +1569,7 @@ class DATA:
                 # static.INFO.append("DATACHANNEL;OPENING")
 
                 self.send_data_to_socket_queue(
+                    freedata="tnc-message",
                     arq="transmission",
                     status="opening",
                 )
@@ -1589,6 +1600,7 @@ class DATA:
             )
 
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="failed",
                 reason="unknown",
@@ -1627,6 +1639,7 @@ class DATA:
         self.is_IRS = True
         # static.INFO.append("DATACHANNEL;RECEIVEDOPENER")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="transmission",
             status="opening",
         )
@@ -1731,6 +1744,7 @@ class DATA:
         if protocol_version == static.ARQ_PROTOCOL_VERSION:
             # static.INFO.append("DATACHANNEL;OPEN")
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="opened",
             )
@@ -1775,6 +1789,7 @@ class DATA:
             static.ARQ_STATE = False
             # static.INFO.append("PROTOCOL;VERSION_MISMATCH")
             self.send_data_to_socket_queue(
+                freedata="tnc-message",
                 arq="transmission",
                 status="failed",
                 reason="protocol version missmatch",
@@ -1800,6 +1815,7 @@ class DATA:
 
         # static.INFO.append("PING;SENDING")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             ping="sending",
         )
         self.log.info(
@@ -1848,6 +1864,7 @@ class DATA:
         # static.INFO.append("PING;RECEIVING")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             ping="receiving",
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
@@ -1895,6 +1912,7 @@ class DATA:
         static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             ping="acknowledge",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
@@ -1942,6 +1960,7 @@ class DATA:
         static.ARQ_STATE = False
         # static.INFO.append("TRANSMISSION;STOPPED")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="transmission",
             status="stopped",
         )
@@ -1956,6 +1975,7 @@ class DATA:
         static.ARQ_STATE = False
         # static.INFO.append("TRANSMISSION;STOPPED")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             arq="transmission",
             status="stopped",
             uuid=uniqueid,
@@ -1988,6 +2008,7 @@ class DATA:
                     ):
                         # static.INFO.append("BEACON;SENDING")
                         self.send_data_to_socket_queue(
+                            freedata="tnc-message",
                             beacon="transmitting",
                             interval=self.beacon_interval,
                         )
@@ -2032,6 +2053,7 @@ class DATA:
         dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             type="beacon",
             status="received",
             uuid=str(uuid.uuid4()),
@@ -2043,6 +2065,7 @@ class DATA:
         )
         # static.INFO.append("BEACON;RECEIVING")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             beacon="received",
             mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
@@ -2072,6 +2095,7 @@ class DATA:
         self.log.info("[TNC] CQ CQ CQ")
         # static.INFO.append("CQ;SENDING")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             cq="transmitting",
         )
         cq_frame = bytearray(14)
@@ -2105,6 +2129,7 @@ class DATA:
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         # static.INFO.append("CQ;RECEIVING")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             cq="receiving",
             mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
@@ -2144,6 +2169,7 @@ class DATA:
         helpers.wait(randrange(0, 20, 5) / 10.0)
         # static.INFO.append("QRV;SENDING")
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             qrv="transmitting",
         )
         self.log.info("[TNC] Sending QRV!")
@@ -2174,6 +2200,7 @@ class DATA:
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
         self.send_data_to_socket_queue(
+            freedata="tnc-message",
             qrv="received",
         )
         # static.INFO.append("QRV;RECEIVING")
@@ -2480,6 +2507,7 @@ class DATA:
                 )
                 # static.INFO.append("ARQ;RECEIVING;FAILED")
                 self.send_data_to_socket_queue(
+                    freedata="tnc-message",
                     arq="transmission",
                     status="failed",
                     uuid=uniqueid,
@@ -2508,6 +2536,7 @@ class DATA:
                 )
                 # static.INFO.append("ARQ;SESSION;TIMEOUT")
                 self.send_data_to_socket_queue(
+                    freedata="tnc-message",
                     arq="session",
                     status="failed",
                     reason="timeout",
