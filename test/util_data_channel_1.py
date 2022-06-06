@@ -139,7 +139,7 @@ def t_highsnr_arq_short_station1(
     timeout = time.time() + 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
-    while '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue):
+    while '"arq":"transmission","status":"transmitted"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
             break
@@ -164,7 +164,7 @@ def t_highsnr_arq_short_station1(
     assert '"arq":"transmission","status":"transmitting"' in str(
         sock.SOCKET_QUEUE.queue
     )
-    assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"transmission","status":"transmitted"' in str(sock.SOCKET_QUEUE.queue)
     assert '"percent":100' in str(sock.SOCKET_QUEUE.queue)
     assert '"command_response":"disconnect","status":"OK"' in str(
         sock.SOCKET_QUEUE.queue

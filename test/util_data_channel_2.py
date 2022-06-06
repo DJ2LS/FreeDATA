@@ -120,7 +120,7 @@ def t_highsnr_arq_short_station2(
     timeout = time.time() + 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
-    while '"arq":"received"' not in str(sock.SOCKET_QUEUE.queue) or static.ARQ_STATE:
+    while '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue) or static.ARQ_STATE:
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
             break
@@ -140,8 +140,6 @@ def t_highsnr_arq_short_station2(
     # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
     # log.info("S2 Info: ", info=static.INFO)
     log.info("S2 Socket: ", socket_queue=sock.SOCKET_QUEUE.queue)
-    assert '"arq":"received"' in str(sock.SOCKET_QUEUE.queue)
-    # assert "DATACHANNEL;RECEIVEDOPENER" in static.INFO
-    assert "ARQ;SESSION;CLOSE" in static.INFO
-    # assert '"command_response":"disconnect","status":"OK"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.error("station2: Exiting!")
