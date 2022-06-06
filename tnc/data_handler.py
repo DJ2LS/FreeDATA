@@ -743,8 +743,8 @@ class DATA:
                     [uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
                 )
                 self.send_data_to_socket_queue(
-                    arq="received",
-                    status="success",
+                    arq="transmission",
+                    status="received",
                     uuid=uniqueid,
                     timestamp=timestamp,
                     mycallsign=str(mycallsign, "UTF-8"),
@@ -785,11 +785,10 @@ class DATA:
                     mycallsign=str(mycallsign, "UTF-8"),
                     dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                     dxgrid=str(static.DXGRID, "UTF-8"),
-                    data=base64_data,
                 )
 
                 self.log.warning(
-                    "[TNC] ARQ | RX | DATA FRAME NOT SUCESSFULLY RECEIVED!",
+                    "[TNC] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
                     e="wrong crc",
                     expected=data_frame_crc,
                     received=data_frame_crc_received,
@@ -1379,7 +1378,6 @@ class DATA:
             mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
-            data=base64_data,
         )
 
         self.IS_ARQ_SESSION_MASTER = False
@@ -1427,7 +1425,6 @@ class DATA:
                 mycallsign=str(mycallsign, "UTF-8"),
                 dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                 dxgrid=str(static.DXGRID, "UTF-8"),
-                data=base64_data,
             )
 
             self.IS_ARQ_SESSION_MASTER = False
@@ -1581,7 +1578,6 @@ class DATA:
                     mycallsign=str(mycallsign, "UTF-8"),
                     dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                     dxgrid=str(static.DXGRID, "UTF-8"),
-
                 )
 
                 self.log.info(
@@ -1755,7 +1751,7 @@ class DATA:
             # static.INFO.append("DATACHANNEL;OPEN")
             self.send_data_to_socket_queue(
                 arq="transmission",
-                status="open",
+                status="opened",
                 mycallsign=str(mycallsign, "UTF-8"),
                 dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                 dxgrid=str(static.DXGRID, "UTF-8"),
@@ -1984,7 +1980,8 @@ class DATA:
             status="stopped",
             mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),        )
+            dxgrid=str(static.DXGRID, "UTF-8"),
+        )
         self.arq_cleanup()
 
     def received_stop_transmission(self) -> None:
@@ -2003,7 +2000,6 @@ class DATA:
             mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
-            data=base64_data,
         )
         self.arq_cleanup()
 
