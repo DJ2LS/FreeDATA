@@ -397,9 +397,9 @@ class DATA:
                 freedata="tnc-message",
                 arq="received",
                 status="success",
-                uuid=uniqueid,
+                uuid=self.transmission_uuid,
                 timestamp=timestamp,
-                mycallsign=str(mycallsign, "UTF-8"),
+                mycallsign=str(self.mycallsign, "UTF-8"),
                 dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                 dxgrid=str(static.DXGRID, "UTF-8"),
                 data=base64_data,
@@ -676,7 +676,7 @@ class DATA:
 
         if bof_position >= 0:
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof) : eof_position
+                bof_position + len(self.data_frame_bof): eof_position
             ]
             frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
@@ -703,7 +703,7 @@ class DATA:
 
             # Extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof) : eof_position
+                bof_position + len(self.data_frame_bof): eof_position
             ]
             # Get the data frame crc
             data_frame_crc = payload[:4]  # 0:4 = 4 bytes
@@ -726,7 +726,7 @@ class DATA:
                 )
                 data_frame = data_frame_decompressed
 
-                uniqueid = str(uuid.uuid4())
+                self.transmission_uuid = str(uuid.uuid4())
                 timestamp = int(time.time())
 
                 # check if callsign ssid override
@@ -741,13 +741,13 @@ class DATA:
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
                 static.RX_BUFFER.append(
-                    [uniqueid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
+                    [self.transmission_uuid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
                 )
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
                     status="received",
-                    uuid=uniqueid,
+                    uuid=self.transmission_uuid,
                     timestamp=timestamp,
                     mycallsign=str(mycallsign, "UTF-8"),
                     dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
@@ -783,7 +783,7 @@ class DATA:
                     freedata="tnc-message",
                     arq="transmission",
                     status="failed",
-                    uuid=uniqueid,
+                    uuid=self.transmission_uuid,
                 )
 
                 self.log.warning(
@@ -819,12 +819,10 @@ class DATA:
         self.speed_level = len(self.mode_list) - 1
         static.ARQ_SPEED_LEVEL = self.speed_level
 
-        TX_N_SENT_BYTES = 0  # already sent bytes per data frame
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost
         TX_N_MAX_RETRIES_PER_BURST = 50
         TX_N_FRAMES_PER_BURST = n_frames_per_burst  # amount of n frames per burst
-        TX_BUFFER = []  # our buffer for appending new data
 
         # TIMEOUTS
         BURST_ACK_TIMEOUT_SECONDS = 3.0  # timeout for burst  acknowledges
@@ -1978,11 +1976,9 @@ class DATA:
             freedata="tnc-message",
             arq="transmission",
             status="stopped",
-            uuid=uniqueid,
-            timestamp=timestamp,
-            mycallsign=str(mycallsign, "UTF-8"),
+            uuid=self.transmission_uuid,
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.arq_cleanup()
 
@@ -2067,7 +2063,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             beacon="received",
-            mycallsign=str(mycallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
         )
@@ -2131,7 +2127,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="receiving",
-            mycallsign=str(mycallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
         )
@@ -2510,7 +2506,7 @@ class DATA:
                     freedata="tnc-message",
                     arq="transmission",
                     status="failed",
-                    uuid=uniqueid,
+                    uuid=self.transmission_uuid,
                 )
                 self.arq_cleanup()
 
