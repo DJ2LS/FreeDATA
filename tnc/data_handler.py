@@ -781,10 +781,6 @@ class DATA:
                     arq="transmission",
                     status="failed",
                     uuid=uniqueid,
-                    timestamp=timestamp,
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
                 )
 
                 self.log.warning(
@@ -1373,11 +1369,6 @@ class DATA:
         self.send_data_to_socket_queue(
             arq="session",
             status="close",
-            uuid=uniqueid,
-            timestamp=timestamp,
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
 
         self.IS_ARQ_SESSION_MASTER = False
@@ -1420,11 +1411,6 @@ class DATA:
             self.send_data_to_socket_queue(
                 arq="session",
                 status="close",
-                uuid=uniqueid,
-                timestamp=timestamp,
-                mycallsign=str(mycallsign, "UTF-8"),
-                dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                dxgrid=str(static.DXGRID, "UTF-8"),
             )
 
             self.IS_ARQ_SESSION_MASTER = False
@@ -1575,9 +1561,6 @@ class DATA:
                 self.send_data_to_socket_queue(
                     arq="transmission",
                     status="opening",
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
                 )
 
                 self.log.info(
@@ -1608,6 +1591,7 @@ class DATA:
             self.send_data_to_socket_queue(
                 arq="transmission",
                 status="failed",
+                reason="unknown",
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
@@ -1645,9 +1629,6 @@ class DATA:
         self.send_data_to_socket_queue(
             arq="transmission",
             status="opening",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
@@ -1752,9 +1733,6 @@ class DATA:
             self.send_data_to_socket_queue(
                 arq="transmission",
                 status="opened",
-                mycallsign=str(mycallsign, "UTF-8"),
-                dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                dxgrid=str(static.DXGRID, "UTF-8"),
             )
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
@@ -1823,9 +1801,6 @@ class DATA:
         # static.INFO.append("PING;SENDING")
         self.send_data_to_socket_queue(
             ping="sending",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.log.info(
             "[TNC] PING REQ ["
@@ -1874,7 +1849,6 @@ class DATA:
 
         self.send_data_to_socket_queue(
             ping="receiving",
-            mycallsign=str(mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
         )
@@ -1921,8 +1895,7 @@ class DATA:
         static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
-            type="ping",
-            status="ack",
+            ping="acknowledge",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             mycallsign=str(self.mycallsign, "UTF-8"),
@@ -1942,13 +1915,6 @@ class DATA:
 
         # static.INFO.append("PING;RECEIVEDACK")
 
-        self.send_data_to_socket_queue(
-            ping="receiving",
-            status="ack",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
-        )
         self.log.info(
             "[TNC] PING ACK ["
             + str(self.mycallsign, "UTF-8")
@@ -1978,9 +1944,6 @@ class DATA:
         self.send_data_to_socket_queue(
             arq="transmission",
             status="stopped",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.arq_cleanup()
 
@@ -2026,10 +1989,7 @@ class DATA:
                         # static.INFO.append("BEACON;SENDING")
                         self.send_data_to_socket_queue(
                             beacon="transmitting",
-                            interval=str(self.beacon_interval, "UTF-8"),
-                            mycallsign=str(mycallsign, "UTF-8"),
-                            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                            dxgrid=str(static.DXGRID, "UTF-8"),
+                            interval=self.beacon_interval,
                         )
                         self.log.info(
                             "[TNC] Sending beacon!", interval=self.beacon_interval
@@ -2113,9 +2073,6 @@ class DATA:
         # static.INFO.append("CQ;SENDING")
         self.send_data_to_socket_queue(
             cq="transmitting",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         cq_frame = bytearray(14)
         cq_frame[:1] = bytes([200])
@@ -2188,9 +2145,6 @@ class DATA:
         # static.INFO.append("QRV;SENDING")
         self.send_data_to_socket_queue(
             qrv="transmitting",
-            mycallsign=str(mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.log.info("[TNC] Sending QRV!")
 
@@ -2220,14 +2174,7 @@ class DATA:
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
         self.send_data_to_socket_queue(
-            type="qrv",
-            status="received",
-            uuid=str(uuid.uuid4()),
-            timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8"),
-            snr=str(static.SNR),
+            qrv="received",
         )
         # static.INFO.append("QRV;RECEIVING")
 
@@ -2536,10 +2483,6 @@ class DATA:
                     arq="transmission",
                     status="failed",
                     uuid=uniqueid,
-                    timestamp=timestamp,
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
                 )
                 self.arq_cleanup()
 
@@ -2568,11 +2511,6 @@ class DATA:
                     arq="session",
                     status="failed",
                     reason="timeout",
-                    uuid=uniqueid,
-                    timestamp=timestamp,
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
                 )
                 self.close_session()
 
