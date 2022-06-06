@@ -12,6 +12,7 @@ import sys
 import threading
 import time
 import zlib
+from pprint import pformat
 
 import helpers
 import log_handler
@@ -99,9 +100,9 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
             locate_data_with_crc(s2, text, data, frametype)
 
-    # log.debug("Everything")
-    # log.debug("S1:", s1=pformat(s1))
-    # log.debug("S2:", s2=pformat(s2))
+    # log.info("Everything")
+    # log.info("S1:", s1=pformat(station1))
+    # log.info("S2:", s2=pformat(station2))
 
 
 @pytest.mark.parametrize("freedv_mode", ["datac1", "datac3"])

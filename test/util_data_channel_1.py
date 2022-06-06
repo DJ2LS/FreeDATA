@@ -98,6 +98,7 @@ def t_highsnr_arq_short_station1(
     def t_process_data(self, bytes_out, freedv, bytes_per_frame: int):
         """'Wrap' DATA.process_data function to extract the arguments."""
         nonlocal orig_rx_func, parent_pipe
+
         t_bytes_out = bytes(bytes_out)
         parent_pipe.send(t_bytes_out)
         log.debug(
@@ -115,9 +116,6 @@ def t_highsnr_arq_short_station1(
     tnc, orig_rx_func, orig_tx_func = t_setup(
         mycall, dxcall, lowbwmode, t_transmit, t_process_data
     )
-
-    # Try to wait for the far-end to start up.
-    # time.sleep(0.5)
 
     # Construct message to dxstation.
     b64_str = str(base64.b64encode(bytes(message, "UTF-8")), "UTF-8").strip()
@@ -139,7 +137,9 @@ def t_highsnr_arq_short_station1(
 
     # This transaction should take less than 14 sec.
     timeout = time.time() + 25
-    while "ARQ;TRANSMITTING;SUCCESS" not in static.INFO:
+    # Compare with the string conversion instead of repeatedly dumping
+    # the queue to an object for comparisons.
+    while '"arq":"transmission","status":"success"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
             break
@@ -158,10 +158,15 @@ def t_highsnr_arq_short_station1(
         time.sleep(0.5)
     log.info("station1", arq_state=pformat(static.ARQ_STATE))
 
-    log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
-    log.info("S1 Info: ", info=static.INFO)
-    assert "DATACHANNEL;OPENING" in static.INFO
-    assert "DATACHANNEL;OPEN" in static.INFO
-    assert "ARQ;TRANSMITTING;SUCCESS" in static.INFO
+    # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
+    # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    log.info("S1 Socket: ", socket_queue=sock.SOCKET_QUEUE.queue)
+    assert '"arq":"transmission","status":"transmitting"' in str(
+        sock.SOCKET_QUEUE.queue
+    )
+    assert '"arq":"transmission","status":"success"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"percent":100' in str(sock.SOCKET_QUEUE.queue)
+    assert '"command_response":"disconnect","status":"OK"' in str(
+        sock.SOCKET_QUEUE.queue
+    )
     log.error("station1: Exiting!")

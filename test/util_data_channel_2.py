@@ -12,6 +12,7 @@ from pprint import pformat
 import data_handler
 import helpers
 import modem
+import sock
 import static
 import structlog
 
@@ -96,11 +97,6 @@ def t_highsnr_arq_short_station2(
     def t_process_data(self, bytes_out, freedv, bytes_per_frame: int):
         """'Wrap' DATA.process_data function to extract the arguments."""
         nonlocal orig_rx_func, parent_pipe
-        # global FIRST_RX
-        # if FIRST_RX:
-        #     FIRST_RX = False
-        #     # Swallow the first frame
-        #     orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
         t_bytes_out = bytes(bytes_out)
         parent_pipe.send(t_bytes_out)
@@ -120,14 +116,11 @@ def t_highsnr_arq_short_station2(
         mycall, dxcall, lowbwmode, t_transmit, t_process_data
     )
 
-    # data = {"type": "set", "command": "send_test_frame"}
-    # sock.process_tnc_commands(json.dumps(data, indent=None))
-    # time.sleep(0.5)
-    # time.sleep(2)
-
     # This transaction should take less than 14 sec.
     timeout = time.time() + 25
-    while "ARQ;RECEIVING;SUCCESS" not in static.INFO or static.ARQ_STATE:
+    # Compare with the string conversion instead of repeatedly dumping
+    # the queue to an object for comparisons.
+    while '""arq":"received"' not in str(sock.SOCKET_QUEUE.queue) or static.ARQ_STATE:
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
             break
@@ -143,14 +136,12 @@ def t_highsnr_arq_short_station2(
         time.sleep(0.5)
     log.info("station2", arq_state=pformat(static.ARQ_STATE))
 
-    # data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
-    # sock.process_tnc_commands(json.dumps(data, indent=None))
-
-    log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
-    log.info("S2 Info: ", info=static.INFO)
-    assert "DATACHANNEL;RECEIVEDOPENER" in static.INFO
-    # assert "QRV;SENDING" in static.INFO
-    # assert "ARQ;SESSION;CLOSE" in static.INFO
-    assert "ARQ;RECEIVING;SUCCESS" in static.INFO
+    # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
+    # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S2 Info: ", info=static.INFO)
+    log.info("S2 Socket: ", socket_queue=sock.SOCKET_QUEUE.queue)
+    assert '"arq":"received"' in str(sock.SOCKET_QUEUE.queue)
+    # assert "DATACHANNEL;RECEIVEDOPENER" in static.INFO
+    assert "ARQ;SESSION;CLOSE" in static.INFO
+    # assert '"command_response":"disconnect","status":"OK"' in str(sock.SOCKET_QUEUE.queue)
     log.error("station2: Exiting!")
