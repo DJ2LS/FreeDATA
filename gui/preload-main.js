@@ -1933,6 +1933,8 @@ ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => 
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving); // Returns a Bootstrap toast instance
     toast.show();
 });
+
+
         /*
          // TRANSMISSION STOPPED
         if (arg.info[i] == "TRANSMISSION;STOPPED"){

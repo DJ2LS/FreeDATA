@@ -1863,9 +1863,13 @@ class DATA:
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
-            ping="receiving",
+            ping="received",
+            uuid=str(uuid.uuid4()),
+            timestamp=int(time.time()),
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
+            snr=str(static.SNR)
         )
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
