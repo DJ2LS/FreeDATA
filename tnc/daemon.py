@@ -156,22 +156,19 @@ class DAEMON:
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
                     # list of parameters, necessary for running subprocess command as a list
-                    options = []
+                    options = [
+                        "--port",
+                        str(static.DAEMONPORT - 1),
+                        "--mycall",
+                        data[1],
+                        "--mygrid",
+                        data[2],
+                        "--rx",
+                        data[3],
+                        "--tx",
+                        data[4],
+                    ]
 
-                    options.append("--port")
-                    options.append(str(static.DAEMONPORT - 1))
-
-                    options.append("--mycall")
-                    options.append(data[1])
-
-                    options.append("--mygrid")
-                    options.append(data[2])
-
-                    options.append("--rx")
-                    options.append(data[3])
-
-                    options.append("--tx")
-                    options.append(data[4])
 
                     # if radiocontrol != disabled
                     # this should hopefully avoid a ton of problems if we are just running in
@@ -179,37 +176,19 @@ class DAEMON:
 
                     if data[13] != "disabled":
                         options.append("--devicename")
-                        options.append(data[5])
-
-                        options.append("--deviceport")
-                        options.append(data[6])
-
-                        options.append("--serialspeed")
-                        options.append(data[7])
-
-                        options.append("--pttprotocol")
-                        options.append(data[8])
-
-                        options.append("--pttport")
-                        options.append(data[9])
-
-                        options.append("--data_bits")
-                        options.append(data[10])
-
-                        options.append("--stop_bits")
-                        options.append(data[11])
-
-                        options.append("--handshake")
-                        options.append(data[12])
-
-                        options.append("--radiocontrol")
+                        options.extend((data[5], "--deviceport"))
+                        options.extend((data[6], "--serialspeed"))
+                        options.extend((data[7], "--pttprotocol"))
+                        options.extend((data[8], "--pttport"))
+                        options.extend((data[9], "--data_bits"))
+                        options.extend((data[10], "--stop_bits"))
+                        options.extend((data[11], "--handshake"))
+                        options.extend((data[12], "--radiocontrol"))
                         options.append(data[13])
 
                         if data[13] == "rigctld":
                             options.append("--rigctld_ip")
-                            options.append(data[14])
-
-                            options.append("--rigctld_port")
+                            options.extend((data[14], "--rigctld_port"))
                             options.append(data[15])
 
                     if data[16] == "True":
@@ -222,16 +201,8 @@ class DAEMON:
                         options.append("--500hz")
 
                     options.append("--tuning_range_fmin")
-                    options.append(data[19])
-
-                    options.append("--tuning_range_fmax")
-                    options.append(data[20])
-
-                    # overriding FSK mode
-                    # if data[21] == "True":
-                    #    options.append("--fsk")
-
-                    options.append("--tx-audio-level")
+                    options.extend((data[19], "--tuning_range_fmax"))
+                    options.extend((data[20], "--tx-audio-level"))
                     options.append(data[22])
 
                     if data[23] == "True":
@@ -328,9 +299,7 @@ class DAEMON:
                     # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)
-                    pttstate = hamlib.get_ptt()
-
-                    if pttstate:
+                    if pttstate := hamlib.get_ptt():
                         self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
                         response = {"command": "test_hamlib", "result": "SUCCESS"}
                     else:

@@ -97,7 +97,7 @@ def receive():
         nin_converted = int(nin * (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE))
         if DEBUGGING_MODE:
             print("-----------------------------")
-            print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
+            print(f"NIN:  {str(nin)} [ {nin_converted} ]")
 
         data_in = stream_rx.read(nin_converted, exception_on_overflow=False)
         data_in = data_in.rstrip(b"\x00")
@@ -110,7 +110,7 @@ def receive():
         nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
         total_n_bytes = total_n_bytes + nbytes
         if DEBUGGING_MODE:
-            print("SYNC: " + str(c_lib.freedv_get_rx_status(freedv)))
+            print(f"SYNC: {str(c_lib.freedv_get_rx_status(freedv))}")
 
         if nbytes == bytes_per_frame:
             rx_total_frames = rx_total_frames + 1
@@ -165,7 +165,7 @@ mod_out_preamble = ctypes.c_short * (
 mod_out_preamble = mod_out_preamble()
 
 
-print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST))
+print(f"BURSTS: {str(N_BURSTS)} FRAMES: {str(N_FRAMES_PER_BURST)}")
 print("-----------------------------------------------------------------")
 
 for i in range(N_BURSTS):

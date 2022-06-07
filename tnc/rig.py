@@ -68,13 +68,12 @@ except Exception as err:
         hamlib_version = rigctl.stdout.readline()
         hamlib_version = hamlib_version.split(" ")
 
-        if hamlib_version[1] == "Hamlib":
-            mainlog.warning(
-                "[RIG] Rigctl found! Please try using this", version=hamlib_version[2]
-            )
-            sys.exit()
-        else:
+        if hamlib_version[1] != "Hamlib":
             raise Exception
+        mainlog.warning(
+            "[RIG] Rigctl found! Please try using this", version=hamlib_version[2]
+        )
+        sys.exit()
     except Exception as err1:
         mainlog.critical("[RIG] HAMLIB NOT INSTALLED", error=err1)
         hamlib_version = 0

@@ -356,14 +356,13 @@ def process_tnc_commands(data):
                 except Exception:
                     arq_uuid = "no-uuid"
 
-                if not len(base64data) % 4:
-                    binarydata = base64.b64decode(base64data)
-
-                    data_handler.DATA_QUEUE_TRANSMIT.put(
-                        ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
-                    )
-                else:
+                if len(base64data) % 4:
                     raise TypeError
+                binarydata = base64.b64decode(base64data)
+
+                data_handler.DATA_QUEUE_TRANSMIT.put(
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                )
             except Exception as err:
                 command_response("send_raw", False)
                 log.warning(
@@ -433,7 +432,6 @@ def process_tnc_commands(data):
                     "[SCK] command execution error", e=err, command=received_json
                 )
 
-    # exception, if JSON cant be decoded
     except Exception as err:
         log.error("[TNC] JSON decoding error", e=err)
 

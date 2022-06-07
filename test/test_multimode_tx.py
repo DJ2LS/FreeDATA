@@ -15,8 +15,6 @@ from tnc import codec2
 
 
 def test_mm_tx():
-    # AUDIO PARAMETERS
-    AUDIO_FRAMES_PER_BUFFER = 2400
     MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
     AUDIO_SAMPLE_RATE_TX = 48000
     assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
@@ -61,6 +59,8 @@ def test_mm_tx():
             else:
                 sys.exit()
 
+        # AUDIO PARAMETERS
+        AUDIO_FRAMES_PER_BUFFER = 2400
         # pyaudio init
         stream_tx = p_audio.open(
             format=pyaudio.paInt16,
