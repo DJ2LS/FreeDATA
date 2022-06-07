@@ -16,8 +16,8 @@ from test import util_tnc_ISS as iss
 import pytest
 
 
-# These do not update static.INFO:
-#   "CONNECT", "SEND_TEST_FRAME"
+# These do not update sock.SOCKET_QUEUE:
+#   "CONNECT"
 # This test is currently a little inconsistent.
 @pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])

@@ -10,26 +10,37 @@ import os
 import sys
 import time
 
+import structlog
+
 sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 import data_handler
 import helpers
 import modem
+import sock
 import static
 
 IRS_original_arq_cleanup = object
 MESSAGE: str
 
+log = structlog.get_logger("util_tnc_IRS")
+
 
 def irs_arq_cleanup():
     """Replacement for modem.arq_cleanup to detect when to exit process."""
-    if "TRANSMISSION;STOPPED" in static.INFO:
-        print(f"{static.INFO=}")
+    log.info(
+        "irs_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue, message=MESSAGE.lower()
+    )
+    if '"arq":"transmission","status":"stopped"' in str(sock.SOCKET_QUEUE.queue):
+        # log.info("irs_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
         time.sleep(2)
         # sys.exit does not terminate threads.
         # pylint: disable=protected-access
-        if f"{MESSAGE};RECEIVING" not in static.INFO:
+        if f'"{MESSAGE.lower()}":"receiving"' not in str(
+            sock.SOCKET_QUEUE.queue
+        ) and f'"{MESSAGE.lower()}":"received"' not in str(sock.SOCKET_QUEUE.queue):
             print(f"{MESSAGE} was not received.")
+            log.info("irs_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
             os._exit(1)
 
         os._exit(0)
