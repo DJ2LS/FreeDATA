@@ -354,7 +354,9 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
-        } else if (item.type == 'beacon') {
+
+        // Handle beacon
+        } else if (item.beacon == 'received') {
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -364,7 +366,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.msg = 'null';
             obj.status = item.status;
             obj.snr = item.snr;
-            obj.type = item.type;
+            obj.type = 'beacon';
             
             db.put({
                 _id: obj.uuid,
@@ -393,6 +395,8 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             }).catch(function(err) {
                 console.log(err);
             });
+
+        // handle ARQ transmission
         } else if (item.arq == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);

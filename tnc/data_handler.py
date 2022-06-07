@@ -1814,7 +1814,7 @@ class DATA:
         # static.INFO.append("PING;SENDING")
         self.send_data_to_socket_queue(
             freedata="tnc-message",
-            ping="sending",
+            ping="transmitting",
         )
         self.log.info(
             "[TNC] PING REQ ["
@@ -2050,8 +2050,7 @@ class DATA:
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
-            type="beacon",
-            status="received",
+            beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             mycallsign=str(self.mycallsign, "UTF-8"),
@@ -2060,13 +2059,7 @@ class DATA:
             snr=str(static.SNR),
         )
         # static.INFO.append("BEACON;RECEIVING")
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            beacon="received",
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
-        )
+
         self.log.info(
             "[TNC] BEACON RCVD ["
             + str(dxcallsign, "UTF-8")
@@ -2126,7 +2119,7 @@ class DATA:
         # static.INFO.append("CQ;RECEIVING")
         self.send_data_to_socket_queue(
             freedata="tnc-message",
-            cq="receiving",
+            cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
