@@ -622,7 +622,7 @@ function close_sub_processes(){
         mainLog.error(e)
     }
 
-};
+}
 
 
 function close_all() {
