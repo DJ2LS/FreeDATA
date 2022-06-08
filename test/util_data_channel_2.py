@@ -130,7 +130,7 @@ def t_highsnr_arq_short_station2(
 
     # Allow enough time for this side to receive the disconnect frame.
     timeout = time.time() + 20
-    while "ARQ;SESSION;CLOSE" not in static.INFO:
+    while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.error("station2", TIMEOUT=True)
             break
@@ -139,7 +139,7 @@ def t_highsnr_arq_short_station2(
 
     # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
-    # log.info("S2 Socket: ", socket_queue=sock.SOCKET_QUEUE.queue)
+    # log.info("S2 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
     assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
     assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.error("station2: Exiting!")

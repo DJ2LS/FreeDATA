@@ -139,7 +139,9 @@ def t_highsnr_arq_short_station1(
     timeout = time.time() + 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
-    while '"arq":"transmission","status":"transmitted"' not in str(sock.SOCKET_QUEUE.queue):
+    while '"arq":"transmission","status":"transmitted"' not in str(
+        sock.SOCKET_QUEUE.queue
+    ):
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
             break
@@ -160,11 +162,12 @@ def t_highsnr_arq_short_station1(
 
     # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
-    # log.info("S1 Socket: ", socket_queue=sock.SOCKET_QUEUE.queue)
+    # log.info("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
     assert '"arq":"transmission","status":"transmitting"' in str(
         sock.SOCKET_QUEUE.queue
     )
     assert '"arq":"transmission","status":"transmitted"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"transmission","status":"failed"' not in str(sock.SOCKET_QUEUE.queue)
     assert '"percent":100' in str(sock.SOCKET_QUEUE.queue)
     assert '"command_response":"disconnect","status":"OK"' in str(
         sock.SOCKET_QUEUE.queue
