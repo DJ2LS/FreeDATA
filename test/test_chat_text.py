@@ -20,11 +20,11 @@ import pytest
 import structlog
 
 try:
-    import util_data_channel_1 as util1
-    import util_data_channel_2 as util2
+    import test.util_chat_text_1 as util1
+    import test.util_chat_text_2 as util2
 except ImportError:
-    import test.util_data_channel_1 as util1
-    import test.util_data_channel_2 as util2
+    import test.util_chat_text_1 as util1
+    import test.util_chat_text_2 as util2
 
 log_handler.setup_logging(filename="", level="INFO")
 
@@ -109,8 +109,8 @@ def analyze_results(station1: list, station2: list, call_list: list):
 @pytest.mark.parametrize("n_frames_per_burst", [1])  # Higher fpb is broken.
 @pytest.mark.parametrize("message_no", range(len(messages)))
 @pytest.mark.flaky(reruns=2)
-def test_data_channel(freedv_mode: str, n_frames_per_burst: int, message_no: int):
-    log = structlog.get_logger("test_data_channel")
+def test_chat_text(freedv_mode: str, n_frames_per_burst: int, message_no: int):
+    log = structlog.get_logger("test_chat_text")
 
     s1_data = []
     s2_data = []
