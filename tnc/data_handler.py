@@ -920,9 +920,6 @@ class DATA:
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
-                # Tempbuffer list for storing our data frames
-                tempbuffer = []
-
                 # Append data frames with TX_N_FRAMES_PER_BURST to tempbuffer
                 # TODO: this part needs a complete rewrite!
                 # TX_N_FRAMES_PER_BURST = 1 is working
@@ -952,9 +949,7 @@ class DATA:
                     )
                     frame = arqheader + extended_data_out
 
-                # Append frame to tempbuffer for transmission
-                tempbuffer.append(frame)
-
+                tempbuffer = [frame]
                 self.log.debug("[TNC] tempbuffer:", tempbuffer=tempbuffer)
                 self.log.info(
                     "[TNC] ARQ | TX | FRAMES",
@@ -991,10 +986,6 @@ class DATA:
                 if self.burst_nack:
                     self.burst_nack = False  # reset nack state
 
-                # not yet implemented
-                if self.rpt_request_received:
-                    pass
-
                 if self.data_frame_ack_received:
                     break  # break retry loop
 
@@ -1014,14 +1005,13 @@ class DATA:
                     maxretries=TX_N_MAX_RETRIES_PER_BURST,
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                 )
-                # End of FOR loop
+                        # End of FOR loop
 
             # update buffer position
             bufferposition = bufferposition_end
 
-            # update stats
             self.calculate_transfer_rate_tx(
-                tx_start_of_transmission, bufferposition_end, len(data_out)
+                tx_start_of_transmission, bufferposition, len(data_out)
             )
 
             self.send_data_to_socket_queue(
@@ -1034,7 +1024,7 @@ class DATA:
             )
 
 
-            # GOING TO NEXT ITERATION
+                # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
             # we need to wait until sending "transmitted" state
