@@ -163,6 +163,7 @@ window.addEventListener('DOMContentLoaded', () => {
 db.post({
             
             _id: uuid,
+            _rev: doc._rev,
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign.toUpperCase(),
             dxgrid: '---',
@@ -210,6 +211,7 @@ db.post({
         ipcRenderer.send('run-tnc-command', Data);
         db.post({
             _id: uuid,
+            _rev: doc._rev,
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign,
             dxgrid: 'null',
@@ -263,13 +265,13 @@ ipcRenderer.on('return-selected-files', (event, arg) => {
     `;
 });
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
-    //console.log(arg.status);
-    console.log(arg.uuid);
-    db.get(arg.uuid, {
+    var data = arg["data"][0]
+    console.log(data.status);
+    db.get(data.uuid, {
         attachments: true
     }).then(function(doc) {
         return db.put({
-            _id: arg.uuid,
+            _id: data.uuid,
             _rev: doc._rev,
             timestamp: doc.timestamp,
             dxcallsign: doc.dxcallsign,
@@ -277,17 +279,18 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
             msg: doc.msg,
             checksum: doc.checksum,
             type: "transmit",
-            status: arg.status,
-            percent: arg.percent,
-            bytesperminute: arg.bytesperminute,
+            status: data.status,
+            percent: data.percent,
+            bytesperminute: data.bytesperminute,
             uuid: doc.uuid,
             _attachments: doc._attachments
         });
     }).then(function(response) {
-            update_chat_obj_by_uuid(arg.uuid);
+            update_chat_obj_by_uuid(data.uuid);
 
     }).catch(function(err) {
         console.log(err);
+        console.log(data)
     });
 });
 ipcRenderer.on('action-new-msg-received', (event, arg) => {
@@ -295,7 +298,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
     var new_msg = arg.data;
     new_msg.forEach(function(item) {
-        console.log(item)
+        console.log(item.status)
         let obj = new Object();
 
         //handle ping
@@ -341,7 +344,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
 
         // handle ARQ transmission
-        } else if (item.arq == 'received') {
+        } else if (item.arq == 'transmission' && item.status == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
             obj.timestamp = item.timestamp;
@@ -555,9 +558,7 @@ update_chat = function(obj) {
                 </div>
                 `;
         }
-        
-        
-           
+
         if (obj.type == 'transmit') {
         
             //console.log('msg-' + obj._id + '-status')
@@ -621,33 +622,28 @@ update_chat = function(obj) {
         var element = document.getElementById("message-container");
         //console.log(element.scrollHeight)
 
-
-
-
+    /* UPDATE EXISTING ELEMENTS */
     } else if (document.getElementById('msg-' + obj._id)) {
         console.log("element already exists......")
         console.log(obj)
-        console.log(document.getElementById('msg-' + obj._id + '-progress').getAttribute("aria-valuenow"))
 
+        console.log(document.getElementById('msg-' + obj._id + '-progress').getAttribute("aria-valuenow"))
         
         document.getElementById('msg-' + obj._id + '-status').innerHTML = get_icon_for_state(obj.status);
         
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
         document.getElementById('msg-' + obj._id + '-progress-information').innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
-        
-        
-        
+
         if (obj.percent >= 100){
-            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
             document.getElementById('msg-' + obj._id + '-progress').innerHTML = '';
         } else {       
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-animated");
         }
-        
-       
+
         if (obj.status == 'failed'){
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
@@ -779,10 +775,13 @@ function get_icon_for_state(state) {
     if (state == 'transmit') {
         var status_icon = '<i class="bi bi-check" style="font-size:1rem;"></i>';
     } else if (state == 'transmitting') {
-        var status_icon = '<i class="bi bi-arrow-left-right" style="font-size:0.8rem;"></i>';
+        //var status_icon = '<i class="bi bi-arrow-left-right" style="font-size:0.8rem;"></i>';
+        var status_icon = `
+            <i class="spinner-border ms-auto" style="width: 0.8rem; height: 0.8rem;" role="status" aria-hidden="true"></i>
+        `;
     } else if (state == 'failed') {
         var status_icon = '<i class="bi bi-exclamation-circle" style="font-size:1rem;"></i>';
-    } else if (state == 'success') {
+    } else if (state == 'transmitted') {
         var status_icon = '<i class="bi bi-check-all" style="font-size:1rem;"></i>';
     } else {
         var status_icon = '<i class="bi bi-question" style="font-size:1rem;"></i>';
@@ -807,6 +806,7 @@ update_chat_obj_by_uuid = function(uuid) {
 add_obj_to_database = function(obj){
     db.put({
         _id: obj.uuid,
+        _rev: doc._rev,
         timestamp: obj.timestamp,
         uuid: obj.uuid,
         dxcallsign: obj.dxcallsign,

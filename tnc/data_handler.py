@@ -1033,9 +1033,14 @@ class DATA:
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
             )
 
+
             # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
+            # we need to wait until sending "transmitted" state
+            # gui database is too slow for handling this within 0.001 seconds
+            # so let's sleep a little
+            time.sleep(0.1)
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 arq="transmission",

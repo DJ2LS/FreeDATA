@@ -232,7 +232,8 @@ client.on('data', function(socketdata) {
                 socketLog.info(data)
 
                 // update transmission status
-                if (data['arq'] == 'transmission'){
+                /*
+                if (data['arq'] == 'transmission' && data['status'] == 'transmitting'){
 
                     let state = {
                         status: data['status'],
@@ -243,7 +244,7 @@ client.on('data', function(socketdata) {
 
                     ipcRenderer.send('request-update-transmission-status', state);
                 }
-
+                */
 
                 // CQ TRANSMITTING
                 if (data['cq'] == 'transmitting') {
@@ -299,70 +300,66 @@ client.on('data', function(socketdata) {
                     // ARQ OPEN
                     if (data['status'] == 'open') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-open', {data: [data]});
+
                     // ARQ OPENING
                     } else if (data['status'] == 'opening') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
 
+
                     // ARQ TRANSMISSION FAILED
                     } else if (data['status'] == 'failed') {
                         ipcRenderer.send('request-show-arq-toast-transmission-failed', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+
 
                     // ARQ TRANSMISSION RECEIVED
                     } else if (data['status'] == 'received') {
                         ipcRenderer.send('request-show-arq-toast-transmission-received', {data: [data]});
 
+                        dataArray = []
+                        messageArray = []
+
+                        socketLog.info(data)
+                        // we need to encode here to do a deep check for checking if file or message
+                        var encoded_data = atob(data['data'])
+                        var splitted_data = encoded_data.split(split_char)
+
+                        if(splitted_data[0] == 'f'){
+                            dataArray.push(data)
+                        }
+
+                        if(splitted_data[0] == 'm'){
+                            messageArray.push(data)
+                            console.log(data)
+                        }
+
+                        rxBufferLengthGui = dataArray.length
+                        let Files = {
+                            data: dataArray,
+                        };
+                        ipcRenderer.send('request-update-rx-buffer', Files);
+                        ipcRenderer.send('request-new-msg-received', Files);
+
+                        rxMsgBufferLengthGui = messageArray.length
+                        let Messages = {
+                            data: messageArray,
+                        };
+                        ipcRenderer.send('request-new-msg-received', Messages);
+
                     // ARQ TRANSMISSION TRANSMITTING
                     } else if (data['status'] == 'transmitting') {
                         ipcRenderer.send('request-show-arq-toast-transmission-transmitting', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+
 
                     // ARQ TRANSMISSION TRANSMITTED
                     } else if (data['status'] == 'transmitted') {
                         ipcRenderer.send('request-show-arq-toast-transmission-transmitted', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
                     }
-                }
-
-
-
-
-
-
-
-
-                /* A TEST WITH STREAMING DATA .... */
-                // if we received data through network stream, we get a single data item
-                if (data['arq'] == 'received') {
-                    dataArray = []
-                    messageArray = []
-
-                    socketLog.info(data)
-                    // we need to encode here to do a deep check for checking if file or message
-                    var encoded_data = atob(data['data'])
-                    var splitted_data = encoded_data.split(split_char)
-
-
-                    if(splitted_data[0] == 'f'){
-                        dataArray.push(data)
-                    }
-
-                    if(splitted_data[0] == 'm'){
-                        messageArray.push(data)
-                        console.log(data)
-                    }
-
-                    rxBufferLengthGui = dataArray.length
-                    let Files = {
-                        data: dataArray,
-                    };
-                    ipcRenderer.send('request-update-rx-buffer', Files);
-                    ipcRenderer.send('request-new-msg-received', Files);
-
-                    rxMsgBufferLengthGui = messageArray.length
-                    let Messages = {
-                        data: messageArray,
-                    };
-                    ipcRenderer.send('request-new-msg-received', Messages);
                 }
             }
+
             // ----------- catch tnc info messages END -----------
 
 
