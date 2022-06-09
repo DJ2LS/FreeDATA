@@ -623,7 +623,7 @@ update_chat = function(obj) {
         var id = "chat-" + obj.dxcallsign
         document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
         
-        var element = document.getElementById("message-container");
+        //var element = document.getElementById("message-container");
         //console.log(element.scrollHeight)
 
     /* UPDATE EXISTING ELEMENTS */
