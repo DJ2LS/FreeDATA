@@ -298,8 +298,8 @@ client.on('data', function(socketdata) {
                 if (data['arq'] == 'transmission') {
 
                     // ARQ OPEN
-                    if (data['status'] == 'open') {
-                        ipcRenderer.send('request-show-arq-toast-datachannel-open', {data: [data]});
+                    if (data['status'] == 'opened') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-opened', {data: [data]});
 
                     // ARQ OPENING
                     } else if (data['status'] == 'opening') {

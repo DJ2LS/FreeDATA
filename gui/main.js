@@ -567,8 +567,8 @@ ipcMain.on('request-show-arq-toast-datachannel-opening',(event,data)=>{
 });
 
 // ARQ DATA CHANNEL OPEN
-ipcMain.on('request-show-arq-toast-datachannel-open',(event,data)=>{
-    win.webContents.send('action-show-arq-toast-datachannel-open', data);
+ipcMain.on('request-show-arq-toast-datachannel-opened',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-opened', data);
 });
 
 // ARQ DATA RECEIVED OPENER

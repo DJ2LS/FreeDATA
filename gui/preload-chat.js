@@ -806,7 +806,6 @@ update_chat_obj_by_uuid = function(uuid) {
 add_obj_to_database = function(obj){
     db.put({
         _id: obj.uuid,
-        _rev: doc._rev,
         timestamp: obj.timestamp,
         uuid: obj.uuid,
         dxcallsign: obj.dxcallsign,
