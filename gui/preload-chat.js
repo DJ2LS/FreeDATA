@@ -390,7 +390,7 @@ update_chat = function(obj) {
         var shortmsg = obj.type;
     } else {
         var shortmsg = obj.msg;
-        var maxlength = 40;
+        var maxlength = 30;
         var shortmsg = shortmsg.length > maxlength ? shortmsg.substring(0, maxlength - 3) + "..." : shortmsg;
   
     }

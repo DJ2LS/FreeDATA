@@ -1813,10 +1813,16 @@ ipcRenderer.on('action-show-cq-toast-received', (event, data) => {
 
 // QRV TRANSMITTING
 ipcRenderer.on('action-show-qrv-toast-transmitting', (event, data) => {
+    var toastQRVtransmitting = document.getElementById('toastQRVtransmitting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastQRVtransmitting); // Returns a Bootstrap toast instance
+    toast.show();
 });
 
 // QRV RECEIVED
 ipcRenderer.on('action-show-qrv-toast-received', (event, data) => {
+    var toastQRVreceiving = document.getElementById('toastQRVreceiving');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastQRVreceiving); // Returns a Bootstrap toast instance
+    toast.show();
 });
 
 // BEACON TRANSMITTING

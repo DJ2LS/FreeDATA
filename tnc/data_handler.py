@@ -1040,7 +1040,7 @@ class DATA:
             # we need to wait until sending "transmitted" state
             # gui database is too slow for handling this within 0.001 seconds
             # so let's sleep a little
-            time.sleep(0.1)
+            time.sleep(0.2)
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 arq="transmission",
