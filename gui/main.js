@@ -471,6 +471,10 @@ console.log(filepath.filePaths[0])
 
   var filename = path.basename(filepath.filePaths[0])
   var mimeType = mime.getType(filename)
+  console.log(mimeType)
+  if (mimeType == '' || typeof(mimeType) !== 'null'){
+    mimeType = 'plain/text'
+  }
     chat.webContents.send('return-selected-files', {data : data, mime: mimeType, filename: filename}) 
     })
        

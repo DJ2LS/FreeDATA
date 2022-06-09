@@ -315,6 +315,7 @@ client.on('data', function(socketdata) {
                     // ARQ TRANSMISSION RECEIVED
                     } else if (data['status'] == 'received') {
                         ipcRenderer.send('request-show-arq-toast-transmission-received', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
 
                         dataArray = []
                         messageArray = []

@@ -163,7 +163,6 @@ window.addEventListener('DOMContentLoaded', () => {
 db.post({
             
             _id: uuid,
-            _rev: doc._rev,
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign.toUpperCase(),
             dxgrid: '---',
@@ -193,6 +192,9 @@ db.post({
         console.log(file);
         console.log(filename);
         console.log(filetype);
+        if (filetype == ''){
+            filetype = 'plain/text'
+        }
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
 
         
@@ -211,7 +213,6 @@ db.post({
         ipcRenderer.send('run-tnc-command', Data);
         db.post({
             _id: uuid,
-            _rev: doc._rev,
             timestamp: Math.floor(Date.now() / 1000),
             dxcallsign: dxcallsign,
             dxgrid: 'null',
@@ -242,7 +243,7 @@ db.post({
         // clear input
         document.getElementById('chatModuleMessage').value = ''
                 
-        // after adding file data to our attachment varible, delete it from global 
+        // after adding file data to our attachment variable, delete it from global
         filetype = '';
         file = '';
         filename = '';
@@ -256,6 +257,8 @@ db.post({
 });
 ipcRenderer.on('return-selected-files', (event, arg) => {
     filetype = arg.mime;
+    console.log(filetype)
+
     file = arg.data;
     filename = arg.filename;
     document.getElementById('selectFilesButton').innerHTML = `
@@ -429,6 +432,7 @@ update_chat = function(obj) {
         } else {
             var filename = '';
             var fileheader = '';
+            var filetype = 'text/plain';
             var controlarea_transmit = `
 <div class="ms-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
@@ -645,7 +649,7 @@ update_chat = function(obj) {
         }
 
         if (obj.status == 'failed'){
-            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("bg-primary");
             document.getElementById('msg-' + obj._id + '-progress').classList.add("bg-danger");
@@ -678,11 +682,8 @@ update_chat = function(obj) {
 
         // set Attribute to determine if we already created an EventListener for this element
         document.getElementById('retransmit-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
-
         document.getElementById('retransmit-msg-' + obj._id).addEventListener("click", () => {
-            
 
-        
             db.get(obj._id, {
                 attachments: true
             }).then(function(doc) {
