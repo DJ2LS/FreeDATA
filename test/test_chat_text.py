@@ -23,8 +23,8 @@ try:
     import test.util_chat_text_1 as util1
     import test.util_chat_text_2 as util2
 except ImportError:
-    import test.util_chat_text_1 as util1
-    import test.util_chat_text_2 as util2
+    import util_chat_text_1 as util1
+    import util_chat_text_2 as util2
 
 log_handler.setup_logging(filename="", level="INFO")
 

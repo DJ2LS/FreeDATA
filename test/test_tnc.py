@@ -6,14 +6,14 @@ import os
 import sys
 import time
 
-# pylint: disable=wrong-import-position
-sys.path.insert(0, "..")
-sys.path.insert(0, "../tnc")
-sys.path.insert(0, "test")
-from test import util_tnc_IRS as irs
-from test import util_tnc_ISS as iss
-
 import pytest
+
+try:
+    import test.util_tnc_IRS as irs
+    import test.util_tnc_ISS as iss
+except ImportError:
+    import util_tnc_IRS as irs
+    import util_tnc_ISS as iss
 
 
 # These do not update sock.SOCKET_QUEUE:
