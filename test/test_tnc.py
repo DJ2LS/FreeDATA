@@ -43,8 +43,8 @@ def test_tnc(command):
         except FileNotFoundError as fnfe:
             print(f"Unlinking pipe: {fnfe}")
 
-    assert iss_proc.exitcode == 0, f"Transmit side failed test. {iss_proc}"
-    assert irs_proc.exitcode == 0, f"Receive side failed test. {irs_proc}"
+    assert iss_proc.exitcode in [0, -15], f"Transmit side failed test. {iss_proc}"
+    assert irs_proc.exitcode in [0, -15], f"Receive side failed test. {irs_proc}"
 
 
 if __name__ == "__main__":

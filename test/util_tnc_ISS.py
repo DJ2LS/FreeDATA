@@ -7,8 +7,10 @@ Created on Wed Dec 23 07:04:24 2020
 """
 
 import os
+import signal
 import sys
 import time
+from typing import Callable
 
 import structlog
 
@@ -19,7 +21,7 @@ import modem
 import sock
 import static
 
-ISS_original_arq_cleanup = object
+ISS_original_arq_cleanup: Callable
 MESSAGE: str
 
 log = structlog.get_logger("util_tnc_ISS")
@@ -33,16 +35,15 @@ def iss_arq_cleanup():
     if '"arq":"transmission","status":"stopped"' in str(sock.SOCKET_QUEUE.queue):
         # log.info("iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
         time.sleep(1)
-        # sys.exit does not terminate threads.
-        # pylint: disable=protected-access
         if f'"{MESSAGE.lower()}":"transmitting"' not in str(
             sock.SOCKET_QUEUE.queue
         ) and f'"{MESSAGE.lower()}":"sending"' not in str(sock.SOCKET_QUEUE.queue):
             print(f"{MESSAGE} was not sent.")
             log.info("iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
-            os._exit(1)
+            # sys.exit does not terminate threads, and os_exit doesn't allow coverage collection.
+            signal.raise_signal(signal.SIGKILL)
 
-        os._exit(0)
+        signal.raise_signal(signal.SIGTERM)
     ISS_original_arq_cleanup()
 
 
