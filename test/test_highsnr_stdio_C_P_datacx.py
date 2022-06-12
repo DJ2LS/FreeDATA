@@ -130,9 +130,12 @@ def t_HighSNR_C_P_DATACx(
                 print(lastline)
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
-@pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
+# @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+# @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+# @pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
+@pytest.mark.parametrize("bursts", [BURSTS])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
+@pytest.mark.parametrize("testframes", [TESTFRAMES])
 @pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
 def test_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str

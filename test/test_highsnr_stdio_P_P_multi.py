@@ -91,8 +91,10 @@ def t_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
             print(lastline)
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+# @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+# @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+@pytest.mark.parametrize("bursts", [BURSTS])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
 def test_HighSNR_P_P_multi(bursts: int, frames_per_burst: int):
     proc = multiprocessing.Process(
         target=t_HighSNR_P_P_Multi,

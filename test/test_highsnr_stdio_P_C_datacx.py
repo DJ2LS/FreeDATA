@@ -134,8 +134,10 @@ def t_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
                     print(lastline)
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+# @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+# @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+@pytest.mark.parametrize("bursts", [BURSTS])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
 @pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
 def test_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     proc = multiprocessing.Process(
