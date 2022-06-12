@@ -21,8 +21,8 @@ except ImportError:
 # These do not update sock.SOCKET_QUEUE:
 #   "CONNECT"
 # This test is currently a little inconsistent.
-@pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])
+@pytest.mark.flaky(reruns=2)
 def test_tnc(command, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_tnc", level="INFO")
     log = structlog.get_logger("test_tnc")

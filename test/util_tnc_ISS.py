@@ -6,7 +6,7 @@ Created on Wed Dec 23 07:04:24 2020
 @author: DJ2LS
 """
 
-import os
+import json
 import signal
 import sys
 import time
@@ -30,7 +30,7 @@ log = structlog.get_logger("util_tnc_ISS")
 def iss_arq_cleanup():
     """Replacement for modem.arq_cleanup to detect when to exit process."""
     log.info(
-        "irs_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue, message=MESSAGE.lower()
+        "iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue, message=MESSAGE.lower()
     )
     if '"arq":"transmission","status":"stopped"' in str(sock.SOCKET_QUEUE.queue):
         # log.info("iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
@@ -103,26 +103,45 @@ def t_arq_iss(*args):
     """
     # data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', bytes_out, 255, n_frames_per_burst, '123', b'DJ2LS-0'])
 
-    # for _ in range(4):
+    data = {}
     if MESSAGE in ["BEACON"]:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE, 5, True])
-    elif MESSAGE in ["PING", "CONNECT"]:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE, dxcallsign])
+        data = {"type": "command", "command": "start_beacon", "parameter": 5}
+    elif MESSAGE in ["CQ"]:
+        data = {"type": "command", "command": "cqcqcq"}
+    elif MESSAGE in ["CONNECT"]:
+        data = {
+            "type": "arq",
+            "command": "connect",
+            "dxcallsign": str(dxcallsign, encoding="UTF-8"),
+        }
+    elif MESSAGE in ["PING"]:
+        data = {
+            "type": "ping",
+            "command": "ping",
+            "dxcallsign": str(dxcallsign, encoding="UTF-8"),
+        }
     else:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE])
+        assert not MESSAGE, f"{MESSAGE} not known to test."
+
+    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     time.sleep(1.5)
 
-    # for i in range(4):
-    #    data_handler.DATA_QUEUE_TRANSMIT.put(['PING', b'DN2LS-2'])
+    data = {"type": "arq", "command": "stop_transmission"}
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
-    data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
+    time.sleep(0.5)
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Set timeout
-    timeout = time.time() + 10
+    timeout = time.time() + 15
 
     while time.time() < timeout:
         time.sleep(0.1)
+
+    log.warning("queue:", queue=sock.SOCKET_QUEUE.queue)
 
     assert not "TIMEOUT!"
 

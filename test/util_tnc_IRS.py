@@ -82,7 +82,7 @@ def t_arq_irs(*args):
     t_modem = modem.RF()
 
     # Set timeout
-    timeout = time.time() + 10
+    timeout = time.time() + 15
 
     while time.time() < timeout:
         time.sleep(0.1)
