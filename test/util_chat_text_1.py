@@ -57,6 +57,8 @@ def t_setup(
     tnc.time_list_low_bw = [3, 1, 1]
     tnc.time_list_high_bw = [3, 1, 1]
     tnc.time_list = [3, 1, 1]
+    # Limit number of retries
+    tnc.rx_n_max_retries_per_burst = 10
 
     # Create the modem
     t_modem = modem.RF()

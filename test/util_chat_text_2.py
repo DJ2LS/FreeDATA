@@ -54,6 +54,8 @@ def t_setup(
     tnc.time_list_low_bw = [1, 1, 1]
     tnc.time_list_high_bw = [1, 1, 1]
     tnc.time_list = [1, 1, 1]
+    # Limit number of retries
+    tnc.rx_n_max_retries_per_burst = 10
 
     # Create the modem
     t_modem = modem.RF()
@@ -114,22 +116,22 @@ def t_highsnr_arq_short_station2(
         mycall, dxcall, lowbwmode, t_transmit, t_process_data
     )
 
-    # This transaction should take less than 14 sec.
-    timeout = time.time() + 25
-    # Compare with the string conversion instead of repeatedly dumping
-    # the queue to an object for comparisons.
-    while (
-        '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue)
-        or static.ARQ_STATE
-    ):
-        if time.time() > timeout:
-            log.warning("station2 TIMEOUT", first=True)
-            break
-        time.sleep(0.5)
-    log.info("station2, first", arq_state=pformat(static.ARQ_STATE))
+    # # This transaction should take less than 14 sec.
+    # timeout = time.time() + 25
+    # # Compare with the string conversion instead of repeatedly dumping
+    # # the queue to an object for comparisons.
+    # while (
+    #     '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue)
+    #     or static.ARQ_STATE
+    # ):
+    #     if time.time() > timeout:
+    #         log.warning("station2 TIMEOUT", first=True)
+    #         break
+    #     time.sleep(0.5)
+    # log.info("station2, first", arq_state=pformat(static.ARQ_STATE))
 
     # Allow enough time for this side to receive the disconnect frame.
-    timeout = time.time() + 20
+    timeout = time.time() + 45
     while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.error("station2", TIMEOUT=True)
