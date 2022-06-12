@@ -8,11 +8,11 @@ Created on Wed Dec 23 07:04:24 2020
 
 import contextlib
 import multiprocessing
+import os
 import sys
 import threading
 import time
 import zlib
-from pprint import pformat
 
 import helpers
 import log_handler
@@ -26,7 +26,6 @@ except ImportError:
     import util_chat_text_1 as util1
     import util_chat_text_2 as util2
 
-log_handler.setup_logging(filename="", level="INFO")
 
 STATIONS = ["AA2BB", "ZZ9YY"]
 
@@ -100,16 +99,15 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
             locate_data_with_crc(s2, text, data, frametype)
 
-    # log.info("Everything")
-    # log.info("S1:", s1=pformat(station1))
-    # log.info("S2:", s2=pformat(station2))
-
 
 @pytest.mark.parametrize("freedv_mode", ["datac1", "datac3"])
 @pytest.mark.parametrize("n_frames_per_burst", [1])  # Higher fpb is broken.
 @pytest.mark.parametrize("message_no", range(len(messages)))
 @pytest.mark.flaky(reruns=2)
-def test_chat_text(freedv_mode: str, n_frames_per_burst: int, message_no: int):
+def test_chat_text(
+    freedv_mode: str, n_frames_per_burst: int, message_no: int, tmp_path
+):
+    log_handler.setup_logging(filename=tmp_path / "test_chat_text", level="INFO")
     log = structlog.get_logger("test_chat_text")
 
     s1_data = []
@@ -148,6 +146,7 @@ def test_chat_text(freedv_mode: str, n_frames_per_burst: int, message_no: int):
                 STATIONS[1],
                 messages[message_no],
                 True,  # low bandwidth mode
+                tmp_path,
             ),
             daemon=True,
         ),
@@ -161,6 +160,7 @@ def test_chat_text(freedv_mode: str, n_frames_per_burst: int, message_no: int):
                 STATIONS[0],
                 messages[message_no],
                 True,  # low bandwidth mode
+                tmp_path,
             ),
             daemon=True,
         ),
@@ -182,6 +182,12 @@ def test_chat_text(freedv_mode: str, n_frames_per_burst: int, message_no: int):
     PIPE_THREAD_RUNNING = False
     for pipe_recv in pipe_receivers:
         pipe_recv.join()
+
+    for idx in range(2):
+        try:
+            os.unlink(tmp_path / f"hfchannel{idx+1}")
+        except FileNotFoundError as fnfe:
+            log.debug(f"Unlinking pipe: {fnfe}")
 
     for p_item in proc:
         assert p_item.exitcode == 0

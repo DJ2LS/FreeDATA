@@ -52,13 +52,16 @@ def t_arq_iss(*args):
     global ISS_original_arq_cleanup, MESSAGE
 
     MESSAGE = args[0]
+    tmp_path = args[1]
 
     # enable testmode
     data_handler.TESTMODE = True
+    modem.RXCHANNEL = tmp_path / "hfchannel1"
     modem.TESTMODE = True
-    modem.RXCHANNEL = "/tmp/hfchannel1"
-    modem.TXCHANNEL = "/tmp/hfchannel2"
+    modem.TXCHANNEL = tmp_path / "hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
+    log.info("t_arq_iss:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_arq_iss:", TXCHANNEL=modem.TXCHANNEL)
 
     mycallsign = bytes("DJ2LS-2", "utf-8")
     mycallsign = helpers.callsign_to_bytes(mycallsign)

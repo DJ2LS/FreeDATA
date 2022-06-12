@@ -6,7 +6,6 @@ Created on Wed Dec 23 07:04:24 2020
 @author: DJ2LS
 """
 
-import os
 import signal
 import sys
 import time
@@ -53,14 +52,17 @@ def t_arq_irs(*args):
     global IRS_original_arq_cleanup, MESSAGE
 
     MESSAGE = args[0]
+    tmp_path = args[1]
 
     # enable testmode
     data_handler.TESTMODE = True
+    modem.RXCHANNEL = tmp_path / "hfchannel2"
     modem.TESTMODE = True
-    modem.RXCHANNEL = "/tmp/hfchannel2"
-    modem.TXCHANNEL = "/tmp/hfchannel1"
+    modem.TXCHANNEL = tmp_path / "hfchannel1"
     static.HAMLIB_RADIOCONTROL = "disabled"
     static.RESPOND_TO_CQ = True
+    log.info("t_arq_irs:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_arq_irs:", TXCHANNEL=modem.TXCHANNEL)
 
     mycallsign = bytes("DN2LS-2", "utf-8")
     mycallsign = helpers.callsign_to_bytes(mycallsign)

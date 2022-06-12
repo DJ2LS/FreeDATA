@@ -10,6 +10,7 @@ import base64
 import json
 import time
 from pprint import pformat
+from typing import Callable
 
 import codec2
 import data_handler
@@ -26,12 +27,13 @@ def t_setup(
     lowbwmode: bool,
     t_transmit,
     t_process_data,
+    tmp_path,
 ):
     # Disable data_handler testmode - This is required to test a conversation.
     data_handler.TESTMODE = False
-    modem.RXCHANNEL = "/tmp/hfchannel1"
+    modem.RXCHANNEL = tmp_path / "hfchannel1"
     modem.TESTMODE = True
-    modem.TXCHANNEL = "/tmp/hfchannel2"
+    modem.TXCHANNEL = tmp_path / "hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
     static.LOW_BANDWIDTH_MODE = lowbwmode
     static.MYGRID = bytes("AA12aa", "utf-8")
@@ -77,10 +79,12 @@ def t_highsnr_arq_short_station1(
     dxcall: str,
     message: str,
     lowbwmode: bool,
+    tmp_path,
 ):
     log = structlog.get_logger("station1")
-    orig_tx_func: object
-    orig_rx_func: object
+    orig_tx_func: Callable
+    orig_rx_func: Callable
+    log.info("t_highsnr_arq_short_station1:", TMP_PATH=tmp_path)
 
     def t_transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray):
         """'Wrap' RF.transmit function to extract the arguments."""
@@ -116,8 +120,11 @@ def t_highsnr_arq_short_station1(
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
     tnc, orig_rx_func, orig_tx_func = t_setup(
-        mycall, dxcall, lowbwmode, t_transmit, t_process_data
+        mycall, dxcall, lowbwmode, t_transmit, t_process_data, tmp_path
     )
+
+    log.info("t_highsnr_arq_short_station1:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_highsnr_arq_short_station1:", TXCHANNEL=modem.TXCHANNEL)
 
     # Construct message to dxstation.
     b64_str = str(base64.b64encode(bytes(message, "UTF-8")), "UTF-8").strip()

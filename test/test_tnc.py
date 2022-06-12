@@ -6,7 +6,9 @@ import os
 import sys
 import time
 
+import log_handler
 import pytest
+import structlog
 
 try:
     import test.util_tnc_IRS as irs
@@ -21,17 +23,19 @@ except ImportError:
 # This test is currently a little inconsistent.
 @pytest.mark.flaky(reruns=2)
 @pytest.mark.parametrize("command", ["CQ", "PING", "BEACON"])
-def test_tnc(command):
+def test_tnc(command, tmp_path):
+    log_handler.setup_logging(filename=tmp_path / "test_tnc", level="INFO")
+    log = structlog.get_logger("test_tnc")
 
-    iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command])
-    irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command])
-    # print("Starting threads.")
+    iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command, tmp_path])
+    irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command, tmp_path])
+    log.debug("Starting threads.")
     iss_proc.start()
     irs_proc.start()
 
     time.sleep(12)
 
-    # print("Terminating threads.")
+    log.debug("Terminating threads.")
     irs_proc.terminate()
     iss_proc.terminate()
     irs_proc.join()
@@ -39,9 +43,9 @@ def test_tnc(command):
 
     for idx in range(2):
         try:
-            os.unlink(f"/tmp/hfchannel{idx+1}")
+            os.unlink(tmp_path / f"hfchannel{idx+1}")
         except FileNotFoundError as fnfe:
-            print(f"Unlinking pipe: {fnfe}")
+            log.debug(f"Unlinking pipe: {fnfe}")
 
     assert iss_proc.exitcode in [0, -15], f"Transmit side failed test. {iss_proc}"
     assert irs_proc.exitcode in [0, -15], f"Receive side failed test. {irs_proc}"
