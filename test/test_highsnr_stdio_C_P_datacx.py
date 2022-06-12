@@ -5,9 +5,11 @@ Tests a high signal-to-noise ratio path with codec2 data formats using codec2 to
 # pylint: disable=global-statement, invalid-name, unused-import
 
 import glob
+import multiprocessing
 import os
 import subprocess
 import sys
+import time
 
 import pytest
 
@@ -27,11 +29,7 @@ if os.path.exists("test"):
     os.chdir("test")
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
-@pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
-@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
-def test_HighSNR_C_P_DATACx(
+def t_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str
 ):
     """
@@ -130,6 +128,38 @@ def test_HighSNR_C_P_DATACx(
                 assert f"RECEIVED FRAMES: {frames_per_burst * bursts}" in lastline
                 assert "RX_ERRORS: 0" in lastline
                 print(lastline)
+
+
+@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+@pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
+@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
+def test_HighSNR_C_P_DATACx(
+    bursts: int, frames_per_burst: int, testframes: int, mode: str
+):
+    proc = multiprocessing.Process(
+        target=t_HighSNR_C_P_DATACx,
+        args=[bursts, frames_per_burst, testframes, mode],
+        daemon=True,
+    )
+
+    proc.start()
+
+    # Set timeout
+    timeout = time.time() + 5
+
+    while time.time() < timeout:
+        time.sleep(0.1)
+
+    if proc.is_alive():
+        proc.terminate()
+        assert 0, "Timeout waiting for test to complete."
+
+    proc.join()
+    proc.terminate()
+
+    assert proc.exitcode == 0
+    proc.close()
 
 
 if __name__ == "__main__":
