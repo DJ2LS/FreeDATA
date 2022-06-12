@@ -92,8 +92,6 @@ def t_tsh_dummy():
     print("In transmit_session_heartbeat")
 
 
-# @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "E4AWQ-4"])
-# @pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
 def t_foreign_disconnect(mycall: str, dxcall: str):
     """
     Execute test to validate that receiving a session open frame sets the correct machine
@@ -168,8 +166,6 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
     assert static.ARQ_SESSION_STATE == "connecting"
 
 
-# @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "M4AWQ-4"])
-# @pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
 def t_valid_disconnect(mycall: str, dxcall: str):
     """
     Execute test to validate that receiving a session open frame sets the correct machine
@@ -233,6 +229,7 @@ def t_valid_disconnect(mycall: str, dxcall: str):
 
 @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "E4AWQ-4"])
 @pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
+@pytest.mark.flaky(reruns=2)
 def test_foreign_disconnect(mycall: str, dxcall: str):
     proc = multiprocessing.Process(target=t_foreign_disconnect, args=(mycall, dxcall))
     # print("Starting threads.")
@@ -250,6 +247,7 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
 
 @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "M4AWQ-4"])
 @pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
+@pytest.mark.flaky(reruns=2)
 def test_valid_disconnect(mycall: str, dxcall: str):
     proc = multiprocessing.Process(target=t_valid_disconnect, args=(mycall, dxcall))
     # print("Starting threads.")
