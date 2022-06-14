@@ -70,8 +70,11 @@ def t_setup(
 
 def t_beacon2(
     parent_pipe,
+    freedv_mode: str,
+    n_frames_per_burst: int,
     mycall: str,
     dxcall: str,
+    message: str,
     lowbwmode: bool,
     tmp_path,
 ):
@@ -120,11 +123,16 @@ def t_beacon2(
     log.info("t_beacon2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_beacon2:", TXCHANNEL=modem.TXCHANNEL)
 
-    # This transaction should take less than 14 sec.
-    timeout = time.time() + 20
+    # Assure the test completes.
+    timeout = time.time() + 20 # 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
+    # while (
+    #     '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue)
+    #     or static.ARQ_STATE
+    # ):
     while '"beacon":"received"' not in str(sock.SOCKET_QUEUE.queue):
+    # while '"cq":"received"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
             break
@@ -132,7 +140,7 @@ def t_beacon2(
     log.info("station2, first", arq_state=pformat(static.ARQ_STATE))
 
     # Allow enough time for this side to receive the disconnect frame.
-    timeout = time.time() + 15
+    timeout = time.time() + 15 # 20
     while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.error("station2", TIMEOUT=True)
@@ -143,6 +151,9 @@ def t_beacon2(
     # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
     # log.info("S2 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
+    # assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
     assert '"beacon":"received"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"cq":"received"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"qrv":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
     assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.error("station2: Exiting!")

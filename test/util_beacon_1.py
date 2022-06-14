@@ -6,11 +6,13 @@ Created on Wed Dec 23 07:04:24 2020
 @author: DJ2LS
 """
 
+import base64
 import json
 import time
 from pprint import pformat
 from typing import Callable
 
+import codec2
 import data_handler
 import helpers
 import modem
@@ -71,8 +73,11 @@ def t_setup(
 
 def t_beacon1(
     parent_pipe,
+    freedv_mode: str,
+    n_frames_per_burst: int,
     mycall: str,
     dxcall: str,
+    message: str,
     lowbwmode: bool,
     tmp_path,
 ):
@@ -121,17 +126,38 @@ def t_beacon1(
     log.info("t_beacon1:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_beacon1:", TXCHANNEL=modem.TXCHANNEL)
 
+    # Construct message to dxstation.
+    # b64_str = str(base64.b64encode(bytes(message, "UTF-8")), "UTF-8").strip()
+    # data = {
+    #     "type": "arq",
+    #     "command": "send_raw",
+    #     "parameter": [
+    #         {
+    #             "data": b64_str,
+    #             "dxcallsign": dxcall,
+    #             "mode": codec2.FREEDV_MODE[freedv_mode].value,
+    #             "n_frames": n_frames_per_burst,
+    #         }
+    #     ],
+    # }
     # Construct message to start beacon.
     data = {"type": "command", "command": "start_beacon", "parameter": "5"}
+    # Construct message to start cq.
+    # data = {"type": "command", "command": "cqcqcq"}
 
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
-    # This transaction should take less than 14 sec.
-    timeout = time.time() + 10
+    # Assure the test completes.
+    timeout = time.time() + 10  # 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
+    # while '"arq":"transmission","status":"transmitted"' not in str(
+    #     sock.SOCKET_QUEUE.queue
+    # ):
     while '"beacon":"transmitted"' not in str(sock.SOCKET_QUEUE.queue):
+    # while '"cq":"transmitting"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
             break
@@ -140,9 +166,11 @@ def t_beacon1(
 
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
+    time.sleep(0.5)
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
-    timeout = time.time() + 10
+    timeout = time.time() + 10  # 20
     while static.ARQ_STATE or tnc.data_queue_transmit.queue:
         if time.time() > timeout:
             log.error("station1", TIMEOUT=True)
@@ -153,8 +181,16 @@ def t_beacon1(
     # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
     # log.info("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
+    # assert '"arq":"transmission","status":"transmitting"' in str(
+    #     sock.SOCKET_QUEUE.queue
+    # )
+    # assert '"arq":"transmission","status":"transmitted"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"arq":"transmission","status":"failed"' not in str(sock.SOCKET_QUEUE.queue)
+    # assert '"percent":100' in str(sock.SOCKET_QUEUE.queue)
     assert '"beacon":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
     assert '"beacon":"failed"' not in str(sock.SOCKET_QUEUE.queue)
+    # assert '"cq":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"cq":"failed"' not in str(sock.SOCKET_QUEUE.queue)
     assert '"command_response":"disconnect","status":"OK"' in str(
         sock.SOCKET_QUEUE.queue
     )

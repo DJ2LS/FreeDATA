@@ -29,6 +29,12 @@ except ImportError:
 
 STATIONS = ["AA2BB", "ZZ9YY"]
 
+bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/plain;base64,MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=","crc":"123123123"}'
+
+messages = [
+    "This is a test chat...",
+    "This is a much longer message, hopefully longer than each of the datac1 and datac3 frames available to use in this modem. This should be long enought, but to err on the side of completeness this will string on for many more words before coming to the long awaited conclusion. We are not at the concluding point just yet because there is still more space to be taken up in the datac3 frame. Perhaps now would be a good place to terminate this test message, but perhaps not because we need a few more bytes. Here then we stop. This compresses so well that I need more data, even more stuff than is already here and included in the unreadable diatribe below, or is it a soliloquy? MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=",
+]
 PIPE_THREAD_RUNNING = True
 
 
@@ -94,8 +100,13 @@ def analyze_results(station1: list, station2: list, call_list: list):
             locate_data_with_crc(s2, text, data, frametype)
 
 
-@pytest.mark.flaky(reruns=2)
-def test_cq(tmp_path):
+@pytest.mark.parametrize("freedv_mode", ["datac1", "datac3"])
+@pytest.mark.parametrize("n_frames_per_burst", [1])  # Higher fpb is broken.
+@pytest.mark.parametrize("message_no", range(len(messages)))
+# @pytest.mark.flaky(reruns=2)
+def test_cq(
+    freedv_mode: str, n_frames_per_burst: int, message_no: int, tmp_path
+):
     log_handler.setup_logging(filename=tmp_path / "test_cq", level="INFO")
     log = structlog.get_logger("test_cq")
 
@@ -129,8 +140,11 @@ def test_cq(tmp_path):
             target=util1.t_cq1,
             args=(
                 s1_send,
+                freedv_mode,
+                n_frames_per_burst,
                 STATIONS[0],
                 STATIONS[1],
+                messages[message_no],
                 True,  # low bandwidth mode
                 tmp_path,
             ),
@@ -140,8 +154,11 @@ def test_cq(tmp_path):
             target=util2.t_cq2,
             args=(
                 s2_send,
+                freedv_mode,
+                n_frames_per_burst,
                 STATIONS[1],
                 STATIONS[0],
+                messages[message_no],
                 True,  # low bandwidth mode
                 tmp_path,
             ),

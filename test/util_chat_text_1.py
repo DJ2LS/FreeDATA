@@ -140,17 +140,24 @@ def t_highsnr_arq_short_station1(
             }
         ],
     }
+    # Construct message to start beacon.
+    # data = {"type": "command", "command": "start_beacon", "parameter": "5"}
+    # Construct message to start cq.
+    # data = {"type": "command", "command": "cqcqcq"}
 
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
-    # This transaction should take less than 14 sec.
+    # Assure the test completes.
     timeout = time.time() + 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
     while '"arq":"transmission","status":"transmitted"' not in str(
         sock.SOCKET_QUEUE.queue
     ):
+    # while '"beacon":"transmitted"' not in str(sock.SOCKET_QUEUE.queue):
+    # while '"cq":"transmitting"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station1 TIMEOUT", first=True)
             break
@@ -158,6 +165,8 @@ def t_highsnr_arq_short_station1(
     log.info("station1, first", arq_state=pformat(static.ARQ_STATE))
 
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
+    sock.process_tnc_commands(json.dumps(data, indent=None))
+    time.sleep(0.5)
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
@@ -178,6 +187,10 @@ def t_highsnr_arq_short_station1(
     assert '"arq":"transmission","status":"transmitted"' in str(sock.SOCKET_QUEUE.queue)
     assert '"arq":"transmission","status":"failed"' not in str(sock.SOCKET_QUEUE.queue)
     assert '"percent":100' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"beacon":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"beacon":"failed"' not in str(sock.SOCKET_QUEUE.queue)
+    # assert '"cq":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
+    # assert '"cq":"failed"' not in str(sock.SOCKET_QUEUE.queue)
     assert '"command_response":"disconnect","status":"OK"' in str(
         sock.SOCKET_QUEUE.queue
     )
