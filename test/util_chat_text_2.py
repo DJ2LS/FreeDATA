@@ -131,8 +131,6 @@ def t_highsnr_arq_short_station2(
         '"arq":"transmission","status":"received"' not in str(sock.SOCKET_QUEUE.queue)
         or static.ARQ_STATE
     ):
-    # while '"beacon":"received"' not in str(sock.SOCKET_QUEUE.queue):
-    # while '"cq":"received"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station2 TIMEOUT", first=True)
             break
@@ -151,9 +149,8 @@ def t_highsnr_arq_short_station2(
     # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
     # log.info("S2 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
+
     assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
-    # assert '"beacon":"received"' in str(sock.SOCKET_QUEUE.queue)
-    # assert '"cq":"received"' in str(sock.SOCKET_QUEUE.queue)
-    # assert '"qrv":"transmitting"' in str(sock.SOCKET_QUEUE.queue)
+
     assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.error("station2: Exiting!")
