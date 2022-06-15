@@ -314,9 +314,6 @@ client.on('data', function(socketdata) {
                         ipcRenderer.send('request-show-arq-toast-session-failed', {data: [data]});
                     }
 
-
-                }
-
                 }
                 // ARQ TRANSMISSION
                 if (data['arq'] == 'transmission') {
