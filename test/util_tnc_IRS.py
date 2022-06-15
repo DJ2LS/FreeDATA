@@ -13,7 +13,6 @@ from typing import Callable
 
 import structlog
 
-sys.path.insert(0, "..")
 sys.path.insert(0, "../tnc")
 import data_handler
 import helpers
@@ -54,6 +53,8 @@ def t_arq_irs(*args):
     MESSAGE = args[0]
     tmp_path = args[1]
 
+    sock.log = structlog.get_logger("util_tnc_IRS_sock")
+
     # enable testmode
     data_handler.TESTMODE = True
     modem.RXCHANNEL = tmp_path / "hfchannel2"
@@ -73,6 +74,7 @@ def t_arq_irs(*args):
 
     # start data handler
     tnc = data_handler.DATA()
+    tnc.log = structlog.get_logger("util_tnc_IRS_DATA")
 
     # Inject a way to exit the TNC infinite loop
     IRS_original_arq_cleanup = tnc.arq_cleanup
@@ -80,12 +82,15 @@ def t_arq_irs(*args):
 
     # start modem
     t_modem = modem.RF()
+    t_modem.log = structlog.get_logger("util_tnc_IRS_RF")
 
     # Set timeout
     timeout = time.time() + 15
 
     while time.time() < timeout:
         time.sleep(0.1)
+
+    log.warning("queue:", queue=sock.SOCKET_QUEUE.queue)
 
     assert not "TIMEOUT!"
 
