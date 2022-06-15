@@ -605,6 +605,27 @@ ipcMain.on('request-show-arq-toast-transmission-transmitted',(event,data)=>{
     win.webContents.send('action-show-arq-toast-transmission-transmitted', data);
 });
 
+// ARQ SESSION CONNECTING
+ipcMain.on('request-show-arq-toast-session-connecting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-connecting', data);
+});
+
+// ARQ SESSION CONNECTED
+ipcMain.on('request-show-arq-toast-session-connected',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-connected', data);
+});
+
+// ARQ SESSION CLOSE
+ipcMain.on('request-show-arq-toast-session-close',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-close', data);
+});
+
+// ARQ SESSION FAILED
+ipcMain.on('request-show-arq-toast-session-failed',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-failed', data);
+});
+
+
 
 //tnc messages END --------------------------------------
 

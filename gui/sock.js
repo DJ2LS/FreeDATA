@@ -294,7 +294,31 @@ client.on('data', function(socketdata) {
                     ipcRenderer.send('request-new-msg-received', {data: [data]});
                 }
 
-                // ARQ OPEN
+                // ARQ SESSION
+                if (data['arq'] == 'session') {
+
+                    // ARQ OPEN
+                    if (data['status'] == 'connecting') {
+                        ipcRenderer.send('request-show-arq-toast-session-connecting', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'connected') {
+                        ipcRenderer.send('request-show-arq-toast-session-connected', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'close') {
+                        ipcRenderer.send('request-show-arq-toast-session-close', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'failed') {
+                        ipcRenderer.send('request-show-arq-toast-session-failed', {data: [data]});
+                    }
+
+
+                }
+
+                }
+                // ARQ TRANSMISSION
                 if (data['arq'] == 'transmission') {
 
                     // ARQ OPEN

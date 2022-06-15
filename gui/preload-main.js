@@ -1940,6 +1940,37 @@ ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => 
     toast.show();
 });
 
+// ARQ SESSION CONNECTING
+ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
+
+    var toastARQreceiving = document.getElementById('toastARQsessionconnecting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnecting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+// ARQ SESSION CONNECTED
+ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
+
+    var toastARQreceiving = document.getElementById('toastARQsessionconnected');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnected); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+// ARQ SESSION CLOSE
+ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
+
+    var toastARQreceiving = document.getElementById('toastARQsessionclose');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionclose); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+// ARQ SESSION FAILED
+ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
+
+    var toastARQreceiving = document.getElementById('toastARQsessionfailed');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionfailed); // Returns a Bootstrap toast instance
+    toast.show();
+});
 
         /*
          // TRANSMISSION STOPPED
