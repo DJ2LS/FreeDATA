@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.4.1-alpha",
+  "version": "0.4.2-alpha",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -40,6 +40,7 @@
     "emoji-picker-element-data": "^1.3.0",
     "mime": "^3.0.0",
     "pouchdb": "^7.3.0",
+    "pouchdb-browser": "^7.3.0",
     "pouchdb-find": "^7.3.0",
     "qth-locator": "^2.1.0",
     "utf8": "^3.0.0",
@@ -52,7 +53,7 @@
   "build": {
     "productName": "FreeDATA",
     "appId": "app.freedata",
-    "npmRebuild" : "false",
+    "npmRebuild": "false",
     "directories": {
       "buildResources": "src/img",
       "output": "dist"
@@ -94,4 +95,3 @@
     ]
   }
 }
-

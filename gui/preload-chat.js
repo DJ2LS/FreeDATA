@@ -46,7 +46,20 @@ var selected_callsign = '';
 
 var chatDB = path.join(configFolder, 'chatDB')
 // ---- MessageDB
-var PouchDB = require('pouchdb');
+try{
+    var PouchDB = require('pouchdb');
+} catch(err){
+    console.log(err);
+
+    /*
+    This is a fix for raspberryPi where we get an error when loading pouchdb because of
+    leveldown package isnt running on ARM devices.
+    pouchdb-browser does not depend on leveldb and seems to be working.
+    */
+    console.log("using pouchdb-browser fallback")
+    var PouchDB = require('pouchdb-browser');
+}
+
 PouchDB.plugin(require('pouchdb-find'));
 var db = new PouchDB(chatDB);
 var dxcallsigns = new Set();
@@ -759,7 +772,7 @@ update_chat = function(obj) {
             });
         });
 
-    };
+    }
     //window.location = window.location
 }
 
@@ -815,7 +828,7 @@ function get_icon_for_state(state) {
         var status_icon = '<i class="bi bi-question" style="font-size:1rem;"></i>';
     }
     return status_icon;
-};    
+}
 
 
 
