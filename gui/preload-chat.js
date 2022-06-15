@@ -157,7 +157,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }); 
 
+    // ADJUST TEXTAREA SIZE
+    document.getElementById("chatModuleMessage").addEventListener("input", () => {
+        var textarea = document.getElementById("chatModuleMessage");
+        var text = textarea.value;
+        var lines = text.split("\n").length
+        if (lines >= 10){
+         lines = 10;
+        }
+        var message_container_height_offset = 90 + (23*lines);
+        var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
+        document.getElementById("message-container").style.height = message_container_height;
+        textarea.rows = lines;
 
+
+    })
 
     // NEW CHAT
     
@@ -193,7 +207,15 @@ db.post({
         document.getElementById('emojipickercontainer').style.display = "none";
         
         var dxcallsign = selected_callsign.toUpperCase();
-        var chatmessage = document.getElementById('chatModuleMessage').value;
+        var textarea = document.getElementById('chatModuleMessage')
+        var chatmessage = textarea.value;
+
+        // reset textarea size
+        var message_container_height_offset = 110;
+        var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
+        document.getElementById("message-container").style.height = message_container_height;
+        textarea.rows = 1
+
         console.log(file);
         console.log(filename);
         console.log(filetype);
