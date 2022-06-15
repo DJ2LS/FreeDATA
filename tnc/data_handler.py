@@ -1260,12 +1260,27 @@ class DATA:
         while not static.ARQ_SESSION and not self.arq_session_timeout:
             time.sleep(0.01)
             static.ARQ_SESSION_STATE = "connecting"
-
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="connecting",
+            )
         if static.ARQ_SESSION and static.ARQ_SESSION_STATE == "connected":
             # static.ARQ_SESSION_STATE = "connected"
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="connected",
+            )
             return True
 
         static.ARQ_SESSION_STATE = "failed"
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="failed",
+            reason="timeout",
+        )
         return False
 
     def open_session(self) -> bool:
