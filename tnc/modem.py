@@ -932,9 +932,7 @@ def set_audio_volume(datalist, volume: float) -> np.int16:
     :rtype: np.int16
     """
     # Clip volume provided to acceptable values
-    volume = min(volume, 0.0)
-    volume = max(volume, 200.0)
-
+    volume = np.clip(volume, 0, 200)  # limit to max value of 255
     # Scale samples by the ratio of volume / 100.0
     data = np.fromstring(datalist, np.int16) * (volume / 100.0)  # type: ignore
     return data.astype(np.int16)
