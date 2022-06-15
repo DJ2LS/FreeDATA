@@ -73,7 +73,7 @@ db.find({
     // handle result
     if (typeof(result) !== 'undefined') {
         result.docs.forEach(function(item) {
-            console.log(item)
+            //console.log(item)
             update_chat(item);
         });
     }
@@ -118,10 +118,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 result.docs.forEach(function(item) {
                     console.log(item)
                     db.get(item._id).then(function(doc) {
-                        return db.remove(doc);
+                        db.remove(doc).then(function(doc) {
+                            return location.reload();
+                        }).catch(function(err) {
+                            console.log(err);
+                        });
+                    }).catch(function(err) {
+                        console.log(err);
                     });
-                    location.reload();
-                    
+
                 });
             }
         }).catch(function(err) {
@@ -152,7 +157,21 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }); 
 
+    // ADJUST TEXTAREA SIZE
+    document.getElementById("chatModuleMessage").addEventListener("input", () => {
+        var textarea = document.getElementById("chatModuleMessage");
+        var text = textarea.value;
+        var lines = text.split("\n").length
+        if (lines >= 10){
+         lines = 10;
+        }
+        var message_container_height_offset = 90 + (23*lines);
+        var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
+        document.getElementById("message-container").style.height = message_container_height;
+        textarea.rows = lines;
 
+
+    })
 
     // NEW CHAT
     
@@ -179,14 +198,8 @@ db.post({
         }).catch(function(err) {
             console.log(err);
         });
-        db.get(uuid, [{
-            attachments: true
-        }]).then(function(doc) {
-            // handle doc
-            update_chat(doc)
-        }).catch(function(err) {
-            console.log(err);
-        });
+        update_chat_obj_by_uuid(uuid);
+
     });
     
     // SEND MSG
@@ -194,10 +207,21 @@ db.post({
         document.getElementById('emojipickercontainer').style.display = "none";
         
         var dxcallsign = selected_callsign.toUpperCase();
-        var chatmessage = document.getElementById('chatModuleMessage').value;
+        var textarea = document.getElementById('chatModuleMessage')
+        var chatmessage = textarea.value;
+
+        // reset textarea size
+        var message_container_height_offset = 110;
+        var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
+        document.getElementById("message-container").style.height = message_container_height;
+        textarea.rows = 1
+
         console.log(file);
         console.log(filename);
         console.log(filetype);
+        if (filetype == ''){
+            filetype = 'plain/text'
+        }
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
 
         
@@ -237,21 +261,16 @@ db.post({
         }).catch(function(err) {
             console.log(err);
         });
-        db.get(uuid, [{
-            attachments: true
-        }]).then(function(doc) {
-            // handle doc
-            update_chat(doc)
-        }).catch(function(err) {
-            console.log(err);
-        });
+
+        update_chat_obj_by_uuid(uuid);
+
         // scroll to bottom    
         var element = document.getElementById("message-container");
         element.scrollTo(0, element.scrollHeight);
         // clear input
         document.getElementById('chatModuleMessage').value = ''
                 
-        // after adding file data to our attachment varible, delete it from global 
+        // after adding file data to our attachment variable, delete it from global
         filetype = '';
         file = '';
         filename = '';
@@ -265,6 +284,8 @@ db.post({
 });
 ipcRenderer.on('return-selected-files', (event, arg) => {
     filetype = arg.mime;
+    console.log(filetype)
+
     file = arg.data;
     filename = arg.filename;
     document.getElementById('selectFilesButton').innerHTML = `
@@ -274,13 +295,13 @@ ipcRenderer.on('return-selected-files', (event, arg) => {
     `;
 });
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
-    console.log(arg.status);
-    console.log(arg.uuid);
-    db.get(arg.uuid, {
+    var data = arg["data"][0]
+    console.log(data.status);
+    db.get(data.uuid, {
         attachments: true
     }).then(function(doc) {
         return db.put({
-            _id: arg.uuid,
+            _id: data.uuid,
             _rev: doc._rev,
             timestamp: doc.timestamp,
             dxcallsign: doc.dxcallsign,
@@ -288,33 +309,30 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
             msg: doc.msg,
             checksum: doc.checksum,
             type: "transmit",
-            status: arg.status,
-            percent: arg.percent,
-            bytesperminute: arg.bytesperminute,
+            status: data.status,
+            percent: data.percent,
+            bytesperminute: data.bytesperminute,
             uuid: doc.uuid,
             _attachments: doc._attachments
         });
     }).then(function(response) {
-        // handle response
-        db.get(arg.uuid, [{
-            attachments: true
-        }]).then(function(doc) {
-            // handle doc
-            update_chat(doc);
-        }).catch(function(err) {
-            console.log(err);
-        });
+            update_chat_obj_by_uuid(data.uuid);
+
     }).catch(function(err) {
         console.log(err);
+        console.log(data)
     });
 });
 ipcRenderer.on('action-new-msg-received', (event, arg) => {
     console.log(arg.data)
+
     var new_msg = arg.data;
     new_msg.forEach(function(item) {
-        console.log(item)
+        console.log(item.status)
         let obj = new Object();
-        if (item.type == 'ping') {
+
+        //handle ping
+        if (item.ping == 'received') {
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -324,37 +342,19 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.msg = 'null';
             obj.status = item.status;
             obj.snr = item.snr;
-            obj.type = item.type;
-            
-            db.put({
-                _id: obj.uuid,
-                timestamp: obj.timestamp,
-                uuid: obj.uuid,
-                dxcallsign: obj.dxcallsign,
-                dxgrid: obj.dxgrid,
-                msg: obj.msg,
-                checksum: obj.checksum,
-                type: obj.type,
-                command: obj.command,
-                status: obj.status,
-                snr: obj.snr,
-            }).then(function(response) {
-                console.log("new database entry");
-                console.log(response);
-            }).catch(function(err) {
-                console.log(err);
-            });
-            
-            db.get(item.uuid, {
-                attachments: true
-            }).then(function(doc) {
-                console.log(doc)
-                update_chat(doc);
+            obj.type = 'ping';
+            obj.filename = 'null';
+            obj.filetype = 'null';
+            obj.file = 'null';
 
-            }).catch(function(err) {
-                console.log(err);
-            });
-        } else if (item.type == 'beacon') {
+            add_obj_to_database(obj)
+            update_chat_obj_by_uuid(obj.uuid);
+
+
+
+
+        // handle beacon
+        } else if (item.beacon == 'received') {
             obj.timestamp = item.timestamp;
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -364,36 +364,17 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.msg = 'null';
             obj.status = item.status;
             obj.snr = item.snr;
-            obj.type = item.type;
-            
-            db.put({
-                _id: obj.uuid,
-                timestamp: obj.timestamp,
-                uuid: obj.uuid,
-                dxcallsign: obj.dxcallsign,
-                dxgrid: obj.dxgrid,
-                msg: obj.msg,
-                checksum: obj.checksum,
-                type: obj.type,
-                command: obj.command,
-                status: obj.status,
-                snr: obj.snr,
-            }).then(function(response) {
-                console.log("new database entry");
-                console.log(response);
-            }).catch(function(err) {
-                console.log(err);
-            });
-            
-            db.get(item.uuid, {
-                attachments: true
-            }).then(function(doc) {
-                console.log(doc);
-                update_chat(doc);
-            }).catch(function(err) {
-                console.log(err);
-            });
-        } else if (item.arq == 'received') {
+            obj.type = 'beacon';
+            obj.filename = 'null';
+            obj.filetype = 'null';
+            obj.file = 'null';
+
+            add_obj_to_database(obj);
+            update_chat_obj_by_uuid(obj.uuid);
+
+
+        // handle ARQ transmission
+        } else if (item.arq == 'transmission' && item.status == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
             obj.timestamp = item.timestamp;
@@ -410,46 +391,20 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.filename = utf8.decode(splitted_data[5]);
             obj.filetype = utf8.decode(splitted_data[6]);
             obj.file = btoa(utf8.decode(splitted_data[7]));
-            db.put({
-                _id: obj.uuid,
-                timestamp: obj.timestamp,
-                uuid: obj.uuid,
-                dxcallsign: obj.dxcallsign,
-                dxgrid: obj.dxgrid,
-                msg: obj.msg,
-                checksum: obj.checksum,
-                type: obj.type,
-                command: obj.command,
-                status: obj.status,
-                snr: obj.snr,
-                _attachments: {
-                    [obj.filename]: {
-                        content_type: obj.filetype,
-                        data: obj.file
-                    }
-                }
-            }).then(function(response) {
-                console.log("new database entry");
-                console.log(response);
-            }).catch(function(err) {
-                console.log(err);
-            });
-            
-            db.get(obj.uuid, {
-                attachments: true
-            }).then(function(doc) {
-                console.log(doc);
-                update_chat(doc);
-            }).catch(function(err) {
-                console.log(err);
-            });
+
+            add_obj_to_database(obj);
+            update_chat_obj_by_uuid(obj.uuid);
+
         }
     });
     //window.location = window.location;
 });
+
+
+
+
 // Update chat list
 update_chat = function(obj) {
-    //console.log(obj);
     var dxcallsign = obj.dxcallsign;
     var timestamp = dateFormat.format(obj.timestamp * 1000);
     var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
@@ -462,12 +417,12 @@ update_chat = function(obj) {
         var shortmsg = obj.type;
     } else {
         var shortmsg = obj.msg;
-        var maxlength = 40;
+        var maxlength = 30;
         var shortmsg = shortmsg.length > maxlength ? shortmsg.substring(0, maxlength - 3) + "..." : shortmsg;
   
     }
     try {
-        console.log(Object.keys(obj._attachments)[0].length)
+        //console.log(Object.keys(obj._attachments)[0].length)
         if (typeof(obj._attachments) !== 'undefined' && Object.keys(obj._attachments)[0].length > 0) {
             //var filename = obj._attachments;
             var filename = Object.keys(obj._attachments)[0]
@@ -504,6 +459,7 @@ update_chat = function(obj) {
         } else {
             var filename = '';
             var fileheader = '';
+            var filetype = 'text/plain';
             var controlarea_transmit = `
 <div class="ms-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
@@ -554,7 +510,7 @@ update_chat = function(obj) {
 
             // scroll to bottom    
             var element = document.getElementById("message-container");
-            console.log(element.scrollHeight)
+            //console.log(element.scrollHeight)
             element.scrollTo(0, element.scrollHeight);
 
 
@@ -633,21 +589,17 @@ update_chat = function(obj) {
                 </div>
                 `;
         }
-        
-        
-           
+
         if (obj.type == 'transmit') {
         
-            console.log('msg-' + obj._id + '-status')
-            
-            
-        if (obj.status == 'failed'){
-            var progressbar_bg = 'bg-danger';
-        } else {
-            var progressbar_bg = 'bg-primary';
-        }
-            
-            
+            //console.log('msg-' + obj._id + '-status')
+
+            if (obj.status == 'failed'){
+                var progressbar_bg = 'bg-danger';
+            } else {
+                var progressbar_bg = 'bg-primary';
+            }
+
             var new_message = `
 
             <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
@@ -698,38 +650,33 @@ update_chat = function(obj) {
         var id = "chat-" + obj.dxcallsign
         document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
         
-        var element = document.getElementById("message-container");
-        console.log(element.scrollHeight)
+        //var element = document.getElementById("message-container");
+        //console.log(element.scrollHeight)
 
-
-
-
+    /* UPDATE EXISTING ELEMENTS */
     } else if (document.getElementById('msg-' + obj._id)) {
         console.log("element already exists......")
         console.log(obj)
-        console.log(document.getElementById('msg-' + obj._id + '-progress').getAttribute("aria-valuenow"))
 
+        console.log(document.getElementById('msg-' + obj._id + '-progress').getAttribute("aria-valuenow"))
         
         document.getElementById('msg-' + obj._id + '-status').innerHTML = get_icon_for_state(obj.status);
         
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("aria-valuenow", obj.percent);
         document.getElementById('msg-' + obj._id + '-progress').setAttribute("style", "width:" + obj.percent + "%;");
         document.getElementById('msg-' + obj._id + '-progress-information').innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
-        
-        
-        
+
         if (obj.percent >= 100){
-            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
             document.getElementById('msg-' + obj._id + '-progress').innerHTML = '';
         } else {       
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-animated");
         }
-        
-       
+
         if (obj.status == 'failed'){
-            document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
+            //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("bg-primary");
             document.getElementById('msg-' + obj._id + '-progress').classList.add("bg-danger");
@@ -762,11 +709,8 @@ update_chat = function(obj) {
 
         // set Attribute to determine if we already created an EventListener for this element
         document.getElementById('retransmit-msg-' + obj._id).setAttribute('listenerOnClick', 'true');
-
         document.getElementById('retransmit-msg-' + obj._id).addEventListener("click", () => {
-            
 
-        
             db.get(obj._id, {
                 attachments: true
             }).then(function(doc) {
@@ -819,39 +763,7 @@ update_chat = function(obj) {
     //window.location = window.location
 }
 
-function getObjByID(id) {
-    /*      
-        {
-    "timestamp": 1648139683,
-    "dxcallsign": "DN2LS-0",
-    "dxgrid": "null",
-    "msg": "",
-    "checksum": "null",
-    "type": "transmit",
-    "status": "transmit",
-    "uuid": "5b72a46c-49cf-40d6-8936-a64c95bc3da7",
-    "_attachments": {
-        "CMakeLists.txt": {
-            "content_type": "text/plain",
-            "digest": "md5-Cdk6Ol6uuJ7Gj5lin9o4SQ==",
-            "length": 7802,
-            "revpos": 1,
-            "stub": true
-        }
-    },
-    "_id": "5b72a46c-49cf-40d6-8936-a64c95bc3da7",
-    "_rev": "1-6df2d7227c4f89f8a3a2b4978661dd79"
-}
-**/
-    db.get(id, {
-        attachments: true
-    }).then(function(doc) {
-        return obj
-    }).catch(function(err) {
-        console.log(err);
-        return false
-    });
-}
+
 
 function saveFileToFolder(id) {
     db.get(id, {
@@ -891,13 +803,57 @@ function get_icon_for_state(state) {
     if (state == 'transmit') {
         var status_icon = '<i class="bi bi-check" style="font-size:1rem;"></i>';
     } else if (state == 'transmitting') {
-        var status_icon = '<i class="bi bi-arrow-left-right" style="font-size:0.8rem;"></i>';
+        //var status_icon = '<i class="bi bi-arrow-left-right" style="font-size:0.8rem;"></i>';
+        var status_icon = `
+            <i class="spinner-border ms-auto" style="width: 0.8rem; height: 0.8rem;" role="status" aria-hidden="true"></i>
+        `;
     } else if (state == 'failed') {
         var status_icon = '<i class="bi bi-exclamation-circle" style="font-size:1rem;"></i>';
-    } else if (state == 'success') {
+    } else if (state == 'transmitted') {
         var status_icon = '<i class="bi bi-check-all" style="font-size:1rem;"></i>';
     } else {
         var status_icon = '<i class="bi bi-question" style="font-size:1rem;"></i>';
     }
     return status_icon;
 };    
+
+
+
+update_chat_obj_by_uuid = function(uuid) {
+    db.get(uuid, {
+        attachments: true
+    }).then(function(doc) {
+        update_chat(doc)
+        //return doc
+    }).catch(function(err) {
+        console.log(err);
+    });
+}
+
+
+add_obj_to_database = function(obj){
+    db.put({
+        _id: obj.uuid,
+        timestamp: obj.timestamp,
+        uuid: obj.uuid,
+        dxcallsign: obj.dxcallsign,
+        dxgrid: obj.dxgrid,
+        msg: obj.msg,
+        checksum: obj.checksum,
+        type: obj.type,
+        command: obj.command,
+        status: obj.status,
+        snr: obj.snr,
+        _attachments: {
+            [obj.filename]: {
+                content_type: obj.filetype,
+                data: obj.file
+            }
+        }
+    }).then(function(response) {
+        console.log("new database entry");
+        console.log(response);
+    }).catch(function(err) {
+        console.log(err);
+    });
+}

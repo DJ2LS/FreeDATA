@@ -10,7 +10,7 @@ Not nice, suggestions are appreciated :-)
 
 import subprocess
 
-VERSION = "0.4.0-alpha"
+VERSION = "0.4.1-alpha"
 
 # DAEMON
 DAEMONPORT: int = 3001
