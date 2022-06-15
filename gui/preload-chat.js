@@ -118,10 +118,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 result.docs.forEach(function(item) {
                     console.log(item)
                     db.get(item._id).then(function(doc) {
-                        return db.remove(doc);
+                        db.remove(doc).then(function(doc) {
+                            return location.reload();
+                        }).catch(function(err) {
+                            console.log(err);
+                        });
+                    }).catch(function(err) {
+                        console.log(err);
                     });
-                    location.reload();
-                    
+
                 });
             }
         }).catch(function(err) {
