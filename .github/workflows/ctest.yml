@@ -26,14 +26,10 @@ jobs:
           - arch: ppc64le
             distro: ubuntu18.04
 
-
-
-
     steps:
       - uses: actions/checkout@v2
       - uses: uraimo/run-on-arch-action@v2
-
-      - name: Build
+        name: Build
         id: build
         with:
           arch: ${{ matrix.arch }}
