@@ -60,7 +60,7 @@ def t_setup(
     tnc.time_list_high_bw = [3, 1, 1]
     tnc.time_list = [3, 1, 1]
     # Limit number of retries
-    tnc.rx_n_max_retries_per_burst = 4
+    tnc.rx_n_max_retries_per_burst = 5
 
     # Create the modem
     t_modem = modem.RF()
@@ -142,8 +142,6 @@ def t_highsnr_arq_short_station1(
     }
 
     sock.process_tnc_commands(json.dumps(data, indent=None))
-    time.sleep(0.5)
-    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + 25
@@ -174,7 +172,7 @@ def t_highsnr_arq_short_station1(
 
     # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
-    # log.info("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
+    log.info("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     assert '"arq":"transmission","status":"transmitting"' in str(
         sock.SOCKET_QUEUE.queue
