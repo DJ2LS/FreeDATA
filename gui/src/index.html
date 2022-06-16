@@ -102,6 +102,20 @@
                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                   </div>
                </div>
+               <!-- RECEIVING QRV -->
+               <div class="toast align-items-center text-white bg-primary border-0" id="toastQRVreceiving" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">Receiving a QRV signal!</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
+               <!-- TRANSMITTING QRV -->
+               <div class="toast align-items-center text-white bg-primary border-0" id="toastQRVtransmitting" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">Transmitting a QRV signal!</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
                <!-- RECEIVING BEACON -->
                <div class="toast align-items-center text-white bg-primary border-0" id="toastBEACONreceiving" role="alert" aria-live="assertive" aria-atomic="true">
                   <div class="d-flex">
@@ -207,6 +221,41 @@
                      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
                   </div>
                </div>
+
+               <!-- ARQ SESSION CONNECTING-->
+               <div class="toast align-items-center text-white bg-warning border-0" id="toastARQsessionconnecting" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">CONNECTING / OPENING ARQ SESSION</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
+
+               <!-- ARQ SESSION CONNECTED-->
+               <div class="toast align-items-center text-white bg-success border-0" id="toastARQsessionconnected" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">CONNECTED / ARQ SESSION</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
+
+               <!-- ARQ SESSION CLOSE-->
+               <div class="toast align-items-center text-white bg-success border-0" id="toastARQsessionclose" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">CLOSE / ARQ SESSION</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
+
+               <!-- ARQ SESSION FAILED-->
+               <div class="toast align-items-center text-white bg-danger border-0" id="toastARQsessionfailed" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="d-flex">
+                     <div class="toast-body">FAILED / ARQ SESSION</div>
+                     <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                  </div>
+               </div>
+
+
+
             </div>
          </div>
          <!------------------------------------------------------------------------------------------>

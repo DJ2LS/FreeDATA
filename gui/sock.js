@@ -226,67 +226,166 @@ client.on('data', function(socketdata) {
                 ipcRenderer.send('request-update-tnc-state', Data);
             }
 
-            // update transmission status
 
-            if (data['arq'] == 'transmission'){
-            socketLog.info(data)
-            
-                let state = {
-                    status: data['status'],
-                    uuid: data['uuid'],
-                    percent: data['percent'],
-                    bytesperminute: data['bytesperminute'],
-                };
-            ipcRenderer.send('request-update-transmission-status', state);                
-                
-            
-            }
-
-            // Check for Ping 
-            if (data['type'] == 'ping') {
-                ipcRenderer.send('request-new-msg-received', {data: [data]});
-            }
-
-            // Check for Beacon 
-            if (data['type'] == 'beacon') {
-                ipcRenderer.send('request-new-msg-received', {data: [data]});
-            }
-            
-            /* A TEST WITH STREAMING DATA .... */       
-            // if we received data through network stream, we get a single data item
-            if (data['arq'] == 'received') {
-                dataArray = []
-                messageArray = []
-
+            // ----------- catch tnc messages START -----------
+            if (data['freedata'] == 'tnc-message'){
                 socketLog.info(data)
-                // we need to encode here to do a deep check for checking if file or message
-                var encoded_data = atob(data['data'])
-                var splitted_data = encoded_data.split(split_char)
-                
-                
-                if(splitted_data[0] == 'f'){
-                    dataArray.push(data)
+
+                // update transmission status
+                /*
+                if (data['arq'] == 'transmission' && data['status'] == 'transmitting'){
+
+                    let state = {
+                        status: data['status'],
+                        uuid: data['uuid'],
+                        percent: data['percent'],
+                        bytesperminute: data['bytesperminute'],
+                    };
+
+                    ipcRenderer.send('request-update-transmission-status', state);
                 }
-                        
-                if(splitted_data[0] == 'm'){
-                    messageArray.push(data)
-                    console.log(data)
+                */
+
+                // CQ TRANSMITTING
+                if (data['cq'] == 'transmitting') {
+                    ipcRenderer.send('request-show-cq-toast-transmitting', {data: [data]});
                 }
 
-                rxBufferLengthGui = dataArray.length
-                let Files = {
-                    data: dataArray,
-                };
-                ipcRenderer.send('request-update-rx-buffer', Files);
-                ipcRenderer.send('request-new-msg-received', Files);
-                
-                rxMsgBufferLengthGui = messageArray.length
-                let Messages = {
-                    data: messageArray,
-                };
-                ipcRenderer.send('request-new-msg-received', Messages);
+                // CQ RECEIVED
+                if (data['cq'] == 'received') {
+                    ipcRenderer.send('request-show-cq-toast-received', {data: [data]});
+                }
+
+                // QRV TRANSMITTING
+                if (data['qrv'] == 'transmitting') {
+                    ipcRenderer.send('request-show-qrv-toast-transmitting', {data: [data]});
+                }
+
+                // QRV RECEIVED
+                if (data['qrv'] == 'received') {
+                    ipcRenderer.send('request-show-qrv-toast-received', {data: [data]});
+                }
+
+                // BEACON TRANSMITTING
+                if (data['beacon'] == 'transmitting') {
+                    ipcRenderer.send('request-show-beacon-toast-transmitting', {data: [data]});
+                }
+
+                // BEACON RECEIVED
+                if (data['beacon'] == 'received') {
+                    ipcRenderer.send('request-show-beacon-toast-received', {data: [data]});
+                    ipcRenderer.send('request-new-msg-received', {data: [data]});
+                }
+
+                // PING TRANSMITTING
+                if (data['ping'] == 'transmitting') {
+                    ipcRenderer.send('request-show-ping-toast-transmitting', {data: [data]});
+                }
+
+                // PING RECEIVED
+                if (data['ping'] == 'received') {
+                    ipcRenderer.send('request-show-ping-toast-received', {data: [data]});
+                    ipcRenderer.send('request-new-msg-received', {data: [data]});
+                }
+
+                // PING ACKNOWLEDGE
+                if (data['ping'] == 'acknowledge') {
+                    ipcRenderer.send('request-show-ping-toast-received-ack', {data: [data]});
+                    ipcRenderer.send('request-new-msg-received', {data: [data]});
+                }
+
+                // ARQ SESSION
+                if (data['arq'] == 'session') {
+
+                    // ARQ OPEN
+                    if (data['status'] == 'connecting') {
+                        ipcRenderer.send('request-show-arq-toast-session-connecting', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'connected') {
+                        ipcRenderer.send('request-show-arq-toast-session-connected', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'close') {
+                        ipcRenderer.send('request-show-arq-toast-session-close', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'failed') {
+                        ipcRenderer.send('request-show-arq-toast-session-failed', {data: [data]});
+                    }
+
+                }
+                // ARQ TRANSMISSION
+                if (data['arq'] == 'transmission') {
+
+                    // ARQ OPEN
+                    if (data['status'] == 'opened') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-opened', {data: [data]});
+
+                    // ARQ OPENING
+                    } else if (data['status'] == 'opening') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
+
+
+                    // ARQ TRANSMISSION FAILED
+                    } else if (data['status'] == 'failed') {
+                        ipcRenderer.send('request-show-arq-toast-transmission-failed', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+
+
+                    // ARQ TRANSMISSION RECEIVED
+                    } else if (data['status'] == 'received') {
+                        ipcRenderer.send('request-show-arq-toast-transmission-received', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+
+                        dataArray = []
+                        messageArray = []
+
+                        socketLog.info(data)
+                        // we need to encode here to do a deep check for checking if file or message
+                        var encoded_data = atob(data['data'])
+                        var splitted_data = encoded_data.split(split_char)
+
+                        if(splitted_data[0] == 'f'){
+                            dataArray.push(data)
+                        }
+
+                        if(splitted_data[0] == 'm'){
+                            messageArray.push(data)
+                            console.log(data)
+                        }
+
+                        rxBufferLengthGui = dataArray.length
+                        let Files = {
+                            data: dataArray,
+                        };
+                        ipcRenderer.send('request-update-rx-buffer', Files);
+                        ipcRenderer.send('request-new-msg-received', Files);
+
+                        rxMsgBufferLengthGui = messageArray.length
+                        let Messages = {
+                            data: messageArray,
+                        };
+                        ipcRenderer.send('request-new-msg-received', Messages);
+
+                    // ARQ TRANSMISSION TRANSMITTING
+                    } else if (data['status'] == 'transmitting') {
+                        ipcRenderer.send('request-show-arq-toast-transmission-transmitting', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+
+
+                    // ARQ TRANSMISSION TRANSMITTED
+                    } else if (data['status'] == 'transmitted') {
+                        ipcRenderer.send('request-show-arq-toast-transmission-transmitted', {data: [data]});
+                        ipcRenderer.send('request-update-transmission-status', {data: [data]});
+                    }
+                }
             }
-            
+
+            // ----------- catch tnc info messages END -----------
+
+
+
             // if we manually checking for the rx buffer we are getting an array of multiple data
             if (data['command'] == 'rx_buffer') {
                 socketLog.info(data)

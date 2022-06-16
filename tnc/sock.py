@@ -467,7 +467,6 @@ def send_tnc_state():
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
         "total_bytes": str(static.TOTAL_BYTES),
-        "info": static.INFO,
         "beacon_state": str(static.BEACON_STATE),
         "stations": [],
         "mycallsign": str(static.MYCALLSIGN, encoding),

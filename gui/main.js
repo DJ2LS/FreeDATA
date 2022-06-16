@@ -471,6 +471,10 @@ console.log(filepath.filePaths[0])
 
   var filename = path.basename(filepath.filePaths[0])
   var mimeType = mime.getType(filename)
+  console.log(mimeType)
+  if (mimeType == '' || mimeType == null){
+    mimeType = 'plain/text'
+  }
     chat.webContents.send('return-selected-files', {data : data, mime: mimeType, filename: filename}) 
     })
        
@@ -513,6 +517,117 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
       
 });
 
+
+//tnc messages START --------------------------------------
+
+// CQ TRANSMITTING
+ipcMain.on('request-show-cq-toast-transmitting',(event,data)=>{
+    win.webContents.send('action-show-cq-toast-transmitting', data);
+});
+
+// CQ RECEIVED
+ipcMain.on('request-show-cq-toast-received',(event,data)=>{
+    win.webContents.send('action-show-cq-toast-received', data);
+});
+
+// QRV TRANSMITTING
+ipcMain.on('request-show-qrv-toast-transmitting',(event,data)=>{
+    win.webContents.send('action-show-qrv-toast-transmitting', data);
+});
+
+// QRV RECEIVED
+ipcMain.on('request-show-qrv-toast-received',(event,data)=>{
+    win.webContents.send('action-show-qrv-toast-received', data);
+});
+
+// BEACON TRANSMITTING
+ipcMain.on('request-show-beacon-toast-transmitting',(event,data)=>{
+    win.webContents.send('action-show-beacon-toast-transmitting', data);
+});
+
+// BEACON RECEIVED
+ipcMain.on('request-show-beacon-toast-received',(event,data)=>{
+    win.webContents.send('action-show-beacon-toast-received', data);
+});
+
+// PING TRANSMITTING
+ipcMain.on('request-show-ping-toast-transmitting',(event,data)=>{
+    win.webContents.send('action-show-ping-toast-transmitting', data);
+});
+
+// PING RECEIVED
+ipcMain.on('request-show-ping-toast-received',(event,data)=>{
+    win.webContents.send('action-show-ping-toast-received', data);
+});
+
+// PING RECEIVED ACK
+ipcMain.on('request-show-ping-toast-received-ack',(event,data)=>{
+    win.webContents.send('action-show-ping-toast-received-ack', data);
+});
+
+// ARQ DATA CHANNEL OPENING
+ipcMain.on('request-show-arq-toast-datachannel-opening',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-opening', data);
+});
+
+// ARQ DATA CHANNEL OPEN
+ipcMain.on('request-show-arq-toast-datachannel-opened',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-opened', data);
+});
+
+// ARQ DATA RECEIVED OPENER
+ipcMain.on('request-show-arq-toast-datachannel-received-opener',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-received-opener', data);
+});
+
+// ARQ TRANSMISSION FAILED
+ipcMain.on('request-show-arq-toast-transmission-failed',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-failed', data);
+});
+
+// ARQ TRANSMISSION RECEIVING
+ipcMain.on('request-show-arq-toast-transmission-receiving',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-receiving', data);
+});
+
+// ARQ TRANSMISSION RECEIVED
+ipcMain.on('request-show-arq-toast-transmission-received',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-received', data);
+});
+
+// ARQ TRANSMISSION TRANSMITTING
+ipcMain.on('request-show-arq-toast-transmission-transmitting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-transmitting', data);
+});
+
+// ARQ TRANSMISSION TRANSMITTED
+ipcMain.on('request-show-arq-toast-transmission-transmitted',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-transmitted', data);
+});
+
+// ARQ SESSION CONNECTING
+ipcMain.on('request-show-arq-toast-session-connecting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-connecting', data);
+});
+
+// ARQ SESSION CONNECTED
+ipcMain.on('request-show-arq-toast-session-connected',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-connected', data);
+});
+
+// ARQ SESSION CLOSE
+ipcMain.on('request-show-arq-toast-session-close',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-close', data);
+});
+
+// ARQ SESSION FAILED
+ipcMain.on('request-show-arq-toast-session-failed',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-failed', data);
+});
+
+
+
+//tnc messages END --------------------------------------
 
 //restart and install udpate
 ipcMain.on('request-restart-and-install',(event,data)=>{
