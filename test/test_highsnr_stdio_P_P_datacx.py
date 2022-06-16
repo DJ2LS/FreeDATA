@@ -4,6 +4,7 @@ Tests a high signal-to-noise ratio path with codec2 data formats.
 
 # pylint: disable=global-statement, invalid-name, unused-import
 
+import contextlib
 import multiprocessing
 import os
 import subprocess
@@ -12,14 +13,16 @@ import time
 
 import pytest
 
-try:
+BURSTS = 1
+FRAMESPERBURST = 1
+TESTFRAMES = 3
+
+with contextlib.suppress(KeyError):
     BURSTS = int(os.environ["BURSTS"])
+with contextlib.suppress(KeyError):
     FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+with contextlib.suppress(KeyError):
     TESTFRAMES = int(os.environ["TESTFRAMES"])
-except KeyError:
-    BURSTS = 1
-    FRAMESPERBURST = 1
-    TESTFRAMES = 3
 
 # For some reason, sometimes, this test requires the current directory to be `test`.
 # Try to adapt dynamically. I still want to figure out why but as a workaround,
