@@ -62,3 +62,15 @@ jobs:
                 dnf -y install git which
                 ;;
             esac
+            - 
+
+            run: |
+              git clone https://github.com/drowe67/codec2.git
+              cd codec2 && git checkout master # This should be pinned to a release
+              mkdir -p build_linux && cd build_linux && cmake .. && make
+
+            run: |
+              cd ${{github.workspace}}
+              mkdir build && cd build
+              cmake -DCODEC2_BUILD_DIR=$GITHUB_WORKSPACE/codec2/build_linux ..
+              ctest --output-on-failure
