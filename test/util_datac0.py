@@ -20,6 +20,7 @@ import structlog
 
 
 def t_setup(
+    station: int,
     mycall: str,
     dxcall: str,
     rx_channel: str,
@@ -54,7 +55,7 @@ def t_setup(
     tnc = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
-    tnc.log = structlog.get_logger("station1_DATA")
+    tnc.log = structlog.get_logger(f"station{station}_DATA")
     # Limit the frame-ack timeout
     tnc.time_list_low_bw = [3, 1, 1]
     tnc.time_list_high_bw = [3, 1, 1]
@@ -66,7 +67,7 @@ def t_setup(
     t_modem = modem.RF()
     orig_tx_func = modem.RF.transmit
     modem.RF.transmit = t_transmit
-    t_modem.log = structlog.get_logger("station1_RF")
+    t_modem.log = structlog.get_logger(f"station{station}_RF")
 
     return tnc, orig_rx_func, orig_tx_func
 
@@ -120,6 +121,7 @@ def t_datac0_1(
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
     tnc, orig_rx_func, orig_tx_func = t_setup(
+        1,
         mycall,
         dxcall,
         "hfchannel1",
@@ -180,6 +182,7 @@ def t_datac0_1(
     )
     log.warning("station1: Exiting!")
 
+
 def t_datac0_2(
     parent_pipe,
     mycall: str,
@@ -229,6 +232,7 @@ def t_datac0_2(
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
     _, orig_rx_func, orig_tx_func = t_setup(
+        2,
         mycall,
         dxcall,
         "hfchannel2",
