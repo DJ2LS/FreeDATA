@@ -135,12 +135,13 @@ def t_datac0_1(
     log.info("t_datac0_1:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
 
+    time.sleep(0.5)
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + 10  # 25
+    timeout = time.time() + timeout_duration
     while tx_check not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning(
@@ -156,13 +157,12 @@ def t_datac0_1(
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
-    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
     timeout = time.time() + timeout_duration
     while tnc.data_queue_transmit.queue:
         if time.time() > timeout:
-            log.warning("station1", TIMEOUT=True, queue=str(sock.SOCKET_QUEUE.queue))
+            log.warning("station1", TIMEOUT=True, dq_tx=tnc.data_queue_transmit.queue)
             break
         time.sleep(0.5)
     log.info("station1, final")
@@ -196,7 +196,7 @@ def t_datac0_2(
     log.debug("t_datac0_2:", TMP_PATH=tmp_path)
 
     # Unpack tuple
-    _, timeout_duration, _, rx_check, _, final_rx_check = config
+    data, timeout_duration, _, rx_check, _, final_rx_check = config
 
     def t_transmit(self, mode, repeats: int, repeat_delay: int, frames: bytearray):
         """'Wrap' RF.transmit function to extract the arguments."""
@@ -245,6 +245,11 @@ def t_datac0_2(
 
     log.info("t_datac0_2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac0_2:", TXCHANNEL=modem.TXCHANNEL)
+
+    if "cq" in data:
+        t_data = {"type": "arq", "command": "stop_transmission"}
+        sock.process_tnc_commands(json.dumps(t_data, indent=None))
+        sock.process_tnc_commands(json.dumps(t_data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
