@@ -45,7 +45,6 @@ def parameters() -> dict:
     connect_timeout = 10
 
     beacon_tx_check = '"beacon":"transmitting"'
-    # cq_tx_check = '"cq":"transmitting"'
     cq_tx_check = '"qrv":"received"'
     ping_tx_check = '"ping":"transmitting"'
     connect_tx_check = '"session":"connecting"'
@@ -56,11 +55,7 @@ def parameters() -> dict:
     connect_rx_check = '"connect":"received"'
 
     beacon_final_tx_check = [beacon_tx_check]
-    # cq_final_tx_check = [cq_tx_check, '"qrv":"received"']
     cq_final_tx_check = ['"cq":"transmitting"', cq_tx_check]
-    # , '"qrv":"received"'] # <- Adding this to "cq" exacerbates the FIFO "delay"
-    # because the TX side needs to receive something. With this, the
-    # test fails more often than not. Oddly it works well for ping.
     ping_final_tx_check = [ping_tx_check, '"ping":"acknowledge"']
     connect_final_tx_check = ['"status":"connected"', '"connect":"acknowledge"']
 
