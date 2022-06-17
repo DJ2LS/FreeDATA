@@ -37,26 +37,32 @@ def parameters() -> dict:
     cq_data = {"type": "command", "command": "cqcqcq"}
     # Construct message to start ping.
     ping_data = {"type": "ping", "command": "ping", "dxcallsign": "ZZ9YY-0"}
+    connect_data = {"type": "arq", "command": "connect", "dxcallsign": "ZZ9YY-0"}
 
     beacon_timeout = 6
     cq_timeout = 10
     ping_timeout = 10
+    connect_timeout = 10
 
     beacon_tx_check = '"beacon":"transmitted"'
     cq_tx_check = '"cq":"transmitting"'
     ping_tx_check = '"ping":"transmitting"'
+    connect_tx_check = '"session":"connecting"'
 
     beacon_rx_check = '"beacon":"received"'
     cq_rx_check = '"cq":"received"'
     ping_rx_check = '"ping":"received"'
+    connect_rx_check = '"connect":"received"'
 
     beacon_final_tx_check = ['"beacon":"transmitting"']
     cq_final_tx_check = ['"cq":"transmitting"']
     ping_final_tx_check = ['"ping":"transmitting"', '"ping":"acknowledge"']
+    connect_final_tx_check = ['"status":"connected"', '"connect":"acknowledge"']
 
     beacon_final_rx_check = ['"beacon":"received"']
     cq_final_rx_check = ['"cq":"received"', '"qrv":"transmitting"']
     ping_final_rx_check = ['"ping":"received"']
+    connect_final_rx_check = ['"connect":"received"']
 
     return {
         "beacon": (
@@ -66,6 +72,14 @@ def parameters() -> dict:
             beacon_rx_check,
             beacon_final_tx_check,
             beacon_final_rx_check,
+        ),
+        "connect": (
+            connect_data,
+            connect_timeout,
+            connect_tx_check,
+            connect_rx_check,
+            connect_final_tx_check,
+            connect_final_rx_check,
         ),
         "cq": (
             cq_data,
@@ -148,8 +162,9 @@ def analyze_results(station1: list, station2: list, call_list: list):
             locate_data_with_crc(s2, text, data, frametype)
 
 
-@pytest.mark.parametrize("frame_type", ["beacon", "cq", "ping"])
-@pytest.mark.flaky(reruns=2)
+# frame_type "connect" doesn't work 2022-Jun-16.
+@pytest.mark.parametrize("frame_type", ["beacon", "cq", "ping"]) # , "connect"])
+# @pytest.mark.flaky(reruns=2)
 def test_datac0(frame_type: str, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
     log = structlog.get_logger("test_datac0")
