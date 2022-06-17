@@ -30,6 +30,7 @@ import helpers
 import static
 import structlog
 import ujson as json
+from exceptions import NoCallsign
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -272,6 +273,8 @@ def process_tnc_commands(data):
             # send ping frame and wait for ACK
             try:
                 dxcallsign = received_json["dxcallsign"]
+                if not str(dxcallsign).strip():
+                    raise NoCallsign
 
                 # additional step for beeing sure our callsign is correctly
                 # in case we are not getting a station ssid
@@ -281,6 +284,9 @@ def process_tnc_commands(data):
 
                 data_handler.DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
                 command_response("ping", True)
+            except NoCallsign:
+                command_response("ping", False)
+                log.warning("[SCK] callsign required for ping", command=received_json)
             except Exception as err:
                 command_response("ping", False)
                 log.warning(

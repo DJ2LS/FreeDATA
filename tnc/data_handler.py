@@ -24,6 +24,7 @@ import sock
 import static
 import structlog
 import ujson as json
+from exceptions import NoCallsign
 
 TESTMODE = False
 
@@ -1820,13 +1821,13 @@ class DATA:
           dxcallsign:bytes:
 
         """
+        if not str(dxcallsign).strip():
+            self.log.warning("[TNC] Missing required callsign", dxcallsign=dxcallsign)
+            return
         static.DXCALLSIGN = dxcallsign
         static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            ping="transmitting",
-        )
+        self.send_data_to_socket_queue(freedata="tnc-message", ping="transmitting")
         self.log.info(
             "[TNC] PING REQ ["
             + str(self.mycallsign, "UTF-8")
