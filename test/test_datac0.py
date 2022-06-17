@@ -164,7 +164,7 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
 # frame_type "connect" doesn't work 2022-Jun-16.
 @pytest.mark.parametrize("frame_type", ["beacon", "cq", "ping"]) # , "connect"])
-# @pytest.mark.flaky(reruns=2)
+@pytest.mark.flaky(reruns=2)
 def test_datac0(frame_type: str, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
     log = structlog.get_logger("test_datac0")
