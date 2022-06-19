@@ -9,6 +9,7 @@ Not nice, suggestions are appreciated :-)
 """
 
 import subprocess
+from enum import Enum
 
 VERSION = "0.4.2-alpha"
 
@@ -123,3 +124,43 @@ INFO: list = []
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN: float = -50.0
 TUNING_RANGE_FMAX: float = 50.0
+
+
+class FRAME_TYPE(Enum):
+    """Lookup for frame types"""
+
+    BURST_01 = 10
+    BURST_02 = 11
+    BURST_03 = 12
+    BURST_04 = 13
+    BURST_05 = 14
+    BURST_06 = 15
+    BURST_07 = 16
+    BURST_08 = 17
+    BURST_09 = 18
+    BURST_10 = 19
+    BURST_11 = 20
+    BURST_12 = 21
+    BURST_13 = 22
+    BURST_14 = 23
+    BURST_15 = 24
+    BURST_16 = 25
+    ACK = 60
+    FR_ACK = 61
+    FR_REPEAT = 62
+    FR_NACK = 63
+    BURST_NACK = 64
+    CQ = 200
+    QRV = 201
+    PING = 210
+    PING_ACK = 211
+    ARQ_SESSION_OPEN = 221
+    ARQ_SESSION_HB = 222
+    ARQ_SESSION_CLOSE = 223
+    ARQ_DC_OPEN_W = 225
+    ARQ_DC_OPEN_ACK_W = 226
+    ARQ_DC_OPEN_N = 227
+    ARQ_DC_OPEN_ACK_N = 228
+    ARQ_STOP = 249
+    BEACON = 250
+    TEST_FRAME = 255

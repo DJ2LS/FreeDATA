@@ -22,44 +22,47 @@ def setup_logging(filename: str = "", level: str = "DEBUG"):
         timestamper,
     ]
 
-    logging.config.dictConfig(
-        {
-            "version": 1,
-            "disable_existing_loggers": False,
-            "formatters": {
-                "plain": {
-                    "()": structlog.stdlib.ProcessorFormatter,
-                    "processor": structlog.dev.ConsoleRenderer(colors=False),
-                    "foreign_pre_chain": pre_chain,
-                },
-                "colored": {
-                    "()": structlog.stdlib.ProcessorFormatter,
-                    "processor": structlog.dev.ConsoleRenderer(colors=True),
-                    "foreign_pre_chain": pre_chain,
-                },
+    config_dict = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "plain": {
+                "()": structlog.stdlib.ProcessorFormatter,
+                "processor": structlog.dev.ConsoleRenderer(colors=False),
+                "foreign_pre_chain": pre_chain,
             },
-            "handlers": {
-                "default": {
-                    "level": level,
-                    "class": "logging.StreamHandler",
-                    "formatter": "colored",
-                },
-                "file": {
-                    "level": level,
-                    "class": "logging.handlers.WatchedFileHandler",
-                    "filename": f"{filename}.log",
-                    "formatter": "plain",
-                },
+            "colored": {
+                "()": structlog.stdlib.ProcessorFormatter,
+                "processor": structlog.dev.ConsoleRenderer(colors=True),
+                "foreign_pre_chain": pre_chain,
             },
-            "loggers": {
-                "": {
-                    "handlers": ["default", "file"] if filename else ["default"],
-                    "level": level,
-                    "propagate": True,
-                },
+        },
+        "handlers": {
+            "default": {
+                "level": level,
+                "class": "logging.StreamHandler",
+                "formatter": "colored",
             },
+        },
+        "loggers": {
+            "": {
+                "handlers": ["default"],
+                "level": level,
+                "propagate": True,
+            },
+        },
+    }
+
+    if filename:
+        config_dict["handlers"]["file"] = {
+            "level": level,
+            "class": "logging.handlers.WatchedFileHandler",
+            "filename": f"{filename}.log",
+            "formatter": "plain",
         }
-    )
+        config_dict["loggers"][""]["handlers"].append("file")
+
+    logging.config.dictConfig(config_dict)
     structlog.configure(
         processors=[
             structlog.stdlib.add_log_level,
