@@ -100,7 +100,30 @@ def t_highsnr_arq_short_station1(
         # log.info("S1 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")  # type: ignore
-            log.info("S1 TX: ", TX=frametype)
+            log.info("S1 TX: ", mode=static.FRAME_TYPE(frametype).name)
+
+            if (
+                static.LOW_BANDWIDTH_MODE
+                and frametype == static.FRAME_TYPE.ARQ_DC_OPEN_W.value
+            ):
+                mesg = (
+                    "enqueue_frame_for_tx: Low BW global "
+                    "but DC Open narrow frame NOT chosen."
+                )
+                # Low bandwidth data type, wide bandwidth frame type
+                log.error(mesg)
+                assert False, mesg
+            if (
+                not static.LOW_BANDWIDTH_MODE
+                and frametype == static.FRAME_TYPE.ARQ_DC_OPEN_N.value
+            ):
+                mesg = (
+                    "enqueue_frame_for_tx: High BW global "
+                    "but DC Open wide frame NOT chosen."
+                )
+                # High bandwidth data type, low bandwidth frame type
+                log.error(mesg)
+                assert False, mesg
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.

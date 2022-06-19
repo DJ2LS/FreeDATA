@@ -175,7 +175,7 @@ def test_chat_text(
                 STATIONS[0],
                 STATIONS[1],
                 messages[message_no],
-                freedv_mode == "datac3",  # low bandwidth mode
+                freedv_mode == "datac3",  # == low bandwidth mode
                 tmp_path,
             ),
             daemon=True,
@@ -189,7 +189,7 @@ def test_chat_text(
                 STATIONS[1],
                 STATIONS[0],
                 messages[message_no],
-                freedv_mode == "datac3",  # low bandwidth mode
+                freedv_mode == "datac3",  # == low bandwidth mode
                 tmp_path,
             ),
             daemon=True,
