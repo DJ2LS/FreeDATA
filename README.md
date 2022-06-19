@@ -1,5 +1,5 @@
 # FreeDATA
-My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application. 
+My attempt to create a free and open-source TNC with a GUI for [codec2](https://github.com/drowe67/codec2) with the idea of sending messages and data from one network based application.
 
 [mailing-list](https://groups.io/g/freedata)
 

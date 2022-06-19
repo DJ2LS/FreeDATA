@@ -1571,7 +1571,6 @@ class DATA:
         if 230 <= mode <= 240:
             self.log.debug("[TNC] Requesting manual mode --> not yet implemented ")
             frametype = bytes([mode])
-
         connection_frame = bytearray(14)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
@@ -2088,6 +2087,11 @@ class DATA:
     def transmit_cq(self) -> None:
         """
         Transmit a CQ
+        Args:
+            Nothing
+
+        Returns:
+            Nothing
         """
         self.log.info("[TNC] CQ CQ CQ")
         self.send_data_to_socket_queue(
@@ -2121,7 +2125,6 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
-
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
             freedata="tnc-message",

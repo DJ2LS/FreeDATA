@@ -1,8 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests for the FreeDATA TNC state machine.
+Test control frame messages over a high quality simulated audio channel.
+
+Near end-to-end test for sending / receiving select control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_datac0.py in separate process to perform the data transfer.
+
+@author: N2KIQ
 """
 
+import multiprocessing
 import sys
+import time
 
 import pytest
 
@@ -90,9 +104,7 @@ def t_tsh_dummy():
     print("In transmit_session_heartbeat")
 
 
-@pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "M4AWQ-4"])
-@pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
-def test_valid_disconnect(mycall: str, dxcall: str):
+def t_foreign_disconnect(mycall: str, dxcall: str):
     """
     Execute test to validate that receiving a session open frame sets the correct machine
     state.
@@ -107,7 +119,7 @@ def test_valid_disconnect(mycall: str, dxcall: str):
     # Set the SSIDs we'll use for this test.
     static.SSID_LIST = [0, 1, 2, 3, 4]
 
-    # set up the static parameters for the connection.
+    # Setup the static parameters for the connection.
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
     static.MYCALLSIGN = mycallsign
@@ -120,6 +132,81 @@ def test_valid_disconnect(mycall: str, dxcall: str):
 
     # Create the TNC
     tnc = data_handler.DATA()
+    tnc.arq_cleanup()
+
+    # Replace the heartbeat transmit routine with a No-Op.
+    tnc.transmit_session_heartbeat = t_tsh_dummy
+
+    # Create frame to be 'received' by this station.
+    create_frame = t_create_start_session(mycall=dxcall, dxcall=mycall)
+    print_frame(create_frame)
+    tnc.received_session_opener(create_frame)
+
+    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
+    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
+
+    assert static.ARQ_SESSION is True
+    assert static.TNC_STATE == "BUSY"
+    assert static.ARQ_SESSION_STATE == "connecting"
+
+    # Set up a frame from a non-associated station.
+    foreigncall_bytes = helpers.callsign_to_bytes("ZZ0ZZ-0")
+    foreigncall = helpers.bytes_to_callsign(foreigncall_bytes)
+
+    close_frame = t_create_session_close("ZZ0ZZ-0", "ZZ0ZZ-0")
+    print_frame(close_frame)
+    assert (
+        helpers.check_callsign(static.DXCALLSIGN, bytes(close_frame[4:7]))[0] is False
+    ), f"{helpers.get_crc_24(static.DXCALLSIGN)} == {bytes(close_frame[4:7])} but should be not equal."
+
+    assert (
+        helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
+    ), f"{helpers.get_crc_24(foreigncall)} != {bytes(close_frame[4:7])} but should be equal."
+
+    # Send the non-associated session close frame to the TNC
+    tnc.received_session_close(close_frame)
+
+    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == helpers.callsign_to_bytes(
+        mycall
+    ), f"{static.MYCALLSIGN} != {mycall} but should equal."
+    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == helpers.callsign_to_bytes(
+        dxcall
+    ), f"{static.DXCALLSIGN} != {dxcall} but should equal."
+
+    assert static.ARQ_SESSION is True
+    assert static.TNC_STATE == "BUSY"
+    assert static.ARQ_SESSION_STATE == "connecting"
+
+
+def t_valid_disconnect(mycall: str, dxcall: str):
+    """
+    Execute test to validate that receiving a session open frame sets the correct machine
+    state.
+
+    :param mycall: Callsign of the near station
+    :type mycall: str
+    :param dxcall: Callsign of the far station
+    :type dxcall: str
+    :return: Bytearray of the requested frame
+    :rtype: bytearray
+    """
+    # Set the SSIDs we'll use for this test.
+    static.SSID_LIST = [0, 1, 2, 3, 4]
+
+    # Setup the static parameters for the connection.
+    mycallsign_bytes = helpers.callsign_to_bytes(mycall)
+    mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
+    static.MYCALLSIGN = mycallsign
+    static.MYCALLSIGN_CRC = helpers.get_crc_24(mycallsign)
+
+    dxcallsign_bytes = helpers.callsign_to_bytes(dxcall)
+    dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
+    static.DXCALLSIGN = dxcallsign
+    static.DXCALLSIGN_CRC = helpers.get_crc_24(dxcallsign)
+
+    # Create the TNC
+    tnc = data_handler.DATA()
+    tnc.arq_cleanup()
 
     # Replace the heartbeat transmit routine with our own, a No-Op.
     tnc.transmit_session_heartbeat = t_tsh_dummy
@@ -146,74 +233,46 @@ def test_valid_disconnect(mycall: str, dxcall: str):
     assert static.ARQ_SESSION_STATE == "disconnected"
 
 
+# These tests are pushed into separate processes as a workaround. These tests
+# change the state of one of the static parts of the system. Unfortunately the
+# specific state(s) maintained across tests in the same interpreter are not yet known.
+# The other tests affected are: `test_tnc.py` and the ARQ tests.
+
+
 @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "E4AWQ-4"])
 @pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
+@pytest.mark.flaky(reruns=2)
 def test_foreign_disconnect(mycall: str, dxcall: str):
-    """
-    Execute test to validate that receiving a session open frame sets the correct machine
-    state.
+    proc = multiprocessing.Process(target=t_foreign_disconnect, args=(mycall, dxcall))
+    # print("Starting threads.")
+    proc.start()
 
-    :param mycall: Callsign of the near station
-    :type mycall: str
-    :param dxcall: Callsign of the far station
-    :type dxcall: str
-    :return: Bytearray of the requested frame
-    :rtype: bytearray
-    """
-    # set up the static parameters for the connection.
-    mycallsign_bytes = helpers.callsign_to_bytes(mycall)
-    mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
-    static.MYCALLSIGN = mycallsign
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(mycallsign)
+    time.sleep(0.05)
 
-    dxcallsign_bytes = helpers.callsign_to_bytes(dxcall)
-    dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(dxcallsign)
+    # print("Terminating threads.")
+    proc.terminate()
+    proc.join()
 
-    # Create the TNC
-    tnc = data_handler.DATA()
+    # print(f"\n{proc.exitcode=}")
+    assert proc.exitcode == 0
 
-    # Replace the heartbeat transmit routine with a No-Op.
-    tnc.transmit_session_heartbeat = t_tsh_dummy
 
-    # Create frame to be 'received' by this station.
-    create_frame = t_create_start_session(mycall=dxcall, dxcall=mycall)
-    print_frame(create_frame)
-    tnc.received_session_opener(create_frame)
+@pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "M4AWQ-4"])
+@pytest.mark.parametrize("dxcall", ["AA9AA-1", "DE2ED-0", "F6QWE-3"])
+@pytest.mark.flaky(reruns=2)
+def test_valid_disconnect(mycall: str, dxcall: str):
+    proc = multiprocessing.Process(target=t_valid_disconnect, args=(mycall, dxcall))
+    # print("Starting threads.")
+    proc.start()
 
-    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == mycallsign_bytes
-    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == dxcallsign_bytes
+    time.sleep(0.05)
 
-    assert static.ARQ_SESSION is True
-    assert static.TNC_STATE == "BUSY"
-    assert static.ARQ_SESSION_STATE == "connecting"
+    # print("Terminating threads.")
+    proc.terminate()
+    proc.join()
 
-    # Set up a frame from a non-associated station.
-    foreigncall_bytes = helpers.callsign_to_bytes("ZZ0ZZ-0")
-    foreigncall = helpers.bytes_to_callsign(foreigncall_bytes)
-
-    close_frame = t_create_session_close("ZZ0ZZ-0", "ZZ0ZZ-0")
-    print_frame(close_frame)
-    assert (
-        helpers.check_callsign(static.DXCALLSIGN, bytes(close_frame[4:7]))[0] is False
-    )
-
-    assert helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
-
-    # Send the non-associated session close frame to the TNC
-    tnc.received_session_close(close_frame)
-
-    assert helpers.callsign_to_bytes(static.MYCALLSIGN) == helpers.callsign_to_bytes(
-        mycall
-    )
-    assert helpers.callsign_to_bytes(static.DXCALLSIGN) == helpers.callsign_to_bytes(
-        dxcall
-    )
-
-    assert static.ARQ_SESSION is True
-    assert static.TNC_STATE == "BUSY"
-    assert static.ARQ_SESSION_STATE == "connecting"
+    # print(f"\n{proc.exitcode=}")
+    assert proc.exitcode == 0
 
 
 if __name__ == "__main__":

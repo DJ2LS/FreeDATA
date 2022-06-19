@@ -1,30 +1,51 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests a high signal-to-noise ratio path with codec2 data formats using codec2 to transmit.
+Test small multiple-burst messages over a high quality simulated audio channel.
+
+Legacy test for sending / receiving frames through the codec2 modem
+and back through on the other station. Data injection initiates directly into
+codec2 API. Tests all three codec2 data frames.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_rx.py, sox and freedv_data_raw_tx in separate processeses to perform
+the audio tests.
+
+@author: DJ2LS, N2KIQ
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import
 
+import contextlib
+import glob
+import multiprocessing
 import os
 import subprocess
 import sys
+import time
 
 import pytest
 
-try:
+BURSTS = 1
+FRAMESPERBURST = 1
+TESTFRAMES = 3
+
+with contextlib.suppress(KeyError):
     BURSTS = int(os.environ["BURSTS"])
+with contextlib.suppress(KeyError):
     FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+with contextlib.suppress(KeyError):
     TESTFRAMES = int(os.environ["TESTFRAMES"])
-except KeyError:
-    BURSTS = 1
-    FRAMESPERBURST = 1
-    TESTFRAMES = 3
+
+# For some reason, sometimes, this test requires the current directory to be `test`.
+# Try to adapt dynamically. I still want to figure out why but as a workaround,
+# I'm not completely dissatisfied.
+if os.path.exists("test"):
+    os.chdir("test")
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
-@pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
-@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
-def test_HighSNR_P_P_DATACx(
+def t_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str
 ):
     """
@@ -37,13 +58,24 @@ def test_HighSNR_P_P_DATACx(
     :param testframes: Number of test frames to transmit
     :type testframes: str
     """
-    tx_side = "freedv_data_raw_tx"
-
     # Facilitate running from main directory as well as inside test/
-    rx_side = "test_rx.py"
+    rx_side = "util_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", rx_side)):
         rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."
+
+    tx_side = "freedv_data_raw_tx"
+    _txpaths = (
+        os.path.join("..", "tnc")
+        if os.path.exists(os.path.join("..", "tnc"))
+        else "tnc"
+    )
+    _txpaths = glob.glob(rf"{_txpaths}/**/{tx_side}", recursive=True)
+    for path in _txpaths:
+        tx_side = path
+        break
+
+    print(f"{tx_side=} / {rx_side=}")
 
     with subprocess.Popen(
         args=[
@@ -112,6 +144,41 @@ def test_HighSNR_P_P_DATACx(
                 assert f"RECEIVED FRAMES: {frames_per_burst * bursts}" in lastline
                 assert "RX_ERRORS: 0" in lastline
                 print(lastline)
+
+
+# @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+# @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+# @pytest.mark.parametrize("testframes", [TESTFRAMES, 2, 1])
+@pytest.mark.parametrize("bursts", [BURSTS])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
+@pytest.mark.parametrize("testframes", [TESTFRAMES])
+@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
+def test_HighSNR_C_P_DATACx(
+    bursts: int, frames_per_burst: int, testframes: int, mode: str
+):
+    proc = multiprocessing.Process(
+        target=t_HighSNR_C_P_DATACx,
+        args=[bursts, frames_per_burst, testframes, mode],
+        daemon=True,
+    )
+
+    proc.start()
+
+    # Set timeout
+    timeout = time.time() + 5
+
+    while time.time() < timeout:
+        time.sleep(0.1)
+
+    if proc.is_alive():
+        proc.terminate()
+        assert 0, "Timeout waiting for test to complete."
+
+    proc.join()
+    proc.terminate()
+
+    assert proc.exitcode == 0
+    proc.close()
 
 
 if __name__ == "__main__":

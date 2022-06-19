@@ -7,7 +7,9 @@ The following `CTest` tests cover some TNC functionality and the interface to co
 1. Name: `resampler`
    Tests FreeDATA audio resampling from 48KHz to 8KHz.
 1. Name: `tnc_state_machine`
-   Tests TNC transitions between states.
+   Tests TNC transitions between states. This needs to be expanded.
+1. Name: `tnc_irs_iss`
+   Tests TNC modem queue interaction. This needs to be expanded.
 1. Name: `helper_routines`
    Tests various helper routines.
 1. Name: `py_highsnr_stdio_P_P_multi`
@@ -43,8 +45,6 @@ replaced with equivalent pipeline-compatible tests.
    **Not functional** due to an incompatibility between the two scripts in the way they determine audio devices.
 1. Name: `highsnr_virtual5_P_P_multi_callback`
 1. Name: `highsnr_virtual5_P_P_multi_callback_outside`
-1. Name: `highsnr_ARQ_short`
-   **Not functional**, it is an obsolete or not yet completed test.
 
 
 # Instructions
@@ -69,12 +69,14 @@ replaced with equivalent pipeline-compatible tests.
    ```
    ctest --output-on-failure
    ```
+   or, to include only GitHub-compatible tests:
+   ```
+   GITHUB_RUN_ID=0 ctest --output-on-failure
+   ```
 4. Run tests verbosely:
    ```
    ctest -V
    ```
-
-
 
 
 # 001_HIGHSNR_STDIO_AUDIO TEST SUITE
@@ -97,8 +99,11 @@ replaced with equivalent pipeline-compatible tests.
 Pipes are used to move audio samples from the Tx to Rx:
 
 ```
-python3 test_tx.py --mode datac1 --delay 500 --frames 2 --bursts 1 | python3 test_rx.py --mode datac1 --frames 2 --bursts 1
+python3 util_tx.py --mode datac1 --delay 500 --frames 2 --bursts 1 | python3 util_rx.py --mode datac1 --frames 2 --bursts 1
 ```
+
+## Moderate signal-to-noise ratio (SNR)
+Tests need to be written that test a low SNR data path so that the TNC performance when packets are lost can be evaluated.
 
 ## AUDIO test via virtual audio devices
 ### Important:
@@ -132,7 +137,7 @@ The virtual audio devices are great for testing, but they are also a little tric
 
 1. Determine the audio device number you would like to use:
    ```
-   python3 test_rx.py --list
+   python3 util_rx.py --list
    <snip>
    audiodev:  0 HDA Intel PCH: ALC269VC Analog (hw:0,0)
    audiodev:  1 HDA Intel PCH: HDMI 0 (hw:0,3)
@@ -147,5 +152,5 @@ The virtual audio devices are great for testing, but they are also a little tric
 
 1. Start the Rx first, then Tx in separate consoles:
    ```
-   python3 test_rx.py --mode datac0 --frames 2 --bursts 1 --audiodev 4 --debug
-   python3 test_tx.py --mode datac0 --frames 2 --bursts 1 --audiodev 5
+   python3 util_rx.py --mode datac0 --frames 2 --bursts 1 --audiodev 4 --debug
+   python3 util_tx.py --mode datac0 --frames 2 --bursts 1 --audiodev 5

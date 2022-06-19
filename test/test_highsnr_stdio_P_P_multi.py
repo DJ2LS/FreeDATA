@@ -1,28 +1,50 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests a high signal-to-noise ratio path with multiple codec2 data formats.
+Test small multiple-burst messages over a high quality simulated audio channel.
+
+Legacy test for sending / receiving frames through the codec2 modem
+and back through on the other station. Data injection initiates directly into
+codec2 API. Tests all three codec2 data frames simultaneously.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_multimode_tx.py and util_multimode_tx in separate processeses to perform
+the audio tests.
+
+@author: N2KIQ
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import
 
+import contextlib
+import multiprocessing
 import os
 import subprocess
 import sys
+import time
 
 import pytest
 
-try:
+BURSTS = 1
+FRAMESPERBURST = 1
+TESTFRAMES = 3
+
+with contextlib.suppress(KeyError):
     BURSTS = int(os.environ["BURSTS"])
+with contextlib.suppress(KeyError):
     FRAMESPERBURST = int(os.environ["FRAMESPERBURST"])
+with contextlib.suppress(KeyError):
     TESTFRAMES = int(os.environ["TESTFRAMES"])
-except KeyError:
-    BURSTS = 1
-    FRAMESPERBURST = 1
-    TESTFRAMES = 3
+
+# For some reason, sometimes, this test requires the current directory to be `test`.
+# Try to adapt dynamically. I still want to figure out why but as a workaround,
+# I'm not completely dissatisfied.
+if os.path.exists("test"):
+    os.chdir("test")
 
 
-@pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
-@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
-def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
+def t_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
     """
     Test a high signal-to-noise ratio path with DATAC0, DATAC1 and DATAC3.
 
@@ -32,12 +54,14 @@ def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
     :type frames_per_burst: int
     """
     # Facilitate running from main directory as well as inside test/
-    tx_side = "test_multimode_tx.py"
-    rx_side = "test_multimode_rx.py"
+    tx_side = "util_multimode_tx.py"
+    rx_side = "util_multimode_rx.py"
     if os.path.exists("test") and os.path.exists(os.path.join("test", tx_side)):
         tx_side = os.path.join("test", tx_side)
         rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."
+
+    print(f"{tx_side=} / {rx_side=}")
 
     with subprocess.Popen(
         args=[
@@ -81,6 +105,36 @@ def test_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
             assert f"DATAC1: {bursts}/{frames_per_burst * bursts}" in lastline
             assert f"DATAC3: {bursts}/{frames_per_burst * bursts}" in lastline
             print(lastline)
+
+
+# @pytest.mark.parametrize("bursts", [BURSTS, 2, 3])
+# @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
+@pytest.mark.parametrize("bursts", [BURSTS])
+@pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
+def test_HighSNR_P_P_multi(bursts: int, frames_per_burst: int):
+    proc = multiprocessing.Process(
+        target=t_HighSNR_P_P_Multi,
+        args=[bursts, frames_per_burst],
+        daemon=True,
+    )
+
+    proc.start()
+
+    # Set timeout
+    timeout = time.time() + 5
+
+    while time.time() < timeout:
+        time.sleep(0.1)
+
+    if proc.is_alive():
+        proc.terminate()
+        assert 0, "Timeout waiting for test to complete."
+
+    proc.join()
+    proc.terminate()
+
+    assert proc.exitcode == 0
+    proc.close()
 
 
 if __name__ == "__main__":

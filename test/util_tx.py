@@ -1,6 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Send-side station emulator for test frame tests over a high quality audio channel
+using a physical sound card or STDIO.
 
+Legacy test for sending / receiving connection test frames through the codec2 and
+back through on the other station. Data injection initiates directly through
+the codec2 API.
+
+Invoked from CMake, test_highsnr_stdio_{P_C, P_P}_datacx.py, and many test_virtual[1-3]*.sh.
+
+@author: DJ2LS
+"""
 
 import argparse
 import ctypes
@@ -13,7 +24,7 @@ sys.path.insert(0, "..")
 from tnc import codec2
 
 
-def test_tx():
+def util_tx():
     args = parse_arguments()
 
     if args.LIST:
@@ -35,7 +46,7 @@ def test_tx():
     AUDIO_FRAMES_PER_BUFFER = 2400
     MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
     AUDIO_SAMPLE_RATE_TX = 48000
-    assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0
+    assert (AUDIO_SAMPLE_RATE_TX % MODEM_SAMPLE_RATE) == 0  # type: ignore
 
     # check if we want to use an audio device then do a pyaudio init
     if AUDIO_OUTPUT_DEVICE != -1:
@@ -160,11 +171,11 @@ def test_tx():
 
         # Check if we want to use an audio device or stdout
         if AUDIO_OUTPUT_DEVICE != -1:
-            stream_tx.start()
-            stream_tx.write(txbuffer_48k)
+            stream_tx.start()  # type: ignore
+            stream_tx.write(txbuffer_48k)  # type: ignore
         else:
             # Print data to terminal for piping the output to other programs
-            sys.stdout.buffer.write(txbuffer_48k)
+            sys.stdout.buffer.write(txbuffer_48k)  # type: ignore
             sys.stdout.flush()
 
     # and at last check if we had an opened audio instance and close it
@@ -215,4 +226,4 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    test_tx()
+    util_tx()

@@ -150,7 +150,6 @@ api.FREEDV_MODE_DATAC3 = 12  # type: ignore
 api.FREEDV_MODE_DATAC0 = 14  # type: ignore
 api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
 
-
 # -------------------------------- FSK LDPC MODE SETTINGS
 
 
@@ -242,7 +241,6 @@ class MODEMSTATS(ctypes.Structure):
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
 
-
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1  # type: ignore # demodulator has trial sync
 api.FREEDV_RX_SYNC = 0x2  # type: ignore # demodulator has sync
@@ -267,7 +265,6 @@ api.rx_sync_flags_to_text = [  # type: ignore
     "EBS-",
     "EBST",
 ]
-
 
 # Audio buffer ---------------------------------------------------------
 class audio_buffer:

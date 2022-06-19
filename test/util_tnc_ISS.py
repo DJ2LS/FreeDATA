@@ -1,38 +1,54 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Send-side station emulator for connect frame tests over a high quality simulated audio channel.
 
-@author: DJ2LS
+Near end-to-end test for sending / receiving connection control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Invoked from test_tnc.py.
+
+@author: DJ2LS, N2KIQ
 """
 
-import os
+import json
+import signal
 import sys
 import time
+from typing import Callable
 
-sys.path.insert(0, "..")
+import structlog
+
 sys.path.insert(0, "../tnc")
 import data_handler
 import helpers
 import modem
+import sock
 import static
 
-ISS_original_arq_cleanup = object
+ISS_original_arq_cleanup: Callable
 MESSAGE: str
+
+log = structlog.get_logger("util_tnc_ISS")
 
 
 def iss_arq_cleanup():
     """Replacement for modem.arq_cleanup to detect when to exit process."""
-    if "TRANSMISSION;STOPPED" in static.INFO:
-        print(f"{static.INFO=}")
+    log.info(
+        "iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue, message=MESSAGE.lower()
+    )
+    if '"arq":"transmission","status":"stopped"' in str(sock.SOCKET_QUEUE.queue):
+        # log.info("iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
         time.sleep(1)
-        # sys.exit does not terminate threads.
-        # pylint: disable=protected-access
-        if f"{MESSAGE};SENDING" not in static.INFO:
+        if f'"{MESSAGE.lower()}":"transmitting"' not in str(
+            sock.SOCKET_QUEUE.queue
+        ) and f'"{MESSAGE.lower()}":"sending"' not in str(sock.SOCKET_QUEUE.queue):
             print(f"{MESSAGE} was not sent.")
-            os._exit(1)
+            log.info("iss_arq_cleanup", socket_queue=sock.SOCKET_QUEUE.queue)
+            # sys.exit does not terminate threads, and os_exit doesn't allow coverage collection.
+            signal.raise_signal(signal.SIGKILL)
 
-        os._exit(0)
+        signal.raise_signal(signal.SIGTERM)
     ISS_original_arq_cleanup()
 
 
@@ -41,13 +57,18 @@ def t_arq_iss(*args):
     global ISS_original_arq_cleanup, MESSAGE
 
     MESSAGE = args[0]
+    tmp_path = args[1]
+
+    sock.log = structlog.get_logger("util_tnc_ISS_sock")
 
     # enable testmode
     data_handler.TESTMODE = True
+    modem.RXCHANNEL = tmp_path / "hfchannel1"
     modem.TESTMODE = True
-    modem.RXCHANNEL = "/tmp/hfchannel1"
-    modem.TXCHANNEL = "/tmp/hfchannel2"
+    modem.TXCHANNEL = tmp_path / "hfchannel2"
     static.HAMLIB_RADIOCONTROL = "disabled"
+    log.info("t_arq_iss:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_arq_iss:", TXCHANNEL=modem.TXCHANNEL)
 
     mycallsign = bytes("DJ2LS-2", "utf-8")
     mycallsign = helpers.callsign_to_bytes(mycallsign)
@@ -66,6 +87,7 @@ def t_arq_iss(*args):
 
     # start data handler
     tnc = data_handler.DATA()
+    tnc.log = structlog.get_logger("util_tnc_ISS_DATA")
 
     # Inject a way to exit the TNC infinite loop
     ISS_original_arq_cleanup = tnc.arq_cleanup
@@ -73,6 +95,7 @@ def t_arq_iss(*args):
 
     # start modem
     t_modem = modem.RF()
+    t_modem.log = structlog.get_logger("util_tnc_ISS_RF")
 
     # mode = codec2.freedv_get_mode_value_by_name(FREEDV_MODE)
     # n_frames_per_burst = N_FRAMES_PER_BURST
@@ -89,26 +112,37 @@ def t_arq_iss(*args):
     """
     # data_handler.DATA_QUEUE_TRANSMIT.put(['ARQ_RAW', bytes_out, 255, n_frames_per_burst, '123', b'DJ2LS-0'])
 
-    # for _ in range(4):
-    if MESSAGE in ["BEACON"]:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE, 5, True])
-    elif MESSAGE in ["PING", "CONNECT"]:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE, dxcallsign])
+    data = {}
+    if MESSAGE in ["CONNECT"]:
+        data = {
+            "type": "arq",
+            "command": "connect",
+            "dxcallsign": str(dxcallsign, encoding="UTF-8"),
+        }
     else:
-        data_handler.DATA_QUEUE_TRANSMIT.put([MESSAGE])
+        assert not MESSAGE, f"{MESSAGE} not known to test."
+
+    time.sleep(0.5)
+
+    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     time.sleep(1.5)
 
-    # for i in range(4):
-    #    data_handler.DATA_QUEUE_TRANSMIT.put(['PING', b'DN2LS-2'])
+    data = {"type": "arq", "command": "stop_transmission"}
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
-    data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
+    time.sleep(0.5)
+    sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Set timeout
-    timeout = time.time() + 10
+    timeout = time.time() + 15
 
     while time.time() < timeout:
         time.sleep(0.1)
+
+    log.warning("queue:", queue=sock.SOCKET_QUEUE.queue)
 
     assert not "TIMEOUT!"
 

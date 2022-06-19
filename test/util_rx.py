@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Receive-side station emulator for test frame tests over a high quality audio channel
+using a physical sound card or STDIO.
+
+Legacy test for sending / receiving connection test frames through the codec2 and
+back through on the other station. Data injection initiates directly through
+the codec2 API.
+
+Invoked from CMake, test_highsnr_stdio_{P_C, P_P}_datacx.py, and many test_virtual[1-3]*.sh.
 
 @author: DJ2LS
 """
@@ -14,20 +21,22 @@ import time
 import numpy as np
 import sounddevice as sd
 
+# pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
+sys.path.insert(0, "../tnc")
 from tnc import codec2
 
 
-def test_rx():
+def util_rx():
     args = parse_arguments()
 
     if args.LIST:
 
         devices = sd.query_devices(device=None, kind=None)
-        index = 0
-        for device in devices:
+        for index, device in enumerate(devices):
             print(f"{index} {device['name']}")
             index += 1
+        # pylint: disable=protected-access
         sd._terminate()
         sys.exit()
 
@@ -45,7 +54,7 @@ def test_rx():
     AUDIO_SAMPLE_RATE_RX = 48000
 
     # make sure our resampler will work
-    assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48
+    assert (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
     # check if we want to use an audio device then do a pyaudio init
     if AUDIO_INPUT_DEVICE != -1:
@@ -123,7 +132,7 @@ def test_rx():
         if AUDIO_INPUT_DEVICE != -1:
             try:
                 # data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
-                data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)
+                data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)  # type: ignore
             except OSError as err:
                 print(err, file=sys.stderr)
                 # if str(err).find("Input overflowed") != -1:
@@ -135,7 +144,7 @@ def test_rx():
             data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER * 2)
 
         # insert samples in buffer
-        x = np.frombuffer(data_in48k, dtype=np.int16)
+        x = np.frombuffer(data_in48k, dtype=np.int16)  # type: ignore
         # print(x)
         # x = data_in48k
         x.tofile(frx)
@@ -163,7 +172,7 @@ def test_rx():
             if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
                 rx_errors = rx_errors + 1
             if DEBUGGING_MODE:
-                rx_status = codec2.api.rx_sync_flags_to_text[rx_status]
+                rx_status = codec2.api.rx_sync_flags_to_text[rx_status]  # type: ignore
                 time_needed = time_end - time_start
 
                 print(
@@ -189,6 +198,8 @@ def test_rx():
         if time.time() >= timeout:
             print("TIMEOUT REACHED")
 
+        time.sleep(0.01)
+
     if nread_exceptions:
         print(
             f"nread_exceptions {nread_exceptions:d} - receive audio lost! "
@@ -206,6 +217,7 @@ def test_rx():
     # and at last check if we had an opened audio instance and close it
     if AUDIO_INPUT_DEVICE != -1:
         sd._terminate()
+
 
 def parse_arguments():
     # --------------------------------------------GET PARAMETER INPUTS
@@ -244,4 +256,4 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    test_rx()
+    util_rx()

@@ -37,6 +37,8 @@ DAEMON_QUEUE = queue.Queue()
 CONNECTED_CLIENTS = set()
 CLOSE_SIGNAL = False
 
+log = structlog.get_logger("sock")
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
@@ -45,9 +47,9 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
     pass
 
-
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
+    connection_alive = False
 
     connection_alive = False
     log = structlog.get_logger("ThreadedTCPRequestHandler")
@@ -180,7 +182,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 "[SCK] client connection already removed from client list",
                 client=self.request,
             )
-
 
 def process_tnc_commands(data):
     """
@@ -698,7 +699,6 @@ def send_daemon_state():
             output["daemon_state"].append({"status": "stopped"})
 
         return json.dumps(output)
-
     except Exception as err:
         log.warning("[SCK] error", e=err)
         return None

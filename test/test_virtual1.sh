@@ -9,7 +9,7 @@ function check_alsa_loopback {
       echo
       echo "  sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2"
       exit 1
-    fi  
+    fi
 }
 
 check_alsa_loopback
@@ -20,8 +20,8 @@ MAX_RUN_TIME=2600
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
 
-arecord --device="plughw:CARD=CHAT2,DEV=0" -r 48000 -f S16_LE -d $MAX_RUN_TIME | python3 test_rx.py --mode datac0 --frames 2 --bursts 5 --debug &
+arecord --device="plughw:CARD=CHAT2,DEV=0" -r 48000 -f S16_LE -d $MAX_RUN_TIME | python3 util_rx.py --mode datac0 --frames 2 --bursts 5 --debug &
 rx_pid=$!
 sleep 1
-python3 test_tx.py --mode datac0 --frames 2 --bursts 5 --delay 500 | aplay --device="plughw:CARD=CHAT2,DEV=1" -r 48000 -f S16_LE
+python3 util_tx.py --mode datac0 --frames 2 --bursts 5 --delay 500 | aplay --device="plughw:CARD=CHAT2,DEV=1" -r 48000 -f S16_LE
 wait ${rx_pid}
