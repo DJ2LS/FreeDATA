@@ -10,6 +10,8 @@ queue used by the daemon process into and out of the TNC.
 Can be invoked from CMake, pytest, coverage or directly.
 
 Uses util_tnc_I[RS]S.py in separate process to perform the data transfer.
+
+@author: DJ2LS, N2KIQ
 """
 
 import multiprocessing

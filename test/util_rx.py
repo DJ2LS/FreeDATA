@@ -9,6 +9,8 @@ back through on the other station. Data injection initiates directly through
 the codec2 API.
 
 Invoked from CMake, test_highsnr_stdio_{P_C, P_P}_datacx.py, and many test_virtual[1-3]*.sh.
+
+@author: DJ2LS
 """
 
 import argparse

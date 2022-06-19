@@ -11,6 +11,8 @@ Can be invoked from CMake, pytest, coverage or directly.
 
 Uses util_multimode_tx.py and util_multimode_tx in separate processeses to perform
 the audio tests.
+
+@author: N2KIQ
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import

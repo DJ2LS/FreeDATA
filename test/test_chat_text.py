@@ -12,6 +12,8 @@ high-bandwidth data frames (datac3 and datac1 respectively) from Codec2.
 Can be invoked from CMake, pytest, coverage or directly.
 
 Uses util_chat_test_[12].py in separate processes to perform the data transfer.
+
+@author: N2KIQ
 """
 
 import contextlib

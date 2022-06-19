@@ -11,6 +11,8 @@ Can be invoked from CMake, pytest, coverage or directly.
 
 Uses util_rx.py, sox and freedv_data_raw_tx in separate processeses to perform
 the audio tests.
+
+@author: DJ2LS, N2KIQ
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import

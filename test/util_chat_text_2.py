@@ -7,6 +7,8 @@ TNC and modem and back through on the other station. Data injection initiates fr
 queue used by the daemon process into and out of the TNC.
 
 Invoked from test_chat_text.py.
+
+@author: N2KIQ
 """
 
 import time

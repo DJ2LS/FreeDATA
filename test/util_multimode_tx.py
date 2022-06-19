@@ -9,6 +9,8 @@ back through on the other station. Data injection initiates directly through
 the codec2 API. Tests all three codec2 data frames simultaneously.
 
 Invoked from CMake, test_highsnr_stdio_P_P_multi.py, and many test_virtual[1-3]*.sh.
+
+@author: DJ2LS
 """
 
 import argparse

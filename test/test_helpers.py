@@ -6,6 +6,8 @@ Unit test common helper routines used throughout the TNC.
 Can be invoked from CMake, pytest, coverage or directly.
 
 Uses no other files.
+
+@author: N2KIQ
 """
 
 import sys

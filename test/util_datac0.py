@@ -8,6 +8,8 @@ and back through on the other station. Data injection initiates from the queue u
 by the daemon process into and out of the TNC.
 
 Invoked from test_datac0.py.
+
+@author: N2KIQ
 """
 
 import json
