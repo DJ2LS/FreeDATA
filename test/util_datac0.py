@@ -1,9 +1,15 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Send- and receive-side station emulator for control frame tests over a high quality
+simulated audio channel.
 
-@author: DJ2LS
+Near end-to-end test for sending / receiving control frames through the TNC and modem
+and back through on the other station. Data injection initiates from the queue used
+by the daemon process into and out of the TNC.
+
+Invoked from test_datac0.py.
+
+@author: N2KIQ
 """
 
 import json

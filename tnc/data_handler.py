@@ -2278,11 +2278,11 @@ class DATA:
         """
         # reset ARQ statistics
         static.ARQ_BYTES_PER_MINUTE_BURST = 0
-        static.ARQ_BYTES_PER_MINUTE       = 0
-        static.ARQ_BITS_PER_SECOND_BURST  = 0
-        static.ARQ_BITS_PER_SECOND        = 0
-        static.ARQ_TRANSMISSION_PERCENT   = 0
-        static.TOTAL_BYTES                = 0
+        static.ARQ_BYTES_PER_MINUTE = 0
+        static.ARQ_BITS_PER_SECOND_BURST = 0
+        static.ARQ_BITS_PER_SECOND = 0
+        static.ARQ_TRANSMISSION_PERCENT = 0
+        static.TOTAL_BYTES = 0
 
     def calculate_transfer_rate_tx(
         self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int
