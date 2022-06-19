@@ -1,5 +1,16 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests a high signal-to-noise ratio path with codec2 data formats using codec2 to transmit.
+Test small multiple-burst messages over a high quality simulated audio channel.
+
+Legacy test for sending / receiving frames through the codec2 modem
+and back through on the other station. Data injection initiates directly into
+codec2 API. Tests all three codec2 data frames.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_rx.py, sox and freedv_data_raw_tx in separate processeses to perform
+the audio tests.
 """
 
 # pylint: disable=global-statement, invalid-name, unused-import

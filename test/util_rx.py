@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Receive-side station emulator for test frame tests over a high quality audio channel
+using a physical sound card or STDIO.
 
-@author: DJ2LS
+Legacy test for sending / receiving connection test frames through the codec2 and
+back through on the other station. Data injection initiates directly through
+the codec2 API.
+
+Invoked from CMake, test_highsnr_stdio_{P_C, P_P}_datacx.py, and many test_virtual[1-3]*.sh.
 """
 
 import argparse

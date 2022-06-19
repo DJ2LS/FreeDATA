@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Test control frame commands over a high quality simulated audio channel.
 
-@author: DJ2LS
+Near end-to-end test for sending / receiving select control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_datac0.py in separate process to perform the data transfer.
 """
 
 import contextlib
@@ -173,7 +179,6 @@ def analyze_results(station1: list, station2: list, call_list: list):
         # pytest.param("cq", marks=pytest.mark.xfail(reason="Too unstable for CI")),
     ],
 )
-# @pytest.mark.flaky(reruns=2)
 def test_datac0(frame_type: str, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
     log = structlog.get_logger("test_datac0")

@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 23 07:04:24 2020
+Test small (single-frame) and large (multi-frame) messages over a high quality
+simulated audio channel.
 
-@author: DJ2LS
+Near end-to-end test for sending / receiving data through the TNC and modem
+and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC. Tests both low- and
+high-bandwidth data frames (datac3 and datac1 respectively) from Codec2.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_chat_test_[12].py in separate processes to perform the data transfer.
 """
 
 import contextlib
@@ -33,7 +41,27 @@ bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/pla
 
 messages = [
     "This is a test chat...",
-    "This is a much longer message, hopefully longer than each of the datac1 and datac3 frames available to use in this modem. This should be long enought, but to err on the side of completeness this will string on for many more words before coming to the long awaited conclusion. We are not at the concluding point just yet because there is still more space to be taken up in the datac3 frame. Perhaps now would be a good place to terminate this test message, but perhaps not because we need a few more bytes. Here then we stop. This compresses so well that I need more data, even more stuff than is already here and included in the unreadable diatribe below, or is it a soliloquy? MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=",
+    "This is a much longer message, hopefully longer than each of the datac1 and "
+    "datac3 frames available to use in this modem. This should be long enough, "
+    "but to err on the side of completeness this will string on for many more "
+    "words before coming to the long awaited conclusion. We are not at the "
+    "concluding point just yet because there is still more space to be taken up "
+    "in the datac3 frame. Perhaps now would be a good place to terminate this test "
+    "message, but perhaps not because we need a few more bytes. Here then we stop. "
+    "This compresses so well that I need more data, even more stuff than is already "
+    "here and included in the unreadable diatribe below, or is it a soliloquy? "
+    "MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obm"
+    "UgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5"
+    "NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0"
+    "MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG"
+    "9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowL"
+    "jAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODk"
+    "xMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2R"
+    "lcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc"
+    "3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY"
+    "1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjI"
+    "gbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY"
+    "2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=",
 ]
 PIPE_THREAD_RUNNING = True
 

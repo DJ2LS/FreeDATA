@@ -1,5 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Tests for the FreeDATA TNC state machine.
+Test control frame messages over a high quality simulated audio channel.
+
+Near end-to-end test for sending / receiving select control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_datac0.py in separate process to perform the data transfer.
 """
 
 import multiprocessing

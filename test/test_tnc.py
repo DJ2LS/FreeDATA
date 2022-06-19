@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Test connect frame commands over a high quality simulated audio channel.
+
+Near end-to-end test for sending / receiving connection control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_tnc_I[RS]S.py in separate process to perform the data transfer.
+"""
 
 import multiprocessing
 import os
