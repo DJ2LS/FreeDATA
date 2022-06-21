@@ -34,7 +34,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install psutil
           pip install crcengine
-          pip install 'pyinstaller<5.1'
+          pip install pyinstaller
           pip install ujson
           pip install pyserial
           pip install numpy

@@ -35,7 +35,7 @@ jobs:
           pip3 install pyaudio
           pip3 install psutil
           pip3 install crcengine
-          pip3 install 'pyinstaller<5.1'
+          pip3 install pyinstaller
           pip3 install ujson
           pip3 install pyserial
           pip3 install numpy
