@@ -64,6 +64,13 @@ add_test(NAME datac0_frames
                         python3 test_datac0.py")
          set_tests_properties(datac0_frames PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
+add_test(NAME datac0_frames_negative
+         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
+                        export PYTHONPATH=../tnc;
+                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
+                        python3 test_datac0_negative.py")
+         set_tests_properties(datac0_frames_negative PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+
 add_test(NAME helper_routines
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
                         export PYTHONPATH=../tnc;
