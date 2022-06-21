@@ -1561,7 +1561,7 @@ class DATA:
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
-        if static.LOW_BANDWIDTH_MODE and mode == 255:
+        if static.LOW_BANDWIDTH_MODE:
             frametype = bytes([227])
             self.log.debug("[TNC] Requesting low bandwidth mode")
 

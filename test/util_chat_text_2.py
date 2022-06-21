@@ -146,7 +146,7 @@ def t_highsnr_arq_short_station2(
     timeout = time.time() + 20
     while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
-            log.error("station2", TIMEOUT=True)
+            log.warning("station2", TIMEOUT=True)
             break
         time.sleep(0.5)
     log.info("station2", arq_state=pformat(static.ARQ_STATE))
@@ -158,4 +158,4 @@ def t_highsnr_arq_short_station2(
     assert '"arq":"transmission","status":"received"' in str(sock.SOCKET_QUEUE.queue)
 
     assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
-    log.error("station2: Exiting!")
+    log.warning("station2: Exiting!")
