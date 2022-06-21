@@ -24,7 +24,6 @@ class FREEDV_MODE(Enum):
     Enumeration for codec2 modes and names
     """
 
-    allmodes = 255
     datac0 = 14
     datac1 = 10
     datac3 = 12

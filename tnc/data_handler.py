@@ -876,39 +876,8 @@ class DATA:
         while not self.data_frame_ack_received and static.ARQ_STATE:
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for self.tx_n_retry_of_burst in range(TX_N_MAX_RETRIES_PER_BURST):
-                # AUTO MODE SELECTION
-                # mode 255 == AUTO MODE
-                # force usage of selected mode
-                if mode != 255:
-                    data_mode = mode
-                    self.log.debug("[TNC] FIXED MODE:", mode=data_mode)
-                else:
-                    # we are doing a modulo check of transmission retries of the actual burst
-                    # every 2nd retry which fails, decreases speedlevel by 1.
-                    # as soon as we received an ACK for the current burst, speed_level will increase
-                    # by 1.
-                    # The intent is to optimize speed by adapting to the current RF conditions.
-                    # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
-                    #    self.speed_level = max(self.speed_level - 1, 0)
-
-                    # if self.tx_n_retry_of_burst <= 1:
-                    #    self.speed_level += 1
-                    # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
-
-                    # Bound speed level to:
-                    # - minimum of either the speed or the length of mode list - 1
-                    # - maximum of either the speed or zero
-                    self.speed_level = min(self.speed_level, len(self.mode_list) - 1)
-                    self.speed_level = max(self.speed_level, 0)
-                    static.ARQ_SPEED_LEVEL = self.speed_level
-                    data_mode = self.mode_list[self.speed_level]
-
-                    self.log.debug(
-                        "[TNC] Speed-level:",
-                        level=self.speed_level,
-                        retry=self.tx_n_retry_of_burst,
-                        mode=data_mode,
-                    )
+                data_mode = mode
+                self.log.debug("[TNC] FIXED MODE:", mode=data_mode)
 
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
@@ -2407,7 +2376,7 @@ class DATA:
         elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
-        elif mode == codec2.FREEDV_MODE.allmodes.value:
+        else:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_FSK_LDPC_1 = True
