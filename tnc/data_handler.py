@@ -25,6 +25,7 @@ import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
+from static import FRAME_TYPE as FR_TYPE
 
 TESTMODE = False
 
@@ -238,13 +239,23 @@ class DATA:
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
-        if _valid1 or _valid2 or frametype in [200, 201, 210, 250]:
+        if (
+            _valid1
+            or _valid2
+            or frametype
+            in [
+                FR_TYPE.CQ.value,
+                FR_TYPE.QRV.value,
+                FR_TYPE.PING.value,
+                FR_TYPE.BEACON.value
+            ]
+        ):
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
-            if 50 >= frametype >= 10:
+            if FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
                 # get snr of received data
                 # FIXME: find a fix for this - after moving to classes, this no longer works
                 # snr = self.calculate_snr(freedv)
@@ -261,92 +272,100 @@ class DATA:
                 #    self.c_lib.freedv_set_sync(freedv, 0)
 
             # BURST ACK
-            elif frametype == 60:
+            elif frametype == FR_TYPE.ACK.value:
                 self.log.debug("[TNC] ACK RECEIVED....")
                 self.burst_ack_received(bytes_out[:-2])
 
             # FRAME ACK
-            elif frametype == 61:
+            elif frametype == FR_TYPE.FR_ACK.value:
                 self.log.debug("[TNC] FRAME ACK RECEIVED....")
                 self.frame_ack_received()
 
             # FRAME RPT
-            elif frametype == 62:
+            elif frametype == FR_TYPE.FR_REPEAT.value:
                 self.log.debug("[TNC] REPEAT REQUEST RECEIVED....")
                 self.burst_rpt_received(bytes_out[:-2])
 
             # FRAME NACK
-            elif frametype == 63:
+            elif frametype == FR_TYPE.FR_NACK.value:
                 self.log.debug("[TNC] FRAME NACK RECEIVED....")
                 self.frame_nack_received(bytes_out[:-2])
 
             # BURST NACK
-            elif frametype == 64:
+            elif frametype == FR_TYPE.BURST_NACK.value:
                 self.log.debug("[TNC] BURST NACK RECEIVED....")
                 self.burst_nack_received(bytes_out[:-2])
 
             # CQ FRAME
-            elif frametype == 200:
+            elif frametype == FR_TYPE.CQ.value:
                 self.log.debug("[TNC] CQ RECEIVED....")
                 self.received_cq(bytes_out[:-2])
 
             # QRV FRAME
-            elif frametype == 201:
+            elif frametype == FR_TYPE.QRV.value:
                 self.log.debug("[TNC] QRV RECEIVED....")
                 self.received_qrv(bytes_out[:-2])
 
             # PING FRAME
-            elif frametype == 210:
+            elif frametype == FR_TYPE.PING.value:
                 self.log.debug("[TNC] PING RECEIVED....")
                 self.received_ping(bytes_out[:-2])
 
             # PING ACK
-            elif frametype == 211:
+            elif frametype == FR_TYPE.PING_ACK.value:
                 self.log.debug("[TNC] PING ACK RECEIVED....")
                 self.received_ping_ack(bytes_out[:-2])
 
             # SESSION OPENER
-            elif frametype == 221:
+            elif frametype == FR_TYPE.ARQ_SESSION_OPEN.value:
                 self.log.debug("[TNC] OPEN SESSION RECEIVED....")
                 self.received_session_opener(bytes_out[:-2])
 
             # SESSION HEARTBEAT
-            elif frametype == 222:
+            elif frametype == FR_TYPE.ARQ_SESSION_HB.value:
                 self.log.debug("[TNC] SESSION HEARTBEAT RECEIVED....")
                 self.received_session_heartbeat(bytes_out[:-2])
 
             # SESSION CLOSE
-            elif frametype == 223:
+            elif frametype == FR_TYPE.ARQ_SESSION_CLOSE.value:
                 self.log.debug("[TNC] CLOSE ARQ SESSION RECEIVED....")
                 self.received_session_close(bytes_out[:-2])
 
             # ARQ FILE TRANSFER RECEIVED!
-            elif frametype in [225, 227]:
+            elif frametype in [
+                FR_TYPE.ARQ_DC_OPEN_W.value,
+                FR_TYPE.ARQ_DC_OPEN_N.value,
+            ]:
                 self.log.debug("[TNC] ARQ arq_received_data_channel_opener")
                 self.arq_received_data_channel_opener(bytes_out[:-2])
 
             # ARQ CHANNEL IS OPENED
-            elif frametype in [226, 228]:
+            elif frametype in [
+                FR_TYPE.ARQ_DC_OPEN_ACK_W.value,
+                FR_TYPE.ARQ_DC_OPEN_ACK_N.value,
+            ]:
                 self.log.debug("[TNC] ARQ arq_received_channel_is_open")
                 self.arq_received_channel_is_open(bytes_out[:-2])
 
             # ARQ MANUAL MODE TRANSMISSION
-            elif 230 <= frametype <= 240:
+            elif (
+                FR_TYPE.ARQ_MANUAL_01.value <= frametype <= FR_TYPE.ARQ_MANUAL_11.value
+            ):
                 self.log.debug("[TNC] ARQ manual mode")
                 self.arq_received_data_channel_opener(bytes_out[:-2])
 
             # ARQ STOP TRANSMISSION
-            elif frametype == 249:
+            elif frametype == FR_TYPE.ARQ_STOP.value:
                 self.log.debug("[TNC] ARQ received stop transmission")
                 self.received_stop_transmission()
 
             # this is outdated and we may remove it
-            elif frametype == 250:
+            elif frametype == FR_TYPE.BEACON.value:
                 self.log.debug("[TNC] BEACON RECEIVED")
                 self.received_beacon(bytes_out[:-2])
 
             # TESTFRAMES
-            elif frametype == 255:
+            elif frametype == FR_TYPE.TEST_FRAME.value:
                 self.log.debug("[TNC] TESTFRAME RECEIVED", frame=bytes_out[:])
 
             # Unknown frame type
@@ -413,7 +432,7 @@ class DATA:
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
         ack_frame = bytearray(14)
-        ack_frame[:1] = bytes([60])
+        ack_frame[:1] = bytes([FR_TYPE.ACK.value])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
@@ -425,7 +444,7 @@ class DATA:
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
         ack_frame = bytearray(14)
-        ack_frame[:1] = bytes([61])
+        ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
@@ -452,7 +471,7 @@ class DATA:
 
         # then create a repeat frame
         rpt_frame = bytearray(14)
-        rpt_frame[:1] = bytes([62])
+        rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:4] = static.DXCALLSIGN_CRC
         rpt_frame[4:7] = static.MYCALLSIGN_CRC
         rpt_frame[7:13] = missing_frames
@@ -464,7 +483,7 @@ class DATA:
     def send_burst_nack_frame(self, snr: float = 0) -> None:
         """Build and send NACK frame for received DATA frame"""
         nack_frame = bytearray(14)
-        nack_frame[:1] = bytes([63])
+        nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
@@ -476,7 +495,7 @@ class DATA:
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
         nack_frame = bytearray(14)
-        nack_frame[:1] = bytes([64])
+        nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
@@ -488,7 +507,7 @@ class DATA:
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
         disconnection_frame = bytearray(14)
-        disconnection_frame[:1] = bytes([223])
+        disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:4] = static.DXCALLSIGN_CRC
         disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
@@ -676,7 +695,7 @@ class DATA:
 
         if bof_position >= 0:
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof): eof_position
+                bof_position + len(self.data_frame_bof) : eof_position
             ]
             frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
@@ -703,7 +722,7 @@ class DATA:
 
             # Extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof): eof_position
+                bof_position + len(self.data_frame_bof) : eof_position
             ]
             # Get the data frame crc
             data_frame_crc = payload[:4]  # 0:4 = 4 bytes
@@ -741,7 +760,13 @@ class DATA:
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
                 static.RX_BUFFER.append(
-                    [self.transmission_uuid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
+                    [
+                        self.transmission_uuid,
+                        timestamp,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        base64_data,
+                    ]
                 )
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -921,7 +946,9 @@ class DATA:
                 # TX_N_FRAMES_PER_BURST = 1 is working
 
                 arqheader = bytearray()
-                arqheader[:1] = bytes([10])  # bytes([10 + i])
+                arqheader[:1] = bytes(
+                    [FR_TYPE.BURST_01.value]
+                )  # bytes([FRAME_TYPE.BURST_01.value + i])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST])
                 arqheader[2:5] = static.DXCALLSIGN_CRC
                 arqheader[5:8] = static.MYCALLSIGN_CRC
@@ -1296,7 +1323,7 @@ class DATA:
         static.ARQ_SESSION_STATE = "connecting"
 
         connection_frame = bytearray(14)
-        connection_frame[:1] = bytes([221])
+        connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
@@ -1451,7 +1478,7 @@ class DATA:
         # static.ARQ_SESSION_STATE = "connected"
 
         connection_frame = bytearray(14)
-        connection_frame[:1] = bytes([222])
+        connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
 
@@ -1562,14 +1589,14 @@ class DATA:
         self.data_channel_last_received = int(time.time())
 
         if static.LOW_BANDWIDTH_MODE:
-            frametype = bytes([227])
+            frametype = bytes([FR_TYPE.ARQ_DC_OPEN_N.value])
             self.log.debug("[TNC] Requesting low bandwidth mode")
 
         else:
-            frametype = bytes([225])
+            frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
             self.log.debug("[TNC] Requesting high bandwidth mode")
 
-        if 230 <= mode <= 240:
+        if FR_TYPE.ARQ_MANUAL_01.value <= mode <= FR_TYPE.ARQ_MANUAL_11.value:
             self.log.debug("[TNC] Requesting manual mode --> not yet implemented ")
             frametype = bytes([mode])
         connection_frame = bytearray(14)
@@ -1662,7 +1689,7 @@ class DATA:
         n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         # check if we received low bandwidth mode
-        if frametype == 225:
+        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value:
             self.received_LOW_BANDWIDTH_MODE = False
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
@@ -1672,7 +1699,7 @@ class DATA:
             self.time_list = self.time_list_low_bw
         self.speed_level = len(self.mode_list) - 1
 
-        if 230 <= frametype <= 240:
+        if FR_TYPE.ARQ_MANUAL_01.value <= frametype <= FR_TYPE.ARQ_MANUAL_11.value:
             self.log.debug(
                 "[TNC] arq_received_data_channel_opener: manual mode request"
             )
@@ -1715,10 +1742,10 @@ class DATA:
 
         # Select the frame type based on the current TNC mode
         if static.LOW_BANDWIDTH_MODE or self.received_LOW_BANDWIDTH_MODE:
-            frametype = bytes([228])
+            frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_N.value])
             self.log.debug("[TNC] Responding with low bandwidth mode")
         else:
-            frametype = bytes([226])
+            frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_W.value])
             self.log.debug("[TNC] Responding with high bandwidth mode")
 
         connection_frame = bytearray(14)
@@ -1762,7 +1789,7 @@ class DATA:
             )
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
-            if frametype == 228:
+            if frametype == FR_TYPE.ARQ_DC_OPEN_ACK_N.value:
                 self.received_LOW_BANDWIDTH_MODE = True
                 self.mode_list = self.mode_list_low_bw
                 self.time_list = self.time_list_low_bw
@@ -1837,7 +1864,7 @@ class DATA:
         )
 
         ping_frame = bytearray(14)
-        ping_frame[:1] = bytes([210])
+        ping_frame[:1] = bytes([FR_TYPE.PING.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
         ping_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
@@ -1879,7 +1906,7 @@ class DATA:
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
-            snr=str(static.SNR)
+            snr=str(static.SNR),
         )
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
@@ -1898,7 +1925,7 @@ class DATA:
         )
 
         ping_frame = bytearray(14)
-        ping_frame[:1] = bytes([211])
+        ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
         ping_frame[7:13] = static.MYGRID
@@ -1959,7 +1986,7 @@ class DATA:
         """
         self.log.warning("[TNC] Stopping transmission!")
         stop_frame = bytearray(14)
-        stop_frame[:1] = bytes([249])
+        stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
         stop_frame[4:7] = static.MYCALLSIGN_CRC
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
@@ -2022,7 +2049,7 @@ class DATA:
                         )
 
                         beacon_frame = bytearray(14)
-                        beacon_frame[:1] = bytes([250])
+                        beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[9:13] = static.MYGRID[:4]
                         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -2100,7 +2127,7 @@ class DATA:
             cq="transmitting",
         )
         cq_frame = bytearray(14)
-        cq_frame[:1] = bytes([200])
+        cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
@@ -2173,7 +2200,7 @@ class DATA:
         self.log.info("[TNC] Sending QRV!")
 
         qrv_frame = bytearray(14)
-        qrv_frame[:1] = bytes([201])
+        qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
