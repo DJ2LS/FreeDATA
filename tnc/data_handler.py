@@ -879,6 +879,33 @@ class DATA:
                 data_mode = mode
                 self.log.debug("[TNC] FIXED MODE:", mode=data_mode)
 
+                # we are doing a modulo check of transmission retries of the actual burst
+                # every 2nd retry which fails, decreases speedlevel by 1.
+                # as soon as we received an ACK for the current burst, speed_level will increase
+                # by 1.
+                # The intent is to optimize speed by adapting to the current RF conditions.
+                # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
+                #    self.speed_level = max(self.speed_level - 1, 0)
+
+                # if self.tx_n_retry_of_burst <= 1:
+                #    self.speed_level += 1
+                # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
+
+                # Bound speed level to:
+                # - minimum of either the speed or the length of mode list - 1
+                # - maximum of either the speed or zero
+                self.speed_level = min(self.speed_level, len(self.mode_list) - 1)
+                self.speed_level = max(self.speed_level, 0)
+                static.ARQ_SPEED_LEVEL = self.speed_level
+                data_mode = self.mode_list[self.speed_level]
+
+                self.log.debug(
+                    "[TNC] Speed-level:",
+                    level=self.speed_level,
+                    retry=self.tx_n_retry_of_burst,
+                    mode=data_mode,
+                )
+
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
