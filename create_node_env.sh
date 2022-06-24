@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 if [ ! -d "gui" ]; then
     echo "Error: Run this script from the main FreeDATA directory."
@@ -11,10 +11,10 @@ cd gui
 # Common variables
 OLDPATH=${PATH}
 PATH=/usr/bin:/bin:/usr/local/bin
-NPM=`which npm`
+NPM=$(which npm)
 PATH=${OLDPATH}
-VENVDIR="`pwd`/node_modules"
-PATH_ADDITIONS="`pwd`/node_modules/bin:`pwd`/node_modules/.bin"
+VENVDIR="$(pwd)/node_modules"
+PATH_ADDITIONS="$(pwd)/node_modules/bin:$(pwd)/node_modules/.bin"
 
 
 # Verify NPM exists.
