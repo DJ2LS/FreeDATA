@@ -33,7 +33,7 @@ fi
 ${CHOSEN} -m venv "${VENVDIR}"
 
 # Activate the virtual environment, if needed
-if [ -z "${VIRTUAL_ENV}" -o "${VIRTUAL_ENV}" != "${VENVDIR}" ]; then
+if [ -z "${VIRTUAL_ENV}" ] || [ "${VIRTUAL_ENV}" != "${VENVDIR}" ]; then
     source "${VENVDIR}/activate"
 fi
 
