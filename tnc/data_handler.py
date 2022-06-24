@@ -246,7 +246,7 @@ class DATA:
                 FR_TYPE.CQ.value,
                 FR_TYPE.QRV.value,
                 FR_TYPE.PING.value,
-                FR_TYPE.BEACON.value
+                FR_TYPE.BEACON.value,
             ]
         ):
 
@@ -272,7 +272,7 @@ class DATA:
 
             # BURST ACK
             elif frametype == FR_TYPE.BURST_ACK.value:
-                self.log.debug("[TNC] ACK RECEIVED....")
+                self.log.debug("[TNC] BURST ACK RECEIVED....")
                 self.burst_ack_received(bytes_out[:-2])
 
             # FRAME ACK
@@ -366,7 +366,11 @@ class DATA:
 
         else:
             # for debugging purposes to receive all data
-            self.log.debug("[TNC] Unknown frame received", frame=bytes_out[:-2])
+            self.log.debug(
+                "[TNC] Foreign frame received",
+                frame=bytes_out[:-2].hex(),
+                frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
+            )
 
     def enqueue_frame_for_tx(
         self,
@@ -990,7 +994,7 @@ class DATA:
                 ):
                     time.sleep(0.01)
 
-                # Once we received a burst ack, reset its state and break the RETRIES loop
+                # Once we receive a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack:
                     self.burst_ack = False  # reset ack state
                     self.tx_n_retry_of_burst = 0  # reset retries

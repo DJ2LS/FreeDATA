@@ -7,8 +7,6 @@ Created on Fri Dec 25 21:25:14 2020
 import time
 
 import crcengine
-import structlog
-
 import static
 import structlog
 
@@ -29,6 +27,7 @@ def wait(seconds: float) -> bool:
         time.sleep(0.01)
     return True
 
+
 def get_crc_8(data) -> bytes:
     """Author: DJ2LS
 
@@ -47,6 +46,7 @@ def get_crc_8(data) -> bytes:
     crc_data = crc_data.to_bytes(1, byteorder="big")
     return crc_data
 
+
 def get_crc_16(data) -> bytes:
     """Author: DJ2LS
 
@@ -64,6 +64,7 @@ def get_crc_16(data) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(2, byteorder="big")
     return crc_data
+
 
 def get_crc_24(data) -> bytes:
     """Author: DJ2LS
@@ -92,6 +93,7 @@ def get_crc_24(data) -> bytes:
     crc_data = crc_data.to_bytes(3, byteorder="big")
     return crc_data
 
+
 def get_crc_32(data: bytes) -> bytes:
     """Author: DJ2LS
 
@@ -109,6 +111,7 @@ def get_crc_32(data: bytes) -> bytes:
     crc_data = crc_algorithm(data)
     crc_data = crc_data.to_bytes(4, byteorder="big")
     return crc_data
+
 
 def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     """
@@ -159,10 +162,12 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 )
                 break
 
+
 #    for idx, item in enumerate(static.HEARD_STATIONS):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
 #            static.HEARD_STATIONS[idx] = item
+
 
 def callsign_to_bytes(callsign) -> bytes:
     """
@@ -287,7 +292,6 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
         False
     """
 
-    # print(callsign)
     log.debug("[HLP] check_callsign: Checking:", callsign=callsign)
     try:
         # We want the callsign without SSID
@@ -307,10 +311,11 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
         callsign_crc = get_crc_24(call_with_ssid)
 
         if callsign_crc == crc_to_check:
-            print(call_with_ssid)
+            log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
             return [True, bytes(call_with_ssid)]
 
     return [False, ""]
+
 
 def encode_grid(grid):
     """
@@ -374,6 +379,7 @@ def decode_grid(b_code_word: bytes):
     grid = chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
 
     return grid
+
 
 def encode_call(call):
     """

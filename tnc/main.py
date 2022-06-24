@@ -25,6 +25,7 @@ import structlog
 
 log = structlog.get_logger("main")
 
+
 def signal_handler(sig, frame):
     """
     a signal handler, which closes the network/socket when closing the application
@@ -38,6 +39,7 @@ def signal_handler(sig, frame):
     print("Closing TNC...")
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
+
 
 signal.signal(signal.SIGINT, signal_handler)
 

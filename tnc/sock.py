@@ -48,8 +48,10 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
     pass
 
+
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
+
     connection_alive = False
 
     connection_alive = False
@@ -184,6 +186,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 client=self.request,
             )
 
+
 def process_tnc_commands(data):
     """
     process tnc commands
@@ -213,7 +216,9 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("tx_audio_level", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] TX audio command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # TRANSMIT TEST FRAME  ----------------------------------------------------
@@ -227,7 +232,9 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("send_test_frame", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Send test frame command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # CQ CQ CQ -----------------------------------------------------
@@ -239,7 +246,7 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("cqcqcq", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] CQ command execution error", e=err, command=received_json
                 )
 
         # START_BEACON -----------------------------------------------------
@@ -252,20 +259,24 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("start_beacon", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Start beacon command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # STOP_BEACON -----------------------------------------------------
         if received_json["command"] == "stop_beacon":
             try:
-                log.warning("[TNC] Stopping beacon!")
+                log.warning("[SCK] Stopping beacon!")
                 static.BEACON_STATE = False
                 data_handler.DATA_QUEUE_TRANSMIT.put(["BEACON", None, False])
                 command_response("stop_beacon", True)
             except Exception as err:
                 command_response("stop_beacon", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Stop beacon command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # PING ----------------------------------------------------------
@@ -290,7 +301,7 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("ping", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] PING command execution error", e=err, command=received_json
                 )
 
         # CONNECT ----------------------------------------------------------
@@ -314,7 +325,9 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("connect", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Connect command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # DISCONNECT ----------------------------------------------------------
@@ -326,7 +339,9 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("disconnect", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Disconnect command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # TRANSMIT RAW DATA -------------------------------------------
@@ -363,18 +378,21 @@ def process_tnc_commands(data):
                 except Exception:
                     arq_uuid = "no-uuid"
 
-                if not len(base64data) % 4:
-                    binarydata = base64.b64decode(base64data)
-
-                    data_handler.DATA_QUEUE_TRANSMIT.put(
-                        ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
-                    )
-                else:
+                if len(base64data) % 4:
                     raise TypeError
+
+                binarydata = base64.b64decode(base64data)
+
+                data_handler.DATA_QUEUE_TRANSMIT.put(
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                )
+
             except Exception as err:
                 command_response("send_raw", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Send raw command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         # STOP TRANSMISSION ----------------------------------------------------------
@@ -385,14 +403,14 @@ def process_tnc_commands(data):
             try:
                 if static.TNC_STATE == "BUSY" or static.ARQ_STATE:
                     data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
-                log.warning("[TNC] Stopping transmission!")
+                log.warning("[SCK] Stopping transmission!")
                 static.TNC_STATE = "IDLE"
                 static.ARQ_STATE = False
                 command_response("stop_transmission", True)
             except Exception as err:
                 command_response("stop_transmission", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] STOP command execution error", e=err, command=received_json
                 )
 
         if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
@@ -424,7 +442,9 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("rx_buffer", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Send RX buffer command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
         if (
@@ -437,12 +457,14 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("del_rx_buffer", False)
                 log.warning(
-                    "[SCK] command execution error", e=err, command=received_json
+                    "[SCK] Delete RX buffer command execution error",
+                    e=err,
+                    command=received_json,
                 )
 
     # exception, if JSON cant be decoded
     except Exception as err:
-        log.error("[TNC] JSON decoding error", e=err)
+        log.error("[SCK] JSON decoding error", e=err)
 
 
 def send_tnc_state():
@@ -523,9 +545,9 @@ def process_daemon_commands(data):
             if bytes(callsign, "utf-8") == b"":
                 self.request.sendall(b"INVALID CALLSIGN")
                 log.warning(
-                    "[DMN] SET MYCALL FAILED",
+                    "[SCK] SET MYCALL FAILED",
                     call=static.MYCALLSIGN,
-                    crc=static.MYCALLSIGN_CRC,
+                    crc=static.MYCALLSIGN_CRC.hex(),
                 )
             else:
                 static.MYCALLSIGN = bytes(callsign, "utf-8")
@@ -533,9 +555,9 @@ def process_daemon_commands(data):
 
                 command_response("mycallsign", True)
                 log.info(
-                    "[DMN] SET MYCALL",
+                    "[SCK] SET MYCALL",
                     call=static.MYCALLSIGN,
-                    crc=static.MYCALLSIGN_CRC,
+                    crc=static.MYCALLSIGN_CRC.hex(),
                 )
         except Exception as err:
             command_response("mycallsign", False)
@@ -547,6 +569,7 @@ def process_daemon_commands(data):
 
             if bytes(mygrid, "utf-8") == b"":
                 self.request.sendall(b"INVALID GRID")
+                command_response("mygrid", False)
             else:
                 static.MYGRID = bytes(mygrid, "utf-8")
                 log.info("[SCK] SET MYGRID", grid=static.MYGRID)
@@ -590,7 +613,7 @@ def process_daemon_commands(data):
             # print some debugging parameters
             for item in received_json["parameter"][0]:
                 log.debug(
-                    f"[DMN] TNC Startup Config : {item}",
+                    f"[SCK] TNC Startup Config : {item}",
                     value=received_json["parameter"][0][item],
                 )
 
@@ -669,7 +692,7 @@ def process_daemon_commands(data):
             # unregister process from atexit to avoid process zombies
             atexit.unregister(static.TNCPROCESS.kill)
 
-            log.warning("[DMN] Stopping TNC")
+            log.warning("[SCK] Stopping TNC")
             static.TNCSTARTED = False
             command_response("stop_tnc", True)
         except Exception as err:

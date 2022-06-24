@@ -240,6 +240,7 @@ class MODEMSTATS(ctypes.Structure):
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
     ]
 
+
 # Return code flags for freedv_get_rx_status() function
 api.FREEDV_RX_TRIAL_SYNC = 0x1  # type: ignore # demodulator has trial sync
 api.FREEDV_RX_SYNC = 0x2  # type: ignore # demodulator has sync
