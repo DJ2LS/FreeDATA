@@ -272,7 +272,7 @@ class DATA:
                 #    self.c_lib.freedv_set_sync(freedv, 0)
 
             # BURST ACK
-            elif frametype == FR_TYPE.ACK.value:
+            elif frametype == FR_TYPE.BURST_ACK.value:
                 self.log.debug("[TNC] ACK RECEIVED....")
                 self.burst_ack_received(bytes_out[:-2])
 
@@ -425,7 +425,7 @@ class DATA:
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
         ack_frame = bytearray(14)
-        ack_frame[:1] = bytes([FR_TYPE.ACK.value])
+        ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
