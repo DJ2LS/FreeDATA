@@ -130,22 +130,9 @@ class FRAME_TYPE(Enum):
     """Lookup for frame types"""
 
     BURST_01 = 10
-    BURST_02 = 11
-    BURST_03 = 12
-    BURST_04 = 13
-    BURST_05 = 14
-    BURST_06 = 15
-    BURST_07 = 16
-    BURST_08 = 17
-    BURST_09 = 18
-    BURST_10 = 19
-    BURST_11 = 20
-    BURST_12 = 21
-    BURST_13 = 22
-    BURST_14 = 23
-    BURST_15 = 24
-    BURST_16 = 25
-    ACK = 60
+    # ...
+    BURST_51 = 50
+    BURST_ACK = 60
     FR_ACK = 61
     FR_REPEAT = 62
     FR_NACK = 63
