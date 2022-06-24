@@ -25,6 +25,7 @@ import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
+from codec2 import FREEDV_MODE
 
 TESTMODE = False
 
@@ -84,17 +85,15 @@ class DATA:
 
         # List of codec2 modes to use in "low bandwidth" mode.
         self.mode_list_low_bw = [
-            codec2.FREEDV_MODE.datac0.value,
-            codec2.FREEDV_MODE.datac3.value,
+            FREEDV_MODE.datac3.value,
         ]
         # List for time to wait for corresponding mode in seconds
         self.time_list_low_bw = [3, 7]
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
-            codec2.FREEDV_MODE.datac0.value,
-            codec2.FREEDV_MODE.datac3.value,
-            codec2.FREEDV_MODE.datac1.value,
+            FREEDV_MODE.datac3.value,
+            FREEDV_MODE.datac1.value,
         ]
         # List for time to wait for corresponding mode in seconds
         self.time_list_high_bw = [3, 7, 8, 30]
@@ -360,7 +359,7 @@ class DATA:
     def enqueue_frame_for_tx(
         self,
         frame_to_tx: bytearray,
-        c2_mode=codec2.FREEDV_MODE.datac0.value,
+        c2_mode=FREEDV_MODE.datac0.value,
         copies=1,
         repeat_delay=0,
     ) -> None:
@@ -376,7 +375,7 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=c2_mode)
+        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name)
 
         # Set the TRANSMITTING flag before adding an object to the transmit queue
         # TODO: This is not that nice, we could improve this somehow
@@ -676,7 +675,7 @@ class DATA:
 
         if bof_position >= 0:
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof): eof_position
+                bof_position + len(self.data_frame_bof) : eof_position
             ]
             frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
@@ -703,7 +702,7 @@ class DATA:
 
             # Extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof): eof_position
+                bof_position + len(self.data_frame_bof) : eof_position
             ]
             # Get the data frame crc
             data_frame_crc = payload[:4]  # 0:4 = 4 bytes
@@ -741,7 +740,13 @@ class DATA:
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
                 static.RX_BUFFER.append(
-                    [self.transmission_uuid, timestamp, static.DXCALLSIGN, static.DXGRID, base64_data]
+                    [
+                        self.transmission_uuid,
+                        timestamp,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        base64_data,
+                    ]
                 )
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -787,8 +792,8 @@ class DATA:
                 self.log.warning(
                     "[TNC] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
                     e="wrong crc",
-                    expected=data_frame_crc,
-                    received=data_frame_crc_received,
+                    expected=data_frame_crc.hex(),
+                    received=data_frame_crc_received.hex(),
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                 )
 
@@ -841,7 +846,11 @@ class DATA:
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
         )
 
-        self.log.info("[TNC] | TX | DATACHANNEL", mode=mode, Bytes=static.TOTAL_BYTES)
+        self.log.info(
+            "[TNC] | TX | DATACHANNEL",
+            mode=FREEDV_MODE(mode).name,
+            Bytes=static.TOTAL_BYTES,
+        )
 
         # Compress data frame
         data_frame_compressed = zlib.compress(data_out)
@@ -857,7 +866,7 @@ class DATA:
 
         # Append a crc at the beginning and end of file indicators
         frame_payload_crc = helpers.get_crc_32(data_out)
-        self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc)
+        self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc.hex())
 
         # Assemble the data frame
         data_out = (
@@ -876,39 +885,35 @@ class DATA:
         while not self.data_frame_ack_received and static.ARQ_STATE:
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for self.tx_n_retry_of_burst in range(TX_N_MAX_RETRIES_PER_BURST):
-                # AUTO MODE SELECTION
-                # mode 255 == AUTO MODE
-                # force usage of selected mode
-                if mode != 255:
-                    data_mode = mode
-                    self.log.debug("[TNC] FIXED MODE:", mode=data_mode)
-                else:
-                    # we are doing a modulo check of transmission retries of the actual burst
-                    # every 2nd retry which fails, decreases speedlevel by 1.
-                    # as soon as we received an ACK for the current burst, speed_level will increase
-                    # by 1.
-                    # The intent is to optimize speed by adapting to the current RF conditions.
-                    # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
-                    #    self.speed_level = max(self.speed_level - 1, 0)
+                data_mode = mode
+                self.log.debug("[TNC] FIXED MODE:", mode=FREEDV_MODE(data_mode).name)
 
-                    # if self.tx_n_retry_of_burst <= 1:
-                    #    self.speed_level += 1
-                    # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
+                # we are doing a modulo check of transmission retries of the actual burst
+                # every 2nd retry which fails, decreases speedlevel by 1.
+                # as soon as we received an ACK for the current burst, speed_level will increase
+                # by 1.
+                # The intent is to optimize speed by adapting to the current RF conditions.
+                # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
+                #    self.speed_level = max(self.speed_level - 1, 0)
 
-                    # Bound speed level to:
-                    # - minimum of either the speed or the length of mode list - 1
-                    # - maximum of either the speed or zero
-                    self.speed_level = min(self.speed_level, len(self.mode_list) - 1)
-                    self.speed_level = max(self.speed_level, 0)
-                    static.ARQ_SPEED_LEVEL = self.speed_level
-                    data_mode = self.mode_list[self.speed_level]
+                # if self.tx_n_retry_of_burst <= 1:
+                #    self.speed_level += 1
+                # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
 
-                    self.log.debug(
-                        "[TNC] Speed-level:",
-                        level=self.speed_level,
-                        retry=self.tx_n_retry_of_burst,
-                        mode=data_mode,
-                    )
+                # Bound speed level to:
+                # - minimum of either the speed or the length of mode list - 1
+                # - maximum of either the speed or zero
+                self.speed_level = min(self.speed_level, len(self.mode_list) - 1)
+                self.speed_level = max(self.speed_level, 0)
+                static.ARQ_SPEED_LEVEL = self.speed_level
+                data_mode = self.mode_list[self.speed_level]
+
+                self.log.debug(
+                    "[TNC] Speed-level:",
+                    level=self.speed_level,
+                    retry=self.tx_n_retry_of_burst,
+                    mode=FREEDV_MODE(data_mode).name,
+                )
 
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
@@ -947,7 +952,7 @@ class DATA:
                 self.log.debug("[TNC] tempbuffer:", tempbuffer=tempbuffer)
                 self.log.info(
                     "[TNC] ARQ | TX | FRAMES",
-                    mode=data_mode,
+                    mode=FREEDV_MODE(data_mode).name,
                     fpb=TX_N_FRAMES_PER_BURST,
                     retry=self.tx_n_retry_of_burst,
                 )
@@ -1115,7 +1120,11 @@ class DATA:
             self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
-            self.log.debug("[TNC] burst_ack_received:", speed_level=self.speed_level)
+            self.log.debug(
+                "[TNC] burst_ack_received:",
+                speed_level=self.speed_level,
+                c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
+            )
 
             # Reset burst nack counter
             self.burst_nack_counter = 0
@@ -1153,7 +1162,11 @@ class DATA:
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
             self.burst_nack_counter += 1
-            self.log.debug("[TNC] burst_nack_received:", speed_level=self.speed_level)
+            self.log.debug(
+                "[TNC] burst_nack_received:",
+                speed_level=self.speed_level,
+                c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
+            )
 
     def frame_ack_received(self):
         """Received an ACK for a transmitted frame"""
@@ -1844,13 +1857,9 @@ class DATA:
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(
-                ping_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
-            )
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(
-                ping_frame, c2_mode=codec2.FREEDV_MODE.datac0.value
-            )
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping(self, data_in: bytes) -> None:
         """
@@ -1879,7 +1888,7 @@ class DATA:
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
-            snr=str(static.SNR)
+            snr=str(static.SNR),
         )
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
@@ -1905,13 +1914,9 @@ class DATA:
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(
-                ping_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
-            )
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(
-                ping_frame, c2_mode=codec2.FREEDV_MODE.datac0.value
-            )
+            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -2030,7 +2035,7 @@ class DATA:
                         if static.ENABLE_FSK:
                             self.enqueue_frame_for_tx(
                                 beacon_frame,
-                                c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value,
+                                c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
                             self.enqueue_frame_for_tx(beacon_frame)
@@ -2108,9 +2113,7 @@ class DATA:
         self.log.debug("[TNC] CQ Frame:", data=[cq_frame])
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(
-                cq_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
-            )
+            self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx(cq_frame)
 
@@ -2180,9 +2183,7 @@ class DATA:
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(
-                qrv_frame, c2_mode=codec2.FREEDV_MODE.fsk_ldpc_0.value
-            )
+            self.enqueue_frame_for_tx(qrv_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx(qrv_frame)
 
@@ -2398,16 +2399,16 @@ class DATA:
 
         """
         # set modes we want to listen to
-        if mode == codec2.FREEDV_MODE.datac1.value:
+        if mode == FREEDV_MODE.datac1.value:
             modem.RECEIVE_DATAC1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="datac1")
-        elif mode == codec2.FREEDV_MODE.datac3.value:
+        elif mode == FREEDV_MODE.datac3.value:
             modem.RECEIVE_DATAC3 = True
             self.log.debug("[TNC] Changing listening data mode", mode="datac3")
-        elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
+        elif mode == FREEDV_MODE.fsk_ldpc_1.value:
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
-        elif mode == codec2.FREEDV_MODE.allmodes.value:
+        else:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_FSK_LDPC_1 = True
@@ -2556,5 +2557,7 @@ class DATA:
                 time.sleep(2)
 
     def send_test_frame(self) -> None:
-        """Send a test (type 12) frame"""
-        self.enqueue_frame_for_tx(frame_to_tx=bytearray(126), c2_mode=12)
+        """Send an empty test frame"""
+        self.enqueue_frame_for_tx(
+            frame_to_tx=bytearray(126), c2_mode=FREEDV_MODE.datac3.value
+        )
