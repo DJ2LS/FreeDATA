@@ -2557,5 +2557,7 @@ class DATA:
                 time.sleep(2)
 
     def send_test_frame(self) -> None:
-        """Send a test (type 12) frame"""
-        self.enqueue_frame_for_tx(frame_to_tx=bytearray(126), c2_mode=12)
+        """Send an empty test frame"""
+        self.enqueue_frame_for_tx(
+            frame_to_tx=bytearray(126), c2_mode=FREEDV_MODE.datac3.value
+        )
