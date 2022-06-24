@@ -148,9 +148,6 @@ class FRAME_TYPE(Enum):
     ARQ_DC_OPEN_ACK_W = 226
     ARQ_DC_OPEN_N = 227
     ARQ_DC_OPEN_ACK_N = 228
-    ARQ_MANUAL_01 = 230
-    # ...
-    ARQ_MANUAL_11 = 240
     ARQ_STOP = 249
     BEACON = 250
     TEST_FRAME = 255

@@ -347,13 +347,6 @@ class DATA:
                 self.log.debug("[TNC] ARQ arq_received_channel_is_open")
                 self.arq_received_channel_is_open(bytes_out[:-2])
 
-            # ARQ MANUAL MODE TRANSMISSION
-            elif (
-                FR_TYPE.ARQ_MANUAL_01.value <= frametype <= FR_TYPE.ARQ_MANUAL_11.value
-            ):
-                self.log.debug("[TNC] ARQ manual mode")
-                self.arq_received_data_channel_opener(bytes_out[:-2])
-
             # ARQ STOP TRANSMISSION
             elif frametype == FR_TYPE.ARQ_STOP.value:
                 self.log.debug("[TNC] ARQ received stop transmission")
@@ -1596,9 +1589,6 @@ class DATA:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
             self.log.debug("[TNC] Requesting high bandwidth mode")
 
-        if FR_TYPE.ARQ_MANUAL_01.value <= mode <= FR_TYPE.ARQ_MANUAL_11.value:
-            self.log.debug("[TNC] Requesting manual mode --> not yet implemented ")
-            frametype = bytes([mode])
         connection_frame = bytearray(14)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
@@ -1698,11 +1688,6 @@ class DATA:
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
         self.speed_level = len(self.mode_list) - 1
-
-        if FR_TYPE.ARQ_MANUAL_01.value <= frametype <= FR_TYPE.ARQ_MANUAL_11.value:
-            self.log.debug(
-                "[TNC] arq_received_data_channel_opener: manual mode request"
-            )
 
         # Update modes we are listening to
         self.set_listening_modes(self.mode_list[self.speed_level])
