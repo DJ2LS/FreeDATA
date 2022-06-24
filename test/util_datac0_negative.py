@@ -17,6 +17,8 @@ import modem
 import sock
 import static
 import structlog
+from codec2 import FREEDV_MODE
+from static import FRAME_TYPE as FR_TYPE
 
 
 def t_setup(
@@ -96,7 +98,7 @@ def t_datac0_1(
         # log.info("S1 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")  # type: ignore
-            log.info("S1 TX: ", TX=frametype)
+            log.info("S1 TX: ", TX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -114,7 +116,7 @@ def t_datac0_1(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S1 RX: ", RX=frametype)
+        log.info("S1 RX: ", RX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -135,6 +137,18 @@ def t_datac0_1(
     log.info("t_datac0_1:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
 
+    orig_dxcall = static.DXCALLSIGN
+    if "stop" in data["command"]:
+        time.sleep(0.5)
+        log.debug(
+            "t_datac0_1: STOP test, setting TNC state",
+            mycall=static.MYCALLSIGN,
+            dxcall=static.DXCALLSIGN,
+        )
+        static.DXCALLSIGN = helpers.callsign_to_bytes(data["dxcallsign"])
+        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+        static.TNC_STATE = "BUSY"
+        static.ARQ_STATE = True
     sock.process_tnc_commands(json.dumps(data, indent=None))
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
@@ -151,6 +165,12 @@ def t_datac0_1(
             break
         time.sleep(0.1)
     log.info("station1, first")
+
+    if "stop" in data["command"]:
+        time.sleep(0.5)
+        log.debug("STOP test, resetting DX callsign")
+        static.DXCALLSIGN = orig_dxcall
+        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
@@ -204,7 +224,7 @@ def t_datac0_2(
         # log.info("S2 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")  # type: ignore
-            log.info("S2 TX: ", TX=frametype)
+            log.info("S2 TX: ", TX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -222,7 +242,7 @@ def t_datac0_2(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S2 RX: ", RX=frametype)
+        log.info("S2 RX: ", RX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -242,6 +262,7 @@ def t_datac0_2(
 
     log.info("t_datac0_2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac0_2:", TXCHANNEL=modem.TXCHANNEL)
+    log.info("t_datac0_2:", mycall=static.MYCALLSIGN)
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}
