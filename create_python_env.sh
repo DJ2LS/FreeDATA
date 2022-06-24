@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 if [ ! -d "tnc" ]; then
     echo "Error: Run this script from the main FreeDATA directory."
@@ -6,7 +6,7 @@ if [ ! -d "tnc" ]; then
 fi
 
 # Common variables
-VENVDIR="`pwd`/.venv"
+VENVDIR="$(pwd)/.venv"
 
 # Choose an appropriate python interpreter
 CHOSEN=/bin/python3
