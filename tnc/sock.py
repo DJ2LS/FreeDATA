@@ -736,5 +736,5 @@ def send_daemon_state():
 def command_response(command, status):
     s_status = "OK" if status else "Failed"
     jsondata = {"command_response": command, "status": s_status}
-    data_out = json.dlog.debugumps(jsondata)
+    data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
