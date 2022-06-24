@@ -23,6 +23,8 @@ import modem
 import sock
 import static
 import structlog
+from codec2 import FREEDV_MODE
+from static import FRAME_TYPE as FR_TYPE
 
 
 def t_setup(
@@ -102,7 +104,7 @@ def t_datac0_1(
         # log.info("S1 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")  # type: ignore
-            log.info("S1 TX: ", TX=frametype)
+            log.info("S1 TX: ", TX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -120,7 +122,7 @@ def t_datac0_1(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S1 RX: ", RX=frametype)
+        log.info("S1 RX: ", RX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -142,6 +144,10 @@ def t_datac0_1(
     log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
 
     time.sleep(0.5)
+    if "stop" in data["command"]:
+        log.debug("t_datac0_1: STOP test, setting TNC state")
+        static.TNC_STATE = "BUSY"
+        static.ARQ_STATE = True
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
     sock.process_tnc_commands(json.dumps(data, indent=None))
@@ -213,7 +219,7 @@ def t_datac0_2(
         # log.info("S2 TX: ", frames=t_frames)
         for item in t_frames:
             frametype = int.from_bytes(item[:1], "big")  # type: ignore
-            log.info("S2 TX: ", TX=frametype)
+            log.info("S2 TX: ", TX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.
@@ -231,7 +237,7 @@ def t_datac0_2(
             bytes_per_frame=bytes_per_frame,
         )
         frametype = int.from_bytes(t_bytes_out[:1], "big")
-        log.info("S2 RX: ", RX=frametype)
+        log.info("S2 RX: ", RX=FR_TYPE(frametype).name)
 
         # Apologies for the Python "magic." "orig_func" is a pointer to the
         # original function captured before this one was put in place.

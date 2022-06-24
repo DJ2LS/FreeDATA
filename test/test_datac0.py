@@ -46,31 +46,37 @@ def parameters() -> dict:
     # Construct message to start ping.
     ping_data = {"type": "ping", "command": "ping", "dxcallsign": "ZZ9YY-0"}
     connect_data = {"type": "arq", "command": "connect", "dxcallsign": "ZZ9YY-0"}
+    stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "ZZ9YY-0"}
 
     beacon_timeout = 6
     cq_timeout = 8
     ping_timeout = 5
     connect_timeout = 10
+    stop_timeout = 5
 
     beacon_tx_check = '"beacon":"transmitting"'
     cq_tx_check = '"qrv":"received"'
     ping_tx_check = '"ping":"transmitting"'
     connect_tx_check = '"session":"connecting"'
+    stop_tx_check = '"status":"stopped"'
 
     beacon_rx_check = '"beacon":"received"'
     cq_rx_check = '"cq":"received"'
     ping_rx_check = '"ping":"received"'
     connect_rx_check = '"connect":"received"'
+    stop_rx_check = '"status":"stopped"'
 
     beacon_final_tx_check = [beacon_tx_check]
     cq_final_tx_check = ['"cq":"transmitting"', cq_tx_check]
     ping_final_tx_check = [ping_tx_check, '"ping":"acknowledge"']
     connect_final_tx_check = ['"status":"connected"', '"connect":"acknowledge"']
+    stop_final_tx_check = [stop_tx_check]
 
     beacon_final_rx_check = [beacon_rx_check]
     cq_final_rx_check = [cq_rx_check, '"qrv":"transmitting"']
     ping_final_rx_check = [ping_rx_check]
     connect_final_rx_check = [connect_rx_check]
+    stop_final_rx_check = [stop_rx_check]
 
     return {
         "beacon": (
@@ -104,6 +110,14 @@ def parameters() -> dict:
             ping_rx_check,
             ping_final_tx_check,
             ping_final_rx_check,
+        ),
+        "stop": (
+            stop_data,
+            stop_timeout,
+            stop_tx_check,
+            stop_rx_check,
+            stop_final_tx_check,
+            stop_final_rx_check,
         ),
     }
 
@@ -179,6 +193,7 @@ def analyze_results(station1: list, station2: list, call_list: list):
         pytest.param("ping", marks=pytest.mark.flaky(reruns=2)),
         pytest.param("cq", marks=pytest.mark.flaky(reruns=20)),
         # pytest.param("cq", marks=pytest.mark.xfail(reason="Too unstable for CI")),
+        pytest.param("stop", marks=pytest.mark.flaky(reruns=0)),
     ],
 )
 def test_datac0(frame_type: str, tmp_path):
