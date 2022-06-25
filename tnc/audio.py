@@ -34,7 +34,8 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        return list(proxy_input_devices), list(proxy_output_devices)
+        # The use of set forces the list to contain only unique entries.
+        return list(set(proxy_input_devices)), list(set(proxy_output_devices))
 
 
 def fetch_audio_devices(input_devices, output_devices):
