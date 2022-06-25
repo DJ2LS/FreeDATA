@@ -61,6 +61,8 @@ def fetch_audio_devices(input_devices, output_devices):
             max_output_channels = device["max_output_channels"]
             max_input_channels = device["max_input_channels"]
 
+        except KeyError:
+            continue
         except Exception as err:
             print(err)
             max_input_channels = 0
