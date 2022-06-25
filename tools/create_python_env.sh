@@ -21,6 +21,7 @@ done
 # Verify it's there.
 if [ ! -x ${CHOSEN} ]; then
   echo "Error: ${CHOSEN} is not executable or does not exist."
+  echo "Note: FreeDATA requires Python 3 (higher than version 3.6)."
   exit 1
 fi
 
