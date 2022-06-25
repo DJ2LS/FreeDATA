@@ -35,7 +35,7 @@ def get_audio_devices():
         proc.join()
 
         # The use of set forces the list to contain only unique entries.
-        return list(set(proxy_input_devices)), list(set(proxy_output_devices))
+        return list(proxy_input_devices), list(proxy_output_devices)
 
 
 def fetch_audio_devices(input_devices, output_devices):
@@ -50,7 +50,10 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
-    for index, device in enumerate(devices):
+    input_devs = set()
+    output_devs = set()
+
+    for device in devices:
         # Use a try/except block because Windows doesn't have an audio device range
         try:
             name = device["name"]
@@ -65,6 +68,11 @@ def fetch_audio_devices(input_devices, output_devices):
             name = ""
 
         if max_input_channels > 0:
-            input_devices.append({"id": index, "name": name})
+            input_devs.add(name)
         if max_output_channels > 0:
-            output_devices.append({"id": index, "name": name})
+            output_devs.add(name)
+
+    for index, item in enumerate(input_devs):
+        input_devices.append({"id": index, "name": item})
+    for index, item in enumerate(output_devs):
+        output_devices.append({"id": index, "name": item})
