@@ -16,7 +16,6 @@ PATH=${OLDPATH}
 VENVDIR="$(pwd)/node_modules"
 PATH_ADDITIONS="$(pwd)/node_modules/bin:$(pwd)/node_modules/.bin"
 
-
 # Verify NPM exists.
 if [ -z "${NPM}" ] || [ ! -x "${NPM}" ]; then
     echo "Error: ${NPM} isn't executable or doesn't exist."
