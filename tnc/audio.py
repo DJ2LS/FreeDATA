@@ -34,7 +34,6 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        # The use of set forces the list to contain only unique entries.
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
@@ -50,6 +49,7 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
+    # The use of set forces the list to contain only unique entries.
     input_devs = set()
     output_devs = set()
 
