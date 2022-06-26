@@ -41,7 +41,7 @@ jobs:
           pip install structlog
           pip install colorama
           pip install sounddevice
-          # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://web.archive.org/web/https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
 
 
