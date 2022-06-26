@@ -7,3 +7,18 @@ tnc/codec2
 
 package-lock.json
 .DS_Store
+
+# Other various files and virtual environments
+.coverage
+.coveragerc
+.env
+.envrc
+.idea
+.pytest_cache
+.venv
+.vscode
+*.iml
+*.pyc
+*.raw
+coverage.sh
+coverage.xml
