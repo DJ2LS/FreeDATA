@@ -1,0 +1,20 @@
+crcengine
+numpy
+psutil
+PyAudio
+pyserial
+sounddevice
+structlog
+ujson
+
+# Development and test dependencies
+autopep8
+black
+isort
+pycodestyle
+pyinstaller
+pytest
+pytest-cov
+pytest-cover
+pytest-coverage
+pytest-rerunfailures
