@@ -5,8 +5,11 @@ import atexit
 import multiprocessing
 
 import sounddevice as sd
+import structlog
 
 atexit.register(sd._terminate)
+
+log = structlog.get_logger()
 
 
 def get_audio_devices():
@@ -49,6 +52,7 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
+    log.error("fetch_audio_devices", devices=devices)
     # The use of set forces the list to contain only unique entries.
     input_devs = set()
     output_devs = set()
