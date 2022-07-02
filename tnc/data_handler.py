@@ -56,7 +56,7 @@ class DATA:
         self.transmission_uuid = ""
 
         # Received my callsign crc if we received a crc for another ssid
-        self.received_mycall_crc = b""
+        self.received_mycall_crc = b""  # Does this need to be a class variable?
 
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received burst ack frames
@@ -321,7 +321,9 @@ class DATA:
 
             # Unknown frame type
             else:
-                self.log.warning("[TNC] ARQ - other frame type", frametype=frametype)
+                self.log.warning(
+                    "[TNC] ARQ - other frame type", frametype=FR_TYPE(frametype).name
+                )
 
         else:
             # for debugging purposes to receive all data
@@ -895,9 +897,8 @@ class DATA:
                 # TX_N_FRAMES_PER_BURST = 1 is working
 
                 arqheader = bytearray()
-                arqheader[:1] = bytes(
-                    [FR_TYPE.BURST_01.value]
-                )  # bytes([FRAME_TYPE.BURST_01.value + i])
+                # arqheader[:1] = bytes([FR_TYPE.BURST_01.value + i])
+                arqheader[:1] = bytes([FR_TYPE.BURST_01.value])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST])
                 arqheader[2:5] = static.DXCALLSIGN_CRC
                 arqheader[5:8] = static.MYCALLSIGN_CRC
@@ -1086,17 +1087,17 @@ class DATA:
             if frametype == FR_TYPE.BURST_ACK.value:
                 # Increase speed level if we received a burst ack
                 # self.speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
-            # Force data retry loops of TX TNC to stop and continue with next frame
-            self.burst_ack = True
-            # Reset burst nack counter
-            self.burst_nack_counter = 0
-            # Reset n retries per burst counter
-            self.n_retries_per_burst = 0
+                # Force data retry loops of TX TNC to stop and continue with next frame
+                self.burst_ack = True
+                # Reset burst nack counter
+                self.burst_nack_counter = 0
+                # Reset n retries per burst counter
+                self.n_retries_per_burst = 0
             else:
-        # Decrease speed level if we received a burst nack
-        # self.speed_level = max(self.speed_level - 1, 0)
+                # Decrease speed level if we received a burst nack
+                # self.speed_level = max(self.speed_level - 1, 0)
                 # Set flag to retry frame again.
-            self.burst_nack = True
+                self.burst_nack = True
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
                 desc = "nack"
