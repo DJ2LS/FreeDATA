@@ -126,6 +126,57 @@ class DATA:
 
         self.transmission_timeout = 360  # transmission timeout in seconds
 
+        # Dictionary of functions and log messages used in process_data
+        # instead of a long series of if-elif-else statements.
+        self.rx_dispatcher = {
+            FR_TYPE.ARQ_DC_OPEN_ACK_N.value: (
+                self.arq_received_channel_is_open,
+                "ARQ OPEN ACK (Narrow)",
+            ),
+            FR_TYPE.ARQ_DC_OPEN_ACK_W.value: (
+                self.arq_received_channel_is_open,
+                "ARQ OPEN ACK (Wide)",
+            ),
+            FR_TYPE.ARQ_DC_OPEN_N.value: (
+                self.arq_received_data_channel_opener,
+                "ARQ Data Channel Open (Narrow)",
+            ),
+            FR_TYPE.ARQ_DC_OPEN_W.value: (
+                self.arq_received_data_channel_opener,
+                "ARQ Data Channel Open (Wide)",
+            ),
+            FR_TYPE.ARQ_SESSION_CLOSE.value: (
+                self.received_session_close,
+                "ARQ CLOSE SESSION",
+            ),
+            FR_TYPE.ARQ_SESSION_HB.value: (
+                self.received_session_heartbeat,
+                "ARQ HEARTBEAT",
+            ),
+            FR_TYPE.ARQ_SESSION_OPEN.value: (
+                self.received_session_opener,
+                "ARQ OPEN SESSION",
+            ),
+            FR_TYPE.ARQ_STOP.value: (self.received_stop_transmission, "ARQ STOP TX"),
+            FR_TYPE.BEACON.value: (self.received_beacon, "BEACON"),
+            FR_TYPE.BURST_ACK.value: (self.burst_ack_nack_received, "BURST ACK"),
+            FR_TYPE.BURST_NACK.value: (self.burst_ack_nack_received, "BURST NACK"),
+            FR_TYPE.CQ.value: (self.received_cq, "CQ"),
+            FR_TYPE.FR_ACK.value: (self.frame_ack_received, "FRAME ACK"),
+            FR_TYPE.FR_NACK.value: (self.frame_nack_received, "FRAME NACK"),
+            FR_TYPE.FR_REPEAT.value: (self.burst_rpt_received, "REPEAT REQUEST"),
+            FR_TYPE.PING_ACK.value: (self.received_ping_ack, "PING ACK"),
+            FR_TYPE.PING.value: (self.received_ping, "PING"),
+            FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
+        }
+        self.command_dispatcher = {
+            "CONNECT": (self.arq_session_handler, "CONNECT"),
+            "CQ": (self.transmit_cq, "CQ"),
+            "DISCONNECT": (self.close_session, "DISCONNECT"),
+            "SEND_TEST_FRAME": (self.send_test_frame, "TEST"),
+            "STOP": (self.stop_transmission, "STOP"),
+        }
+
         # Start worker and watchdog threads
         worker_thread_transmit = threading.Thread(
             target=self.worker_transmit, name="worker thread transmit", daemon=True
@@ -159,13 +210,12 @@ class DATA:
         while True:
             data = self.data_queue_transmit.get()
 
-            # [0] == Command
-            if data[0] == "CQ":
-                self.transmit_cq()
+            # Dispatch commands known to command_dispatcher
+            if data[0] in self.command_dispatcher:
+                self.log.debug(f"[TNC] TX {self.command_dispatcher[data[0]][1]}...")
+                self.command_dispatcher[data[0]][0]()
 
-            elif data[0] == "STOP":
-                self.stop_transmission()
-
+            # Dispatch commands that need more arguments.
             elif data[0] == "PING":
                 # [1] dxcallsign
                 self.transmit_ping(data[1])
@@ -187,18 +237,6 @@ class DATA:
                 # [5] mycallsign with ssid
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
-            elif data[0] == "CONNECT":
-                # [1] DX CALLSIGN
-                # self.arq_session_handler(data[1])
-                self.arq_session_handler()
-
-            elif data[0] == "DISCONNECT":
-                # [1] DX CALLSIGN
-                self.close_session()
-
-            elif data[0] == "SEND_TEST_FRAME":
-                # [1] DX CALLSIGN
-                self.send_test_frame()
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -254,7 +292,14 @@ class DATA:
             frame = frametype - 10
             n_frames_per_burst = int.from_bytes(bytes(bytes_out[1:2]), "big")
 
-            if FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
+            # Dispatch activity based on received frametype
+            if frametype in self.rx_dispatcher:
+                # Process frames "known" by rx_dispatcher
+                self.log.debug(f"[TNC] {self.rx_dispatcher[frametype][1]} RECEIVED....")
+                self.rx_dispatcher[frametype][0](bytes_out[:-2])
+
+            # Process frametypes requiring a different set of arguments.
+            elif FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
                 # get snr of received data
                 # FIXME: find a fix for this - after moving to classes, this no longer works
                 # snr = self.calculate_snr(freedv)
@@ -269,92 +314,6 @@ class DATA:
                 # if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
                 #    self.log.debug(f"[TNC] LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                 #    self.c_lib.freedv_set_sync(freedv, 0)
-
-            # BURST ACK
-            elif frametype == FR_TYPE.BURST_ACK.value:
-                self.log.debug("[TNC] BURST ACK RECEIVED....")
-                self.burst_ack_received(bytes_out[:-2])
-
-            # FRAME ACK
-            elif frametype == FR_TYPE.FR_ACK.value:
-                self.log.debug("[TNC] FRAME ACK RECEIVED....")
-                self.frame_ack_received()
-
-            # FRAME RPT
-            elif frametype == FR_TYPE.FR_REPEAT.value:
-                self.log.debug("[TNC] REPEAT REQUEST RECEIVED....")
-                self.burst_rpt_received(bytes_out[:-2])
-
-            # FRAME NACK
-            elif frametype == FR_TYPE.FR_NACK.value:
-                self.log.debug("[TNC] FRAME NACK RECEIVED....")
-                self.frame_nack_received(bytes_out[:-2])
-
-            # BURST NACK
-            elif frametype == FR_TYPE.BURST_NACK.value:
-                self.log.debug("[TNC] BURST NACK RECEIVED....")
-                self.burst_nack_received(bytes_out[:-2])
-
-            # CQ FRAME
-            elif frametype == FR_TYPE.CQ.value:
-                self.log.debug("[TNC] CQ RECEIVED....")
-                self.received_cq(bytes_out[:-2])
-
-            # QRV FRAME
-            elif frametype == FR_TYPE.QRV.value:
-                self.log.debug("[TNC] QRV RECEIVED....")
-                self.received_qrv(bytes_out[:-2])
-
-            # PING FRAME
-            elif frametype == FR_TYPE.PING.value:
-                self.log.debug("[TNC] PING RECEIVED....")
-                self.received_ping(bytes_out[:-2])
-
-            # PING ACK
-            elif frametype == FR_TYPE.PING_ACK.value:
-                self.log.debug("[TNC] PING ACK RECEIVED....")
-                self.received_ping_ack(bytes_out[:-2])
-
-            # SESSION OPENER
-            elif frametype == FR_TYPE.ARQ_SESSION_OPEN.value:
-                self.log.debug("[TNC] OPEN SESSION RECEIVED....")
-                self.received_session_opener(bytes_out[:-2])
-
-            # SESSION HEARTBEAT
-            elif frametype == FR_TYPE.ARQ_SESSION_HB.value:
-                self.log.debug("[TNC] SESSION HEARTBEAT RECEIVED....")
-                self.received_session_heartbeat(bytes_out[:-2])
-
-            # SESSION CLOSE
-            elif frametype == FR_TYPE.ARQ_SESSION_CLOSE.value:
-                self.log.debug("[TNC] CLOSE ARQ SESSION RECEIVED....")
-                self.received_session_close(bytes_out[:-2])
-
-            # ARQ FILE TRANSFER RECEIVED!
-            elif frametype in [
-                FR_TYPE.ARQ_DC_OPEN_W.value,
-                FR_TYPE.ARQ_DC_OPEN_N.value,
-            ]:
-                self.log.debug("[TNC] ARQ arq_received_data_channel_opener")
-                self.arq_received_data_channel_opener(bytes_out[:-2])
-
-            # ARQ CHANNEL IS OPENED
-            elif frametype in [
-                FR_TYPE.ARQ_DC_OPEN_ACK_W.value,
-                FR_TYPE.ARQ_DC_OPEN_ACK_N.value,
-            ]:
-                self.log.debug("[TNC] ARQ arq_received_channel_is_open")
-                self.arq_received_channel_is_open(bytes_out[:-2])
-
-            # ARQ STOP TRANSMISSION
-            elif frametype == FR_TYPE.ARQ_STOP.value:
-                self.log.debug("[TNC] ARQ received stop transmission")
-                self.received_stop_transmission()
-
-            # this is outdated and we may remove it
-            elif frametype == FR_TYPE.BEACON.value:
-                self.log.debug("[TNC] BEACON RECEIVED")
-                self.received_beacon(bytes_out[:-2])
 
             # TESTFRAMES
             elif frametype == FR_TYPE.TEST_FRAME.value:
@@ -1106,10 +1065,9 @@ class DATA:
             self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
             sys.exit(0)
 
-    # signalling frames received
-    def burst_ack_received(self, data_in: bytes):
+    def burst_ack_nack_received(self, data_in: bytes) -> None:
         """
-        Received a ACK for a transmitted frame, keep track and
+        Received a ACK/NACK for a transmitted frame, keep track and
         make adjustments to speed level if needed.
 
         Args:
@@ -1118,9 +1076,6 @@ class DATA:
         Returns:
 
         """
-        # Increase speed level if we received a burst ack
-        # self.speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
-
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
             helpers.add_to_heard_stations(
@@ -1131,62 +1086,42 @@ class DATA:
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
             )
+
+            frametype = int.from_bytes(bytes(data_in[:1]), "big")
+            desc = "ack"
+            if frametype == FR_TYPE.BURST_ACK.value:
+                # Increase speed level if we received a burst ack
+                # self.speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
             # Force data retry loops of TX TNC to stop and continue with next frame
             self.burst_ack = True
-            # Update data_channel timestamp
-            self.data_channel_last_received = int(time.time())
-            self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
-            self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
-            static.ARQ_SPEED_LEVEL = self.speed_level
-            self.log.debug(
-                "[TNC] burst_ack_received:",
-                speed_level=self.speed_level,
-                c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
-            )
-
             # Reset burst nack counter
             self.burst_nack_counter = 0
             # Reset n retries per burst counter
             self.n_retries_per_burst = 0
-
-    # signalling frames received
-    def burst_nack_received(self, data_in: bytes):
-        """
-        Received a NACK for a transmitted frame, keep track and
-        make adjustments to speed level if needed.
-
-        Args:
-          data_in:bytes:
-
-        """
+            else:
         # Decrease speed level if we received a burst nack
         # self.speed_level = max(self.speed_level - 1, 0)
-
-        # only process data if we are in ARQ and BUSY state
-        if static.ARQ_STATE:
-            helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
-                static.DXGRID,
-                "DATA-CHANNEL",
-                static.SNR,
-                static.FREQ_OFFSET,
-                static.HAMLIB_FREQUENCY,
-            )
-            # Force data loops of TNC to stop and continue with next frame
+                # Set flag to retry frame again.
             self.burst_nack = True
+                # Increment burst nack counter
+                self.burst_nack_counter += 1
+                desc = "nack"
+
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
             self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
-            self.burst_nack_counter += 1
+
             self.log.debug(
-                "[TNC] burst_nack_received:",
+                f"[TNC] burst_{desc}_received:",
                 speed_level=self.speed_level,
                 c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
             )
 
-    def frame_ack_received(self):
+    def frame_ack_received(
+        self, data_in: bytes  # pylint: disable=unused-argument
+    ) -> None:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
@@ -1204,9 +1139,11 @@ class DATA:
             self.data_channel_last_received = int(time.time())
             self.arq_session_last_received = int(time.time())
 
-    def frame_nack_received(self, data_in: bytes):  # pylint: disable=unused-argument
+    def frame_nack_received(
+        self, data_in: bytes  # pylint: disable=unused-argument
+    ) -> None:
         """
-        Received a NACK for a transmitted framt
+        Received a NACK for a transmitted frame
 
         Args:
           data_in:bytes:
@@ -1990,7 +1927,9 @@ class DATA:
         )
         self.arq_cleanup()
 
-    def received_stop_transmission(self) -> None:
+    def received_stop_transmission(
+        self, data_in: bytes
+    ) -> None:  # pylint: disable=unused-argument
         """
         Received a transmission stop
         """
