@@ -481,19 +481,17 @@ class DATA:
 
         Returns:
         """
+        # We've arrived here from process_data which already checked that the frame
+        # is intended for this station.
         data_in = bytes(data_in)
 
         # get received crc for different mycall ssids
         self.received_mycall_crc = data_in[2:5]
 
         # check if callsign ssid override
-        _valid, mycallsign = helpers.check_callsign(
+        _, mycallsign = helpers.check_callsign(
             self.mycallsign, self.received_mycall_crc
         )
-        if not _valid:
-            # ARQ data packet not for me.
-            self.arq_cleanup()
-            return
 
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE != "BUSY":
@@ -703,14 +701,11 @@ class DATA:
                 self.transmission_uuid = str(uuid.uuid4())
                 timestamp = int(time.time())
 
-                # check if callsign ssid override
-                _valid, mycallsign = helpers.check_callsign(
-                    self.mycallsign, self.received_mycall_crc
-                )
-                if not _valid:
-                    # ARQ data packet not for me.
-                    self.arq_cleanup()
-                    return
+                # This shouldn't be needed - it's checked at the start of arq_data_received.
+                # # check if callsign ssid override
+                # _, mycallsign = helpers.check_callsign(
+                #     self.mycallsign, self.received_mycall_crc
+                # )
 
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
@@ -756,7 +751,6 @@ class DATA:
                 )
 
             else:
-
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -1381,7 +1375,9 @@ class DATA:
           data_in:bytes:
 
         """
-        # Close the session if the DXCALLSIGN_CRC matches the station in static.
+        # We've arrived here from process_data which already checked that the frame
+        # is intended for this station.
+        # Close the session if the CRC matches the remote station in static.
         _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
         if _valid_crc:
             static.ARQ_SESSION_STATE = "disconnected"
@@ -1614,6 +1610,8 @@ class DATA:
           data_in:bytes:
 
         """
+        # We've arrived here from process_data which already checked that the frame
+        # is intended for this station.
         self.arq_file_transfer = True
         self.is_IRS = True
         self.send_data_to_socket_queue(
@@ -1621,10 +1619,13 @@ class DATA:
             arq="transmission",
             status="opening",
         )
+
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
 
-        n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
+        # n_frames_per_burst is currently unused
+        # n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
+
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         # check if we received low bandwidth mode
         if frametype == FR_TYPE.ARQ_DC_OPEN_W.value:
@@ -1650,11 +1651,7 @@ class DATA:
         )
 
         # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
-        if not valid:
-            # ARQ connect packet not for me.
-            self.arq_cleanup()
-            return
+        _, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
 
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
