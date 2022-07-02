@@ -36,31 +36,37 @@ def parameters() -> dict:
     # Construct message to start ping.
     ping_data = {"type": "ping", "command": "ping", "dxcallsign": ""}
     connect_data = {"type": "arq", "command": "connect", "dxcallsign": ""}
+    qrv_data = {"type": "test", "command": "send_qrv", "dxcallsign": "DD5GG-3"}
     stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "DD5GG-3"}
 
-    beacon_timeout = 1
-    ping_timeout = 1
-    connect_timeout = 1
-    stop_timeout = 1
+    beacon_timeout = 2
+    ping_timeout = 2
+    connect_timeout = 2
+    qrv_timeout = 2
+    stop_timeout = 2
 
     beacon_tx_check = '"status":"Failed"'
     ping_tx_check = '"ping","status":"Failed"'
     connect_tx_check = '"status":"Failed"'
+    qrv_tx_check = '"qrv":"transmitting"'
     stop_tx_check = '"status":"stopped"'
 
     beacon_rx_check = '"beacon":"received"'
     ping_rx_check = '"ping":"received"'
     connect_rx_check = '"connect":"received"'
+    qrv_rx_check = '"qrv":"received"'
     stop_rx_check = '"status":"stopped"'
 
     beacon_final_tx_check = [beacon_tx_check]
     ping_final_tx_check = [ping_tx_check]
     connect_final_tx_check = [connect_tx_check]
+    qrv_final_tx_check = [qrv_tx_check]
     stop_final_tx_check = [stop_tx_check]
 
     beacon_final_rx_check = [beacon_rx_check]
     ping_final_rx_check = [ping_rx_check]
     connect_final_rx_check = [connect_rx_check]
+    qrv_final_rx_check = [qrv_rx_check]
     stop_final_rx_check = [stop_rx_check]
 
     return {
@@ -87,6 +93,14 @@ def parameters() -> dict:
             ping_rx_check,
             ping_final_tx_check,
             ping_final_rx_check,
+        ),
+        "qrv": (
+            qrv_data,
+            qrv_timeout,
+            qrv_tx_check,
+            qrv_rx_check,
+            qrv_final_tx_check,
+            qrv_final_rx_check,
         ),
         "stop": (
             stop_data,
@@ -162,7 +176,14 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
 
 # @pytest.mark.parametrize("frame_type", ["beacon", "connect", "ping"])
-@pytest.mark.parametrize("frame_type", ["ping", "stop"])
+@pytest.mark.parametrize(
+    "frame_type",
+    [
+        "ping",
+        pytest.param("qrv", marks=pytest.mark.xfail(reason="Needs protocol change")),
+        "stop",
+    ],
+)
 def test_datac0_negative(frame_type: str, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
     log = structlog.get_logger("test_datac0")

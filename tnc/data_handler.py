@@ -594,6 +594,12 @@ class DATA:
                 )
                 static.RX_BURST_BUFFER = []
 
+            # Only used for testing
+            elif data[0] == "QRV":
+                # [1] dxcallsign
+                self.transmit_qrv()
+                # self.transmit_qrv(data[1]) # Possible protocol change.
+
             else:
                 # Here we are going to search for our data in the last received bytes.
                 # This reduces the chance we will lose the entire frame in the case of signalling frame loss
