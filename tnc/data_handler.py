@@ -199,6 +199,13 @@ class DATA:
             elif data[0] == "SEND_TEST_FRAME":
                 # [1] DX CALLSIGN
                 self.send_test_frame()
+
+            # Only used for testing
+            elif data[0] == "QRV":
+                # [1] dxcallsign
+                self.transmit_qrv()
+                # self.transmit_qrv(data[1]) # Possible protocol change.
+
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -593,12 +600,6 @@ class DATA:
                     "[TNC] ARQ | RX | Frame already received - sending ACK again"
                 )
                 static.RX_BURST_BUFFER = []
-
-            # Only used for testing
-            elif data[0] == "QRV":
-                # [1] dxcallsign
-                self.transmit_qrv()
-                # self.transmit_qrv(data[1]) # Possible protocol change.
 
             else:
                 # Here we are going to search for our data in the last received bytes.
