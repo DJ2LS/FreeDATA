@@ -2166,9 +2166,9 @@ class DATA:
         )
 
         if static.RESPOND_TO_CQ:
-            self.transmit_qrv()
+            self.transmit_qrv(static.DXCALLSIGN)
 
-    def transmit_qrv(self) -> None:
+    def transmit_qrv(self, dxcallsign: bytes) -> None:
         """
         Called when we send a QRV frame
         Args:
@@ -2188,7 +2188,7 @@ class DATA:
 
         qrv_frame = bytearray(14)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
-        qrv_frame[1:4] = static.DXCALLSIGN_CRC
+        qrv_frame[1:4] = helpers.get_crc_24(dxcallsign)
         qrv_frame[4:10] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[10:14] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
