@@ -2207,8 +2207,8 @@ class DATA:
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:11]))
-        dxgrid = bytes(helpers.decode_grid(data_in[11:14]), "UTF-8")
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[4:10]))
+        dxgrid = bytes(helpers.decode_grid(data_in[10:14]), "UTF-8")
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
