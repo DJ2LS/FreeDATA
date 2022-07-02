@@ -278,15 +278,15 @@ class DATA:
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
         if (
-                _valid1
-                or _valid2
-                or frametype
-                in [
-            FR_TYPE.CQ.value,
-            FR_TYPE.QRV.value,
-            FR_TYPE.PING.value,
-            FR_TYPE.BEACON.value,
-        ]
+            _valid1
+            or _valid2
+            or frametype
+            in [
+              FR_TYPE.CQ.value,
+                FR_TYPE.QRV.value,
+                FR_TYPE.PING.value,
+                FR_TYPE.BEACON.value,
+            ]
         ):
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
@@ -2188,8 +2188,9 @@ class DATA:
 
         qrv_frame = bytearray(14)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
-        qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-        qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
+        qrv_frame[1:4] = static.DXCALLSIGN_CRC
+        qrv_frame[4:10] = helpers.callsign_to_bytes(self.mycallsign)
+        qrv_frame[10:14] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
@@ -2206,8 +2207,8 @@ class DATA:
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:11]))
+        dxgrid = bytes(helpers.decode_grid(data_in[11:14]), "UTF-8")
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
