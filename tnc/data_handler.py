@@ -1813,10 +1813,10 @@ class DATA:
           data_in:bytes:
 
         """
-        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        dxcallsign_CRC = bytes(data_in[4:7])
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         helpers.add_to_heard_stations(
-            static.DXCALLSIGN,
+            dxcallsign,
             static.DXGRID,
             "PING",
             static.SNR,
@@ -1830,7 +1830,7 @@ class DATA:
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
         )
@@ -1841,6 +1841,8 @@ class DATA:
             self.log.debug("[TNC] received_ping: ping not for this station.")
             return
 
+        static.DXCALLSIGN_CRC = dxcallsign_CRC
+        static.DXCALLSIGN = dxcallsign
         self.log.info(
             "[TNC] PING REQ ["
             + str(mycallsign, "UTF-8")
