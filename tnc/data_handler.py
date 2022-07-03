@@ -1490,7 +1490,7 @@ class DATA:
         # we need to compress data for gettin a compression factor.
         # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
-        static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
+        # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
 
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
@@ -1777,6 +1777,7 @@ class DATA:
 
         """
         if not str(dxcallsign).strip():
+            # TODO: We should display a message to this effect on the UI.
             self.log.warning("[TNC] Missing required callsign", dxcallsign=dxcallsign)
             return
         static.DXCALLSIGN = dxcallsign
