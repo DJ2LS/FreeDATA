@@ -8,7 +8,6 @@ Created on Sun Dec 27 20:43:40 2020
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 import base64
-import queue
 import sys
 import threading
 import time
@@ -26,12 +25,10 @@ import structlog
 import ujson as json
 from codec2 import FREEDV_MODE
 from exceptions import NoCallsign
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT
 from static import FRAME_TYPE as FR_TYPE
 
 TESTMODE = False
-
-DATA_QUEUE_TRANSMIT = queue.Queue()
-DATA_QUEUE_RECEIVED = queue.Queue()
 
 
 class DATA:
