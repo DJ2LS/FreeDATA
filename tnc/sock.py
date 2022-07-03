@@ -413,6 +413,26 @@ def process_tnc_commands(data):
                     "[SCK] STOP command execution error", e=err, command=received_json
                 )
 
+        # TEST Only - Send QRV -------------------------------------------------------
+        if received_json["type"] == "test" and received_json["command"] == "send_qrv":
+            # Send QRV frame
+            try:
+                dxcallsign = received_json["dxcallsign"]
+                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+                static.DXCALLSIGN = dxcallsign
+                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+                log.info("[SCK] Sending Data Queue Transmit", dxcallsign=dxcallsign)
+                data_handler.DATA_QUEUE_TRANSMIT.put(["QRV", dxcallsign])
+                command_response("send_qrv", True)
+            except Exception as err:
+                command_response("send_qrv", False)
+                log.warning(
+                    "[SCK] Send QRV command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
         if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
             try:
                 output = {

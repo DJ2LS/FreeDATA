@@ -137,7 +137,7 @@ def t_datac0_1(
     log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
 
     orig_dxcall = static.DXCALLSIGN
-    if "stop" in data["command"]:
+    if "stop" in data["command"] or "qrv" in data["command"]:
         time.sleep(0.5)
         log.debug(
             "t_datac0_1: STOP test, setting TNC state",
@@ -165,7 +165,7 @@ def t_datac0_1(
         time.sleep(0.1)
     log.info("station1, first")
 
-    if "stop" in data["command"]:
+    if "stop" in data["command"] or "qrv" in data["command"]:
         time.sleep(0.5)
         log.debug("STOP test, resetting DX callsign")
         static.DXCALLSIGN = orig_dxcall

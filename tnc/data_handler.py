@@ -238,6 +238,11 @@ class DATA:
                 # [5] mycallsign with ssid
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
+            # Only used for testing
+            elif data[0] == "QRV":
+                # [1] dxcallsign
+                self.transmit_qrv(data[1])
+
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
