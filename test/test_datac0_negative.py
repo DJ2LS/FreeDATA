@@ -36,8 +36,8 @@ def parameters() -> dict:
     # Construct message to start ping.
     ping_data = {"type": "ping", "command": "ping", "dxcallsign": ""}
     connect_data = {"type": "arq", "command": "connect", "dxcallsign": ""}
-    qrv_data = {"type": "test", "command": "send_qrv", "dxcallsign": "DD5GG-3"}
-    stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "DD5GG-3"}
+    qrv_data = {"type": "test", "command": "send_qrv", "dxcallsign": "ZZ0AA-5"}
+    stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "ZZ0AA-5"}
 
     beacon_timeout = 2
     ping_timeout = 2
