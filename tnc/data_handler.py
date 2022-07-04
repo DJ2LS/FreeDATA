@@ -52,9 +52,6 @@ class DATA:
 
         self.transmission_uuid = ""
 
-        # Received my callsign crc if we received a crc for another ssid
-        self.received_mycall_crc = b""  # Does this need to be a class variable?
-
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received burst ack frames
 
@@ -485,11 +482,9 @@ class DATA:
         data_in = bytes(data_in)
 
         # get received crc for different mycall ssids
-        self.received_mycall_crc = data_in[2:5]
-
         # check if callsign ssid override
         _, mycallsign = helpers.check_callsign(
-            self.mycallsign, self.received_mycall_crc
+            self.mycallsign, data_in[2:5]
         )
 
         # only process data if we are in ARQ and BUSY state else return to quit
@@ -699,12 +694,6 @@ class DATA:
 
                 self.transmission_uuid = str(uuid.uuid4())
                 timestamp = int(time.time())
-
-                # This shouldn't be needed - it's checked at the start of arq_data_received.
-                # # check if callsign ssid override
-                # _, mycallsign = helpers.check_callsign(
-                #     self.mycallsign, self.received_mycall_crc
-                # )
 
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
@@ -2284,8 +2273,6 @@ class DATA:
             return
 
         self.log.debug("[TNC] arq_cleanup")
-
-        self.received_mycall_crc = b""
 
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
