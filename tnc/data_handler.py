@@ -2150,8 +2150,8 @@ class DATA:
             freedata="tnc-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-            dxgrid=str(static.DXGRID, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxgrid=str(dxgrid, "UTF-8"),
         )
         self.log.info(
             "[TNC] CQ RCVD ["
