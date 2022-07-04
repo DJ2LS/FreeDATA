@@ -360,7 +360,7 @@ class DATA:
         while static.TRANSMITTING:
             time.sleep(0.01)
 
-    def send_data_to_socket_queue(self, /, **jsondata):
+    def send_data_to_socket_queue(self, **jsondata):
         """
         Send information to the UI via JSON and the sock.SOCKET_QUEUE.
 

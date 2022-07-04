@@ -61,7 +61,7 @@ def t_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
         rx_side = os.path.join("test", rx_side)
         os.environ["PYTHONPATH"] += ":."
 
-    print(f"{tx_side=} / {rx_side=}")
+    print(f"tx_side={tx_side} / rx_side={rx_side}")
 
     with subprocess.Popen(
         args=[
@@ -139,7 +139,9 @@ def test_HighSNR_P_P_DATACx(bursts: int, frames_per_burst: int, mode: str):
     proc.terminate()
 
     assert proc.exitcode == 0
-    proc.close()
+    # proc.close()  # Python 3.7+ only
+    proc.terminate()
+    proc.join()
 
 
 if __name__ == "__main__":

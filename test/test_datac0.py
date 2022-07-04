@@ -275,7 +275,9 @@ def test_datac0(frame_type: str, tmp_path):
 
     for p_item in proc:
         assert p_item.exitcode == 0
-        p_item.close()
+        # p_item.close()  # Python 3.7+ only
+        p_item.terminate()
+        p_item.join()
 
     analyze_results(s1_data, s2_data, STATIONS)
 

@@ -253,7 +253,7 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
     proc.terminate()
     proc.join()
 
-    # print(f"\n{proc.exitcode=}")
+    # print(f"\nproc.exitcode={proc.exitcode}")
     assert proc.exitcode == 0
 
 
@@ -271,7 +271,7 @@ def test_valid_disconnect(mycall: str, dxcall: str):
     proc.terminate()
     proc.join()
 
-    # print(f"\n{proc.exitcode=}")
+    # print(f"\nproc.exitcode={proc.exitcode}")
     assert proc.exitcode == 0
 
 
