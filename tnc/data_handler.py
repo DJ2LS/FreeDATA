@@ -2171,7 +2171,7 @@ class DATA:
         )
 
         if static.RESPOND_TO_CQ:
-            self.transmit_qrv(static.DXCALLSIGN)
+            self.transmit_qrv(dxcallsign)
 
     def transmit_qrv(self, dxcallsign: bytes) -> None:
         """
