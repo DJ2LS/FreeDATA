@@ -1,0 +1,330 @@
+name: Build_Multiplatform
+on: [push]
+
+jobs:
+  BUILD_ON_AMD64:
+    name: Build codec2 ${{ matrix.os }} x64_i686
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2019, windows-2022]
+        include:
+          - os: ubuntu-18.04
+            libcodec2_name: libcodec2.so
+            libcodec2_os_name: libcodec2_ubuntu-1804_x64_i686.so
+            generator: Unix Makefiles
+            shell: bash
+
+          - os: ubuntu-20.04
+            libcodec2_name: libcodec2.so
+            libcodec2_os_name: libcodec2_ubuntu-2004_x64_i686.so
+            generator: Unix Makefiles
+            shell: bash
+
+          - os: ubuntu-22.04
+            libcodec2_name: libcodec2.so
+            libcodec2_os_name: libcodec2_ubuntu-2204_x64_i686.so
+            generator: Unix Makefiles
+            shell: bash
+
+          - os: macos-11
+            libcodec2_name: libcodec2.dylib
+            libcodec2_os_name: libcodec2_macos-11_x64_i686.dylib
+            generator: Unix Makefiles
+            shell: bash
+
+          - os: macos-12
+            libcodec2_name: libcodec2.dylib
+            libcodec2_os_name: libcodec2_macos-12_x64_i686.dylib
+            generator: Unix Makefiles
+            shell: bash
+
+          - os: windows-2019
+            libcodec2_name: libcodec2.dll
+            libcodec2_os_name: libcodec2_windows-2019_x64_i686.dll
+
+          - os: windows-2022
+            libcodec2_name: libcodec2.dll
+            libcodec2_os_name: libcodec2_windows-2022_x64_i686.dll
+
+
+    steps:
+      - name: Build codec2 ${{ matrix.os }} x64_i686
+        if: ${{!startsWith(matrix.os, 'windows') }}
+        run: |
+          git clone https://github.com/drowe67/codec2.git
+          cd codec2
+          git checkout master
+          mkdir build
+          cd build
+          cmake ../
+          make
+          mv src/${{ matrix.libcodec2_name }} src/${{ matrix.libcodec2_os_name }}
+
+      - name: Build codec2 ${{ matrix.os }} x64_i686
+        if: ${{startsWith(matrix.os, 'windows') }}
+        run: |
+          git clone https://github.com/drowe67/codec2.git
+          cd codec2
+          git checkout master
+          mkdir build
+          cd build
+          cmake -G "MinGW Makefiles" -D CMAKE_MAKE_PROGRAM=mingw32-make.exe ../
+          make
+          mv src/${{ matrix.libcodec2_name }} src/${{ matrix.libcodec2_os_name }}
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libcodec2_${{ matrix.os }}
+          path: codec2/build/src/${{ matrix.libcodec2_os_name }}
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R
+
+  BUILD_ON_MULTIARCH:
+    # The host should always be linux
+    runs-on: ubuntu-22.04
+    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+
+    # Run steps on a matrix of 3 arch/distro combinations
+    strategy:
+      matrix:
+        include:
+          - arch: armv7
+            distro: bullseye
+            libcodec2_os_name: libcodec2_ubuntu-bullseye_armv7.so
+          - arch: armv7
+            distro: ubuntu18.04
+            libcodec2_os_name: libcodec2_ubuntu-1804_armv7.so
+
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - uses: uraimo/run-on-arch-action@v2
+        name: Build artifact
+        id: build
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.distro }}
+
+          # Not required, but speeds up builds
+          githubToken: ${{ github.token }}
+
+          # Create an artifacts directory
+          setup: |
+            mkdir -p "${PWD}/artifacts"
+
+          # Mount the artifacts directory as /artifacts in the container
+          dockerRunArgs: |
+            --volume "${PWD}/artifacts:/artifacts"
+
+          # Pass some environment variables to the container
+          env: | # YAML, but pipe character is necessary
+            artifact_name: libcodec2_${{ matrix.distro }}_${{ matrix.arch }}.so
+
+          # The shell to run commands with in the container
+          shell: /bin/sh
+
+          # Install some dependencies in the container. This speeds up builds if
+          # you are also using githubToken. Any dependencies installed here will
+          # be part of the container image that gets cached, so subsequent
+          # builds don't have to re-install them. The image layer is cached
+          # publicly in your project's package repository, so it is vital that
+          # no secrets are present in the container state or logs.
+          install: |
+            case "${{ matrix.distro }}" in
+              ubuntu*|jessie|stretch|buster|bullseye)
+                apt-get update -q -y
+                apt-get install -q -y git build-essential cmake
+                ;;
+              fedora*)
+                dnf -y update
+                dnf -y install git which build-essential cmake
+                ;;
+              alpine*)
+                apk update
+                apk add git build-essential cmake
+                ;;
+            esac
+
+          # Produce a binary artifact and place it in the mounted volume
+          run: |
+            
+            git clone https://github.com/drowe67/codec2.git
+            cd codec2
+            git checkout master
+            mkdir build
+            cd build
+            cmake ../
+            make
+            mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
+
+      - name: Show the artifact
+        # Items placed in /artifacts in the container will be in
+        # ${PWD}/artifacts on the host.
+        run: |
+          ls -al "${PWD}/artifacts"
+
+      - name: Show the artifact
+        run: |
+          ls -R /home/runner/work/codec2/codec2/artifacts/
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.libcodec2_os_name }}
+          path: /home/runner/work/codec2/codec2/artifacts/*
+
+  build_i686_x64_release:
+    needs: [BUILD_ON_MULTIARCH, BUILD_ON_AMD64]
+    name: Build FreeDATA
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-11, windows-latest]
+        include:
+          - os: ubuntu-20.04
+            zip_name: ubuntu_tnc
+            generator: Unix Makefiles
+
+          - os: macos-11
+            zip_name: macos_tnc
+            generator: Unix Makefiles
+
+          - os: windows-latest
+            zip_name: windows_tnc
+            generator: Visual Studio 16 2019
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          repository: DJ2LS/FreeDATA
+          ref: main
+
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos-11'
+        run: |
+          brew install portaudio
+          python -m pip install --upgrade pip
+          pip3 install pyaudio
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install psutil
+          pip install crcengine
+          pip install 'pyinstaller<5.1'
+          pip install ujson
+          pip install pyserial
+          pip install numpy
+          pip install structlog
+          pip install colorama
+          pip install sounddevice
+          # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+
+
+      - name: Install Pyaudio Windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc/lib/pyaudio/windows
+        run: |
+          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: cleanup codec2
+        working-directory: tnc/lib/
+        run: |
+          rm -r codec2
+          mkdir codec2
+          cd codec2
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: tnc/lib/codec2
+
+
+      # - name: Unzip all artifacts
+      #  working-directory: tnc/lib/codec2
+      #  run: |
+      #    unzip *.zip
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: Build Linux Daemon
+        working-directory: tnc
+        run: |
+          pyinstaller freedata.spec
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R
+
+      #- name: Compress TNC
+      #  # if: ${{!startsWith(matrix.os, 'windows') }}
+      #  shell: bash
+      #  run: |
+      #    cd ./tnc/dist
+      #    zip -r ./${{ matrix.zip_name }}.zip *
+
+      - name: Compress TNC
+        uses: thedoctor0/zip-release@master
+        with:
+            type: 'zip'
+            filename: '${{ matrix.zip_name }}.zip'
+            directory: ./tnc/dist/tnc
+            path: .
+            #exclusions: '*.git* /*node_modules/* .editorconfig'
+
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R
+
+      - name: Upload TNC artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.zip_name }}.zip
+          path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+
+      - name: Copy TNC to GUI Linux
+        run: |
+          cp -R ./tnc/dist/tnc ./gui/tnc
+          ls -R
+
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Release TNC
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+
+
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          package_root: "./gui/"
+          github_token: ${{ secrets.github_token }}
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          args: "-p always"
+
