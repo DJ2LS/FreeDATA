@@ -3,81 +3,112 @@ on: [push]
 
 jobs:
   BUILD_ON_AMD64:
-    name: Build codec2 ${{ matrix.os }} x64_i686
+    name: Build codec2 ${{ matrix.os }} x64
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
+        # platform: [x86, x64]
         os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12, windows-2019, windows-2022]
         include:
           - os: ubuntu-18.04
             libcodec2_name: libcodec2.so
-            libcodec2_os_name: libcodec2_ubuntu-1804_x64_i686.so
+            libcodec2_os_name: libcodec2_ubuntu-1804
+            libcodec2_filetype: .so
             generator: Unix Makefiles
             shell: bash
 
           - os: ubuntu-20.04
             libcodec2_name: libcodec2.so
-            libcodec2_os_name: libcodec2_ubuntu-2004_x64_i686.so
+            libcodec2_os_name: libcodec2_ubuntu-2004
+            libcodec2_filetype: .so
             generator: Unix Makefiles
             shell: bash
 
           - os: ubuntu-22.04
             libcodec2_name: libcodec2.so
-            libcodec2_os_name: libcodec2_ubuntu-2204_x64_i686.so
+            libcodec2_os_name: libcodec2_ubuntu-2204
+            libcodec2_filetype: .so
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-11
             libcodec2_name: libcodec2.dylib
-            libcodec2_os_name: libcodec2_macos-11_x64_i686.dylib
+            libcodec2_os_name: libcodec2_macos-11
+            libcodec2_filetype: .dylib
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-12
             libcodec2_name: libcodec2.dylib
-            libcodec2_os_name: libcodec2_macos-12_x64_i686.dylib
+            libcodec2_os_name: libcodec2_macos-12
+            libcodec2_filetype: .dylib
             generator: Unix Makefiles
             shell: bash
 
           - os: windows-2019
             libcodec2_name: libcodec2.dll
-            libcodec2_os_name: libcodec2_windows-2019_x64_i686.dll
-
+            libcodec2_os_name: libcodec2_windows-2019
+            libcodec2_filetype: .dll
           - os: windows-2022
             libcodec2_name: libcodec2.dll
-            libcodec2_os_name: libcodec2_windows-2022_x64_i686.dll
+            libcodec2_filetype: .dll
+            libcodec2_os_name: libcodec2_windows-2022_x64
+
+
+
+
 
 
     steps:
-      - name: Build codec2 ${{ matrix.os }} x64_i686
+      - name: Build codec2 ${{ matrix.os }}
+        #working-directory: codec2
         if: ${{!startsWith(matrix.os, 'windows') }}
         run: |
+          rm -r -f codec2
           git clone https://github.com/drowe67/codec2.git
           cd codec2
-          git checkout master
           mkdir build
           cd build
           cmake ../
           make
-          mv src/${{ matrix.libcodec2_name }} src/${{ matrix.libcodec2_os_name }}
+          #mv src/${{ matrix.libcodec2_name }} src/${{ matrix.libcodec2_os_name }}_${{ matrix.libcodec2_filetype }}
+          mkdir tempfiles
+          mv src/${{ matrix.libcodec2_name }} tempfiles/${{ matrix.libcodec2_os_name }}_${{ matrix.libcodec2_filetype }}
 
-      - name: Build codec2 ${{ matrix.os }} x64_i686
+      # C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin
+      - name: LIST MINGW
+        if: ${{startsWith(matrix.os, 'windows') }}
+        run: |
+            ls -R C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin
+        
+
+      - name: Build codec2 win ${{ matrix.os }}
         if: ${{startsWith(matrix.os, 'windows') }}
         run: |
           git clone https://github.com/drowe67/codec2.git
           cd codec2
-          git checkout master
+          echo "set(CMAKE_SHARED_LINKER_FLAGS '-static-libgcc -static-libstdc++ -static')" >> CMakeLists.txt
           mkdir build
           cd build
           cmake -G "MinGW Makefiles" -D CMAKE_MAKE_PROGRAM=mingw32-make.exe ../
           make
-          mv src/${{ matrix.libcodec2_name }} src/${{ matrix.libcodec2_os_name }}
+          mkdir tempfiles
+          mv src/${{ matrix.libcodec2_name }} tempfiles/${{ matrix.libcodec2_os_name }}_${{ matrix.libcodec2_filetype }}          
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libatomic-1.dll" "tempfiles/libatomic-1.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libgcc_s_seh-1.dll" "tempfiles/libgcc_s_seh-1.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libgomp-1.dll" "tempfiles/libgomp-1.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libquadmath-0.dll" "tempfiles/libquadmath-0.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libssp-0.dll" "tempfiles/libssp-0.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libstdc++-6.dll" "tempfiles/ libstdc++-6.dll"
+          mv "C:\ProgramData\chocolatey\lib\mingw\tools\install\mingw64\bin\libwinpthread-1.dll" "tempfiles/libwinpthread-1.dll"
+          ls -l tempfiles
 
       - uses: actions/upload-artifact@v3
         with:
-          name: libcodec2_${{ matrix.os }}
-          path: codec2/build/src/${{ matrix.libcodec2_os_name }}
+          name: ${{ matrix.libcodec2_os_name }}_${{ matrix.libcodec2_filetype }}
+          #path: codec2/build/src/${{ matrix.libcodec2_os_name }}_${{ matrix.libcodec2_filetype }}
+          path: codec2/build/tempfiles/*
 
       - name: LIST ALL FILES
         shell: bash
@@ -150,7 +181,8 @@ jobs:
             esac
 
           # Produce a binary artifact and place it in the mounted volume
-          run: |        
+          run: |
+            
             git clone https://github.com/drowe67/codec2.git
             cd codec2
             git checkout master
@@ -165,11 +197,6 @@ jobs:
         # ${PWD}/artifacts on the host.
         run: |
           ls -al "${PWD}/artifacts"
-
-      - name: Show the artifact
-        run: |
-          ls -R $GITHUB_WORKSPACE
-          ls -R $GITHUB_WORKSPACE/FreeDATA/codec2/artifacts/
 
       - uses: actions/upload-artifact@v3
         with:
