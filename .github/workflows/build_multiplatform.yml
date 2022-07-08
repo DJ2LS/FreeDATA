@@ -150,8 +150,7 @@ jobs:
             esac
 
           # Produce a binary artifact and place it in the mounted volume
-          run: |
-            
+          run: |        
             git clone https://github.com/drowe67/codec2.git
             cd codec2
             git checkout master
@@ -169,12 +168,13 @@ jobs:
 
       - name: Show the artifact
         run: |
-          ls -R /home/runner/work/codec2/codec2/artifacts/
+          ls -R $GITHUB_WORKSPACE
+          ls -R $GITHUB_WORKSPACE/FreeDATA/codec2/artifacts/
 
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.libcodec2_os_name }}
-          path: /home/runner/work/codec2/codec2/artifacts/*
+          path: $GITHUB_WORKSPACE/codec2/artifacts/*
 
   build_i686_x64_release:
     needs: [BUILD_ON_MULTIARCH, BUILD_ON_AMD64]
