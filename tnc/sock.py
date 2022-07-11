@@ -25,12 +25,12 @@ import sys
 import threading
 import time
 
-import data_handler
 import helpers
 import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
+from queues import DATA_QUEUE_TRANSMIT
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -227,7 +227,7 @@ def process_tnc_commands(data):
             and received_json["command"] == "send_test_frame"
         ):
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
+                DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
                 command_response("send_test_frame", True)
             except Exception as err:
                 command_response("send_test_frame", False)
@@ -240,7 +240,7 @@ def process_tnc_commands(data):
         # CQ CQ CQ -----------------------------------------------------
         if received_json["command"] == "cqcqcq":
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(["CQ"])
+                DATA_QUEUE_TRANSMIT.put(["CQ"])
                 command_response("cqcqcq", True)
 
             except Exception as err:
@@ -254,7 +254,7 @@ def process_tnc_commands(data):
             try:
                 static.BEACON_STATE = True
                 interval = int(received_json["parameter"])
-                data_handler.DATA_QUEUE_TRANSMIT.put(["BEACON", interval, True])
+                DATA_QUEUE_TRANSMIT.put(["BEACON", interval, True])
                 command_response("start_beacon", True)
             except Exception as err:
                 command_response("start_beacon", False)
@@ -269,7 +269,7 @@ def process_tnc_commands(data):
             try:
                 log.warning("[SCK] Stopping beacon!")
                 static.BEACON_STATE = False
-                data_handler.DATA_QUEUE_TRANSMIT.put(["BEACON", None, False])
+                DATA_QUEUE_TRANSMIT.put(["BEACON", None, False])
                 command_response("stop_beacon", True)
             except Exception as err:
                 command_response("stop_beacon", False)
@@ -293,7 +293,7 @@ def process_tnc_commands(data):
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                data_handler.DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
+                DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
                 command_response("ping", True)
             except NoCallsign:
                 command_response("ping", False)
@@ -320,7 +320,7 @@ def process_tnc_commands(data):
                 static.DXCALLSIGN = dxcallsign
                 static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                data_handler.DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
+                DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
                 command_response("connect", True)
             except Exception as err:
                 command_response("connect", False)
@@ -334,7 +334,7 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
             # send ping frame and wait for ACK
             try:
-                data_handler.DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+                DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
                 command_response("disconnect", True)
             except Exception as err:
                 command_response("disconnect", False)
@@ -383,7 +383,7 @@ def process_tnc_commands(data):
 
                 binarydata = base64.b64decode(base64data)
 
-                data_handler.DATA_QUEUE_TRANSMIT.put(
+                DATA_QUEUE_TRANSMIT.put(
                     ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
                 )
 
@@ -402,7 +402,7 @@ def process_tnc_commands(data):
         ):
             try:
                 if static.TNC_STATE == "BUSY" or static.ARQ_STATE:
-                    data_handler.DATA_QUEUE_TRANSMIT.put(["STOP"])
+                    DATA_QUEUE_TRANSMIT.put(["STOP"])
                 log.warning("[SCK] Stopping transmission!")
                 static.TNC_STATE = "IDLE"
                 static.ARQ_STATE = False

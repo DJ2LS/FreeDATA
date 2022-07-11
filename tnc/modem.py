@@ -11,28 +11,24 @@ Created on Wed Dec 23 07:04:24 2020
 import atexit
 import ctypes
 import os
-import queue
 import sys
 import threading
 import time
 from collections import deque
 
 import codec2
-import data_handler
 import numpy as np
 import sock
 import sounddevice as sd
 import static
 import structlog
 import ujson as json
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
 TXCHANNEL = ""
 
-# Initialize FIFO queue to store received frames
-MODEM_RECEIVED_QUEUE = queue.Queue()
-MODEM_TRANSMIT_QUEUE = queue.Queue()
 static.TRANSMITTING = False
 
 # Receive only specific modes to reduce CPU load
@@ -690,7 +686,7 @@ class RF:
             # data[0] = bytes_out
             # data[1] = freedv session
             # data[2] = bytes_per_frame
-            data_handler.DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2]])
+            DATA_QUEUE_RECEIVED.put([data[0], data[1], data[2]])
             self.modem_received_queue.task_done()
 
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:

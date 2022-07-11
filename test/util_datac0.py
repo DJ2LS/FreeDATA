@@ -23,7 +23,6 @@ import modem
 import sock
 import static
 import structlog
-from codec2 import FREEDV_MODE
 from static import FRAME_TYPE as FR_TYPE
 
 
