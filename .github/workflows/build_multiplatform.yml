@@ -76,13 +76,13 @@ jobs:
           sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
           git clone https://github.com/drowe67/codec2.git
           cd codec2
-          mkdir tempfiles 
+          mkdir tempfiles
           mkdir build_w32
           cd build_w32
           echo 'set(CMAKE_SYSTEM_NAME ${{ matrix.platform.name }})' > toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_C_COMPILER ${{ matrix.architecture }}-gcc)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_CXX_COMPILER ${{ matrix.architecture }}-g++)' >> toolchain-ubuntu-mingw32.cmake
-          echo 'set(CMAKE_RC_COMPILER ${{ matrix.architecture }}-windres)' >> toolchain-ubuntu-mingw32.cmake        
+          echo 'set(CMAKE_RC_COMPILER ${{ matrix.architecture }}-windres)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_FIND_ROOT_PATH /usr/${{ matrix.architecture }})' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)' >> toolchain-ubuntu-mingw32.cmake
