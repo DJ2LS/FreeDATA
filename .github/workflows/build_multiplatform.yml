@@ -260,7 +260,6 @@ jobs:
       - name: cleanup codec2
         working-directory: tnc/lib/
         run: |
-          rm -r codec2
           mkdir codec2
           cd codec2
 
