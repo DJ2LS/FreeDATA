@@ -114,8 +114,8 @@ jobs:
             distro: bullseye
             libcodec2_os_name: libcodec2_ubuntu-bullseye_armv7.so
           - arch: armv7
-            distro: ubuntu18.04
-            libcodec2_os_name: libcodec2_ubuntu-1804_armv7.so
+            distro: ubuntu20.04
+            libcodec2_os_name: libcodec2_ubuntu-2004_armv7.so
 
     steps:
       - uses: actions/checkout@v2.1.0
