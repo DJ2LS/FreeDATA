@@ -703,9 +703,11 @@ class DATA:
                     pass
                 else:
                     # if full, free space by getting an item
+                    # if full, free space by getting an item
                     self.log.info(
                         "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
                         buffer_size=RX_BUFFER.qsize(),
+                        maxsize=static.RX_BUFFER_SIZE
                     )
                     RX_BUFFER.get()
 

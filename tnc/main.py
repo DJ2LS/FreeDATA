@@ -224,7 +224,13 @@ if __name__ == "__main__":
         help="Set the tx audio level at an early stage",
         type=int,
     )
-
+    PARSER.add_argument(
+        "--rx-buffer-size",
+        dest="rx_buffer_size",
+        default=20,
+        help="Set the maximum size of rx buffer.",
+        type=int,
+    )
     ARGS = PARSER.parse_args()
 
     # additional step for being sure our callsign is correctly
@@ -260,6 +266,7 @@ if __name__ == "__main__":
     static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
     static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
     static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
+    static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock
