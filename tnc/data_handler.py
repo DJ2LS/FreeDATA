@@ -805,7 +805,6 @@ class DATA:
 
         self.log.info(
             "[TNC] | TX | DATACHANNEL",
-            mode=FREEDV_MODE(mode).name,
             Bytes=static.TOTAL_BYTES,
         )
 
@@ -843,7 +842,7 @@ class DATA:
             # we have TX_N_MAX_RETRIES_PER_BURST attempts for sending a burst
             for self.tx_n_retry_of_burst in range(TX_N_MAX_RETRIES_PER_BURST):
                 data_mode = mode
-                self.log.debug("[TNC] FIXED MODE:", mode=FREEDV_MODE(data_mode).name)
+                # self.log.debug("[TNC] FIXED MODE:", mode=FREEDV_MODE(data_mode).name)
 
                 # we are doing a modulo check of transmission retries of the actual burst
                 # every 2nd retry which fails, decreases speedlevel by 1.

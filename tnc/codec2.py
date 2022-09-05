@@ -30,7 +30,6 @@ class FREEDV_MODE(Enum):
     fsk_ldpc = 9
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
-    auto_mode = 255  # TODO: find a better way for this --> better remove the need for this line
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
