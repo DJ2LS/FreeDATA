@@ -154,15 +154,18 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y git build-essential cmake
+                apt-get install -q -y git build-essential cmake gcc g++
+                cmake --version
                 ;;
               fedora*)
                 dnf -y update
-                dnf -y install git which build-essential cmake
+                dnf -y install git which build-essential cmake gcc-c++ gcc
+                cmake --version
                 ;;
               alpine*)
                 apk update
-                apk add git build-essential cmake
+                apk add git build-essential cmake gcc g++
+                cmake --version
                 ;;
             esac
 
