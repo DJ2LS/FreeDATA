@@ -1,5 +1,5 @@
-/* disable scrolling in main window */ 
-body { 
+/* disable scrolling in main window */
+body {
     padding-right: 0px !important;
     overflow-y: hidden !important;
     overflow-x: hidden !important;
@@ -17,6 +17,10 @@ body {
     color: black;
 }
 
+/* smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
 
 /* hide scrollbar in callsign list */
 #callsignlist::-webkit-scrollbar {
