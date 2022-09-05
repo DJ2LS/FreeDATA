@@ -109,7 +109,6 @@ BEACON_STATE: bool = False
 BEACON_PAUSE: bool = False
 
 # ------- RX BUFFER
-RX_BUFFER: list = []
 RX_MSG_BUFFER: list = []
 RX_BURST_BUFFER: list = []
 RX_FRAME_BUFFER: bytes = b""

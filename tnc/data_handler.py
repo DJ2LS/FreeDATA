@@ -25,7 +25,7 @@ import structlog
 import ujson as json
 from codec2 import FREEDV_MODE
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT
+from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
 
 TESTMODE = False
@@ -697,7 +697,20 @@ class DATA:
 
                 # Re-code data_frame in base64, UTF-8 for JSON UI communication.
                 base64_data = base64.b64encode(data_frame).decode("UTF-8")
-                static.RX_BUFFER.append(
+
+                if not RX_BUFFER.full():
+                    # check if RX_BUFFER isn't full
+                    pass
+                else:
+                    # if full, free space by getting an item
+                    self.log.info(
+                        "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
+                        buffer_size=RX_BUFFER.qsize(),
+                    )
+                    RX_BUFFER.get()
+
+                # add item to RX_BUFFER
+                RX_BUFFER.put(
                     [
                         self.transmission_uuid,
                         timestamp,
@@ -706,6 +719,7 @@ class DATA:
                         base64_data,
                     ]
                 )
+
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",

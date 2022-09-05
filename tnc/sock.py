@@ -30,7 +30,7 @@ import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -420,24 +420,22 @@ def process_tnc_commands(data):
                     "data-array": [],
                 }
 
-                for i in range(len(static.RX_BUFFER)):
-                    # print(static.RX_BUFFER[i][4])
-                    # rawdata = json.loads(static.RX_BUFFER[i][4])
-                    base64_data = static.RX_BUFFER[i][4]
-                    output["data-array"].append(
-                        {
-                            "uuid": static.RX_BUFFER[i][0],
-                            "timestamp": static.RX_BUFFER[i][1],
-                            "dxcallsign": str(static.RX_BUFFER[i][2], "utf-8"),
-                            "dxgrid": str(static.RX_BUFFER[i][3], "utf-8"),
-                            "data": base64_data,
-                        }
-                    )
-
-                jsondata = json.dumps(output)
-                # self.request.sendall(bytes(jsondata, encoding))
-                SOCKET_QUEUE.put(jsondata)
-                command_response("rx_buffer", True)
+                if not RX_BUFFER.empty():
+                    for _buffer_length in range(RX_BUFFER.qsize()):
+                        base64_data = RX_BUFFER.queue[_buffer_length][4]
+                        output["data-array"].append(
+                            {
+                                "uuid": RX_BUFFER.queue[_buffer_length][0],
+                                "timestamp": RX_BUFFER.queue[_buffer_length][1],
+                                "dxcallsign": str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
+                                "dxgrid": str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
+                                "data": base64_data,
+                            }
+                        )
+                    jsondata = json.dumps(output)
+                    # self.request.sendall(bytes(jsondata, encoding))
+                    SOCKET_QUEUE.put(jsondata)
+                    command_response("rx_buffer", True)
 
             except Exception as err:
                 command_response("rx_buffer", False)
@@ -452,7 +450,7 @@ def process_tnc_commands(data):
             and received_json["command"] == "del_rx_buffer"
         ):
             try:
-                static.RX_BUFFER = []
+                RX_BUFFER.queue.clear()
                 command_response("del_rx_buffer", True)
             except Exception as err:
                 command_response("del_rx_buffer", False)
@@ -489,7 +487,7 @@ def send_tnc_state():
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
         "scatter": static.SCATTER,
-        "rx_buffer_length": str(len(static.RX_BUFFER)),
+        "rx_buffer_length": str(RX_BUFFER.qsize()),
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
         "arq_bytes_per_minute": str(static.ARQ_BYTES_PER_MINUTE),
         "arq_bytes_per_minute_burst": str(static.ARQ_BYTES_PER_MINUTE_BURST),
