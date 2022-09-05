@@ -607,6 +607,7 @@ def process_daemon_commands(data):
             tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
             respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
+            rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
@@ -641,6 +642,7 @@ def process_daemon_commands(data):
                     enable_fsk,
                     tx_audio_level,
                     respond_to_cq,
+                    rx_buffer_size,
                 ]
             )
             command_response("start_tnc", True)

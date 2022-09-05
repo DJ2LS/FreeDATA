@@ -32,7 +32,7 @@ import structlog
 import ujson as json
 
 
-# signal handler for closing aplication
+# signal handler for closing application
 def signal_handler(sig, frame):
     """
     Signal handler for closing the network socket on app exit
@@ -151,6 +151,8 @@ class DAEMON:
                 # data[21] enable FSK
                 # data[22] tx-audio-level
                 # data[23] respond_to_cq
+                # data[24] rx_buffer_size
+
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -236,6 +238,9 @@ class DAEMON:
 
                     if data[23] == "True":
                         options.append("--qrv")
+
+                    options.append("--rx-buffer-size")
+                    options.append(data[24])
 
                     # Try running tnc from binary, else run from source
                     # This helps running the tnc in a developer environment

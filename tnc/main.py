@@ -227,7 +227,7 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--rx-buffer-size",
         dest="rx_buffer_size",
-        default=20,
+        default=16,
         help="Set the maximum size of rx buffer.",
         type=int,
     )

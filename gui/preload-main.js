@@ -117,9 +117,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
-       
-       
-       
+
     if(config.enable_scatter == 'True'){
         document.getElementById("scatterSwitch").checked = true;
     } else {
@@ -175,8 +173,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // Update TX Audio Level
     document.getElementById("audioLevelTXvalue").innerHTML = parseInt(config.tx_audio_level);
     document.getElementById("audioLevelTX").value = parseInt(config.tx_audio_level);    
-    
-    
+
+    // Update RX Buffer Size
+    document.getElementById("rx_buffer_size").value = config.rx_buffer_size;
+
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
         document.getElementById("waterfall-scatter-switch2").checked = false;
@@ -590,8 +590,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     });    
-    
-        
+
+    // rx buffer size selector clicked
+    document.getElementById("rx_buffer_size").addEventListener("click", () => {
+        var rx_buffer_size = document.getElementById("rx_buffer_size").value;
+        config.rx_buffer_size = rx_buffer_size;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
     
 
     //screen size
@@ -710,7 +715,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         }     
 
         var tx_audio_level = document.getElementById("audioLevelTX").value;
-
+        var rx_buffer_size = document.getElementById("rx_buffer_size").value;
         
         config.radiocontrol = radiocontrol;
         config.mycall = callsign_ssid;
@@ -735,6 +740,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.low_bandwidth_mode = low_bandwidth_mode;
         config.tx_audio_level = tx_audio_level;
         config.respond_to_cq = respond_to_cq;
+        config.rx_buffer_size = rx_buffer_size;
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -753,7 +759,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size);
         
         
     })
