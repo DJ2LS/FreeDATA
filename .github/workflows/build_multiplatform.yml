@@ -292,9 +292,10 @@ jobs:
         working-directory: tnc
         run: |
           #pyinstaller freedata.spec
-          python3 -m nuitka --enable-plugin=numpy --onefile daemon.py -o freedata-daemon
-          python3 -m nuitka --enable-plugin=numpy --onefile main.py -o freedata-tnc
+          python3 -m nuitka --enable-plugin=numpy --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
+          python3 -m nuitka --enable-plugin=numpy --onefile main.py -o ${{ matrix.tnc_binary_name }}
           mkdir dist
+          ls -R
           cp ${{ matrix.daemon_binary_name }} dist/
           cp ${{ matrix.tnc_binary_name }} dist/
 
