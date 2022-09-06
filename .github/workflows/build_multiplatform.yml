@@ -228,7 +228,7 @@ jobs:
         run: |
           sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
 
-      - name: Install macOS dependencies
+      - name: Install macOS pyAudio
         if: matrix.os == 'macos-11'
         run: |
           brew install portaudio
@@ -249,6 +249,8 @@ jobs:
           pip install sounddevice
           # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          pip install nuitka
+          pip install ordered-set
 
 
       - name: Install Pyaudio Windows
@@ -279,10 +281,15 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Build Linux Daemon
+      - name: Build Linux binaries
         working-directory: tnc
         run: |
-          pyinstaller freedata.spec
+          #pyinstaller freedata.spec
+          python3 -m nuitka --enable-plugin=numpy --onefile daemon.py -o freedata-daemon
+          python3 -m nuitka --enable-plugin=numpy --onefile main.py -o freedata-tnc
+          mkdir dist
+          cp freedata-daemon dist/
+          cp freedata-tnc dist/
 
       - name: LIST ALL FILES
         shell: bash
@@ -296,12 +303,20 @@ jobs:
       #    cd ./tnc/dist
       #    zip -r ./${{ matrix.zip_name }}.zip *
 
+      - name: Copy TNC to GUI Linux
+        run: |
+          #cp -R ./tnc/dist/tnc ./gui/tnc
+          cp -R ./tnc/dist ./gui/tnc
+          ls -R
+          
+
       - name: Compress TNC
         uses: thedoctor0/zip-release@master
         with:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
-            directory: ./tnc/dist/tnc
+            #directory: ./tnc/dist/tnc
+            directory: ./tnc/dist
             path: .
             #exclusions: '*.git* /*node_modules/* .editorconfig'
 
@@ -314,12 +329,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.zip_name }}.zip
-          path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-
-      - name: Copy TNC to GUI Linux
-        run: |
-          cp -R ./tnc/dist/tnc ./gui/tnc
-          ls -R
+          #path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          path: ./tnc/dist/${{ matrix.zip_name }}.zip
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v1
@@ -330,7 +341,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          #files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          files: ./tnc/dist/${{ matrix.zip_name }}.zip
 
 
       - name: Build/release Electron app
