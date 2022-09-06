@@ -190,7 +190,8 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.libcodec2_os_name }}
-          path: $GITHUB_WORKSPACE/codec2/artifacts/*
+          #path: $GITHUB_WORKSPACE/codec2/artifacts/*
+          path: ${PWD}/artifacts/*
 
   build_i686_x64_release:
     needs: [BUILD_ON_MULTIARCH, BUILD_ON_AMD64]
@@ -203,14 +204,20 @@ jobs:
           - os: ubuntu-20.04
             zip_name: ubuntu_tnc
             generator: Unix Makefiles
+            daemon_binary_name: freedata-daemon
+            tnc_binary_name: freedata-tnc
 
           - os: macos-11
             zip_name: macos_tnc
             generator: Unix Makefiles
+            daemon_binary_name: freedata-daemon
+            tnc_binary_name: freedata-tnc
 
           - os: windows-latest
             zip_name: windows_tnc
             generator: Visual Studio 16 2019
+            daemon_binary_name: freedata-daemon.exe
+            tnc_binary_name: freedata-tnc.exe
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -288,8 +295,14 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --onefile daemon.py -o freedata-daemon
           python3 -m nuitka --enable-plugin=numpy --onefile main.py -o freedata-tnc
           mkdir dist
-          cp freedata-daemon dist/
-          cp freedata-tnc dist/
+          cp ${{ matrix.daemon_binary_name }} dist/
+          cp ${{ matrix.tnc_binary_name }} dist/
+
+      - name: Install Pyaudio Windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc/lib/pyaudio/windows
+        run: |
+          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
 
       - name: LIST ALL FILES
         shell: bash
