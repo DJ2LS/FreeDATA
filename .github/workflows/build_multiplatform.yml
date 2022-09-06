@@ -179,7 +179,7 @@ jobs:
             cd build
             cmake ../
             make
-            mv ./src/libcodec2.so.1.0 /artifacts/${ matrix.libcodec2_os_name }
+            mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
 
       - name: Show recursive PWD
         # Items placed in /artifacts in the container will be in
@@ -187,11 +187,6 @@ jobs:
         run: |
           ls -al "${PWD}/artifacts"
 
-      - name: Show recursive GITHUB WORKSPACE
-        # Items placed in /artifacts in the container will be in
-        # ${PWD}/artifacts on the host.
-        run: |
-          ls -R "${$GITHUB_WORKSPACE}/"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -222,8 +217,8 @@ jobs:
           - os: windows-latest
             zip_name: windows_tnc
             generator: Visual Studio 16 2019
-            daemon_binary_name: daemon.dist\freedata-daemon.exe
-            tnc_binary_name: main.dist\freedata-tnc.exe
+            daemon_binary_name: freedata-daemon.exe
+            tnc_binary_name: freedata-tnc.exe
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -300,10 +295,26 @@ jobs:
           #pyinstaller freedata.spec
           python3 -m nuitka --enable-plugin=numpy --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
           python3 -m nuitka --enable-plugin=numpy --onefile main.py -o ${{ matrix.tnc_binary_name }}
+
+
+      - name: Copy binaries unix linux
+        if: matrix.os != 'windows-latest'
+        working-directory: tnc
+        run: |
           mkdir dist
           ls -R
           cp ${{ matrix.daemon_binary_name }} dist/
           cp ${{ matrix.tnc_binary_name }} dist/
+
+      - name: Copy binaries windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc
+        run: |
+          mkdir dist
+          ls -R
+          cp daemon.dist\${{ matrix.daemon_binary_name }} dist/
+          cp daemon.dist\${{ matrix.tnc_binary_name }} dist/
+                   
 
       - name: Install Pyaudio Windows
         if: matrix.os == 'windows-latest'
