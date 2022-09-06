@@ -103,7 +103,7 @@ jobs:
 
   BUILD_ON_MULTIARCH:
     # The host should always be linux
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
 
     # Run steps on a matrix of 3 arch/distro combinations
@@ -114,8 +114,8 @@ jobs:
             distro: bullseye
             libcodec2_os_name: libcodec2_ubuntu-bullseye_armv7.so
           - arch: armv7
-            distro: ubuntu20.04
-            libcodec2_os_name: libcodec2_ubuntu-2004_armv7.so
+            distro: ubuntu-latest
+            libcodec2_os_name: libcodec2_ubuntu-latest_armv7.so
 
     steps:
       - uses: actions/checkout@v2.1.0
