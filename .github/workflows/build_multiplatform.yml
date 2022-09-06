@@ -112,10 +112,10 @@ jobs:
         include:
           - arch: armv7
             distro: bullseye
-            libcodec2_os_name: libcodec2_ubuntu-bullseye_armv7.so
+            libcodec2_os_name: libcodec2_bullseye_armv7.so
           - arch: armv7
             distro: ubuntu_latest
-            libcodec2_os_name: libcodec2_ubuntu-latest_armv7.so
+            libcodec2_os_name: libcodec2_ubuntu_latest_armv7.so
 
     steps:
       - uses: actions/checkout@v2.1.0
@@ -139,7 +139,7 @@ jobs:
 
           # Pass some environment variables to the container
           env: | # YAML, but pipe character is necessary
-            artifact_name: libcodec2_${{ matrix.distro }}_${{ matrix.arch }}.so
+            artifact_name: ${{ matrix.libcodec2_os_name }}
 
           # The shell to run commands with in the container
           shell: /bin/sh
@@ -179,19 +179,25 @@ jobs:
             cd build
             cmake ../
             make
-            mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
+            mv ./src/libcodec2.so.1.0 /artifacts/${ matrix.libcodec2_os_name }
 
-      - name: Show the artifact
+      - name: Show recursive PWD
         # Items placed in /artifacts in the container will be in
         # ${PWD}/artifacts on the host.
         run: |
           ls -al "${PWD}/artifacts"
 
+      - name: Show recursive GITHUB WORKSPACE
+        # Items placed in /artifacts in the container will be in
+        # ${PWD}/artifacts on the host.
+        run: |
+          ls -R "${$GITHUB_WORKSPACE}/"
+
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.libcodec2_os_name }}
           #path: $GITHUB_WORKSPACE/codec2/artifacts/*
-          path: ${PWD}/artifacts/*
+          path: artifacts/*
 
   build_i686_x64_release:
     needs: [BUILD_ON_MULTIARCH, BUILD_ON_AMD64]
@@ -216,8 +222,8 @@ jobs:
           - os: windows-latest
             zip_name: windows_tnc
             generator: Visual Studio 16 2019
-            daemon_binary_name: freedata-daemon.exe
-            tnc_binary_name: freedata-tnc.exe
+            daemon_binary_name: daemon.dist\freedata-daemon.exe
+            tnc_binary_name: main.dist\freedata-tnc.exe
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -288,7 +294,7 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Build Linux binaries
+      - name: Build binaries
         working-directory: tnc
         run: |
           #pyinstaller freedata.spec
