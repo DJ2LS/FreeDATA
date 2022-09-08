@@ -1681,18 +1681,11 @@ class DATA:
             self.snr_list = self.snr_list_low_bw
 
 
-        # TODO: check SNR against minimum operation level in mode list
-        # List for minimum SNR operating level for the corresponding mode in self.mode_list
-
+        # get mode which fits to given SNR
         for i in range(len(self.mode_list)):
             if static.SNR >= self.snr_list[i]:
                 self.speed_level = i
-                print("#######")
-                print(static.SNR)
-                print(i)
-                print(self.snr_list[i])
-
-        #self.speed_level = len(self.mode_list) - 1
+        self.log.debug("[TNC] calculated speed level", speed_level=self.speed_level, given_snr=static.SNR, min_snr=self.snr_list[self.speed_level])
 
         # Update modes we are listening to
         self.set_listening_modes(self.mode_list[self.speed_level])
