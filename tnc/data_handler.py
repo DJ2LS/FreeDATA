@@ -82,6 +82,10 @@ class DATA:
         self.mode_list_low_bw = [
             FREEDV_MODE.datac3.value,
         ]
+
+        # List for minimum SNR operating level for the corresponding mode in self.mode_list
+        self.snr_list_low_bw = [0]
+
         # List for time to wait for corresponding mode in seconds
         self.time_list_low_bw = [6]
 
@@ -90,6 +94,9 @@ class DATA:
             FREEDV_MODE.datac3.value,
             FREEDV_MODE.datac1.value,
         ]
+        # List for minimum SNR operating level for the corresponding mode in self.mode_list
+        self.snr_list_high_bw = [0, 15]
+
         # List for time to wait for corresponding mode in seconds
         self.time_list_high_bw = [6, 7]
 
@@ -1647,31 +1654,48 @@ class DATA:
             self.received_LOW_BANDWIDTH_MODE = False
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
+            self.snr_list = self.snr_list_high_bw
         elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value and static.LOW_BANDWIDTH_MODE:
             # ISS(w) <-> IRS(n)
             constellation = "ISS(w) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = False
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
+            self.snr_list = self.snr_list_low_bw
         elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not static.LOW_BANDWIDTH_MODE:
             # ISS(n) <-> IRS(w)
             constellation = "ISS(n) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
+            self.snr_list = self.snr_list_low_bw
         elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and static.LOW_BANDWIDTH_MODE:
             # ISS(n) <-> IRS(n)
             constellation = "ISS(n) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
+            self.snr_list = self.snr_list_low_bw
         else:
             constellation = "not matched"
             self.received_LOW_BANDWIDTH_MODE = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
+            self.snr_list = self.snr_list_low_bw
 
-        self.speed_level = len(self.mode_list) - 1
+
+        # TODO: check SNR against minimum operation level in mode list
+        # List for minimum SNR operating level for the corresponding mode in self.mode_list
+
+        for i in range(len(self.mode_list)):
+            if static.SNR >= self.snr_list[i]:
+                self.speed_level = i
+                print("#######")
+                print(static.SNR)
+                print(i)
+                print(self.snr_list[i])
+
+        #self.speed_level = len(self.mode_list) - 1
 
         # Update modes we are listening to
         self.set_listening_modes(self.mode_list[self.speed_level])
@@ -1717,6 +1741,8 @@ class DATA:
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[8:9] = self.speed_level
+
         # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
@@ -1764,7 +1790,10 @@ class DATA:
                 self.mode_list = self.mode_list_high_bw
                 self.time_list = self.time_list_high_bw
                 self.log.debug("[TNC] high bandwidth mode", modes=self.mode_list)
-            self.speed_level = len(self.mode_list) - 1
+
+            # set speed level from session opener frame which is selected by SNR measurement
+            self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
+            #self.speed_level = len(self.mode_list) - 1
 
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
