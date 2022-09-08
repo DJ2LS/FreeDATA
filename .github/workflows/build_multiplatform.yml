@@ -297,8 +297,7 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
 
 
-      - name: Copy binaries unix linux
-        if: matrix.os != 'windows-latest'
+      - name: Copy binaries
         working-directory: tnc
         run: |
           mkdir dist
@@ -306,14 +305,6 @@ jobs:
           cp ${{ matrix.daemon_binary_name }} dist/
           cp ${{ matrix.tnc_binary_name }} dist/
 
-      - name: Copy binaries windows
-        if: matrix.os == 'windows-latest'
-        working-directory: tnc
-        run: |
-          mkdir dist
-          ls -R
-          cp daemon.dist\${{ matrix.daemon_binary_name }} dist/
-          cp daemon.dist\${{ matrix.tnc_binary_name }} dist/
 
       - name: Install Pyaudio Windows
         if: matrix.os == 'windows-latest'
