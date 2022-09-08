@@ -278,15 +278,15 @@ class DATA:
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
         if (
-            _valid1
-            or _valid2
-            or frametype
-            in [
-                FR_TYPE.CQ.value,
-                FR_TYPE.QRV.value,
-                FR_TYPE.PING.value,
-                FR_TYPE.BEACON.value,
-            ]
+                _valid1
+                or _valid2
+                or frametype
+                in [
+            FR_TYPE.CQ.value,
+            FR_TYPE.QRV.value,
+            FR_TYPE.PING.value,
+            FR_TYPE.BEACON.value,
+        ]
         ):
 
             # CHECK IF FRAMETYPE IS BETWEEN 10 and 50 ------------------------
@@ -335,11 +335,11 @@ class DATA:
             )
 
     def enqueue_frame_for_tx(
-        self,
-        frame_to_tx: bytearray,
-        c2_mode=FREEDV_MODE.datac0.value,
-        copies=1,
-        repeat_delay=0,
+            self,
+            frame_to_tx: bytearray,
+            c2_mode=FREEDV_MODE.datac0.value,
+            copies=1,
+            repeat_delay=0,
     ) -> None:
         """
         Send (transmit) supplied frame to TNC
@@ -473,7 +473,7 @@ class DATA:
         self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=250)
 
     def arq_data_received(
-        self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
+            self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
     ) -> None:
         """
         Args:
@@ -571,8 +571,8 @@ class DATA:
                 # if we find data, replace it at this position with the new data and strip it
                 if get_position >= 0:
                     static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[
-                        : search_position + get_position
-                    ]
+                                             : search_position + get_position
+                                             ]
                     static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.warning(
                         "[TNC] ARQ | RX | replacing existing buffer data",
@@ -587,9 +587,9 @@ class DATA:
             # Check if we didn't receive a BOF and EOF yet to avoid sending
             # ack frames if we already received all data
             if (
-                not self.rx_frame_bof_received
-                and not self.rx_frame_eof_received
-                and data_in.find(self.data_frame_eof) < 0
+                    not self.rx_frame_bof_received
+                    and not self.rx_frame_eof_received
+                    and data_in.find(self.data_frame_eof) < 0
             ):
 
                 self.frame_received_counter += 1
@@ -649,8 +649,8 @@ class DATA:
 
         if bof_position >= 0:
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof) : eof_position
-            ]
+                      bof_position + len(self.data_frame_bof): eof_position
+                      ]
             frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
             static.TOTAL_BYTES = frame_length
             compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
@@ -662,9 +662,9 @@ class DATA:
             )
 
         if (
-            bof_position >= 0
-            and eof_position > 0
-            and None not in static.RX_BURST_BUFFER
+                bof_position >= 0
+                and eof_position > 0
+                and None not in static.RX_BURST_BUFFER
         ):
             self.log.debug(
                 "[TNC] arq_data_received:",
@@ -676,8 +676,8 @@ class DATA:
 
             # Extract raw data from buffer
             payload = static.RX_FRAME_BUFFER[
-                bof_position + len(self.data_frame_bof) : eof_position
-            ]
+                      bof_position + len(self.data_frame_bof): eof_position
+                      ]
             # Get the data frame crc
             data_frame_crc = payload[:4]  # 0:4 = 4 bytes
             # Get the data frame length
@@ -850,12 +850,12 @@ class DATA:
 
         # Assemble the data frame
         data_out = (
-            self.data_frame_bof
-            + frame_payload_crc
-            + frame_total_size
-            + compression_factor
-            + data_out
-            + self.data_frame_eof
+                self.data_frame_bof
+                + frame_payload_crc
+                + frame_total_size
+                + compression_factor
+                + data_out
+                + self.data_frame_eof
         )
 
         # Initial bufferposition is 0
@@ -924,7 +924,7 @@ class DATA:
                 else:
                     extended_data_out = data_out[bufferposition:]
                     extended_data_out += bytes([0]) * (
-                        payload_per_frame - len(extended_data_out) - len(arqheader)
+                            payload_per_frame - len(extended_data_out) - len(arqheader)
                     )
                     frame = arqheader + extended_data_out
 
@@ -951,10 +951,10 @@ class DATA:
 
                 # burstacktimeout = time.time() + BURST_ACK_TIMEOUT_SECONDS + 100
                 while static.ARQ_STATE and not (
-                    self.burst_ack
-                    or self.burst_nack
-                    or self.rpt_request_received
-                    or self.data_frame_ack_received
+                        self.burst_ack
+                        or self.burst_nack
+                        or self.rpt_request_received
+                        or self.data_frame_ack_received
                 ):
                     time.sleep(0.01)
 
@@ -1125,7 +1125,7 @@ class DATA:
             )
 
     def frame_ack_received(
-        self, data_in: bytes  # pylint: disable=unused-argument
+            self, data_in: bytes  # pylint: disable=unused-argument
     ) -> None:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
@@ -1145,7 +1145,7 @@ class DATA:
             self.arq_session_last_received = int(time.time())
 
     def frame_nack_received(
-        self, data_in: bytes  # pylint: disable=unused-argument
+            self, data_in: bytes  # pylint: disable=unused-argument
     ) -> None:
         """
         Received a NACK for a transmitted frame
@@ -1202,8 +1202,8 @@ class DATA:
             missing_area = bytes(data_in[3:12])  # 1:9
 
             for i in range(0, 6, 2):
-                if not missing_area[i : i + 2].endswith(b"\x00\x00"):
-                    missing = missing_area[i : i + 2]
+                if not missing_area[i: i + 2].endswith(b"\x00\x00"):
+                    missing = missing_area[i: i + 2]
                     self.rpt_request_buffer.insert(0, missing)
 
     ############################################################################################################
@@ -1467,12 +1467,12 @@ class DATA:
     # ARQ DATA CHANNEL HANDLER
     ##########################################################################################################
     def open_dc_and_transmit(
-        self,
-        data_out: bytes,
-        mode: int,
-        n_frames_per_burst: int,
-        transmission_uuid: str,
-        mycallsign,
+            self,
+            data_out: bytes,
+            mode: int,
+            n_frames_per_burst: int,
+            transmission_uuid: str,
+            mycallsign,
     ) -> bool:
         """
         Open data channel and transmit data
@@ -1518,7 +1518,7 @@ class DATA:
         return False
 
     def arq_open_data_channel(
-        self, mode: int, n_frames_per_burst: int, mycallsign
+            self, mode: int, n_frames_per_burst: int, mycallsign
     ) -> bool:
         """
         Open an ARQ data channel.
@@ -1567,7 +1567,7 @@ class DATA:
                     + "]>> <<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    attempt=f"{str(attempt+1)}/{str(self.data_channel_max_retries)}",
+                    attempt=f"{str(attempt + 1)}/{str(self.data_channel_max_retries)}",
                 )
 
                 self.enqueue_frame_for_tx(connection_frame)
@@ -1680,12 +1680,19 @@ class DATA:
             self.time_list = self.time_list_low_bw
             self.snr_list = self.snr_list_low_bw
 
-
         # get mode which fits to given SNR
+        # initially set speed_level 0 in case of really bad SNR and no matching mode
+        self.speed_level = 0
         for i in range(len(self.mode_list)):
             if static.SNR >= self.snr_list[i]:
                 self.speed_level = i
-        self.log.debug("[TNC] calculated speed level", speed_level=self.speed_level, given_snr=static.SNR, min_snr=self.snr_list[self.speed_level])
+
+        self.log.debug(
+            "[TNC] calculated speed level",
+            speed_level=self.speed_level,
+            given_snr=static.SNR,
+            min_snr=self.snr_list[self.speed_level],
+        )
 
         # Update modes we are listening to
         self.set_listening_modes(self.mode_list[self.speed_level])
@@ -1784,7 +1791,7 @@ class DATA:
             # set speed level from session opener frame which is selected by SNR measurement
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             self.log.debug("[TNC] speed level selected for given SNR", speed_level=self.speed_level)
-            #self.speed_level = len(self.mode_list) - 1
+            # self.speed_level = len(self.mode_list) - 1
 
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
@@ -1983,7 +1990,7 @@ class DATA:
         self.arq_cleanup()
 
     def received_stop_transmission(
-        self, data_in: bytes
+            self, data_in: bytes
     ) -> None:  # pylint: disable=unused-argument
         """
         Received a transmission stop
@@ -2017,9 +2024,9 @@ class DATA:
                 time.sleep(0.5)
                 while static.BEACON_STATE:
                     if (
-                        not static.ARQ_SESSION
-                        and not self.arq_file_transfer
-                        and not static.BEACON_PAUSE
+                            not static.ARQ_SESSION
+                            and not self.arq_file_transfer
+                            and not static.BEACON_PAUSE
                     ):
                         self.send_data_to_socket_queue(
                             freedata="tnc-message",
@@ -2046,9 +2053,9 @@ class DATA:
 
                     interval_timer = time.time() + self.beacon_interval
                     while (
-                        time.time() < interval_timer
-                        and static.BEACON_STATE
-                        and not static.BEACON_PAUSE
+                            time.time() < interval_timer
+                            and static.BEACON_STATE
+                            and not static.BEACON_PAUSE
                     ):
                         time.sleep(0.01)
 
@@ -2226,7 +2233,7 @@ class DATA:
 
     # ------------ CALUCLATE TRANSFER RATES
     def calculate_transfer_rate_rx(
-        self, rx_start_of_transmission: float, receivedbytes: int
+            self, rx_start_of_transmission: float, receivedbytes: int
     ) -> list:
         """
         Calculate transfer rate for received data
@@ -2245,9 +2252,9 @@ class DATA:
             static.ARQ_TRANSMISSION_PERCENT = min(
                 int(
                     (
-                        receivedbytes
-                        * static.ARQ_COMPRESSION_FACTOR
-                        / (static.TOTAL_BYTES)
+                            receivedbytes
+                            * static.ARQ_COMPRESSION_FACTOR
+                            / (static.TOTAL_BYTES)
                     )
                     * 100
                 ),
@@ -2290,7 +2297,7 @@ class DATA:
         static.TOTAL_BYTES = 0
 
     def calculate_transfer_rate_tx(
-        self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int
+            self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int
     ) -> list:
         """
         Calculate transfer rate for transmission
@@ -2440,16 +2447,16 @@ class DATA:
         # TODO: We need to redesign this part for cleaner state handling
         # Return if not ARQ STATE and not ARQ SESSION STATE as they are different use cases
         if (
-            not static.ARQ_STATE
-            and static.ARQ_SESSION_STATE != "connected"
-            or not self.is_IRS
+                not static.ARQ_STATE
+                and static.ARQ_SESSION_STATE != "connected"
+                or not self.is_IRS
         ):
             return
 
         # We want to reach this state only if connected ( == return above not called )
         if (
-            self.data_channel_last_received + self.time_list[self.speed_level]
-            <= time.time()
+                self.data_channel_last_received + self.time_list[self.speed_level]
+                <= time.time()
         ):
             self.log.warning(
                 "[TNC] Frame timeout",
@@ -2490,8 +2497,8 @@ class DATA:
         if static.ARQ_STATE and static.TNC_STATE == "BUSY":
             time.sleep(0.01)
             if (
-                self.data_channel_last_received + self.transmission_timeout
-                > time.time()
+                    self.data_channel_last_received + self.transmission_timeout
+                    > time.time()
             ):
                 time.sleep(0.01)
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
@@ -2520,9 +2527,9 @@ class DATA:
         ARQ SESSION
         """
         if (
-            static.ARQ_SESSION
-            and static.TNC_STATE == "BUSY"
-            and not self.arq_file_transfer
+                static.ARQ_SESSION
+                and static.TNC_STATE == "BUSY"
+                and not self.arq_file_transfer
         ):
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
                 time.sleep(0.01)
@@ -2549,10 +2556,10 @@ class DATA:
         while True:
             time.sleep(0.01)
             if (
-                static.ARQ_SESSION
-                and self.IS_ARQ_SESSION_MASTER
-                and static.ARQ_SESSION_STATE == "connected"
-                and not self.arq_file_transfer
+                    static.ARQ_SESSION
+                    and self.IS_ARQ_SESSION_MASTER
+                    and static.ARQ_SESSION_STATE == "connected"
+                    and not self.arq_file_transfer
             ):
                 time.sleep(1)
                 self.transmit_session_heartbeat()
