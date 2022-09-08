@@ -95,7 +95,7 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [0, 15]
+        self.snr_list_high_bw = [0, 5]
 
         # List for time to wait for corresponding mode in seconds
         self.time_list_high_bw = [6, 7]
@@ -803,10 +803,6 @@ class DATA:
         """
         self.arq_file_transfer = True
 
-        # Start at the highest speed level for selected speed mode
-        self.speed_level = len(self.mode_list) - 1
-        static.ARQ_SPEED_LEVEL = self.speed_level
-
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost
         TX_N_MAX_RETRIES_PER_BURST = 50
@@ -889,6 +885,7 @@ class DATA:
                 # - maximum of either the speed or zero
                 self.speed_level = min(self.speed_level, len(self.mode_list) - 1)
                 self.speed_level = max(self.speed_level, 0)
+
                 static.ARQ_SPEED_LEVEL = self.speed_level
                 data_mode = self.mode_list[self.speed_level]
 
@@ -1741,7 +1738,7 @@ class DATA:
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
-        connection_frame[8:9] = self.speed_level
+        connection_frame[8:9] = bytes([self.speed_level])
 
         # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
@@ -1793,6 +1790,7 @@ class DATA:
 
             # set speed level from session opener frame which is selected by SNR measurement
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
+            self.log.debug("[TNC] speed level selected for given SNR", speed_level=self.speed_level)
             #self.speed_level = len(self.mode_list) - 1
 
             helpers.add_to_heard_stations(
