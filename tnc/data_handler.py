@@ -83,7 +83,7 @@ class DATA:
             FREEDV_MODE.datac3.value,
         ]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [3, 7]
+        self.time_list_low_bw = [6]
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
@@ -91,7 +91,7 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [3, 7, 8, 30]
+        self.time_list_high_bw = [6, 7]
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
@@ -1635,14 +1635,42 @@ class DATA:
 
         frametype = int.from_bytes(bytes(data_in[:1]), "big")
         # check if we received low bandwidth mode
-        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value:
+        # possible channel constellations
+        # ISS(w) <-> IRS(w)
+        # ISS(w) <-> IRS(n)
+        # ISS(n) <-> IRS(w)
+        # ISS(n) <-> IRS(n)
+
+        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value and not static.LOW_BANDWIDTH_MODE:
+            # ISS(w) <-> IRS(w)
+            constellation = "ISS(w) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = False
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
-        else:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value and static.LOW_BANDWIDTH_MODE:
+            # ISS(w) <-> IRS(n)
+            constellation = "ISS(w) <-> IRS(n)"
+            self.received_LOW_BANDWIDTH_MODE = False
+            self.mode_list = self.mode_list_low_bw
+            self.time_list = self.time_list_low_bw
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not static.LOW_BANDWIDTH_MODE:
+            # ISS(n) <-> IRS(w)
+            constellation = "ISS(n) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = True
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and static.LOW_BANDWIDTH_MODE:
+            # ISS(n) <-> IRS(n)
+            constellation = "ISS(n) <-> IRS(n)"
+            self.received_LOW_BANDWIDTH_MODE = True
+            self.mode_list = self.mode_list_low_bw
+            self.time_list = self.time_list_low_bw
+        else:
+            constellation = "not matched"
+            self.received_LOW_BANDWIDTH_MODE = True
+            self.mode_list = self.mode_list_low_bw
+            self.time_list = self.time_list_low_bw
+
         self.speed_level = len(self.mode_list) - 1
 
         # Update modes we are listening to
@@ -1666,7 +1694,7 @@ class DATA:
             + "]>> <<["
             + str(static.DXCALLSIGN, "UTF-8")
             + "]",
-            bandwidth="wide",
+            channel_constellation=constellation,
         )
 
         static.ARQ_STATE = True
