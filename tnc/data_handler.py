@@ -48,7 +48,7 @@ class DATA:
         self.IS_ARQ_SESSION_MASTER = False
         self.arq_session_last_received = 0
         self.arq_session_timeout = 30
-        self.session_connect_max_retries = 3
+        self.session_connect_max_retries = 15
 
         self.transmission_uuid = ""
 
@@ -75,7 +75,7 @@ class DATA:
         # Flag to indicate if we recevied a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
 
-        self.data_channel_max_retries = 5
+        self.data_channel_max_retries = 15
         self.datachannel_timeout = False
 
         # List of codec2 modes to use in "low bandwidth" mode.
@@ -1568,7 +1568,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx(connection_frame)
 
-                timeout = time.time() + 3
+                timeout = time.time() + 2
                 while time.time() < timeout:
                     time.sleep(0.01)
                     # Stop waiting if data channel is opened
