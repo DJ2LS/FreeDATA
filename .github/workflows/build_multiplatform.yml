@@ -254,6 +254,7 @@ jobs:
           pip install numpy
           pip install structlog
           pip install colorama
+          pip install pyaudio
           pip install sounddevice
           # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
@@ -261,11 +262,11 @@ jobs:
           pip install ordered-set
 
 
-      - name: Install Pyaudio Windows
-        if: matrix.os == 'windows-latest'
-        working-directory: tnc/lib/pyaudio/windows
-        run: |
-          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+      #- name: Install Pyaudio Windows
+        #if: matrix.os == 'windows-latest'
+        #working-directory: tnc/lib/pyaudio/windows
+        #run: |
+        #  pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -293,8 +294,8 @@ jobs:
         working-directory: tnc
         run: |
           #pyinstaller freedata.spec
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py -o ${{ matrix.daemon_binary_name }}
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py -o ${{ matrix.tnc_binary_name }}
 
 
       - name: Copy binaries
@@ -302,15 +303,10 @@ jobs:
         run: |
           mkdir dist
           ls -R
-          cp ${{ matrix.daemon_binary_name }} dist/
-          cp ${{ matrix.tnc_binary_name }} dist/
-
-
-      - name: Install Pyaudio Windows
-        if: matrix.os == 'windows-latest'
-        working-directory: tnc/lib/pyaudio/windows
-        run: |
-          pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+          #cp ${{ matrix.daemon_binary_name }} dist/
+          #cp ${{ matrix.tnc_binary_name }} dist/
+          cp -r freedata-daemon.dist/ dist/
+          cp -r freedata-tnc.dist/ dist/
 
       - name: LIST ALL FILES
         shell: bash
