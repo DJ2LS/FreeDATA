@@ -298,16 +298,23 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-      - name: Copy binaries
+      - name: Copy binaries linux unix
+        if: matrix.os != 'windows-latest'
         working-directory: tnc
         run: |
           mkdir dist
           ls -R
-          #cp ${{ matrix.daemon_binary_name }} dist/
-          #cp ${{ matrix.tnc_binary_name }} dist/
           cp -r -f daemon.dist/* dist/
           cp -r -f main.dist/* dist/
 
+      - name: Copy binaries windows
+        if: matrix.os == 'windows-latest'
+        working-directory: tnc
+        run: |
+          mkdir dist
+          ls -R
+          cp -r -Force daemon.dist/* dist/
+          cp -r -Force main.dist/* dist/
       - name: rename tnc binaries
         working-directory: tnc
         run: |
