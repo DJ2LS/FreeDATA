@@ -432,6 +432,7 @@ class RF:
         """
         self.log.debug("[MDM] transmit", mode=mode)
         static.TRANSMITTING = True
+        start_of_transmission = time.time()
         # Toggle ptt early to save some time and send ptt state via socket
         static.PTT_STATE = self.hamlib.set_ptt(True)
         jsondata = {"ptt": "True"}
@@ -572,6 +573,10 @@ class RF:
         self.modem_transmit_queue.task_done()
         static.TRANSMITTING = False
         threading.Event().set()
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def demodulate_audio(
         self,
