@@ -254,7 +254,6 @@ jobs:
           pip install numpy
           pip install structlog
           pip install colorama
-          pip install pyaudio
           pip install sounddevice
           # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
           # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
@@ -294,9 +293,10 @@ jobs:
         working-directory: tnc
         run: |
           #pyinstaller freedata.spec
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py -o ${{ matrix.daemon_binary_name }}
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py -o ${{ matrix.tnc_binary_name }}
-
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py -o ${{ matrix.daemon_binary_name }}
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py -o ${{ matrix.tnc_binary_name }}
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
       - name: Copy binaries
         working-directory: tnc
