@@ -293,8 +293,8 @@ jobs:
         working-directory: tnc
         run: |
           #pyinstaller freedata.spec
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py -o ${{ matrix.daemon_binary_name }}
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py -o ${{ matrix.tnc_binary_name }}
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
@@ -305,8 +305,8 @@ jobs:
           ls -R
           #cp ${{ matrix.daemon_binary_name }} dist/
           #cp ${{ matrix.tnc_binary_name }} dist/
-          cp -r freedata-daemon.dist/ dist/
-          cp -r freedata-tnc.dist/ dist/
+          cp -r daemon.dist/ dist/
+          cp -r main.dist/ dist/
 
       - name: LIST ALL FILES
         shell: bash
