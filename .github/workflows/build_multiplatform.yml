@@ -308,19 +308,16 @@ jobs:
           cp -r daemon.dist/ dist/
           cp -r main.dist/ dist/
 
-- name: rename tnc binaries
+      - name: rename tnc binaries
         working-directory: tnc
         run: |
           mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
           mv dist/main* dist/${{ matrix.tnc_binary_name }}
 
-- name: Download Portaudio binaries
+      - name: Download Portaudio binaries
         working-directory: tnc
         run: |
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
-
-
-
 
       - name: LIST ALL FILES
         shell: bash
