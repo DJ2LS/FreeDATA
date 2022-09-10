@@ -187,7 +187,6 @@ window.addEventListener('DOMContentLoaded', () => {
     })
 
     // NEW CHAT
-    
 
     document.getElementById("createNewChatButton").addEventListener("click", () => {
         var dxcallsign = document.getElementById('chatModuleNewDxCall').value;
@@ -277,9 +276,6 @@ db.post({
 
         update_chat_obj_by_uuid(uuid);
 
-        // scroll to bottom    
-        var element = document.getElementById("message-container");
-        element.scrollTo(0, element.scrollHeight);
         // clear input
         document.getElementById('chatModuleMessage').value = ''
                 
@@ -521,10 +517,10 @@ update_chat = function(obj) {
             //document.getElementById('chatModuleDxCall').value = dxcallsign;
             selected_callsign = dxcallsign;
 
-            // scroll to bottom    
-            var element = document.getElementById("message-container");
-            //console.log(element.scrollHeight)
-            element.scrollTo(0, element.scrollHeight);
+
+            setTimeout(scrollMessagesToBottom, 200);
+
+
 
 
         });
@@ -662,9 +658,6 @@ update_chat = function(obj) {
         // CHECK CHECK CHECK --> This could be done better
         var id = "chat-" + obj.dxcallsign
         document.getElementById(id).insertAdjacentHTML("beforeend", new_message);
-        
-        //var element = document.getElementById("message-container");
-        //console.log(element.scrollHeight)
 
     /* UPDATE EXISTING ELEMENTS */
     } else if (document.getElementById('msg-' + obj._id)) {
@@ -730,9 +723,6 @@ update_chat = function(obj) {
                 // handle doc
                 console.log(doc)
 
-
-
-
                 var filename = Object.keys(obj._attachments)[0]
                 var filetype = filename.content_type
  
@@ -774,6 +764,10 @@ update_chat = function(obj) {
 
     }
     //window.location = window.location
+
+    // scroll to bottom on new message
+    scrollMessagesToBottom();
+
 }
 
 
@@ -869,4 +863,11 @@ add_obj_to_database = function(obj){
     }).catch(function(err) {
         console.log(err);
     });
+}
+
+
+// Scroll to bottom of message-container
+function scrollMessagesToBottom() {
+    var messageBody = document.getElementById('message-container');
+    messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
 }
