@@ -114,8 +114,8 @@ jobs:
             distro: bullseye
             libcodec2_os_name: libcodec2_ubuntu-bullseye_armv7.so
           - arch: armv7
-            distro: ubuntu18.04
-            libcodec2_os_name: libcodec2_ubuntu-1804_armv7.so
+            distro: ubuntu20.04
+            libcodec2_os_name: libcodec2_ubuntu-2004_armv7.so
 
     steps:
       - uses: actions/checkout@v2.1.0
@@ -154,15 +154,18 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y git build-essential cmake
+                apt-get install -q -y git build-essential cmake gcc g++
+                cmake --version
                 ;;
               fedora*)
                 dnf -y update
-                dnf -y install git which build-essential cmake
+                dnf -y install git which build-essential cmake gcc-c++ gcc
+                cmake --version
                 ;;
               alpine*)
                 apk update
-                apk add git build-essential cmake
+                apk add git build-essential cmake gcc g++
+                cmake --version
                 ;;
             esac
 
