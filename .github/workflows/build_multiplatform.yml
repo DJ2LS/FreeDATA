@@ -305,8 +305,8 @@ jobs:
           ls -R
           #cp ${{ matrix.daemon_binary_name }} dist/
           #cp ${{ matrix.tnc_binary_name }} dist/
-          cp -r daemon.dist/* dist/
-          cp -r main.dist/* dist/
+          cp -r -f daemon.dist/* dist/
+          cp -r -f main.dist/* dist/
 
       - name: rename tnc binaries
         working-directory: tnc
