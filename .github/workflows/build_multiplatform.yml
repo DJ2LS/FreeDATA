@@ -315,6 +315,7 @@ jobs:
           ls -R
           cp -r -Force daemon.dist/* dist/
           cp -r -Force main.dist/* dist/
+
       - name: rename tnc binaries
         working-directory: tnc
         run: |
@@ -325,6 +326,10 @@ jobs:
         working-directory: tnc
         run: |
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: dist/codec2
 
       - name: LIST ALL FILES
         shell: bash
