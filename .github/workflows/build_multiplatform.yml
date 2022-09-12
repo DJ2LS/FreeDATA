@@ -231,6 +231,16 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: early download of libcodec2
+        if: matrix.os != 'windows-latest'
+        working-directory: tnc
+        run: |
+          mkdir dist
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: tnc/dist/codec2
+
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -270,21 +280,16 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: cleanup codec2
-        working-directory: tnc/lib/
-        run: |
-          mkdir codec2
-          cd codec2
-
-      - uses: actions/download-artifact@v3
-        with:
-          path: tnc/lib/codec2
-
-
-      # - name: Unzip all artifacts
-      #  working-directory: tnc/lib/codec2
+      #- name: cleanup codec2
+      #  working-directory: tnc/lib/
       #  run: |
-      #    unzip *.zip
+      #    mkdir codec2
+      #    cd codec2
+
+      #- uses: actions/download-artifact@v3
+      #  with:
+      #    path: tnc/lib/codec2
+
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -302,7 +307,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         working-directory: tnc
         run: |
-          mkdir dist
+          #mkdir dist
           ls -R
           cp -r -f daemon.dist/* dist/
           cp -r -f main.dist/* dist/
@@ -311,10 +316,11 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |
-          mkdir dist
+          #mkdir dist
           ls -R
           cp -r -Force daemon.dist/* dist/
           cp -r -Force main.dist/* dist/
+
       - name: rename tnc binaries
         working-directory: tnc
         run: |
@@ -325,6 +331,10 @@ jobs:
         working-directory: tnc
         run: |
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
+
+      #- uses: actions/download-artifact@v3
+      #  with:
+      #    path: tnc/dist/codec2
 
       - name: LIST ALL FILES
         shell: bash
@@ -389,3 +399,14 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
 
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R
+
+      - name: Upload App bundle artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app_bundle_${{ matrix.os }}.zip
+          #path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          path: ./gui/dist/*
