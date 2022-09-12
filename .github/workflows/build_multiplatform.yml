@@ -307,7 +307,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         working-directory: tnc
         run: |
-          mkdir dist
+          #mkdir dist
           ls -R
           cp -r -f daemon.dist/* dist/
           cp -r -f main.dist/* dist/
@@ -316,7 +316,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         working-directory: tnc
         run: |
-          mkdir dist
+          #mkdir dist
           ls -R
           cp -r -Force daemon.dist/* dist/
           cp -r -Force main.dist/* dist/
