@@ -231,6 +231,16 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: early download of libcodec2
+        if: matrix.os != 'windows-latest'
+        working-directory: tnc
+        run: |
+          mkdir dist
+
+      - uses: actions/download-artifact@v3
+        with:
+          path: tnc/dist/codec2
+
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-20.04'
         run: |
@@ -270,21 +280,16 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: cleanup codec2
-        working-directory: tnc/lib/
-        run: |
-          mkdir codec2
-          cd codec2
-
-      - uses: actions/download-artifact@v3
-        with:
-          path: tnc/lib/codec2
-
-
-      # - name: Unzip all artifacts
-      #  working-directory: tnc/lib/codec2
+      #- name: cleanup codec2
+      #  working-directory: tnc/lib/
       #  run: |
-      #    unzip *.zip
+      #    mkdir codec2
+      #    cd codec2
+
+      #- uses: actions/download-artifact@v3
+      #  with:
+      #    path: tnc/lib/codec2
+
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -327,9 +332,9 @@ jobs:
         run: |
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
 
-      - uses: actions/download-artifact@v3
-        with:
-          path: tnc/dist/codec2
+      #- uses: actions/download-artifact@v3
+      #  with:
+      #    path: tnc/dist/codec2
 
       - name: LIST ALL FILES
         shell: bash
