@@ -329,7 +329,7 @@ jobs:
 
       - uses: actions/download-artifact@v3
         with:
-          path: dist/codec2
+          path: tnc/dist/codec2
 
       - name: LIST ALL FILES
         shell: bash
