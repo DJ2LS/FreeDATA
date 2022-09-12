@@ -389,3 +389,14 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: "-p always"
 
+      - name: LIST ALL FILES
+        shell: bash
+        run: |
+          ls -R
+
+      - name: Upload App bundle artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: app_bundle_${{ matrix.os }}.zip
+          #path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          path: ./gui/dist/*
