@@ -603,6 +603,7 @@ class DATA:
                     )
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
+
                 # Update modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
 
