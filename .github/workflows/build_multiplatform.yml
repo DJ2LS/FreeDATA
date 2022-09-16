@@ -52,7 +52,7 @@ jobs:
       - name: Build codec2 ${{ matrix.os }}
         if: ${{startsWith(matrix.platform.name, 'native') }}
         run: |
-          git clone https://github.com/drowe67/codec2.git
+          git clone https://github.com/DJ2LS/codec2.git -b ls-ofdm-octave-tests
           cd codec2
           mkdir build
           mkdir tempfiles
