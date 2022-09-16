@@ -74,7 +74,7 @@ jobs:
         if: ${{startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.platform.name, 'native') }}
         run: |
           sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
-          git clone https://github.com/drowe67/codec2.git
+          git clone https://github.com/DJ2lS/codec2.git -b ls-ofdm-octave-tests
           cd codec2
           mkdir tempfiles
           mkdir build_w32
@@ -172,7 +172,7 @@ jobs:
           # Produce a binary artifact and place it in the mounted volume
           run: |
             
-            git clone https://github.com/drowe67/codec2.git
+            git clone https://github.com/DJ2LS/codec2.git -b ls-ofdm-octave-tests
             cd codec2
             git checkout master
             mkdir build
