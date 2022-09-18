@@ -9,7 +9,7 @@ import structlog
 
 atexit.register(sd._terminate)
 
-log = structlog.get_logger()
+log = structlog.get_logger("audio")
 
 
 def get_audio_devices():
@@ -52,7 +52,7 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
-    log.error("fetch_audio_devices", devices=devices)
+    log.error("[Aud] fetch_audio_devices", devices=devices)
     # The use of set forces the list to contain only unique entries.
     input_devs = set()
     output_devs = set()
@@ -79,8 +79,8 @@ def fetch_audio_devices(input_devices, output_devices):
             output_devs.add(name)
 
     for index, item in enumerate(input_devs):
-        log.error(f"Adding input device - id: {index}, name: {item}")
+        log.error(f"[Aud] Adding input device - id: {index}, name: {item}")
         input_devices.append({"id": index, "name": item})
     for index, item in enumerate(output_devs):
-        log.error(f"Adding output device - id: {index}, name: {item}")
+        log.error(f"[Aud] Adding output device - id: {index}, name: {item}")
         output_devices.append({"id": index, "name": item})
