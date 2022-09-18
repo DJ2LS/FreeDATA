@@ -79,6 +79,8 @@ def fetch_audio_devices(input_devices, output_devices):
             output_devs.add(name)
 
     for index, item in enumerate(input_devs):
+        log.error(f"Adding input device - id: {index}, name: {item}")
         input_devices.append({"id": index, "name": item})
     for index, item in enumerate(output_devs):
+        log.error(f"Adding output device - id: {index}, name: {item}")
         output_devices.append({"id": index, "name": item})
