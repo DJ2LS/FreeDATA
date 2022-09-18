@@ -49,7 +49,7 @@ jobs:
 
 
     steps:
-      - name: Build codec2 ${{ matrix.os }}
+      - name: Build codec2 ${{ matrix.os }} ${{ matrix.platform.name }}
         if: ${{startsWith(matrix.platform.name, 'native') }}
         run: |
           git clone https://github.com/drowe67/codec2.git
@@ -70,7 +70,7 @@ jobs:
           path: ${{ github.workspace }}/codec2/tempfiles/
 
 
-      - name: Build ${{ matrix.platform.name }} ${{ matrix.architecture }}
+      - name: Build codec2 ${{ matrix.platform.name }} ${{ matrix.architecture }}
         if: ${{startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.platform.name, 'native') }}
         run: |
           sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
@@ -171,7 +171,6 @@ jobs:
 
           # Produce a binary artifact and place it in the mounted volume
           run: |
-            
             git clone https://github.com/drowe67/codec2.git
             cd codec2
             git checkout master
@@ -181,7 +180,7 @@ jobs:
             make
             mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
 
-      - name: Show recursive PWD
+      - name: Show recursive PWD/artifacts
         # Items placed in /artifacts in the container will be in
         # ${PWD}/artifacts on the host.
         run: |
@@ -235,7 +234,7 @@ jobs:
         if: matrix.os != 'windows-latest'
         working-directory: tnc
         run: |
-          mkdir dist
+          mkdir -p dist
 
       - uses: actions/download-artifact@v3
         with:
@@ -244,9 +243,9 @@ jobs:
       - name: Install Linux dependencies
         if: matrix.os == 'ubuntu-20.04'
         run: |
-          sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
 
-      - name: Install macOS pyAudio
+      - name: Install MacOS pyAudio
         if: matrix.os == 'macos-11'
         run: |
           brew install portaudio
@@ -258,7 +257,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install psutil
           pip install crcengine
-          pip install 'pyinstaller<5.1'
+          # pip install 'pyinstaller<5.1'
           pip install ujson
           pip install pyserial
           pip install numpy
@@ -290,9 +289,8 @@ jobs:
       #  with:
       #    path: tnc/lib/codec2
 
-
-      - name: Display structure of downloaded files
-        run: ls -R
+      # - name: Display structure of downloaded files
+      #   run: ls -R
 
       - name: Build binaries
         working-directory: tnc
@@ -303,14 +301,14 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-      - name: Copy binaries linux unix
+      - name: Copy binaries linux and MacOS
         if: matrix.os != 'windows-latest'
         working-directory: tnc
         run: |
           #mkdir dist
           ls -R
-          cp -r -f daemon.dist/* dist/
-          cp -r -f main.dist/* dist/
+          cp -r --force daemon.dist/* dist/
+          cp -r --force main.dist/* dist/
 
       - name: Copy binaries windows
         if: matrix.os == 'windows-latest'
@@ -318,8 +316,8 @@ jobs:
         run: |
           #mkdir dist
           ls -R
-          cp -r -Force daemon.dist/* dist/
-          cp -r -Force main.dist/* dist/
+          cp -r --force daemon.dist/* dist/
+          cp -r --force main.dist/* dist/
 
       - name: rename tnc binaries
         working-directory: tnc
