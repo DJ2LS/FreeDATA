@@ -27,6 +27,7 @@ def get_audio_devices():
     sd._terminate()
     sd._initialize()
 
+    log.error("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
@@ -37,6 +38,8 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
+        log.error(f"[AUD] get_audio_devices: input_devices: {proxy_input_devices}")
+        log.error(f"[AUD] get_audio_devices: output_devices: {proxy_output_devices}")
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
@@ -52,7 +55,7 @@ def fetch_audio_devices(input_devices, output_devices):
 
     """
     devices = sd.query_devices(device=None, kind=None)
-    log.error("[Aud] fetch_audio_devices", devices=devices)
+
     # The use of set forces the list to contain only unique entries.
     input_devs = set()
     output_devs = set()
@@ -79,8 +82,6 @@ def fetch_audio_devices(input_devices, output_devices):
             output_devs.add(name)
 
     for index, item in enumerate(input_devs):
-        log.error(f"[Aud] Adding input device - id: {index}, name: {item}")
         input_devices.append({"id": index, "name": item})
     for index, item in enumerate(output_devs):
-        log.error(f"[Aud] Adding output device - id: {index}, name: {item}")
         output_devices.append({"id": index, "name": item})
