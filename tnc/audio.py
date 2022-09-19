@@ -4,6 +4,7 @@ Gather information about audio devices.
 import atexit
 import multiprocessing
 
+import crcengine
 import sounddevice as sd
 import structlog
 
@@ -43,6 +44,14 @@ def get_audio_devices():
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
+def device_crc(dev_name: str) -> str:
+    crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc8 library
+    crc_hwid = crc_algorithm(bytes(dev_name, encoding="utf-8"))
+    crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
+    crc_hwid = crc_hwid.hex()
+    return f"{dev_name} [{crc_hwid}]"
+
+
 def fetch_audio_devices(input_devices, output_devices):
     """
     get audio devices from portaudio
@@ -77,9 +86,9 @@ def fetch_audio_devices(input_devices, output_devices):
             name = ""
 
         if max_input_channels > 0:
-            input_devs.add(name)
+            input_devs.add(device_crc(name))
         if max_output_channels > 0:
-            output_devs.add(name)
+            output_devs.add(device_crc(name))
 
     for index, item in enumerate(input_devs):
         input_devices.append({"id": index, "name": item})
