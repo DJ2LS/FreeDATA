@@ -128,6 +128,9 @@ class DAEMON:
         while True:
             try:
                 data = self.daemon_queue.get()
+                # increase length of list for storing additional
+                # parameters starting at entry 64
+                data = data[:64] + [None] * (64 - len(data))
 
                 # data[1] mycall
                 # data[2] mygrid
@@ -163,6 +166,8 @@ class DAEMON:
 
                     options.append("--port")
                     options.append(str(static.DAEMONPORT - 1))
+                    # create an additional list entry for parameters not covered by gui
+                    data[50] = int(static.DAEMONPORT - 1)
 
                     options.append("--mycall")
                     options.append(data[1])

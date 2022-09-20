@@ -264,7 +264,7 @@ if __name__ == "__main__":
         static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
         static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
         static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
-        static.PORT = 0 ####
+        static.PORT = int(config['NETWORK']['tncport'])
         static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
         static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
         static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']

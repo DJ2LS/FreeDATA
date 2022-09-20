@@ -39,15 +39,13 @@ class CONFIG:
         """
         write entire config
         """
-        #self.config['DEFAULT'] = {'':''}
-
         self.config['NETWORK'] = {'#Network settings': None,
-                                  'TNCPORT': 0
+                                  'TNCPORT': data[50]
                                   }
 
         self.config['STATION'] = {'#Station settings': None,
-                                  'mycall' : data[1],
-                                  'mygrid' : data[2]
+                                  'mycall': data[1],
+                                  'mygrid': data[2]
                                   }
 
         self.config['AUDIO'] = {'#Audio settings': None,
