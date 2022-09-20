@@ -305,9 +305,6 @@
                            <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-ptt">
                            <i class="bi bi-alt" style="font-size: 0.8rem; color: black;"></i>
                            </label>
-                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-network" autocomplete="off">
-                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-network"><strong><i class="bi bi-ethernet"></i></strong>
-                           </label>
                         </div>
 
                         <div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
@@ -320,6 +317,14 @@
                            <i class="bi bi-activity" style="font-size: 0.8rem; color: black;"></i>
                            </label>
                         </div>
+
+                        <div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-network" autocomplete="off">
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-network">
+                           <i class="bi bi-ethernet" style="font-size: 0.8rem; color: black;"></i>
+                           </label>
+                        </div>
+
 
                         <div class="btn-group" role="group">
                            <button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">PTT Test</button>
@@ -685,6 +690,8 @@
                            <div class="input-group  input-group-sm mb-1">
                               <span class="input-group-text" id="basic-addon1">Rigctld Path</span>
                               <input type="text" class="form-control" placeholder="rigctld Path" id="hamlib_rigctld_path" aria-label="Device IP" aria-describedby="basic-addon1">
+                           </div>
+                           <div class="input-group  input-group-sm mb-1">
                               <span class="input-group-text" id="basic-addon1">Rigctld Server Port</span>
                               <input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_server_port" aria-label="Device Port" aria-describedby="basic-addon1">
                            </div>
@@ -698,7 +705,13 @@
                               <span class="input-group-text" id="basic-addon1">Rigctld Version</span>
                               <input type="text" class="form-control" placeholder="Version" id="hamlib_rigctld_version" aria-label="Device Port" aria-describedby="basic-addon1">
                            </div>
-                           Start Stop
+
+                           <div class="input-group  input-group-sm mb-1">
+                              <span class="input-group-text" id="hamlib_rigctld_start">start</span>
+                              <span class="input-group-text" id="hamlib_rigctld_stop">stop</span>
+                           </div>
+
+
                         </div>
 
 

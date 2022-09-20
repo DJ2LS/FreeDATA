@@ -1,5 +1,6 @@
 const path = require('path');
 const {ipcRenderer} = require('electron');
+const exec = require('child_process').spawn;
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
 const fs = require('fs');
@@ -95,11 +96,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     document.getElementById('hamlib_databits_advanced').value = config.data_bits_direct;
     document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits_direct;
     document.getElementById('hamlib_handshake_advanced').value = config.handshake_direct;
+    document.getElementById("hamlib_rigctld_path").value = config.hamlib_rigctld_path;
 
     document.getElementById("beaconInterval").value = config.beacon_interval;
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
+
 
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
@@ -450,6 +453,47 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+/*
+document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
+var fileList = document.getElementById("dataModalFile").files;
+        console.log(fileList)
+
+})
+*/
+
+document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
+
+    ipcRenderer.send('get-file-path',{
+        title: 'Title',
+    });
+
+    ipcRenderer.on('return-file-paths',(event,data)=>{
+        rigctldPath = data.path.filePaths[0]
+        document.getElementById("hamlib_rigctld_path").value = rigctldPath
+        config.hamlib_rigctld_path = rigctldPath
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    });
+})
+
+document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
+    var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+  ipcRenderer.send('request-start-rigctld',{
+        path: rigctldPath,
+        parameters: ['-m', '3085', '-r', '/dev/ttyACM0']
+    });
+
+
+})
+document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
+  ipcRenderer.send('request-stop-rigctld',{
+        path: '123',
+        parameters: '--version'
+    });
+
+
+})
+
 
     // on click waterfall scatter toggle view
     // waterfall
@@ -805,19 +849,15 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             }
         }        
 
-        if (document.getElementById("radio-control-switch-network").checked) {
+        if (!document.getElementById("radio-control-switch-disabled").checked) {
             var radiocontrol = 'rigctld';
-
-        } else if (document.getElementById("radio-control-switch-radio").checked) {
-            var radiocontrol = 'direct';
-                        
         } else {
             var radiocontrol = 'disabled';
         }     
 
         var tx_audio_level = document.getElementById("audioLevelTX").value;
         var rx_buffer_size = document.getElementById("rx_buffer_size").value;
-        
+
         config.radiocontrol = radiocontrol;
         config.mycall = callsign_ssid;
         config.mygrid = mygrid;                

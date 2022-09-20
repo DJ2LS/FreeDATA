@@ -78,7 +78,8 @@ const configDefaultSettings = '{\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16" \
+                  "rx_buffer_size" : "16" ,\
+                  "hamlib_rigctld_path" : ""\
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -441,6 +442,15 @@ ipcMain.on('request-open-tnc-log', (event) => {
     logViewer.show();
 });
 
+//file selector
+ipcMain.on('get-file-path',(event,data)=>{
+    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../'),
+        buttonLabel: 'Select rigctld', properties: ['openFile']}).then(filePaths => {
+            win.webContents.send('return-file-paths', {path: filePaths,})
+
+    });
+});
+
 //folder selector
 ipcMain.on('get-folder-path',(event,data)=>{
     dialog.showOpenDialog({defaultPath: path.join(__dirname, '../'), 
@@ -757,3 +767,43 @@ function close_all() {
 }
 
 
+// RUN RIGCTLD
+ipcMain.on('request-start-rigctld',(event,data)=>{
+    //win.webContents.send('action-show-arq-toast-session-failed', data);
+    //exec('git', ['--version'])
+
+    console.log(data.path)
+    console.log(data.parameters)
+
+
+    const rigctld = exec(data.path, data.parameters);
+    rigctld.stdout.on("data", data => {
+        console.log(`stdout: ${data}`);
+    });
+
+});
+
+
+// STOP RIGCTLD
+ipcMain.on('request-stop-rigctld',(event,data)=>{
+    mainLog.warn('closing rigctld');
+    try {
+
+        if(os.platform()=='win32' || os.platform()=='win64'){
+            exec('Taskkill', ['/IM', 'rigctld.exe', '/F'])
+        }
+
+        if(os.platform()=='linux'){
+
+            exec('pkill', ['-9', 'rigctld'])
+        }
+
+        if(os.platform()=='darwin'){
+
+            exec('pkill', ['-9', 'rigctld'])
+
+        }
+    } catch (e) {
+        mainLog.error(e)
+    }
+});
