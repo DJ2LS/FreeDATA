@@ -298,6 +298,7 @@ jobs:
 
       - name: Build binaries
         working-directory: tnc
+        uses: hendrikmuhs/ccache-action@v1.2
         run: |
           # pyinstaller freedata.spec
           # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
