@@ -58,7 +58,7 @@ jobs:
           mkdir tempfiles
           cd build
           cmake ../
-          make
+          make -j4
           mv src/${{ matrix.libcodec2_name }} ../tempfiles/libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}.${{ matrix.libcodec2_filetype }}
 
       - name: LIST ALL FILES ${{ github.workspace }}
@@ -93,7 +93,7 @@ jobs:
           echo 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")' >> toolchain-ubuntu-mingw32.cmake
           cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain-ubuntu-mingw32.cmake ..
-          make
+          make -j4
           mv src/libcodec2.${{ matrix.platform.file }} ../tempfiles/libcodec2_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
 
       - uses: actions/upload-artifact@v3
@@ -181,7 +181,7 @@ jobs:
             mkdir build
             cd build
             cmake -D CMAKE_C_COMPILER_LAUNCHER=ccache ../
-            make
+            make -j4
             mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
 
       - name: Show recursive PWD/artifacts
