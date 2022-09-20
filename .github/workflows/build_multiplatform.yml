@@ -2,8 +2,8 @@ name: Build_Multiplatform
 on: [push]
 
 jobs:
-  BUILD_ON_AMD64:
-    name: Build codec2 ${{ matrix.os }}
+  BUILD_AMD64:
+    name: Build codec2 for x86/x64 devices
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -49,7 +49,7 @@ jobs:
 
 
     steps:
-      - name: Build codec2 ${{ matrix.os }}
+      - name: Build codec2 on ${{ matrix.os }} for ${{ matrix.platform.name }}
         if: ${{startsWith(matrix.platform.name, 'native') }}
         run: |
           git clone https://github.com/DJ2LS/codec2.git -b ls-ofdm-octave-tests
@@ -60,7 +60,9 @@ jobs:
           cmake ../
           make
           mv src/${{ matrix.libcodec2_name }} ../tempfiles/libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}.${{ matrix.libcodec2_filetype }}
-          ls -R ${{ github.workspace }}
+
+      - name: LIST ALL FILES ${{ github.workspace }}
+        run: ls -R ${{ github.workspace }}
 
       - uses: actions/upload-artifact@v3
         if: ${{startsWith(matrix.platform.name, 'native') }}
@@ -70,8 +72,8 @@ jobs:
           path: ${{ github.workspace }}/codec2/tempfiles/
 
 
-      - name: Build ${{ matrix.platform.name }} ${{ matrix.architecture }}
-        if: ${{startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.platform.name, 'native') }}
+      - name: Build codec2 ${{ matrix.platform.name }} ${{ matrix.architecture }}
+        if: ${{startsWith(matrix.os, 'ubuntu-20') && !startsWith(matrix.platform.name, 'native') }}
         run: |
           sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
           git clone https://github.com/DJ2lS/codec2.git -b ls-ofdm-octave-tests
@@ -93,7 +95,7 @@ jobs:
           mv src/libcodec2.${{ matrix.platform.file }} ../tempfiles/libcodec2_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
 
       - uses: actions/upload-artifact@v3
-        if: ${{startsWith(matrix.os, 'ubuntu') && !startsWith(matrix.platform.name, 'native') }}
+        if: ${{startsWith(matrix.os, 'ubuntu-20') && !startsWith(matrix.platform.name, 'native') }}
         with:
           name: libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
           path: codec2/tempfiles/*
@@ -101,12 +103,12 @@ jobs:
 
 
 
-  BUILD_ON_MULTIARCH:
+  BUILD_ARM:
     # The host should always be linux
     runs-on: ubuntu-latest
-    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+    name: Build codec2 for ARM devices
 
-    # Run steps on a matrix of 3 arch/distro combinations
+    # Run steps on a matrix of 2 arch/distro combinations
     strategy:
       matrix:
         include:
@@ -118,7 +120,7 @@ jobs:
             libcodec2_os_name: libcodec2_ubuntu_latest_armv7.so
 
     steps:
-      - uses: actions/checkout@v2.1.0
+      - uses: actions/checkout@v3
       - uses: uraimo/run-on-arch-action@v2
         name: Build artifact
         id: build
@@ -159,20 +161,20 @@ jobs:
                 ;;
               fedora*)
                 dnf -y update
-                dnf -y install git which build-essential cmake gcc-c++ gcc
+                dnf -y install git which make cmake gcc-c++ gcc
                 cmake --version
                 ;;
               alpine*)
                 apk update
-                apk add git build-essential cmake gcc g++
+                apk add git cmake gcc g++
                 cmake --version
                 ;;
             esac
 
           # Produce a binary artifact and place it in the mounted volume
           run: |
-            
-            git clone https://github.com/DJ2LS/codec2.git -b ls-ofdm-octave-tests
+
+            git clone https://github.com/drowe67/codec2.git
             cd codec2
             git checkout master
             mkdir build
@@ -181,12 +183,10 @@ jobs:
             make
             mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
 
-      - name: Show recursive PWD
+      - name: Show recursive PWD/artifacts
         # Items placed in /artifacts in the container will be in
         # ${PWD}/artifacts on the host.
-        run: |
-          ls -al "${PWD}/artifacts"
-
+        run: ls -al "${PWD}/artifacts"
 
       - uses: actions/upload-artifact@v3
         with:
@@ -195,8 +195,8 @@ jobs:
           path: artifacts/*
 
   build_i686_x64_release:
-    needs: [BUILD_ON_MULTIARCH, BUILD_ON_AMD64]
-    name: Build FreeDATA
+    needs: [BUILD_AMD64]
+    name: Build FreeDATA packages
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -220,34 +220,35 @@ jobs:
             daemon_binary_name: freedata-daemon.exe
             tnc_binary_name: freedata-tnc.exe
     steps:
-      - name: Checkout code
+      - name: Checkout code for ${{ matrix.platform.name }}
         uses: actions/checkout@v3
         with:
           repository: DJ2LS/FreeDATA
           ref: main
 
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
-      - name: early download of libcodec2
-        if: matrix.os != 'windows-latest'
+      - name: Create tnc/dist
         working-directory: tnc
         run: |
-          mkdir dist
+          mkdir -p dist
 
-      - uses: actions/download-artifact@v3
+      - name: Download libcodec2 artifact
+        uses: actions/download-artifact@v3
         with:
           path: tnc/dist/codec2
 
       - name: Install Linux dependencies
-        if: matrix.os == 'ubuntu-20.04'
+        # if: matrix.os == 'ubuntu-20.04'
+        if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
 
-      - name: Install macOS pyAudio
-        if: matrix.os == 'macos-11'
+      - name: Install MacOS pyAudio
+        if: ${{startsWith(matrix.os, 'macos')}}
         run: |
           brew install portaudio
           python -m pip install --upgrade pip
@@ -258,7 +259,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install psutil
           pip install crcengine
-          pip install 'pyinstaller<5.1'
+          # pip install 'pyinstaller<5.1'
           pip install ujson
           pip install pyserial
           pip install numpy
@@ -271,25 +272,24 @@ jobs:
           pip install ordered-set
 
 
-      #- name: Install Pyaudio Windows
-        #if: matrix.os == 'windows-latest'
-        #working-directory: tnc/lib/pyaudio/windows
-        #run: |
-        #  pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+      # - name: Install Pyaudio Windows
+      #   if: ${{startsWith(matrix.os, 'windows')}}
+      #   working-directory: tnc/lib/pyaudio/windows
+      #   run: |
+      #     pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
 
-      - name: Display structure of downloaded files
-        run: ls -R
+      # - name: Display structure of downloaded files
+      #   run: ls -R
 
-      #- name: cleanup codec2
-      #  working-directory: tnc/lib/
-      #  run: |
-      #    mkdir codec2
-      #    cd codec2
+      # - name: cleanup codec2
+      #   working-directory: tnc/lib/
+      #   run: |
+      #     mkdir codec2
+      #     cd codec2
 
-      #- uses: actions/download-artifact@v3
-      #  with:
-      #    path: tnc/lib/codec2
-
+      # - uses: actions/download-artifact@v3
+      #   with:
+      #     path: tnc/lib/codec2
 
       - name: Display structure of downloaded files
         run: ls -R
@@ -297,31 +297,34 @@ jobs:
       - name: Build binaries
         working-directory: tnc
         run: |
-          #pyinstaller freedata.spec
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
+          # pyinstaller freedata.spec
+          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
+          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-      - name: Copy binaries linux unix
-        if: matrix.os != 'windows-latest'
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Copy binaries - Linux and MacOS
+        if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          #mkdir dist
-          ls -R
           cp -r -f daemon.dist/* dist/
           cp -r -f main.dist/* dist/
 
-      - name: Copy binaries windows
-        if: matrix.os == 'windows-latest'
+      - name: LIST ALL FILES
+        run: ls -R
+
+      - name: Copy binaries - Windows
+        if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: tnc
+        # These are powershell aliases, not UNIX commands.
         run: |
-          #mkdir dist
-          ls -R
           cp -r -Force daemon.dist/* dist/
           cp -r -Force main.dist/* dist/
 
-      - name: rename tnc binaries
+      - name: Rename tnc binaries
         working-directory: tnc
         run: |
           mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
@@ -337,9 +340,7 @@ jobs:
       #    path: tnc/dist/codec2
 
       - name: LIST ALL FILES
-        shell: bash
-        run: |
-          ls -R
+        run: ls -R
 
       #- name: Compress TNC
       #  # if: ${{!startsWith(matrix.os, 'windows') }}
@@ -348,36 +349,36 @@ jobs:
       #    cd ./tnc/dist
       #    zip -r ./${{ matrix.zip_name }}.zip *
 
-      - name: Copy TNC to GUI Linux
+      - name: Copy TNC to GUI
         run: |
-          #cp -R ./tnc/dist/tnc ./gui/tnc
+          # cp -R ./tnc/dist/tnc ./gui/tnc
           cp -R ./tnc/dist ./gui/tnc
-          ls -R
+
+      - name: LIST ALL FILES
+        run: ls -R
 
       - name: Compress TNC
         uses: thedoctor0/zip-release@master
         with:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
-            #directory: ./tnc/dist/tnc
+            # directory: ./tnc/dist/tnc
             directory: ./tnc/dist
             path: .
-            #exclusions: '*.git* /*node_modules/* .editorconfig'
+            # exclusions: '*.git* /*node_modules/* .editorconfig'
 
       - name: LIST ALL FILES
-        shell: bash
-        run: |
-          ls -R
+        run: ls -R
 
       - name: Upload TNC artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.zip_name }}.zip
-          #path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
           path: ./tnc/dist/${{ matrix.zip_name }}.zip
 
       - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v3
         with:
           node-version: 16
 
@@ -385,9 +386,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          #files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          # files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
           files: ./tnc/dist/${{ matrix.zip_name }}.zip
-
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -400,13 +400,11 @@ jobs:
           args: "-p always"
 
       - name: LIST ALL FILES
-        shell: bash
-        run: |
-          ls -R
+        run: ls -R
 
       - name: Upload App bundle artifacts
         uses: actions/upload-artifact@v3
         with:
           name: app_bundle_${{ matrix.os }}.zip
-          #path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
           path: ./gui/dist/*
