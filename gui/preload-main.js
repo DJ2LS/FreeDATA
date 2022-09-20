@@ -478,9 +478,16 @@ document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
 
 document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
     var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+    var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
+    var hamlib_deviceport = document.getElementById("hamlib_deviceport").value;
+
+
+
   ipcRenderer.send('request-start-rigctld',{
         path: rigctldPath,
-        parameters: ['-m', '3085', '-r', '/dev/ttyACM0']
+        parameters: ['-m', hamlib_deviceid,
+                    '-r', hamlib_deviceport
+                    ]
     });
 
 
