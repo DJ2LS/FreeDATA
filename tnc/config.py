@@ -82,7 +82,7 @@ class CONFIG:
             with open(self.config_name, 'w') as configfile:
                 self.config.write(configfile)
         except Exception as conferror:
-            pass
+            self.log.error("[CFG] reading logfile", e=conferror)
 
 
     def read_config(self):
