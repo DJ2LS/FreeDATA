@@ -15,7 +15,7 @@ import socketserver
 import sys
 import threading
 import time
-
+import config
 import data_handler
 import helpers
 import log_handler
@@ -48,8 +48,19 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description="FreeDATA TNC")
+
     PARSER.add_argument(
-        "--mycall", dest="mycall", default="AA0AA", help="My callsign", type=str
+        "--use-config",
+        dest="configfile",
+        action="store_true",
+        help="Use the default config file config.ini",
+    )
+    PARSER.add_argument(
+        "--mycall",
+        dest="mycall",
+        default="AA0AA",
+        help="My callsign",
+        type=str
     )
     PARSER.add_argument(
         "--ssid",
@@ -60,7 +71,11 @@ if __name__ == "__main__":
         type=str,
     )
     PARSER.add_argument(
-        "--mygrid", dest="mygrid", default="JN12AA", help="My gridsquare", type=str
+        "--mygrid",
+        dest="mygrid",
+        default="JN12AA",
+        help="My gridsquare",
+        type=str
     )
     PARSER.add_argument(
         "--rx",
@@ -231,42 +246,81 @@ if __name__ == "__main__":
         help="Set the maximum size of rx buffer.",
         type=int,
     )
+
     ARGS = PARSER.parse_args()
+    if ARGS.configfile:
+        # init config
+        config = config.CONFIG().read_config()
 
-    # additional step for being sure our callsign is correctly
-    # in case we are not getting a station ssid
-    # then we are forcing a station ssid = 0
-    mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
-    mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+        # additional step for being sure our callsign is correctly
+        # in case we are not getting a station ssid
+        # then we are forcing a station ssid = 0
+        mycallsign = bytes(config['STATION']['mycall'], "utf-8")
+        mycallsign = helpers.callsign_to_bytes(mycallsign)
+        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-    static.SSID_LIST = ARGS.ssid_list
+        static.SSID_LIST = [] ####
+        static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
+        static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
+        static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+        static.PORT = 0 ####
+        static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
+        static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
+        static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
+        static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
+        static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
+        static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
+        static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
+        static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
+        static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
+        static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
+        static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
+        static.ENABLE_SCATTER = config['TNC']['scatter']
+        static.ENABLE_FFT = config['TNC']['fft']
+        static.ENABLE_FSK = False
+        static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband']
+        static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
+        static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
+        static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
+        static.RESPOND_TO_CQ = config['TNC']['qrv']
+        static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
 
-    static.MYGRID = bytes(ARGS.mygrid, "utf-8")
-    static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
-    static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
-    static.PORT = ARGS.socket_port
-    static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
-    static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
-    static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-    static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
-    static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
-    static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
-    static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
-    static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
-    static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
-    static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
-    static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
-    static.ENABLE_SCATTER = ARGS.send_scatter
-    static.ENABLE_FFT = ARGS.send_fft
-    static.ENABLE_FSK = ARGS.enable_fsk
-    static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
-    static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
-    static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
-    static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
-    static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
-    static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
+
+    else:
+        # additional step for being sure our callsign is correctly
+        # in case we are not getting a station ssid
+        # then we are forcing a station ssid = 0
+        mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
+        mycallsign = helpers.callsign_to_bytes(mycallsign)
+        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+
+        static.SSID_LIST = ARGS.ssid_list
+        static.MYGRID = bytes(ARGS.mygrid, "utf-8")
+        static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
+        static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+        static.PORT = ARGS.socket_port
+        static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
+        static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
+        static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
+        static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
+        static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
+        static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
+        static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
+        static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
+        static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
+        static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
+        static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
+        static.ENABLE_SCATTER = ARGS.send_scatter
+        static.ENABLE_FFT = ARGS.send_fft
+        static.ENABLE_FSK = ARGS.enable_fsk
+        static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
+        static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
+        static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
+        static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
+        static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
+        static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock

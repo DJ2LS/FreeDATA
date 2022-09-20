@@ -21,7 +21,6 @@ import subprocess
 import sys
 import threading
 import time
-
 import audio
 import crcengine
 import log_handler
@@ -30,6 +29,8 @@ import sock
 import static
 import structlog
 import ujson as json
+import config
+
 
 
 # signal handler for closing application
@@ -242,6 +243,9 @@ class DAEMON:
                     options.append("--rx-buffer-size")
                     options.append(data[24])
 
+                    # safe data to config file
+                    config.write_entire_config(data)
+
                     # Try running tnc from binary, else run from source
                     # This helps running the tnc in a developer environment
                     try:
@@ -391,6 +395,9 @@ if __name__ == "__main__":
         log_handler.setup_logging(logging_path)
     except Exception as err:
         mainlog.error("[DMN] logger init error", exception=err)
+
+    # init config
+    config = config.CONFIG()
 
     try:
         mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
