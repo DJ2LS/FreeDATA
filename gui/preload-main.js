@@ -62,13 +62,6 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 */
 
 
-    // DISABLE HAMLIB DIRECT AND RIGCTL ON WINDOWS
-    if(os.platform()=='win32' || os.platform()=='win64'){
-
-        document.getElementById("radio-control-switch1").style.disabled = true;
-        //document.getElementById("radio-control-switch2").style.disabled = true;
-    }
-
     // ENABLE TOOLTIPS EVERYWHERE
     // https://getbootstrap.com/docs/5.1/components/tooltips/
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -98,12 +91,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     document.getElementById("hamlib_rigctld_ip").value = config.rigctld_ip;
     document.getElementById("hamlib_rigctld_port").value = config.rigctld_port;
     
-    //document.getElementById("hamlib_deviceid_rigctl").value = config.deviceid_rigctl;
-    //document.getElementById("hamlib_serialspeed_rigctl").value = config.serialspeed_rigctl;
-    //document.getElementById("hamlib_ptt_protocol_rigctl").value = config.pttprotocol_rigctl; 
-    
-    document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed_direct;
-    document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol_direct;     
+
     document.getElementById('hamlib_databits_advanced').value = config.data_bits_direct;
     document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits_direct;
     document.getElementById('hamlib_handshake_advanced').value = config.handshake_direct;
@@ -112,9 +100,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
-    //document.getElementById("500HzModeSwitch").value = config.low_bandwidth_mode; 
-    //document.getElementById("fskModeSwitch").value = config.enable_fsk; 
-    //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
+
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
 
@@ -193,70 +179,59 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     }
 
     // radio control element
-    if (config.radiocontrol == 'direct') {
+    if (config.radiocontrol == 'rigctld') {
 
-        document.getElementById("radio-control-switch0").checked = false;
-        document.getElementById("radio-control-switch1").checked = true;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = false;
+        document.getElementById("radio-control-switch-disabled").checked = false;
+        document.getElementById("radio-control-switch-radio").checked = true;
+        document.getElementById("radio-control-switch-connect").checked = false;
+        document.getElementById("radio-control-switch-network").checked = false;
 
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
+       document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+        document.getElementById("radio-control-disabled").style.display = 'none';
+
+        document.getElementById("radio-control-radio").style.visibility = 'visible';
+        document.getElementById("radio-control-radio").style.display = '100%';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+        document.getElementById("radio-control-network").style.display = 'none';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
         document.getElementById("radio-control-rigctld").style.display = 'none';
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%'; 
-
-    /*
-    } else if (config.radiocontrol == 'rigctl') {
-
-        document.getElementById("radio-control-switch0").checked = false;  
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = true;
-        document.getElementById("radio-control-switch3").checked = false;
-        
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
-
-        document.getElementById("radio-control-rigctl").style.display = 'block';                
-        document.getElementById("radio-control-rigctl").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctl").style.height = '100%';       
-*/
-    } else if (config.radiocontrol == 'rigctld') {
-
-        document.getElementById("radio-control-switch0").checked = false;
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = true;
-
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        //document.getElementById("radio-control-rigctl").style.display = 'none';  
-
-        document.getElementById("radio-control-rigctld").style.display = 'block';                
-        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctld").style.height = '100%';
-        
+       document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
     } else {
     
-        document.getElementById("radio-control-switch0").checked = true;
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = false;
+        document.getElementById("radio-control-switch-disabled").checked = true;
+        document.getElementById("radio-control-switch-radio").checked = false;
+        document.getElementById("radio-control-switch-connect").checked = false;
+        document.getElementById("radio-control-switch-network").checked = false;
+        document.getElementById("radio-control-switch-rigctld").checked = false;
+        document.getElementById("radio-control-switch-rigctld-info").checked = false;
 
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';  
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
 
     }
 
@@ -281,63 +256,200 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     // on click radio control toggle view
     // disabled
-    document.getElementById("radio-control-switch0").addEventListener("click", () => {
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+    document.getElementById("radio-control-switch-disabled").addEventListener("click", () => {
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
+        document.getElementById("radio-control-disabled").style.display = 'block';
+        document.getElementById("radio-control-disabled").style.visibility = 'visible';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
         config.radiocontrol = 'disabled'
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
     
-    // direct
-    document.getElementById("radio-control-switch1").addEventListener("click", () => {
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+    // radio settings event listener
+    document.getElementById("radio-control-switch-radio").addEventListener("click", () => {
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
-        config.radiocontrol = 'direct';
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'block';
+        document.getElementById("radio-control-radio").style.visibility = 'visible';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-    /*
-    // rigctl
-    document.getElementById("radio-control-switch2").addEventListener("click", () => {
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
 
-        //document.getElementById("radio-control-rigctl").style.display = 'block';                
-        //document.getElementById("radio-control-rigctl").style.visibility = 'visible';
-        //document.getElementById("radio-control-rigctl").style.height = '100%';
-        config.radiocontrol = 'rigctl';
+    // radio settings 'connection' event listener
+    document.getElementById("radio-control-switch-connect").addEventListener("click", () => {
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'visible';
+        document.getElementById("radio-control-connection").style.display = 'block';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-    */
-    // rigctld
-    document.getElementById("radio-control-switch3").addEventListener("click", () => {
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        //document.getElementById("radio-control-rigctl").style.display = 'none';  
 
-        document.getElementById("radio-control-rigctld").style.display = 'block';                
-        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctld").style.height = '100%';
+    // radio settings 'ptt' event listener
+    document.getElementById("radio-control-switch-ptt").addEventListener("click", () => {
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'visible';
+        document.getElementById("radio-control-ptt").style.display = 'block';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+    // // radio settings 'network' event listener
+    document.getElementById("radio-control-switch-network").addEventListener("click", () => {
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'block';
+        document.getElementById("radio-control-network").style.visibility = 'visible';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
         config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });    
 
+    // // radio settings 'rigctld' event listener
+    document.getElementById("radio-control-switch-rigctld").addEventListener("click", () => {
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
+        document.getElementById("radio-control-rigctld").style.display = 'block';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+    // // radio settings 'rigctld' event listener
+    document.getElementById("radio-control-switch-rigctld-info").addEventListener("click", () => {
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'visible';
+        document.getElementById("radio-control-rigctld-info").style.display = 'block';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
     // on click waterfall scatter toggle view
     // waterfall
@@ -693,21 +805,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             }
         }        
 
-        /*
-        // overriding settings for rigctl / direct
-        if (document.getElementById("radio-control-switch2").checked){
-            var radiocontrol = 'rigctl';
-            var deviceid = document.getElementById("hamlib_deviceid_rigctl").value;
-            var deviceport = document.getElementById("hamlib_deviceport_rigctl").value;
-            var serialspeed = document.getElementById("hamlib_serialspeed_rigctl").value;
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol_rigctl").value;
-        
-        } else 
-        */
-        if (document.getElementById("radio-control-switch3").checked) {
+        if (document.getElementById("radio-control-switch-network").checked) {
             var radiocontrol = 'rigctld';
 
-        } else if (document.getElementById("radio-control-switch1").checked) {
+        } else if (document.getElementById("radio-control-switch-radio").checked) {
             var radiocontrol = 'direct';
                         
         } else {
@@ -832,24 +933,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
         var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
 
-
-        /*
-        // overriding settings for rigctl / direct
-        if (document.getElementById("radio-control-switch2").checked){
-            var radiocontrol = 'rigctl';
-            var deviceid = document.getElementById("hamlib_deviceid_rigctl").value;
-            var deviceport = document.getElementById("hamlib_deviceport_rigctl").value;
-            var serialspeed = document.getElementById("hamlib_serialspeed_rigctl").value;
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol_rigctl").value;
-        
-        } else */
-        if (document.getElementById("radio-control-switch3").checked) {
-            var radiocontrol = 'rigctld';
-
-        } else if (document.getElementById("radio-control-switch1").checked) {
-            var radiocontrol = 'direct';
-        } else {
+        if (document.getElementById("radio-control-switch-disabled").checked) {
             var radiocontrol = 'disabled';
+        } else {
+            var radiocontrol = 'rigctld';
         }     
 
 
@@ -927,7 +1014,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
                 command: "openRFChat"
             };
             ipcRenderer.send('request-show-chat-window', Data);    
-    })    
+    })
+
+
     
     
     
@@ -1428,38 +1517,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             }
         }
 
-        // advanced settings
-        if (document.getElementById("hamlib_deviceport_advanced").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_deviceport_advanced").innerHTML = "";
-            for (i = 0; i < arg.serial_devices.length; i++) {
-                var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['description'];
-                option.value = arg.serial_devices[i]['port'];
-                // set device from config if available
-                if(config.deviceport == option.value){
-                    option.setAttribute('selected', true);
-                }
-                document.getElementById("hamlib_deviceport_advanced").add(option);
-            }
-        }
-        
-        /*
-        // rigctl settings
-        if (document.getElementById("hamlib_deviceport_rigctl").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_deviceport_rigctl").innerHTML = "";
-            for (i = 0; i < arg.serial_devices.length; i++) {
-                var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['description'];
-                option.value = arg.serial_devices[i]['port'];
-                // set device from config if available
-                if(config.deviceport == option.value){
-                    option.setAttribute('selected', true);
-                }
-                document.getElementById("hamlib_deviceport_rigctl").add(option);
-            }
-        }
-        */
-        
+
                
     }
     
@@ -1533,7 +1591,6 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
     if (arg.tnc_connection == "open") {
         document.getElementById('hamlib_deviceid').disabled = true;
         document.getElementById('hamlib_deviceport').disabled = true;
-        document.getElementById('advancedHamlibSettingsButton').disabled = true;
         document.getElementById('testHamlib').disabled = true;
         document.getElementById('hamlib_ptt_protocol').disabled = true;
         document.getElementById('audio_input_selectbox').disabled = true;
@@ -1556,7 +1613,6 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
     } else {
         document.getElementById('hamlib_deviceid').disabled = false;
         document.getElementById('hamlib_deviceport').disabled = false;
-        document.getElementById('advancedHamlibSettingsButton').disabled = false;
         document.getElementById('testHamlib').disabled = false;
         document.getElementById('hamlib_ptt_protocol').disabled = false;
         document.getElementById('audio_input_selectbox').disabled = false;
@@ -1978,45 +2034,3 @@ ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
     toast.show();
 });
 
-        /*
-         // TRANSMISSION STOPPED
-        if (arg.info[i] == "TRANSMISSION;STOPPED"){
-            var toastDATACHANNELreceivedopener = document.getElementById('toastTRANSMISSIONstopped');
-            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener); // Returns a Bootstrap toast instance
-            toast.show();
-        }
-        */
-
-         // DATACHANNEL FAILED TOAST
-        //if (arg.info[i] == "DATACHANNEL;FAILED"){
-        //    var toastDATACHANNELfailed = document.getElementById('toastDATACHANNELfailed');
-        //    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELfailed); // Returns a Bootstrap toast instance
-        //    toast.show();
-        //}
-
-
-        /*
-         // ARQ RECEIVING FAILED TOAST
-        if (arg.info[i] == "ARQ;RECEIVING;FAILED"){
-
-            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-
-            var toastARQreceivingfailed = document.getElementById('toastARQreceivingfailed');
-            var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingfailed); // Returns a Bootstrap toast instance
-            toast.show();
-        }
-        */
-
-
-
-        /*
-         // ARQ TRANSMITTING FAILED TOAST
-        if (arg.info[i] == "ARQ;TRANSMITTING;FAILED"){
-
-            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-
-            var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed); // Returns a Bootstrap toast instance
-            toast.show();
-        }
-
-        */

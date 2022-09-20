@@ -287,36 +287,51 @@
                <div class="col">
                   <div class="card text-dark mb-0">
                      <div class="card-header p-1">
-                        <i class="bi bi-projector" style="font-size: 1rem; color: black;"></i><strong>RADIO</strong>
+                        <i class="bi bi-projector" style="font-size: 1rem; color: black;"></i>
                         <div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
-                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch0" autocomplete="off" checked>
-                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch0">
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-disabled" autocomplete="off" checked>
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-disabled">
                            <i class="bi bi-x-circle" style="font-size: 0.8rem; color: black;"></i>
                            </label>
-                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch1" autocomplete="off" checked>
-                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch1"><strong>direct</strong>
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-radio" autocomplete="off" checked>
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-radio">
+                           <i class="bi bi-projector" style="font-size: 0.8rem; color: black;"></i>
                            </label>
-                           <!--
-                              <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch2" autocomplete="off">
-                              
-                              <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch2"><strong>rigctl</strong>
-                              </label>
-                              -->
-                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch3" autocomplete="off">
-                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch3"><strong><i class="bi bi-ethernet"></i></strong>
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-connect" autocomplete="off" checked>
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-connect">
+                           <i class="bi bi-usb-symbol" style="font-size: 0.8rem; color: black;"></i>
+                           </label>
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-ptt" autocomplete="off" checked>
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-ptt">
+                           <i class="bi bi-alt" style="font-size: 0.8rem; color: black;"></i>
+                           </label>
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-network" autocomplete="off">
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-network"><strong><i class="bi bi-ethernet"></i></strong>
                            </label>
                         </div>
-                        <div class="btn-group" role="group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Set advanced hamlib settings like stop_bits and data_bits or a different port for a PTT device">
-                           <button type="button" id="advancedHamlibSettingsButton" data-bs-toggle="modal" data-bs-target="#advancedHamlibSettingsModal" class="btn btn-sm btn-secondary">
-                           <i class="bi bi-sliders" style="font-size: 0.8rem; color: black;"></i>
-                           </button>
+
+                        <div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld" autocomplete="off">
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld">
+                           <i class="bi bi-terminal" style="font-size: 0.8rem; color: black;"></i>
+                           </label>
+                           <input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld-info" autocomplete="off">
+                           <label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld-info">
+                           <i class="bi bi-activity" style="font-size: 0.8rem; color: black;"></i>
+                           </label>
                         </div>
+
                         <div class="btn-group" role="group">
                            <button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">PTT Test</button>
                         </div>
                      </div>
                      <div class="card-body p-2">
-                        <div id="radio-control-direct">
+
+                        <!-- RADIO CONTROL DISABLED -->
+                        <div id="radio-control-disabled">DISABLED....</div>
+
+                        <!-- RADIO CONTROL RADIO -->
+                        <div id="radio-control-radio">
                            <div class="input-group  input-group-sm mb-1">
                               <span class="input-group-text" id="basic-addon1">
                               <i class="bi bi-projector-fill" style="font-size: 0.8rem; color: black;"></i>
@@ -586,22 +601,11 @@
                                  <option value="RIG_MODEL_FT897D">Yaesu FT-897D</option>
                                  <option value="RIG_MODEL_FTDX101MP">Yaesu FTDX-101MP</option>
                               </datalist>
-                              <span class="input-group-text" id="basic-addon1">
-                              <i class="bi bi-alt" style="font-size: 1rem; color: black;"></i>
-                              </span>
-                              <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
-                                 <option value="NONE">NONE</option>
-                                 <option value="RIG">RIG</option>
-                                 <option value="USB">USB</option>
-                                 <option value="RTS">Serial RTS</option>
-                                 <option value="DTR-H">Serial DTR-High</option>
-                                 <option value="DTR-H">Serial DTR-Low</option>
-                                 <option value="PARALLEL">Rig PARALLEL</option>
-                                 <option value="MICDATA">Rig MICDATA</option>
-                                 <option value="CM108">Rig CM108</option>
-                              </select>
                            </div>
-                           <!--<hr class="m-1">-->
+                        </div>
+
+                        <!-- RADIO CONTROL CONNECTION -->
+                        <div id="radio-control-connection">
                            <div class="input-group  input-group-sm mb-1">
                               <span class="input-group-text" id="basic-addon1">
                               <i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i>
@@ -610,7 +614,7 @@
                                  <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                     <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
                               </select>
-                              <span class="input-group-text" id="basic-addon1">Speed</span>
+                              <span class="input-group-text" id="basic-addon1"><i class="bi bi-speedometer" style="font-size: 1rem; color: black;"></i></span>
                               <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
                                  <option value="1200">1200</option>
                                  <option value="2400">2400</option>
@@ -624,58 +628,83 @@
                                  <option value="115200">115200</option>
                               </select>
                            </div>
+                           <div class="input-group input-group-sm mb-1">
+                     <span class="input-group-text" id="basic-addon1">Data</span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits_advanced">
+                        <option value="7">7</option>
+                        <option value="8">8 (Default)</option>
+                     </select>
+                     <span class="input-group-text" id="basic-addon1">Stop</span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits_advanced">
+                        <option value="1">1 (Default)</option>
+                        <option value="2">2</option>
+                     </select>
+                     <span class="input-group-text" id="basic-addon1">HS</span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake_advanced">
+                        <option value="None">None (Default)</option>
+                     </select>
+                  </div>
                         </div>
-                        <!--
-                           <div id="radio-control-rigctl">
-                           	<div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">
-                           <i class="bi bi-projector" style="font-size: 1rem; color: black;"></i>
-                           	</span>
-                           		<input type="text" class="form-control" placeholder="Device id" id="hamlib_deviceid_rigctl" aria-label="Device ID" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">
-                           
-                           	<i class="bi bi-alt" style="font-size: 1rem; color: black;"></i>
-                           	</span>
-                           		<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol_rigctl" style="width: 0.5rem">
-                           			<option value="RIG">RIG</option>
-                           			<option value="USB">USB</option>
-                           			<option value="RTS">Serial RTS</option>
-                           			<option value="DTR-H">Serial DTR-High</option>
-                           			<option value="DTR-L">Serial DTR-Low</option>
-                           			<option value="PARALLEL">Rig PARALLEL</option>
-                           			<option value="MICDATA">Rig MICDATA</option>
-                           			<option value="CM108">Rig CM108</option>
-                           		</select>
-                           	</div>
-                           	<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
-                           
-                           <i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i>
-                           
-                           </span>
-                           		<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport_rigctl" style="width:7rem">
-                           			
-                           		</select> <span class="input-group-text" id="basic-addon1">Speed</span>
-                           		<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed_rigctl">
-                           			<option value="1200">1200</option>
-                           			<option value="2400">2400</option>
-                           			<option value="4800">4800</option>
-                           			<option selected value="9600">9600</option>
-                           			<option value="14400">14400</option>
-                           			<option value="19200">19200</option>
-                           			<option value="28800">28800</option>
-                           			<option value="38400">38400</option>
-                           			<option value="57600">57600</option>
-                           			<option value="115200">115200</option>
-                           		</select>
-                           	</div>
-                           </div>
-                           -->
-                        <div id="radio-control-rigctld">
+
+                        <!-- RADIO CONTROL PTT -->
+                        <div id="radio-control-ptt">
+
+                        <div class="input-group input-group-sm mb-1">
+                     <span class="input-group-text" id="basic-addon1"><i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i></span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port_advanced">
+                        <!--<option value="None">None</option>-->
+                     </select>
+                     <span class="input-group-text" id="basic-addon1">Type</span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
+                        <option value="NONE">NONE</option>
+                        <option value="RIG">RIG</option>
+                        <option value="USB">USB</option>
+                        <option value="RTS">Serial RTS</option>
+                        <option value="DTR-H">Serial DTR-High</option>
+                        <option value="DTR-L">Serial DTR-Low</option>
+                        <option value="PARALLEL">Rig PARALLEL</option>
+                        <option value="MICDATA">Rig MICDATA</option>
+                        <option value="CM108">Rig CM108</option>
+                     </select>
+                  </div>
+
+
+
+                        </div>
+
+                        <!-- RADIO CONTROL NETWORK -->
+                        <div id="radio-control-network">
                            <div class="input-group  input-group-sm mb-1">	<span class="input-group-text" id="basic-addon1">Rigctld IP</span>
                               <input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1">	<span class="input-group-text" id="basic-addon1">:</span>
                               <input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1">
                            </div>
                         </div>
+
+                        <!-- RADIO CONTROL RIGCTLD -->
+                        <div id="radio-control-rigctld">
+                           <div class="input-group  input-group-sm mb-1">
+                              <span class="input-group-text" id="basic-addon1">Rigctld Path</span>
+                              <input type="text" class="form-control" placeholder="rigctld Path" id="hamlib_rigctld_path" aria-label="Device IP" aria-describedby="basic-addon1">
+                              <span class="input-group-text" id="basic-addon1">Rigctld Server Port</span>
+                              <input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_server_port" aria-label="Device Port" aria-describedby="basic-addon1">
+                           </div>
+                        </div>
+
+                        <!-- RADIO CONTROL RIGCTLD INFO-->
+                        <div id="radio-control-rigctld-info">
+                           <div class="input-group  input-group-sm mb-1">
+                              <span class="input-group-text" id="basic-addon1">Rigctld Status</span>
+                              <input type="text" class="form-control" placeholder="Status" id="hamlib_rigctld_status" aria-label="Device IP" aria-describedby="basic-addon1">
+                              <span class="input-group-text" id="basic-addon1">Rigctld Version</span>
+                              <input type="text" class="form-control" placeholder="Version" id="hamlib_rigctld_version" aria-label="Device Port" aria-describedby="basic-addon1">
+                           </div>
+                           Start Stop
+                        </div>
+
+
+
                      </div>
-                     <div class="card-footer text-muted small">Please select your radio settings. Starting the TNC saves them.</div>
+                     <div class="card-footer text-muted small">Select your radio and PTT settings. Start/Stop Hamlib Rigctld</div>
                   </div>
                </div>
             </div>
@@ -1306,84 +1335,9 @@
                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                </div>
                <div class="modal-body">
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">Port</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport_advanced">
-                        <!--<option value="None">None</option>-->
-                        <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>
-                        -->
-                     </select>
-                     <span class="input-group-text" id="basic-addon1">Speed</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed_advanced">
-                        <option value="1200">1200</option>
-                        <option value="2400">2400</option>
-                        <option value="4800">4800</option>
-                        <option selected value="9600">9600</option>
-                        <option value="14400">14400</option>
-                        <option value="19200">19200</option>
-                        <option value="28800">28800</option>
-                        <option value="38400">38400</option>
-                        <option value="57600">57600</option>
-                        <option value="115200">115200</option>
-                     </select>
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">PTT</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol_advanced" style="width: 0.5rem">
-                        <option value="NONE">NONE</option>
-                        <option value="RIG">RIG</option>
-                        <option value="USB">USB</option>
-                        <option value="RTS">Serial RTS</option>
-                        <option value="DTR-H">Serial DTR-High</option>
-                        <option value="DTR-L">Serial DTR-Low</option>
-                        <option value="PARALLEL">Rig PARALLEL</option>
-                        <option value="MICDATA">Rig MICDATA</option>
-                        <option value="CM108">Rig CM108</option>
-                     </select>
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">Data bits</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits_advanced">
-                        <option value="7">7</option>
-                        <option value="8">8 (Default)</option>
-                     </select>
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">Stop bits</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits_advanced">
-                        <option value="1">1 (Default)</option>
-                        <option value="2">2</option>
-                     </select>
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">Handshake</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake_advanced">
-                        <option value="None">None (Default)</option>
-                     </select>
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                     <span class="input-group-text" id="basic-addon1">PTT Port</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port_advanced">
-                        <!--<option value="None">None</option>-->
-                     </select>
-                     <!--
-                        <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
-                     <!--
-                        </select> <span class="input-group-text" id="basic-addon1">PTT Speed</span>
-                        <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_pttspeed_advanced">
-                        	<option value="1200">1200</option>
-                        	<option value="2400">2400</option>
-                        	<option value="4800">4800</option>
-                        	<option selected value="9600">9600</option>
-                        	<option value="14400">14400</option>
-                        	<option value="19200">19200</option>
-                        	<option value="28800">28800</option>
-                        	<option value="38400">38400</option>
-                        	<option value="57600">57600</option>
-                        	<option value="115200">115200</option>
-                        </select>
-                        -->
-                  </div>
+
+
+
                </div>
                <div class="modal-footer">
                   <button type="button" id="testHamlibAdvanced" class="btn btn-sm btn-outline-secondary">Test settings</button>
