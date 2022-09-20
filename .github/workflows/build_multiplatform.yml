@@ -75,12 +75,14 @@ jobs:
       - name: Build codec2 ${{ matrix.platform.name }} ${{ matrix.architecture }}
         if: ${{startsWith(matrix.os, 'ubuntu-20') && !startsWith(matrix.platform.name, 'native') }}
         run: |
-          sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
+          sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake ccache
           git clone https://github.com/drowe67/codec2.git
           cd codec2
           mkdir tempfiles
           mkdir build_w32
           cd build_w32
+          echo 'set(CMAKE_C_COMPILER_LAUNCHER=ccache)' > toolchain-ubuntu-mingw32.cmake
+          echo 'set(CMAKE_CXX_COMPILER_LAUNCHER=ccache)' > toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_SYSTEM_NAME ${{ matrix.platform.name }})' > toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_C_COMPILER ${{ matrix.architecture }}-gcc)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_CXX_COMPILER ${{ matrix.architecture }}-g++)' >> toolchain-ubuntu-mingw32.cmake
@@ -156,7 +158,7 @@ jobs:
             case "${{ matrix.distro }}" in
               ubuntu*|jessie|stretch|buster|bullseye)
                 apt-get update -q -y
-                apt-get install -q -y git build-essential cmake gcc g++
+                apt-get install -q -y git build-essential cmake gcc g++ ccache
                 cmake --version
                 ;;
               fedora*)
@@ -179,7 +181,7 @@ jobs:
             git checkout master
             mkdir build
             cd build
-            cmake ../
+            cmake -D CMAKE_C_COMPILER_LAUNCHER=ccache ../
             make
             mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
 
@@ -227,8 +229,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: DJ2LS/FreeDATA
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
 
 
       - name: Set up Python 3.9
@@ -250,12 +250,12 @@ jobs:
         # if: matrix.os == 'ubuntu-20.04'
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 ccache
 
-      - name: Install MacOS pyAudio
+      - name: Install MacOS pyAudio ccache
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
-          brew install portaudio
+          brew install portaudio ccache
           python -m pip install --upgrade pip
           pip3 install pyaudio
 
