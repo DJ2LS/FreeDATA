@@ -386,7 +386,7 @@ app.on('window-all-closed', () => {
 
 // IPC HANDLER
 
-ipcMain.on('request-show-chat-window', (arg) => {
+ipcMain.on('request-show-chat-window', () => {
     chat.show();
  });
 
@@ -774,15 +774,17 @@ function close_all() {
 
 
 // RUN RIGCTLD
-ipcMain.on('request-start-rigctld',(event,data)=>{
+ipcMain.on('request-start-rigctld',(data)=>{
     //win.webContents.send('action-show-arq-toast-session-failed', data);
     //exec('git', ['--version'])
 
     console.log(data.path)
     console.log(data.parameters)
     // TODO: WE NEED SOME ERROR HANDLING
-    const rigctld = exec(data.path, data.parameters);
+    exec(data.path, data.parameters);
+
     /*
+    const rigctld = exec(data.path, data.parameters);
     rigctld.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
     });
