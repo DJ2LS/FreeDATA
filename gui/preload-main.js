@@ -106,6 +106,9 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     document.getElementById('hamlib_handshake').value = config.hamlib_handshake;
     set_setting_switch("enable_hamlib_handshake", "hamlib_handshake", config.enable_hamlib_handshake)
 
+    document.getElementById('hamlib_dcd').value = config.hamlib_dcd;
+    set_setting_switch("enable_hamlib_dcd", "hamlib_dcd", config.enable_hamlib_dcd)
+
 
     document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
     document.getElementById("hamlib_rigctld_port").value = config.hamlib_rigctld_port;
@@ -502,6 +505,10 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     document.getElementById("enable_hamlib_pttprotocol").addEventListener("change", () => {
         enable_setting("enable_hamlib_pttprotocol", "hamlib_pttprotocol")
     });
+        // radio settings 'enable hamlib dcd' event listener
+    document.getElementById("enable_hamlib_dcd").addEventListener("change", () => {
+        enable_setting("enable_hamlib_dcd", "hamlib_dcd")
+    });
 /*
 document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
 var fileList = document.getElementById("dataModalFile").files;
@@ -535,9 +542,46 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
     var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
     paramList = paramList.concat('-m', hamlib_deviceid)
 
+    // hamlib deviceport setting
     if (document.getElementById('enable_hamlib_deviceport').checked){
         var hamlib_deviceport = document.getElementById("hamlib_deviceport").value;
         paramList = paramList.concat('-r', hamlib_deviceport)
+    }
+
+    // hamlib serialspeed setting
+    if (document.getElementById('enable_hamlib_serialspeed').checked){
+        var hamlib_serialspeed = document.getElementById("hamlib_serialspeed").value;
+        paramList = paramList.concat('-s', hamlib_serialspeed)
+    }
+
+    // hamlib databits setting
+    if (document.getElementById('enable_hamlib_databits').checked){
+        var hamlib_databits = document.getElementById("hamlib_databits").value;
+        paramList = paramList.concat('--set-conf=data_bits=' + hamlib_databits)
+    }
+
+    // hamlib stopbits setting
+    if (document.getElementById('enable_hamlib_stopbits').checked){
+        var hamlib_stopbits = document.getElementById("hamlib_stopbits").value;
+        paramList = paramList.concat('--set-conf=stop_bits=' + hamlib_stopbits)
+    }
+
+    // hamlib handshake setting
+    if (document.getElementById('enable_hamlib_handshake').checked){
+        var hamlib_handshake = document.getElementById("hamlib_handshake").value;
+        paramList = paramList.concat('--set-conf=serial_handshake=' + hamlib_handshake)
+    }
+
+    // hamlib dcd setting
+    if (document.getElementById('enable_hamlib_dcd').checked){
+        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
+        paramList = paramList.concat('--dcd-type=' + hamlib_dcd)
+    }
+
+    // hamlib ptt port
+    if (document.getElementById('enable_hamlib_ptt_port').checked){
+        var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
+        paramList = paramList.concat('-p', hamlib_ptt_port)
     }
 
 
@@ -849,6 +893,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var deviceport = document.getElementById("hamlib_deviceport").value;
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
         var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
+        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
 
         var mycall = document.getElementById("myCall").value;
         var ssid = document.getElementById("myCallSSID").value;
@@ -936,6 +981,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.hamlib_data_bits = data_bits;
         config.hamlib_stop_bits = stop_bits;
         config.hamlib_handshake = handshake;
+        config.hamlib_dcd = hamlib_dcd;
         //config.deviceid_rigctl = deviceid_rigctl;
         //config.serialspeed_rigctl = serialspeed_rigctl;
         //config.pttprotocol_rigctl = pttprotocol_rigctl;
@@ -1046,8 +1092,6 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             var radiocontrol = 'rigctld';
         }     
 
-
-          
         daemon.testHamlib(radiocontrol, deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port)                 
     })
 

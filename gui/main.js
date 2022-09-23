@@ -65,6 +65,7 @@ const configDefaultSettings = '{\
                   "hamlib_pttprotocol" : "USB",\
                   "enable_hamlib_pttport" : "False",\
                   "hamlib_pttport": "/dev/ttyACM1",\
+                  "hamlib_dcd": "None",\
                   "hamlbib_serialspeed_ptt": "9600",\
                   "hamlib_rigctld_port" : "4532",\
                   "hamlib_rigctld_ip" : "127.0.0.1",\

@@ -694,6 +694,22 @@
                      </select>
                   </div>
 
+                            <div class="input-group input-group-sm mb-1">
+
+                     <span class="input-group-text" id="basic-addon1">DCD</span>
+                                                         <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_dcd">
+                              </span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dcd" style="width: 0.5rem">
+                        <option value="NONE">NONE</option>
+                        <option value="RIG">RIG/CAT</option>
+                        <option value="DSR">DSR</option>
+                        <option value="CTS">CTS</option>
+                        <option value="CD">CD</option>
+                        <option value="PARALLEL">PARALLEL</option>
+                     </select>
+                  </div>
+
 
 
                         </div>
@@ -726,9 +742,9 @@
                            </div>
 
                            <div class="input-group  input-group-sm mb-1">
-                              <span class="input-group-text" id="hamlib_rigctld_start">start</span>
+                              <button class="btn btn-outline-success" type="button" id="hamlib_rigctld_start">Start</button>
                               <input type="text" class="form-control" placeholder="Status" id="hamlib_rigctld_status" aria-label="State" aria-describedby="basic-addon1">
-                              <span class="input-group-text" id="hamlib_rigctld_stop">stop</span>
+                              <button class="btn btn-outline-danger" type="button" id="hamlib_rigctld_stop">Stop</button>
                            </div>
 
 
