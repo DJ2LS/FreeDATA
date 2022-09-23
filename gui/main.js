@@ -444,7 +444,7 @@ ipcMain.on('request-update-transmission-status', (event, arg) => {
     chat.webContents.send('action-update-transmission-status', arg);
 });
 
-ipcMain.on('request-open-tnc-log', (event) => {
+ipcMain.on('request-open-tnc-log', () => {
     logViewer.show();
 });
 
@@ -780,12 +780,14 @@ ipcMain.on('request-start-rigctld',(event,data)=>{
 
     console.log(data.path)
     console.log(data.parameters)
-
-
+    // TODO: WE NEED SOME ERROR HANDLING
     const rigctld = exec(data.path, data.parameters);
+    /*
     rigctld.stdout.on("data", data => {
         console.log(`stdout: ${data}`);
     });
+    */
+
 
 });
 
