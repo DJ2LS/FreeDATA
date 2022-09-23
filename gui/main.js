@@ -822,7 +822,7 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 
 // CHECK RIGCTLD
-ipcMain.on('request-check-rigctld',(event,data)=>{
+ipcMain.on('request-check-rigctld',(data)=>{
     try {
 
         if(os.platform()=='win32' || os.platform()=='win64'){
