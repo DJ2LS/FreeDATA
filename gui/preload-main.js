@@ -84,18 +84,31 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
-    
-    document.getElementById('hamlib_deviceid').value = config.deviceid;
-    document.getElementById('hamlib_serialspeed').value = config.serialspeed_direct;
-    document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol_direct; 
 
-    document.getElementById("hamlib_rigctld_ip").value = config.rigctld_ip;
-    document.getElementById("hamlib_rigctld_port").value = config.rigctld_port;
-    
+    // hamlib settings
+    document.getElementById('hamlib_deviceid').value = config.hamlib_deviceid;
 
-    document.getElementById('hamlib_databits_advanced').value = config.data_bits_direct;
-    document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits_direct;
-    document.getElementById('hamlib_handshake_advanced').value = config.handshake_direct;
+set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
+set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
+
+    document.getElementById('hamlib_serialspeed').value = config.hamlib_serialspeed;
+    set_setting_switch("enable_hamlib_serialspeed", "hamlib_serialspeed", config.enable_hamlib_serialspeed)
+
+    document.getElementById('hamlib_pttprotocol').value = config.hamlib_pttprotocol;
+    set_setting_switch("enable_hamlib_pttprotocol", "hamlib_pttprotocol", config.enable_hamlib_pttprotocol)
+
+    document.getElementById('hamlib_databits').value = config.hamlib_data_bits;
+    set_setting_switch("enable_hamlib_databits", "hamlib_databits", config.enable_hamlib_databits)
+
+    document.getElementById('hamlib_stopbits').value = config.hamlib_stop_bits;
+    set_setting_switch("enable_hamlib_stopbits", "hamlib_stopbits", config.enable_hamlib_stopbits)
+
+    document.getElementById('hamlib_handshake').value = config.hamlib_handshake;
+    set_setting_switch("enable_hamlib_handshake", "hamlib_handshake", config.enable_hamlib_handshake)
+
+
+    document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
+    document.getElementById("hamlib_rigctld_port").value = config.hamlib_rigctld_port;
     document.getElementById("hamlib_rigctld_path").value = config.hamlib_rigctld_path;
 
     document.getElementById("beaconInterval").value = config.beacon_interval;
@@ -453,6 +466,42 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+
+
+    // radio settings 'enable hamlib deviceport' event listener
+    document.getElementById("enable_hamlib_deviceport").addEventListener("change", () => {
+        enable_setting("enable_hamlib_deviceport", "hamlib_deviceport")
+    });
+
+    // radio settings 'enable hamlib serialspeed' event listener
+    document.getElementById("enable_hamlib_serialspeed").addEventListener("change", () => {
+        enable_setting("enable_hamlib_serialspeed", "hamlib_serialspeed")
+    });
+
+    // radio settings 'enable hamlib data bits' event listener
+    document.getElementById("enable_hamlib_databits").addEventListener("change", () => {
+        enable_setting("enable_hamlib_databits", "hamlib_databits")
+    });
+
+    // radio settings 'enable hamlib stop bits' event listener
+    document.getElementById("enable_hamlib_stopbits").addEventListener("change", () => {
+        enable_setting("enable_hamlib_stopbits", "hamlib_stopbits")
+    });
+
+    // radio settings 'enable hamlib handshake' event listener
+    document.getElementById("enable_hamlib_handshake").addEventListener("change", () => {
+        enable_setting("enable_hamlib_handshake", "hamlib_handshake")
+    });
+
+    // radio settings 'enable hamlib ptt port' event listener
+    document.getElementById("enable_hamlib_ptt_port").addEventListener("change", () => {
+        enable_setting("enable_hamlib_ptt_port", "hamlib_ptt_port")
+    });
+
+    // radio settings 'enable hamlib ptt protocol' event listener
+    document.getElementById("enable_hamlib_pttprotocol").addEventListener("change", () => {
+        enable_setting("enable_hamlib_pttprotocol", "hamlib_pttprotocol")
+    });
 /*
 document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
 var fileList = document.getElementById("dataModalFile").files;
@@ -788,7 +837,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var deviceid = document.getElementById("hamlib_deviceid").value;
         var deviceport = document.getElementById("hamlib_deviceport").value;
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
-        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
+        var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
 
         var mycall = document.getElementById("myCall").value;
         var ssid = document.getElementById("myCallSSID").value;
@@ -799,10 +848,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var rx_audio = document.getElementById("audio_input_selectbox").value;
         var tx_audio = document.getElementById("audio_output_selectbox").value;
         
-        var pttport = document.getElementById("hamlib_ptt_port_advanced").value;
-        var data_bits = document.getElementById('hamlib_databits_advanced').value;
-        var stop_bits = document.getElementById('hamlib_stopbits_advanced').value;
-        var handshake = document.getElementById('hamlib_handshake_advanced').value;
+        var pttport = document.getElementById("hamlib_ptt_port").value;
+        var data_bits = document.getElementById('hamlib_databits').value;
+        var stop_bits = document.getElementById('hamlib_stopbits').value;
+        var handshake = document.getElementById('hamlib_handshake').value;
         
         if (document.getElementById("scatterSwitch").checked == true){
             var enable_scatter = "True";
@@ -868,19 +917,19 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.radiocontrol = radiocontrol;
         config.mycall = callsign_ssid;
         config.mygrid = mygrid;                
-        config.deviceid = deviceid;
-        config.deviceport = deviceport;
-        config.serialspeed_direct = serialspeed;
-        config.pttprotocol_direct = pttprotocol;
-        config.pttport = pttport;
-        config.data_bits_direct = data_bits;
-        config.stop_bits_direct = stop_bits;
-        config.handshake_direct = handshake;
+        config.hamlib_deviceid = deviceid;
+        config.hamlib_deviceport = deviceport;
+        config.hamlib_serialspeed = serialspeed;
+        config.hamlib_pttprotocol = pttprotocol;
+        config.hamlib_pttport = pttport;
+        config.hamlib_data_bits = data_bits;
+        config.hamlib_stop_bits = stop_bits;
+        config.hamlib_handshake = handshake;
         //config.deviceid_rigctl = deviceid_rigctl;
         //config.serialspeed_rigctl = serialspeed_rigctl;
         //config.pttprotocol_rigctl = pttprotocol_rigctl;
-        config.rigctld_port = rigctld_port;
-        config.rigctld_ip = rigctld_ip;
+        config.hamlib_rigctld_port = rigctld_port;
+        config.hamlib_rigctld_ip = rigctld_ip;
         //config.deviceport_rigctl = deviceport_rigctl;
         config.enable_scatter = enable_scatter;
         config.enable_fft = enable_fft;
@@ -967,10 +1016,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("testHamlib").addEventListener("click", () => {
         
 
-        var data_bits = document.getElementById("hamlib_databits_advanced").value;
-        var stop_bits = document.getElementById("hamlib_stopbits_advanced").value;
-        var handshake = document.getElementById("hamlib_handshake_advanced").value;
-        var pttport = document.getElementById("hamlib_ptt_port_advanced").value;
+        var data_bits = document.getElementById("hamlib_databits").value;
+        var stop_bits = document.getElementById("hamlib_stopbits").value;
+        var handshake = document.getElementById("hamlib_handshake").value;
+        var pttport = document.getElementById("hamlib_ptt_port").value;
 
         var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
         var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
@@ -978,7 +1027,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var deviceid = document.getElementById("hamlib_deviceid").value;
         var deviceport = document.getElementById("hamlib_deviceport").value;
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
-        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
+        var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
 
         if (document.getElementById("radio-control-switch-disabled").checked) {
             var radiocontrol = 'disabled';
@@ -1569,8 +1618,8 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     }
     
     if (arg.tnc_running_state == "stopped") {
-        if (document.getElementById("hamlib_ptt_port_advanced").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_ptt_port_advanced").innerHTML = "";
+        if (document.getElementById("hamlib_ptt_port").length != arg.serial_devices.length) {
+            document.getElementById("hamlib_ptt_port").innerHTML = "";
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
                 option.text = arg.serial_devices[i]['description'];
@@ -1579,7 +1628,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 if(config.pttport == option.value){
                     option.setAttribute('selected', true);
                 }
-                document.getElementById("hamlib_ptt_port_advanced").add(option);
+                document.getElementById("hamlib_ptt_port").add(option);
             }
         }  
     }
@@ -1636,6 +1685,7 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
 
     if (arg.tnc_connection == "open") {
+        /*
         document.getElementById('hamlib_deviceid').disabled = true;
         document.getElementById('hamlib_deviceport').disabled = true;
         document.getElementById('testHamlib').disabled = true;
@@ -1647,6 +1697,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('dxCall').disabled = false;
         document.getElementById("hamlib_serialspeed").disabled = true;
         document.getElementById("openDataModule").disabled = false;
+        */
 
         // collapse settings screen
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
@@ -1658,6 +1709,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.show();         
     } else {
+        /*
         document.getElementById('hamlib_deviceid').disabled = false;
         document.getElementById('hamlib_deviceport').disabled = false;
         document.getElementById('testHamlib').disabled = false;
@@ -1669,7 +1721,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('dxCall').disabled = true;
         document.getElementById("hamlib_serialspeed").disabled = false;
         document.getElementById("openDataModule").disabled = true;
-        
+        */
         // collapse settings screen
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.show();
@@ -2081,3 +2133,26 @@ ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
     toast.show();
 });
 
+
+
+
+
+
+
+// enable or disable a setting by given switch and element
+function enable_setting(enable_switch, enable_object){
+        if(document.getElementById(enable_switch).checked){
+            config[enable_switch] = true
+            document.getElementById(enable_object).removeAttribute("disabled","disabled");
+        } else {
+            config[enable_switch] = false
+            document.getElementById(enable_object).setAttribute("disabled","disabled");
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+}
+
+// enable or disable a setting switch
+function set_setting_switch(setting_switch, enable_object, state){
+        document.getElementById(setting_switch).checked = state
+        enable_setting(setting_switch, enable_object)
+    }

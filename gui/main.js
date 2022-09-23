@@ -49,22 +49,28 @@ const configDefaultSettings = '{\
                   "daemon_port": "3001",\
                   "mycall": "AA0AA-0",\
                   "mygrid": "JN40aa",\
-                  "deviceid": "RIG_MODEL_DUMMY_NOVFO",\
-                  "deviceport": "/dev/ttyACM1",\
-                  "serialspeed_direct": "9600",\
+                  "radiocontrol" : "disabled",\
+                  "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
+                  "enable_hamlib_deviceport" : "False",\
+                  "hamlib_deviceport": "/dev/ttyACM1",\
+                  "enable_hamlib_stop_bits" : "False",\
+                  "hamlib_stop_bits" : "1",\
+                  "enable_hamlib_data_bits" : "False",\
+                  "hamlib_data_bits" : "8",\
+                  "enable_hamlib_handshake" : "False",\
+                  "hamlib_handshake" : "None",\
+                  "enable_hamlib_serialspeed" : "False",\
+                  "hamlib_serialspeed" : "9600",\
+                  "enable_hamlib_pttprotocol" : "False",\
+                  "hamlib_pttprotocol" : "USB",\
+                  "enable_hamlib_pttport" : "False",\
+                  "hamlib_pttport": "/dev/ttyACM1",\
+                  "hamlbib_serialspeed_ptt": "9600",\
+                  "hamlib_rigctld_port" : "4532",\
+                  "hamlib_rigctld_ip" : "127.0.0.1",\
+                  "hamlib_rigctld_path" : "",\
                   "spectrum": "waterfall",\
                   "tnclocation": "localhost",\
-                  "stop_bits_direct" : "1",\
-                  "data_bits_direct" : "8",\
-                  "handshake_direct" : "None",\
-                  "radiocontrol" : "disabled",\
-                  "deviceport_rigctl" : "3",\
-                  "deviceid_rigctl" : "3",\
-                  "serialspeed_rigctl" : "9600",\
-                  "pttprotocol_direct" : "USB",\
-                  "pttprotocol_rigctl" : "USB",\
-                  "rigctld_port" : "4532",\
-                  "rigctld_ip" : "127.0.0.1",\
                   "enable_scatter" : "False",\
                   "enable_fft" : "False",\
                   "enable_fsk" : "False",\
@@ -78,8 +84,7 @@ const configDefaultSettings = '{\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16" ,\
-                  "hamlib_rigctld_path" : ""\
+                  "rx_buffer_size" : "16" \
                   }';
 
 if (!fs.existsSync(configPath)) {

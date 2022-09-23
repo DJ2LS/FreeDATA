@@ -615,11 +615,17 @@
                               <span class="input-group-text" id="basic-addon1">
                               <i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i>
                               </span>
+                              <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_deviceport">
+                              </span>
                               <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport" style="width:7rem">
                                  <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                     <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
                               </select>
                               <span class="input-group-text" id="basic-addon1"><i class="bi bi-speedometer" style="font-size: 1rem; color: black;"></i></span>
+                              <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_serialspeed">
+                              </span>
                               <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
                                  <option value="1200">1200</option>
                                  <option value="2400">2400</option>
@@ -635,17 +641,26 @@
                            </div>
                            <div class="input-group input-group-sm mb-1">
                      <span class="input-group-text" id="basic-addon1">Data</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits_advanced">
+                                                            <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_databits">
+                              </span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits">
                         <option value="7">7</option>
-                        <option value="8">8 (Default)</option>
+                        <option value="8">8</option>
                      </select>
                      <span class="input-group-text" id="basic-addon1">Stop</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits_advanced">
-                        <option value="1">1 (Default)</option>
+                                                   <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_stopbits">
+                              </span>
+                              <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits">
+                        <option value="1">1</option>
                         <option value="2">2</option>
                      </select>
                      <span class="input-group-text" id="basic-addon1">HS</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake_advanced">
+                                                            <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_handshake">
+                              </span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake">
                         <option value="None">None (Default)</option>
                      </select>
                   </div>
@@ -656,11 +671,17 @@
 
                         <div class="input-group input-group-sm mb-1">
                      <span class="input-group-text" id="basic-addon1"><i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i></span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port_advanced">
+                                                   <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_ptt_port">
+                              </span>
+                           <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port">
                         <!--<option value="None">None</option>-->
                      </select>
                      <span class="input-group-text" id="basic-addon1">Type</span>
-                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_protocol" style="width: 0.5rem">
+                                                         <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_pttprotocol">
+                              </span>
+                     <select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_pttprotocol" style="width: 0.5rem">
                         <option value="NONE">NONE</option>
                         <option value="RIG">RIG</option>
                         <option value="USB">USB</option>
