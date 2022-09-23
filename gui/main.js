@@ -386,12 +386,12 @@ app.on('window-all-closed', () => {
 
 // IPC HANDLER
 
-ipcMain.on('request-show-chat-window', (event, arg) => {
+ipcMain.on('request-show-chat-window', (arg) => {
     chat.show();
  });
 
 
-ipcMain.on('request-update-tnc-state', (event, arg) => {
+ipcMain.on('request-update-tnc-state', (arg) => {
     win.webContents.send('action-update-tnc-state', arg);
     //data.webContents.send('action-update-tnc-state', arg);
 });
@@ -406,29 +406,29 @@ ipcMain.on('request-update-heard-stations', (event, arg) => {
     win.webContents.send('action-update-heard-stations', arg);
 });
 */
-ipcMain.on('request-update-daemon-state', (event, arg) => {
+ipcMain.on('request-update-daemon-state', (arg) => {
     win.webContents.send('action-update-daemon-state', arg);
 });
 
-ipcMain.on('request-update-hamlib-test', (event, arg) => {
+ipcMain.on('request-update-hamlib-test', (arg) => {
     win.webContents.send('action-update-hamlib-test', arg);
 });
 
 
 
-ipcMain.on('request-update-tnc-connection', (event, arg) => {
+ipcMain.on('request-update-tnc-connection', (arg) => {
     win.webContents.send('action-update-tnc-connection', arg);
 });
 
-ipcMain.on('request-update-daemon-connection', (event, arg) => {
+ipcMain.on('request-update-daemon-connection', (arg) => {
     win.webContents.send('action-update-daemon-connection', arg);
 });
 
-ipcMain.on('run-tnc-command', (event, arg) => {
+ipcMain.on('run-tnc-command', (arg) => {
     win.webContents.send('run-tnc-command', arg);
 });
 
-ipcMain.on('request-update-rx-buffer', (event, arg) => {
+ipcMain.on('request-update-rx-buffer', (arg) => {
     win.webContents.send('action-update-rx-buffer', arg);
 });
 
@@ -437,10 +437,10 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
     chat.webContents.send('action-update-rx-msg-buffer', arg);
 });
 */
-ipcMain.on('request-new-msg-received', (event, arg) => {
+ipcMain.on('request-new-msg-received', (arg) => {
     chat.webContents.send('action-new-msg-received', arg);
 });
-ipcMain.on('request-update-transmission-status', (event, arg) => {
+ipcMain.on('request-update-transmission-status', (arg) => {
     chat.webContents.send('action-update-transmission-status', arg);
 });
 
