@@ -527,16 +527,27 @@ document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
 
 document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
     var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+
+
+
+    var paramList = []
+
     var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
-    var hamlib_deviceport = document.getElementById("hamlib_deviceport").value;
+    paramList = paramList.concat('-m', hamlib_deviceid)
+
+    if (document.getElementById('enable_hamlib_deviceport').checked){
+        var hamlib_deviceport = document.getElementById("hamlib_deviceport").value;
+        paramList = paramList.concat('-r', hamlib_deviceport)
+    }
 
 
+    document.getElementById('hamlib_rigctld_command').value = paramList
+
+    console.log(paramList)
 
   ipcRenderer.send('request-start-rigctld',{
         path: rigctldPath,
-        parameters: ['-m', hamlib_deviceid,
-                    '-r', hamlib_deviceport
-                    ]
+        parameters: paramList
     });
 
 
@@ -2156,3 +2167,12 @@ function set_setting_switch(setting_switch, enable_object, state){
         document.getElementById(setting_switch).checked = state
         enable_setting(setting_switch, enable_object)
     }
+
+setInterval(checkRigctld, 500)
+function checkRigctld(){
+    ipcRenderer.send('request-check-rigctld');
+}
+ipcRenderer.on('action-check-rigctld', (event, data) => {
+        console.log(data)
+        document.getElementById("hamlib_rigctld_status").value = data["state"];
+});

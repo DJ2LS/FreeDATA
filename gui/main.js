@@ -801,11 +801,83 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
         if(os.platform()=='linux'){
 
             exec('pkill', ['-9', 'rigctld'])
+
         }
 
         if(os.platform()=='darwin'){
 
             exec('pkill', ['-9', 'rigctld'])
+
+        }
+    } catch (e) {
+        mainLog.error(e)
+    }
+});
+
+
+
+// CHECK RIGCTLD
+ipcMain.on('request-check-rigctld',(event,data)=>{
+    try {
+
+        if(os.platform()=='win32' || os.platform()=='win64'){
+            var state = exec('tasklist', ['/svc', '/FI', 'ImageName eq rigctld*'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
+        }
+
+        if(os.platform()=='linux'){
+
+            var state = exec('pgrep', ['rigctld'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
+
+        }
+
+        if(os.platform()=='darwin'){
+
+            var state = exec('pgrep', ['rigctld'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
 
         }
     } catch (e) {
