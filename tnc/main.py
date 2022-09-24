@@ -194,7 +194,7 @@ if __name__ == "__main__":
     )
     PARSER.add_argument(
         "--fft",
-        dest="send_fft",
+        dest="fft",
         action="store_true",
         help="Send fft information via network",
     )
@@ -247,7 +247,29 @@ if __name__ == "__main__":
         type=int,
     )
 
+
     ARGS = PARSER.parse_args()
+
+
+    print("##################")
+    for arg in sys.argv:
+        print("------")
+        arg_clean = arg.replace('--', '')
+
+        if arg in ARGS:
+            print(arg)
+            print(vars(ARGS).get(arg))
+            PARSER.add_argument(
+                arg,
+                dest=arg_clean,
+                default=vars(ARGS).get(arg),
+                type=type(vars(ARGS).get(arg)),
+            )
+    print("##################")
+
+
+
+    print("---------------------------------")
     if ARGS.configfile:
         # init config
         config = config.CONFIG().read_config()
@@ -286,7 +308,6 @@ if __name__ == "__main__":
         static.RESPOND_TO_CQ = config['TNC']['qrv']
         static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
 
-
     else:
         # additional step for being sure our callsign is correctly
         # in case we are not getting a station ssid
@@ -313,7 +334,7 @@ if __name__ == "__main__":
         static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
         static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
         static.ENABLE_SCATTER = ARGS.send_scatter
-        static.ENABLE_FFT = ARGS.send_fft
+        static.ENABLE_FFT = ARGS.fft
         static.ENABLE_FSK = ARGS.enable_fsk
         static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
         static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin

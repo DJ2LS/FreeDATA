@@ -278,6 +278,17 @@ def bytes_to_callsign(bytestring: bytes) -> bytes:
     return bytes(f"{callsign}-{ssid}", "utf-8")
 
 
+def check_session_id(id: bytes, id_to_check: bytes):
+    """
+    Funktion to check if we received the correct session id
+    """
+    if id == id_to_check:
+        return True
+    else:
+        return False
+
+
+
 def check_callsign(callsign: bytes, crc_to_check: bytes):
     """
     Function to check a crc against a callsign to calculate the
