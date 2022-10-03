@@ -88,6 +88,10 @@
       "target": [
         "AppImage"
       ],
+      "arch": [
+        "x64",
+        "ia32"
+      ]
       "category": "Development"
     },
     "publish": {
