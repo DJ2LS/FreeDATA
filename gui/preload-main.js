@@ -1711,7 +1711,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 option.text = arg.serial_devices[i]['port'] + ' -- ' + arg.serial_devices[i]['description'];
                 option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
-                if(config.deviceport == option.value){
+                if(config.hamlib_deviceport == option.value){
                     option.setAttribute('selected', true);
                 }
                 document.getElementById("hamlib_deviceport").add(option);
@@ -1731,7 +1731,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 option.text = arg.serial_devices[i]['description'];
                 option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
-                if(config.pttport == option.value){
+                if(config.hamlib_pttport == option.value){
                     option.setAttribute('selected', true);
                 }
                 document.getElementById("hamlib_ptt_port").add(option);
