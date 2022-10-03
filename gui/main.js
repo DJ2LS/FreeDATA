@@ -391,7 +391,7 @@ ipcMain.on('request-show-chat-window', () => {
  });
 
 
-ipcMain.on('request-update-tnc-state', (arg) => {
+ipcMain.on('request-update-tnc-state', (event, arg) => {
     win.webContents.send('action-update-tnc-state', arg);
     //data.webContents.send('action-update-tnc-state', arg);
 });
@@ -406,29 +406,29 @@ ipcMain.on('request-update-heard-stations', (event, arg) => {
     win.webContents.send('action-update-heard-stations', arg);
 });
 */
-ipcMain.on('request-update-daemon-state', (arg) => {
+ipcMain.on('request-update-daemon-state', (event, arg) => {
     win.webContents.send('action-update-daemon-state', arg);
 });
 
-ipcMain.on('request-update-hamlib-test', (arg) => {
+ipcMain.on('request-update-hamlib-test', (event, arg) => {
     win.webContents.send('action-update-hamlib-test', arg);
 });
 
 
 
-ipcMain.on('request-update-tnc-connection', (arg) => {
+ipcMain.on('request-update-tnc-connection', (event, arg) => {
     win.webContents.send('action-update-tnc-connection', arg);
 });
 
-ipcMain.on('request-update-daemon-connection', (arg) => {
+ipcMain.on('request-update-daemon-connection', (event, arg) => {
     win.webContents.send('action-update-daemon-connection', arg);
 });
 
-ipcMain.on('run-tnc-command', (arg) => {
+ipcMain.on('run-tnc-command', (event, arg) => {
     win.webContents.send('run-tnc-command', arg);
 });
 
-ipcMain.on('request-update-rx-buffer', (arg) => {
+ipcMain.on('request-update-rx-buffer', (event, arg) => {
     win.webContents.send('action-update-rx-buffer', arg);
 });
 
@@ -437,10 +437,10 @@ ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
     chat.webContents.send('action-update-rx-msg-buffer', arg);
 });
 */
-ipcMain.on('request-new-msg-received', (arg) => {
+ipcMain.on('request-new-msg-received', (event, arg) => {
     chat.webContents.send('action-new-msg-received', arg);
 });
-ipcMain.on('request-update-transmission-status', (arg) => {
+ipcMain.on('request-update-transmission-status', (event, arg) => {
     chat.webContents.send('action-update-transmission-status', arg);
 });
 
@@ -774,10 +774,10 @@ function close_all() {
 
 
 // RUN RIGCTLD
-ipcMain.on('request-start-rigctld',(data)=>{
+ipcMain.on('request-start-rigctld',(event, data)=>{
     //win.webContents.send('action-show-arq-toast-session-failed', data);
     //exec('git', ['--version'])
-
+    console.log(data)
     console.log(data.path)
     console.log(data.parameters)
     // TODO: WE NEED SOME ERROR HANDLING

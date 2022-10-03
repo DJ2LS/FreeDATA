@@ -535,8 +535,6 @@ document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
 document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
     var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
 
-
-
     var paramList = []
 
     var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
@@ -588,11 +586,14 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
     document.getElementById('hamlib_rigctld_command').value = paramList
 
     console.log(paramList)
+    console.log(rigctldPath)
 
-  ipcRenderer.send('request-start-rigctld',{
+    let Data = {
         path: rigctldPath,
         parameters: paramList
-    });
+    };
+    ipcRenderer.send('request-start-rigctld', Data);
+
 
 
 })
@@ -1737,7 +1738,7 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
-ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
+ipcRenderer.on('action-update-tnc-connection', (arg) => {
 
     if (arg.tnc_connection == "open") {
         /*
