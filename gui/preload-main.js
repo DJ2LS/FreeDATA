@@ -277,6 +277,8 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     // disabled
     document.getElementById("radio-control-switch-disabled").addEventListener("click", () => {
 
+        document.getElementById("hamlib_info_field").innerHTML = 'Set hamlib related settings.';
+
         document.getElementById("radio-control-disabled").style.display = 'block';
         document.getElementById("radio-control-disabled").style.visibility = 'visible';
 
@@ -305,6 +307,8 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     
     // radio settings event listener
     document.getElementById("radio-control-switch-radio").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Select your radio by searching for the name or ID.';
 
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
@@ -335,6 +339,8 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     // radio settings 'connection' event listener
     document.getElementById("radio-control-switch-connect").addEventListener("click", () => {
 
+        document.getElementById("hamlib_info_field").innerHTML = 'Setup the connection between rigctld and your radio';
+
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
 
@@ -362,6 +368,8 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
 
     // radio settings 'ptt' event listener
     document.getElementById("radio-control-switch-ptt").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Set your PTT related settings.';
 
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
@@ -391,6 +399,9 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
 
     // // radio settings 'network' event listener
     document.getElementById("radio-control-switch-network").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Set the ip and port of a rigctld session';
+
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
 
@@ -418,6 +429,9 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
 
     // // radio settings 'rigctld' event listener
     document.getElementById("radio-control-switch-rigctld").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Define the rigctld path and port';
+
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
 
@@ -445,6 +459,10 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
 
     // // radio settings 'rigctld' event listener
     document.getElementById("radio-control-switch-rigctld-info").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Start and stop rigctld .';
+
+
         document.getElementById("radio-control-disabled").style.display = 'none';
         document.getElementById("radio-control-disabled").style.visibility = 'hidden';
 
