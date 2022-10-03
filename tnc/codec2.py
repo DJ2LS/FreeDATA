@@ -30,6 +30,7 @@ class FREEDV_MODE(Enum):
     fsk_ldpc = 9
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
+    ofdm_adv = 100
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
@@ -100,6 +101,9 @@ api.freedv_open.restype = ctypes.c_void_p
 api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
+api.freedv_open_ofdm_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
+api.freedv_open_ofdm_advanced.restype = ctypes.c_void_p
+
 api.freedv_get_bits_per_modem_frame.argtype = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_bits_per_modem_frame.restype = ctypes.c_int
 
@@ -147,8 +151,50 @@ api.FREEDV_MODE_DATAC1 = 10  # type: ignore
 api.FREEDV_MODE_DATAC3 = 12  # type: ignore
 api.FREEDV_MODE_DATAC0 = 14  # type: ignore
 api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
+api.FREEDV_MODE_OFDM_ADVANCED = 100 # type:ignore
 
 # -------------------------------- FSK LDPC MODE SETTINGS
+
+class OFDM_ADVANCED(ctypes.Structure):
+    """Advanced structure for fsk modes"""
+
+    _fields_ = [
+        ("nc", ctypes.c_int),
+        ("np", ctypes.c_int),
+        ("ns", ctypes.c_int),
+        ("bps", ctypes.c_int),
+        ("nuwbits", ctypes.c_int),
+        ("bad_uw_errors", ctypes.c_int),
+        ("ftwindowwidth", ctypes.c_int),
+        ("edge_pilots", ctypes.c_int),
+        ("ts", ctypes.c_float),
+        ("tcp", ctypes.c_float),
+        ("timing_mx_thresh", ctypes.c_float),
+        #("amp_scale", ctypes.c_float),
+        ("clip_gain1", ctypes.c_float),
+        ("clip_gain2", ctypes.c_float),
+        ("clip_en", ctypes.c_bool),
+        ("txtbits", ctypes.c_int),
+        ("statemachine", ctypes.c_char_p),
+        ("data_mode", ctypes.c_char_p),
+        ("codename", ctypes.c_char_p),
+
+        #("tx_centre", ctypes.c_float),
+        #("rx_centre", ctypes.c_float),
+        ##("fs", ctypes.c_float),
+        ##("rs", ctypes.c_float),
+        ##("bps", ctypes.c_int),
+
+        ("tx_uw", (ctypes.c_uint8 * 64)),
+        #("amp_est_mode", ctypes.c_int),
+        #("tx_bpf_en", ctypes.c_bool),
+        ##("foff_limiter", ctypes.c_bool),
+
+        ##("mode", ctypes.c_char),
+        ##("fmin", ctypes.c_float),
+        ##("fmax", ctypes.c_float)
+    ]
+
 
 
 class ADVANCED(ctypes.Structure):
@@ -187,6 +233,45 @@ H_4096_8192_3d       rate 0.50 (8192,4096)  BPF: 512    not working
 H_16200_9720         rate 0.60 (16200,9720) BPF: 1215   not working
 H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
 """
+
+
+api.FREEDV_MODE_OFDM_ADV_SETTINGS = OFDM_ADVANCED()
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.nc = 3
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.np = 12
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.ns = 5
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.bps = 2
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.nuwbits = 32
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.bad_uw_errors = 9
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.ftwindowwidth = 80
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.edge_pilots = 0
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.ts = 0.016
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.tcp = 0.006
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.timing_mx_thresh = 0.08
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.tx_bpf_en = True
+#api.FREEDV_MODE_OFDM_ADV_SETTINGS.amp_scale = 300E3
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.clip_gain1 = 2.2
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.clip_gain2 = 0.85
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.clip_en = True
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.txtbits = 0
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.statemachine = 'data'.encode("utf-8")
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.data_mode = 'streaming'.encode("utf-8")
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.codename = 'H_128_256_5'.encode("utf-8")
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.amp_est_mode = 1
+uwlist = [
+            1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, \
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, \
+        ]
+
+#api.FREEDV_MODE_OFDM_ADV_SETTINGS.tx_uw = (ctypes.c_uint8 * len(uwlist))(*uwlist)
+#api.FREEDV_MODE_OFDM_ADV_SETTINGS.tx_uw = (ctypes.c_uint8*64)(*uwlist)
+pointer = (ctypes.c_uint8 * 64)(*uwlist)
+api.FREEDV_MODE_OFDM_ADV_SETTINGS.tx_uw = ctypes.cast(ctypes.byref(pointer), ctypes.POINTER(ctypes.c_uint8 * 64)).contents
+#api.FREEDV_MODE_OFDM_ADV_SETTINGS.tx_uw = ctypes.cast(ctypes.addressof(pointer)-4, ctypes.POINTER(ctypes.c_uint8 * 64)).contents
+
+
+
 # --------------- 2 FSK H_128_256_5, 16 bytes
 api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()  # type: ignore
 api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0

@@ -280,7 +280,7 @@ class DATA:
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
-        _valid3, _ = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))
+        _valid3 = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))
 
 
         if (
@@ -2158,7 +2158,7 @@ class DATA:
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(cq_frame)
+            self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.ofdm_adv.value)
 
     def received_cq(self, data_in: bytes) -> None:
         """

@@ -82,9 +82,20 @@ class RF:
 
         # Open codec2 instances
         # Datac0 - control frames
+        #self.datac0_freedv = ctypes.cast(
+        #    codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+        #)
+        print(codec2.api.FREEDV_MODE_OFDM_ADV_SETTINGS)
         self.datac0_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+            codec2.api.freedv_open_ofdm_advanced(
+                codec2.api.FREEDV_MODE_OFDM_ADVANCED,
+                ctypes.byref(codec2.api.FREEDV_MODE_OFDM_ADV_SETTINGS),
+            ),
+            ctypes.c_void_p,
         )
+
+
+
         self.c_lib.freedv_set_tuning_range(
             self.datac0_freedv,
             ctypes.c_float(static.TUNING_RANGE_FMIN),
@@ -442,15 +453,13 @@ class RF:
         # Open codec2 instance
         self.MODE = mode
         freedv = open_codec2_instance(self.MODE)
-
         # Get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
-        payload_bytes_per_frame = bytes_per_frame - 2
 
+        payload_bytes_per_frame = bytes_per_frame - 2
         # Init buffer for data
         n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(freedv)
         mod_out = ctypes.create_string_buffer(n_tx_modem_samples * 2)
-
         # Init buffer for preample
         n_tx_preamble_modem_samples = codec2.api.freedv_get_n_tx_preamble_modem_samples(
             freedv
@@ -872,6 +881,7 @@ class RF:
 
         codec2.api.freedv_set_frames_per_burst(self.datac1_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.datac3_freedv, frames_per_burst)
+
         codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, frames_per_burst)
 
 
@@ -884,6 +894,18 @@ def open_codec2_instance(mode: int) -> ctypes.c_void_p:
     :return: C-function of the requested codec2 instance
     :rtype: ctypes.c_void_p
     """
+
+    if mode in [codec2.FREEDV_MODE.ofdm_adv.value]:
+        return ctypes.cast(
+            codec2.api.freedv_open_ofdm_advanced(
+                codec2.api.FREEDV_MODE_OFDM_ADVANCED,
+                ctypes.byref(codec2.api.FREEDV_MODE_OFDM_ADV_SETTINGS),
+            ),
+
+            ctypes.c_void_p,
+        )
+
+
     if mode in [codec2.FREEDV_MODE.fsk_ldpc_0.value]:
         return ctypes.cast(
             codec2.api.freedv_open_advanced(
