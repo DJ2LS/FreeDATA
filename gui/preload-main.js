@@ -113,6 +113,9 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
     document.getElementById("hamlib_rigctld_port").value = config.hamlib_rigctld_port;
     document.getElementById("hamlib_rigctld_path").value = config.hamlib_rigctld_path;
+    document.getElementById("hamlib_rigctld_server_port").value = config.hamlib_rigctld_server_port;
+
+
 
     document.getElementById("beaconInterval").value = config.beacon_interval;
  
@@ -527,6 +530,8 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     document.getElementById("enable_hamlib_dcd").addEventListener("change", () => {
         enable_setting("enable_hamlib_dcd", "hamlib_dcd")
     });
+
+
 /*
 document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
 var fileList = document.getElementById("dataModalFile").files;
@@ -550,8 +555,19 @@ document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
     });
 })
 
+        // radio settings 'hamlib_rigctld_server_port' event listener
+    document.getElementById("hamlib_rigctld_server_port").addEventListener("change", () => {
+
+
+        config.hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+
 document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
     var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+
 
     var paramList = []
 
@@ -605,6 +621,11 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
         var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
         paramList = paramList.concat('--ptt-type=', hamlib_ptt_type)
     }
+
+    var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
+    paramList = paramList.concat('--port=', hamlib_rigctld_server_port)
+
+
 
 
     document.getElementById('hamlib_rigctld_command').value = paramList
@@ -913,6 +934,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
                 
         var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
         var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+        var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
 
         var deviceid = document.getElementById("hamlib_deviceid").value;
         var deviceport = document.getElementById("hamlib_deviceport").value;
@@ -995,6 +1017,9 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var tx_audio_level = document.getElementById("audioLevelTX").value;
         var rx_buffer_size = document.getElementById("rx_buffer_size").value;
 
+
+
+
         config.radiocontrol = radiocontrol;
         config.mycall = callsign_ssid;
         config.mygrid = mygrid;                
@@ -1012,6 +1037,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         //config.pttprotocol_rigctl = pttprotocol_rigctl;
         config.hamlib_rigctld_port = rigctld_port;
         config.hamlib_rigctld_ip = rigctld_ip;
+        config.hamlib_rigctld_server_port = hamlib_rigctld_server_port;
         //config.deviceport_rigctl = deviceport_rigctl;
         config.enable_scatter = enable_scatter;
         config.enable_fft = enable_fft;
