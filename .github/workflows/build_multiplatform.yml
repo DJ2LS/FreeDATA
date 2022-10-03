@@ -52,7 +52,7 @@ jobs:
       - name: Build codec2 on ${{ matrix.os }} for ${{ matrix.platform.name }}
         if: ${{startsWith(matrix.platform.name, 'native') }}
         run: |
-          git clone https://github.com/DJ2LS/codec2.git -b ls-ofdm-octave-tests
+          git clone https://github.com/DJ2LS/codec2.git
           cd codec2
           mkdir build
           mkdir tempfiles
@@ -76,7 +76,7 @@ jobs:
         if: ${{startsWith(matrix.os, 'ubuntu-20') && !startsWith(matrix.platform.name, 'native') }}
         run: |
           sudo apt install build-essential mingw-w64 g++-mingw-w64 make cmake
-          git clone https://github.com/DJ2lS/codec2.git -b ls-ofdm-octave-tests
+          git clone https://github.com/DJ2lS/codec2.git
           cd codec2
           mkdir tempfiles
           mkdir build_w32
