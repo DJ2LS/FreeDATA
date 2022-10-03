@@ -623,7 +623,7 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
     }
 
     var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
-    paramList = paramList.concat('--port=', hamlib_rigctld_server_port)
+    paramList = paramList.concat('-t', hamlib_rigctld_server_port)
 
 
 
