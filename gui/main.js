@@ -776,13 +776,15 @@ function close_all() {
 
 // RUN RIGCTLD
 ipcMain.on('request-start-rigctld',(event, data)=>{
-    //win.webContents.send('action-show-arq-toast-session-failed', data);
-    //exec('git', ['--version'])
-    console.log(data)
-    console.log(data.path)
-    console.log(data.parameters)
-    // TODO: WE NEED SOME ERROR HANDLING
-    exec(data.path, data.parameters);
+
+
+    try{
+        exec(data.path, data.parameters);
+    } catch (e) {
+     console.log(e);
+    }
+
+
 
     /*
     const rigctld = exec(data.path, data.parameters);
