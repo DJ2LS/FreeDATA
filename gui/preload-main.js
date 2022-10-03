@@ -582,6 +582,12 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
         paramList = paramList.concat('-p', hamlib_ptt_port)
     }
 
+    // hamlib ptt type
+    if (document.getElementById('enable_hamlib_pttprotocol').checked){
+        var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
+        paramList = paramList.concat('--ptt-type=', hamlib_ptt_type)
+    }
+
 
     document.getElementById('hamlib_rigctld_command').value = paramList
 
