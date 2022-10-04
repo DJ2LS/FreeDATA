@@ -829,7 +829,7 @@ ipcMain.on('request-check-rigctld',(data)=>{
     try {
 
         if(os.platform()=='win32' || os.platform()=='win64'){
-            var state = exec('tasklist', ['/svc', '/FI', 'ImageName eq rigctld*'])
+            var state = exec('tasklist', ['/svc', '/FI', '"ImageName eq rigctld*"'])
             state.on('close', function(code) {
                 if(code == 0){
                     let Data = {
