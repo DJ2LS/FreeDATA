@@ -397,7 +397,7 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          args: "-p always --x64 --ia32"
+          args: "-p always"
 
       - name: LIST ALL FILES
         run: ls -R
