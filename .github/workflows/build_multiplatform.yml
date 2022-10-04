@@ -173,6 +173,7 @@ jobs:
 
           # Produce a binary artifact and place it in the mounted volume
           run: |
+
             git clone https://github.com/drowe67/codec2.git
             cd codec2
             git checkout master
@@ -206,18 +207,21 @@ jobs:
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
             tnc_binary_name: freedata-tnc
+            electron_parameters: "-p always"
 
           - os: macos-11
             zip_name: macos_tnc
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
             tnc_binary_name: freedata-tnc
+            electron_parameters: "-p always"
 
           - os: windows-latest
             zip_name: windows_tnc
             generator: Visual Studio 16 2019
             daemon_binary_name: freedata-daemon.exe
             tnc_binary_name: freedata-tnc.exe
+            electron_parameters: "-p always --x64 --ia32"
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
         uses: actions/checkout@v3
@@ -395,7 +399,7 @@ jobs:
           # If the commit is tagged with a version (e.g. "v1.0.0"),
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          args: "-p always"
+          args: ${{ matrix.electron_parameters }}
 
       - name: LIST ALL FILES
         run: ls -R

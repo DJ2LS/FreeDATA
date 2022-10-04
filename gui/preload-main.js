@@ -1,5 +1,6 @@
 const path = require('path');
 const {ipcRenderer} = require('electron');
+const exec = require('child_process').spawn;
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
 const fs = require('fs');
@@ -62,13 +63,6 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 */
 
 
-    // DISABLE HAMLIB DIRECT AND RIGCTL ON WINDOWS
-    if(os.platform()=='win32' || os.platform()=='win64'){
-
-        document.getElementById("radio-control-switch1").style.disabled = true;
-        //document.getElementById("radio-control-switch2").style.disabled = true;
-    }
-
     // ENABLE TOOLTIPS EVERYWHERE
     // https://getbootstrap.com/docs/5.1/components/tooltips/
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
@@ -90,31 +84,45 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
-    
-    document.getElementById('hamlib_deviceid').value = config.deviceid;
-    document.getElementById('hamlib_serialspeed').value = config.serialspeed_direct;
-    document.getElementById('hamlib_ptt_protocol').value = config.pttprotocol_direct; 
 
-    document.getElementById("hamlib_rigctld_ip").value = config.rigctld_ip;
-    document.getElementById("hamlib_rigctld_port").value = config.rigctld_port;
-    
-    //document.getElementById("hamlib_deviceid_rigctl").value = config.deviceid_rigctl;
-    //document.getElementById("hamlib_serialspeed_rigctl").value = config.serialspeed_rigctl;
-    //document.getElementById("hamlib_ptt_protocol_rigctl").value = config.pttprotocol_rigctl; 
-    
-    document.getElementById('hamlib_serialspeed_advanced').value = config.serialspeed_direct;
-    document.getElementById('hamlib_ptt_protocol_advanced').value = config.pttprotocol_direct;     
-    document.getElementById('hamlib_databits_advanced').value = config.data_bits_direct;
-    document.getElementById('hamlib_stopbits_advanced').value = config.stop_bits_direct;
-    document.getElementById('hamlib_handshake_advanced').value = config.handshake_direct;
+    // hamlib settings
+    document.getElementById('hamlib_deviceid').value = config.hamlib_deviceid;
+
+set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
+set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
+
+    document.getElementById('hamlib_serialspeed').value = config.hamlib_serialspeed;
+    set_setting_switch("enable_hamlib_serialspeed", "hamlib_serialspeed", config.enable_hamlib_serialspeed)
+
+    document.getElementById('hamlib_pttprotocol').value = config.hamlib_pttprotocol;
+    set_setting_switch("enable_hamlib_pttprotocol", "hamlib_pttprotocol", config.enable_hamlib_pttprotocol)
+
+    document.getElementById('hamlib_databits').value = config.hamlib_data_bits;
+    set_setting_switch("enable_hamlib_databits", "hamlib_databits", config.enable_hamlib_databits)
+
+    document.getElementById('hamlib_stopbits').value = config.hamlib_stop_bits;
+    set_setting_switch("enable_hamlib_stopbits", "hamlib_stopbits", config.enable_hamlib_stopbits)
+
+    document.getElementById('hamlib_handshake').value = config.hamlib_handshake;
+    set_setting_switch("enable_hamlib_handshake", "hamlib_handshake", config.enable_hamlib_handshake)
+
+    document.getElementById('hamlib_dcd').value = config.hamlib_dcd;
+    set_setting_switch("enable_hamlib_dcd", "hamlib_dcd", config.enable_hamlib_dcd)
+
+
+    document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
+    document.getElementById("hamlib_rigctld_port").value = config.hamlib_rigctld_port;
+    document.getElementById("hamlib_rigctld_path").value = config.hamlib_rigctld_path;
+    document.getElementById("hamlib_rigctld_server_port").value = config.hamlib_rigctld_server_port;
+
+
 
     document.getElementById("beaconInterval").value = config.beacon_interval;
  
     document.getElementById("scatterSwitch").value = config.enable_scatter;
     document.getElementById("fftSwitch").value = config.enable_fft;
-    //document.getElementById("500HzModeSwitch").value = config.low_bandwidth_mode; 
-    //document.getElementById("fskModeSwitch").value = config.enable_fsk; 
-    //document.getElementById("respondCQSwitch").value = config.respond_to_cq; 
+
+
        
     document.getElementById("received_files_folder").value = config.received_files_folder;   
 
@@ -193,70 +201,59 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     }
 
     // radio control element
-    if (config.radiocontrol == 'direct') {
+    if (config.radiocontrol == 'rigctld') {
 
-        document.getElementById("radio-control-switch0").checked = false;
-        document.getElementById("radio-control-switch1").checked = true;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = false;
+        document.getElementById("radio-control-switch-disabled").checked = false;
+        document.getElementById("radio-control-switch-radio").checked = true;
+        document.getElementById("radio-control-switch-connect").checked = false;
+        document.getElementById("radio-control-switch-network").checked = false;
 
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
+       document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+        document.getElementById("radio-control-disabled").style.display = 'none';
+
+        document.getElementById("radio-control-radio").style.visibility = 'visible';
+        document.getElementById("radio-control-radio").style.display = '100%';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+        document.getElementById("radio-control-network").style.display = 'none';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
         document.getElementById("radio-control-rigctld").style.display = 'none';
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%'; 
-
-    /*
-    } else if (config.radiocontrol == 'rigctl') {
-
-        document.getElementById("radio-control-switch0").checked = false;  
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = true;
-        document.getElementById("radio-control-switch3").checked = false;
-        
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
-
-        document.getElementById("radio-control-rigctl").style.display = 'block';                
-        document.getElementById("radio-control-rigctl").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctl").style.height = '100%';       
-*/
-    } else if (config.radiocontrol == 'rigctld') {
-
-        document.getElementById("radio-control-switch0").checked = false;
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = true;
-
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        //document.getElementById("radio-control-rigctl").style.display = 'none';  
-
-        document.getElementById("radio-control-rigctld").style.display = 'block';                
-        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctld").style.height = '100%';
-        
+       document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
     } else {
     
-        document.getElementById("radio-control-switch0").checked = true;
-        document.getElementById("radio-control-switch1").checked = false;
-        //document.getElementById("radio-control-switch2").checked = false;
-        document.getElementById("radio-control-switch3").checked = false;
+        document.getElementById("radio-control-switch-disabled").checked = true;
+        document.getElementById("radio-control-switch-radio").checked = false;
+        document.getElementById("radio-control-switch-connect").checked = false;
+        document.getElementById("radio-control-switch-network").checked = false;
+        document.getElementById("radio-control-switch-rigctld").checked = false;
+        document.getElementById("radio-control-switch-rigctld-info").checked = false;
 
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';  
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
 
     }
 
@@ -281,62 +278,378 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     // on click radio control toggle view
     // disabled
-    document.getElementById("radio-control-switch0").addEventListener("click", () => {
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+    document.getElementById("radio-control-switch-disabled").addEventListener("click", () => {
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
+        document.getElementById("hamlib_info_field").innerHTML = 'Set hamlib related settings.';
+
+        document.getElementById("radio-control-disabled").style.display = 'block';
+        document.getElementById("radio-control-disabled").style.visibility = 'visible';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
         config.radiocontrol = 'disabled'
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
     
-    // direct
-    document.getElementById("radio-control-switch1").addEventListener("click", () => {
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        //document.getElementById("radio-control-rigctl").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
+    // radio settings event listener
+    document.getElementById("radio-control-switch-radio").addEventListener("click", () => {
 
-        document.getElementById("radio-control-direct").style.display = 'block';
-        document.getElementById("radio-control-direct").style.visibility = 'visible';
-        document.getElementById("radio-control-direct").style.height = '100%';
-        config.radiocontrol = 'direct';
+        document.getElementById("hamlib_info_field").innerHTML = 'Select your radio by searching for the name or ID.';
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'block';
+        document.getElementById("radio-control-radio").style.visibility = 'visible';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-    /*
-    // rigctl
-    document.getElementById("radio-control-switch2").addEventListener("click", () => {
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        document.getElementById("radio-control-rigctld").style.display = 'none';  
 
-        //document.getElementById("radio-control-rigctl").style.display = 'block';                
-        //document.getElementById("radio-control-rigctl").style.visibility = 'visible';
-        //document.getElementById("radio-control-rigctl").style.height = '100%';
-        config.radiocontrol = 'rigctl';
+    // radio settings 'connection' event listener
+    document.getElementById("radio-control-switch-connect").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Setup the connection between rigctld and your radio';
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'visible';
+        document.getElementById("radio-control-connection").style.display = 'block';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-    */
-    // rigctld
-    document.getElementById("radio-control-switch3").addEventListener("click", () => {
-        document.getElementById("radio-control-direct").style.visibility = 'hidden';
-        //document.getElementById("radio-control-rigctl").style.visibility = 'hidden';        
-        document.getElementById("radio-control-direct").style.display = 'none';
-        //document.getElementById("radio-control-rigctl").style.display = 'none';  
 
-        document.getElementById("radio-control-rigctld").style.display = 'block';                
-        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
-        document.getElementById("radio-control-rigctld").style.height = '100%';
+    // radio settings 'ptt' event listener
+    document.getElementById("radio-control-switch-ptt").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Set your PTT related settings.';
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'visible';
+        document.getElementById("radio-control-ptt").style.display = 'block';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+    // // radio settings 'network' event listener
+    document.getElementById("radio-control-switch-network").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Set the ip and port of a rigctld session';
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'block';
+        document.getElementById("radio-control-network").style.visibility = 'visible';
+
+       document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
         config.radiocontrol = 'rigctld';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });    
+
+    // // radio settings 'rigctld' event listener
+    document.getElementById("radio-control-switch-rigctld").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Define the rigctld path and port';
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-rigctld").style.visibility = 'visible';
+        document.getElementById("radio-control-rigctld").style.display = 'block';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld-info").style.display = 'none';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+    // // radio settings 'rigctld' event listener
+    document.getElementById("radio-control-switch-rigctld-info").addEventListener("click", () => {
+
+        document.getElementById("hamlib_info_field").innerHTML = 'Start and stop rigctld .';
+
+
+        document.getElementById("radio-control-disabled").style.display = 'none';
+        document.getElementById("radio-control-disabled").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-radio").style.display = 'none';
+        document.getElementById("radio-control-radio").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-connection").style.visibility = 'hidden';
+        document.getElementById("radio-control-connection").style.display = 'none';
+
+        document.getElementById("radio-control-ptt").style.visibility = 'hidden';
+        document.getElementById("radio-control-ptt").style.display = 'none';
+
+        document.getElementById("radio-control-network").style.display = 'none';
+        document.getElementById("radio-control-network").style.visibility = 'hidden';
+
+        document.getElementById("radio-control-rigctld").style.visibility = 'hidden';
+        document.getElementById("radio-control-rigctld").style.display = 'none';
+
+        document.getElementById("radio-control-rigctld-info").style.visibility = 'visible';
+        document.getElementById("radio-control-rigctld-info").style.display = 'block';
+
+        config.radiocontrol = 'rigctld';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+    // radio settings 'enable hamlib deviceport' event listener
+    document.getElementById("enable_hamlib_deviceport").addEventListener("change", () => {
+        enable_setting("enable_hamlib_deviceport", "hamlib_deviceport")
+    });
+
+    // radio settings 'enable hamlib serialspeed' event listener
+    document.getElementById("enable_hamlib_serialspeed").addEventListener("change", () => {
+        enable_setting("enable_hamlib_serialspeed", "hamlib_serialspeed")
+    });
+
+    // radio settings 'enable hamlib data bits' event listener
+    document.getElementById("enable_hamlib_databits").addEventListener("change", () => {
+        enable_setting("enable_hamlib_databits", "hamlib_databits")
+    });
+
+    // radio settings 'enable hamlib stop bits' event listener
+    document.getElementById("enable_hamlib_stopbits").addEventListener("change", () => {
+        enable_setting("enable_hamlib_stopbits", "hamlib_stopbits")
+    });
+
+    // radio settings 'enable hamlib handshake' event listener
+    document.getElementById("enable_hamlib_handshake").addEventListener("change", () => {
+        enable_setting("enable_hamlib_handshake", "hamlib_handshake")
+    });
+
+    // radio settings 'enable hamlib ptt port' event listener
+    document.getElementById("enable_hamlib_ptt_port").addEventListener("change", () => {
+        enable_setting("enable_hamlib_ptt_port", "hamlib_ptt_port")
+    });
+
+    // radio settings 'enable hamlib ptt protocol' event listener
+    document.getElementById("enable_hamlib_pttprotocol").addEventListener("change", () => {
+        enable_setting("enable_hamlib_pttprotocol", "hamlib_pttprotocol")
+    });
+        // radio settings 'enable hamlib dcd' event listener
+    document.getElementById("enable_hamlib_dcd").addEventListener("change", () => {
+        enable_setting("enable_hamlib_dcd", "hamlib_dcd")
+    });
+
+
+/*
+document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
+var fileList = document.getElementById("dataModalFile").files;
+        console.log(fileList)
+
+})
+*/
+
+document.getElementById('hamlib_rigctld_path').addEventListener('click', () => {
+
+    ipcRenderer.send('get-file-path',{
+        title: 'Title',
+    });
+
+    ipcRenderer.on('return-file-paths',(event,data)=>{
+        rigctldPath = data.path.filePaths[0]
+        document.getElementById("hamlib_rigctld_path").value = rigctldPath
+        config.hamlib_rigctld_path = rigctldPath
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+    });
+})
+
+        // radio settings 'hamlib_rigctld_server_port' event listener
+    document.getElementById("hamlib_rigctld_server_port").addEventListener("change", () => {
+
+
+        config.hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+
+
+
+document.getElementById('hamlib_rigctld_start').addEventListener('click', () => {
+    var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+
+
+    var paramList = []
+
+    var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
+    paramList = paramList.concat('-m', hamlib_deviceid)
+
+    // hamlib deviceport setting
+    if (document.getElementById('enable_hamlib_deviceport').checked){
+        var hamlib_deviceport = document.getElementById("hamlib_deviceport").value;
+        paramList = paramList.concat('-r', hamlib_deviceport)
+    }
+
+    // hamlib serialspeed setting
+    if (document.getElementById('enable_hamlib_serialspeed').checked){
+        var hamlib_serialspeed = document.getElementById("hamlib_serialspeed").value;
+        paramList = paramList.concat('-s', hamlib_serialspeed)
+    }
+
+    // hamlib databits setting
+    if (document.getElementById('enable_hamlib_databits').checked){
+        var hamlib_databits = document.getElementById("hamlib_databits").value;
+        paramList = paramList.concat('--set-conf=data_bits=' + hamlib_databits)
+    }
+
+    // hamlib stopbits setting
+    if (document.getElementById('enable_hamlib_stopbits').checked){
+        var hamlib_stopbits = document.getElementById("hamlib_stopbits").value;
+        paramList = paramList.concat('--set-conf=stop_bits=' + hamlib_stopbits)
+    }
+
+    // hamlib handshake setting
+    if (document.getElementById('enable_hamlib_handshake').checked){
+        var hamlib_handshake = document.getElementById("hamlib_handshake").value;
+        paramList = paramList.concat('--set-conf=serial_handshake=' + hamlib_handshake)
+    }
+
+    // hamlib dcd setting
+    if (document.getElementById('enable_hamlib_dcd').checked){
+        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
+        paramList = paramList.concat('--dcd-type=' + hamlib_dcd)
+    }
+
+    // hamlib ptt port
+    if (document.getElementById('enable_hamlib_ptt_port').checked){
+        var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
+        paramList = paramList.concat('-p', hamlib_ptt_port)
+    }
+
+    // hamlib ptt type
+    if (document.getElementById('enable_hamlib_pttprotocol').checked){
+        var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
+        paramList = paramList.concat('--ptt-type=', hamlib_ptt_type)
+    }
+
+    var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
+    paramList = paramList.concat('-t', hamlib_rigctld_server_port)
+
+
+
+
+    document.getElementById('hamlib_rigctld_command').value = paramList
+
+    console.log(paramList)
+    console.log(rigctldPath)
+
+    let Data = {
+        path: rigctldPath,
+        parameters: paramList
+    };
+    ipcRenderer.send('request-start-rigctld', Data);
+
+
+
+})
+document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
+  ipcRenderer.send('request-stop-rigctld',{
+        path: '123',
+        parameters: '--version'
+    });
+
+
+})
 
 
     // on click waterfall scatter toggle view
@@ -621,11 +934,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
                 
         var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
         var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+        var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
 
         var deviceid = document.getElementById("hamlib_deviceid").value;
         var deviceport = document.getElementById("hamlib_deviceport").value;
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
-        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
+        var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
+        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
 
         var mycall = document.getElementById("myCall").value;
         var ssid = document.getElementById("myCallSSID").value;
@@ -636,10 +951,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         var rx_audio = document.getElementById("audio_input_selectbox").value;
         var tx_audio = document.getElementById("audio_output_selectbox").value;
         
-        var pttport = document.getElementById("hamlib_ptt_port_advanced").value;
-        var data_bits = document.getElementById('hamlib_databits_advanced').value;
-        var stop_bits = document.getElementById('hamlib_stopbits_advanced').value;
-        var handshake = document.getElementById('hamlib_handshake_advanced').value;
+        var pttport = document.getElementById("hamlib_ptt_port").value;
+        var data_bits = document.getElementById('hamlib_databits').value;
+        var stop_bits = document.getElementById('hamlib_stopbits').value;
+        var handshake = document.getElementById('hamlib_handshake').value;
         
         if (document.getElementById("scatterSwitch").checked == true){
             var enable_scatter = "True";
@@ -693,46 +1008,36 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             }
         }        
 
-        /*
-        // overriding settings for rigctl / direct
-        if (document.getElementById("radio-control-switch2").checked){
-            var radiocontrol = 'rigctl';
-            var deviceid = document.getElementById("hamlib_deviceid_rigctl").value;
-            var deviceport = document.getElementById("hamlib_deviceport_rigctl").value;
-            var serialspeed = document.getElementById("hamlib_serialspeed_rigctl").value;
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol_rigctl").value;
-        
-        } else 
-        */
-        if (document.getElementById("radio-control-switch3").checked) {
+        if (!document.getElementById("radio-control-switch-disabled").checked) {
             var radiocontrol = 'rigctld';
-
-        } else if (document.getElementById("radio-control-switch1").checked) {
-            var radiocontrol = 'direct';
-                        
         } else {
             var radiocontrol = 'disabled';
         }     
 
         var tx_audio_level = document.getElementById("audioLevelTX").value;
         var rx_buffer_size = document.getElementById("rx_buffer_size").value;
-        
+
+
+
+
         config.radiocontrol = radiocontrol;
         config.mycall = callsign_ssid;
         config.mygrid = mygrid;                
-        config.deviceid = deviceid;
-        config.deviceport = deviceport;
-        config.serialspeed_direct = serialspeed;
-        config.pttprotocol_direct = pttprotocol;
-        config.pttport = pttport;
-        config.data_bits_direct = data_bits;
-        config.stop_bits_direct = stop_bits;
-        config.handshake_direct = handshake;
+        config.hamlib_deviceid = deviceid;
+        config.hamlib_deviceport = deviceport;
+        config.hamlib_serialspeed = serialspeed;
+        config.hamlib_pttprotocol = pttprotocol;
+        config.hamlib_pttport = pttport;
+        config.hamlib_data_bits = data_bits;
+        config.hamlib_stop_bits = stop_bits;
+        config.hamlib_handshake = handshake;
+        config.hamlib_dcd = hamlib_dcd;
         //config.deviceid_rigctl = deviceid_rigctl;
         //config.serialspeed_rigctl = serialspeed_rigctl;
         //config.pttprotocol_rigctl = pttprotocol_rigctl;
-        config.rigctld_port = rigctld_port;
-        config.rigctld_ip = rigctld_ip;
+        config.hamlib_rigctld_port = rigctld_port;
+        config.hamlib_rigctld_ip = rigctld_ip;
+        config.hamlib_rigctld_server_port = hamlib_rigctld_server_port;
         //config.deviceport_rigctl = deviceport_rigctl;
         config.enable_scatter = enable_scatter;
         config.enable_fft = enable_fft;
@@ -819,10 +1124,10 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     document.getElementById("testHamlib").addEventListener("click", () => {
         
 
-        var data_bits = document.getElementById("hamlib_databits_advanced").value;
-        var stop_bits = document.getElementById("hamlib_stopbits_advanced").value;
-        var handshake = document.getElementById("hamlib_handshake_advanced").value;
-        var pttport = document.getElementById("hamlib_ptt_port_advanced").value;
+        var data_bits = document.getElementById("hamlib_databits").value;
+        var stop_bits = document.getElementById("hamlib_stopbits").value;
+        var handshake = document.getElementById("hamlib_handshake").value;
+        var pttport = document.getElementById("hamlib_ptt_port").value;
 
         var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
         var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
@@ -830,30 +1135,14 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         var deviceid = document.getElementById("hamlib_deviceid").value;
         var deviceport = document.getElementById("hamlib_deviceport").value;
         var serialspeed = document.getElementById("hamlib_serialspeed").value;
-        var pttprotocol = document.getElementById("hamlib_ptt_protocol").value;
+        var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
 
-
-        /*
-        // overriding settings for rigctl / direct
-        if (document.getElementById("radio-control-switch2").checked){
-            var radiocontrol = 'rigctl';
-            var deviceid = document.getElementById("hamlib_deviceid_rigctl").value;
-            var deviceport = document.getElementById("hamlib_deviceport_rigctl").value;
-            var serialspeed = document.getElementById("hamlib_serialspeed_rigctl").value;
-            var pttprotocol = document.getElementById("hamlib_ptt_protocol_rigctl").value;
-        
-        } else */
-        if (document.getElementById("radio-control-switch3").checked) {
-            var radiocontrol = 'rigctld';
-
-        } else if (document.getElementById("radio-control-switch1").checked) {
-            var radiocontrol = 'direct';
-        } else {
+        if (document.getElementById("radio-control-switch-disabled").checked) {
             var radiocontrol = 'disabled';
+        } else {
+            var radiocontrol = 'rigctld';
         }     
 
-
-          
         daemon.testHamlib(radiocontrol, deviceid, deviceport, serialspeed, pttprotocol, pttport, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port)                 
     })
 
@@ -927,7 +1216,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
                 command: "openRFChat"
             };
             ipcRenderer.send('request-show-chat-window', Data);    
-    })    
+    })
+
+
     
     
     
@@ -1420,7 +1711,7 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
                 option.text = arg.serial_devices[i]['port'] + ' -- ' + arg.serial_devices[i]['description'];
                 option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
-                if(config.deviceport == option.value){
+                if(config.hamlib_deviceport == option.value){
                     option.setAttribute('selected', true);
                 }
                 document.getElementById("hamlib_deviceport").add(option);
@@ -1428,53 +1719,22 @@ ipcRenderer.on('action-update-daemon-state', (event, arg) => {
             }
         }
 
-        // advanced settings
-        if (document.getElementById("hamlib_deviceport_advanced").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_deviceport_advanced").innerHTML = "";
-            for (i = 0; i < arg.serial_devices.length; i++) {
-                var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['description'];
-                option.value = arg.serial_devices[i]['port'];
-                // set device from config if available
-                if(config.deviceport == option.value){
-                    option.setAttribute('selected', true);
-                }
-                document.getElementById("hamlib_deviceport_advanced").add(option);
-            }
-        }
-        
-        /*
-        // rigctl settings
-        if (document.getElementById("hamlib_deviceport_rigctl").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_deviceport_rigctl").innerHTML = "";
-            for (i = 0; i < arg.serial_devices.length; i++) {
-                var option = document.createElement("option");
-                option.text = arg.serial_devices[i]['description'];
-                option.value = arg.serial_devices[i]['port'];
-                // set device from config if available
-                if(config.deviceport == option.value){
-                    option.setAttribute('selected', true);
-                }
-                document.getElementById("hamlib_deviceport_rigctl").add(option);
-            }
-        }
-        */
-        
+
                
     }
     
     if (arg.tnc_running_state == "stopped") {
-        if (document.getElementById("hamlib_ptt_port_advanced").length != arg.serial_devices.length) {
-            document.getElementById("hamlib_ptt_port_advanced").innerHTML = "";
+        if (document.getElementById("hamlib_ptt_port").length != arg.serial_devices.length) {
+            document.getElementById("hamlib_ptt_port").innerHTML = "";
             for (i = 0; i < arg.serial_devices.length; i++) {
                 var option = document.createElement("option");
                 option.text = arg.serial_devices[i]['description'];
                 option.value = arg.serial_devices[i]['port'];
                 // set device from config if available
-                if(config.pttport == option.value){
+                if(config.hamlib_pttport == option.value){
                     option.setAttribute('selected', true);
                 }
-                document.getElementById("hamlib_ptt_port_advanced").add(option);
+                document.getElementById("hamlib_ptt_port").add(option);
             }
         }  
     }
@@ -1528,12 +1788,12 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
-ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
+ipcRenderer.on('action-update-tnc-connection', (arg) => {
 
     if (arg.tnc_connection == "open") {
+        /*
         document.getElementById('hamlib_deviceid').disabled = true;
         document.getElementById('hamlib_deviceport').disabled = true;
-        document.getElementById('advancedHamlibSettingsButton').disabled = true;
         document.getElementById('testHamlib').disabled = true;
         document.getElementById('hamlib_ptt_protocol').disabled = true;
         document.getElementById('audio_input_selectbox').disabled = true;
@@ -1543,6 +1803,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('dxCall').disabled = false;
         document.getElementById("hamlib_serialspeed").disabled = true;
         document.getElementById("openDataModule").disabled = false;
+        */
 
         // collapse settings screen
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
@@ -1554,9 +1815,9 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.show();         
     } else {
+        /*
         document.getElementById('hamlib_deviceid').disabled = false;
         document.getElementById('hamlib_deviceport').disabled = false;
-        document.getElementById('advancedHamlibSettingsButton').disabled = false;
         document.getElementById('testHamlib').disabled = false;
         document.getElementById('hamlib_ptt_protocol').disabled = false;
         document.getElementById('audio_input_selectbox').disabled = false;
@@ -1566,7 +1827,7 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         document.getElementById('dxCall').disabled = true;
         document.getElementById("hamlib_serialspeed").disabled = false;
         document.getElementById("openDataModule").disabled = true;
-        
+        */
         // collapse settings screen
         var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
         collapseFirstRow.show();
@@ -1978,45 +2239,35 @@ ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
     toast.show();
 });
 
-        /*
-         // TRANSMISSION STOPPED
-        if (arg.info[i] == "TRANSMISSION;STOPPED"){
-            var toastDATACHANNELreceivedopener = document.getElementById('toastTRANSMISSIONstopped');
-            var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener); // Returns a Bootstrap toast instance
-            toast.show();
+
+
+
+
+
+
+// enable or disable a setting by given switch and element
+function enable_setting(enable_switch, enable_object){
+        if(document.getElementById(enable_switch).checked){
+            config[enable_switch] = true
+            document.getElementById(enable_object).removeAttribute("disabled","disabled");
+        } else {
+            config[enable_switch] = false
+            document.getElementById(enable_object).setAttribute("disabled","disabled");
         }
-        */
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+}
 
-         // DATACHANNEL FAILED TOAST
-        //if (arg.info[i] == "DATACHANNEL;FAILED"){
-        //    var toastDATACHANNELfailed = document.getElementById('toastDATACHANNELfailed');
-        //    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELfailed); // Returns a Bootstrap toast instance
-        //    toast.show();
-        //}
+// enable or disable a setting switch
+function set_setting_switch(setting_switch, enable_object, state){
+        document.getElementById(setting_switch).checked = state
+        enable_setting(setting_switch, enable_object)
+    }
 
-
-        /*
-         // ARQ RECEIVING FAILED TOAST
-        if (arg.info[i] == "ARQ;RECEIVING;FAILED"){
-
-            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-
-            var toastARQreceivingfailed = document.getElementById('toastARQreceivingfailed');
-            var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingfailed); // Returns a Bootstrap toast instance
-            toast.show();
-        }
-        */
-
-
-
-        /*
-         // ARQ TRANSMITTING FAILED TOAST
-        if (arg.info[i] == "ARQ;TRANSMITTING;FAILED"){
-
-            document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-
-            var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed); // Returns a Bootstrap toast instance
-            toast.show();
-        }
-
-        */
+setInterval(checkRigctld, 500)
+function checkRigctld(){
+    ipcRenderer.send('request-check-rigctld');
+}
+ipcRenderer.on('action-check-rigctld', (event, data) => {
+        console.log(data)
+        document.getElementById("hamlib_rigctld_status").value = data["state"];
+});

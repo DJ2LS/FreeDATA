@@ -49,22 +49,30 @@ const configDefaultSettings = '{\
                   "daemon_port": "3001",\
                   "mycall": "AA0AA-0",\
                   "mygrid": "JN40aa",\
-                  "deviceid": "RIG_MODEL_DUMMY_NOVFO",\
-                  "deviceport": "/dev/ttyACM1",\
-                  "serialspeed_direct": "9600",\
+                  "radiocontrol" : "disabled",\
+                  "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
+                  "enable_hamlib_deviceport" : "False",\
+                  "hamlib_deviceport": "/dev/ttyACM1",\
+                  "enable_hamlib_stop_bits" : "False",\
+                  "hamlib_stop_bits" : "1",\
+                  "enable_hamlib_data_bits" : "False",\
+                  "hamlib_data_bits" : "8",\
+                  "enable_hamlib_handshake" : "False",\
+                  "hamlib_handshake" : "None",\
+                  "enable_hamlib_serialspeed" : "False",\
+                  "hamlib_serialspeed" : "9600",\
+                  "enable_hamlib_pttprotocol" : "False",\
+                  "hamlib_pttprotocol" : "USB",\
+                  "enable_hamlib_pttport" : "False",\
+                  "hamlib_pttport": "/dev/ttyACM1",\
+                  "hamlib_dcd": "None",\
+                  "hamlbib_serialspeed_ptt": "9600",\
+                  "hamlib_rigctld_port" : "4532",\
+                  "hamlib_rigctld_ip" : "127.0.0.1",\
+                  "hamlib_rigctld_path" : "",\
+                  "hamlib_rigctld_server_port" : "4532",\
                   "spectrum": "waterfall",\
                   "tnclocation": "localhost",\
-                  "stop_bits_direct" : "1",\
-                  "data_bits_direct" : "8",\
-                  "handshake_direct" : "None",\
-                  "radiocontrol" : "disabled",\
-                  "deviceport_rigctl" : "3",\
-                  "deviceid_rigctl" : "3",\
-                  "serialspeed_rigctl" : "9600",\
-                  "pttprotocol_direct" : "USB",\
-                  "pttprotocol_rigctl" : "USB",\
-                  "rigctld_port" : "4532",\
-                  "rigctld_ip" : "127.0.0.1",\
                   "enable_scatter" : "False",\
                   "enable_fft" : "False",\
                   "enable_fsk" : "False",\
@@ -379,7 +387,7 @@ app.on('window-all-closed', () => {
 
 // IPC HANDLER
 
-ipcMain.on('request-show-chat-window', (event, arg) => {
+ipcMain.on('request-show-chat-window', () => {
     chat.show();
  });
 
@@ -437,8 +445,17 @@ ipcMain.on('request-update-transmission-status', (event, arg) => {
     chat.webContents.send('action-update-transmission-status', arg);
 });
 
-ipcMain.on('request-open-tnc-log', (event) => {
+ipcMain.on('request-open-tnc-log', () => {
     logViewer.show();
+});
+
+//file selector
+ipcMain.on('get-file-path',(event,data)=>{
+    dialog.showOpenDialog({defaultPath: path.join(__dirname, '../'),
+        buttonLabel: 'Select rigctld', properties: ['openFile']}).then(filePaths => {
+            win.webContents.send('return-file-paths', {path: filePaths,})
+
+    });
 });
 
 //folder selector
@@ -757,3 +774,121 @@ function close_all() {
 }
 
 
+// RUN RIGCTLD
+ipcMain.on('request-start-rigctld',(event, data)=>{
+
+
+    try{
+        exec(data.path, data.parameters);
+    } catch (e) {
+     console.log(e);
+    }
+
+
+
+    /*
+    const rigctld = exec(data.path, data.parameters);
+    rigctld.stdout.on("data", data => {
+        console.log(`stdout: ${data}`);
+    });
+    */
+
+
+});
+
+
+// STOP RIGCTLD
+ipcMain.on('request-stop-rigctld',(event,data)=>{
+    mainLog.warn('closing rigctld');
+    try {
+
+        if(os.platform()=='win32' || os.platform()=='win64'){
+            exec('Taskkill', ['/IM', 'rigctld.exe', '/F'])
+        }
+
+        if(os.platform()=='linux'){
+
+            exec('pkill', ['-9', 'rigctld'])
+
+        }
+
+        if(os.platform()=='darwin'){
+
+            exec('pkill', ['-9', 'rigctld'])
+
+        }
+    } catch (e) {
+        mainLog.error(e)
+    }
+});
+
+
+
+// CHECK RIGCTLD
+ipcMain.on('request-check-rigctld',(data)=>{
+    try {
+
+        if(os.platform()=='win32' || os.platform()=='win64'){
+            var state = exec('tasklist', ['/svc', '/FI', 'ImageName eq rigctld*'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
+        }
+
+        if(os.platform()=='linux'){
+
+            var state = exec('pgrep', ['rigctld'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
+
+        }
+
+        if(os.platform()=='darwin'){
+
+            var state = exec('pgrep', ['rigctld'])
+            state.on('close', function(code) {
+                if(code == 0){
+                    let Data = {
+                        state: "running",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                } else {
+                    let Data = {
+                        state: "unknown",
+                    };
+                    win.webContents.send('action-check-rigctld', Data);
+
+                }
+            });
+
+        }
+    } catch (e) {
+        mainLog.error(e)
+    }
+});

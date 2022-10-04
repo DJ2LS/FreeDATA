@@ -77,12 +77,19 @@
       "icon": "src/img/icon.png",
       "target": [
         "nsis"
+      ],
+      "arch": [
+        "x64",
+        "ia32"
       ]
     },
     "linux": {
       "icon": "src/img/icon.png",
       "target": [
         "AppImage"
+      ],
+      "arch": [
+        "x64"
       ],
       "category": "Development"
     },

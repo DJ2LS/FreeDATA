@@ -43,6 +43,9 @@ class DATA:
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
 
+        # length of signalling frame
+        self.length_sig_frame = 14
+
         # ------- ARQ SESSION
         self.arq_file_transfer = False
         self.IS_ARQ_SESSION_MASTER = False
@@ -87,7 +90,7 @@ class DATA:
         self.snr_list_low_bw = [0]
 
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [6]
+        self.time_list_low_bw = [8]
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
@@ -98,7 +101,7 @@ class DATA:
         self.snr_list_high_bw = [0, 5]
 
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [6, 7]
+        self.time_list_high_bw = [8, 9]
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
@@ -389,7 +392,7 @@ class DATA:
 
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
-        ack_frame = bytearray(14)
+        ack_frame = bytearray(self.length_sig_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
@@ -401,7 +404,7 @@ class DATA:
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
-        ack_frame = bytearray(14)
+        ack_frame = bytearray(self.length_sig_frame)
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:4] = static.DXCALLSIGN_CRC
         ack_frame[4:7] = static.MYCALLSIGN_CRC
@@ -428,7 +431,7 @@ class DATA:
         # TODO: Trim `missing_frames` bytesarray to [7:13] (6) frames, if it's larger.
 
         # then create a repeat frame
-        rpt_frame = bytearray(14)
+        rpt_frame = bytearray(self.length_sig_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:4] = static.DXCALLSIGN_CRC
         rpt_frame[4:7] = static.MYCALLSIGN_CRC
@@ -440,7 +443,7 @@ class DATA:
 
     def send_burst_nack_frame(self, snr: float = 0) -> None:
         """Build and send NACK frame for received DATA frame"""
-        nack_frame = bytearray(14)
+        nack_frame = bytearray(self.length_sig_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
@@ -452,7 +455,7 @@ class DATA:
 
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
-        nack_frame = bytearray(14)
+        nack_frame = bytearray(self.length_sig_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:4] = static.DXCALLSIGN_CRC
         nack_frame[4:7] = static.MYCALLSIGN_CRC
@@ -464,7 +467,7 @@ class DATA:
 
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
-        disconnection_frame = bytearray(14)
+        disconnection_frame = bytearray(self.length_sig_frame)
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:4] = static.DXCALLSIGN_CRC
         disconnection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -599,6 +602,7 @@ class DATA:
                         self.speed_level + 1, len(self.mode_list) - 1
                     )
                     static.ARQ_SPEED_LEVEL = self.speed_level
+
 
                 # Update modes we are listening to
                 self.set_listening_modes(self.mode_list[self.speed_level])
@@ -1268,7 +1272,7 @@ class DATA:
         self.IS_ARQ_SESSION_MASTER = True
         static.ARQ_SESSION_STATE = "connecting"
 
-        connection_frame = bytearray(14)
+        connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1425,7 +1429,7 @@ class DATA:
         # static.TNC_STATE = "BUSY"
         # static.ARQ_SESSION_STATE = "connected"
 
-        connection_frame = bytearray(14)
+        connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1544,7 +1548,7 @@ class DATA:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
             self.log.debug("[TNC] Requesting high bandwidth mode")
 
-        connection_frame = bytearray(14)
+        connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1572,7 +1576,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx(connection_frame)
 
-                timeout = time.time() + 2
+                timeout = time.time() + 4
                 while time.time() < timeout:
                     time.sleep(0.01)
                     # Stop waiting if data channel is opened
@@ -1734,7 +1738,7 @@ class DATA:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_W.value])
             self.log.debug("[TNC] Responding with high bandwidth mode")
 
-        connection_frame = bytearray(14)
+        connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1856,7 +1860,7 @@ class DATA:
             + "]"
         )
 
-        ping_frame = bytearray(14)
+        ping_frame = bytearray(self.length_sig_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1915,7 +1919,7 @@ class DATA:
             snr=static.SNR,
         )
 
-        ping_frame = bytearray(14)
+        ping_frame = bytearray(self.length_sig_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1972,7 +1976,7 @@ class DATA:
         Force a stop of the running transmission
         """
         self.log.warning("[TNC] Stopping transmission!")
-        stop_frame = bytearray(14)
+        stop_frame = bytearray(self.length_sig_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
         stop_frame[4:7] = static.MYCALLSIGN_CRC
@@ -2037,7 +2041,7 @@ class DATA:
                             "[TNC] Sending beacon!", interval=self.beacon_interval
                         )
 
-                        beacon_frame = bytearray(14)
+                        beacon_frame = bytearray(self.length_sig_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[9:13] = static.MYGRID[:4]
@@ -2115,7 +2119,7 @@ class DATA:
             freedata="tnc-message",
             cq="transmitting",
         )
-        cq_frame = bytearray(14)
+        cq_frame = bytearray(self.length_sig_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
@@ -2186,7 +2190,7 @@ class DATA:
         )
         self.log.info("[TNC] Sending QRV!")
 
-        qrv_frame = bytearray(14)
+        qrv_frame = bytearray(self.length_sig_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
