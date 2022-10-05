@@ -82,7 +82,6 @@ def fetch_audio_devices(input_devices, output_devices):
             print(err)
             max_input_channels = 0
             max_output_channels = 0
-            name = ""
 
         if max_input_channels > 0:
             new_input_device = {"id": index, "name": device_crc(device)}
