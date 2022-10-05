@@ -871,7 +871,7 @@ const isRunning = (query, cb) => {
         case 'linux' : cmd = `ps -A`; break;
         default: break;
     }
-    exec(cmd, (err, stdout, stderr) => {
+    exec(cmd, (err, stdout) => {
         cb(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
     });
 }
