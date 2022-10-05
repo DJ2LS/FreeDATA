@@ -184,6 +184,7 @@ class RF:
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
+        # TODO: deprecated feature - we can remove this possibly
         if static.HAMLIB_RADIOCONTROL == "direct":
             import rig
         elif static.HAMLIB_RADIOCONTROL == "rigctl":
