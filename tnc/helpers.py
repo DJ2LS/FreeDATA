@@ -328,10 +328,7 @@ def check_session_id(id: bytes, id_to_check: bytes):
         True
         False
     """
-    if id == id_to_check:
-        return True
-    else:
-        return False
+    return id == id_to_check
 
 
 def encode_grid(grid):
