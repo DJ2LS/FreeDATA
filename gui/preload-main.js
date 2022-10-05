@@ -1788,7 +1788,7 @@ ipcRenderer.on('action-update-daemon-connection', (event, arg) => {
 
 });
 
-ipcRenderer.on('action-update-tnc-connection', (arg) => {
+ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
 
     if (arg.tnc_connection == "open") {
         /*
