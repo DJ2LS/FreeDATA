@@ -9,7 +9,9 @@ const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const exec = require('child_process').spawn;
+const spawn = require('child_process').spawn;
+const exec = require('child_process').exec;
+
 const log = require('electron-log');
 const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
@@ -285,7 +287,7 @@ app.whenReady().then(() => {
     mainLog.info('Starting freedata-daemon binary');
 
     if(os.platform()=='darwin'){
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [], 
+        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });                
@@ -310,7 +312,7 @@ app.whenReady().then(() => {
     });
     */
 
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [], 
+        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });        
@@ -321,7 +323,7 @@ app.whenReady().then(() => {
         // for windows the relative path via path.join(__dirname) is not needed for some reason 
         //daemonProcess = exec('\\tnc\\daemon.exe', [])
         
-        daemonProcess = exec(path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe'), [], 
+        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe'), [],
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });
@@ -735,20 +737,20 @@ function close_sub_processes(){
     try {
     
         if(os.platform()=='win32' || os.platform()=='win64'){
-            exec('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
-            exec('Taskkill', ['/IM', 'freedata-daemon.exe', '/F'])
+            spawn('Taskkill', ['/IM', 'freedata-tnc.exe', '/F'])
+            spawn('Taskkill', ['/IM', 'freedata-daemon.exe', '/F'])
         }
         
         if(os.platform()=='linux'){
             
-            exec('pkill', ['-9', 'freedata-tnc'])
-            exec('pkill', ['-9', 'freedata-daemon'])        
+            spawn('pkill', ['-9', 'freedata-tnc'])
+            spawn('pkill', ['-9', 'freedata-daemon'])
         }
 
         if(os.platform()=='darwin'){
 
-            exec('pkill', ['-9', 'freedata-tnc'])
-            exec('pkill', ['-9', 'freedata-daemon']) 
+            spawn('pkill', ['-9', 'freedata-tnc'])
+            spawn('pkill', ['-9', 'freedata-daemon'])
             
         }
     } catch (e) {
@@ -779,7 +781,7 @@ ipcMain.on('request-start-rigctld',(event, data)=>{
 
 
     try{
-        exec(data.path, data.parameters);
+        spawn(data.path, data.parameters);
     } catch (e) {
      console.log(e);
     }
@@ -803,18 +805,18 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
     try {
 
         if(os.platform()=='win32' || os.platform()=='win64'){
-            exec('Taskkill', ['/IM', 'rigctld.exe', '/F'])
+            spawn('Taskkill', ['/IM', 'rigctld.exe', '/F'])
         }
 
         if(os.platform()=='linux'){
 
-            exec('pkill', ['-9', 'rigctld'])
+            spawn('pkill', ['-9', 'rigctld'])
 
         }
 
         if(os.platform()=='darwin'){
 
-            exec('pkill', ['-9', 'rigctld'])
+            spawn('pkill', ['-9', 'rigctld'])
 
         }
     } catch (e) {
@@ -827,68 +829,50 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 // CHECK RIGCTLD
 ipcMain.on('request-check-rigctld',(data)=>{
     try {
+        let Data = {
+            state: "unknown",
+        };
 
-        if(os.platform()=='win32' || os.platform()=='win64'){
-            var state = exec('tasklist', ['/svc', '/FI', '"ImageName eq rigctld*"'])
-            state.on('close', function(code) {
-                if(code == 0){
-                    let Data = {
-                        state: "running",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
+        isRunning('rigctld', (status) => {
+            if (status){
+                Data["state"] = "running";
+            } else {
+                Data["state"] = "unknown";
+            }
+            win.webContents.send('action-check-rigctld', Data);
+        })
 
-                } else {
-                    let Data = {
-                        state: "unknown",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
-
-                }
-            });
-        }
-
-        if(os.platform()=='linux'){
-
-            var state = exec('pgrep', ['rigctld'])
-            state.on('close', function(code) {
-                if(code == 0){
-                    let Data = {
-                        state: "running",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
-
-                } else {
-                    let Data = {
-                        state: "unknown",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
-
-                }
-            });
-
-        }
-
-        if(os.platform()=='darwin'){
-
-            var state = exec('pgrep', ['rigctld'])
-            state.on('close', function(code) {
-                if(code == 0){
-                    let Data = {
-                        state: "running",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
-
-                } else {
-                    let Data = {
-                        state: "unknown",
-                    };
-                    win.webContents.send('action-check-rigctld', Data);
-
-                }
-            });
-
-        }
     } catch (e) {
         mainLog.error(e)
     }
 });
+
+
+
+
+// https://stackoverflow.com/a/51084163
+// Function for checking if a process is running or not
+/*
+isRunning('rigctld', (status) => {
+            if (status){
+                Data["state"] = "running";
+            } else {
+                Data["state"] = "unknown";
+            }
+            win.webContents.send('action-check-rigctld', Data);
+        })
+*/
+const isRunning = (query, cb) => {
+    let platform = process.platform;
+    let cmd = '';
+    switch (platform) {
+        case 'win32' : cmd = `tasklist`; break;
+        case 'darwin' : cmd = `ps -ax | grep ${query}`; break;
+        case 'linux' : cmd = `ps -A`; break;
+        default: break;
+    }
+    exec(cmd, (err, stdout, stderr) => {
+        cb(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
+    });
+}
+
