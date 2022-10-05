@@ -837,7 +837,7 @@ ipcMain.on('request-check-rigctld',(data)=>{
             if (status){
                 Data["state"] = "running";
             } else {
-                Data["state"] = "unknown";
+                Data["state"] = "unknown/stopped";
             }
             win.webContents.send('action-check-rigctld', Data);
         })
