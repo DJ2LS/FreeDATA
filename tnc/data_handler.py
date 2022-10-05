@@ -13,7 +13,7 @@ import threading
 import time
 import uuid
 import zlib
-from random import randrange
+from random import randrange, randbytes
 
 import codec2
 import helpers
@@ -45,6 +45,9 @@ class DATA:
 
         # length of signalling frame
         self.length_sig_frame = 14
+
+        # hold session id
+        self.session_id = bytes(1)
 
         # ------- ARQ SESSION
         self.arq_file_transfer = False
@@ -278,11 +281,17 @@ class DATA:
         # bytes_out[2:5] == transmission
         # we could also create an own function, which returns True.
         frametype = int.from_bytes(bytes(bytes_out[:1]), "big")
+
+        # check for callsign CRC
         _valid1, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[1:4]))
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
+
+        # check for session ID
+        _valid3 = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))
         if (
                 _valid1
                 or _valid2
+                or _valid3
                 or frametype
                 in [
             FR_TYPE.CQ.value,
@@ -394,8 +403,9 @@ class DATA:
         """Build and send ACK frame for burst DATA frame"""
         ack_frame = bytearray(self.length_sig_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
-        ack_frame[1:4] = static.DXCALLSIGN_CRC
-        ack_frame[4:7] = static.MYCALLSIGN_CRC
+        #ack_frame[1:4] = static.DXCALLSIGN_CRC
+        #ack_frame[4:7] = static.MYCALLSIGN_CRC
+        ack_frame[1:2] = self.session_id
         ack_frame[7:8] = bytes([int(snr)])
         ack_frame[8:9] = bytes([int(self.speed_level)])
 
@@ -406,8 +416,9 @@ class DATA:
         """Build and send ACK frame for received DATA frame"""
         ack_frame = bytearray(self.length_sig_frame)
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
-        ack_frame[1:4] = static.DXCALLSIGN_CRC
-        ack_frame[4:7] = static.MYCALLSIGN_CRC
+        ack_frame[1:2] = self.session_id
+        #ack_frame[1:4] = static.DXCALLSIGN_CRC
+        #ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[7:8] = bytes([int(snr)])
         ack_frame[8:9] = bytes([int(self.speed_level)])
 
@@ -433,8 +444,9 @@ class DATA:
         # then create a repeat frame
         rpt_frame = bytearray(self.length_sig_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
-        rpt_frame[1:4] = static.DXCALLSIGN_CRC
-        rpt_frame[4:7] = static.MYCALLSIGN_CRC
+        rpt_frame[1:2] = self.session_id
+        #rpt_frame[1:4] = static.DXCALLSIGN_CRC
+        #rpt_frame[4:7] = static.MYCALLSIGN_CRC
         rpt_frame[7:13] = missing_frames
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
@@ -445,8 +457,9 @@ class DATA:
         """Build and send NACK frame for received DATA frame"""
         nack_frame = bytearray(self.length_sig_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
-        nack_frame[1:4] = static.DXCALLSIGN_CRC
-        nack_frame[4:7] = static.MYCALLSIGN_CRC
+        nack_frame[1:2] = self.session_id
+        #nack_frame[1:4] = static.DXCALLSIGN_CRC
+        #nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
         nack_frame[8:9] = bytes([int(self.speed_level)])
 
@@ -457,8 +470,9 @@ class DATA:
         """Build and send NACK frame for watchdog timeout"""
         nack_frame = bytearray(self.length_sig_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
-        nack_frame[1:4] = static.DXCALLSIGN_CRC
-        nack_frame[4:7] = static.MYCALLSIGN_CRC
+        nack_frame[1:2] = self.session_id
+        #nack_frame[1:4] = static.DXCALLSIGN_CRC
+        #nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[7:8] = bytes([int(snr)])
         nack_frame[8:9] = bytes([int(self.speed_level)])
 
@@ -469,8 +483,9 @@ class DATA:
         """Build and send a disconnect frame"""
         disconnection_frame = bytearray(self.length_sig_frame)
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
-        disconnection_frame[1:4] = static.DXCALLSIGN_CRC
-        disconnection_frame[4:7] = static.MYCALLSIGN_CRC
+        disconnection_frame[1:2] = self.session_id
+        #disconnection_frame[1:4] = static.DXCALLSIGN_CRC
+        #disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=250)
@@ -914,8 +929,9 @@ class DATA:
                 # arqheader[:1] = bytes([FR_TYPE.BURST_01.value + i])
                 arqheader[:1] = bytes([FR_TYPE.BURST_01.value])
                 arqheader[1:2] = bytes([TX_N_FRAMES_PER_BURST])
-                arqheader[2:5] = static.DXCALLSIGN_CRC
-                arqheader[5:8] = static.MYCALLSIGN_CRC
+                arqheader[2:3] = self.session_id
+                #arqheader[2:5] = static.DXCALLSIGN_CRC
+                #arqheader[5:8] = static.MYCALLSIGN_CRC
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
@@ -1272,10 +1288,14 @@ class DATA:
         self.IS_ARQ_SESSION_MASTER = True
         static.ARQ_SESSION_STATE = "connecting"
 
+        # create a random session id
+        self.session_id = randbytes(1)
+
         connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
-        connection_frame[1:4] = static.DXCALLSIGN_CRC
-        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[1:2] = self.session_id
+        #connection_frame[1:4] = static.DXCALLSIGN_CRC
+        #connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         while not static.ARQ_SESSION:
@@ -1431,8 +1451,10 @@ class DATA:
 
         connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
-        connection_frame[1:4] = static.DXCALLSIGN_CRC
-        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[1:2] = self.session_id
+        #connection_frame[1:4] = static.DXCALLSIGN_CRC
+        #connection_frame[4:7] = static.MYCALLSIGN_CRC
+
 
         self.enqueue_frame_for_tx(connection_frame)
 
@@ -1443,9 +1465,9 @@ class DATA:
           data_in:bytes:
 
         """
-        # Accept session data if the DXCALLSIGN_CRC matches the station in static.
-        _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
-        if _valid_crc:
+        # Accept session data if the DXCALLSIGN_CRC matches the station in static or session id.
+        _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
+        if _valid_crc or _valid_session:
             self.log.debug("[TNC] Received session heartbeat")
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
@@ -1537,6 +1559,10 @@ class DATA:
         """
         self.is_IRS = False
 
+        # init a new random session id
+        self.session_id = randbytes(1)
+        print(session_id)
+
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
@@ -1553,7 +1579,8 @@ class DATA:
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-        connection_frame[13:14] = bytes([n_frames_per_burst])
+        #connection_frame[13:14] = bytes([n_frames_per_burst])
+        connection_frame[13:14] = self.session_id
 
         while not static.ARQ_STATE:
             time.sleep(0.01)
@@ -1710,6 +1737,9 @@ class DATA:
             static.HAMLIB_FREQUENCY,
         )
 
+        self.session_id = data_in[13:14]
+        print(self.session_id)
+
         # check if callsign ssid override
         _, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
 
@@ -1740,8 +1770,9 @@ class DATA:
 
         connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = frametype
-        connection_frame[1:4] = static.DXCALLSIGN_CRC
-        connection_frame[4:7] = static.MYCALLSIGN_CRC
+        connection_frame[1:2] = self.session_id
+        #connection_frame[1:4] = static.DXCALLSIGN_CRC
+        #connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[8:9] = bytes([self.speed_level])
 
         # For checking protocol version on the receiving side
@@ -1978,8 +2009,9 @@ class DATA:
         self.log.warning("[TNC] Stopping transmission!")
         stop_frame = bytearray(self.length_sig_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
-        stop_frame[1:4] = static.DXCALLSIGN_CRC
-        stop_frame[4:7] = static.MYCALLSIGN_CRC
+        #stop_frame[1:4] = static.DXCALLSIGN_CRC
+        #stop_frame[4:7] = static.MYCALLSIGN_CRC
+        stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=250)
@@ -2353,6 +2385,7 @@ class DATA:
 
         self.log.debug("[TNC] arq_cleanup")
 
+        self.session_id = bytes(1)
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
         self.burst_ack = False

@@ -316,6 +316,23 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
 
     return [False, ""]
 
+def check_session_id(id: bytes, id_to_check: bytes):
+    """
+    Funktion to check if we received the correct session id
+
+    Args:
+        id: our own session id
+        id_to_check: The session id byte we want to check
+
+    Returns:
+        True
+        False
+    """
+    if id == id_to_check:
+        return True
+    else:
+        return False
+
 
 def encode_grid(grid):
     """
