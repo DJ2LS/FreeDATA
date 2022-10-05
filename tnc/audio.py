@@ -12,6 +12,9 @@ atexit.register(sd._terminate)
 
 log = structlog.get_logger("audio")
 
+# crc algorithm for unique audio device names
+crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc16 library
+
 
 def get_audio_devices():
     """
@@ -28,7 +31,7 @@ def get_audio_devices():
     sd._terminate()
     sd._initialize()
 
-    log.error("[AUD] get_audio_devices")
+    log.debug("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
@@ -39,13 +42,13 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        log.error(f"[AUD] get_audio_devices: input_devices: {proxy_input_devices}")
-        log.error(f"[AUD] get_audio_devices: output_devices: {proxy_output_devices}")
+        log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
+        log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
 def device_crc(device) -> str:
-    crc_algorithm = crcengine.new("crc16-ccitt-false")  # load crc8 library
+
     crc_hwid = crc_algorithm(bytes(f"{device}", encoding="utf-8"))
     crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
     crc_hwid = crc_hwid.hex()
@@ -65,11 +68,7 @@ def fetch_audio_devices(input_devices, output_devices):
     """
     devices = sd.query_devices(device=None, kind=None)
 
-    # The use of set forces the list to contain only unique entries.
-    input_devs = set()
-    output_devs = set()
-
-    for device in devices:
+    for index, device in enumerate(devices):
         # Use a try/except block because Windows doesn't have an audio device range
         try:
             name = device["name"]
@@ -86,11 +85,13 @@ def fetch_audio_devices(input_devices, output_devices):
             name = ""
 
         if max_input_channels > 0:
-            input_devs.add(device_crc(device))
-        if max_output_channels > 0:
-            output_devs.add(device_crc(device))
+            new_input_device = {"id": index, "name": device_crc(device)}
+            # check if device not in device list
+            if new_input_device not in input_devices:
+                input_devices.append(new_input_device)
 
-    for index, item in enumerate(input_devs):
-        input_devices.append({"id": index, "name": item})
-    for index, item in enumerate(output_devs):
-        output_devices.append({"id": index, "name": item})
+        if max_output_channels > 0:
+            new_output_device = {"id": index, "name": device_crc(device)}
+            # check if device not in device list
+            if new_output_device not in output_devices:
+                output_devices.append(new_output_device)
