@@ -64,6 +64,8 @@ const configDefaultSettings = '{\
                   "enable_hamlib_serialspeed" : "False",\
                   "hamlib_serialspeed" : "9600",\
                   "enable_hamlib_pttprotocol" : "False",\
+                  "hamlib_dtrstate" : "OFF",\
+                  "enable_hamlib_dtrstate" : "False",\
                   "hamlib_pttprotocol" : "USB",\
                   "enable_hamlib_pttport" : "False",\
                   "hamlib_pttport": "/dev/ttyACM1",\

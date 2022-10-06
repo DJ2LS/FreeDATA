@@ -109,6 +109,12 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     document.getElementById('hamlib_dcd').value = config.hamlib_dcd;
     set_setting_switch("enable_hamlib_dcd", "hamlib_dcd", config.enable_hamlib_dcd)
 
+    document.getElementById('hamlib_dtrstate').value = config.hamlib_dtrstate;
+    set_setting_switch("enable_hamlib_dtrstate", "hamlib_dtrstate", config.enable_hamlib_dtrstate)
+
+
+
+
 
     document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
     document.getElementById("hamlib_rigctld_port").value = config.hamlib_rigctld_port;
@@ -531,6 +537,11 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
         enable_setting("enable_hamlib_dcd", "hamlib_dcd")
     });
 
+        // radio settings 'enable hamlib dtr state' event listener
+    document.getElementById("enable_hamlib_dtrstate").addEventListener("change", () => {
+        enable_setting("enable_hamlib_dtrstate", "hamlib_dtrstate")
+    });
+
 
 /*
 document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
@@ -621,6 +632,16 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
         var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
         paramList = paramList.concat('--ptt-type=', hamlib_ptt_type)
     }
+
+    // hamlib dtr state
+    if (document.getElementById('enable_hamlib_dtrstate').checked){
+        var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
+        paramList = paramList.concat('--set-conf=dtr_state=' + hamlib_dtrstate)
+    }
+
+
+
+
 
     var hamlib_rigctld_server_port = document.getElementById("hamlib_rigctld_server_port").value;
     paramList = paramList.concat('-t', hamlib_rigctld_server_port)
