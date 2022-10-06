@@ -2030,12 +2030,12 @@ class DATA:
         self.log.warning("[TNC] Stopping transmission!")
         stop_frame = bytearray(self.length_sig_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
-        # stop_frame[1:4] = static.DXCALLSIGN_CRC
-        # stop_frame[4:7] = static.MYCALLSIGN_CRC
-        stop_frame[1:2] = self.session_id
+        stop_frame[1:4] = static.DXCALLSIGN_CRC
+        stop_frame[4:7] = static.MYCALLSIGN_CRC
+        # TODO: Not sure if we really need the session id when disconnecting
+        # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-
-        self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=0)
+        self.enqueue_frame_for_tx(stop_frame, copies=6, repeat_delay=0)
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
