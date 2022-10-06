@@ -435,7 +435,7 @@ class DATA:
         ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ack_frame, copies=3, repeat_delay=100)
+        self.enqueue_frame_for_tx(ack_frame, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
@@ -500,7 +500,7 @@ class DATA:
         # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
-        self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=250)
+        self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=0)
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -518,11 +518,14 @@ class DATA:
         # is intended for this station.
         data_in = bytes(data_in)
 
+        # TODO: this seems not to work anymore
         # get received crc for different mycall ssids
         # check if callsign ssid override
-        _, mycallsign = helpers.check_callsign(
-            self.mycallsign, data_in[2:5]
-        )
+        #_, mycallsign = helpers.check_callsign(
+        #    self.mycallsign, data_in[2:5]
+        #)
+        # attempt fixing this
+        mycallsign = self.mycallsign
 
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE != "BUSY":
@@ -783,7 +786,6 @@ class DATA:
                     crc=data_frame_crc.hex(),
                 )
 
-                print("kommen wir hier an?")
                 self.send_data_ack_frame(snr)
                 # Update statistics AFTER the frame ACK is sent
                 self.calculate_transfer_rate_rx(
