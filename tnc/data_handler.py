@@ -295,11 +295,15 @@ class DATA:
         _valid2, _ = helpers.check_callsign(self.mycallsign, bytes(bytes_out[2:5]))
 
         # check for session ID
+        # signalling frames
         _valid3 = helpers.check_session_id(self.session_id, bytes(bytes_out[1:2]))
+        # arq data frames
+        _valid4 = helpers.check_session_id(self.session_id, bytes(bytes_out[2:3]))
         if (
                 _valid1
                 or _valid2
                 or _valid3
+                or _valid4
                 or frametype
                 in [
                         FR_TYPE.CQ.value,
@@ -546,7 +550,8 @@ class DATA:
 
         # Append data to rx burst buffer
         # [frame_type][n_frames_per_burst][CRC24][CRC24]
-        static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[8:]  # type: ignore
+        #static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[8:]  # type: ignore
+        static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[3:]  # type: ignore
 
         self.log.debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
 
@@ -777,6 +782,8 @@ class DATA:
                     snr=snr,
                     crc=data_frame_crc.hex(),
                 )
+
+                print("kommen wir hier an?")
                 self.send_data_ack_frame(snr)
                 # Update statistics AFTER the frame ACK is sent
                 self.calculate_transfer_rate_rx(
@@ -1290,6 +1297,7 @@ class DATA:
 
         # create a random session id
         self.session_id = randbytes(1)
+        print(self.session_id)
 
         connection_frame = bytearray(self.length_sig_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
