@@ -1407,9 +1407,13 @@ class DATA:
 
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
+
+        # we need to send disconnect frame before doing arq cleanup
+        # we would loose our session id then
+        self.send_disconnect_frame()
         self.arq_cleanup()
 
-        self.send_disconnect_frame()
+
 
     def received_session_close(self, data_in: bytes):
         """
@@ -1649,11 +1653,13 @@ class DATA:
                 + "]"
             )
             self.datachannel_timeout = True
-            self.arq_cleanup()
+
 
             # Attempt to cleanup the far-side, if it received the
             # open_session frame and can still hear us.
             self.close_session()
+
+            self.arq_cleanup()
             return False
 
         # Shouldn't get here..
