@@ -2029,7 +2029,7 @@ class DATA:
         stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
-        self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=250)
+        self.enqueue_frame_for_tx(stop_frame, copies=2, repeat_delay=0)
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
