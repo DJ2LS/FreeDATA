@@ -630,7 +630,7 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
     // hamlib ptt type
     if (document.getElementById('enable_hamlib_pttprotocol').checked){
         var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
-        paramList = paramList.concat('--ptt-type=', hamlib_ptt_type)
+        paramList = paramList.concat('--ptt-type=' + hamlib_ptt_type)
     }
 
     // hamlib dtr state
