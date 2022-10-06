@@ -615,14 +615,13 @@
 										<option value="RIG">RIG</option>
 										<option value="USB">USB</option>
 										<option value="RTS">Serial RTS</option>
-										<option value="DTR-H">Serial DTR-High</option>
-										<option value="DTR-L">Serial DTR-Low</option>
 										<option value="PARALLEL">Rig PARALLEL</option>
 										<option value="MICDATA">Rig MICDATA</option>
 										<option value="CM108">Rig CM108</option>
 									</select>
 								</div>
-								<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">DCD</span> <span class="input-group-text" id="basic-addon1">
+								<div class="input-group input-group-sm mb-1">
+									<span class="input-group-text" id="basic-addon1">DCD</span> <span class="input-group-text" id="basic-addon1">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_dcd">
                               </span>
 									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dcd" style="width: 0.5rem">
@@ -633,7 +632,19 @@
 										<option value="CD">CD</option>
 										<option value="PARALLEL">PARALLEL</option>
 									</select>
+
+
+								<span class="input-group-text" id="basic-addon1">DTR</span> <span class="input-group-text" id="basic-addon1">
+                                 <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_dtrstate">
+                              </span>
+									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dtrstate" style="width: 0.5rem">
+										<option value="OFF">OFF</option>
+										<option value="ON">ON</option>
+
+									</select>
 								</div>
+
+
 							</div>
 							<!-- RADIO CONTROL NETWORK -->
 							<div id="radio-control-network">
