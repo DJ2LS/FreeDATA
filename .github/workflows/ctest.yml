@@ -24,7 +24,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install octave octave-common octave-signal sox portaudio19-dev python3-pyaudio
-          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice
+          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice pyaudio
           pip3 install pytest pytest-rerunfailures
 
       - name: Build codec2
