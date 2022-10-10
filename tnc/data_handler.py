@@ -140,7 +140,7 @@ class DATA:
         self.burst_ack_timeout_seconds = 3.0  # timeout for burst  acknowledges
         self.data_frame_ack_timeout_seconds = 3.0  # timeout for data frame acknowledges
         self.rpt_ack_timeout_seconds = 3.0  # timeout for rpt frame acknowledges
-        self.transmission_timeout = 360  # transmission timeout in seconds
+        self.transmission_timeout = 500  # transmission timeout in seconds
 
         # Dictionary of functions and log messages used in process_data
         # instead of a long series of if-elif-else statements.
@@ -2578,7 +2578,10 @@ class DATA:
                     self.data_channel_last_received + self.transmission_timeout
                     > time.time()
             ):
-                time.sleep(0.01)
+                time.sleep(5)
+                timeleft = (self.data_channel_last_received + self.transmission_timeout) - time.time()
+                self.log.debug("Time left until timeout", seconds=timeleft)
+
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 # pass
             else:
