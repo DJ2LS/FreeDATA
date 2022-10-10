@@ -418,8 +418,8 @@ class DATA:
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[1:2] = self.session_id
-        ack_frame[7:8] = bytes([int(snr)])
-        ack_frame[8:9] = bytes([int(self.speed_level)])
+        ack_frame[2:3] = bytes([int(snr)])
+        ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
         self.enqueue_frame_for_tx(ack_frame)
@@ -431,8 +431,8 @@ class DATA:
         ack_frame[1:2] = self.session_id
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
-        ack_frame[7:8] = bytes([int(snr)])
-        ack_frame[8:9] = bytes([int(self.speed_level)])
+        # ack_frame[7:8] = bytes([int(snr)])
+        # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # Transmit frame
         self.enqueue_frame_for_tx(ack_frame, copies=3, repeat_delay=0)
@@ -452,14 +452,14 @@ class DATA:
         codec2.api.freedv_set_frames_per_burst(freedv, len(missing_frames))
 
         # TODO: Trim `missing_frames` bytesarray to [7:13] (6) frames, if it's larger.
-
+        # TODO: Instead of using int we could use a binary flag
         # then create a repeat frame
         rpt_frame = bytearray(self.length_sig_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:2] = self.session_id
         # rpt_frame[1:4] = static.DXCALLSIGN_CRC
         # rpt_frame[4:7] = static.MYCALLSIGN_CRC
-        rpt_frame[7:13] = missing_frames
+        # rpt_frame[7:13] = missing_frames
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
@@ -472,8 +472,8 @@ class DATA:
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[7:8] = bytes([int(snr)])
-        nack_frame[8:9] = bytes([int(self.speed_level)])
+        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx(nack_frame)
@@ -485,8 +485,8 @@ class DATA:
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[7:8] = bytes([int(snr)])
-        nack_frame[8:9] = bytes([int(self.speed_level)])
+        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx(nack_frame)
@@ -498,7 +498,7 @@ class DATA:
         disconnection_frame[1:2] = self.session_id
         # disconnection_frame[1:4] = static.DXCALLSIGN_CRC
         # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
-        disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
+        # TODO: Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
         self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=0)
 
@@ -553,7 +553,7 @@ class DATA:
 
         # Append data to rx burst buffer
         # [frame_type][n_frames_per_burst][CRC24][CRC24]
-        #static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[8:]  # type: ignore
+        # static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[8:]  # type: ignore
         static.RX_BURST_BUFFER[rx_n_frame_of_burst] = data_in[3:]  # type: ignore
 
         self.log.debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
@@ -635,7 +635,7 @@ class DATA:
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
-                self.set_listening_modes(self.mode_list[self.speed_level])
+                self.set_listening_modes(False, True, self.mode_list[self.speed_level])
 
                 # Create and send ACK frame
                 self.log.info("[TNC] ARQ | RX | SENDING ACK")
@@ -837,6 +837,11 @@ class DATA:
 
         """
         self.arq_file_transfer = True
+
+        # set signalling modes we want to listen to
+        # we are in an ongoing arq transmission, so we don't need sig0 actually
+        modem.RECEIVE_SIG0 = False
+        modem.RECEIVE_SIG1 = True
 
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost
@@ -1143,8 +1148,8 @@ class DATA:
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
-            self.burst_ack_snr = int.from_bytes(bytes(data_in[7:8]), "big")
-            self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
+            self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
+            self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
 
             self.log.debug(
@@ -1747,7 +1752,7 @@ class DATA:
         )
 
         # Update modes we are listening to
-        self.set_listening_modes(self.mode_list[self.speed_level])
+        self.set_listening_modes(True, True, self.mode_list[self.speed_level])
 
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
@@ -2417,6 +2422,8 @@ class DATA:
         self.burst_ack_snr = 255
 
         # reset modem receiving state to reduce cpu load
+        modem.RECEIVE_SIG0 = True
+        modem.RECEIVE_SIG1 = False
         modem.RECEIVE_DATAC1 = False
         modem.RECEIVE_DATAC3 = False
         # modem.RECEIVE_FSK_LDPC_0 = False
@@ -2457,15 +2464,20 @@ class DATA:
         self.rpt_request_received = state
         self.data_frame_ack_received = state
 
-    def set_listening_modes(self, mode: int) -> None:
+    def set_listening_modes(self, enable_sig0: bool, enable_sig1: bool, mode: int) -> None:
         """
         Function for setting the data modes we are listening to for saving cpu power
 
         Args:
+          enable_sig0:int: Enable/Disable signalling mode 0
+          enable_sig1:int: Enable/Disable signalling mode 1
           mode:int: Codec2 mode to listen for
 
         """
         # set modes we want to listen to
+        modem.RECEIVE_SIG0 = enable_sig0
+        modem.RECEIVE_SIG1 = enable_sig1
+
         if mode == FREEDV_MODE.datac1.value:
             modem.RECEIVE_DATAC1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="datac1")
@@ -2530,7 +2542,7 @@ class DATA:
                 static.ARQ_SPEED_LEVEL = self.speed_level
 
             # Update modes we are listening to
-            self.set_listening_modes(self.mode_list[self.speed_level])
+            self.set_listening_modes(True, True, self.mode_list[self.speed_level])
 
             # Why not pass `snr` or `static.SNR`?
             self.send_burst_nack_frame_watchdog(0)
