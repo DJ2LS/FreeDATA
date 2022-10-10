@@ -32,7 +32,7 @@ TXCHANNEL = ""
 static.TRANSMITTING = False
 
 # Receive only specific modes to reduce CPU load
-RECEIVE_SIG0 = False
+RECEIVE_SIG0 = True
 RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
@@ -353,8 +353,8 @@ class RF:
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
             for audiobuffer, receive, index in [
-                (self.sig0_datac0_buffer, True, 0),
-                (self.sig1_datac0_buffer, True, 1),
+                (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
+                (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
                 (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
