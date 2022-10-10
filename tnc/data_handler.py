@@ -44,7 +44,8 @@ class DATA:
         self.data_queue_received = DATA_QUEUE_RECEIVED
 
         # length of signalling frame
-        self.length_sig_frame = 14
+        self.length_sig0_frame = 14
+        self.length_sig1_frame = 14
 
         # hold session id
         self.session_id = bytes(1)
@@ -413,7 +414,7 @@ class DATA:
 
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
-        ack_frame = bytearray(self.length_sig_frame)
+        ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
@@ -422,11 +423,11 @@ class DATA:
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ack_frame)
+        self.enqueue_frame_for_tx(ack_frame, c2_mode=FREEDV_MODE.datac0.value)
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
-        ack_frame = bytearray(self.length_sig_frame)
+        ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:2] = self.session_id
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
@@ -435,7 +436,7 @@ class DATA:
         # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ack_frame, copies=3, repeat_delay=0)
+        self.enqueue_frame_for_tx(ack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
@@ -454,7 +455,7 @@ class DATA:
         # TODO: Trim `missing_frames` bytesarray to [7:13] (6) frames, if it's larger.
         # TODO: Instead of using int we could use a binary flag
         # then create a repeat frame
-        rpt_frame = bytearray(self.length_sig_frame)
+        rpt_frame = bytearray(self.length_sig1_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:2] = self.session_id
         # rpt_frame[1:4] = static.DXCALLSIGN_CRC
@@ -463,11 +464,12 @@ class DATA:
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
-        self.enqueue_frame_for_tx(rpt_frame)
+        self.enqueue_frame_for_tx(rpt_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+
 
     def send_burst_nack_frame(self, snr: float = 0) -> None:
         """Build and send NACK frame for received DATA frame"""
-        nack_frame = bytearray(self.length_sig_frame)
+        nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
@@ -476,11 +478,12 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
-        self.enqueue_frame_for_tx(nack_frame)
+        self.enqueue_frame_for_tx(nack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+
 
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
-        nack_frame = bytearray(self.length_sig_frame)
+        nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
@@ -489,18 +492,20 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
-        self.enqueue_frame_for_tx(nack_frame)
+        self.enqueue_frame_for_tx(nack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+
 
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
-        disconnection_frame = bytearray(self.length_sig_frame)
+        disconnection_frame = bytearray(self.length_sig1_frame)
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:2] = self.session_id
         # disconnection_frame[1:4] = static.DXCALLSIGN_CRC
         # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         # TODO: Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
-        self.enqueue_frame_for_tx(disconnection_frame, copies=5, repeat_delay=0)
+        self.enqueue_frame_for_tx(disconnection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=5, repeat_delay=0)
+
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -1306,7 +1311,7 @@ class DATA:
         self.session_id = randbytes(1)
         print(self.session_id)
 
-        connection_frame = bytearray(self.length_sig_frame)
+        connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
         connection_frame[1:2] = self.session_id
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
@@ -1326,7 +1331,7 @@ class DATA:
                     state=static.ARQ_SESSION_STATE,
                 )
 
-                self.enqueue_frame_for_tx(connection_frame)
+                self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
                 # indicates we've received a positive response from the far station.
@@ -1469,13 +1474,14 @@ class DATA:
         # static.TNC_STATE = "BUSY"
         # static.ARQ_SESSION_STATE = "connected"
 
-        connection_frame = bytearray(self.length_sig_frame)
+        connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:2] = self.session_id
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
         # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
-        self.enqueue_frame_for_tx(connection_frame)
+        self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+
 
     def received_session_heartbeat(self, data_in: bytes) -> None:
         """
@@ -1598,7 +1604,7 @@ class DATA:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
             self.log.debug("[TNC] Requesting high bandwidth mode")
 
-        connection_frame = bytearray(self.length_sig_frame)
+        connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
         connection_frame[1:4] = static.DXCALLSIGN_CRC
         connection_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1625,7 +1631,7 @@ class DATA:
                     attempt=f"{str(attempt + 1)}/{str(self.data_channel_max_retries)}",
                 )
 
-                self.enqueue_frame_for_tx(connection_frame)
+                self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 timeout = time.time() + 4
                 while time.time() < timeout:
@@ -1794,7 +1800,7 @@ class DATA:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_W.value])
             self.log.debug("[TNC] Responding with high bandwidth mode")
 
-        connection_frame = bytearray(self.length_sig_frame)
+        connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
         connection_frame[1:2] = self.session_id
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
@@ -1804,7 +1810,8 @@ class DATA:
         # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
-        self.enqueue_frame_for_tx(connection_frame)
+        self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+
 
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
@@ -1917,7 +1924,7 @@ class DATA:
             + "]"
         )
 
-        ping_frame = bytearray(self.length_sig_frame)
+        ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
@@ -1976,7 +1983,7 @@ class DATA:
             snr=static.SNR,
         )
 
-        ping_frame = bytearray(self.length_sig_frame)
+        ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
@@ -2033,14 +2040,14 @@ class DATA:
         Force a stop of the running transmission
         """
         self.log.warning("[TNC] Stopping transmission!")
-        stop_frame = bytearray(self.length_sig_frame)
+        stop_frame = bytearray(self.length_sig0_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
         stop_frame[4:7] = static.MYCALLSIGN_CRC
         # TODO: Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-        self.enqueue_frame_for_tx(stop_frame, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx(stop_frame, c2_mode=FREEDV_MODE.datac0.value, copies=6, repeat_delay=0)
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
@@ -2099,7 +2106,7 @@ class DATA:
                             "[TNC] Sending beacon!", interval=self.beacon_interval
                         )
 
-                        beacon_frame = bytearray(self.length_sig_frame)
+                        beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[9:13] = static.MYGRID[:4]
@@ -2111,7 +2118,8 @@ class DATA:
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
-                            self.enqueue_frame_for_tx(beacon_frame)
+                            self.enqueue_frame_for_tx(beacon_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1,
+                                                      repeat_delay=0)
 
                     interval_timer = time.time() + self.beacon_interval
                     while (
@@ -2177,7 +2185,7 @@ class DATA:
             freedata="tnc-message",
             cq="transmitting",
         )
-        cq_frame = bytearray(self.length_sig_frame)
+        cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
@@ -2188,7 +2196,7 @@ class DATA:
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(cq_frame)
+            self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_cq(self, data_in: bytes) -> None:
         """
@@ -2248,7 +2256,7 @@ class DATA:
         )
         self.log.info("[TNC] Sending QRV!")
 
-        qrv_frame = bytearray(self.length_sig_frame)
+        qrv_frame = bytearray(self.length_sig0_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
@@ -2258,7 +2266,7 @@ class DATA:
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx(qrv_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(qrv_frame)
+            self.enqueue_frame_for_tx(qrv_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes) -> None:
         """
