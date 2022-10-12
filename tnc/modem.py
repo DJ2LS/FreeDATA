@@ -775,8 +775,8 @@ class RF:
         for i in range(codec2.MODEM_STATS_NC_MAX):
             for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
                 # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
-                xsymbols = round(modemStats.rx_symbols[i][j - 1] / 1000)
-                ysymbols = round(modemStats.rx_symbols[i][j] / 1000)
+                xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+                ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
                 if xsymbols != 0.0 and ysymbols != 0.0:
                     scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
@@ -872,8 +872,10 @@ class RF:
                     if not static.TRANSMITTING:
                         dfft[dfft > avg + 10] = 100
 
-                        # Calculate audio max value
-                        # static.AUDIO_RMS = np.amax(self.fft_data)
+                        # Calculate audio RMS
+                        # https://stackoverflow.com/a/9763652
+                        d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
+                        static.AUDIO_RMS = int(np.sqrt((d * d).sum() / len(d)))
 
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
