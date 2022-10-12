@@ -296,7 +296,16 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
 
-      - name: Build binaries
+      - name: Build binaries macOS
+        if: ${{startsWith(matrix.os, 'macos')}}
+        working-directory: tnc
+        run: |
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --macos-create-app-bundle --standalone daemon.py
+          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --macos-create-app-bundle --standalone main.py
+          
+
+      - name: Build binaries Linux and Windows
+        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
           # pyinstaller freedata.spec
