@@ -1551,7 +1551,7 @@ class DATA:
 
         # wait a moment for the case, a heartbeat is already on the way back to us
         if static.ARQ_SESSION:
-            time.sleep(0.5)
+            time.sleep(1.5)
 
         self.datachannel_timeout = False
 
@@ -2637,15 +2637,18 @@ class DATA:
         """
         while True:
             time.sleep(0.01)
-            if (
-                    static.ARQ_SESSION
-                    and self.IS_ARQ_SESSION_MASTER
-                    and static.ARQ_SESSION_STATE == "connected"
-                    and not self.arq_file_transfer
-            ):
-                time.sleep(1)
-                self.transmit_session_heartbeat()
-                time.sleep(2)
+            # additional check for smoother stopping if heartbeat transmission
+            while not self.arq_file_transfer:
+                time.sleep(0.01)
+                if (
+                        static.ARQ_SESSION
+                        and self.IS_ARQ_SESSION_MASTER
+                        and static.ARQ_SESSION_STATE == "connected"
+                        #and not self.arq_file_transfer
+                ):
+                    time.sleep(1)
+                    self.transmit_session_heartbeat()
+                    time.sleep(2)
 
     def send_test_frame(self) -> None:
         """Send an empty test frame"""
