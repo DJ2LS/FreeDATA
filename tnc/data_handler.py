@@ -1555,7 +1555,7 @@ class DATA:
 
         self.datachannel_timeout = False
 
-        # we need to compress data for gettin a compression factor.
+        # we need to compress data for getting a compression factor.
         # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
