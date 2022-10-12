@@ -255,7 +255,6 @@ jobs:
           brew install virtualenv
           virtualenv -p python3 venv
           cd venv
-          chmod +x /venv/bin/activate
           source ./venv/bin/activate
           ./bin/activate
           brew install portaudio
