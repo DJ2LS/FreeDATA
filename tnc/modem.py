@@ -877,11 +877,11 @@ class RF:
 
                         # Calculate audio RMS
                         # https://stackoverflow.com/a/9763652
-                        # calculate RMS every 150 cycles for reducing CPU load
+                        # calculate RMS every 50 cycles for reducing CPU load
                         rms_counter += 1
-                        if rms_counter > 150:
+                        if rms_counter > 50:
                             d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
-                            static.AUDIO_RMS = int(np.sqrt((d * d).sum() / len(d)))
+                            static.AUDIO_RMS = int(np.sqrt(np.mean(d ** 2)))
                             rms_counter = 0
 
                     # Check for signals higher than average by checking for "100"
