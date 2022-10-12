@@ -581,7 +581,7 @@ class RF:
                         "[MDM] [demod_audio] Pushing received data to received_queue"
                     )
                     self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
-                    # self.get_scatter(freedv)
+                    self.get_scatter(freedv)
                     self.calculate_snr(freedv)
         return nin
 
@@ -749,7 +749,6 @@ class RF:
         :rtype: float
         """
         modemStats = codec2.MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
         static.FREQ_OFFSET = offset
@@ -767,28 +766,27 @@ class RF:
             return
 
         modemStats = codec2.MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats.restype = None
-        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        ctypes.cast(
+            self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats)),
+            ctypes.c_void_p,
+        )
 
         scatterdata = []
-        scatterdata_small = []
         for i in range(codec2.MODEM_STATS_NC_MAX):
-            for j in range(codec2.MODEM_STATS_NR_MAX):
-                # check if odd or not to get every 2nd item for x
-                if (j % 2) == 0:
-                    xsymbols = round(modemStats.rx_symbols[i][j] / 1000)
-                    ysymbols = round(modemStats.rx_symbols[i][j + 1] / 1000)
-                    # check if value 0.0 or has real data
-                    if xsymbols != 0.0 and ysymbols != 0.0:
-                        scatterdata.append({"x": xsymbols, "y": ysymbols})
+            for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
+                # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+                xsymbols = round(modemStats.rx_symbols[i][j - 1] / 1000)
+                ysymbols = round(modemStats.rx_symbols[i][j] / 1000)
+                if xsymbols != 0.0 and ysymbols != 0.0:
+                    scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
             static.SCATTER = scatterdata
         else:
             # only take every tenth data point
-            scatterdata_small = scatterdata[::10]
-            static.SCATTER = scatterdata_small
+            static.SCATTER = scatterdata[::10]
+
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
