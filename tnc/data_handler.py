@@ -1314,9 +1314,9 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
         connection_frame[1:2] = self.session_id
-        # connection_frame[1:4] = static.DXCALLSIGN_CRC
-        # connection_frame[4:7] = static.MYCALLSIGN_CRC
-        connection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
+        connection_frame[2:5] = static.DXCALLSIGN_CRC
+        connection_frame[5:8] = static.MYCALLSIGN_CRC
+        connection_frame[8:14] = helpers.callsign_to_bytes(self.mycallsign)
 
         while not static.ARQ_SESSION:
             time.sleep(0.01)
@@ -1365,8 +1365,9 @@ class DATA:
         # Update arq_session timestamp
         self.arq_session_last_received = int(time.time())
 
-        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        self.session_id = bytes(data_in[1:2])
+        static.DXCALLSIGN_CRC = bytes(data_in[5:8])
+        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[8:14]))
 
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
