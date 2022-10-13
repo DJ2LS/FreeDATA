@@ -252,10 +252,10 @@ jobs:
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
-          brew install virtualenv
-          virtualenv -p python3 venv
-          cd venv
-          source ./bin/activate
+          #brew install virtualenv
+          #virtualenv -p python3 venv
+          #cd venv
+          #source ./bin/activate
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
@@ -305,9 +305,13 @@ jobs:
         if: ${{startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
-          python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
-          
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
+          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
+          pyinstaller freedata.spec
+          cp -r -f dist/tnc/* dist/
+          cp -r -f dist/daemon/* dist/
+          rm -r * dist/tnc
+          rm -r * dist/daemon
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
