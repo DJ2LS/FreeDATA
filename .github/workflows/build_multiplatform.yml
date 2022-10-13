@@ -310,7 +310,7 @@ jobs:
           #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
           pyinstaller freedata.spec
           cp -r -f dist/tnc/* dist/
-          rm -r * dist/tnc
+          rm -r dist/tnc
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
