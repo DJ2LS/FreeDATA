@@ -310,9 +310,7 @@ jobs:
           #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
           pyinstaller freedata.spec
           cp -r -f dist/tnc/* dist/
-          cp -r -f dist/daemon/* dist/
           rm -r * dist/tnc
-          rm -r * dist/daemon
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
@@ -327,8 +325,8 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      - name: Copy binaries - Linux and MacOS
-        if: ${{!startsWith(matrix.os, 'windows')}}
+      - name: Copy binaries - Linux
+        if: ${{startsWith(matrix.os, 'ubuntu')}}
         working-directory: tnc
         run: |
           cp -r -f daemon.dist/* dist/
@@ -346,6 +344,7 @@ jobs:
           cp -r -Force main.dist/* dist/
 
       - name: Rename tnc binaries
+        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
           mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
