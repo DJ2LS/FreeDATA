@@ -255,7 +255,7 @@ jobs:
           brew install virtualenv
           virtualenv -p python3 venv
           cd venv
-          source ./venv/bin/activate
+          source ./bin/activate
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
