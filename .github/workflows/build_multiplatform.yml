@@ -350,13 +350,19 @@ jobs:
           mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
           mv dist/main* dist/${{ matrix.tnc_binary_name }}
 
-      - name: Download Portaudio binaries
+      - name: Download Portaudio binaries Linux macOS
+        if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          if (! test -d "dist/_sounddevice_data"); then
+          if ! test -d "dist/_sounddevice_data"; then
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
           fi
 
+      - name: Download Portaudio binaries Windows
+        if: ${{startsWith(matrix.os, 'windows')}}
+        working-directory: tnc
+        run: |
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
 
       #- uses: actions/download-artifact@v3
       #  with:
