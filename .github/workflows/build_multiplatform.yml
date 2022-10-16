@@ -362,8 +362,11 @@ jobs:
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
-
+          if(Test-Path -Path "dist/_sounddevice_data"){
+          echo "already exists"
+          } else {
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries          
+          }
       #- uses: actions/download-artifact@v3
       #  with:
       #    path: tnc/dist/codec2
