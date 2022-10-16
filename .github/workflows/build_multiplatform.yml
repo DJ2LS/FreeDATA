@@ -353,7 +353,7 @@ jobs:
       - name: Download Portaudio binaries
         working-directory: tnc
         run: |
-          if ! test -f "dist/_sounddevice_data/portaudio-binaries/libportaudio.dylib"; then
+          if ! test -d "dist/_sounddevice_data"; then
           git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
           fi
 
