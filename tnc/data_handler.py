@@ -412,6 +412,15 @@ class DATA:
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
+    def send_ident_frame(self) -> None:
+        """Build and send IDENT frame """
+        ident_frame = bytearray(self.length_sig1_frame)
+        ident_frame[:1] = bytes([FR_TYPE.IDENT.value])
+        ident_frame[1:self.length_sig1_frame] = self.mycallsign
+
+        # Transmit frame
+        self.enqueue_frame_for_tx(ident_frame, c2_mode=FREEDV_MODE.datac0.value)
+
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
         ack_frame = bytearray(self.length_sig1_frame)
