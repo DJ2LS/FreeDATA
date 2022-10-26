@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.5.0-alpha"
+VERSION = "0.6.0-alpha"
 
 # DAEMON
 DAEMONPORT: int = 3001
@@ -85,7 +85,7 @@ ENABLE_FFT: bool = False
 CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION: int = 2
+ARQ_PROTOCOL_VERSION: int = 3
 
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST: int = 0
