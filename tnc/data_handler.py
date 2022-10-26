@@ -1429,7 +1429,7 @@ class DATA:
         static.ARQ_SESSION = False
 
         # we need to send disconnect frame before doing arq cleanup
-        # we would loose our session id then
+        # we would lose our session id then
         self.send_disconnect_frame()
         self.arq_cleanup()
 
@@ -1521,8 +1521,18 @@ class DATA:
             # Update the timeout timestamps
             self.arq_session_last_received = int(time.time())
             self.data_channel_last_received = int(time.time())
-
-            if not self.IS_ARQ_SESSION_MASTER and not self.arq_file_transfer:
+            # transmit session heartbeat only
+            # -> if not session master
+            # --> this will be triggered by heartbeat watchdog
+            # -> if not during a file transfer
+            # -> if ARQ_SESSION_STATE != disconnecting to avoid heartbeat toggle loops while disconnecting
+            if (
+                    not self.IS_ARQ_SESSION_MASTER
+                    and not self.arq_file_transfer
+                    and static.ARQ_SESSION_STATE != 'disconnecting'
+                    and static.ARQ_SESSION_STATE != 'disconnected'
+                    and static.ARQ_SESSION_STATE != 'failed'
+            ):
                 self.transmit_session_heartbeat()
 
     ##########################################################################################################
