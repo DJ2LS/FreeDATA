@@ -42,8 +42,8 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
-        log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
+        #log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
+        #log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
