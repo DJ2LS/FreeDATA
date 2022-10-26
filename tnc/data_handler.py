@@ -1525,7 +1525,8 @@ class DATA:
             # -> if not session master
             # --> this will be triggered by heartbeat watchdog
             # -> if not during a file transfer
-            # -> if ARQ_SESSION_STATE != disconnecting to avoid heartbeat toggle loops while disconnecting
+            # -> if ARQ_SESSION_STATE != disconnecting, disconnected, failed 
+            # --> to avoid heartbeat toggle loops while disconnecting
             if (
                     not self.IS_ARQ_SESSION_MASTER
                     and not self.arq_file_transfer
