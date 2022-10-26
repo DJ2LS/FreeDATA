@@ -1559,8 +1559,9 @@ class DATA:
         self.transmission_uuid = transmission_uuid
 
         # wait a moment for the case, a heartbeat is already on the way back to us
+        # this makes channel establishment more clean
         if static.ARQ_SESSION:
-            time.sleep(1.5)
+            time.sleep(2)
 
         self.datachannel_timeout = False
 
