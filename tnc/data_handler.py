@@ -492,8 +492,9 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
+        # TODO: Do we have to send ident frame?
+        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
-
 
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
