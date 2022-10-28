@@ -448,10 +448,12 @@ class DATA:
         # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # Transmit frame
+        # TODO: Do we have to send , self.send_ident_frame(False) ?
+        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self, freedv) -> None:
-        # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
+        # check where a None is in our burst buffer and do frame+1, because lists start at 0
         # FIXME: Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
         missing_frames = [
             frame + 1
