@@ -495,7 +495,6 @@ class DATA:
         # TODO: Do we have to send ident frame?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
-
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
         """Build and send NACK frame for watchdog timeout"""
         nack_frame = bytearray(self.length_sig1_frame)
@@ -1693,7 +1692,6 @@ class DATA:
             )
             self.datachannel_timeout = True
 
-
             # Attempt to cleanup the far-side, if it received the
             # open_session frame and can still hear us.
             self.close_session()
@@ -1839,7 +1837,6 @@ class DATA:
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
-
 
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
