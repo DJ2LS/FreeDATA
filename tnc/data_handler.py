@@ -370,7 +370,7 @@ class DATA:
         Send (transmit) supplied frame to TNC
 
         :param frame_to_tx: Frame data to send
-        :type frame_to_tx: bytearray
+        :type frame_to_tx: list of bytearrays
         :param c2_mode: Codec2 mode to use, defaults to 14 (datac0)
         :type c2_mode: int, optional
         :param copies: Number of frame copies to send, defaults to 1
@@ -383,7 +383,7 @@ class DATA:
         # Set the TRANSMITTING flag before adding an object to the transmit queue
         # TODO: This is not that nice, we could improve this somehow
         static.TRANSMITTING = True
-        modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, [frame_to_tx]])
+        modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
         while static.TRANSMITTING:
@@ -412,14 +412,17 @@ class DATA:
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
-    def send_ident_frame(self) -> None:
+    def send_ident_frame(self, transmit) -> None:
         """Build and send IDENT frame """
         ident_frame = bytearray(self.length_sig1_frame)
         ident_frame[:1] = bytes([FR_TYPE.IDENT.value])
         ident_frame[1:self.length_sig1_frame] = self.mycallsign
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ident_frame, c2_mode=FREEDV_MODE.datac0.value)
+        if transmit:
+            self.enqueue_frame_for_tx([ident_frame], c2_mode=FREEDV_MODE.datac0.value)
+        else:
+            return ident_frame
 
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
@@ -432,7 +435,7 @@ class DATA:
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ack_frame, c2_mode=FREEDV_MODE.datac0.value)
+        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
@@ -445,7 +448,7 @@ class DATA:
         # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx(ack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
+        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, beacuse lists start at 0
@@ -473,7 +476,7 @@ class DATA:
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
-        self.enqueue_frame_for_tx(rpt_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
 
     def send_burst_nack_frame(self, snr: float = 0) -> None:
@@ -487,7 +490,7 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
-        self.enqueue_frame_for_tx(nack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
 
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
@@ -501,7 +504,7 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
-        self.enqueue_frame_for_tx(nack_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
 
     def send_disconnect_frame(self) -> None:
@@ -513,7 +516,7 @@ class DATA:
         # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         # TODO: Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
-        self.enqueue_frame_for_tx(disconnection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=5, repeat_delay=0)
+        self.enqueue_frame_for_tx([disconnection_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=5, repeat_delay=0)
 
 
     def arq_data_received(
@@ -988,7 +991,7 @@ class DATA:
                 )
 
                 for t_buf_item in tempbuffer:
-                    self.enqueue_frame_for_tx(t_buf_item, c2_mode=data_mode)
+                    self.enqueue_frame_for_tx([t_buf_item], c2_mode=data_mode)
 
                 # After transmission finished, wait for an ACK or RPT frame
                 # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
@@ -1340,7 +1343,7 @@ class DATA:
                     state=static.ARQ_SESSION_STATE,
                 )
 
-                self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
                 # indicates we've received a positive response from the far station.
@@ -1490,7 +1493,7 @@ class DATA:
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
         # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
-        self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
 
     def received_session_heartbeat(self, data_in: bytes) -> None:
@@ -1653,7 +1656,7 @@ class DATA:
                     attempt=f"{str(attempt + 1)}/{str(self.data_channel_max_retries)}",
                 )
 
-                self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 timeout = time.time() + 4
                 while time.time() < timeout:
@@ -1832,7 +1835,7 @@ class DATA:
         # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
-        self.enqueue_frame_for_tx(connection_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
 
         self.log.info(
@@ -1954,9 +1957,9 @@ class DATA:
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.datac0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping(self, data_in: bytes) -> None:
         """
@@ -2013,9 +2016,9 @@ class DATA:
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(ping_frame, c2_mode=FREEDV_MODE.datac0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -2069,7 +2072,7 @@ class DATA:
         # TODO: Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-        self.enqueue_frame_for_tx(stop_frame, c2_mode=FREEDV_MODE.datac0.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.datac0.value, copies=6, repeat_delay=0)
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
@@ -2136,11 +2139,11 @@ class DATA:
 
                         if static.ENABLE_FSK:
                             self.enqueue_frame_for_tx(
-                                beacon_frame,
+                                [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
-                            self.enqueue_frame_for_tx(beacon_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1,
+                            self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1,
                                                       repeat_delay=0)
 
                     interval_timer = time.time() + self.beacon_interval
@@ -2216,9 +2219,9 @@ class DATA:
         self.log.debug("[TNC] CQ Frame:", data=[cq_frame])
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(cq_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_cq(self, data_in: bytes) -> None:
         """
@@ -2286,9 +2289,9 @@ class DATA:
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
         if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx(qrv_frame, c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx(qrv_frame, c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes) -> None:
         """
@@ -2674,5 +2677,5 @@ class DATA:
     def send_test_frame(self) -> None:
         """Send an empty test frame"""
         self.enqueue_frame_for_tx(
-            frame_to_tx=bytearray(126), c2_mode=FREEDV_MODE.datac3.value
+            frame_to_tx=[bytearray(126)], c2_mode=FREEDV_MODE.datac3.value
         )
