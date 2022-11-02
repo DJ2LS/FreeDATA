@@ -175,7 +175,7 @@ function createWindow() {
         icon: 'src/img/icon.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
-            backgroundThrottle = false,
+            backgroundThrottle: false,
             preload: require.resolve('./preload-main.js'),
             nodeIntegration: true,
             contextIsolation: false,
