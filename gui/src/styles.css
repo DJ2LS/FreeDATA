@@ -5,6 +5,13 @@ body {
     overflow-x: hidden !important;
 }
 
+.navbar {
+    background-color: white;
+    border-top: .1em solid #adadad;
+    border-bottom: .1em solid #adadad;
+}
+
+
 /*Progress bars with centered text*/
 .progress {
     position: relative;
@@ -27,4 +34,60 @@ html {
   display: none;
 }
 
+.btn-default {
+    background-color: #f2f2f2;
+    border-color: #f2f2f2;
+    border-bottom: .15em solid #adadad;
+    border-radius: 3px;
+}
 
+.btn-primary {
+    background-color: #428bca;
+    border-color: #428bca;
+    border-bottom: .15em solid #2a6496;
+    border-radius: 3px;
+}
+
+.btn-info {
+    background-color: #46b8da;
+    border-color: #46b8da;
+    border-bottom: .15em solid #269abc;
+    border-radius: 3px;
+}
+.btn-danger {
+    background-color: #d43f3a;
+    border-color: #d43f3a;
+    border-bottom: .15em solid #ac2925;
+    border-radius: 3px;
+}
+.btn-success {
+    background-color: #5cb85c;
+    border-color: #5cb85c;
+    border-bottom: .15em solid #398439;
+    border-radius: 3px;
+}
+.btn-warning {
+    background-color: #f0ad4e;
+    border-color: #f0ad4e;
+    border-bottom: .15em solid #d58512;
+    border-radius: 3px;
+}
+
+
+
+.card {
+    background-color: #FFF;
+    border: 1px solid rgba(0,0,0,0.06);
+    //box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.40);
+    border-radius: .25rem;
+}
+.card-header {
+    background-color: #FFF;
+}
+.card-footer {
+    background-color: #FFF;
+}
+
+.input-group-text{
+    background-color: #FFF;
+}

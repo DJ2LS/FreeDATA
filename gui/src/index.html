@@ -13,12 +13,14 @@
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
+
+
 	<title>FreeDATA by DJ2LS</title>
 </head>
 
 <body>
 	<!-- SECONDARY NAVBAR -->
-	<nav class="navbar bg-light fixed-top mt-0 mb-1 pb-1 pt-1 shadow-sm">
+	<nav class="navbar fixed-top mt-0 mb-1 pb-1 pt-1">
 		<div class="container-fluid mt-0">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 				<div class="btn-group btn-group-sm me-2" role="group" aria-label="local-remote-switch toggle button group" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option.">
@@ -230,31 +232,65 @@
 			</div>
 		</div>
 		<!------------------------------------------------------------------------------------------>
-		<div class="container mt-5 p-0">
+		<div class="container p-0" style="margin-top: 4rem;">
 			<div class="row collapse multi-collapse show" id="collapseFirstRow">
 				<div class="col">
 					<div class="card text-dark mb-0">
-						<div class="card-header p-1"> <i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i><strong>AUDIO</strong> </div>
+						<!--<div class="card-header p-1"> <i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i><strong>AUDIO</strong> </div>-->
 						<div class="card-body p-2 mb-1">
-							<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
-                           <i class="bi bi-mic-fill" style="font-size: 1rem; color: black;"></i>
-                           </span>
+							<div class="media d-flex">
+								<div class="align-self-center ms-0 me-2">
+									<i class="bi bi-volume-up" style="font-size: 3rem; color: #FFA87D;"></i>
+								</div>
+							<div class="media-body text-right">
+								<div class="input-group input-group-sm mb-1">
+									<span class="input-group-text" id="basic-addon1">
+                           				<i class="bi bi-mic-fill" style="font-size: 1rem; color: black;"></i>
+                           			</span>
+
 								<select class="form-select form-select-sm" id="audio_input_selectbox" aria-label=".form-select-sm">
 									<!-- 					 					<option selected value="3011">USB Interface</option>-->
 								</select>
 							</div>
-							<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+							<div class="input-group input-group-sm" style="margin-bottom: 2.2rem;"> <span class="input-group-text" id="basic-addon1">
                            <i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i>
                            </span>
 								<select class="form-select form-select-sm" id="audio_output_selectbox" aria-label=".form-select-sm"></select>
 							</div>
+	</div>
+	</div>
 						</div>
-						<div class="card-footer text-muted small">Please select audio device for RX and TX</div>
+
+
+						<!--<div class="card-footer text-muted small">Please select audio device for RX and TX</div>-->
 					</div>
 				</div>
 				<div class="col">
 					<div class="card text-dark mb-0">
+						<!--
 						<div class="card-header p-1"> <i class="bi bi-projector" style="font-size: 1rem; color: black;"></i>
+
+
+						</div>
+												-->
+
+						<div class="card-body p-2">
+
+
+
+
+
+
+
+
+
+							<div class="media d-flex">
+								<div class="align-self-center ms-0 me-2">
+									<i class="bi bi-projector" style="font-size: 3rem; color: #FFA87D;"></i>
+								</div>
+							<div class="media-body text-right w-100">
+
+							<div class="mb-1">
 							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
 								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-disabled" autocomplete="off" checked>
 								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-disabled"> <i class="bi bi-x-circle" style="font-size: 0.8rem; color: black;"></i> </label>
@@ -278,10 +314,17 @@
 							<div class="btn-group" role="group">
 								<button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">PTT Test</button>
 							</div>
-						</div>
-						<div class="card-body p-2">
+							</div>
+
+
 							<!-- RADIO CONTROL DISABLED -->
-							<div id="radio-control-disabled">hamlib/rigctld connection disabled</div>
+							<div id="radio-control-disabled">
+
+								<div class="alert alert-danger d-flex align-items-center p-3 mb-2 mt-1" role="alert">
+  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+  <div> hamlib/rigctld connection <strong>disabled</strong></div>
+</div>
+								</div>
 							<!-- RADIO CONTROL RADIO -->
 							<div id="radio-control-radio">
 								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
@@ -553,6 +596,10 @@
 										<option value="33001">	ELAD                   FDM-DUO                </option>
 									</datalist>
 								</div>
+								<div class="alert alert-warning d-flex align-items-center p-0 mb-2" role="alert">
+  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+  <div> Set your <strong>radio settings</strong> here!</div>
+</div>
 							</div>
 							<!-- RADIO CONTROL CONNECTION -->
 							<div id="radio-control-connection">
@@ -651,6 +698,12 @@
 								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Rigctld IP</span>
 									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1"> <span class="input-group-text" id="basic-addon1">:</span>
 									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
+							<div class="alert alert-warning d-flex align-items-center p-0 mb-2" role="alert">
+							  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+							  <div> Connect to <strong>existing rigcltd</strong> instance!</div>
+							</div>
+
+
 							</div>
 							<!-- RADIO CONTROL RIGCTLD -->
 							<div id="radio-control-rigctld">
@@ -669,18 +722,29 @@
 									<button class="btn btn-outline-danger" type="button" id="hamlib_rigctld_stop">Stop</button>
 								</div>
 							</div>
+
+							</div></div>
+
+
 						</div>
-						<div class="card-footer text-muted small" id="hamlib_info_field">Select your radio and PTT settings. Start/Stop Hamlib Rigctld</div>
+						<!--<div class="card-footer text-muted small" id="hamlib_info_field">Select your radio and PTT settings. Start/Stop Hamlib Rigctld</div>-->
 					</div>
 				</div>
 			</div>
 			<div class="row collapse multi-collapse show mt-2" id="collapseSecondRow">
 				<div class="col">
 					<div class="card text-dark mb-1">
-						<div class="card-header p-1"><strong>MY STATION</strong> </div>
+						<!--<div class="card-header p-1"><strong>MY STATION</strong> </div>-->
 						<div class="card-body p-2">
-							<div class="row">
-								<div class="col-md-auto">
+
+							<div class="media d-flex">
+								<div class="align-self-center ms-0 me-2">
+									<i class="bi bi-person-bounding-box" style="font-size: 3rem; color: #00B5B8;"></i>
+								</div>
+							<div class="media-body text-right">
+
+							<!--<div class="row">
+								<div class="col-md-auto">-->
 									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your callsign and save it"> <span class="input-group-text" id="basic-addon1">
                                  <i class="bi bi-person-bounding-box" style="font-size: 1rem; color: black;"></i>
                                  </span>
@@ -705,32 +769,58 @@
 										</select>
 										<button class="btn btn-sm btn-success" id="saveMyCall" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
-								</div>
-								<div class="col-md-auto">
+
+								<div class="input-group input-group-sm mb-0 mt-1" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text" id="basic-addon1">
+                                 <i class="bi bi-house-fill" style="font-size: 1rem; color: black;"></i>
+                                 </span>
+										<input type="text" class="form-control mr-1" style="max-width: 6rem" placeholder="locator" id="myGrid" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
+										<button class="btn btn-sm btn-success" id="saveMyGrid" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
+									</div>
+
+								<!--</div>-->
+								<!--<div class="col-md-auto">
 									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text" id="basic-addon1">
                                  <i class="bi bi-house-fill" style="font-size: 1rem; color: black;"></i>
                                  </span>
 										<input type="text" class="form-control mr-1" style="max-width: 6rem" placeholder="locator" id="myGrid" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
 										<button class="btn btn-sm btn-success" id="saveMyGrid" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
-								</div>
+								</div>-->
 							</div>
 							<!-- end of row-->
+								</div>
 						</div>
 					</div>
 				</div>
 				<div class="col">
 					<div class="card text-dark mb-0">
-						<div class="card-header p-1 d-flex"> <i class="bi bi-cloud-download ms-1 me-1" style="font-size: 1rem; color: black;"></i> <strong>UPDATER</strong>
+						<!--<div class="card-header p-1 d-flex"> <i class="bi bi-cloud-download ms-1 me-1" style="font-size: 1rem; color: black;"></i> <strong>UPDATER</strong>
 							<div class="progress w-75 ms-1 m-1">
 								<div class="progress-bar" style="width: 0%" role="progressbar" id="UpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="UpdateProgressInfo"></span> </div>
 							</div>
-						</div>
+						</div>-->
 						<div class="card-body p-2 mb-1">
-							<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>
-							<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
-							<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
-							<button class="btn btn-primary btn-sm" id="update_and_install" type="button" style="display:none;">Install & Restart</button>
+
+							<div class="media d-flex">
+								<div class="align-self-center ms-0 me-2">
+									<i class="bi bi-cloud-download" style="font-size: 3rem; color: #16D39A;"></i>
+								</div>
+								<div class="media-body text-right w-100">
+
+
+
+									<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>
+									<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
+									<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
+									<button class="btn btn-primary btn-sm" id="update_and_install" type="button" style="display:none;">Install & Restart</button>
+
+									<div class="progress w-100 mt-1">
+										<div class="progress-bar" style="width: 0%" role="progressbar" id="UpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="UpdateProgressInfo"></span> </div>
+									</div>
+
+								</div>
+
+							</div>
 						</div>
 					</div>
 				</div>
@@ -1034,7 +1124,7 @@
 	</div>
 	<!--end of blur div -->
 	<!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
-	<nav class="navbar fixed-bottom navbar-light bg-light">
+	<nav class="navbar fixed-bottom navbar-light">
 		<div class="container-fluid">
 			<div class="btn-toolbar" role="toolbar">
 				<div class="btn-group btn-group-sm me-2" role="group">
