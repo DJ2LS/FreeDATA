@@ -435,7 +435,7 @@ class DATA:
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
-        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.datac0.value)
+        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
@@ -449,8 +449,8 @@ class DATA:
 
         # Transmit frame
         # TODO: Do we have to send , self.send_ident_frame(False) ?
-        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
-        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
+        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
+        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, because lists start at 0
@@ -478,7 +478,7 @@ class DATA:
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
-        self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
     def send_burst_nack_frame(self, snr: float = 0) -> None:
         """Build and send NACK frame for received DATA frame"""
@@ -492,8 +492,8 @@ class DATA:
 
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
-        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=3, repeat_delay=0)
-        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
+        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
     def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
 
         """Build and send NACK frame for watchdog timeout"""
@@ -506,7 +506,7 @@ class DATA:
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
-        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
@@ -516,11 +516,11 @@ class DATA:
         # disconnection_frame[1:4] = static.DXCALLSIGN_CRC
         # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
         # TODO: Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-        # self.enqueue_frame_for_tx([disconnection_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.datac0.value, copies=5, repeat_delay=0)
+        # self.enqueue_frame_for_tx([disconnection_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
         # TODO: We need to add the ident frame feature with a seperate PR after publishing latest protocol
         # TODO: We need to wait some time between last arq related signalling frame and ident frame
         # TODO: Maybe about 500ms - 1500ms to avoid confusion and too much PTT toggles
-        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=5, repeat_delay=0)
+        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -2070,7 +2070,7 @@ class DATA:
         # TODO: Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-        self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.datac0.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
