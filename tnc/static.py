@@ -85,7 +85,7 @@ ENABLE_FFT: bool = False
 CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION: int = 2
+ARQ_PROTOCOL_VERSION: int = 3
 
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST: int = 0
@@ -149,4 +149,5 @@ class FRAME_TYPE(Enum):
     ARQ_DC_OPEN_ACK_N = 228
     ARQ_STOP = 249
     BEACON = 250
+    IDENT = 254
     TEST_FRAME = 255

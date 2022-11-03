@@ -23,7 +23,8 @@ class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
-
+    sig0 = 14
+    sig1 = 14
     datac0 = 14
     datac1 = 10
     datac3 = 12
@@ -102,6 +103,9 @@ api.freedv_open_advanced.restype = ctypes.c_void_p
 
 api.freedv_get_bits_per_modem_frame.argtype = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_bits_per_modem_frame.restype = ctypes.c_int
+
+api.freedv_get_modem_extended_stats.argtype = [ctypes.c_void_p, ctypes.c_void_p]
+api.freedv_get_modem_extended_stats.restype = ctypes.c_int
 
 api.freedv_nin.argtype = [ctypes.c_void_p]  # type: ignore
 api.freedv_nin.restype = ctypes.c_int
@@ -208,8 +212,8 @@ api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
 api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_256_512_4".encode("utf-8")  # code word
 
 # ------- MODEM STATS STRUCTURES
-MODEM_STATS_NC_MAX = 50 + 1
-MODEM_STATS_NR_MAX = 160
+MODEM_STATS_NC_MAX = 50 + 1 * 2
+MODEM_STATS_NR_MAX = 160 * 2
 MODEM_STATS_ET_MAX = 8
 MODEM_STATS_EYE_IND_MAX = 160
 MODEM_STATS_NSPEC = 512
@@ -233,10 +237,12 @@ class MODEMSTATS(ctypes.Structure):
         ("pre", ctypes.c_int),
         ("post", ctypes.c_int),
         ("uw_fails", ctypes.c_int),
+        ("rx_eye", (ctypes.c_float * MODEM_STATS_ET_MAX) * MODEM_STATS_EYE_IND_MAX),
         ("neyetr", ctypes.c_int),  # How many eye traces are plotted
         ("neyesamp", ctypes.c_int),  # How many samples in the eye diagram
         ("f_est", (ctypes.c_float * MODEM_STATS_MAX_F_EST)),
         ("fft_buf", (ctypes.c_float * MODEM_STATS_NSPEC * 2)),
+        ("fft_cfg", ctypes.c_void_p)
     ]
 
 

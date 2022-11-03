@@ -32,6 +32,8 @@ TXCHANNEL = ""
 static.TRANSMITTING = False
 
 # Receive only specific modes to reduce CPU load
+RECEIVE_SIG0 = True
+RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 RECEIVE_FSK_LDPC_1 = False
@@ -81,110 +83,63 @@ class RF:
         self.fft_data = bytes()
 
         # Open codec2 instances
-        # Datac0 - control frames
-        self.datac0_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
-        )
-        self.c_lib.freedv_set_tuning_range(
-            self.datac0_freedv,
-            ctypes.c_float(static.TUNING_RANGE_FMIN),
-            ctypes.c_float(static.TUNING_RANGE_FMAX),
-        )
-        self.datac0_bytes_per_frame = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv) / 8
-        )
-        self.datac0_bytes_out = ctypes.create_string_buffer(self.datac0_bytes_per_frame)
-        codec2.api.freedv_set_frames_per_burst(self.datac0_freedv, 1)
-        self.datac0_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
 
-        # Additional Datac0-specific information - these are not referenced anywhere else.
-        # self.datac0_payload_per_frame = self.datac0_bytes_per_frame - 2
-        # self.datac0_n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(
-        #     self.datac0_freedv
-        # )
-        # self.datac0_n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(
-        #     self.datac0_freedv
-        # )
-        # self.datac0_n_tx_preamble_modem_samples = (
-        #     self.c_lib.freedv_get_n_tx_preamble_modem_samples(self.datac0_freedv)
-        # )
-        # self.datac0_n_tx_postamble_modem_samples = (
-        #     self.c_lib.freedv_get_n_tx_postamble_modem_samples(self.datac0_freedv)
-        # )
+        # DATAC0
+        # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
+        self.sig0_datac0_freedv, \
+            self.sig0_datac0_bytes_per_frame, \
+            self.sig0_datac0_bytes_out, \
+            self.sig0_datac0_buffer, \
+            self.sig0_datac0_nin = \
+            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
-        # Datac1 - higher-bandwidth data frames
-        self.datac1_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), ctypes.c_void_p
-        )
-        self.c_lib.freedv_set_tuning_range(
-            self.datac1_freedv,
-            ctypes.c_float(static.TUNING_RANGE_FMIN),
-            ctypes.c_float(static.TUNING_RANGE_FMAX),
-        )
-        self.datac1_bytes_per_frame = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.datac1_freedv) / 8
-        )
-        self.datac1_bytes_out = ctypes.create_string_buffer(self.datac1_bytes_per_frame)
-        codec2.api.freedv_set_frames_per_burst(self.datac1_freedv, 1)
-        self.datac1_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+        # DATAC0
+        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
+        self.sig1_datac0_freedv, \
+            self.sig1_datac0_bytes_per_frame, \
+            self.sig1_datac0_bytes_out, \
+            self.sig1_datac0_buffer, \
+            self.sig1_datac0_nin = \
+            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
-        # Datac3 - lower-bandwidth data frames
-        self.datac3_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), ctypes.c_void_p
-        )
-        self.c_lib.freedv_set_tuning_range(
-            self.datac3_freedv,
-            ctypes.c_float(static.TUNING_RANGE_FMIN),
-            ctypes.c_float(static.TUNING_RANGE_FMAX),
-        )
-        self.datac3_bytes_per_frame = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.datac3_freedv) / 8
-        )
-        self.datac3_bytes_out = ctypes.create_string_buffer(self.datac3_bytes_per_frame)
-        codec2.api.freedv_set_frames_per_burst(self.datac3_freedv, 1)
-        self.datac3_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
 
-        # FSK Long-distance Parity Code 0 - data frames
-        self.fsk_ldpc_freedv_0 = ctypes.cast(
-            codec2.api.freedv_open_advanced(
+        # DATAC1
+        self.dat0_datac1_freedv, \
+            self.dat0_datac1_bytes_per_frame, \
+            self.dat0_datac1_bytes_out, \
+            self.dat0_datac1_buffer, \
+            self.dat0_datac1_nin = \
+            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
+
+        # DATAC3
+        self.dat0_datac3_freedv, \
+            self.dat0_datac3_bytes_per_frame, \
+            self.dat0_datac3_bytes_out, \
+            self.dat0_datac3_buffer, \
+            self.dat0_datac3_nin = \
+            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
+
+        # FSK LDPC - 0
+        self.fsk_ldpc_freedv_0, \
+            self.fsk_ldpc_bytes_per_frame_0, \
+            self.fsk_ldpc_bytes_out_0, \
+            self.fsk_ldpc_buffer_0, \
+            self.fsk_ldpc_nin_0 = \
+            self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
-                ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-        self.fsk_ldpc_bytes_per_frame_0 = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.fsk_ldpc_freedv_0) / 8
-        )
-        self.fsk_ldpc_bytes_out_0 = ctypes.create_string_buffer(
-            self.fsk_ldpc_bytes_per_frame_0
-        )
-        # codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, 1)
-        self.fsk_ldpc_buffer_0 = codec2.audio_buffer(self.AUDIO_FRAMES_PER_BUFFER_RX)
+                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
+            )
 
-        # FSK Long-distance Parity Code 1 - data frames
-        self.fsk_ldpc_freedv_1 = ctypes.cast(
-            codec2.api.freedv_open_advanced(
+        # FSK LDPC - 1
+        self.fsk_ldpc_freedv_1, \
+            self.fsk_ldpc_bytes_per_frame_1, \
+            self.fsk_ldpc_bytes_out_1, \
+            self.fsk_ldpc_buffer_1, \
+            self.fsk_ldpc_nin_1 = \
+            self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
-                ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV),
-            ),
-            ctypes.c_void_p,
-        )
-        self.fsk_ldpc_bytes_per_frame_1 = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.fsk_ldpc_freedv_1) / 8
-        )
-        self.fsk_ldpc_bytes_out_1 = ctypes.create_string_buffer(
-            self.fsk_ldpc_bytes_per_frame_1
-        )
-        # codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, 1)
-        self.fsk_ldpc_buffer_1 = codec2.audio_buffer(self.AUDIO_FRAMES_PER_BUFFER_RX)
-
-        # initial nin values
-        self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
-        self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
-        self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
-        self.fsk_ldpc_nin_0 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_0)
-        self.fsk_ldpc_nin_1 = codec2.api.freedv_nin(self.fsk_ldpc_freedv_1)
-        # self.log.debug("[MDM] RF: ",datac0_nin=self.datac0_nin)
+                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
+            )
 
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE:
@@ -242,6 +197,7 @@ class RF:
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
+        # TODO: deprecated feature - we can remove this possibly
         if static.HAMLIB_RADIOCONTROL == "direct":
             import rig
         elif static.HAMLIB_RADIOCONTROL == "rigctl":
@@ -272,20 +228,25 @@ class RF:
             )
             fft_thread.start()
 
-        audio_thread_datac0 = threading.Thread(
-            target=self.audio_datac0, name="AUDIO_THREAD DATAC0", daemon=True
+        audio_thread_sig0_datac0 = threading.Thread(
+            target=self.audio_sig0_datac0, name="AUDIO_THREAD DATAC0 - 0", daemon=True
         )
-        audio_thread_datac0.start()
+        audio_thread_sig0_datac0.start()
 
-        audio_thread_datac1 = threading.Thread(
-            target=self.audio_datac1, name="AUDIO_THREAD DATAC1", daemon=True
+        audio_thread_sig1_datac0 = threading.Thread(
+            target=self.audio_sig1_datac0, name="AUDIO_THREAD DATAC0 - 1", daemon=True
         )
-        audio_thread_datac1.start()
+        audio_thread_sig1_datac0.start()
 
-        audio_thread_datac3 = threading.Thread(
-            target=self.audio_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+        audio_thread_dat0_datac1 = threading.Thread(
+            target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
         )
-        audio_thread_datac3.start()
+        audio_thread_dat0_datac1.start()
+
+        audio_thread_dat0_datac3 = threading.Thread(
+            target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+        )
+        audio_thread_dat0_datac3.start()
 
         if static.ENABLE_FSK:
             audio_thread_fsk_ldpc0 = threading.Thread(
@@ -335,9 +296,10 @@ class RF:
 
                         length_x = len(x)
                         for data_buffer, receive in [
-                            (self.datac0_buffer, True),
-                            (self.datac1_buffer, RECEIVE_DATAC1),
-                            (self.datac3_buffer, RECEIVE_DATAC3),
+                            (self.sig0_datac0_buffer, RECEIVE_SIG0),
+                            (self.sig1_datac0_buffer, RECEIVE_SIG1),
+                            (self.dat0_datac1_buffer, RECEIVE_DATAC1),
+                            (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             # Not enabled yet.
                             # (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
                             # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
@@ -391,11 +353,12 @@ class RF:
             # Avoid buffer overflow by filling only if buffer for
             # selected datachannel mode is not full
             for audiobuffer, receive, index in [
-                (self.datac0_buffer, True, 0),
-                (self.datac1_buffer, RECEIVE_DATAC1, 1),
-                (self.datac3_buffer, RECEIVE_DATAC3, 2),
-                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 3),
-                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 4),
+                (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
+                (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
+                (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
+                (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
+                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
+                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
             ]:
                 if audiobuffer.nbuffer + length_x > audiobuffer.size:
                     static.BUFFER_OVERFLOW_COUNTER[index] += 1
@@ -618,38 +581,119 @@ class RF:
                         "[MDM] [demod_audio] Pushing received data to received_queue"
                     )
                     self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
-                    # self.get_scatter(freedv)
+                    self.get_scatter(freedv)
                     self.calculate_snr(freedv)
         return nin
 
-    def audio_datac0(self) -> None:
-        """Receive data encoded with datac0"""
-        self.datac0_nin = self.demodulate_audio(
-            self.datac0_buffer,
-            self.datac0_nin,
-            self.datac0_freedv,
-            self.datac0_bytes_out,
-            self.datac0_bytes_per_frame,
+    def init_codec2_mode(self, mode, adv):
+        """
+        Init codec2 and return some important parameters
+
+        Args:
+          self:
+          mode:
+          adv:
+
+        Returns:
+            c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
+        """
+        if adv:
+            # FSK Long-distance Parity Code 1 - data frames
+            c2instance = ctypes.cast(
+                codec2.api.freedv_open_advanced(
+                    codec2.api.FREEDV_MODE_FSK_LDPC,
+                    ctypes.byref(adv),
+                ),
+                ctypes.c_void_p,
+            )
+        else:
+
+            # create codec2 instance
+            c2instance = ctypes.cast(
+                codec2.api.freedv_open(mode), ctypes.c_void_p
+            )
+
+        # set tuning range
+        self.c_lib.freedv_set_tuning_range(
+            c2instance,
+            ctypes.c_float(static.TUNING_RANGE_FMIN),
+            ctypes.c_float(static.TUNING_RANGE_FMAX),
         )
 
-    def audio_datac1(self) -> None:
+        # get bytes per frame
+        bytes_per_frame = int(
+            codec2.api.freedv_get_bits_per_modem_frame(c2instance) / 8
+        )
+
+        # create byte out buffer
+        bytes_out = ctypes.create_string_buffer(bytes_per_frame)
+
+        # set initial frames per burst
+        codec2.api.freedv_set_frames_per_burst(c2instance, 1)
+
+        # init audio buffer
+        audio_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER_RX)
+
+        # get initial nin
+        nin = codec2.api.freedv_nin(c2instance)
+
+        # Additional Datac0-specific information - these are not referenced anywhere else.
+        # self.sig0_datac0_payload_per_frame = self.sig0_datac0_bytes_per_frame - 2
+        # self.sig0_datac0_n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(
+        #     self.sig0_datac0_freedv
+        # )
+        # self.sig0_datac0_n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(
+        #     self.sig0_datac0_freedv
+        # )
+        # self.sig0_datac0_n_tx_preamble_modem_samples = (
+        #     self.c_lib.freedv_get_n_tx_preamble_modem_samples(self.sig0_datac0_freedv)
+        # )
+        # self.sig0_datac0_n_tx_postamble_modem_samples = (
+        #     self.c_lib.freedv_get_n_tx_postamble_modem_samples(self.sig0_datac0_freedv)
+        # )
+
+        # return values
+        return c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
+
+    def audio_sig0_datac0(self) -> None:
+        """Receive data encoded with datac0 - 0"""
+        self.sig0_datac0_nin = self.demodulate_audio(
+            self.sig0_datac0_buffer,
+            self.sig0_datac0_nin,
+            self.sig0_datac0_freedv,
+            self.sig0_datac0_bytes_out,
+            self.sig0_datac0_bytes_per_frame,
+        )
+
+    def audio_sig1_datac0(self) -> None:
+        """Receive data encoded with datac0 - 1"""
+        self.sig1_datac0_nin = self.demodulate_audio(
+            self.sig1_datac0_buffer,
+            self.sig1_datac0_nin,
+            self.sig1_datac0_freedv,
+            self.sig1_datac0_bytes_out,
+            self.sig1_datac0_bytes_per_frame,
+        )
+
+
+    def audio_dat0_datac1(self) -> None:
         """Receive data encoded with datac1"""
-        self.datac1_nin = self.demodulate_audio(
-            self.datac1_buffer,
-            self.datac1_nin,
-            self.datac1_freedv,
-            self.datac1_bytes_out,
-            self.datac1_bytes_per_frame,
+        self.dat0_datac1_nin = self.demodulate_audio(
+            self.dat0_datac1_buffer,
+            self.dat0_datac1_nin,
+            self.dat0_datac1_freedv,
+            self.dat0_datac1_bytes_out,
+            self.dat0_datac1_bytes_per_frame,
         )
 
-    def audio_datac3(self) -> None:
+    def audio_dat0_datac3(self) -> None:
         """Receive data encoded with datac3"""
-        self.datac3_nin = self.demodulate_audio(
-            self.datac3_buffer,
-            self.datac3_nin,
-            self.datac3_freedv,
-            self.datac3_bytes_out,
-            self.datac3_bytes_per_frame,
+        self.dat0_datac3_nin = self.demodulate_audio(
+            self.dat0_datac3_buffer,
+            self.dat0_datac3_nin,
+            self.dat0_datac3_freedv,
+            self.dat0_datac3_bytes_out,
+            self.dat0_datac3_bytes_per_frame,
         )
 
     def audio_fsk_ldpc_0(self) -> None:
@@ -705,7 +749,6 @@ class RF:
         :rtype: float
         """
         modemStats = codec2.MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats.restype = None
         self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
         static.FREQ_OFFSET = offset
@@ -723,28 +766,27 @@ class RF:
             return
 
         modemStats = codec2.MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats.restype = None
-        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        ctypes.cast(
+            self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats)),
+            ctypes.c_void_p,
+        )
 
         scatterdata = []
-        scatterdata_small = []
         for i in range(codec2.MODEM_STATS_NC_MAX):
-            for j in range(codec2.MODEM_STATS_NR_MAX):
-                # check if odd or not to get every 2nd item for x
-                if (j % 2) == 0:
-                    xsymbols = round(modemStats.rx_symbols[i][j] / 1000)
-                    ysymbols = round(modemStats.rx_symbols[i][j + 1] / 1000)
-                    # check if value 0.0 or has real data
-                    if xsymbols != 0.0 and ysymbols != 0.0:
-                        scatterdata.append({"x": xsymbols, "y": ysymbols})
+            for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
+                # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+                xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+                ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
+                if xsymbols != 0.0 and ysymbols != 0.0:
+                    scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
             static.SCATTER = scatterdata
         else:
             # only take every tenth data point
-            scatterdata_small = scatterdata[::10]
-            static.SCATTER = scatterdata_small
+            static.SCATTER = scatterdata[::10]
+
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
@@ -801,6 +843,9 @@ class RF:
         # Initialize channel_busy_delay counter
         channel_busy_delay = 0
 
+        # Initialize rms counter
+        rms_counter = 0
+
         while True:
             # time.sleep(0.01)
             threading.Event().wait(0.01)
@@ -830,8 +875,14 @@ class RF:
                     if not static.TRANSMITTING:
                         dfft[dfft > avg + 10] = 100
 
-                        # Calculate audio max value
-                        # static.AUDIO_RMS = np.amax(self.fft_data)
+                        # Calculate audio RMS
+                        # https://stackoverflow.com/a/9763652
+                        # calculate RMS every 50 cycles for reducing CPU load
+                        rms_counter += 1
+                        if rms_counter > 50:
+                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
+                            static.AUDIO_RMS = int(np.sqrt(np.mean(d ** 2)))
+                            rms_counter = 0
 
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
@@ -870,8 +921,8 @@ class RF:
         frames_per_burst = min(frames_per_burst, 1)
         frames_per_burst = max(frames_per_burst, 5)
 
-        codec2.api.freedv_set_frames_per_burst(self.datac1_freedv, frames_per_burst)
-        codec2.api.freedv_set_frames_per_burst(self.datac3_freedv, frames_per_burst)
+        codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
+        codec2.api.freedv_set_frames_per_burst(self.dat0_datac3_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, frames_per_burst)
 
 

@@ -1458,11 +1458,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("beaconInterval").disabled = false;
     }
     // RMS
-    /*
-    var rms_level = Math.round((arg.rms_level/60) * 100)
+    var rms_level = (arg.rms_level / 32767)  * 100
     document.getElementById("rms_level").setAttribute("aria-valuenow", rms_level);
     document.getElementById("rms_level").setAttribute("style", "width:" + rms_level + "%;");
-    */
+
 
     // SET FREQUENCY
     document.getElementById("frequency").innerHTML = arg.frequency;
