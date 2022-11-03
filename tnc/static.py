@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.5.0-alpha"
+VERSION = "0.6.1-alpha.1"
 
 # DAEMON
 DAEMONPORT: int = 3001
