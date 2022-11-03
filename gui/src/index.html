@@ -13,8 +13,6 @@
 	<!-- Waterfall CSS -->
 	<link rel="stylesheet" type="text/css" href="waterfall/waterfall.css" />
 	<link rel="stylesheet" type="text/css" href="styles.css" />
-
-
 	<title>FreeDATA by DJ2LS</title>
 </head>
 
@@ -29,8 +27,8 @@
 					<input type="radio" class="btn-check" name="local-remote-switch" id="local-remote-switch2" autocomplete="off">
 					<label class="btn btn-sm btn-outline-secondary" for="local-remote-switch2"> <i class="bi bi-ethernet" style="font-size: 1rem; color: black;"></i> </label>
 				</div>
-				<div class="input-group input-group-sm me-2" id="remote-tnc-field"> <span class="input-group-text" id="basic-addon1">TNC IP</span>
-					<input type="text" class="form-control" placeholder="ip adress" id="tnc_adress" value="192.168.178.163" maxlength="17" style="width: 8rem" aria-label="Username" aria-describedby="basic-addon1"> <span class="input-group-text" id="basic-addon1">:</span>
+				<div class="input-group input-group-sm me-2" id="remote-tnc-field"> <span class="input-group-text">TNC IP</span>
+					<input type="text" class="form-control" placeholder="ip address" id="tnc_adress" value="192.168.178.163" maxlength="17" style="width: 8rem" aria-label="Username" aria-describedby="basic-addon1"> <span class="input-group-text">:</span>
 					<input type="text" class="form-control" placeholder="port" value="3000" id="tnc_port" maxlength="5" max="65534" min="1025" style="width: 4rem" aria-label="Username" aria-describedby="basic-addon1">
 					<button class="btn btn-sm btn-danger" id="daemon_connection_state" type="button" disabled> <i class="bi bi-diagram-3" style="font-size: 1rem; color: white;"></i> </button>
 				</div>
@@ -54,7 +52,7 @@
                </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
                <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
                <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-               </button>			
+               </button>
                </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
                <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary"><strong>Settings </strong>
                <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
@@ -232,38 +230,31 @@
 			</div>
 		</div>
 		<!------------------------------------------------------------------------------------------>
-		<div class="container p-0" style="margin-top: 4rem;">
+		<div class="container p-0 " style="margin-top: 4rem;">
 			<div class="row collapse multi-collapse show" id="collapseFirstRow">
 				<div class="col">
 					<div class="card text-dark mb-0">
 						<!--<div class="card-header p-1"> <i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i><strong>AUDIO</strong> </div>-->
 						<div class="card-body p-2 mb-1">
 							<div class="media d-flex">
-								<div class="align-self-center ms-0 me-2">
-									<i class="bi bi-volume-up" style="font-size: 3rem; color: #FFA87D;"></i>
-								</div>
-							<div class="media-body text-right">
-								<div class="input-group input-group-sm mb-1">
-									<span class="input-group-text" id="basic-addon1">
+								<div class="align-self-center ms-0 me-2"> <i class="bi bi-volume-up" style="font-size: 3rem; color: #FFA87D;"></i> </div>
+								<div class="media-body text-right">
+									<div class="input-group input-group-sm mb-1"> <span class="input-group-text">
                            				<i class="bi bi-mic-fill" style="font-size: 1rem; color: black;"></i>
                            			</span>
-
-								<select class="form-select form-select-sm" id="audio_input_selectbox" aria-label=".form-select-sm">
-									<!-- 					 					<option selected value="3011">USB Interface</option>-->
-								</select>
-							</div>
-							<div class="input-group input-group-sm" style="margin-bottom: 2.2rem;"> <span class="input-group-text" id="basic-addon1">
+										<select class="form-select form-select-sm" id="audio_input_selectbox" aria-label=".form-select-sm">
+											<!-- 					 					<option selected value="3011">USB Interface</option>-->
+										</select>
+									</div>
+									<div class="input-group input-group-sm" style="margin-bottom: 2.2rem;"> <span class="input-group-text">
                            <i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i>
                            </span>
-								<select class="form-select form-select-sm" id="audio_output_selectbox" aria-label=".form-select-sm"></select>
+										<select class="form-select form-select-sm" id="audio_output_selectbox" aria-label=".form-select-sm"></select>
+									</div>
+								</div>
 							</div>
-	</div>
-	</div>
 						</div>
-
-
-						<!--<div class="card-footer text-muted small">Please select audio device for RX and TX</div>-->
-					</div>
+						<!--<div class="card-footer text-muted small">Please select audio device for RX and TX</div>--></div>
 				</div>
 				<div class="col">
 					<div class="card text-dark mb-0">
@@ -273,462 +264,431 @@
 
 						</div>
 												-->
-
 						<div class="card-body p-2">
-
-
-
-
-
-
-
-
-
 							<div class="media d-flex">
-								<div class="align-self-center ms-0 me-2">
-									<i class="bi bi-projector" style="font-size: 3rem; color: #FF7588;"></i>
-								</div>
-							<div class="media-body text-right w-100">
-
-							<div class="mb-1">
-							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-disabled" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-disabled"> <i class="bi bi-x-circle" style="font-size: 0.8rem; color: black;"></i> </label>
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-radio" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-radio"> <i class="bi bi-projector" style="font-size: 0.8rem; color: black;"></i> </label>
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-connect" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-connect"> <i class="bi bi-usb-symbol" style="font-size: 0.8rem; color: black;"></i> </label>
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-ptt" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-ptt"> <i class="bi bi-alt" style="font-size: 0.8rem; color: black;"></i> </label>
-							</div>
-							<div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld" autocomplete="off">
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld"> <i class="bi bi-terminal" style="font-size: 0.8rem; color: black;"></i> </label>
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld-info" autocomplete="off">
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld-info"> <i class="bi bi-activity" style="font-size: 0.8rem; color: black;"></i> </label>
-							</div>
-							<div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
-								<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-network" autocomplete="off">
-								<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-network"> <i class="bi bi-ethernet" style="font-size: 0.8rem; color: black;"></i> </label>
-							</div>
-							<div class="btn-group" role="group">
-								<button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">PTT Test</button>
-							</div>
-							</div>
-
-
-							<!-- RADIO CONTROL DISABLED -->
-							<div id="radio-control-disabled">
-
-								<div class="alert alert-danger d-flex align-items-center p-3 mb-2 mt-1" role="alert">
-  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
-  <div> hamlib/rigctld connection <strong>disabled</strong></div>
-</div>
-								</div>
-							<!-- RADIO CONTROL RADIO -->
-							<div id="radio-control-radio">
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+								<div class="align-self-center ms-0 me-2"> <i class="bi bi-projector" style="font-size: 3rem; color: #FF7588;"></i> </div>
+								<div class="media-body text-right w-100">
+									<div class="mb-1">
+										<div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld toggle button group">
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-disabled" autocomplete="off" checked>
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-disabled"> <i class="bi bi-x-circle" style="font-size: 0.8rem; color: black;"></i> </label>
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-radio" autocomplete="off" checked>
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-radio"> <i class="bi bi-projector" style="font-size: 0.8rem; color: black;"></i> </label>
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-connect" autocomplete="off" checked>
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-connect"> <i class="bi bi-usb-symbol" style="font-size: 0.8rem; color: black;"></i> </label>
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-ptt" autocomplete="off" checked>
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-ptt"> <i class="bi bi-alt" style="font-size: 0.8rem; color: black;"></i> </label>
+										</div>
+										<div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld" autocomplete="off">
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld"> <i class="bi bi-terminal" style="font-size: 0.8rem; color: black;"></i> </label>
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-rigctld-info" autocomplete="off">
+											<label class="btn btn-sm btn-outline-secondary" for="radio-control-switch-rigctld-info"> <i class="bi bi-activity" style="font-size: 0.8rem; color: black;"></i> </label>
+										</div>
+										<div class="btn-group btn-group-sm" role="group" aria-label="radio-control-switch-rigctld">
+											<input type="radio" class="btn-check" name="radio-control-switch" id="radio-control-switch-network" autocomplete="off">
+											<label class="btn btn-sm btn-outline-info" for="radio-control-switch-network"> <i class="bi bi-ethernet" style="font-size: 0.8rem; color: black;"></i> </label>
+										</div>
+										<div class="btn-group" role="group">
+											<button type="button" id="testHamlib" class="btn btn-sm btn-outline-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails.">PTT Test</button>
+										</div>
+									</div>
+									<!-- RADIO CONTROL DISABLED -->
+									<div id="radio-control-disabled">
+										<div class="alert alert-light d-flex align-items-center p-3 mb-2 mt-1" role="alert"> <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+											<div> hamlib/rigctld connection <strong>disabled</strong></div>
+										</div>
+									</div>
+									<!-- RADIO CONTROL RADIO -->
+									<div id="radio-control-radio">
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">
                               <i class="bi bi-projector-fill" style="font-size: 0.8rem; color: black;"></i>
                               </span>
-									<input class="form-control" list="datalistOptions" id="hamlib_deviceid" placeholder="Search radio..." style="width:7rem">
-									<datalist id="datalistOptions">
-										<option value="2028">Kenwood TS480</option>
-										<option value="1">Hamlib                 Dummy</option>
-										<option value="2">Hamlib                 NET rigctl            </option>
-										<option value="4">FLRig                  FLRig                  </option>
-										<option value="5">TRXManager             TRXManager 5.7.630+</option>
-										<option value="6">	Hamlib                 Dummy No VFO           </option>
-										<option value="1001">	Yaesu                  FT-847                 </option>
-										<option value="1003">	Yaesu                  FT-1000D               </option>
-										<option value="1004">	Yaesu                  MARK-V FT-1000MP       </option>
-										<option value="1005">	Yaesu                  FT-747GX               </option>
-										<option value="1006">	Yaesu                  FT-757GX               </option>
-										<option value="1007">	Yaesu                  FT-757GXII</option>
-										<option value="1009">	Yaesu                  FT-767GX               </option>
-										<option value="1010">	Yaesu                  FT-736R                </option>
-										<option value="1011">	Yaesu                  FT-840                 </option>
-										<option value="1013">	Yaesu                  FT-900                 </option>
-										<option value="1014">	Yaesu                  FT-920                 </option>
-										<option value="1015">	Yaesu                  FT-890                 </option>
-										<option value="1016">	Yaesu                  FT-990                 </option>
-										<option value="1017">	Yaesu                  FRG-100                </option>
-										<option value="1018">	Yaesu                  FRG-9600               </option>
-										<option value="1019">	Yaesu                  FRG-8800               </option>
-										<option value="1020">	Yaesu                  FT-817                 </option>
-										<option value="1021">	Yaesu                  FT-100                 </option>
-										<option value="1022">	Yaesu                  FT-857                 </option>
-										<option value="1023">	Yaesu                  FT-897                 </option>
-										<option value="1024">	Yaesu                  FT-1000MP              </option>
-										<option value="1025">	Yaesu                  MARK-V Field FT-1000MP </option>
-										<option value="1026">	Yaesu                  VR-5000                </option>
-										<option value="1027">	Yaesu                  FT-450                 </option>
-										<option value="1028">	Yaesu                  FT-950                 </option>
-										<option value="1029">	Yaesu                  FT-2000                </option>
-										<option value="1030">	Yaesu                  FTDX-9000              </option>
-										<option value="1031">	Yaesu                  FT-980                 </option>
-										<option value="1032">	Yaesu                  FTDX-5000              </option>
-										<option value="1033">	Vertex Standard        VX-1700                </option>
-										<option value="1034">	Yaesu                  FTDX-1200              </option>
-										<option value="1035">	Yaesu                  FT-991                 </option>
-										<option value="1036">	Yaesu                  FT-891                 </option>
-										<option value="1037">	Yaesu                  FTDX-3000              </option>
-										<option value="1038">	Yaesu                  FT-847UNI              </option>
-										<option value="1039">	Yaesu                  FT-600                 </option>
-										<option value="1040">	Yaesu                  FTDX-101D              </option>
-										<option value="1041">	Yaesu                  FT-818                 </option>
-										<option value="1042">	Yaesu                  FTDX-10                </option>
-										<option value="1043">	Yaesu                  FT-897D                </option>
-										<option value="1044">	Yaesu                  FTDX-101MP             </option>
-										<option value="2001">	Kenwood                TS-50S                 </option>
-										<option value="2002">	Kenwood                TS-440S                </option>
-										<option value="2003">	Kenwood                TS-450S                </option>
-										<option value="2004">	Kenwood                TS-570D                </option>
-										<option value="2005">	Kenwood                TS-690S                </option>
-										<option value="2006">	Kenwood                TS-711                 </option>
-										<option value="2007">	Kenwood                TS-790                 </option>
-										<option value="2008">	Kenwood                TS-811                 </option>
-										<option value="2009">	Kenwood                TS-850                 </option>
-										<option value="2010">	Kenwood                TS-870S                </option>
-										<option value="2011">	Kenwood                TS-940S                </option>
-										<option value="2012">	Kenwood                TS-950S                </option>
-										<option value="2013">	Kenwood                TS-950SDX              </option>
-										<option value="2014">	Kenwood                TS-2000                </option>
-										<option value="2015">	Kenwood                R-5000                 </option>
-										<option value="2016">	Kenwood                TS-570S                </option>
-										<option value="2017">	Kenwood                TH-D7A                 </option>
-										<option value="2019">	Kenwood                TH-F6A                 </option>
-										<option value="2020">	Kenwood                TH-F7E                 </option>
-										<option value="2021">	Elecraft               K2                     </option>
-										<option value="2022">	Kenwood                TS-930                 </option>
-										<option value="2023">	Kenwood                TH-G71                 </option>
-										<option value="2024">	Kenwood                TS-680S                </option>
-										<option value="2025">	Kenwood                TS-140S                </option>
-										<option value="2026">	Kenwood                TM-D700                </option>
-										<option value="2027">	Kenwood                TM-V7                  </option>
-										<option value="2028">	Kenwood                TS-480                 </option>
-										<option value="2029">	Elecraft               K3                     </option>
-										<option value="2030">	Kenwood                TRC-80                 </option>
-										<option value="2031">	Kenwood                TS-590S                </option>
-										<option value="2032">	SigFox                 Transfox               </option>
-										<option value="2033">	Kenwood                TH-D72A                </option>
-										<option value="2034">	Kenwood                TM-D710(G)             </option>
-										<option value="2036">	FlexRadio              6xxx                   </option>
-										<option value="2037">	Kenwood                TS-590SG               </option>
-										<option value="2038">	Elecraft               XG3                    </option>
-										<option value="2039">	Kenwood                TS-990s                </option>
-										<option value="2040">	OpenHPSDR              PiHPSDR                </option>
-										<option value="2041">	Kenwood                TS-890S                </option>
-										<option value="2042">	Kenwood                TH-D74                 </option>
-										<option value="2043">	Elecraft               K3S                    </option>
-										<option value="2044">	Elecraft               KX2                    </option>
-										<option value="2045">	Elecraft               KX3                    </option>
-										<option value="2046">	Hilberling             PT-8000A               </option>
-										<option value="2047">	Elecraft               K4                     </option>
-										<option value="2048">	FlexRadio/ANAN         PowerSDR/Thetis   </option>
-										<option value="2049">	Malachite              DSP                    </option>
-										<option value="3002">	Icom                   IC-1275                </option>
-										<option value="3003">	Icom                   IC-271                 </option>
-										<option value="3004">	Icom                   IC-275                 </option>
-										<option value="3006">	Icom                   IC-471                 </option>
-										<option value="3007">	Icom                   IC-475                 </option>
-										<option value="3009">	Icom                   IC-706                 </option>
-										<option value="3010">	Icom                   IC-706MkII             </option>
-										<option value="3011">	Icom                   IC-706MkIIG            </option>
-										<option value="3012">	Icom                   IC-707                 </option>
-										<option value="3013">	Icom                   IC-718                 </option>
-										<option value="3014">	Icom                   IC-725                 </option>
-										<option value="3015">	Icom                   IC-726                 </option>
-										<option value="3016">	Icom                   IC-728                 </option>
-										<option value="3017">	Icom                   IC-729                 </option>
-										<option value="3019">	Icom                   IC-735                 </option>
-										<option value="3020">	Icom                   IC-736                 </option>
-										<option value="3021">	Icom                   IC-737                 </option>
-										<option value="3022">	Icom                   IC-738                 </option>
-										<option value="3023">	Icom                   IC-746                 </option>
-										<option value="3024">	Icom                   IC-751                 </option>
-										<option value="3026">	Icom                   IC-756                 </option>
-										<option value="3027">	Icom                   IC-756PRO              </option>
-										<option value="3028">	Icom                   IC-761                 </option>
-										<option value="3029">	Icom                   IC-765                 </option>
-										<option value="3030">	Icom                   IC-775                 </option>
-										<option value="3031">	Icom                   IC-781                 </option>
-										<option value="3032">	Icom                   IC-820H                </option>
-										<option value="3034">	Icom                   IC-821H                </option>
-										<option value="3035">	Icom                   IC-970                 </option>
-										<option value="3036">	Icom                   IC-R10                 </option>
-										<option value="3037">	Icom                   IC-R71                 </option>
-										<option value="3038">	Icom                   IC-R72                 </option>
-										<option value="3039">	Icom                   IC-R75                 </option>
-										<option value="3040">	Icom                   IC-R7000               </option>
-										<option value="3041">	Icom                   IC-R7100               </option>
-										<option value="3042">	Icom                   ICR-8500               </option>
-										<option value="3043">	Icom                   IC-R9000               </option>
-										<option value="3044">	Icom                   IC-910                 </option>
-										<option value="3045">	Icom                   IC-78                  </option>
-										<option value="3046">	Icom                   IC-746PRO              </option>
-										<option value="3047">	Icom                   IC-756PROII            </option>
-										<option value="3051">Ten-Tec                Omni VI Plus           </option>
-										<option value="3052">	Optoelectronics        OptoScan535            </option>
-										<option value="3053">	Optoelectronics        OptoScan456            </option>
-										<option value="3054">	Icom                   IC ID-1                </option>
-										<option value="3055">	Icom                   IC-703                 </option>
-										<option value="3056">	Icom                   IC-7800                </option>
-										<option value="3057">	Icom                   IC-756PROIII           </option>
-										<option value="3058">	Icom                   IC-R20                 </option>
-										<option value="3060">	Icom                   IC-7000                </option>
-										<option value="3061">	Icom                   IC-7200                </option>
-										<option value="3062">	Icom                   IC-7700                </option>
-										<option value="3063">	Icom                   IC-7600                </option>
-										<option value="3064">	Ten-Tec                Delta II               </option>
-										<option value="3065">	Icom                   IC-92D                 </option>
-										<option value="3066">	Icom                   IC-R9500               </option>
-										<option value="3067">	Icom                   IC-7410                </option>
-										<option value="3068">	Icom                   IC-9100                </option>
-										<option value="3069">	Icom                   IC-RX7                 </option>
-										<option value="3070">	Icom                   IC-7100                </option>
-										<option value="3071">	Icom                   ID-5100                </option>
-										<option value="3072">	Icom                   IC-2730                </option>
-										<option value="3073">	Icom                   IC-7300                </option>
-										<option value="3074">	Microtelecom           Perseus                </option>
-										<option value="3075">	Icom                   IC-785x                </option>
-										<option value="3076">	Xeigu                  X108G                  </option>
-										<option value="3077">	Icom                   IC-R6                  </option>
-										<option value="3078">	Icom                   IC-7610                </option>
-										<option value="3079">	Icom                   IC-R8600               </option>
-										<option value="3080">	Icom                   IC-R30                 </option>
-										<option value="3081">	Icom                   IC-9700                </option>
-										<option value="3082">	Icom                   ID-4100                </option>
-										<option value="3083">	Icom                   ID-31                  </option>
-										<option value="3084">	Icom                   ID-51                  </option>
-										<option value="3085">	Icom                   IC-705                 </option>
-										<option value="4001">	Icom                   IC-PCR1000             </option>
-										<option value="4002">	Icom                   IC-PCR100              </option>
-										<option value="4003">	Icom                   IC-PCR1500             </option>
-										<option value="4004">	Icom                   IC-PCR2500             </option>
-										<option value="5001">	AOR                    AR8200                 </option>
-										<option value="5002">	AOR                    AR8000                 </option>
-										<option value="5003">	AOR                    AR7030                 </option>
-										<option value="5004">	AOR                    AR5000                 </option>
-										<option value="5005">	AOR                    AR3030                 </option>
-										<option value="5006">	AOR                    AR3000A                </option>
-										<option value="5008">	AOR                    AR2700                 </option>
-										<option value="5013">	AOR                    AR8600                 </option>
-										<option value="5014">	AOR                    AR5000A                </option>
-										<option value="5015">	AOR                    AR7030 Plus            </option>
-										<option value="5016">	AOR                    SR2200                 </option>
-										<option value="6005">	JRC                    NRD-525                </option>
-										<option value="6006">	JRC                    NRD-535D               </option>
-										<option value="6007">	JRC                    NRD-545 DSP            </option>
-										<option value="8001">	Uniden                 BC780xlt               </option>
-										<option value="8002">	Uniden                 BC245xlt               </option>
-										<option value="8003">	Uniden                 BC895xlt               </option>
-										<option value="8004">	Radio Shack            PRO-2052               </option>
-										<option value="8006">	Uniden                 BC250D                 </option>
-										<option value="8010">	Uniden                 BCD-396T               </option>
-										<option value="8011">	Uniden                 BCD-996T               </option>
-										<option value="8012">	Uniden                 BC898T                 </option>
-										<option value="9002">	Drake                  R-8A                   </option>
-										<option value="9003">	Drake                  R-8B                   </option>
-										<option value="10004">	Lowe                   HF-235                 </option>
-										<option value="11003">Racal                  RA6790/GM              </option>
-										<option value="11005">	Racal                  RA3702                 </option>
-										<option value="12004">	Watkins-Johnson        WJ-8888                </option>
-										<option value="14002">	Skanti                 TRP8000                </option>
-										<option value="14004">	Skanti                 TRP 8255 S R           </option>
-										<option value="15001">	Winradio               WR-1000                </option>
-										<option value="15002">	Winradio               WR-1500                </option>
-										<option value="15003">	Winradio               WR-1550                </option>
-										<option value="15004">	Winradio               WR-3100                </option>
-										<option value="15005">	Winradio               WR-3150                </option>
-										<option value="15006">Winradio               WR-3500                </option>
-										<option value="15007">	Winradio               WR-3700                </option>
-										<option value="15009">	Winradio               WR-G313                </option>
-										<option value="16001">	Ten-Tec                TT-550                 </option>
-										<option value="16002">	Ten-Tec                TT-538 Jupiter         </option>
-										<option value="16003">	Ten-Tec                RX-320                 </option>
-										<option value="16004">	Ten-Tec                RX-340                 </option>
-										<option value="16005">	Ten-Tec                RX-350                 </option>
-										<option value="16007">	Ten-Tec                TT-516 Argonaut V      </option>
-										<option value="16008">	Ten-Tec                TT-565 Orion           </option>
-										<option value="16009">	Ten-Tec                TT-585 Paragon         </option>
-										<option value="16011">	Ten-Tec                TT-588 Omni VII        </option>
-										<option value="16012">	Ten-Tec                RX-331                 </option>
-										<option value="16013">	Ten-Tec                TT-599 Eagle           </option>
-										<option value="17001">	Alinco                 DX-77                  </option>
-										<option value="17002">	Alinco                 DX-SR8                 </option>
-										<option value="18001">	Kachina                505DSP                 </option>
-										<option value="22001">	TAPR                   DSP-10                 </option>
-										<option value="23001">	Flex-radio             SDR-1000               </option>
-										<option value="23003">	DTTS Microwave Society DttSP IPC              </option>
-										<option value="23004">	DTTS Microwave Society DttSP UDP              </option>
-										<option value="24001">	RFT                    EKD-500                </option>
-										<option value="25001">	Elektor                Elektor 3/04           </option>
-										<option value="25002">	SAT-Schneider          DRT1                   </option>
-										<option value="25003">	Coding Technologies    Digital World Traveller</option>
-										<option value="25006">	AmQRP                  DDS-60                 </option>
-										<option value="25007">	Elektor                Elektor SDR-USB        </option>
-										<option value="25008">	mRS                    miniVNA                </option>
-										<option value="25009">	SoftRock               Si570 AVR-USB          </option>
-										<option value="25011">	KTH-SDR kit            Si570 PIC-USB          </option>
-										<option value="25012">	FiFi                   FiFi-SDR               </option>
-										<option value="25013">	AMSAT-UK               FUNcube Dongle         </option>
-										<option value="25014">	N2ADR                  HiQSDR                 </option>
-										<option value="25015">	Funkamateur            FA-SDR                 </option>
-										<option value="25016">	AE9RB                  Si570 Peaberry V1      </option>
-										<option value="25017">	AE9RB                  Si570 Peaberry V2      </option>
-										<option value="25018">	AMSAT-UK               FUNcube Dongle Pro+    </option>
-										<option value="25019">	HobbyPCB               RS-HFIQ                </option>
-										<option value="26001">	Video4Linux            SW/FM radio            </option>
-										<option value="26002">	Video4Linux2           SW/FM radio            </option>
-										<option value="27001">	Rohde&Schwarz          ESMC                   </option>
-										<option value="27002">	Rohde&Schwarz          EB200                  </option>
-										<option value="27003">	Rohde&Schwarz          XK2100                 </option>
-										<option value="28001">	Philips/Simoco         PRM8060                </option>
-										<option value="29001">	ADAT www.adat.ch       ADT-200A               </option>
-										<option value="30001">	Icom                   IC-M700PRO             </option>
-										<option value="30002">	Icom                   IC-M802                </option>
-										<option value="30003">	Icom                   IC-M710                </option>
-										<option value="30004">	Icom                   IC-M803                </option>
-										<option value="31001">	Dorji                  DRA818V                </option>
-										<option value="31002">	Dorji                  DRA818U                </option>
-										<option value="32001">	Barrett                2050                   </option>
-										<option value="32002">	Barrett                950                    </option>
-										<option value="33001">	ELAD                   FDM-DUO                </option>
-									</datalist>
-								</div>
-								<div class="alert alert-warning d-flex align-items-center p-0 mb-2" role="alert">
-  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
-  <div> Start with your <strong>radio settings</strong> here!</div>
-</div>
-							</div>
-							<!-- RADIO CONTROL CONNECTION -->
-							<div id="radio-control-connection">
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">
+											<input class="form-control" list="datalistOptions" id="hamlib_deviceid" placeholder="Search radio..." style="width:7rem">
+											<datalist id="datalistOptions">
+												<option value="2028">Kenwood TS480</option>
+												<option value="1">Hamlib Dummy</option>
+												<option value="2">Hamlib NET rigctl </option>
+												<option value="4">FLRig FLRig </option>
+												<option value="5">TRXManager TRXManager 5.7.630+</option>
+												<option value="6"> Hamlib Dummy No VFO </option>
+												<option value="1001"> Yaesu FT-847 </option>
+												<option value="1003"> Yaesu FT-1000D </option>
+												<option value="1004"> Yaesu MARK-V FT-1000MP </option>
+												<option value="1005"> Yaesu FT-747GX </option>
+												<option value="1006"> Yaesu FT-757GX </option>
+												<option value="1007"> Yaesu FT-757GXII</option>
+												<option value="1009"> Yaesu FT-767GX </option>
+												<option value="1010"> Yaesu FT-736R </option>
+												<option value="1011"> Yaesu FT-840 </option>
+												<option value="1013"> Yaesu FT-900 </option>
+												<option value="1014"> Yaesu FT-920 </option>
+												<option value="1015"> Yaesu FT-890 </option>
+												<option value="1016"> Yaesu FT-990 </option>
+												<option value="1017"> Yaesu FRG-100 </option>
+												<option value="1018"> Yaesu FRG-9600 </option>
+												<option value="1019"> Yaesu FRG-8800 </option>
+												<option value="1020"> Yaesu FT-817 </option>
+												<option value="1021"> Yaesu FT-100 </option>
+												<option value="1022"> Yaesu FT-857 </option>
+												<option value="1023"> Yaesu FT-897 </option>
+												<option value="1024"> Yaesu FT-1000MP </option>
+												<option value="1025"> Yaesu MARK-V Field FT-1000MP </option>
+												<option value="1026"> Yaesu VR-5000 </option>
+												<option value="1027"> Yaesu FT-450 </option>
+												<option value="1028"> Yaesu FT-950 </option>
+												<option value="1029"> Yaesu FT-2000 </option>
+												<option value="1030"> Yaesu FTDX-9000 </option>
+												<option value="1031"> Yaesu FT-980 </option>
+												<option value="1032"> Yaesu FTDX-5000 </option>
+												<option value="1033"> Vertex Standard VX-1700 </option>
+												<option value="1034"> Yaesu FTDX-1200 </option>
+												<option value="1035"> Yaesu FT-991 </option>
+												<option value="1036"> Yaesu FT-891 </option>
+												<option value="1037"> Yaesu FTDX-3000 </option>
+												<option value="1038"> Yaesu FT-847UNI </option>
+												<option value="1039"> Yaesu FT-600 </option>
+												<option value="1040"> Yaesu FTDX-101D </option>
+												<option value="1041"> Yaesu FT-818 </option>
+												<option value="1042"> Yaesu FTDX-10 </option>
+												<option value="1043"> Yaesu FT-897D </option>
+												<option value="1044"> Yaesu FTDX-101MP </option>
+												<option value="2001"> Kenwood TS-50S </option>
+												<option value="2002"> Kenwood TS-440S </option>
+												<option value="2003"> Kenwood TS-450S </option>
+												<option value="2004"> Kenwood TS-570D </option>
+												<option value="2005"> Kenwood TS-690S </option>
+												<option value="2006"> Kenwood TS-711 </option>
+												<option value="2007"> Kenwood TS-790 </option>
+												<option value="2008"> Kenwood TS-811 </option>
+												<option value="2009"> Kenwood TS-850 </option>
+												<option value="2010"> Kenwood TS-870S </option>
+												<option value="2011"> Kenwood TS-940S </option>
+												<option value="2012"> Kenwood TS-950S </option>
+												<option value="2013"> Kenwood TS-950SDX </option>
+												<option value="2014"> Kenwood TS-2000 </option>
+												<option value="2015"> Kenwood R-5000 </option>
+												<option value="2016"> Kenwood TS-570S </option>
+												<option value="2017"> Kenwood TH-D7A </option>
+												<option value="2019"> Kenwood TH-F6A </option>
+												<option value="2020"> Kenwood TH-F7E </option>
+												<option value="2021"> Elecraft K2 </option>
+												<option value="2022"> Kenwood TS-930 </option>
+												<option value="2023"> Kenwood TH-G71 </option>
+												<option value="2024"> Kenwood TS-680S </option>
+												<option value="2025"> Kenwood TS-140S </option>
+												<option value="2026"> Kenwood TM-D700 </option>
+												<option value="2027"> Kenwood TM-V7 </option>
+												<option value="2028"> Kenwood TS-480 </option>
+												<option value="2029"> Elecraft K3 </option>
+												<option value="2030"> Kenwood TRC-80 </option>
+												<option value="2031"> Kenwood TS-590S </option>
+												<option value="2032"> SigFox Transfox </option>
+												<option value="2033"> Kenwood TH-D72A </option>
+												<option value="2034"> Kenwood TM-D710(G) </option>
+												<option value="2036"> FlexRadio 6xxx </option>
+												<option value="2037"> Kenwood TS-590SG </option>
+												<option value="2038"> Elecraft XG3 </option>
+												<option value="2039"> Kenwood TS-990s </option>
+												<option value="2040"> OpenHPSDR PiHPSDR </option>
+												<option value="2041"> Kenwood TS-890S </option>
+												<option value="2042"> Kenwood TH-D74 </option>
+												<option value="2043"> Elecraft K3S </option>
+												<option value="2044"> Elecraft KX2 </option>
+												<option value="2045"> Elecraft KX3 </option>
+												<option value="2046"> Hilberling PT-8000A </option>
+												<option value="2047"> Elecraft K4 </option>
+												<option value="2048"> FlexRadio/ANAN PowerSDR/Thetis </option>
+												<option value="2049"> Malachite DSP </option>
+												<option value="3002"> Icom IC-1275 </option>
+												<option value="3003"> Icom IC-271 </option>
+												<option value="3004"> Icom IC-275 </option>
+												<option value="3006"> Icom IC-471 </option>
+												<option value="3007"> Icom IC-475 </option>
+												<option value="3009"> Icom IC-706 </option>
+												<option value="3010"> Icom IC-706MkII </option>
+												<option value="3011"> Icom IC-706MkIIG </option>
+												<option value="3012"> Icom IC-707 </option>
+												<option value="3013"> Icom IC-718 </option>
+												<option value="3014"> Icom IC-725 </option>
+												<option value="3015"> Icom IC-726 </option>
+												<option value="3016"> Icom IC-728 </option>
+												<option value="3017"> Icom IC-729 </option>
+												<option value="3019"> Icom IC-735 </option>
+												<option value="3020"> Icom IC-736 </option>
+												<option value="3021"> Icom IC-737 </option>
+												<option value="3022"> Icom IC-738 </option>
+												<option value="3023"> Icom IC-746 </option>
+												<option value="3024"> Icom IC-751 </option>
+												<option value="3026"> Icom IC-756 </option>
+												<option value="3027"> Icom IC-756PRO </option>
+												<option value="3028"> Icom IC-761 </option>
+												<option value="3029"> Icom IC-765 </option>
+												<option value="3030"> Icom IC-775 </option>
+												<option value="3031"> Icom IC-781 </option>
+												<option value="3032"> Icom IC-820H </option>
+												<option value="3034"> Icom IC-821H </option>
+												<option value="3035"> Icom IC-970 </option>
+												<option value="3036"> Icom IC-R10 </option>
+												<option value="3037"> Icom IC-R71 </option>
+												<option value="3038"> Icom IC-R72 </option>
+												<option value="3039"> Icom IC-R75 </option>
+												<option value="3040"> Icom IC-R7000 </option>
+												<option value="3041"> Icom IC-R7100 </option>
+												<option value="3042"> Icom ICR-8500 </option>
+												<option value="3043"> Icom IC-R9000 </option>
+												<option value="3044"> Icom IC-910 </option>
+												<option value="3045"> Icom IC-78 </option>
+												<option value="3046"> Icom IC-746PRO </option>
+												<option value="3047"> Icom IC-756PROII </option>
+												<option value="3051">Ten-Tec Omni VI Plus </option>
+												<option value="3052"> Optoelectronics OptoScan535 </option>
+												<option value="3053"> Optoelectronics OptoScan456 </option>
+												<option value="3054"> Icom IC ID-1 </option>
+												<option value="3055"> Icom IC-703 </option>
+												<option value="3056"> Icom IC-7800 </option>
+												<option value="3057"> Icom IC-756PROIII </option>
+												<option value="3058"> Icom IC-R20 </option>
+												<option value="3060"> Icom IC-7000 </option>
+												<option value="3061"> Icom IC-7200 </option>
+												<option value="3062"> Icom IC-7700 </option>
+												<option value="3063"> Icom IC-7600 </option>
+												<option value="3064"> Ten-Tec Delta II </option>
+												<option value="3065"> Icom IC-92D </option>
+												<option value="3066"> Icom IC-R9500 </option>
+												<option value="3067"> Icom IC-7410 </option>
+												<option value="3068"> Icom IC-9100 </option>
+												<option value="3069"> Icom IC-RX7 </option>
+												<option value="3070"> Icom IC-7100 </option>
+												<option value="3071"> Icom ID-5100 </option>
+												<option value="3072"> Icom IC-2730 </option>
+												<option value="3073"> Icom IC-7300 </option>
+												<option value="3074"> Microtelecom Perseus </option>
+												<option value="3075"> Icom IC-785x </option>
+												<option value="3076"> Xeigu X108G </option>
+												<option value="3077"> Icom IC-R6 </option>
+												<option value="3078"> Icom IC-7610 </option>
+												<option value="3079"> Icom IC-R8600 </option>
+												<option value="3080"> Icom IC-R30 </option>
+												<option value="3081"> Icom IC-9700 </option>
+												<option value="3082"> Icom ID-4100 </option>
+												<option value="3083"> Icom ID-31 </option>
+												<option value="3084"> Icom ID-51 </option>
+												<option value="3085"> Icom IC-705 </option>
+												<option value="4001"> Icom IC-PCR1000 </option>
+												<option value="4002"> Icom IC-PCR100 </option>
+												<option value="4003"> Icom IC-PCR1500 </option>
+												<option value="4004"> Icom IC-PCR2500 </option>
+												<option value="5001"> AOR AR8200 </option>
+												<option value="5002"> AOR AR8000 </option>
+												<option value="5003"> AOR AR7030 </option>
+												<option value="5004"> AOR AR5000 </option>
+												<option value="5005"> AOR AR3030 </option>
+												<option value="5006"> AOR AR3000A </option>
+												<option value="5008"> AOR AR2700 </option>
+												<option value="5013"> AOR AR8600 </option>
+												<option value="5014"> AOR AR5000A </option>
+												<option value="5015"> AOR AR7030 Plus </option>
+												<option value="5016"> AOR SR2200 </option>
+												<option value="6005"> JRC NRD-525 </option>
+												<option value="6006"> JRC NRD-535D </option>
+												<option value="6007"> JRC NRD-545 DSP </option>
+												<option value="8001"> Uniden BC780xlt </option>
+												<option value="8002"> Uniden BC245xlt </option>
+												<option value="8003"> Uniden BC895xlt </option>
+												<option value="8004"> Radio Shack PRO-2052 </option>
+												<option value="8006"> Uniden BC250D </option>
+												<option value="8010"> Uniden BCD-396T </option>
+												<option value="8011"> Uniden BCD-996T </option>
+												<option value="8012"> Uniden BC898T </option>
+												<option value="9002"> Drake R-8A </option>
+												<option value="9003"> Drake R-8B </option>
+												<option value="10004"> Lowe HF-235 </option>
+												<option value="11003">Racal RA6790/GM </option>
+												<option value="11005"> Racal RA3702 </option>
+												<option value="12004"> Watkins-Johnson WJ-8888 </option>
+												<option value="14002"> Skanti TRP8000 </option>
+												<option value="14004"> Skanti TRP 8255 S R </option>
+												<option value="15001"> Winradio WR-1000 </option>
+												<option value="15002"> Winradio WR-1500 </option>
+												<option value="15003"> Winradio WR-1550 </option>
+												<option value="15004"> Winradio WR-3100 </option>
+												<option value="15005"> Winradio WR-3150 </option>
+												<option value="15006">Winradio WR-3500 </option>
+												<option value="15007"> Winradio WR-3700 </option>
+												<option value="15009"> Winradio WR-G313 </option>
+												<option value="16001"> Ten-Tec TT-550 </option>
+												<option value="16002"> Ten-Tec TT-538 Jupiter </option>
+												<option value="16003"> Ten-Tec RX-320 </option>
+												<option value="16004"> Ten-Tec RX-340 </option>
+												<option value="16005"> Ten-Tec RX-350 </option>
+												<option value="16007"> Ten-Tec TT-516 Argonaut V </option>
+												<option value="16008"> Ten-Tec TT-565 Orion </option>
+												<option value="16009"> Ten-Tec TT-585 Paragon </option>
+												<option value="16011"> Ten-Tec TT-588 Omni VII </option>
+												<option value="16012"> Ten-Tec RX-331 </option>
+												<option value="16013"> Ten-Tec TT-599 Eagle </option>
+												<option value="17001"> Alinco DX-77 </option>
+												<option value="17002"> Alinco DX-SR8 </option>
+												<option value="18001"> Kachina 505DSP </option>
+												<option value="22001"> TAPR DSP-10 </option>
+												<option value="23001"> Flex-radio SDR-1000 </option>
+												<option value="23003"> DTTS Microwave Society DttSP IPC </option>
+												<option value="23004"> DTTS Microwave Society DttSP UDP </option>
+												<option value="24001"> RFT EKD-500 </option>
+												<option value="25001"> Elektor Elektor 3/04 </option>
+												<option value="25002"> SAT-Schneider DRT1 </option>
+												<option value="25003"> Coding Technologies Digital World Traveller</option>
+												<option value="25006"> AmQRP DDS-60 </option>
+												<option value="25007"> Elektor Elektor SDR-USB </option>
+												<option value="25008"> mRS miniVNA </option>
+												<option value="25009"> SoftRock Si570 AVR-USB </option>
+												<option value="25011"> KTH-SDR kit Si570 PIC-USB </option>
+												<option value="25012"> FiFi FiFi-SDR </option>
+												<option value="25013"> AMSAT-UK FUNcube Dongle </option>
+												<option value="25014"> N2ADR HiQSDR </option>
+												<option value="25015"> Funkamateur FA-SDR </option>
+												<option value="25016"> AE9RB Si570 Peaberry V1 </option>
+												<option value="25017"> AE9RB Si570 Peaberry V2 </option>
+												<option value="25018"> AMSAT-UK FUNcube Dongle Pro+ </option>
+												<option value="25019"> HobbyPCB RS-HFIQ </option>
+												<option value="26001"> Video4Linux SW/FM radio </option>
+												<option value="26002"> Video4Linux2 SW/FM radio </option>
+												<option value="27001"> Rohde&Schwarz ESMC </option>
+												<option value="27002"> Rohde&Schwarz EB200 </option>
+												<option value="27003"> Rohde&Schwarz XK2100 </option>
+												<option value="28001"> Philips/Simoco PRM8060 </option>
+												<option value="29001"> ADAT www.adat.ch ADT-200A </option>
+												<option value="30001"> Icom IC-M700PRO </option>
+												<option value="30002"> Icom IC-M802 </option>
+												<option value="30003"> Icom IC-M710 </option>
+												<option value="30004"> Icom IC-M803 </option>
+												<option value="31001"> Dorji DRA818V </option>
+												<option value="31002"> Dorji DRA818U </option>
+												<option value="32001"> Barrett 2050 </option>
+												<option value="32002"> Barrett 950 </option>
+												<option value="33001"> ELAD FDM-DUO </option>
+											</datalist>
+										</div>
+										<div class="alert alert-light d-flex align-items-center p-0 mb-2" role="alert"> <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+											<div><small class="text-muted"> Start with your <strong>radio settings</strong> here!</small></div>
+										</div>
+									</div>
+									<!-- RADIO CONTROL CONNECTION -->
+									<div id="radio-control-connection">
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">
                               <i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i>
-                              </span> <span class="input-group-text" id="basic-addon1">
+                              </span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_deviceport">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport" style="width:7rem">
-										<!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_deviceport" style="width:7rem">
+												<!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                     <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
-									</select> <span class="input-group-text" id="basic-addon1"><i class="bi bi-speedometer" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" id="basic-addon1">
+											</select> <span class="input-group-text"><i class="bi bi-speedometer" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_serialspeed">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
-										<option value="1200">1200</option>
-										<option value="2400">2400</option>
-										<option value="4800">4800</option>
-										<option selected value="9600">9600</option>
-										<option value="14400">14400</option>
-										<option value="19200">19200</option>
-										<option value="28800">28800</option>
-										<option value="38400">38400</option>
-										<option value="57600">57600</option>
-										<option value="115200">115200</option>
-									</select>
-								</div>
-								<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Data</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_serialspeed">
+												<option value="1200">1200</option>
+												<option value="2400">2400</option>
+												<option value="4800">4800</option>
+												<option selected value="9600">9600</option>
+												<option value="14400">14400</option>
+												<option value="19200">19200</option>
+												<option value="28800">28800</option>
+												<option value="38400">38400</option>
+												<option value="57600">57600</option>
+												<option value="115200">115200</option>
+											</select>
+										</div>
+										<div class="input-group input-group-sm mb-1"> <span class="input-group-text">Data</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_databits">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits">
-										<option value="7">7</option>
-										<option value="8">8</option>
-									</select> <span class="input-group-text" id="basic-addon1">Stop</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_databits">
+												<option value="7">7</option>
+												<option value="8">8</option>
+											</select> <span class="input-group-text">Stop</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_stopbits">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits">
-										<option value="1">1</option>
-										<option value="2">2</option>
-									</select> <span class="input-group-text" id="basic-addon1">HS</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_stopbits">
+												<option value="1">1</option>
+												<option value="2">2</option>
+											</select> <span class="input-group-text">HS</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_handshake">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake">
-										<option value="None">None (Default)</option>
-									</select>
-								</div>
-							</div>
-							<!-- RADIO CONTROL PTT -->
-							<div id="radio-control-ptt">
-								<div class="input-group input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1"><i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_handshake">
+												<option value="None">None (Default)</option>
+											</select>
+										</div>
+									</div>
+									<!-- RADIO CONTROL PTT -->
+									<div id="radio-control-ptt">
+										<div class="input-group input-group-sm mb-1"> <span class="input-group-text"><i class="bi bi-usb-symbol" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_ptt_port">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port">
-										<!--<option value="None">None</option>-->
-									</select> <span class="input-group-text" id="basic-addon1">Type</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_ptt_port">
+												<!--<option value="None">None</option>-->
+											</select> <span class="input-group-text">Type</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_pttprotocol">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_pttprotocol" style="width: 0.5rem">
-										<option value="NONE">NONE</option>
-										<option value="RIG">RIG</option>
-										<option value="USB">USB</option>
-										<option value="RTS">Serial RTS</option>
-										<option value="PARALLEL">Rig PARALLEL</option>
-										<option value="MICDATA">Rig MICDATA</option>
-										<option value="CM108">Rig CM108</option>
-									</select>
-								</div>
-								<div class="input-group input-group-sm mb-1">
-									<span class="input-group-text" id="basic-addon1">DCD</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_pttprotocol" style="width: 0.5rem">
+												<option value="NONE">NONE</option>
+												<option value="RIG">RIG</option>
+												<option value="USB">USB</option>
+												<option value="RTS">Serial RTS</option>
+												<option value="PARALLEL">Rig PARALLEL</option>
+												<option value="MICDATA">Rig MICDATA</option>
+												<option value="CM108">Rig CM108</option>
+											</select>
+										</div>
+										<div class="input-group input-group-sm mb-1"> <span class="input-group-text">DCD</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_dcd">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dcd" style="width: 0.5rem">
-										<option value="NONE">NONE</option>
-										<option value="RIG">RIG/CAT</option>
-										<option value="DSR">DSR</option>
-										<option value="CTS">CTS</option>
-										<option value="CD">CD</option>
-										<option value="PARALLEL">PARALLEL</option>
-									</select>
-
-
-								<span class="input-group-text" id="basic-addon1">DTR</span> <span class="input-group-text" id="basic-addon1">
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dcd" style="width: 0.5rem">
+												<option value="NONE">NONE</option>
+												<option value="RIG">RIG/CAT</option>
+												<option value="DSR">DSR</option>
+												<option value="CTS">CTS</option>
+												<option value="CD">CD</option>
+												<option value="PARALLEL">PARALLEL</option>
+											</select> <span class="input-group-text">DTR</span> <span class="input-group-text">
                                  <input class="form-check-sm form-check-input" type="checkbox" id="enable_hamlib_dtrstate">
                               </span>
-									<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dtrstate" style="width: 0.5rem">
-										<option value="OFF">OFF</option>
-										<option value="ON">ON</option>
-
-									</select>
-								</div>
-
-
-							</div>
-							<!-- RADIO CONTROL NETWORK -->
-							<div id="radio-control-network">
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Rigctld IP</span>
-									<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1"> <span class="input-group-text" id="basic-addon1">:</span>
-									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
-							<div class="alert alert-warning d-flex align-items-center p-0 mb-2" role="alert">
-							  <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
-							  <div> Connect to <strong>existing rigcltd</strong> instance!</div>
-							</div>
-
-
-							</div>
-							<!-- RADIO CONTROL RIGCTLD -->
-							<div id="radio-control-rigctld">
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Rigctld Path</span>
-									<input type="text" class="form-control" placeholder="rigctld Path" id="hamlib_rigctld_path" aria-label="Device IP" aria-describedby="basic-addon1"> </div>
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Rigctld Server Port</span>
-									<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_server_port" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
-							</div>
-							<!-- RADIO CONTROL RIGCTLD INFO-->
-							<div id="radio-control-rigctld-info">
-								<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Cmd</span>
-									<input type="text" class="form-control" placeholder="Command" id="hamlib_rigctld_command" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
-								<div class="input-group  input-group-sm mb-1">
-									<button class="btn btn-outline-success" type="button" id="hamlib_rigctld_start">Start</button>
-									<input type="text" class="form-control" placeholder="Status" id="hamlib_rigctld_status" aria-label="State" aria-describedby="basic-addon1">
-									<button class="btn btn-outline-danger" type="button" id="hamlib_rigctld_stop">Stop</button>
+											<select class="form-select form-select-sm" aria-label=".form-select-sm" id="hamlib_dtrstate" style="width: 0.5rem">
+												<option value="OFF">OFF</option>
+												<option value="ON">ON</option>
+											</select>
+										</div>
+									</div>
+									<!-- RADIO CONTROL NETWORK -->
+									<div id="radio-control-network">
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">Rigctld IP</span>
+											<input type="text" class="form-control" placeholder="rigctld IP" id="hamlib_rigctld_ip" aria-label="Device IP" aria-describedby="basic-addon1"> <span class="input-group-text">:</span>
+											<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_port" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
+										<div class="alert alert-light d-flex align-items-center p-0 mb-2" role="alert"> <i class="bi bi-exclamation-triangle-fill p-1" style="font-size: 1rem;"></i>
+											<div><small class="text-muted"> Change IP for connecting to <strong>existing rigctld</strong> instance!</small></div>
+										</div>
+									</div>
+									<!-- RADIO CONTROL RIGCTLD -->
+									<div id="radio-control-rigctld">
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">Rigctld Path</span>
+											<input type="text" class="form-control" placeholder="rigctld Path" id="hamlib_rigctld_path" aria-label="Device IP" aria-describedby="basic-addon1"> </div>
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">Rigctld Server Port</span>
+											<input type="text" class="form-control" placeholder="rigctld port" id="hamlib_rigctld_server_port" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
+									</div>
+									<!-- RADIO CONTROL RIGCTLD INFO-->
+									<div id="radio-control-rigctld-info">
+										<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">Cmd</span>
+											<input type="text" class="form-control" placeholder="Command" id="hamlib_rigctld_command" aria-label="Device Port" aria-describedby="basic-addon1"> </div>
+										<div class="input-group  input-group-sm mb-1">
+											<button class="btn btn-outline-success" type="button" id="hamlib_rigctld_start">Start</button>
+											<input type="text" class="form-control" placeholder="Status" id="hamlib_rigctld_status" aria-label="State" aria-describedby="basic-addon1">
+											<button class="btn btn-outline-danger" type="button" id="hamlib_rigctld_stop">Stop</button>
+										</div>
+									</div>
 								</div>
 							</div>
-
-							</div></div>
-
-
 						</div>
-						<!--<div class="card-footer text-muted small" id="hamlib_info_field">Select your radio and PTT settings. Start/Stop Hamlib Rigctld</div>-->
-					</div>
+						<!--<div class="card-footer text-muted small" id="hamlib_info_field">Select your radio and PTT settings. Start/Stop Hamlib Rigctld</div>--></div>
 				</div>
 			</div>
 			<div class="row collapse multi-collapse show mt-2" id="collapseSecondRow">
@@ -736,16 +696,12 @@
 					<div class="card text-dark mb-1">
 						<!--<div class="card-header p-1"><strong>MY STATION</strong> </div>-->
 						<div class="card-body p-2">
-
 							<div class="media d-flex">
-								<div class="align-self-center ms-0 me-2">
-									<i class="bi bi-person-bounding-box" style="font-size: 3rem; color: #00B5B8;"></i>
-								</div>
-							<div class="media-body text-right">
-
-							<!--<div class="row">
+								<div class="align-self-center ms-0 me-2"> <i class="bi bi-person-bounding-box" style="font-size: 3rem; color: #00B5B8;"></i> </div>
+								<div class="media-body text-right">
+									<!--<div class="row">
 								<div class="col-md-auto">-->
-									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your callsign and save it"> <span class="input-group-text" id="basic-addon1">
+									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your callsign and save it"> <span class="input-group-text">
                                  <i class="bi bi-person-bounding-box" style="font-size: 1rem; color: black;"></i>
                                  </span>
 										<input type="text" class="form-control" style="width: 5rem; text-transform:uppercase" placeholder="callsign" pattern="[A-Z]*" id="myCall" maxlength="8" aria-label="Input group" aria-describedby="btnGroupAddon">
@@ -769,26 +725,23 @@
 										</select>
 										<button class="btn btn-sm btn-success" id="saveMyCall" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
-
-								<div class="input-group input-group-sm mb-0 mt-1" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text" id="basic-addon1">
+									<div class="input-group input-group-sm mb-0 mt-1" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text">
                                  <i class="bi bi-house-fill" style="font-size: 1rem; color: black;"></i>
                                  </span>
 										<input type="text" class="form-control mr-1" style="max-width: 6rem" placeholder="locator" id="myGrid" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
 										<button class="btn btn-sm btn-success" id="saveMyGrid" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
-
-								<!--</div>-->
-								<!--<div class="col-md-auto">
-									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text" id="basic-addon1">
+									<!--</div>-->
+									<!--<div class="col-md-auto">
+									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Enter your gridsquare and save it"> <span class="input-group-text" >
                                  <i class="bi bi-house-fill" style="font-size: 1rem; color: black;"></i>
                                  </span>
 										<input type="text" class="form-control mr-1" style="max-width: 6rem" placeholder="locator" id="myGrid" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
 										<button class="btn btn-sm btn-success" id="saveMyGrid" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
-								</div>-->
+								</div>--></div>
+								<!-- end of row-->
 							</div>
-							<!-- end of row-->
-								</div>
 						</div>
 					</div>
 				</div>
@@ -800,26 +753,17 @@
 							</div>
 						</div>-->
 						<div class="card-body p-2 mb-1">
-
 							<div class="media d-flex">
-								<div class="align-self-center ms-0 me-2">
-									<i class="bi bi-cloud-download" style="font-size: 3rem; color: #16D39A;"></i>
-								</div>
+								<div class="align-self-center ms-0 me-2"> <i class="bi bi-cloud-download" style="font-size: 3rem; color: #16D39A;"></i> </div>
 								<div class="media-body text-right w-100">
-
-
-
 									<button class="btn btn-secondary btn-sm" id="updater_channel" type="button" disabled>...</button>
 									<button class="btn btn-secondary btn-sm" id="updater_status" type="button" disabled>...</button>
 									<button class="btn btn-secondary btn-sm" id="updater_changelog" type="button" style="display:none;">Changelog</button>
 									<button class="btn btn-primary btn-sm" id="update_and_install" type="button" style="display:none;">Install & Restart</button>
-
 									<div class="progress w-100 mt-1">
 										<div class="progress-bar" style="width: 0%" role="progressbar" id="UpdateProgressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"> <span id="UpdateProgressInfo"></span> </div>
 									</div>
-
 								</div>
-
 							</div>
 						</div>
 					</div>
@@ -935,7 +879,7 @@
 				<div class="col">
 					<div class="card text-dark mb-1" style="height: 240px">
 						<!--325px-->
-						<div class="card-header p-1"> <i class="bi bi-list-columns-reverse" style="font-size: 1rem; color: black;" style="font-size: 1rem; color: black;"></i> <strong> HEARD STATIONS</strong> </div>
+						<div class="card-header p-1"> <i class="bi bi-list-columns-reverse" style="font-size: 1rem; color: black;"></i> <strong> HEARD STATIONS</strong> </div>
 						<div class="card-body p-0">
 							<!-- START OF TABLE FOR HEARD STATIONS -->
 							<table class="table table-sm">
@@ -1029,7 +973,7 @@
 										<div class="col-auto">
 											<!--
                                        <div class="input-group input-group-sm mb-0">
-                                       
+
                                        	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
                                        </div>
                                        --></div>
@@ -1046,17 +990,7 @@
 					<!--row-->
 					<div class="row mb-1">
 						<div class="col">
-							<div class="card text-dark mb-0 ">
-								<!--
-                              <div class="card-header p-1"> <strong>Data</strong>
-                              </div>
-                              <div class="card-body p-2">
-                              	<div class="input-group input-group-sm mb-0">
-                              		<input type="file" class="form-control" id="dataModalFile">
-                              		<label class="input-group-text" for="inputGroupFile02">kB</label>
-                              	</div>
-                              </div>
-                              --></div>
+							<div class="card text-dark mb-0 "> </div>
 						</div>
 						<!--col-->
 					</div>
@@ -1068,7 +1002,7 @@
 								<div class="card-body p-2">
 									<div class="row">
 										<div class="col">
-											<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1">Mode</span>
+											<div class="input-group input-group-sm"> <span class="input-group-text">Mode</span>
 												<select class="form-select form-select-sm" aria-label=".form-select-sm" id="datamode" disabled>
 													<option selected value="255">AUTO</option>
 													<!--<option value="232">HIGH SNR (DC1)</option>-->
@@ -1078,7 +1012,7 @@
 											</div>
 										</div>
 										<div class="col-auto">
-											<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1">Frames</span>
+											<div class="input-group input-group-sm"> <span class="input-group-text">Frames</span>
 												<select class="form-select form-select-sm" aria-label=".form-select-sm" id="framesperburst" disabled>
 													<option selected value="1">1</option>
 												</select>
@@ -1142,16 +1076,16 @@
 			</div>
 			<div class="container-fluid p-0" style="width:15rem">
 				<div class="input-group input-group-sm">
-					<!--<span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>--><span class="input-group-text" id="frequency">---</span>
-					<!--<span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>--><span class="input-group-text" id="mode">---</span>
-					<!--<span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>--><span class="input-group-text" id="bandwidth">---</span> </div>
+					<!--<span class="input-group-text" ><strong>Freq</strong></span>--><span class="input-group-text" id="frequency">---</span>
+					<!--<span class="input-group-text" ><strong>Mode</strong></span>--><span class="input-group-text" id="mode">---</span>
+					<!--<span class="input-group-text" ><strong>BW</strong></span>--><span class="input-group-text" id="bandwidth">---</span> </div>
 			</div>
 			<div class="container-fluid p-0" style="width:12rem">
-				<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1"><i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="actual speed level">
+				<div class="input-group input-group-sm"> <span class="input-group-text"><i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="actual speed level">
                   <i id="speed_level" class="bi bi-reception-0" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" id="bytes_per_min" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="raw data rate modem in bytes per minute">---</span> <span class="input-group-text" id="bytes_per_min_compressed" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="data rate including file compression in bytes per minute">---</span> </div>
 			</div>
 			<div class="container-fluid p-0" style="width:10rem">
-				<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1"><strong>Bytes</strong></span> <span class="input-group-text" id="total_bytes">---</span> </div>
+				<div class="input-group input-group-sm"> <span class="input-group-text"><strong>Bytes</strong></span> <span class="input-group-text" id="total_bytes">---</span> </div>
 			</div>
 			<div class="container-fluid p-0" style="width:15rem">
 				<div class="progress" style="height: 30px;">
@@ -1181,10 +1115,10 @@
 					<button type="button" class="btn btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">Test-Frame</span>
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">Test-Frame</span>
 						<button type="button" id="sendTestFrame" class="btn btn-danger">Transmit</button>
 					</div>
-					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text" id="basic-addon1">TX Level</span> <span class="input-group-text" id="audioLevelTXvalue">---</span> <span class="input-group-text w-75" id="basic-addon1">
+					<div class="input-group  input-group-sm mb-1"> <span class="input-group-text">TX Level</span> <span class="input-group-text" id="audioLevelTXvalue">---</span> <span class="input-group-text w-75">
                      <input type="range" class="form-range" min="0" max="250" step="1" id="audioLevelTX"></span> </div>
 				</div>
 			</div>
@@ -1199,7 +1133,7 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Theme</span>
+					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50">Theme</span>
 						<select class="form-select form-select-sm w-50" id="theme_selector">
 							<option value="default">Default</option>
 							<option value="cerulean">Cerulean</option>
@@ -1229,7 +1163,7 @@
 							<option value="zephyr">Zephyr</option>
 						</select>
 					</div>
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Update channel</span>
+					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50">Update channel</span>
 						<select class="form-select form-select-sm w-50" id="update_channel_selector">
 							<option value="latest">stable</option>
 							<option value="beta">beta</option>

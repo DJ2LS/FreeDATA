@@ -3,14 +3,15 @@ body {
     padding-right: 0px !important;
     overflow-y: hidden !important;
     overflow-x: hidden !important;
+    background-color: #f9fafc;
 }
 
 .navbar {
     background-color: white;
-    border-top: .1em solid #adadad;
-    border-bottom: .1em solid #adadad;
+    //border-top: .1em solid #adadad;
+    //border-bottom: .1em solid #adadad;
+    box-shadow: 0px 2px 9px rgba(62, 57, 107, 0.06);
 }
-
 
 /*Progress bars with centered text*/
 .progress {
@@ -34,6 +35,7 @@ html {
   display: none;
 }
 
+/* button custom styles */
 .btn-default {
     background-color: #f2f2f2;
     border-color: #f2f2f2;
@@ -74,11 +76,11 @@ html {
 }
 
 
-
+/* card custom styles */
 .card {
     background-color: #FFF;
     border: 1px solid rgba(0,0,0,0.06);
-    //box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.40);
+    box-shadow: 0px 2px 9px rgba(62, 57, 107, 0.06);
     border-radius: .25rem;
 }
 .card-header {
@@ -88,6 +90,7 @@ html {
     background-color: #FFF;
 }
 
+/* input group custom styles */
 .input-group-text{
     background-color: #FFF;
 }
