@@ -20,7 +20,7 @@ log = structlog.get_logger("explorer")
 class explorer():
     def __init__(self):
         self.explorer_url = "https://explorer.freedata.app/api.php"
-        self.publish_interval = 3
+        self.publish_interval = 15
 
         self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
         self.interval_thread.start()
