@@ -373,8 +373,7 @@ if __name__ == "__main__":
     # start modem
     modem = modem.RF()
 
-    # start explorer
-    print(static.ENABLE_EXPLORER)
+    # optionally start explorer module
     if static.ENABLE_EXPLORER:
         log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=static.ENABLE_EXPLORER)
         explorer = explorer.explorer()
