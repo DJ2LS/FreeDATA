@@ -248,6 +248,9 @@ class DAEMON:
                     options.append("--rx-buffer-size")
                     options.append(data[24])
 
+                    if data[25] == "True":
+                        options.append("--explorer")
+
                     # safe data to config file
                     config.write_entire_config(data)
 

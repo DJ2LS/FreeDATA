@@ -74,7 +74,8 @@ class CONFIG:
                               'fmin': data[19],
                               'fmax': data[20],
                               'qrv': data[23],
-                              'rxbuffersize': data[24]
+                              'rxbuffersize': data[24],
+                              'explorer': data[25]
                               }
         try:
             with open(self.config_name, 'w') as configfile:

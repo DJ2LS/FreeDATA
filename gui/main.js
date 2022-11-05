@@ -90,7 +90,8 @@ const configDefaultSettings = '{\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16" \
+                  "rx_buffer_size" : "16", \
+                  "enable_explorer" : "False" \
                   }';
 
 if (!fs.existsSync(configPath)) {

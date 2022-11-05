@@ -7,6 +7,14 @@ Created on Tue Dec 22 16:58:45 2020
 
 main module for running the tnc
 """
+
+
+# run tnc self test on startup before we are doing other things
+import selftest
+selftest.TEST()
+
+# continue if we passed the test
+
 import argparse
 import multiprocessing
 import os
@@ -22,9 +30,9 @@ import log_handler
 import modem
 import static
 import structlog
+import explorer
 
 log = structlog.get_logger("main")
-
 
 def signal_handler(sig, frame):
     """
@@ -246,7 +254,12 @@ if __name__ == "__main__":
         help="Set the maximum size of rx buffer.",
         type=int,
     )
-
+    PARSER.add_argument(
+        "--explorer",
+        dest="enable_explorer",
+        action="store_true",
+        help="Enable sending tnc data to https://explorer.freedata.app",
+    )
     ARGS = PARSER.parse_args()
     if ARGS.configfile:
         # init config
@@ -285,6 +298,7 @@ if __name__ == "__main__":
         static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
         static.RESPOND_TO_CQ = config['TNC']['qrv']
         static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
+        static.ENABLE_EXPLORER = config['TNC']['explorer']
 
 
     else:
@@ -321,6 +335,7 @@ if __name__ == "__main__":
         static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
         static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
         static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
+        static.ENABLE_EXPLORER = ARGS.enable_explorer
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock
@@ -357,6 +372,12 @@ if __name__ == "__main__":
 
     # start modem
     modem = modem.RF()
+
+    # start explorer
+    print(static.ENABLE_EXPLORER)
+    if static.ENABLE_EXPLORER:
+        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=static.ENABLE_EXPLORER)
+        explorer = explorer.explorer()
 
     # --------------------------------------------START CMD SERVER
     try:

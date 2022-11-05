@@ -13,6 +13,9 @@ from enum import Enum
 
 VERSION = "0.6.1-alpha.1"
 
+ENABLE_EXPLORER = False
+
+
 # DAEMON
 DAEMONPORT: int = 3001
 TNCSTARTED: bool = False

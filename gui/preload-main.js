@@ -160,7 +160,13 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
         document.getElementById("respondCQSwitch").checked = true;
     } else {
         document.getElementById("respondCQSwitch").checked = false;
-    }  
+    }
+
+    if(config.enable_explorer == 'True'){
+        document.getElementById("ExplorerSwitch").checked = true;
+    } else {
+        document.getElementById("ExplorerSwitch").checked = false;
+    }
     // theme selector
 
     if(config.theme != 'default'){
@@ -872,7 +878,16 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });    
-    
+
+    // enable explorer Switch clicked
+    document.getElementById("ExplorerSwitch").addEventListener("click", () => {
+        if(document.getElementById("ExplorerSwitch").checked == true){
+            config.enable_explorer = "True";
+        } else {
+            config.enable_explorer = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -1008,6 +1023,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             var respond_to_cq = "False";
         } 
 
+        if (document.getElementById("ExplorerSwitch").checked == true){
+            var enable_explorer = "True";
+        } else {
+            var enable_explorer = "False";
+        }
        
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
@@ -1067,6 +1087,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.tx_audio_level = tx_audio_level;
         config.respond_to_cq = respond_to_cq;
         config.rx_buffer_size = rx_buffer_size;
+        config.enable_explorer = enable_explorer;
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -1085,7 +1106,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
         
         
     })
