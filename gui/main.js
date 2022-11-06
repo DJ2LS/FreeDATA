@@ -90,7 +90,8 @@ const configDefaultSettings = '{\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16" \
+                  "rx_buffer_size" : "16", \
+                  "enable_explorer" : "False" \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -175,6 +176,7 @@ function createWindow() {
         icon: 'src/img/icon.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
+            backgroundThrottle: false,
             preload: require.resolve('./preload-main.js'),
             nodeIntegration: true,
             contextIsolation: false,
