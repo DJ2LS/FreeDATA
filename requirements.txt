@@ -6,6 +6,7 @@ pyserial
 sounddevice
 structlog
 ujson
+requests
 
 # Development and test dependencies
 autopep8
