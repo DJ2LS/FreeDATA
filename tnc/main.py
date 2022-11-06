@@ -10,8 +10,8 @@ main module for running the tnc
 
 
 # run tnc self test on startup before we are doing other things
-import selftest
-selftest.TEST()
+# import selftest
+# selftest.TEST()
 
 # continue if we passed the test
 
