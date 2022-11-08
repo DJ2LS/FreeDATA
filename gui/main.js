@@ -832,6 +832,7 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 // CHECK RIGCTLD
 ipcMain.on('request-check-rigctld',(data)=>{
+
     try {
         let Data = {
             state: "unknown",
@@ -843,12 +844,15 @@ ipcMain.on('request-check-rigctld',(data)=>{
             } else {
                 Data["state"] = "unknown/stopped";
             }
-            win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== ''){
+                win.webContents.send('action-check-rigctld', Data);
+            }
         })
 
     } catch (e) {
         mainLog.error(e)
     }
+
 });
 
 
