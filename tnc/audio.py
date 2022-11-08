@@ -31,7 +31,7 @@ def get_audio_devices():
     sd._terminate()
     sd._initialize()
 
-    log.debug("[AUD] get_audio_devices")
+    # log.debug("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
@@ -42,8 +42,9 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
-        log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
+        # additional logging for audio devices
+        # log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
+        # log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
