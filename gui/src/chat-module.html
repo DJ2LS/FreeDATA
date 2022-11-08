@@ -54,11 +54,15 @@
 				</div>
 				<hr class="m-0">
 				<! ------messages area ---------------------------------------------------------------------->
-				<div class="container overflow-auto" id="message-container" style="height: calc(100% - 110px);">
+				<div class="container overflow-auto" id="message-container" style="height: calc(100% - 150px);">
 					<div class="tab-content" id="nav-tabContent"> </div>
 					<!--<div class="container position-absolute bottom-0">--></div>
 				<!-- </div>-->
 				<div class="container-fluid mt-2 p-0">
+
+					<input type="checkbox" id="expand_textarea" class="btn-check" autocomplete="off">
+					<label class="btn d-flex justify-content-center" id="expand_textarea_label" for="expand_textarea"><i id="expand_textarea_button" class="bi bi-chevron-compact-up"></i></label>
+
 					<div class="input-group bottom-0 w-100">
 						<!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
 						<!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">--><i id="emojipickerbutton" class="bi bi-emoji-smile m-1" style="font-size: 1.5rem; color: grey;"></i><!--</button>-->

@@ -174,17 +174,48 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById("chatModuleMessage").addEventListener("input", () => {
         var textarea = document.getElementById("chatModuleMessage");
         var text = textarea.value;
+
+        if(document.getElementById("expand_textarea").checked){
+        var lines = 6
+        } else {
         var lines = text.split("\n").length
-        if (lines >= 10){
-         lines = 10;
+
+        if (lines >= 6){
+         lines = 6;
         }
-        var message_container_height_offset = 90 + (23*lines);
+
+        }
+        var message_container_height_offset = 130 + (20*lines);
         var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
         document.getElementById("message-container").style.height = message_container_height;
         textarea.rows = lines;
 
+        console.log(textarea.value)
+
 
     })
+
+ document.getElementById("expand_textarea").addEventListener("click", () => {
+  var textarea = document.getElementById("chatModuleMessage");
+
+if(document.getElementById("expand_textarea").checked){
+    var lines=6
+    document.getElementById("expand_textarea_button").className = "bi bi-chevron-compact-down";
+
+} else {
+    var lines=1
+    document.getElementById("expand_textarea_button").className = "bi bi-chevron-compact-up";
+}
+
+ var message_container_height_offset = 130 + (20*lines);
+ //var message_container_height_offset = 90 + (23*lines);
+        var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
+ document.getElementById("message-container").style.height = message_container_height;
+ textarea.rows = lines;
+ console.log(textarea.rows)
+
+   })
+
 
     // NEW CHAT
 
@@ -223,10 +254,12 @@ db.post({
         var chatmessage = textarea.value;
 
         // reset textarea size
-        var message_container_height_offset = 110;
+        var message_container_height_offset = 150;
         var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
         document.getElementById("message-container").style.height = message_container_height;
         textarea.rows = 1
+        document.getElementById("expand_textarea_button").className = "bi bi-chevron-compact-up";
+        document.getElementById("expand_textarea").checked = false;
 
         console.log(file);
         console.log(filename);

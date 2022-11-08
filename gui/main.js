@@ -870,8 +870,8 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
         var rigctld = new net.Socket();
         rigctld.connect(data.port, data.ip)
 
-        rigctld.on('error', function(err) {
-            console.log(err);
+        rigctld.on('error', function() {
+
             Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
             win.webContents.send('action-check-rigctld', Data);
         })
