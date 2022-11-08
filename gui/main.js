@@ -871,6 +871,7 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
         rigctld.connect(data.port, data.ip)
 
         rigctld.on('error', function(err) {
+            console.log(err);
             Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
             win.webContents.send('action-check-rigctld', Data);
         })
