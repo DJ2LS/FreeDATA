@@ -2306,8 +2306,17 @@ function set_setting_switch(setting_switch, enable_object, state){
 
 setInterval(checkRigctld, 500)
 function checkRigctld(){
-    ipcRenderer.send('request-check-rigctld');
+
+    var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
+    var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+
+    let Data = {
+                ip: rigctld_ip,
+                port: rigctld_port
+            };
+    ipcRenderer.send('request-check-rigctld', Data);
 }
+
 ipcRenderer.on('action-check-rigctld', (event, data) => {
         console.log(data)
         document.getElementById("hamlib_rigctld_status").value = data["state"];

@@ -16,6 +16,8 @@ const log = require('electron-log');
 const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
 const mime = require('mime');
+const net = require('net');
+
   
 const sysInfo = log.scope('system information');
 sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
@@ -857,57 +859,30 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 
 
-// CHECK RIGCTLD
-ipcMain.on('request-check-rigctld',(data)=>{
+// CHECK RIGCTLD CONNECTION
+ipcMain.on('request-check-rigctld',(event, data)=>{
 
-    try {
+    try{
+
         let Data = {
-            state: "unknown",
+                state: "unknown",
         };
 
-        isRunning('rigctld', (status) => {
-            if (status){
-                Data["state"] = "running";
-            } else {
-                Data["state"] = "unknown/stopped";
-            }
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
-            }
+        var rigctld = new net.Socket();
+        rigctld.connect(data.port, data.ip)
+
+        rigctld.on('error', function(err) {
+            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+            win.webContents.send('action-check-rigctld', Data);
         })
 
-    } catch (e) {
-        mainLog.error(e)
+        rigctld.on('connect', function(err) {
+            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
+            win.webContents.send('action-check-rigctld', Data);
+        })
+
+    } catch(e) {
+        console.log(e)
     }
 
 });
-
-
-
-
-// https://stackoverflow.com/a/51084163
-// Function for checking if a process is running or not
-/*
-isRunning('rigctld', (status) => {
-            if (status){
-                Data["state"] = "running";
-            } else {
-                Data["state"] = "unknown";
-            }
-            win.webContents.send('action-check-rigctld', Data);
-        })
-*/
-const isRunning = (query, cb) => {
-    let platform = process.platform;
-    let cmd = '';
-    switch (platform) {
-        case 'win32' : cmd = `tasklist`; break;
-        case 'darwin' : cmd = `ps -ax | grep ${query}`; break;
-        case 'linux' : cmd = `ps -A`; break;
-        default: break;
-    }
-    exec(cmd, (err, stdout) => {
-        cb(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
-    });
-}
-
