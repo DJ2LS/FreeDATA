@@ -52,7 +52,10 @@ def device_crc(device) -> str:
     crc_hwid = crc_algorithm(bytes(f"{device}", encoding="utf-8"))
     crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
     crc_hwid = crc_hwid.hex()
-    return f"{device['name']} [{crc_hwid}]"
+
+    hostapi_name = sd.query_hostapis(device['hostapi'])['name']
+
+    return f"{device['name']} [{hostapi_name}] [{crc_hwid}]"
 
 
 def fetch_audio_devices(input_devices, output_devices):
