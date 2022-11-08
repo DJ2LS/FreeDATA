@@ -31,7 +31,7 @@ def get_audio_devices():
     sd._terminate()
     sd._initialize()
 
-    log.debug("[AUD] get_audio_devices")
+    # log.debug("[AUD] get_audio_devices")
     with multiprocessing.Manager() as manager:
         proxy_input_devices = manager.list()
         proxy_output_devices = manager.list()
@@ -42,8 +42,9 @@ def get_audio_devices():
         proc.start()
         proc.join()
 
-        log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
-        log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
+        # additional logging for audio devices
+        # log.debug("[AUD] get_audio_devices: input_devices:", list=f"{proxy_input_devices}")
+        # log.debug("[AUD] get_audio_devices: output_devices:", list=f"{proxy_output_devices}")
         return list(proxy_input_devices), list(proxy_output_devices)
 
 
@@ -52,7 +53,10 @@ def device_crc(device) -> str:
     crc_hwid = crc_algorithm(bytes(f"{device}", encoding="utf-8"))
     crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
     crc_hwid = crc_hwid.hex()
-    return f"{device['name']} [{crc_hwid}]"
+
+    hostapi_name = sd.query_hostapis(device['hostapi'])['name']
+
+    return f"{device['name']} [{hostapi_name}] [{crc_hwid}]"
 
 
 def fetch_audio_devices(input_devices, output_devices):

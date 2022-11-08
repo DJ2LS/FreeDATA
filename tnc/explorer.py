@@ -42,11 +42,12 @@ class explorer():
         gridsquare = str(static.MYGRID, "utf-8")
         version = str(static.VERSION)
         bandwidth = str(static.LOW_BANDWIDTH_MODE)
+        beacon = str(static.BEACON_STATE)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon}
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)

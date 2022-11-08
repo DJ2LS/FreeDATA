@@ -13,7 +13,7 @@ import threading
 import time
 import uuid
 import zlib
-from random import randrange, randbytes
+from random import randrange# , randbytes
 
 import codec2
 import helpers
@@ -361,7 +361,7 @@ class DATA:
 
     def enqueue_frame_for_tx(
             self,
-            frame_to_tx: list[bytearray],
+            frame_to_tx,# : list[bytearray], # this causes a crash on python 3.7
             c2_mode=FREEDV_MODE.datac0.value,
             copies=1,
             repeat_delay=0,
@@ -1323,7 +1323,8 @@ class DATA:
         static.ARQ_SESSION_STATE = "connecting"
 
         # create a random session id
-        self.session_id = randbytes(1)
+        # self.session_id = randbytes(1)
+        self.session_id = np.random.bytes(1)
         print(self.session_id)
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -1615,7 +1616,8 @@ class DATA:
 
         # init a new random session id if we are not in an arq session
         if not static.ARQ_SESSION:
-            self.session_id = randbytes(1)
+            # self.session_id = randbytes(1)
+            self.session_id = np.random.bytes(1)
         print(self.session_id)
 
         # Update data_channel timestamp
