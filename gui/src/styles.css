@@ -27,4 +27,12 @@ html {
   display: none;
 }
 
+#chatModuleMessage {
+    resize: none;
+    border-radius:15px;
+}
 
+#expand_textarea_label{
+    border: 0;
+    padding: 1px;
+}
