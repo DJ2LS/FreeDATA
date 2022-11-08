@@ -10,7 +10,6 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const spawn = require('child_process').spawn;
-const exec = require('child_process').exec;
 
 const log = require('electron-log');
 const mainLog = log.scope('main');
@@ -876,7 +875,7 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
             win.webContents.send('action-check-rigctld', Data);
         })
 
-        rigctld.on('connect', function(err) {
+        rigctld.on('connect', function() {
             Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
             win.webContents.send('action-check-rigctld', Data);
         })
