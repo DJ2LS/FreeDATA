@@ -11,10 +11,51 @@ const config = require(configPath);
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
-    // here we could add filter buttons, somewhen later..
-    
+    document.getElementById('enable_filter_info').addEventListener('click', () => {
+        if (document.getElementById('enable_filter_info').checked){
+            display_class("table-info", true)
+        } else {
+            display_class("table-info", false)
+        }
+    })
+
+    document.getElementById('enable_filter_debug').addEventListener('click', () => {
+        if (document.getElementById('enable_filter_debug').checked){
+            display_class("table-debug", true)
+        } else {
+            display_class("table-debug", false)
+        }
+    })
+
+    document.getElementById('enable_filter_warning').addEventListener('click', () => {
+        if (document.getElementById('enable_filter_warning').checked){
+            display_class("table-warning", true)
+        } else {
+            display_class("table-warning", false)
+        }
+    })
+
+    document.getElementById('enable_filter_error').addEventListener('click', () => {
+        if (document.getElementById('enable_filter_error').checked){
+            display_class("table-error", true)
+        } else {
+            display_class("table-error", false)
+        }
+    })
 })
 
+
+function display_class(class_name, state){
+    const collection = document.getElementsByClassName(class_name);
+    for (let i = 0; i < collection.length; i++) {
+        if (state === true){
+            collection[i].style.display = "block";
+        } else {
+            collection[i].style.display = "None";
+        }
+
+    }
+}
 
 ipcRenderer.on('action-update-log', (event, arg) => {
 
@@ -63,7 +104,7 @@ ipcRenderer.on('action-update-log', (event, arg) => {
     if (logEntryText.innerText.includes('[error ]')) {
         row.classList.add("table-danger");
     }    
-        
+
     
     // scroll to bottom of page
     // https://stackoverflow.com/a/11715670
