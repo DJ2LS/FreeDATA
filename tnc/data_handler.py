@@ -1409,14 +1409,7 @@ class DATA:
     def close_session(self) -> None:
         """Close the ARQ session"""
         static.ARQ_SESSION_STATE = "disconnecting"
-        helpers.add_to_heard_stations(
-            static.DXCALLSIGN,
-            static.DXGRID,
-            "DATA-CHANNEL",
-            static.SNR,
-            static.FREQ_OFFSET,
-            static.HAMLIB_FREQUENCY,
-        )
+
         self.log.info(
             "[TNC] SESSION ["
             + str(self.mycallsign, "UTF-8")
