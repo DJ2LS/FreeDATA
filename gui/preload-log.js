@@ -8,29 +8,6 @@ var configPath = path.join(configFolder, 'config.json')
 const config = require(configPath);
 
 
-var _getAllFilesFromFolder = function(dir) {
-
-    var filesystem = require("fs");
-    var results = [];
-
-    filesystem.readdirSync(dir).forEach(function(file) {
-
-        file = dir+'/'+file;
-        var stat = filesystem.statSync(file);
-
-        if (stat && stat.isDirectory()) {
-            results = results.concat(_getAllFilesFromFolder(file))
-        } else results.push(file);
-
-    });
-
-    return results;
-
-};
-
-console.log(_getAllFilesFromFolder(__dirname));
-
-
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('enable_filter_info').addEventListener('click', () => {
@@ -87,22 +64,45 @@ ipcRenderer.on('action-update-log', (event, arg) => {
    // https://stackoverflow.com/a/29497680
    entry = entry.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,'')
 
-  
+
     var tbl = document.getElementById("log");
     var row = document.createElement("tr");
 
     var timestamp = document.createElement("td");
     var timestampText = document.createElement('span');
-    datetime = new Date();
-    timestampText.innerText = datetime.toISOString();
+
+    //datetime = new Date();
+    //timestampText.innerText = datetime.toISOString();
+    timestampText.innerText = entry.slice(0, 19);
     timestamp.appendChild(timestampText);
+
+    var type = document.createElement("td");
+    var typeText = document.createElement('span');
+    // typeText.innerText = entry.slice(10, 30).match(/[\[](.*)[^\]]/g);
+    typeText.innerText = entry.match(/\[[^\]]+\]/g)[0];
+
+
+
+//    let res = str.match(/[\[](.*)[^\]]/g);
+
+    type.appendChild(typeText);
+
+    var area = document.createElement("td");
+    var areaText = document.createElement('span');
+    //areaText.innerText = entry.slice(10, 50).match(/[\] \[](.*)[^\]]/g);
+    areaText.innerText = entry.match(/\[[^\]]+\]/g)[1];
+    area.appendChild(areaText);
     
     var logEntry = document.createElement("td");
     var logEntryText = document.createElement('span');
-    logEntryText.innerText = entry
+
+
+    logEntryText.innerText = entry.split("]")[2];
     logEntry.appendChild(logEntryText);
 
     row.appendChild(timestamp);
+    row.appendChild(type);
+    row.appendChild(area);
     row.appendChild(logEntry);
     tbl.appendChild(row);
 
