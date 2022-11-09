@@ -426,12 +426,15 @@ class DATA:
 
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
+
+
+
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[1:2] = self.session_id
-        ack_frame[2:3] = bytes([int(snr)])
+        ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
@@ -439,9 +442,11 @@ class DATA:
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
+
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:2] = self.session_id
+        ack_frame[2:3] = helpers.snr_to_bytes(snr)
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         # ack_frame[7:8] = bytes([int(snr)])
@@ -480,29 +485,30 @@ class DATA:
         # Transmit frame
         self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
-    def send_burst_nack_frame(self, snr: float = 0) -> None:
+    def send_burst_nack_frame(self, snr: bytes) -> None:
         """Build and send NACK frame for received DATA frame"""
+
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[2:3] = snr
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
-    def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
-
+    def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
+
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
@@ -1168,9 +1174,13 @@ class DATA:
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
-            self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
+            # self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
+            self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
+            self.log.info("SNR ON IRS", snr=self.burst_ack_snr)
+
             self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
+
 
             self.log.debug(
                 f"[TNC] burst_{desc}_received:",
