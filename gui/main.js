@@ -873,12 +873,16 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
         rigctld.on('error', function() {
 
             Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
-            win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== ''){
+                win.webContents.send('action-check-rigctld', Data);
+            }
         })
 
         rigctld.on('connect', function() {
             Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== ''){
+                win.webContents.send('action-check-rigctld', Data);
+            }
         })
 
     } catch(e) {
