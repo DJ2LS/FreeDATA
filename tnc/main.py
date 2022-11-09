@@ -305,37 +305,40 @@ if __name__ == "__main__":
         # additional step for being sure our callsign is correctly
         # in case we are not getting a station ssid
         # then we are forcing a station ssid = 0
-        mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
-        mycallsign = helpers.callsign_to_bytes(mycallsign)
-        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+        try:
+            mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
+            mycallsign = helpers.callsign_to_bytes(mycallsign)
+            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-        static.SSID_LIST = ARGS.ssid_list
-        static.MYGRID = bytes(ARGS.mygrid, "utf-8")
-        static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
-        static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
-        static.PORT = ARGS.socket_port
-        static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
-        static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
-        static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-        static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
-        static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
-        static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
-        static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
-        static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
-        static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
-        static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
-        static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
-        static.ENABLE_SCATTER = ARGS.send_scatter
-        static.ENABLE_FFT = ARGS.send_fft
-        static.ENABLE_FSK = ARGS.enable_fsk
-        static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
-        static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
-        static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
-        static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
-        static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
-        static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
-        static.ENABLE_EXPLORER = ARGS.enable_explorer
+            static.SSID_LIST = ARGS.ssid_list
+            static.MYGRID = bytes(ARGS.mygrid, "utf-8")
+            static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
+            static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+            static.PORT = ARGS.socket_port
+            static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
+            static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
+            static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
+            static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
+            static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
+            static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
+            static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
+            static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
+            static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
+            static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
+            static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
+            static.ENABLE_SCATTER = ARGS.send_scatter
+            static.ENABLE_FFT = ARGS.send_fft
+            static.ENABLE_FSK = ARGS.enable_fsk
+            static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
+            static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
+            static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
+            static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
+            static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
+            static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
+            static.ENABLE_EXPLORER = ARGS.enable_explorer
+        except Exception as e:
+            log.error("[DMN] Error reading config file", exception=e)
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock
