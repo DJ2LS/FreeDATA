@@ -267,7 +267,8 @@ db.post({
         if (filetype == ''){
             filetype = 'plain/text'
         }
-        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
+        var timestamp = Math.floor(Date.now() / 1000);
+        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file + split_char + timestamp;
 
         
         document.getElementById('selectFilesButton').innerHTML = ``;
@@ -285,7 +286,7 @@ db.post({
         ipcRenderer.send('run-tnc-command', Data);
         db.post({
             _id: uuid,
-            timestamp: Math.floor(Date.now() / 1000),
+            timestamp: timestamp,
             dxcallsign: dxcallsign,
             dxgrid: 'null',
             msg: chatmessage,
@@ -419,7 +420,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
         } else if (item.arq == 'transmission' && item.status == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
-            obj.timestamp = item.timestamp;
+            obj.timestamp = splitted_data[8];
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.command = splitted_data[1];
@@ -776,7 +777,7 @@ update_chat = function(obj) {
                     console.log(blob)
                     
                                       
-                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
+                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file + split_char + doc.timestamp;
                     let Data = {
                         command: "send_message",
                         dxcallsign: doc.dxcallsign,
