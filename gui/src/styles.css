@@ -37,7 +37,7 @@ html {
     padding: 1px;
 }
 
-
+/* ------ fixed border table header --------- */
 .tableFixHead          {
 overflow: auto;
 height: 90vh;
@@ -48,3 +48,10 @@ height: 90vh;
 table  { border-collapse: collapse; width: 100%; }
 th, td { padding: 8px 16px; }
 th     { background:#eee; }
+
+
+/* ------ emoji picker customization --------- */
+.picker {
+    border-radius: 10px:
+
+}

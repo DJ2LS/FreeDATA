@@ -614,7 +614,7 @@ update_chat = function(obj) {
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
                                             
-                      <div class="card-body p-0">
+                      <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
                             <span class="badge bg-light text-muted">${timestamp}</span>  
@@ -655,7 +655,7 @@ update_chat = function(obj) {
                     <div class="card border-primary  bg-primary" id="msg-${obj._id}">
                     ${fileheader}
                     
-                      <div class="card-body p-0 text-right bg-primary">
+                      <div class="card-body rounded-3 p-0 text-right bg-primary">
                         <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
