@@ -36,3 +36,15 @@ html {
     border: 0;
     padding: 1px;
 }
+
+
+.tableFixHead          {
+overflow: auto;
+height: 90vh;
+}
+.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }
+
+/* Just common table stuff. Really. */
+table  { border-collapse: collapse; width: 100%; }
+th, td { padding: 8px 16px; }
+th     { background:#eee; }

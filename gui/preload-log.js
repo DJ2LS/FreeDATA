@@ -36,19 +36,20 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('enable_filter_error').addEventListener('click', () => {
         if (document.getElementById('enable_filter_error').checked){
-            display_class("table-error", true)
+            display_class("table-danger", true)
         } else {
-            display_class("table-error", false)
+            display_class("table-danger", false)
         }
     })
 })
 
 
 function display_class(class_name, state){
-    const collection = document.getElementsByClassName(class_name);
+    var collection = document.getElementsByClassName(class_name);
+    console.log(collection)
     for (let i = 0; i < collection.length; i++) {
-        if (state === true){
-            collection[i].style.display = "block";
+        if (state == true){
+            collection[i].style.display = "table-row";
         } else {
             collection[i].style.display = "None";
         }
@@ -79,8 +80,13 @@ ipcRenderer.on('action-update-log', (event, arg) => {
     var type = document.createElement("td");
     var typeText = document.createElement('span');
     // typeText.innerText = entry.slice(10, 30).match(/[\[](.*)[^\]]/g);
-    typeText.innerText = entry.match(/\[[^\]]+\]/g)[0];
+    console.log(entry.match(/\[[^\]]+\]/g))
 
+    try{
+        typeText.innerText = entry.match(/\[[^\]]+\]/g)[0];
+    } catch(e){
+        typeText.innerText = '-'
+    }
 
 
 //    let res = str.match(/[\[](.*)[^\]]/g);
@@ -90,42 +96,92 @@ ipcRenderer.on('action-update-log', (event, arg) => {
     var area = document.createElement("td");
     var areaText = document.createElement('span');
     //areaText.innerText = entry.slice(10, 50).match(/[\] \[](.*)[^\]]/g);
-    areaText.innerText = entry.match(/\[[^\]]+\]/g)[1];
+    //areaText.innerText = entry.match(/\[[^\]]+\]/g)[1];
+
+    try{
+        areaText.innerText = entry.match(/\[[^\]]+\]/g)[1];
+    } catch(e){
+        areaText.innerText = '-'
+    }
     area.appendChild(areaText);
     
     var logEntry = document.createElement("td");
     var logEntryText = document.createElement('span');
-
-
-    logEntryText.innerText = entry.split("]")[2];
+    try{logEntryText.innerText = entry.split("]")[2];
+    } catch(e){
+        logEntryText.innerText = "-";
+    }
     logEntry.appendChild(logEntryText);
 
     row.appendChild(timestamp);
     row.appendChild(type);
     row.appendChild(area);
     row.appendChild(logEntry);
+
+    //row.classList.add("table-blablubb");
+/*
+    if (logEntryText.innerText.includes('ALSA lib pcm')) {
+        row.classList.add("table-secondary");
+    }
+  */
+    if (typeText.innerText.includes('info')) {
+        row.classList.add("table-info");
+    }
+    if (typeText.innerText.includes('debug')) {
+        row.classList.add("table-secondary");
+    }
+
+    if (typeText.innerText.includes('warning')) {
+        row.classList.add("table-warning");
+    }  
+    
+    if (typeText.innerText.includes('error')) {
+        row.classList.add("table-danger");
+    }
+
+
+    if (document.getElementById('enable_filter_info').checked) {
+        row.style.display = "table-row"
+        display_class("table-info", true)
+    } else {
+        row.style.display = "None"
+        display_class("table-info", false)
+
+    }
+    if (document.getElementById('enable_filter_debug').checked) {
+        row.style.display = "table-row"
+        display_class("table-secondary", true)
+    } else {
+        row.style.display = "None"
+        display_class("table-secondary", false)
+
+    }
+    if (document.getElementById('enable_filter_warning').checked) {
+        row.style.display = "table-row"
+        display_class("table-warning", true)
+    } else {
+        row.style.display = "None"
+        display_class("table-warning", false)
+
+    }
+    if (document.getElementById('enable_filter_error').checked) {
+        row.style.display = "table-row"
+        display_class("table-danger", true)
+    } else {
+        row.style.display = "None"
+        display_class("table-danger", false)
+
+    }
+
+
+
+
+
+
     tbl.appendChild(row);
 
 
 
-    if (logEntryText.innerText.includes('ALSA lib pcm')) {
-        row.classList.add("table-secondary");
-    }
-    
-    if (logEntryText.innerText.includes('[info ]')) {
-        row.classList.add("table-info");
-    }
-    if (logEntryText.innerText.includes('[debug ]')) {
-        row.classList.add("table-secondary");
-    }
-
-    if (logEntryText.innerText.includes('[warning ]')) {
-        row.classList.add("table-warning");
-    }  
-    
-    if (logEntryText.innerText.includes('[error ]')) {
-        row.classList.add("table-danger");
-    }    
 
     
     // scroll to bottom of page
