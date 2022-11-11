@@ -2247,7 +2247,7 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) 
 
     } else if(irs_snr >= 12.7){
         document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
-        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " really good 12.7++";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " really good 12.7+";
         toast.show();
 
     } else {
