@@ -9,6 +9,7 @@ import time
 import crcengine
 import static
 import structlog
+import numpy as np
 
 log = structlog.get_logger("helpers")
 
