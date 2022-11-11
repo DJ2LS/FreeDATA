@@ -2223,18 +2223,33 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) =
 
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
-    console.log(data)
-    var irs_snr = data["irs_snr"];
-    console.log(data.irs_snr);
+
+    //document.getElementById("toastARQtransmittingSNR").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+    var toastARQtransmittingSNR = document.getElementById('toastARQtransmittingSNR');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingSNR); // Returns a Bootstrap toast instance
+
+    var irs_snr = data["data"][0].irs_snr;
     if(irs_snr <= 0){
-        console.log("low snr warning");
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-danger border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " low " + irs_snr;
+        toast.show();
+
     } else if(irs_snr > 0 && irs_snr <= 5){
-        console.log("snr okay");
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-warning border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " okay " + irs_snr;
+        toast.show();
+
     } else if(data.irs_snr > 5){
-        console.log("good snr ");
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " good " + irs_snr;
+        toast.show();
+
     } else {
         console.log("no snr info available")
+        toast.show();
+
     }
+
 
     document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
     var toastARQtransmitting = document.getElementById('toastARQtransmitting');
