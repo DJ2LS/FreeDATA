@@ -861,8 +861,9 @@ function saveFileToFolder(id) {
             console.log(data.length)
             //data = new Blob([data.buffer], { type: 'image/png' } /* (1) */) 
             console.log(data)
+            // we need to encode data because of error "an object could not be cloned"
             let Data = {
-                file: data,
+                file: btoa(data),
                 filename: filename,
                 filetype: filetype,
             }
@@ -878,7 +879,7 @@ function saveFileToFolder(id) {
 }
 
 
-// function for setting an ICON to the correspinding state
+// function for setting an ICON to the corresponding state
 function get_icon_for_state(state) {
     if (state == 'transmit') {
         var status_icon = '<i class="bi bi-check" style="font-size:1rem;"></i>';
