@@ -493,7 +493,7 @@ update_chat = function(obj) {
             if(filetype == 'image/png' || filetype =="png"){
                         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
-        <img class="w-100 rounded-2" src="data:image/png;base64,${obj_attachments[filename]["data"]}">
+        <img class="w-100 rounded-2" src="data:image/png;base64,${obj._attachments[filename]["data"]}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
