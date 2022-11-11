@@ -474,7 +474,15 @@ update_chat = function(obj) {
             var filename = Object.keys(obj._attachments)[0]
             var filetype = filename.split('.')[1]
             var filesize = obj._attachments[filename]["length"] + " Bytes";
-            
+            if (filesize == 'undefined Bytes'){
+                // get filesize of new submitted data
+                // not that nice....
+                // we really should avoid converting back from base64 for performance reasons...
+                var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
+            }
+
+
+
             var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
