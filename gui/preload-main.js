@@ -2223,6 +2223,18 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) =
 
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
+    console.log(data)
+    var irs_snr = data.irs_snr;
+    console.log(data.irs_snr);
+    if(irs_snr <= 0){
+        console.log("low snr warning");
+    } else if(irs_snr > 0 && irs_snr <= 5){
+        console.log("snr okay");
+    } else if(data.irs_snr > 5){
+        console.log("good snr ");
+    } else {
+        console.log("no snr info available")
+    }
 
     document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
     var toastARQtransmitting = document.getElementById('toastARQtransmitting');

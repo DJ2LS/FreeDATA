@@ -1076,6 +1076,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                irs_snr=self.burst_ack_snr,
             )
 
             # Stay in the while loop until we receive a data_frame_ack. Otherwise,
