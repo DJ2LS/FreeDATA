@@ -863,7 +863,7 @@ function saveFileToFolder(id) {
             console.log(data)
             // we need to encode data because of error "an object could not be cloned"
             let Data = {
-                file: btoa(data),
+                file: data,
                 filename: filename,
                 filetype: filetype,
             }

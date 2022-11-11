@@ -550,7 +550,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
 
               try {
 
-                let buffer = Buffer.from(atob(data.file));
+                let buffer = Buffer.from(data.file);
                 let arraybuffer = Uint8Array.from(buffer);
                 console.log(arraybuffer)
                fs.writeFile(filepath.filePath, data.file, 'binary', function (err, data) {
