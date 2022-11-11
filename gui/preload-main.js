@@ -2224,7 +2224,7 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) =
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
     console.log(data)
-    var irs_snr = data.irs_snr;
+    var irs_snr = data["irs_snr"];
     console.log(data.irs_snr);
     if(irs_snr <= 0){
         console.log("low snr warning");
