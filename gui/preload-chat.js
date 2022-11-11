@@ -87,7 +87,15 @@ db.find({
     if (typeof(result) !== 'undefined') {
         result.docs.forEach(function(item) {
             //console.log(item)
-            update_chat(item);
+            // another query with attachments
+            db.get(item._id, {
+                attachments: true
+            }).then(function(item_with_attachments){
+                //update_chat(item_with_attachments);
+            });
+
+
+
         });
     }
 }).catch(function(err) {
@@ -481,18 +489,35 @@ update_chat = function(obj) {
                 var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
             }
 
+            // check if image, then display it
+            if(filetype == 'image/png' || filetype =="png"){
+                        var fileheader = `
+        <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
+        <img class="w-100 rounded-2" src="data:image/png;base64,${obj_attachments[filename]["data"]}">
+       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
+                        </p>
+        </div>
+        <hr class="m-0 p-0">
+        `;
 
+            }else{
 
             var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
-                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i> 
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
                         </p>
         </div>
         <hr class="m-0 p-0">
         `;
+        }
+
+
         
         var controlarea_transmit = `
         <div class="ms-auto" id="msg-${obj._id}-control-area">
