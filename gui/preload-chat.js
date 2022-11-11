@@ -268,9 +268,9 @@ db.post({
             filetype = 'plain/text'
         }
         var timestamp = Math.floor(Date.now() / 1000);
+
         var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file + split_char + timestamp;
 
-        
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
         console.log(data_with_attachment)
@@ -420,6 +420,9 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
         } else if (item.arq == 'transmission' && item.status == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
+
+            console.log(splitted_data)
+
             obj.timestamp = splitted_data[8];
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
@@ -709,6 +712,9 @@ update_chat = function(obj) {
         if (obj.percent >= 100){
             //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("bg-danger");
+            document.getElementById('msg-' + obj._id + '-progress').classList.add("bg-primary");
+
             document.getElementById('msg-' + obj._id + '-progress').innerHTML = '';
         } else {       
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
