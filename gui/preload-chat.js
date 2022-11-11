@@ -91,7 +91,7 @@ db.find({
             db.get(item._id, {
                 attachments: true
             }).then(function(item_with_attachments){
-                //update_chat(item_with_attachments);
+                update_chat(item_with_attachments);
             });
 
 
