@@ -493,7 +493,7 @@ class DATA:
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[2:3] = snr
+        nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
