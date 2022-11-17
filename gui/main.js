@@ -822,26 +822,23 @@ function close_all() {
 // RUN RIGCTLD
 ipcMain.on('request-start-rigctld',(event, data)=>{
 
-
     try{
         let rigctld_proc = spawn(data.path, data.parameters);
+
+        rigctld_proc.on('exit', function (code) {
+            console.log('rigctld process exited with code ' + code);
+
+            // if rigctld crashes, error code is -2
+            // then we are going to restart rigctld
+            // this "fixes" a problem with latest rigctld on raspberry pi
+            //if (code == -2){
+            //    setTimeout(ipcRenderer.send('request-start-rigctld', data), 500);
+            //}
+            //let rigctld_proc = spawn(data.path, data.parameters);
+        });
     } catch (e) {
      console.log(e);
     }
-
-
-    rigctld_proc.on('exit', function (code) {
-        console.log('rigctld process exited with code ' + code);
-
-        // if rigctld crashes, error code is -2
-        // then we are going to restart rigctld
-        // this "fixes" a problem with latest rigctld on raspberry pi
-        //if (code == -2){
-        //    setTimeout(ipcRenderer.send('request-start-rigctld', data), 500);
-        //}
-        //let rigctld_proc = spawn(data.path, data.parameters);
-    });
-
 
     /*
     const rigctld = exec(data.path, data.parameters);
