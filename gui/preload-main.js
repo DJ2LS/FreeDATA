@@ -12,7 +12,7 @@ const {
 } = require('qth-locator');
 const os = require('os');
 
-// split character used for appending addiotional data to files
+// split character used for appending additional data to files
 const split_char = '\0;';
 
 
@@ -2172,6 +2172,14 @@ ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
     toast.show();
 });
 
+// DATA CHANNEL WAITING TOAST
+ipcRenderer.on('action-show-arq-toast-datachannel-waiting', (event, data) => {
+    var toastDATACHANNELwaiting = document.getElementById('toastDATACHANNELwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // DATA CHANNEL OPEN TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
     var toastDATACHANNELopen = document.getElementById('toastDATACHANNELopen');
@@ -2351,6 +2359,5 @@ function checkRigctld(){
 }
 
 ipcRenderer.on('action-check-rigctld', (event, data) => {
-        console.log(data)
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });

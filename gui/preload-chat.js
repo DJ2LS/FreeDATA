@@ -62,6 +62,25 @@ try{
 
 PouchDB.plugin(require('pouchdb-find'));
 var db = new PouchDB(chatDB);
+var remoteDB = new PouchDB('http://192.168.178.79:5984/chatDB')
+
+db.sync(remoteDB, {
+  live: true,
+  retry: true
+}).on('change', function (change) {
+  // yo, something changed!
+  console.log(change)
+}).on('paused', function (info) {
+  // replication was paused, usually because of a lost connection
+  console.log(info)
+}).on('active', function (info) {
+  // replication was resumed
+  console.log(info)
+}).on('error', function (err) {
+  // totally unhandled error (shouldn't happen)
+  console.log(error)
+});
+
 var dxcallsigns = new Set();
 db.createIndex({
     index: {
@@ -73,6 +92,7 @@ db.createIndex({
 }).catch(function(err) {
     console.log(err);
 });
+
 db.find({
     selector: {
         timestamp: {

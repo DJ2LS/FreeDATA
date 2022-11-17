@@ -326,6 +326,10 @@ client.on('data', function(socketdata) {
                     } else if (data['status'] == 'opening') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
 
+                    // ARQ WAITING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-waiting', {data: [data]});
+
 
                     // ARQ TRANSMISSION FAILED
                     } else if (data['status'] == 'failed') {

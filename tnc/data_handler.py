@@ -1599,6 +1599,12 @@ class DATA:
         # Let's check if we have a busy channel and we are not in a running arq session.
         if static.CHANNEL_BUSY and not static.ARQ_SESSION:
             self.log.warning("[TNC] Channel busy, waiting until free...")
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="transmission",
+                status="waiting",
+            )
+
             # wait while timeout not reached and our busy state is busy
             while static.CHANNEL_BUSY and not self.datachannel_timeout:
                 time.sleep(0.01)
