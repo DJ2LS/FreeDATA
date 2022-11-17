@@ -668,6 +668,11 @@ ipcMain.on('request-show-arq-toast-session-connecting',(event,data)=>{
     win.webContents.send('action-show-arq-toast-session-connecting', data);
 });
 
+// ARQ SESSION WAITING
+ipcMain.on('request-show-arq-toast-session-waiting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-waiting', data);
+});
+
 // ARQ SESSION CONNECTED
 ipcMain.on('request-show-arq-toast-session-connected',(event,data)=>{
     win.webContents.send('action-show-arq-toast-session-connected', data);

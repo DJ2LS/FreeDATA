@@ -1293,6 +1293,32 @@ class DATA:
             state=static.ARQ_SESSION_STATE,
         )
 
+        # Let's check if we have a busy channel
+        if static.CHANNEL_BUSY:
+            self.log.warning("[TNC] Channel busy, waiting until free...")
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="waiting",
+            )
+
+            # wait while timeout not reached and our busy state is busy
+            channel_busy_timeout = time.time() + 30
+            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+                time.sleep(0.01)
+
+            # if channel busy timeout reached stop connecting
+            if time.time() > channel_busy_timeout:
+                self.log.warning("[TNC] Channel busy, try again later...")
+                static.ARQ_SESSION_STATE = "failed"
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="session",
+                    status="failed",
+                    reason="busy",
+                )
+                return False
+
         self.open_session()
 
         # wait until data channel is open
@@ -1596,7 +1622,7 @@ class DATA:
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
 
-        # Let's check if we have a busy channel and we are not in a running arq session.
+        # Let's check if we have a busy channel and if we are not in a running arq session.
         if static.CHANNEL_BUSY and not static.ARQ_SESSION:
             self.log.warning("[TNC] Channel busy, waiting until free...")
             self.send_data_to_socket_queue(
@@ -1606,8 +1632,21 @@ class DATA:
             )
 
             # wait while timeout not reached and our busy state is busy
-            while static.CHANNEL_BUSY and not self.datachannel_timeout:
+            channel_busy_timeout = time.time() + 30
+            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                 time.sleep(0.01)
+
+            # if channel busy timeout reached, stop connecting
+            if time.time() > channel_busy_timeout:
+                self.log.warning("[TNC] Channel busy, try again later...")
+                static.ARQ_SESSION_STATE = "failed"
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="transmission",
+                    status="failed",
+                    reason="busy",
+                )
+                return False
 
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 

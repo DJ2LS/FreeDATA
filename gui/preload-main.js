@@ -2284,15 +2284,15 @@ ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
 ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => {
 
     document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQreceiving = document.getElementById('toastARQreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving); // Returns a Bootstrap toast instance
+    var toastARQsessionreceiving = document.getElementById('toastARQreceiving');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionreceiving); // Returns a Bootstrap toast instance
     toast.show();
 });
 
 // ARQ SESSION CONNECTING
 ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnecting');
+    var toastARQsessionconnecting = document.getElementById('toastARQsessionconnecting');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnecting); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2300,15 +2300,24 @@ ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnected');
+    var toastARQsessionconnected = document.getElementById('toastARQsessionconnected');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnected); // Returns a Bootstrap toast instance
     toast.show();
 });
 
+// ARQ SESSION CONNECTED
+ipcRenderer.on('action-show-arq-toast-session-waiting', (event, data) => {
+
+    var toastARQsessionwaiting = document.getElementById('toastARQsessionwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // ARQ SESSION CLOSE
 ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionclose');
+    var toastARQsessionclose = document.getElementById('toastARQsessionclose');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionclose); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2316,7 +2325,7 @@ ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 // ARQ SESSION FAILED
 ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionfailed');
+    var toastARQsessionfailed = document.getElementById('toastARQsessionfailed');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionfailed); // Returns a Bootstrap toast instance
     toast.show();
 });

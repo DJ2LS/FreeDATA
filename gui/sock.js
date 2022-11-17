@@ -306,6 +306,10 @@ client.on('data', function(socketdata) {
                         ipcRenderer.send('request-show-arq-toast-session-connected', {data: [data]});
 
                     // ARQ OPENING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-session-waiting', {data: [data]});
+
+                    // ARQ OPENING
                     } else if (data['status'] == 'close') {
                         ipcRenderer.send('request-show-arq-toast-session-close', {data: [data]});
 
