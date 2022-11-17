@@ -884,6 +884,30 @@ class RF:
                             static.AUDIO_RMS = int(np.sqrt(np.mean(d ** 2)))
                             rms_counter = 0
 
+                    # Convert data to int to decrease size
+                    dfft = dfft.astype(int)
+
+                    # Create list of dfft for later pushing to static.FFT
+                    dfftlist = dfft.tolist()
+
+                    # Reduce area where the busy detection is enabled
+                    # We want to have this in correlation with mode bandwidth
+                    # TODO: This is not correctly and needs to be checked for correct maths
+                    # dfftlist[0:1] = 10,15Hz
+                    # Bandwidth[Hz] / 10,15
+                    # narrowband = 563Hz = 56
+                    # wideband = 1700Hz = 167
+                    # 1500Hz = 148
+                    # 2700Hz = 266
+                    # 3200Hz = 315
+
+                    # define the area, we are detecting busy state
+                    if static.LOW_BANDWIDTH_MODE:
+                        dfft = dfft[120:176]
+                    else:
+                        dfft = dfft[65:231]
+
+
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
                     # so we have a smoother state toggle
@@ -899,11 +923,9 @@ class RF:
                         if channel_busy_delay == 0:
                             static.CHANNEL_BUSY = False
 
-                    # Round data to decrease size
-                    dfft = np.around(dfft, 0)
-                    dfftlist = dfft.tolist()
 
-                    static.FFT = dfftlist[:320]  # 320 --> bandwidth 3000
+
+                    static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")
                     self.log.debug("[MDM] Setting fft=0")
