@@ -1596,6 +1596,13 @@ class DATA:
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
 
+        # Let's check if we have a busy channel and we are not in a running arq session.
+        if static.CHANNEL_BUSY and not static.ARQ_SESSION:
+            self.log.warning("[TNC] Channel busy, waiting until free...")
+            # wait while timeout not reached and our busy state is busy
+            while static.CHANNEL_BUSY and not self.datachannel_timeout:
+                time.sleep(0.01)
+
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
         # wait until data channel is open
