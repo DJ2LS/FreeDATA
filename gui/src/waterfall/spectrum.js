@@ -72,6 +72,52 @@ Spectrum.prototype.drawSpectrum = function(bins) {
     var width = this.ctx.canvas.width;
     var height = this.ctx.canvas.height;
 
+
+    // Modification by DJ2LS
+    // Draw bandwidth lines
+    // TODO: Math not correct. But a first attempt
+    // it seems position is more or less equal to frequenzy by factor 10
+    // eg. position 150 == 1500Hz
+    /*
+    // CENTER LINE
+    this.ctx_wf.beginPath();
+    this.ctx_wf.moveTo(150,0);
+    this.ctx_wf.lineTo(150, height);
+    this.ctx_wf.lineWidth = 1;
+    this.ctx_wf.strokeStyle = '#8C8C8C';
+    this.ctx_wf.stroke()
+    */
+
+    // 586Hz LINES
+    var bandwidth = 568;
+    var linePositionLow = 150 - ((bandwidth/2)/10);
+    var linePositionHigh = 150 + ((bandwidth/2)/10);
+    this.ctx_wf.beginPath();
+    this.ctx_wf.moveTo(linePositionLow,0);
+    this.ctx_wf.lineTo(linePositionLow, height);
+    this.ctx_wf.moveTo(linePositionHigh,0);
+    this.ctx_wf.lineTo(linePositionHigh, height);
+    this.ctx_wf.lineWidth = 1;
+    this.ctx_wf.strokeStyle = '#C3C3C3';
+    this.ctx_wf.stroke()
+
+    // 1700Hz LINES
+    var bandwidth = 1700;
+    var linePositionLow = 150 - ((bandwidth/2)/10);
+    var linePositionHigh = 150 + ((bandwidth/2)/10);
+    this.ctx_wf.beginPath();
+    this.ctx_wf.moveTo(linePositionLow,0);
+    this.ctx_wf.lineTo(linePositionLow, height);
+    this.ctx_wf.moveTo(linePositionHigh,0);
+    this.ctx_wf.lineTo(linePositionHigh, height);
+    this.ctx_wf.lineWidth = 1;
+    this.ctx_wf.strokeStyle = '#C3C3C3';
+    this.ctx_wf.stroke()
+
+
+    // ---- END OF MODIFICATION ------
+
+
     // Fill with black
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, width, height);
