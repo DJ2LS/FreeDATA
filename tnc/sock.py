@@ -332,9 +332,11 @@ def process_tnc_commands(data):
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
-            # send ping frame and wait for ACK
             try:
                 DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+
+                # set early disconnecting state so we can interrupt connection attemtps
+                static.ARQ_SESSION_STATE = "disconnecting"
                 command_response("disconnect", True)
             except Exception as err:
                 command_response("disconnect", False)

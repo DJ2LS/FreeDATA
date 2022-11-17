@@ -1369,6 +1369,11 @@ class DATA:
                     if static.ARQ_SESSION:
                         return True
 
+                    # Stop waiting and interrupt if data channel is getting closed while opening
+                    if static.ARQ_SESSION_STATE == "disconnecting":
+                        self.close_session()
+                        return False
+
             # Session connect timeout, send close_session frame to
             # attempt to clean up the far-side, if it received the
             # open_session frame and can still hear us.
@@ -1443,6 +1448,8 @@ class DATA:
         # we would lose our session id then
         self.send_disconnect_frame()
         self.arq_cleanup()
+
+        static.ARQ_SESSION_STATE = "disconnected"
 
     def received_session_close(self, data_in: bytes):
         """
