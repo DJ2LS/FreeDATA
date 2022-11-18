@@ -22,6 +22,14 @@ var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
 
+
+// SET dbfs LEVEL GLOBAL
+// this is an attempt of reducing CPU LOAD
+// we are going to check if we have unequal values before we start calculating again
+var dbfs_level_raw = 0
+
+
+
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
 
@@ -1486,11 +1494,16 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
     }
-    // RMS
-    var rms_level = (arg.rms_level / 32767)  * 100
-    document.getElementById("rms_level").setAttribute("aria-valuenow", rms_level);
-    document.getElementById("rms_level").setAttribute("style", "width:" + rms_level + "%;");
-
+    // dbfs
+    // https://www.moellerstudios.org/converting-amplitude-representations/
+    if (dbfs_level_raw != arg.dbfs_level){
+        dbfs_level_raw = arg.dbfs_level
+        dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
+        console.log(dbfs_level)
+        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
+        document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
+        document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
+    }
 
     // SET FREQUENCY
     document.getElementById("frequency").innerHTML = arg.frequency;

@@ -844,7 +844,7 @@ class RF:
         # Initialize channel_busy_delay counter
         channel_busy_delay = 0
 
-        # Initialize rms counter
+        # Initialize dbfs counter
         rms_counter = 0
 
         while True:
@@ -876,16 +876,17 @@ class RF:
                     if not static.TRANSMITTING:
                         dfft[dfft > avg + 10] = 100
 
-                        # Calculate audio RMS
+                        # Calculate audio dbfs
                         # https://stackoverflow.com/a/9763652
-                        # calculate RMS every 50 cycles for reducing CPU load
+                        # calculate dbfs every 50 cycles for reducing CPU load
                         rms_counter += 1
                         if rms_counter > 50:
                             d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
+                            # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
                             rms = int(np.sqrt(np.mean(d ** 2)))
-                            static.AUDIO_RMS = 20 * np.log10(rms * np.sqrt(2) / 32768)
+                            static.AUDIO_DBFS = 20 * np.log10(rms * np.sqrt(2) / 32768)
 
                             rms_counter = 0
 

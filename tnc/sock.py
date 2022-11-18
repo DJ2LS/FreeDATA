@@ -530,7 +530,7 @@ def send_tnc_state():
         "arq_state": str(static.ARQ_STATE),
         "arq_session": str(static.ARQ_SESSION),
         "arq_session_state": str(static.ARQ_SESSION_STATE),
-        "audio_rms": str(static.AUDIO_RMS),
+        "audio_dbfs": str(static.AUDIO_DBFS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),

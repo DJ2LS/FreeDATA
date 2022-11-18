@@ -83,7 +83,7 @@ AUDIO_INPUT_DEVICE: int = -2
 AUDIO_OUTPUT_DEVICE: int = -2
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
-AUDIO_RMS: int = 0
+AUDIO_DBFS: int = 0
 FFT: list = [0]
 ENABLE_FFT: bool = False
 CHANNEL_BUSY: bool = False

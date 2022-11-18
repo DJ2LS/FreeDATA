@@ -56,7 +56,7 @@ client.on('connect', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
     };
     ipcRenderer.send('request-update-tnc-state', Data);
     
@@ -85,7 +85,7 @@ client.on('error', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
 
     };
     ipcRenderer.send('request-update-tnc-state', Data);
@@ -200,7 +200,7 @@ client.on('data', function(socketdata) {
                     speed_level: data['speed_level'],
                     mode: data['mode'],
                     bandwidth: data['bandwidth'],
-                    rms_level: data['audio_rms'],
+                    dbfs_level: data['audio_dbfs'],
                     fft: data['fft'],
                     channel_busy: data['channel_busy'],
                     scatter: data['scatter'],
