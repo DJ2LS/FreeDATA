@@ -337,51 +337,47 @@ def process_tnc_commands(data):
                     # set early disconnecting state so we can interrupt connection attempts
                     static.ARQ_SESSION_STATE = "disconnecting"
 
-                    # set disconnect timeout to 15 seconds to avoid being stuck here if disconnect fails
-                    disconnect_timeout = time.time() + 15
-                    # wait until disconnected or timeout reached
-                    while static.ARQ_SESSION_STATE != 'disconnected' and time.time() < disconnect_timeout:
-                        time.sleep(0.01)
+                # wait for disconnecting
+                log.info(
+                    "[SCK] Waiting for disconnecting",
+                    callsign=static.DXCALLSIGN,
+                    command=received_json,
+                )
+                # set disconnect timeout to 15 seconds to avoid being stuck here if disconnect fails
+                disconnect_timeout = time.time() + 15
+                # wait until disconnected or timeout reached
+                while static.ARQ_SESSION_STATE != 'disconnected' and time.time() < disconnect_timeout:
+                    time.sleep(0.01)
 
-                    # finally check again if we are disconnected or failed
-                    if static.ARQ_SESSION_STATE == 'disconnected' or static.ARQ_SESSION_STATE == 'failed':
+                # finally check again if we are disconnected or failed
+                if static.ARQ_SESSION_STATE == 'disconnected' or static.ARQ_SESSION_STATE == 'failed':
 
-                        # try connecting
-                        try:
-                            static.DXCALLSIGN = dxcallsign
-                            static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+                    # try connecting
+                    try:
+                        static.DXCALLSIGN = dxcallsign
+                        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                            DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
-                            command_response("connect", True)
-                        except Exception as err:
-                            command_response("connect", False)
-                            log.warning(
-                                "[SCK] Connect command execution error",
-                                e=err,
-                                command=received_json,
-                            )
-                            # allow beacon transmission again
-                            static.BEACON_PAUSE = False
-
-                    else:
+                        DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
+                        command_response("connect", True)
+                    except Exception as err:
                         command_response("connect", False)
                         log.warning(
                             "[SCK] Connect command execution error",
-                            e="connection still exists",
+                            e=err,
                             command=received_json,
                         )
                         # allow beacon transmission again
                         static.BEACON_PAUSE = False
 
-                # finally an error - we shouldn't reach this point
-                command_response("connect", False)
-                log.error(
-                    "[SCK] Connect command execution error - shouldn't reach this point",
-                    e="connection exists",
-                    command=received_json,
-                )
-                # allow beacon transmission again
-                static.BEACON_PAUSE = False
+                else:
+                    command_response("connect", False)
+                    log.warning(
+                        "[SCK] Connect command execution error",
+                        e="connection still exists",
+                        command=received_json,
+                    )
+                    # allow beacon transmission again
+                    static.BEACON_PAUSE = False
 
 
         # DISCONNECT ----------------------------------------------------------
