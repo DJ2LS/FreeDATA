@@ -551,7 +551,7 @@ def send_tnc_state():
         "mycallsign": str(static.MYCALLSIGN, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
-        "hamlib_status": str(static.HAMLIB_STATUS, encoding),
+        "hamlib_status": static.HAMLIB_STATUS,
     }
 
     # add heard stations to heard stations object
