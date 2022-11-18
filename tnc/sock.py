@@ -322,9 +322,8 @@ def process_tnc_commands(data):
                 command_response("connect", False)
                 log.warning(
                     "[SCK] Connect command execution error",
-                    e=err,
+                    e="already connected to callsign",
                     command=received_json,
-                    reason="already connected to callsign",
                 )
 
             else:
@@ -368,9 +367,8 @@ def process_tnc_commands(data):
                         command_response("connect", False)
                         log.warning(
                             "[SCK] Connect command execution error",
-                            e=err,
+                            e="connection still exists",
                             command=received_json,
-                            reason="connection still exists"
                         )
                         # allow beacon transmission again
                         static.BEACON_PAUSE = False
@@ -379,9 +377,8 @@ def process_tnc_commands(data):
                 command_response("connect", False)
                 log.error(
                     "[SCK] Connect command execution error - shouldn't reach this point",
-                    e=err,
+                    e="connection exists",
                     command=received_json,
-                    reason="connection exists"
                 )
                 # allow beacon transmission again
                 static.BEACON_PAUSE = False
