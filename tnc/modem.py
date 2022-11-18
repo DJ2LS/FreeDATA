@@ -912,12 +912,15 @@ class RF:
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
                     # so we have a smoother state toggle
-                    if np.sum(dfft[dfft > avg + 10]) >= 300 and not static.TRANSMITTING:
+                    if np.sum(dfft[dfft > avg + 10]) >= 400 and not static.TRANSMITTING:
                         static.CHANNEL_BUSY = True
-                        # Limit delay counter to a maximum of 50. The higher this value,
+                        # Limit delay counter to a maximum of 250. The higher this value,
                         # the longer we will wait until releasing state
-                        channel_busy_delay = min(channel_busy_delay + 5, 250)
+                        channel_busy_delay = min(channel_busy_delay + 10, 250)
                     else:
+                        # if transmitting set busy delay to 0 for avoiding too much false positives
+                        if static.TRANSMITTING:
+                            channel_busy_delay = 0
                         # Decrement channel busy counter if no signal has been detected.
                         channel_busy_delay = max(channel_busy_delay - 1, 0)
                         # When our channel busy counter reaches 0, toggle state to False
