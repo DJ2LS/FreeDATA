@@ -37,17 +37,27 @@ html {
     padding: 1px;
 }
 
-/* ------ fixed border table header --------- */
-.tableFixHead          {
-overflow: auto;
-height: 90vh;
+/* fixed border table header */
+.tableFixHead {
+    overflow: auto;
+    height: 90vh;
 }
-.tableFixHead thead th { position: sticky; top: 0; z-index: 1; }
+.tableFixHead thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+table  {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    padding: 8px 16px;
+}
 
-/* Just common table stuff. Really. */
-table  { border-collapse: collapse; width: 100%; }
-th, td { padding: 8px 16px; }
-th     { background:#eee; }
+th     {
+    background:#eee;
+}
 
 
 /* ------ emoji picker customization --------- */
