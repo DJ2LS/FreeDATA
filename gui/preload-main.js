@@ -1499,7 +1499,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (dbfs_level_raw != arg.dbfs_level){
         dbfs_level_raw = arg.dbfs_level
         dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
-        console.log(dbfs_level)
+
         document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
         document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
         document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
