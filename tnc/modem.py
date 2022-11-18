@@ -882,7 +882,11 @@ class RF:
                         rms_counter += 1
                         if rms_counter > 50:
                             d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
-                            static.AUDIO_RMS = int(np.sqrt(np.mean(d ** 2)))
+                            # calculate RMS and then dBFS
+                            # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
+                            rms = int(np.sqrt(np.mean(d ** 2)))
+                            static.AUDIO_RMS = 20 * np.log10(rms * np.sqrt(2) / 32768)
+
                             rms_counter = 0
 
                     # Convert data to int to decrease size
