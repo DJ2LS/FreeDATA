@@ -1459,6 +1459,14 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     }
 
+    // HAMLIB STATUS
+    if (arg.hamlib_status == 'connected') {
+        document.getElementById("rigctld_state").className = "btn btn-success btn-sm";
+
+    } else {
+        document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
+    }
+
 
 
     // BEACON STATE

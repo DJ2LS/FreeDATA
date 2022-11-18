@@ -60,6 +60,7 @@ HAMLIB_RADIOCONTROL: str = "direct"
 HAMLIB_RIGCTLD_IP: str = "127.0.0.1"
 HAMLIB_RIGCTLD_PORT: str = "4532"
 
+HAMLIB_STATUS: str = "unknown/disconnected"
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0

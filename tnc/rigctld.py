@@ -6,7 +6,7 @@
 
 import socket
 import time
-
+import static
 import structlog
 
 # set global hamlib version
@@ -136,6 +136,9 @@ class radio:
 
         return b""
 
+    def get_status(self):
+        """ """
+        return "connected" if self.connected else "unknown/disconnected"
     def get_mode(self):
         """ """
         try:

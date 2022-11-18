@@ -221,6 +221,7 @@ client.on('data', function(socketdata) {
                     arq_transmission_percent: data['arq_transmission_percent'],
                     stations: data['stations'],
                     beacon_state: data['beacon_state'],
+                    hamlib_status: data['hamlib_status'],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
