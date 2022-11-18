@@ -879,6 +879,9 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 
 // CHECK RIGCTLD CONNECTION
+// create new socket so we are not reopening every time a new one
+var rigctld_connection = new net.Socket();
+var rigctld_connection_state = false;
 ipcMain.on('request-check-rigctld',(event, data)=>{
 
     try{
@@ -887,23 +890,35 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
                 state: "unknown",
         };
 
-        var rigctld = new net.Socket();
-        rigctld.connect(data.port, data.ip)
+        if(!rigctld_connection_state){
+            rigctld_connection = new net.Socket();
+            rigctld_connection.connect(data.port, data.ip)
+        }
 
-        rigctld.on('error', function() {
+        // check if we have created a new socket object
+        if (typeof(rigctld_connection) != 'undefined') {
 
+        rigctld_connection.on('connect', function() {
+            rigctld_connection_state = true;
+            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
+            if (win !== null && win !== ''){
+                win.webContents.send('action-check-rigctld', Data);
+            }
+        })
+
+        rigctld_connection.on('error', function() {
+            rigctld_connection_state = false;
             Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
             if (win !== null && win !== ''){
                 win.webContents.send('action-check-rigctld', Data);
             }
         })
 
-        rigctld.on('connect', function() {
-            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
-            }
+        rigctld_connection.on('end', function() {
+            rigctld_connection_state = false;
         })
+
+        }
 
     } catch(e) {
         console.log(e)
