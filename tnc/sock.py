@@ -306,29 +306,86 @@ def process_tnc_commands(data):
 
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "connect":
+
+            # pause our beacon first
             static.BEACON_PAUSE = True
-            # send ping frame and wait for ACK
-            try:
-                dxcallsign = received_json["dxcallsign"]
 
-                # additional step for beeing sure our callsign is correctly
-                # in case we are not getting a station ssid
-                # then we are forcing a station ssid = 0
-                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+            dxcallsign = received_json["dxcallsign"]
 
-                static.DXCALLSIGN = dxcallsign
-                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
-                command_response("connect", True)
-            except Exception as err:
+            if dxcallsign == static.DXCALLSIGN and static.ARQ_SESSION_STATE != "disconnected":
                 command_response("connect", False)
                 log.warning(
                     "[SCK] Connect command execution error",
                     e=err,
                     command=received_json,
+                    reason="already connected to callsign",
                 )
+
+            else:
+                # check if we are going to connect to a different callsign
+                # if so, then disconnect first
+                if dxcallsign != static.DXCALLSIGN and static.ARQ_SESSION_STATE != "disconnected":
+                    command_response("connect", True)
+
+                    # lets disconnect
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+
+                    # set disconnect timeout to 15 seconds to avoid being stuck here if disconnect fails
+                    disconnect_timeout = time.time() + 15
+                    # wait until disconnected or timeout reached
+                    while static.ARQ_SESSION_STATE != 'disconnected' and time.time() < disconnect_timeout:
+                        time.sleep(0.01)
+
+                    # finally check again if we are disconnected or failed
+                    if static.ARQ_SESSION_STATE == 'disconnected' or static.ARQ_SESSION_STATE == 'failed':
+
+                        # try connecting
+                        try:
+                            static.DXCALLSIGN = dxcallsign
+                            static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+
+                            DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
+                            command_response("connect", True)
+                        except Exception as err:
+                            command_response("connect", False)
+                            log.warning(
+                                "[SCK] Connect command execution error",
+                                e=err,
+                                command=received_json,
+                            )
+                            # allow beacon transmission again
+                            static.BEACON_PAUSE = False
+
+                    else:
+                        command_response("connect", False)
+                        log.warning(
+                            "[SCK] Connect command execution error",
+                            e=err,
+                            command=received_json,
+                            reason="connection still exists"
+                        )
+                        # allow beacon transmission again
+                        static.BEACON_PAUSE = False
+
+                # finally an error - we shouldn't reach this point
+                command_response("connect", False)
+                log.error(
+                    "[SCK] Connect command execution error - shouldn't reach this point",
+                    e=err,
+                    command=received_json,
+                    reason="connection exists"
+                )
+                # allow beacon transmission again
+                static.BEACON_PAUSE = False
+
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
