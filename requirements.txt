@@ -7,6 +7,10 @@ sounddevice
 structlog
 ujson
 requests
+colorama
+ordered-set
+nuitka
+pyinstaller
 
 # Development and test dependencies
 autopep8
