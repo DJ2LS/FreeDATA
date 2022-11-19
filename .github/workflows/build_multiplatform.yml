@@ -238,10 +238,10 @@ jobs:
         with:
           node-version: 16
 
-      ##- name: Create tnc/dist
-      ##  working-directory: tnc
-      ##  run: |
-      ##    mkdir -p dist
+      - name: Create tnc/dist
+        working-directory: tnc
+        run: |
+          mkdir -p dist
 
       ##- name: Download libcodec2 artifact TNC DIST
       ##  uses: actions/download-artifact@v3
