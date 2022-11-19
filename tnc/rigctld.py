@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# class taken from darsidelemm
+# class taken from darksidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
 # modified and adjusted to FreeDATA needs by DJ2LS
@@ -16,8 +16,6 @@ hamlib_version = 0
 class radio:
     """rigctld (hamlib) communication class"""
 
-    # Note: This is a massive hack.
-
     log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
@@ -29,6 +27,12 @@ class radio:
         self.hostname = hostname
         self.port = port
         self.connection_attempts = 5
+
+        # class wide variable for some parameters
+        self.bandwidth = 0
+        self.frequency = 0
+        self.mode = ''
+
 
     def open_rig(
         self,
@@ -144,8 +148,10 @@ class radio:
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            mode = data[0]
-            return mode.decode("utf-8")
+            if 'RPRT' not in data[0]:
+                self.mode = data[0]
+
+            return self.mode.decode("utf-8")
         except Exception:
             return 0
 
@@ -154,16 +160,21 @@ class radio:
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            bandwidth = data[1]
-            return bandwidth.decode("utf-8")
+
+            if 'RPRT' not in data[1]:
+                self.bandwidth = data[1]
+            return self.bandwidth.decode("utf-8")
         except Exception:
             return 0
 
     def get_frequency(self):
         """ """
         try:
-            frequency = self.send_command(b"f")
-            return frequency.decode("utf-8")
+            data = self.send_command(b"f")
+            if 'RPRT' not in data:
+                self.frequency = data
+
+            return self.frequency.decode("utf-8")
         except Exception:
             return 0
 

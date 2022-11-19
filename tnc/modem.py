@@ -830,7 +830,7 @@ class RF:
           - static.HAMLIB_BANDWIDTH
         """
         while True:
-            threading.Event().wait(1.0)
+            threading.Event().wait(0.5)
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
