@@ -320,9 +320,11 @@ class DAEMON:
 
                     # check how we want to control the radio
                     if radiocontrol == "direct":
-                        import rig
+                        print("direct hamlib support deprecated - not usable anymore")
+                        sys.exit(1)
                     elif radiocontrol == "rigctl":
-                        import rigctl as rig
+                        print("rigctl support deprecated - not usable anymore")
+                        sys.exit(1)
                     elif radiocontrol == "rigctld":
                         import rigctld as rig
                     else:

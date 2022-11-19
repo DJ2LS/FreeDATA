@@ -199,9 +199,11 @@ class RF:
         # Check how we want to control the radio
         # TODO: deprecated feature - we can remove this possibly
         if static.HAMLIB_RADIOCONTROL == "direct":
-            import rig
+            print("direct hamlib support deprecated - not usable anymore")
+            sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctl":
-            import rigctl as rig
+            print("rigctl support deprecated - not usable anymore")
+            sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
         else:
