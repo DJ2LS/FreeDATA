@@ -147,39 +147,38 @@ class radio:
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            data = data.decode("utf-8")
-            if 'RPRT' not in data[0]:
-                self.mode = data[0]
+            data = data[0].decode("utf-8")
+            if 'RPRT' not in data:
+                self.mode = data
 
             return self.mode
         except Exception:
-            return 0
+            return self.mode
 
     def get_bandwidth(self):
         """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            data = data.decode("utf-8")
+            data = data[1].decode("utf-8")
 
-            if 'RPRT' not in data[1]:
-                self.bandwidth = data[1]
+            if 'RPRT' not in data:
+                self.bandwidth = data
             return self.bandwidth
         except Exception:
-            return 0
+            return self.bandwidth
 
     def get_frequency(self):
         """ """
         try:
             data = self.send_command(b"f")
             data = data.decode("utf-8")
-            print(data)
             if 'RPRT' not in data:
                 self.frequency = data
 
             return self.frequency
         except Exception:
-            return 0
+            return self.frequency
 
     def get_ptt(self):
         """ """
