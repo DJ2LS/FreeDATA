@@ -318,15 +318,15 @@ def process_tnc_commands(data):
             dxcallsign = helpers.callsign_to_bytes(dxcallsign)
             dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-            if dxcallsign == static.DXCALLSIGN and static.ARQ_SESSION_STATE != "disconnected":
+            if static.ARQ_SESSION_STATE != "disconnected":
                 command_response("connect", False)
                 log.warning(
                     "[SCK] Connect command execution error",
-                    e="already connected to callsign",
+                    e=f"already connected to station:{static.DXCALLSIGN}",
                     command=received_json,
                 )
-
             else:
+                """
                 # check if we are going to connect to a different callsign
                 # if so, then disconnect first
                 if dxcallsign != static.DXCALLSIGN and static.ARQ_SESSION_STATE != "disconnected":
@@ -343,11 +343,15 @@ def process_tnc_commands(data):
                     callsign=static.DXCALLSIGN,
                     command=received_json,
                 )
+                
+                
+                
                 # set disconnect timeout to 15 seconds to avoid being stuck here if disconnect fails
                 disconnect_timeout = time.time() + 15
                 # wait until disconnected or timeout reached
                 while static.ARQ_SESSION_STATE != 'disconnected' and time.time() < disconnect_timeout:
                     time.sleep(0.01)
+                """
 
                 # finally check again if we are disconnected or failed
                 if static.ARQ_SESSION_STATE == 'disconnected' or static.ARQ_SESSION_STATE == 'failed':
@@ -378,7 +382,6 @@ def process_tnc_commands(data):
                     )
                     # allow beacon transmission again
                     static.BEACON_PAUSE = False
-
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
