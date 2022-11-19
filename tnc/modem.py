@@ -929,8 +929,6 @@ class RF:
                         if channel_busy_delay == 0:
                             static.CHANNEL_BUSY = False
 
-
-
                     static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")

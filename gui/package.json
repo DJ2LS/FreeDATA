@@ -91,7 +91,8 @@
       "releaseType": "release"
     },
     "extraResources": [
-      "./tnc/**"
+      "./tnc/**",
+      "../tnc/dist/tnc/**"
     ]
   }
 }
