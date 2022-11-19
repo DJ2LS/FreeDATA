@@ -6,7 +6,6 @@
 
 import socket
 import time
-import static
 import structlog
 
 # set global hamlib version
@@ -21,7 +20,6 @@ class radio:
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """Open a connection to rigctld, and test it for validity"""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.sock.settimeout(timeout)
 
         self.connected = False
         self.hostname = hostname
@@ -143,6 +141,7 @@ class radio:
     def get_status(self):
         """ """
         return "connected" if self.connected else "unknown/disconnected"
+
     def get_mode(self):
         """ """
         try:
