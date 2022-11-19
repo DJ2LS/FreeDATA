@@ -29,8 +29,8 @@ class radio:
         self.connection_attempts = 5
 
         # class wide variable for some parameters
-        self.bandwidth = 0
-        self.frequency = 0
+        self.bandwidth = ''
+        self.frequency = ''
         self.mode = ''
 
 
@@ -148,10 +148,11 @@ class radio:
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
+            data = data.decode("utf-8")
             if 'RPRT' not in data[0]:
                 self.mode = data[0]
 
-            return self.mode.decode("utf-8")
+            return self.mode
         except Exception:
             return 0
 
@@ -160,10 +161,11 @@ class radio:
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
+            data = data.decode("utf-8")
 
             if 'RPRT' not in data[1]:
                 self.bandwidth = data[1]
-            return self.bandwidth.decode("utf-8")
+            return self.bandwidth
         except Exception:
             return 0
 
@@ -171,10 +173,12 @@ class radio:
         """ """
         try:
             data = self.send_command(b"f")
+            data = data.decode("utf-8")
+            print(data)
             if 'RPRT' not in data:
                 self.frequency = data
 
-            return self.frequency.decode("utf-8")
+            return self.frequency
         except Exception:
             return 0
 
