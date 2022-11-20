@@ -9,6 +9,7 @@ import time
 import crcengine
 import static
 import structlog
+import numpy as np
 
 log = structlog.get_logger("helpers")
 
@@ -443,3 +444,19 @@ def decode_call(b_code_word: bytes):
     call = call[:-1] + ssid  # remove the last char from call and replace with SSID
 
     return call
+
+def snr_to_bytes(snr):
+    """create a byte from snr value """
+    # make sure we have onl 1 byte snr
+    # min max = -12.7 / 12.7
+    # enough for detecting if a channel is good or bad
+    snr = snr * 10
+    snr = np.clip(snr, -127, 127)
+    snr = int(snr).to_bytes(1, byteorder='big', signed=True)
+    return snr
+
+def snr_from_bytes(snr):
+    """create int from snr byte"""
+    snr = int.from_bytes(snr, byteorder='big', signed=True)
+    snr = snr / 10
+    return snr

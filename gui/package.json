@@ -55,11 +55,11 @@
     "appId": "app.freedata",
     "npmRebuild": "false",
     "directories": {
-      "buildResources": "src/img",
+      "buildResources": "build",
       "output": "dist"
     },
     "dmg": {
-      "icon": "src/img/icon.png",
+      "icon": "build/icon.png",
       "contents": [
         {
           "x": 130,
@@ -74,13 +74,13 @@
       ]
     },
     "win": {
-      "icon": "src/img/icon.png",
+      "icon": "build/icon.png",
       "target": [
         "nsis"
       ]
     },
     "linux": {
-      "icon": "src/img/icon.png",
+      "icon": "build/icon.png",
       "target": [
         "AppImage"
       ],
@@ -91,7 +91,13 @@
       "releaseType": "release"
     },
     "extraResources": [
-      "./tnc/**"
+      {
+        "from": "../tnc/dist/tnc/",
+        "to": "tnc",
+        "filter": [
+          "**/*"
+        ]
+      }
     ]
   }
 }

@@ -186,7 +186,7 @@ class DATA:
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
         }
         self.command_dispatcher = {
-            "CONNECT": (self.arq_session_handler, "CONNECT"),
+            #"CONNECT": (self.arq_session_handler, "CONNECT"),
             "CQ": (self.transmit_cq, "CQ"),
             "DISCONNECT": (self.close_session, "DISCONNECT"),
             "SEND_TEST_FRAME": (self.send_test_frame, "TEST"),
@@ -232,6 +232,11 @@ class DATA:
                 self.command_dispatcher[data[0]][0]()
 
             # Dispatch commands that need more arguments.
+            elif data[0] == "CONNECT":
+                # [1] dxcallsign
+                # [2] attempts
+                self.arq_session_handler(data[1], data[2])
+
             elif data[0] == "PING":
                 # [1] dxcallsign
                 self.transmit_ping(data[1])
@@ -251,7 +256,8 @@ class DATA:
                 # [3] N_FRAMES_PER_BURST int
                 # [4] self.transmission_uuid str
                 # [5] mycallsign with ssid
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
+                # [6] attempts
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6])
 
             else:
                 self.log.error(
@@ -426,12 +432,15 @@ class DATA:
 
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
+
+
+
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[1:2] = self.session_id
-        ack_frame[2:3] = bytes([int(snr)])
+        ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
         # Transmit frame
@@ -439,9 +448,11 @@ class DATA:
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
+
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:2] = self.session_id
+        ack_frame[2:3] = helpers.snr_to_bytes(snr)
         # ack_frame[1:4] = static.DXCALLSIGN_CRC
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         # ack_frame[7:8] = bytes([int(snr)])
@@ -480,29 +491,30 @@ class DATA:
         # Transmit frame
         self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
-    def send_burst_nack_frame(self, snr: float = 0) -> None:
+    def send_burst_nack_frame(self, snr: bytes) -> None:
         """Build and send NACK frame for received DATA frame"""
+
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
-    def send_burst_nack_frame_watchdog(self, snr: float = 0) -> None:
-
+    def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
+
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
         # nack_frame[1:4] = static.DXCALLSIGN_CRC
         # nack_frame[4:7] = static.MYCALLSIGN_CRC
-        nack_frame[2:3] = bytes([int(snr)])
+        nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
         # TRANSMIT NACK FRAME FOR BURST
@@ -520,7 +532,7 @@ class DATA:
         # TODO: We need to add the ident frame feature with a seperate PR after publishing latest protocol
         # TODO: We need to wait some time between last arq related signalling frame and ident frame
         # TODO: Maybe about 500ms - 1500ms to avoid confusion and too much PTT toggles
-        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
+        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=6, repeat_delay=0)
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -1070,6 +1082,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                irs_snr=self.burst_ack_snr,
             )
 
             # Stay in the while loop until we receive a data_frame_ack. Otherwise,
@@ -1168,9 +1181,13 @@ class DATA:
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
-            self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
+            # self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
+            self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
+            self.log.info("SNR ON IRS", snr=self.burst_ack_snr)
+
             self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
+
 
             self.log.debug(
                 f"[TNC] burst_{desc}_received:",
@@ -1263,7 +1280,7 @@ class DATA:
     ############################################################################################################
     # ARQ SESSION HANDLER
     ############################################################################################################
-    def arq_session_handler(self) -> bool:
+    def arq_session_handler(self, dxcallsign, attempts) -> bool:
         """
         Create a session with `static.DXCALLSIGN` and wait until the session is open.
 
@@ -1271,6 +1288,9 @@ class DATA:
             True if the session was opened successfully
             False if the session open request failed
         """
+        # override connection attempts
+        self.session_connect_max_retries = attempts
+
         # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         self.log.info(
@@ -1281,6 +1301,32 @@ class DATA:
             + "]",
             state=static.ARQ_SESSION_STATE,
         )
+
+        # Let's check if we have a busy channel
+        if static.CHANNEL_BUSY:
+            self.log.warning("[TNC] Channel busy, waiting until free...")
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="waiting",
+            )
+
+            # wait while timeout not reached and our busy state is busy
+            channel_busy_timeout = time.time() + 30
+            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+                time.sleep(0.01)
+
+            # if channel busy timeout reached stop connecting
+            if time.time() > channel_busy_timeout:
+                self.log.warning("[TNC] Channel busy, try again later...")
+                static.ARQ_SESSION_STATE = "failed"
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="session",
+                    status="failed",
+                    reason="busy",
+                )
+                return False
 
         self.open_session()
 
@@ -1302,6 +1348,16 @@ class DATA:
             )
             return True
 
+        self.log.warning(
+            "[TNC] SESSION FAILED ["
+            + str(self.mycallsign, "UTF-8")
+            + "]>>X<<["
+            + str(static.DXCALLSIGN, "UTF-8")
+            + "]",
+            attempts=self.session_connect_max_retries,  # Adjust for 0-based for user display
+            reason="maximum connection attempts reached",
+            state=static.ARQ_SESSION_STATE,
+        )
         static.ARQ_SESSION_STATE = "failed"
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -1325,7 +1381,6 @@ class DATA:
         # create a random session id
         # self.session_id = randbytes(1)
         self.session_id = np.random.bytes(1)
-        print(self.session_id)
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
@@ -1343,7 +1398,7 @@ class DATA:
                     + "]>>?<<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    a=attempt + 1,  # Adjust for 0-based for user display
+                    a=str(attempt + 1) + "/" + str(self.session_connect_max_retries),  # Adjust for 0-based for user display
                     state=static.ARQ_SESSION_STATE,
                 )
 
@@ -1357,6 +1412,12 @@ class DATA:
                     # Stop waiting if data channel is opened
                     if static.ARQ_SESSION:
                         return True
+
+                    # Stop waiting and interrupt if data channel is getting closed while opening
+                    if static.ARQ_SESSION_STATE == "disconnecting":
+                        # disabled this session close as its called twice
+                        # self.close_session()
+                        return False
 
             # Session connect timeout, send close_session frame to
             # attempt to clean up the far-side, if it received the
@@ -1409,14 +1470,7 @@ class DATA:
     def close_session(self) -> None:
         """Close the ARQ session"""
         static.ARQ_SESSION_STATE = "disconnecting"
-        helpers.add_to_heard_stations(
-            static.DXCALLSIGN,
-            static.DXGRID,
-            "DATA-CHANNEL",
-            static.SNR,
-            static.FREQ_OFFSET,
-            static.HAMLIB_FREQUENCY,
-        )
+
         self.log.info(
             "[TNC] SESSION ["
             + str(self.mycallsign, "UTF-8")
@@ -1439,6 +1493,8 @@ class DATA:
         # we would lose our session id then
         self.send_disconnect_frame()
         self.arq_cleanup()
+
+        static.ARQ_SESSION_STATE = "disconnected"
 
     def received_session_close(self, data_in: bytes):
         """
@@ -1550,6 +1606,7 @@ class DATA:
             n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
+            attempts: int,
     ) -> bool:
         """
         Open data channel and transmit data
@@ -1560,6 +1617,7 @@ class DATA:
           n_frames_per_burst:int:
           transmission_uuid:str:
           mycallsign:bytes:
+          attempts:int: Overriding number of attempts initiating a connection
 
         Returns:
             True if the data session was opened and the data was sent
@@ -1567,6 +1625,9 @@ class DATA:
         """
         # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
+
+        # override session connection attempts
+        self.data_channel_max_retries = attempts
 
         static.TNC_STATE = "BUSY"
         self.arq_file_transfer = True
@@ -1584,6 +1645,33 @@ class DATA:
         # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
+
+        # Let's check if we have a busy channel and if we are not in a running arq session.
+        if static.CHANNEL_BUSY and not static.ARQ_SESSION:
+            self.log.warning("[TNC] Channel busy, waiting until free...")
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="transmission",
+                status="waiting",
+            )
+
+            # wait while timeout not reached and our busy state is busy
+            channel_busy_timeout = time.time() + 30
+            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+                time.sleep(0.01)
+
+            # if channel busy timeout reached, stop connecting
+            if time.time() > channel_busy_timeout:
+                self.log.warning("[TNC] Channel busy, try again later...")
+                static.ARQ_SESSION_STATE = "failed"
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="transmission",
+                    status="failed",
+                    reason="busy",
+                )
+                static.ARQ_SESSION_STATE = "disconnected"
+                return False
 
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
@@ -2477,6 +2565,10 @@ class DATA:
 
         # reset retry counter for rx channel / burst
         self.n_retries_per_burst = 0
+
+        # reset max retries possibly overriden by api
+        self.session_connect_max_retries = 15
+        self.data_channel_max_retries = 15
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"

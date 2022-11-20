@@ -60,6 +60,7 @@ HAMLIB_RADIOCONTROL: str = "direct"
 HAMLIB_RIGCTLD_IP: str = "127.0.0.1"
 HAMLIB_RIGCTLD_PORT: str = "4532"
 
+HAMLIB_STATUS: str = "unknown/disconnected"
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0
@@ -82,7 +83,7 @@ AUDIO_INPUT_DEVICE: int = -2
 AUDIO_OUTPUT_DEVICE: int = -2
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
-AUDIO_RMS: int = 0
+AUDIO_DBFS: int = 0
 FFT: list = [0]
 ENABLE_FFT: bool = False
 CHANNEL_BUSY: bool = False

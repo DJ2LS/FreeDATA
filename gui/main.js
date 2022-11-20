@@ -549,7 +549,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
         console.log(data.file)        
 
               try {
-              
+
                 let buffer = Buffer.from(data.file);
                 let arraybuffer = Uint8Array.from(buffer);
                 console.log(arraybuffer)
@@ -622,6 +622,12 @@ ipcMain.on('request-show-arq-toast-datachannel-opening',(event,data)=>{
     win.webContents.send('action-show-arq-toast-datachannel-opening', data);
 });
 
+// ARQ DATA CHANNEL WAITING
+ipcMain.on('request-show-arq-toast-datachannel-waiting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-waiting', data);
+});
+
+
 // ARQ DATA CHANNEL OPEN
 ipcMain.on('request-show-arq-toast-datachannel-opened',(event,data)=>{
     win.webContents.send('action-show-arq-toast-datachannel-opened', data);
@@ -660,6 +666,11 @@ ipcMain.on('request-show-arq-toast-transmission-transmitted',(event,data)=>{
 // ARQ SESSION CONNECTING
 ipcMain.on('request-show-arq-toast-session-connecting',(event,data)=>{
     win.webContents.send('action-show-arq-toast-session-connecting', data);
+});
+
+// ARQ SESSION WAITING
+ipcMain.on('request-show-arq-toast-session-waiting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-waiting', data);
 });
 
 // ARQ SESSION CONNECTED
@@ -811,14 +822,23 @@ function close_all() {
 // RUN RIGCTLD
 ipcMain.on('request-start-rigctld',(event, data)=>{
 
-
     try{
-        spawn(data.path, data.parameters);
+        let rigctld_proc = spawn(data.path, data.parameters);
+
+        rigctld_proc.on('exit', function (code) {
+            console.log('rigctld process exited with code ' + code);
+
+            // if rigctld crashes, error code is -2
+            // then we are going to restart rigctld
+            // this "fixes" a problem with latest rigctld on raspberry pi
+            //if (code == -2){
+            //    setTimeout(ipcRenderer.send('request-start-rigctld', data), 500);
+            //}
+            //let rigctld_proc = spawn(data.path, data.parameters);
+        });
     } catch (e) {
      console.log(e);
     }
-
-
 
     /*
     const rigctld = exec(data.path, data.parameters);
@@ -859,6 +879,9 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 
 // CHECK RIGCTLD CONNECTION
+// create new socket so we are not reopening every time a new one
+var rigctld_connection = new net.Socket();
+var rigctld_connection_state = false;
 ipcMain.on('request-check-rigctld',(event, data)=>{
 
     try{
@@ -867,23 +890,45 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
                 state: "unknown",
         };
 
-        var rigctld = new net.Socket();
-        rigctld.connect(data.port, data.ip)
+        if(!rigctld_connection_state){
+            rigctld_connection = new net.Socket();
+            rigctld_connection.connect(data.port, data.ip)
+        }
 
-        rigctld.on('error', function() {
+        // check if we have created a new socket object
+        if (typeof(rigctld_connection) != 'undefined') {
 
-            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
-            }
-        })
-
-        rigctld.on('connect', function() {
+        rigctld_connection.on('connect', function() {
+            rigctld_connection_state = true;
             Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
             }
         })
+
+        rigctld_connection.on('error', function() {
+            rigctld_connection_state = false;
+            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
+            }
+        })
+
+        rigctld_connection.on('end', function() {
+            rigctld_connection_state = false;
+        })
+
+        }
 
     } catch(e) {
         console.log(e)

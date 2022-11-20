@@ -41,6 +41,16 @@ class radio:
         """
         return None
 
+    def get_status(self):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return "connected"
     def get_ptt(self):
         """ """
         return None

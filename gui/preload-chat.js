@@ -62,6 +62,25 @@ try{
 
 PouchDB.plugin(require('pouchdb-find'));
 var db = new PouchDB(chatDB);
+var remoteDB = new PouchDB('http://192.168.178.79:5984/chatDB')
+
+db.sync(remoteDB, {
+  live: true,
+  retry: true
+}).on('change', function (change) {
+  // yo, something changed!
+  console.log(change)
+}).on('paused', function (info) {
+  // replication was paused, usually because of a lost connection
+  console.log(info)
+}).on('active', function (info) {
+  // replication was resumed
+  console.log(info)
+}).on('error', function (err) {
+  // totally unhandled error (shouldn't happen)
+  console.log(error)
+});
+
 var dxcallsigns = new Set();
 db.createIndex({
     index: {
@@ -73,6 +92,7 @@ db.createIndex({
 }).catch(function(err) {
     console.log(err);
 });
+
 db.find({
     selector: {
         timestamp: {
@@ -87,7 +107,15 @@ db.find({
     if (typeof(result) !== 'undefined') {
         result.docs.forEach(function(item) {
             //console.log(item)
-            update_chat(item);
+            // another query with attachments
+            db.get(item._id, {
+                attachments: true
+            }).then(function(item_with_attachments){
+                update_chat(item_with_attachments);
+            });
+
+
+
         });
     }
 }).catch(function(err) {
@@ -267,9 +295,10 @@ db.post({
         if (filetype == ''){
             filetype = 'plain/text'
         }
-        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file;
+        var timestamp = Math.floor(Date.now() / 1000);
 
-        
+        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file + split_char + timestamp;
+
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
         console.log(data_with_attachment)
@@ -285,7 +314,7 @@ db.post({
         ipcRenderer.send('run-tnc-command', Data);
         db.post({
             _id: uuid,
-            timestamp: Math.floor(Date.now() / 1000),
+            timestamp: timestamp,
             dxcallsign: dxcallsign,
             dxgrid: 'null',
             msg: chatmessage,
@@ -419,7 +448,10 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
         } else if (item.arq == 'transmission' && item.status == 'received') {
             var encoded_data = atob(item.data);
             var splitted_data = encoded_data.split(split_char);
-            obj.timestamp = item.timestamp;
+
+            console.log(splitted_data)
+
+            obj.timestamp = splitted_data[8];
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.command = splitted_data[1];
@@ -470,17 +502,42 @@ update_chat = function(obj) {
             var filename = Object.keys(obj._attachments)[0]
             var filetype = filename.split('.')[1]
             var filesize = obj._attachments[filename]["length"] + " Bytes";
-            
+            if (filesize == 'undefined Bytes'){
+                // get filesize of new submitted data
+                // not that nice....
+                // we really should avoid converting back from base64 for performance reasons...
+                var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
+            }
+
+            // check if image, then display it
+            if(filetype == 'image/png' || filetype =="png"){
+                        var fileheader = `
+        <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
+        <img class="w-100 rounded-2" src="data:image/png;base64,${obj._attachments[filename]["data"]}">
+       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
+                    <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
+                        </p>
+        </div>
+        <hr class="m-0 p-0">
+        `;
+
+            }else{
+
             var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
-                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i> 
+                            <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
                         </p>
         </div>
         <hr class="m-0 p-0">
         `;
+        }
+
+
         
         var controlarea_transmit = `
         <div class="ms-auto" id="msg-${obj._id}-control-area">
@@ -613,7 +670,7 @@ update_chat = function(obj) {
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
                                             
-                      <div class="card-body p-0">
+                      <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
                             <span class="badge bg-light text-muted">${timestamp}</span>  
@@ -654,7 +711,7 @@ update_chat = function(obj) {
                     <div class="card border-primary  bg-primary" id="msg-${obj._id}">
                     ${fileheader}
                     
-                      <div class="card-body p-0 text-right bg-primary">
+                      <div class="card-body rounded-3 p-0 text-right bg-primary">
                         <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
@@ -708,6 +765,9 @@ update_chat = function(obj) {
         if (obj.percent >= 100){
             //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
             document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-animated");
+            document.getElementById('msg-' + obj._id + '-progress').classList.remove("bg-danger");
+            document.getElementById('msg-' + obj._id + '-progress').classList.add("bg-primary");
+
             document.getElementById('msg-' + obj._id + '-progress').innerHTML = '';
         } else {       
             document.getElementById('msg-' + obj._id + '-progress').classList.add("progress-bar-striped");
@@ -776,7 +836,7 @@ update_chat = function(obj) {
                     console.log(blob)
                     
                                       
-                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file;
+                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file + split_char + doc.timestamp;
                     let Data = {
                         command: "send_message",
                         dxcallsign: doc.dxcallsign,
@@ -821,6 +881,7 @@ function saveFileToFolder(id) {
             console.log(data.length)
             //data = new Blob([data.buffer], { type: 'image/png' } /* (1) */) 
             console.log(data)
+            // we need to encode data because of error "an object could not be cloned"
             let Data = {
                 file: data,
                 filename: filename,
@@ -838,7 +899,7 @@ function saveFileToFolder(id) {
 }
 
 
-// function for setting an ICON to the correspinding state
+// function for setting an ICON to the corresponding state
 function get_icon_for_state(state) {
     if (state == 'transmit') {
         var status_icon = '<i class="bi bi-check" style="font-size:1rem;"></i>';

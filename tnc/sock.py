@@ -306,36 +306,73 @@ def process_tnc_commands(data):
 
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "connect":
+
+            # pause our beacon first
             static.BEACON_PAUSE = True
-            # send ping frame and wait for ACK
+
+            # check for connection attempts key
             try:
-                dxcallsign = received_json["dxcallsign"]
+                attempts = int(received_json["attempts"])
+            except Exception:
+                # 15 == self.session_connect_max_retries
+                attempts = 15
 
-                # additional step for beeing sure our callsign is correctly
-                # in case we are not getting a station ssid
-                # then we are forcing a station ssid = 0
-                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+            dxcallsign = received_json["dxcallsign"]
 
-                static.DXCALLSIGN = dxcallsign
-                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
-                command_response("connect", True)
-            except Exception as err:
+            if static.ARQ_SESSION_STATE not in ["disconnected", "failed"]:
                 command_response("connect", False)
                 log.warning(
                     "[SCK] Connect command execution error",
-                    e=err,
+                    e=f"already connected to station:{static.DXCALLSIGN}",
                     command=received_json,
                 )
+            else:
+
+                # finally check again if we are disconnected or failed
+
+                # try connecting
+                try:
+                    static.DXCALLSIGN = dxcallsign
+                    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+
+                    DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign, attempts])
+                    command_response("connect", True)
+                except Exception as err:
+                    command_response("connect", False)
+                    log.warning(
+                        "[SCK] Connect command execution error",
+                        e=err,
+                        command=received_json,
+                    )
+                    # allow beacon transmission again
+                    static.BEACON_PAUSE = False
+
+
+                # allow beacon transmission again
+                static.BEACON_PAUSE = False
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
-            # send ping frame and wait for ACK
             try:
-                DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
-                command_response("disconnect", True)
+                if not static.ARQ_SESSION_STATE in ["disconnecting", "disconnected", "failed"]:
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+                    command_response("disconnect", True)
+                else:
+                    command_response("disconnect", False)
+                    log.warning(
+                        "[SCK] Disconnect command not possible",
+                        state=static.ARQ_SESSION_STATE,
+                        command=received_json,
+                    )
             except Exception as err:
                 command_response("disconnect", False)
                 log.warning(
@@ -347,6 +384,7 @@ def process_tnc_commands(data):
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
+
             try:
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]
@@ -372,6 +410,14 @@ def process_tnc_commands(data):
                 except Exception:
                     mycallsign = static.MYCALLSIGN
 
+                # check for connection attempts key
+                try:
+                    attempts = int(received_json["parameter"][0]["attempts"])
+
+                except Exception:
+                    # 15 == self.session_connect_max_retries
+                    attempts = 15
+
                 # check if transmission uuid provided else set no-uuid
                 try:
                     arq_uuid = received_json["uuid"]
@@ -384,7 +430,7 @@ def process_tnc_commands(data):
                 binarydata = base64.b64decode(base64data)
 
                 DATA_QUEUE_TRANSMIT.put(
-                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, attempts]
                 )
 
             except Exception as err:
@@ -478,7 +524,7 @@ def send_tnc_state():
         "arq_state": str(static.ARQ_STATE),
         "arq_session": str(static.ARQ_SESSION),
         "arq_session_state": str(static.ARQ_SESSION_STATE),
-        "audio_rms": str(static.AUDIO_RMS),
+        "audio_dbfs": str(static.AUDIO_DBFS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
@@ -499,6 +545,7 @@ def send_tnc_state():
         "mycallsign": str(static.MYCALLSIGN, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
+        "hamlib_status": static.HAMLIB_STATUS,
     }
 
     # add heard stations to heard stations object

@@ -56,7 +56,7 @@ client.on('connect', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
     };
     ipcRenderer.send('request-update-tnc-state', Data);
     
@@ -85,7 +85,7 @@ client.on('error', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
 
     };
     ipcRenderer.send('request-update-tnc-state', Data);
@@ -200,7 +200,7 @@ client.on('data', function(socketdata) {
                     speed_level: data['speed_level'],
                     mode: data['mode'],
                     bandwidth: data['bandwidth'],
-                    rms_level: data['audio_rms'],
+                    dbfs_level: data['audio_dbfs'],
                     fft: data['fft'],
                     channel_busy: data['channel_busy'],
                     scatter: data['scatter'],
@@ -221,6 +221,7 @@ client.on('data', function(socketdata) {
                     arq_transmission_percent: data['arq_transmission_percent'],
                     stations: data['stations'],
                     beacon_state: data['beacon_state'],
+                    hamlib_status: data['hamlib_status'],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
@@ -306,6 +307,10 @@ client.on('data', function(socketdata) {
                         ipcRenderer.send('request-show-arq-toast-session-connected', {data: [data]});
 
                     // ARQ OPENING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-session-waiting', {data: [data]});
+
+                    // ARQ OPENING
                     } else if (data['status'] == 'close') {
                         ipcRenderer.send('request-show-arq-toast-session-close', {data: [data]});
 
@@ -325,6 +330,10 @@ client.on('data', function(socketdata) {
                     // ARQ OPENING
                     } else if (data['status'] == 'opening') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
+
+                    // ARQ WAITING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-waiting', {data: [data]});
 
 
                     // ARQ TRANSMISSION FAILED
@@ -516,7 +525,7 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, c
     data = btoa(data)
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
     socketLog.info(command)
     socketLog.info("-------------------------------------")
     writeTncCommand(command)
@@ -554,7 +563,7 @@ exports.stopBeacon = function() {
 
 // OPEN ARQ SESSION
 exports.connectARQ = function(dxcallsign) {
-    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '"}'
+    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '", "attempts": "15"}'
     writeTncCommand(command)
 }
 
@@ -564,7 +573,7 @@ exports.disconnectARQ = function() {
     writeTncCommand(command)
 }
 
-// SEND SINE
+// SEND TEST FRAME
 exports.sendTestFrame = function() {
     command = '{"type" : "set", "command" : "send_test_frame"}'
     writeTncCommand(command)

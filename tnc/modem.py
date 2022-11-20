@@ -199,9 +199,11 @@ class RF:
         # Check how we want to control the radio
         # TODO: deprecated feature - we can remove this possibly
         if static.HAMLIB_RADIOCONTROL == "direct":
-            import rig
+            print("direct hamlib support deprecated - not usable anymore")
+            sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctl":
-            import rigctl as rig
+            print("rigctl support deprecated - not usable anymore")
+            sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
         else:
@@ -811,10 +813,10 @@ class RF:
 
             snr = round(modem_stats_snr, 1)
             self.log.info("[MDM] calculate_snr: ", snr=snr)
-            # static.SNR = np.clip(snr, 0, 255)  # limit to max value of 255
-            static.SNR = np.clip(
-                snr, -128, 128
-            )  # limit to max value of -128/128 as a possible fix of #188
+            static.SNR = snr
+            #static.SNR = np.clip(
+            #    snr, -127, 127
+            #)  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
@@ -834,6 +836,7 @@ class RF:
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
+            static.HAMLIB_STATUS = self.hamlib.get_status()
 
     def calculate_fft(self) -> None:
         """
@@ -843,7 +846,7 @@ class RF:
         # Initialize channel_busy_delay counter
         channel_busy_delay = 0
 
-        # Initialize rms counter
+        # Initialize dbfs counter
         rms_counter = 0
 
         while True:
@@ -873,25 +876,54 @@ class RF:
                     # Have to do this when we are not transmitting so our
                     # own sending data will not affect this too much
                     if not static.TRANSMITTING:
-                        dfft[dfft > avg + 10] = 100
+                        dfft[dfft > avg + 15] = 100
 
-                        # Calculate audio RMS
+                        # Calculate audio dbfs
                         # https://stackoverflow.com/a/9763652
-                        # calculate RMS every 50 cycles for reducing CPU load
+                        # calculate dbfs every 50 cycles for reducing CPU load
                         rms_counter += 1
                         if rms_counter > 50:
                             d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
-                            static.AUDIO_RMS = int(np.sqrt(np.mean(d ** 2)))
+                            # calculate RMS and then dBFS
+                            # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
+                            # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
+                            rms = int(np.sqrt(np.mean(d ** 2)))
+                            static.AUDIO_DBFS = 20 * np.log10(rms * np.sqrt(2) / 32768)
+
                             rms_counter = 0
+
+                    # Convert data to int to decrease size
+                    dfft = dfft.astype(int)
+
+                    # Create list of dfft for later pushing to static.FFT
+                    dfftlist = dfft.tolist()
+
+                    # Reduce area where the busy detection is enabled
+                    # We want to have this in correlation with mode bandwidth
+                    # TODO: This is not correctly and needs to be checked for correct maths
+                    # dfftlist[0:1] = 10,15Hz
+                    # Bandwidth[Hz] / 10,15
+                    # narrowband = 563Hz = 56
+                    # wideband = 1700Hz = 167
+                    # 1500Hz = 148
+                    # 2700Hz = 266
+                    # 3200Hz = 315
+
+                    # define the area, we are detecting busy state
+                    if static.LOW_BANDWIDTH_MODE:
+                        dfft = dfft[120:176]
+                    else:
+                        dfft = dfft[65:231]
+
 
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
                     # so we have a smoother state toggle
-                    if np.sum(dfft[dfft > avg + 10]) >= 300 and not static.TRANSMITTING:
+                    if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
                         static.CHANNEL_BUSY = True
-                        # Limit delay counter to a maximun of 50. The higher this value,
+                        # Limit delay counter to a maximum of 250. The higher this value,
                         # the longer we will wait until releasing state
-                        channel_busy_delay = min(channel_busy_delay + 5, 50)
+                        channel_busy_delay = min(channel_busy_delay + 10, 250)
                     else:
                         # Decrement channel busy counter if no signal has been detected.
                         channel_busy_delay = max(channel_busy_delay - 1, 0)
@@ -899,11 +931,7 @@ class RF:
                         if channel_busy_delay == 0:
                             static.CHANNEL_BUSY = False
 
-                    # Round data to decrease size
-                    dfft = np.around(dfft, 0)
-                    dfftlist = dfft.tolist()
-
-                    static.FFT = dfftlist[:320]  # 320 --> bandwidth 3000
+                    static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")
                     self.log.debug("[MDM] Setting fft=0")

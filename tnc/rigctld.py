@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-# class taken from darsidelemm
+# class taken from darksidelemm
 # rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
 #
 # modified and adjusted to FreeDATA needs by DJ2LS
 
 import socket
 import time
-
 import structlog
 
 # set global hamlib version
@@ -16,19 +15,22 @@ hamlib_version = 0
 class radio:
     """rigctld (hamlib) communication class"""
 
-    # Note: This is a massive hack.
-
     log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """Open a connection to rigctld, and test it for validity"""
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # self.sock.settimeout(timeout)
 
         self.connected = False
         self.hostname = hostname
         self.port = port
         self.connection_attempts = 5
+
+        # class wide variable for some parameters
+        self.bandwidth = ''
+        self.frequency = ''
+        self.mode = ''
+
 
     def open_rig(
         self,
@@ -136,33 +138,47 @@ class radio:
 
         return b""
 
+    def get_status(self):
+        """ """
+        return "connected" if self.connected else "unknown/disconnected"
+
     def get_mode(self):
         """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            mode = data[0]
-            return mode.decode("utf-8")
+            data = data[0].decode("utf-8")
+            if 'RPRT' not in data:
+                self.mode = data
+
+            return self.mode
         except Exception:
-            return 0
+            return self.mode
 
     def get_bandwidth(self):
         """ """
         try:
             data = self.send_command(b"m")
             data = data.split(b"\n")
-            bandwidth = data[1]
-            return bandwidth.decode("utf-8")
+            data = data[1].decode("utf-8")
+
+            if 'RPRT' not in data:
+                self.bandwidth = data
+            return self.bandwidth
         except Exception:
-            return 0
+            return self.bandwidth
 
     def get_frequency(self):
         """ """
         try:
-            frequency = self.send_command(b"f")
-            return frequency.decode("utf-8")
+            data = self.send_command(b"f")
+            data = data.decode("utf-8")
+            if 'RPRT' not in data:
+                self.frequency = data
+
+            return self.frequency
         except Exception:
-            return 0
+            return self.frequency
 
     def get_ptt(self):
         """ """

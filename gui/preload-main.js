@@ -12,7 +12,7 @@ const {
 } = require('qth-locator');
 const os = require('os');
 
-// split character used for appending addiotional data to files
+// split character used for appending additional data to files
 const split_char = '\0;';
 
 
@@ -21,6 +21,14 @@ var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? proce
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
+
+
+// SET dbfs LEVEL GLOBAL
+// this is an attempt of reducing CPU LOAD
+// we are going to check if we have unequal values before we start calculating again
+var dbfs_level_raw = 0
+
+
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
@@ -1459,6 +1467,14 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     }
 
+    // HAMLIB STATUS
+    if (arg.hamlib_status == 'connected') {
+        document.getElementById("rigctld_state").className = "btn btn-success btn-sm";
+
+    } else {
+        document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
+    }
+
 
 
     // BEACON STATE
@@ -1478,11 +1494,16 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
     }
-    // RMS
-    var rms_level = (arg.rms_level / 32767)  * 100
-    document.getElementById("rms_level").setAttribute("aria-valuenow", rms_level);
-    document.getElementById("rms_level").setAttribute("style", "width:" + rms_level + "%;");
+    // dbfs
+    // https://www.moellerstudios.org/converting-amplitude-representations/
+    if (dbfs_level_raw != arg.dbfs_level){
+        dbfs_level_raw = arg.dbfs_level
+        dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
 
+        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
+        document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
+        document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
+    }
 
     // SET FREQUENCY
     document.getElementById("frequency").innerHTML = arg.frequency;
@@ -2172,6 +2193,14 @@ ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
     toast.show();
 });
 
+// DATA CHANNEL WAITING TOAST
+ipcRenderer.on('action-show-arq-toast-datachannel-waiting', (event, data) => {
+    var toastDATACHANNELwaiting = document.getElementById('toastDATACHANNELwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // DATA CHANNEL OPEN TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
     var toastDATACHANNELopen = document.getElementById('toastDATACHANNELopen');
@@ -2224,10 +2253,43 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) =
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
 
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQtransmitting = document.getElementById('toastARQtransmitting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting); // Returns a Bootstrap toast instance
-    toast.show();
+    //document.getElementById("toastARQtransmittingSNR").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+    var toastARQtransmittingSNR = document.getElementById('toastARQtransmittingSNR');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingSNR); // Returns a Bootstrap toast instance
+
+    var irs_snr = data["data"][0].irs_snr;
+
+    if(irs_snr <= 0){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-danger border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " low " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr > 0 && irs_snr <= 5){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-warning border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " okay " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr > 5  && irs_snr < 12.7){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " good " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr >= 12.7){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " really good 12.7+";
+        toast.show();
+
+    } else {
+        console.log("no snr info available")
+        document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+        var toastARQtransmitting = document.getElementById('toastARQtransmitting');
+        var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting); // Returns a Bootstrap toast instance
+        toast.show();
+
+    }
+
+
+
 });
 
 // ARQ TRANSMISSION RECEIVED
@@ -2243,15 +2305,15 @@ ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
 ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => {
 
     document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQreceiving = document.getElementById('toastARQreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving); // Returns a Bootstrap toast instance
+    var toastARQsessionreceiving = document.getElementById('toastARQreceiving');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionreceiving); // Returns a Bootstrap toast instance
     toast.show();
 });
 
 // ARQ SESSION CONNECTING
 ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnecting');
+    var toastARQsessionconnecting = document.getElementById('toastARQsessionconnecting');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnecting); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2259,15 +2321,24 @@ ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnected');
+    var toastARQsessionconnected = document.getElementById('toastARQsessionconnected');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnected); // Returns a Bootstrap toast instance
     toast.show();
 });
 
+// ARQ SESSION CONNECTED
+ipcRenderer.on('action-show-arq-toast-session-waiting', (event, data) => {
+
+    var toastARQsessionwaiting = document.getElementById('toastARQsessionwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // ARQ SESSION CLOSE
 ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionclose');
+    var toastARQsessionclose = document.getElementById('toastARQsessionclose');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionclose); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2275,7 +2346,7 @@ ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 // ARQ SESSION FAILED
 ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionfailed');
+    var toastARQsessionfailed = document.getElementById('toastARQsessionfailed');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionfailed); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2318,6 +2389,5 @@ function checkRigctld(){
 }
 
 ipcRenderer.on('action-check-rigctld', (event, data) => {
-        console.log(data)
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });
