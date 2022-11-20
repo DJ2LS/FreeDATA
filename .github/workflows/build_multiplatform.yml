@@ -332,6 +332,10 @@ jobs:
           mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
           mv dist/tnc/main* dist/tnc/${{ matrix.tnc_binary_name }}
 
+      - uses: actions/download-artifact@v3
+        with:
+           path: tnc/dist/tnc
+
       - name: LIST ALL FILES
         run: ls -R
 
