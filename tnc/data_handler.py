@@ -1595,7 +1595,7 @@ class DATA:
             n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
-            attempts:int,
+            attempts: int,
     ) -> bool:
         """
         Open data channel and transmit data
@@ -1674,7 +1674,7 @@ class DATA:
         return False
 
     def arq_open_data_channel(
-            self, mode: int, n_frames_per_burst: int, mycallsign, attempts: int
+            self, mode: int, n_frames_per_burst: int, mycallsign
     ) -> bool:
         """
         Open an ARQ data channel.
@@ -1683,16 +1683,12 @@ class DATA:
           mode:int:
           n_frames_per_burst:int:
           mycallsign:bytes:
-          attempts:int: Number of attempts initiating a connection
 
         Returns:
             True if the data channel was opened successfully
             False if the data channel failed to open
         """
         self.is_IRS = False
-
-        # override connection attempts
-        self.data_channel_max_retries = attempts
 
         # init a new random session id if we are not in an arq session
         if not static.ARQ_SESSION:

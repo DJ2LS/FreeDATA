@@ -411,7 +411,8 @@ def process_tnc_commands(data):
 
                 # check for connection attempts key
                 try:
-                    attempts = int(received_json["attempts"])
+                    attempts = int(received_json["parameter"][0]["attempts"])
+
                 except Exception:
                     # 15 == self.session_connect_max_retries
                     attempts = 15
