@@ -360,11 +360,19 @@ def process_tnc_commands(data):
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
             try:
-                DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+                if not static.ARQ_SESSION_STATE in ["disconnecting", "disconnected", "failed"]:
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
 
-                # set early disconnecting state so we can interrupt connection attempts
-                static.ARQ_SESSION_STATE = "disconnecting"
-                command_response("disconnect", True)
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+                    command_response("disconnect", True)
+                else:
+                    command_response("disconnect", False)
+                    log.warning(
+                        "[SCK] Disconnect command not possible",
+                        state=static.ARQ_SESSION_STATE,
+                        command=received_json,
+                    )
             except Exception as err:
                 command_response("disconnect", False)
                 log.warning(
