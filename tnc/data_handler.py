@@ -1661,7 +1661,7 @@ class DATA:
                 )
                 return False
 
-        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign, attempts)
+        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
         # wait until data channel is open
         while not static.ARQ_STATE and not self.datachannel_timeout:
