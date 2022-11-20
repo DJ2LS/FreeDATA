@@ -1659,6 +1659,7 @@ class DATA:
                     status="failed",
                     reason="busy",
                 )
+                static.ARQ_SESSION_STATE = "disconnected"
                 return False
 
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
