@@ -310,6 +310,13 @@ def process_tnc_commands(data):
             # pause our beacon first
             static.BEACON_PAUSE = True
 
+            # check for connection attempts key
+            try:
+                attempts = int(received_json["attempts"])
+            except Exception:
+                # 15 == self.session_connect_max_retries
+                attempts = 15
+
             dxcallsign = received_json["dxcallsign"]
 
             # additional step for being sure our callsign is correctly
@@ -326,32 +333,6 @@ def process_tnc_commands(data):
                     command=received_json,
                 )
             else:
-                """
-                # check if we are going to connect to a different callsign
-                # if so, then disconnect first
-                if dxcallsign != static.DXCALLSIGN and static.ARQ_SESSION_STATE != "disconnected":
-                    command_response("connect", True)
-
-                    # lets disconnect
-                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
-                    # set early disconnecting state so we can interrupt connection attempts
-                    static.ARQ_SESSION_STATE = "disconnecting"
-
-                # wait for disconnecting
-                log.info(
-                    "[SCK] Waiting for disconnecting",
-                    callsign=static.DXCALLSIGN,
-                    command=received_json,
-                )
-                
-                
-                
-                # set disconnect timeout to 15 seconds to avoid being stuck here if disconnect fails
-                disconnect_timeout = time.time() + 15
-                # wait until disconnected or timeout reached
-                while static.ARQ_SESSION_STATE != 'disconnected' and time.time() < disconnect_timeout:
-                    time.sleep(0.01)
-                """
 
                 # finally check again if we are disconnected or failed
                 if static.ARQ_SESSION_STATE == 'disconnected' or static.ARQ_SESSION_STATE == 'failed':
@@ -361,7 +342,7 @@ def process_tnc_commands(data):
                         static.DXCALLSIGN = dxcallsign
                         static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                        DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
+                        DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign, attempts])
                         command_response("connect", True)
                     except Exception as err:
                         command_response("connect", False)
@@ -402,6 +383,7 @@ def process_tnc_commands(data):
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
+
             try:
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]
@@ -427,6 +409,13 @@ def process_tnc_commands(data):
                 except Exception:
                     mycallsign = static.MYCALLSIGN
 
+                # check for connection attempts key
+                try:
+                    attempts = int(received_json["attempts"])
+                except Exception:
+                    # 15 == self.session_connect_max_retries
+                    attempts = 15
+
                 # check if transmission uuid provided else set no-uuid
                 try:
                     arq_uuid = received_json["uuid"]
@@ -439,7 +428,7 @@ def process_tnc_commands(data):
                 binarydata = base64.b64decode(base64data)
 
                 DATA_QUEUE_TRANSMIT.put(
-                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, attempts]
                 )
 
             except Exception as err:

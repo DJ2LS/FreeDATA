@@ -186,7 +186,7 @@ class DATA:
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
         }
         self.command_dispatcher = {
-            "CONNECT": (self.arq_session_handler, "CONNECT"),
+            #"CONNECT": (self.arq_session_handler, "CONNECT"),
             "CQ": (self.transmit_cq, "CQ"),
             "DISCONNECT": (self.close_session, "DISCONNECT"),
             "SEND_TEST_FRAME": (self.send_test_frame, "TEST"),
@@ -232,6 +232,11 @@ class DATA:
                 self.command_dispatcher[data[0]][0]()
 
             # Dispatch commands that need more arguments.
+            elif data[0] == "CONNECT":
+                # [1] dxcallsign
+                # [2] attempts
+                self.arq_session_handler(data[1], data[2])
+
             elif data[0] == "PING":
                 # [1] dxcallsign
                 self.transmit_ping(data[1])
@@ -1274,7 +1279,7 @@ class DATA:
     ############################################################################################################
     # ARQ SESSION HANDLER
     ############################################################################################################
-    def arq_session_handler(self) -> bool:
+    def arq_session_handler(self, dxcallsign, attempts) -> bool:
         """
         Create a session with `static.DXCALLSIGN` and wait until the session is open.
 
@@ -1282,6 +1287,9 @@ class DATA:
             True if the session was opened successfully
             False if the session open request failed
         """
+        # override connection attempts
+        self.session_connect_max_retries = attempts
+
         # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         self.log.info(
@@ -1362,7 +1370,6 @@ class DATA:
         # create a random session id
         # self.session_id = randbytes(1)
         self.session_id = np.random.bytes(1)
-        print(self.session_id)
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_OPEN.value])
@@ -1587,6 +1594,7 @@ class DATA:
             n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
+            attempts,
     ) -> bool:
         """
         Open data channel and transmit data
@@ -1648,7 +1656,7 @@ class DATA:
                 )
                 return False
 
-        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
+        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign, attempts)
 
         # wait until data channel is open
         while not static.ARQ_STATE and not self.datachannel_timeout:
@@ -1661,7 +1669,7 @@ class DATA:
         return False
 
     def arq_open_data_channel(
-            self, mode: int, n_frames_per_burst: int, mycallsign
+            self, mode: int, n_frames_per_burst: int, mycallsign, attempts: int
     ) -> bool:
         """
         Open an ARQ data channel.
@@ -1670,12 +1678,16 @@ class DATA:
           mode:int:
           n_frames_per_burst:int:
           mycallsign:bytes:
+          attempts:int: Number of attempts initiating a connection
 
         Returns:
             True if the data channel was opened successfully
             False if the data channel failed to open
         """
         self.is_IRS = False
+
+        # override connection attempts
+        self.data_channel_max_retries = attempts
 
         # init a new random session id if we are not in an arq session
         if not static.ARQ_SESSION:
@@ -2540,6 +2552,10 @@ class DATA:
 
         # reset retry counter for rx channel / burst
         self.n_retries_per_burst = 0
+
+        # reset max retries possibly overriden by api
+        self.session_connect_max_retries = 15
+        self.data_channel_max_retries = 15
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
