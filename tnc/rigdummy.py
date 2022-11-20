@@ -41,7 +41,7 @@ class radio:
         """
         return None
 
-    def get_status(self, mode):
+    def get_status(self):
         """
 
         Args:
