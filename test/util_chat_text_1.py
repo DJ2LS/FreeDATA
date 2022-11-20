@@ -172,7 +172,7 @@ def t_highsnr_arq_short_station1(
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + 25
+    timeout = time.time() + 60#25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
     while '"arq":"transmission","status":"transmitted"' not in str(
@@ -190,7 +190,7 @@ def t_highsnr_arq_short_station1(
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
-    timeout = time.time() + 20
+    timeout = time.time() + 60#20
     while static.ARQ_STATE or tnc.data_queue_transmit.queue:
         if time.time() > timeout:
             log.error("station1", TIMEOUT=True)

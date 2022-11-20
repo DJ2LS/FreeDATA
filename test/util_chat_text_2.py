@@ -129,7 +129,7 @@ def t_highsnr_arq_short_station2(
     log.info("t_highsnr_arq_short_station2:", TXCHANNEL=modem.TXCHANNEL)
 
     # Assure the test completes.
-    timeout = time.time() + 25
+    timeout = time.time() + 60#25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
     while (
@@ -143,7 +143,7 @@ def t_highsnr_arq_short_station2(
     log.info("station2, first", arq_state=pformat(static.ARQ_STATE))
 
     # Allow enough time for this side to receive the disconnect frame.
-    timeout = time.time() + 20
+    timeout = time.time() + 60#20
     while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station2", TIMEOUT=True)
