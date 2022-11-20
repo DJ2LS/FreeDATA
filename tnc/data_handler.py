@@ -1398,7 +1398,7 @@ class DATA:
                     + "]>>?<<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    a=attempt + 1 + "/" + self.session_connect_max_retries,  # Adjust for 0-based for user display
+                    a=str(attempt + 1) + "/" + str(self.session_connect_max_retries),  # Adjust for 0-based for user display
                     state=static.ARQ_SESSION_STATE,
                 )
 
