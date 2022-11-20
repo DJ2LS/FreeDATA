@@ -253,6 +253,11 @@ jobs:
       ##  with:
       ##    path: tnc/dist/codec2
 
+      - name: create tnc/lib/codec2
+        working-directory: tnc/lib/
+        run: |
+          mkdir codec2
+
       - name: Download libcodec2 artifact TNC LIB
         uses: actions/download-artifact@v3
         with:
@@ -333,7 +338,7 @@ jobs:
       - name: Download Portaudio binaries
         working-directory: tnc
         run: |
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
 
       - name: LIST ALL FILES
         run: ls -R
