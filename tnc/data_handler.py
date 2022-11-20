@@ -532,7 +532,7 @@ class DATA:
         # TODO: We need to add the ident frame feature with a seperate PR after publishing latest protocol
         # TODO: We need to wait some time between last arq related signalling frame and ident frame
         # TODO: Maybe about 500ms - 1500ms to avoid confusion and too much PTT toggles
-        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
+        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=6, repeat_delay=0)
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -1405,7 +1405,8 @@ class DATA:
 
                     # Stop waiting and interrupt if data channel is getting closed while opening
                     if static.ARQ_SESSION_STATE == "disconnecting":
-                        self.close_session()
+                        # disabled this session close as its called twice
+                        # self.close_session()
                         return False
 
             # Session connect timeout, send close_session frame to
