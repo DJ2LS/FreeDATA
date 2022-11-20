@@ -1354,7 +1354,7 @@ class DATA:
             + "]>>X<<["
             + str(static.DXCALLSIGN, "UTF-8")
             + "]",
-            a=attempt + 1 + "/" + self.session_connect_max_retries,  # Adjust for 0-based for user display
+            attempts=self.session_connect_max_retries,  # Adjust for 0-based for user display
             reason="maximum connection attempts reached",
             state=static.ARQ_SESSION_STATE,
         )
@@ -1398,7 +1398,7 @@ class DATA:
                     + "]>>?<<["
                     + str(static.DXCALLSIGN, "UTF-8")
                     + "]",
-                    a=attempt + 1,  # Adjust for 0-based for user display
+                    a=attempt + 1 + "/" + self.session_connect_max_retries,  # Adjust for 0-based for user display
                     state=static.ARQ_SESSION_STATE,
                 )
 
