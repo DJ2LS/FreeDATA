@@ -44,6 +44,8 @@ def t_setup(
     static.MYGRID = bytes("AA12aa", "utf-8")
     static.RESPOND_TO_CQ = True
     static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    # override ARQ SESSION STATE for allowing disconnect command
+    static.ARQ_SESSION_STATE = "connected"
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)
@@ -172,7 +174,7 @@ def t_highsnr_arq_short_station1(
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + 60#25
+    timeout = time.time() + 25
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
     while '"arq":"transmission","status":"transmitted"' not in str(
@@ -187,10 +189,12 @@ def t_highsnr_arq_short_station1(
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
+    # override ARQ SESSION STATE for allowing disconnect command
+    static.ARQ_SESSION_STATE = "connected"
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
-    timeout = time.time() + 60#20
+    timeout = time.time() + 20
     while static.ARQ_STATE or tnc.data_queue_transmit.queue:
         if time.time() > timeout:
             log.error("station1", TIMEOUT=True)
