@@ -164,7 +164,8 @@ def t_datac0_1(
             break
         time.sleep(0.1)
     log.info("station1, first")
-
+    # override ARQ SESSION STATE for allowing disconnect command
+    static.ARQ_SESSION_STATE = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)

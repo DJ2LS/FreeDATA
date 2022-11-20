@@ -170,7 +170,8 @@ def t_datac0_1(
         log.debug("STOP test, resetting DX callsign")
         static.DXCALLSIGN = orig_dxcall
         static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-
+    # override ARQ SESSION STATE for allowing disconnect command
+    static.ARQ_SESSION_STATE = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
