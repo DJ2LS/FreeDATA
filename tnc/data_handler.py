@@ -1348,6 +1348,16 @@ class DATA:
             )
             return True
 
+        self.log.warning(
+            "[TNC] SESSION FAILED ["
+            + str(self.mycallsign, "UTF-8")
+            + "]>>X<<["
+            + str(static.DXCALLSIGN, "UTF-8")
+            + "]",
+            a=attempt + 1 + "/" + self.session_connect_max_retries,  # Adjust for 0-based for user display
+            reason="maximum connection attempts reached",
+            state=static.ARQ_SESSION_STATE,
+        )
         static.ARQ_SESSION_STATE = "failed"
         self.send_data_to_socket_queue(
             freedata="tnc-message",
