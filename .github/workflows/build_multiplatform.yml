@@ -305,22 +305,22 @@ jobs:
         if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          cp -r -f daemon.dist/* dist/
-          cp -r -f main.dist/* dist/
+          cp -r -f daemon.dist/* dist/tnc
+          cp -r -f main.dist/* dist/tnc
 
       - name: Copy binaries - Windows
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         # These are powershell aliases, not UNIX commands.
         run: |
-          cp -r -Force daemon.dist/* dist/
-          cp -r -Force main.dist/* dist/
+          cp -r -Force daemon.dist/* dist/tnc
+          cp -r -Force main.dist/* dist/tnc
 
       - name: Rename tnc binaries
         working-directory: tnc
         run: |
-          mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
-          mv dist/main* dist/${{ matrix.tnc_binary_name }}
+          mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
+          mv dist/tnc/main* dist/tnc/${{ matrix.tnc_binary_name }}
 
       - name: LIST ALL FILES
         run: ls -R
@@ -352,9 +352,9 @@ jobs:
       ##  uses: thedoctor0/zip-release@master
       ##  with:
       ##      type: 'zip'
-      ##      filename: '${{ matrix.zip_name }}.zip'
+      ##      filename: '${{ matrix.zip_name }}'
       ##      # directory: ./tnc/dist/tnc
-      ##      directory: ./tnc/dist
+      ##      directory: ./tnc/dist/tnc
       ##      path: .
       ##      # exclusions: '*.git* /*node_modules/* .editorconfig'
 
@@ -369,12 +369,12 @@ jobs:
       ##    path: ./tnc/dist/${{ matrix.zip_name }}.zip
 
 
-      - name: Release TNC
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          # files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          files: ./tnc/dist/${{ matrix.zip_name }}.zip
+      ##- name: Release TNC
+      ##  uses: softprops/action-gh-release@v1
+      ##  if: startsWith(github.ref, 'refs/tags/v')
+      ##  with:
+      ##    files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+      ##    #files: ./tnc/dist/${{ matrix.zip_name }}.zip
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -392,9 +392,16 @@ jobs:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
             # directory: ./tnc/dist/tnc
-            directory: ./tnc/dist
+            directory: ./tnc/dist/tnc
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
+
+      - name: Release TNC
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          #files: ./tnc/dist/${{ matrix.zip_name }}.zip
 
       - name: LIST ALL FILES
         run: ls -R
@@ -404,7 +411,7 @@ jobs:
         with:
           name: ${{ matrix.zip_name }}.zip
           # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          path: ./tnc/dist/${{ matrix.zip_name }}.zip
+          path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
 
 
 
