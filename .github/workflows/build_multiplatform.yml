@@ -243,6 +243,11 @@ jobs:
         run: |
           mkdir -p dist
 
+      - name: Create tnc/dist/tnc
+        working-directory: tnc
+        run: |
+          mkdir -p dist/tnc
+
       ##- name: Download libcodec2 artifact TNC DIST
       ##  uses: actions/download-artifact@v3
       ##  with:
