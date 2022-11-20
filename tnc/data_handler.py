@@ -1615,6 +1615,9 @@ class DATA:
         # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
 
+        # override session connection attempts
+        self.data_channel_max_retries = attempts
+
         static.TNC_STATE = "BUSY"
         self.arq_file_transfer = True
 
