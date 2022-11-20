@@ -901,16 +901,26 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
         rigctld_connection.on('connect', function() {
             rigctld_connection_state = true;
             Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
             }
         })
 
         rigctld_connection.on('error', function() {
             rigctld_connection_state = false;
             Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== ''){
-                win.webContents.send('action-check-rigctld', Data);
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
             }
         })
 
