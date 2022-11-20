@@ -525,7 +525,7 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, c
     data = btoa(data)
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", attempts: "15"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
     socketLog.info(command)
     socketLog.info("-------------------------------------")
     writeTncCommand(command)
@@ -563,7 +563,7 @@ exports.stopBeacon = function() {
 
 // OPEN ARQ SESSION
 exports.connectARQ = function(dxcallsign) {
-    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '", attempts: "15"}'
+    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '", "attempts": "15"}'
     writeTncCommand(command)
 }
 

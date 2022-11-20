@@ -256,7 +256,8 @@ class DATA:
                 # [3] N_FRAMES_PER_BURST int
                 # [4] self.transmission_uuid str
                 # [5] mycallsign with ssid
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
+                # [6] attempts
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6])
 
             else:
                 self.log.error(
@@ -1594,7 +1595,7 @@ class DATA:
             n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
-            attempts,
+            attempts:int,
     ) -> bool:
         """
         Open data channel and transmit data
@@ -1605,6 +1606,7 @@ class DATA:
           n_frames_per_burst:int:
           transmission_uuid:str:
           mycallsign:bytes:
+          attempts:int: Overriding number of attempts initiating a connection
 
         Returns:
             True if the data session was opened and the data was sent
