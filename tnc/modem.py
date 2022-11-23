@@ -887,8 +887,8 @@ class RF:
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                            rms = int(np.sqrt(np.mean(d ** 2)))
-                            static.AUDIO_DBFS = 20 * np.log10(rms * np.sqrt(2) / 32768)
+                            rms = int(np.sqrt(np.max(d ** 2)))
+                            static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
 
                             rms_counter = 0
 
