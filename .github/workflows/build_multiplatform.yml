@@ -422,21 +422,15 @@ jobs:
 
       - name: Upload TNC artifacts
         uses: actions/upload-artifact@v3
-        if: !startsWith(github.ref, 'refs/tags/v')
+        if: ${{!startsWith(github.ref, 'refs/tags/v')}}
         with:
           name: ${{ matrix.zip_name }}.zip
           # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
           path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
 
-
-
-
-      - name: LIST ALL FILES
-        run: ls -R
-
       - name: Upload App bundle artifacts
         uses: actions/upload-artifact@v3
-        if: !startsWith(github.ref, 'refs/tags/v')
+        if: ${{!startsWith(github.ref, 'refs/tags/v')}}
         with:
           name: app_bundle_${{ matrix.os }}.zip
           # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
