@@ -441,5 +441,3 @@ jobs:
           name: app_bundle_${{ matrix.os }}.zip
           # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
           path: ./gui/dist/*
-
-  build_tnc_standalone:
