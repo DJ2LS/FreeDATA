@@ -723,13 +723,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-    // on change port and host
-    document.getElementById("tnc_adress").addEventListener("change", () => {
-        console.log(document.getElementById("tnc_adress").value);
-        config.tnc_host = document.getElementById("tnc_adress").value;
-        config.daemon_host = document.getElementById("tnc_adress").value;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    });
+
 
     // on change ping callsign
         document.getElementById("dxCall").addEventListener("change", () => {
@@ -741,12 +735,44 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         
             });
         
-    
+     // on change port and host
+    document.getElementById("tnc_adress").addEventListener("change", () => {
+        console.log(document.getElementById("tnc_adress").value);
+        config.tnc_host = document.getElementById("tnc_adress").value;
+        config.daemon_host = document.getElementById("tnc_adress").value;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+        let Data = {
+            port: document.getElementById("tnc_port").value,
+            adress: document.getElementById("tnc_adress").value,
+        };
+        ipcRenderer.send('request-update-tnc-ip', Data);
+
+        Data = {
+            port: parseInt(document.getElementById("tnc_port").value) + 1,
+            adress: document.getElementById("tnc_adress").value,
+        };
+        ipcRenderer.send('request-update-daemon-ip', Data);
+    });
+
     // on change tnc port
     document.getElementById("tnc_port").addEventListener("change", () => {
+
         config.tnc_port = document.getElementById("tnc_port").value;
         config.daemon_port = parseInt(document.getElementById("tnc_port").value) + 1;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+            let Data = {
+                port: document.getElementById("tnc_port").value,
+                adress: document.getElementById("tnc_adress").value,
+            };
+            ipcRenderer.send('request-update-tnc-ip', Data);
+
+            Data = {
+                port: parseInt(document.getElementById("tnc_port").value) + 1,
+                adress: document.getElementById("tnc_adress").value,
+            };
+            ipcRenderer.send('request-update-daemon-ip', Data);
 
     });
     
