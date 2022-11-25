@@ -425,6 +425,16 @@ ipcMain.on('request-show-chat-window', () => {
     chat.show();
  });
 
+// UPDATE TNC CONNECTION
+ipcMain.on('request-update-tnc-ip',(event,data)=>{
+    win.webContents.send('action-update-tnc-ip', data);
+});
+
+// UPDATE DAEMON CONNECTION
+ipcMain.on('request-update-daemon-ip',(event,data)=>{
+    win.webContents.send('action-update-daemon-ip', data);
+});
+
 
 ipcMain.on('request-update-tnc-state', (event, arg) => {
     win.webContents.send('action-update-tnc-state', arg);
@@ -568,6 +578,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
       
       
 });
+
 
 
 //tnc messages START --------------------------------------

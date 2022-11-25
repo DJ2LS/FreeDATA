@@ -20,6 +20,10 @@ var socketchunk = ''; // Current message, per connection.
 // global to keep track of daemon connection error emissions
 var daemonShowConnectStateError = 1
 
+// global for storing ip information
+var daemon_port = config.daemon_port;
+var daemon_host = config.daemon_host;
+
 setTimeout(connectDAEMON, 500)
 
 function connectDAEMON() {
@@ -27,13 +31,13 @@ function connectDAEMON() {
         daemonLog.info('connecting to daemon');
     }
 
-    //clear message buffer after reconnecting or inital connection
+    //clear message buffer after reconnecting or initial connection
     socketchunk = '';
     
     if (config.tnclocation == 'localhost') {
         daemon.connect(3001, '127.0.0.1')
     } else {
-        daemon.connect(config.daemon_port, config.daemon_host)
+        daemon.connect(daemon_port, daemon_host)
 
     }
 
@@ -299,4 +303,19 @@ exports.saveMyGrid = function(grid) {
     writeDaemonCommand(command)
 }
 
-
+ipcRenderer.on('action-update-daemon-ip', (event, arg) => {
+    daemon.destroy();
+    let Data = {
+        busy_state: "-",
+        arq_state: "-",
+        //channel_state: "-",
+        frequency: "-",
+        mode: "-",
+        bandwidth: "-",
+        dbfs_level: 0
+    };
+    ipcRenderer.send('request-update-tnc-state', Data);
+    daemon_port = arg.port;
+    daemon_host = arg.adress;
+    connectDAEMON();
+});

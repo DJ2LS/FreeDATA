@@ -30,6 +30,10 @@ var rxMsgBufferLengthGui = 0
 // global to keep track of TNC connection error emissions
 var tncShowConnectStateError = 1
 
+// global for storing ip information
+var tnc_port = config.tnc_port;
+var tnc_host = config.tnc_host;
+
 // network connection Timeout
 setTimeout(connectTNC, 2000)
 
@@ -37,13 +41,13 @@ function connectTNC() {
     //exports.connectTNC = function(){
     //socketLog.info('connecting to TNC...')
 
-    //clear message buffer after reconnecting or inital connection
+    //clear message buffer after reconnecting or initial connection
     socketchunk = '';
 
     if (config.tnclocation == 'localhost') {
         client.connect(3000, '127.0.0.1')
     } else {
-        client.connect(config.tnc_port, config.tnc_host)
+        client.connect(tnc_port, tnc_host)
     }
 }
 
@@ -578,3 +582,23 @@ exports.sendTestFrame = function() {
     command = '{"type" : "set", "command" : "send_test_frame"}'
     writeTncCommand(command)
 }
+
+
+
+ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
+    client.destroy();
+    let Data = {
+        busy_state: "-",
+        arq_state: "-",
+        //channel_state: "-",
+        frequency: "-",
+        mode: "-",
+        bandwidth: "-",
+        dbfs_level: 0
+    };
+    ipcRenderer.send('request-update-tnc-state', Data);
+    tnc_port = arg.port;
+    tnc_host = arg.adress;
+    connectTNC();
+
+});
