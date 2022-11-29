@@ -273,7 +273,7 @@ if __name__ == "__main__":
         static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
         static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-        static.SSID_LIST = [] ####
+        static.SSID_LIST = config['STATION']['ssid']
         static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
         static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
         static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
