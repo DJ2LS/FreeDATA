@@ -76,7 +76,7 @@ if __name__ == "__main__":
         nargs="*",
         default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         help="SSID list we are responding to",
-        type=str,
+        type=int,
     )
     PARSER.add_argument(
         "--mygrid",
@@ -273,19 +273,20 @@ if __name__ == "__main__":
         static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
         static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-        static.SSID_LIST = [] ####
+        static.SSID_LIST = config['STATION']['ssid']
         static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
         static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
         static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
         static.PORT = int(config['NETWORK']['tncport'])
-        static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
-        static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
-        static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
-        static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
-        static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
-        static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
-        static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
-        static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
+        # TODO: disabled because we don't need these settings anymore.
+        #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
+        #static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
+        #static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
+        #static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
+        #static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
+        #static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
+        #static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
+        #static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
         static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
         static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
         static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
