@@ -1014,6 +1014,13 @@ def set_audio_volume(datalist, volume: float) -> np.int16:
     :return: Scaled audio samples
     :rtype: np.int16
     """
+    # make sure we have float as data type to avoid crash
+    try:
+        volume = float(volume)
+    except Exception as e:
+        print(f"[MDM] changing audio volume failed with error: {e}")
+        volume = 100.0
+
     # Clip volume provided to acceptable values
     volume = np.clip(volume, 0, 200)  # limit to max value of 255
     # Scale samples by the ratio of volume / 100.0
