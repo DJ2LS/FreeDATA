@@ -221,6 +221,18 @@ def process_tnc_commands(data):
                     command=received_json,
                 )
 
+        # SET ENABLE RESPOND TO CQ -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "respond_to_cq":
+            try:
+                static.RESPOND_TO_CQ = received_json["state"] in ['true', 'True', True]
+                command_response("respond_to_cq", True)
+
+            except Exception as err:
+                command_response("respond_to_cq", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
         # TRANSMIT TEST FRAME  ----------------------------------------------------
         if (
             received_json["type"] == "set"
