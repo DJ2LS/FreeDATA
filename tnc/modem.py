@@ -569,22 +569,25 @@ class RF:
         :rtype: int
         """
         nbytes = 0
-        while self.stream.active:
-            threading.Event().wait(0.01)
-            while audiobuffer.nbuffer >= nin:
-                # demodulate audio
-                nbytes = codec2.api.freedv_rawdatarx(
-                    freedv, bytes_out, audiobuffer.buffer.ctypes
-                )
-                audiobuffer.pop(nin)
-                nin = codec2.api.freedv_nin(freedv)
-                if nbytes == bytes_per_frame:
-                    self.log.debug(
-                        "[MDM] [demod_audio] Pushing received data to received_queue"
+        try:
+            while self.stream.active:
+                threading.Event().wait(0.01)
+                while audiobuffer.nbuffer >= nin:
+                    # demodulate audio
+                    nbytes = codec2.api.freedv_rawdatarx(
+                        freedv, bytes_out, audiobuffer.buffer.ctypes
                     )
-                    self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
-                    self.get_scatter(freedv)
-                    self.calculate_snr(freedv)
+                    audiobuffer.pop(nin)
+                    nin = codec2.api.freedv_nin(freedv)
+                    if nbytes == bytes_per_frame:
+                        self.log.debug(
+                            "[MDM] [demod_audio] Pushing received data to received_queue"
+                        )
+                        self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
+                        self.get_scatter(freedv)
+                        self.calculate_snr(freedv)
+        except Exception as e:
+            self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
         return nin
 
     def init_codec2_mode(self, mode, adv):
