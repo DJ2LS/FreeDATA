@@ -56,14 +56,15 @@ class CONFIG:
                                 }
         self.config['RADIO'] = {'#Radio settings': None,
                                 'radiocontrol': data[13],
-                                'devicename': data[5],
-                                'deviceport': data[6],
-                                'serialspeed': data[7],
-                                'pttprotocol': data[8],
-                                'pttport': data[9],
-                                'data_bits': data[10],
-                                'stop_bits': data[11],
-                                'handshake': data[12],
+                                # TODO: disabled because we dont need these settings anymore
+                                #'devicename': data[5],
+                                #'deviceport': data[6],
+                                #'serialspeed': data[7],
+                                #'pttprotocol': data[8],
+                                #'pttport': data[9],
+                                #'data_bits': data[10],
+                                #'stop_bits': data[11],
+                                #'handshake': data[12],
                                 'rigctld_ip': data[14],
                                 'rigctld_port': data[15]
                                 }
