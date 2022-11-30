@@ -89,16 +89,21 @@ class DATA:
         self.data_channel_max_retries = 15
         self.datachannel_timeout = False
 
+        # -------------- AVAILABLE MODES START-----------
+        # IMPORTANT: LISTS MUST BE OF EQUAL LENGTH
+
+        # --------------------- LOW BANDWIDTH
+
         # List of codec2 modes to use in "low bandwidth" mode.
         self.mode_list_low_bw = [
             FREEDV_MODE.datac3.value,
         ]
-
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_low_bw = [0]
-
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [8]
+        self.time_list_low_bw = [7]
+
+        # --------------------- HIGH BANDWIDTH
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
@@ -107,9 +112,9 @@ class DATA:
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_high_bw = [0, 5]
-
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [8, 9]
+        self.time_list_high_bw = [7, 8]
+        # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
@@ -659,11 +664,16 @@ class DATA:
             ):
 
                 self.frame_received_counter += 1
+                # try increasing speed level only if we had two successful decodes
                 if self.frame_received_counter >= 2:
                     self.frame_received_counter = 0
-                    self.speed_level = min(
-                        self.speed_level + 1, len(self.mode_list) - 1
-                    )
+
+                    # make sure new speed level isn't higher than available modes
+                    new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
+                    # check if actual snr is higher than minimum snr for next mode
+                    if static.SNR >= self.snr_list[new_speed_level]:
+                        self.speed_level = new_speed_level
+
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
