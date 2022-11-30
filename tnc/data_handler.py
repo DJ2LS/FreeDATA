@@ -420,6 +420,17 @@ class DATA:
             )
         """
         self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=jsondata)
+
+        # add mycallsign and dxcallsign to network message if they not exist
+        # and make sure we are not overwrite them if they exist
+        try:
+            if not ["mycallsign"] in jsondata:
+                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
+            if not ["dxcallsign"] in jsondata:
+                jsondata["dxcallsign"] = str(static.DXCALLSIGN, "UTF-8")
+        except Exception as e:
+            self.log.debug("[TNC] error adding callsigns to network message", e=e)
+
         json_data_out = json.dumps(jsondata)
         sock.SOCKET_QUEUE.put(json_data_out)
 
@@ -2067,10 +2078,29 @@ class DATA:
           data_in:bytes:
 
         """
-        dxcallsign_CRC = bytes(data_in[4:7])
+        dxcallsign_crc = bytes(data_in[4:7])
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+
+        # check if callsign ssid override
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        if not valid:
+            # PING packet not for me.
+            self.log.debug("[TNC] received_ping: ping not for this station.")
+            return
+
+        static.DXCALLSIGN_CRC = dxcallsign_crc
+        static.DXCALLSIGN = dxcallsign
+        self.log.info(
+            "[TNC] PING REQ ["
+            + str(mycallsign, "UTF-8")
+            + "] <<< ["
+            + str(static.DXCALLSIGN, "UTF-8")
+            + "]",
+            snr=static.SNR,
+        )
+
         helpers.add_to_heard_stations(
-            dxcallsign,
+            static.DXCALLSIGN,
             static.DXGRID,
             "PING",
             static.SNR,
@@ -2083,27 +2113,8 @@ class DATA:
             ping="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
-        )
-        # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
-        if not valid:
-            # PING packet not for me.
-            self.log.debug("[TNC] received_ping: ping not for this station.")
-            return
-
-        static.DXCALLSIGN_CRC = dxcallsign_CRC
-        static.DXCALLSIGN = dxcallsign
-        self.log.info(
-            "[TNC] PING REQ ["
-            + str(mycallsign, "UTF-8")
-            + "] <<< ["
-            + str(static.DXCALLSIGN, "UTF-8")
-            + "]",
-            snr=static.SNR,
         )
 
         ping_frame = bytearray(self.length_sig0_frame)
@@ -2133,8 +2144,6 @@ class DATA:
             ping="acknowledge",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
         )
@@ -2195,8 +2204,6 @@ class DATA:
             arq="transmission",
             status="stopped",
             uuid=self.transmission_uuid,
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
         )
         self.arq_cleanup()
 
@@ -2263,7 +2270,7 @@ class DATA:
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
@@ -2271,22 +2278,21 @@ class DATA:
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxcallsign=str(beacon_callsign, "UTF-8"),
             dxgrid=str(dxgrid, "UTF-8"),
             snr=str(static.SNR),
         )
 
         self.log.info(
             "[TNC] BEACON RCVD ["
-            + str(dxcallsign, "UTF-8")
+            + str(beacon_callsign, "UTF-8")
             + "]["
             + str(dxgrid, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
-            dxcallsign,
+            beacon_callsign,
             dxgrid,
             "BEACON",
             static.SNR,
@@ -2338,7 +2344,7 @@ class DATA:
             freedata="tnc-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.log.info(
