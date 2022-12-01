@@ -317,6 +317,7 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
 
     return [False, ""]
 
+
 def check_session_id(id: bytes, id_to_check: bytes):
     """
     Funktion to check if we received the correct session id
@@ -445,6 +446,7 @@ def decode_call(b_code_word: bytes):
 
     return call
 
+
 def snr_to_bytes(snr):
     """create a byte from snr value """
     # make sure we have onl 1 byte snr
@@ -454,6 +456,7 @@ def snr_to_bytes(snr):
     snr = np.clip(snr, -127, 127)
     snr = int(snr).to_bytes(1, byteorder='big', signed=True)
     return snr
+
 
 def snr_from_bytes(snr):
     """create int from snr byte"""

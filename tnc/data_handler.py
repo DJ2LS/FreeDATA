@@ -1430,6 +1430,14 @@ class DATA:
                     state=static.ARQ_SESSION_STATE,
                 )
 
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="session",
+                    status="connecting",
+                    attempt=str(attempt + 1,"UTF-8"),
+                    maxattempts=str(self.session_connect_max_retries,"UTF-8"),
+                )
+
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
@@ -1455,6 +1463,11 @@ class DATA:
                 return False
 
         # Given the while condition, it will only exit when `static.ARQ_SESSION` is True
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+        )
         return True
 
     def received_session_opener(self, data_in: bytes) -> None:
@@ -1493,6 +1506,11 @@ class DATA:
         static.ARQ_SESSION = True
         static.TNC_STATE = "BUSY"
 
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+        )
         self.transmit_session_heartbeat()
 
     def close_session(self) -> None:
@@ -1579,6 +1597,13 @@ class DATA:
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
         # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+            heartbeat="transmitting",
+        )
+
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_session_heartbeat(self, data_in: bytes) -> None:
@@ -1600,6 +1625,13 @@ class DATA:
                 static.SNR,
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
+            )
+
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="connected",
+                heartbeat="received",
             )
 
             static.ARQ_SESSION = True
@@ -2237,6 +2269,7 @@ class DATA:
                         self.send_data_to_socket_queue(
                             freedata="tnc-message",
                             beacon="transmitting",
+                            dxcallsign="None",
                             interval=self.beacon_interval,
                         )
                         self.log.info(
@@ -2320,6 +2353,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="transmitting",
+            dxcallsign="None",
         )
         cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
@@ -2372,13 +2406,14 @@ class DATA:
         )
 
         if static.RESPOND_TO_CQ:
-            self.transmit_qrv()
+            self.transmit_qrv(dxcallsign)
 
-    def transmit_qrv(self) -> None:
+    def transmit_qrv(self, dxcallsign: bytes) -> None:
         """
         Called when we send a QRV frame
         Args:
-          self
+          self,
+          dxcallsign
 
         """
         # Sleep a random amount of time before responding to make it more likely to be
@@ -2389,6 +2424,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="transmitting",
+            dxcallsign=str(dxcallsign, "UTF-8"),
         )
         self.log.info("[TNC] Sending QRV!")
 
@@ -2788,7 +2824,7 @@ class DATA:
                 ):
                     time.sleep(1)
                     self.transmit_session_heartbeat()
-                    time.sleep(2)
+                    time.sleep(4)
 
     def send_test_frame(self) -> None:
         """Send an empty test frame"""
