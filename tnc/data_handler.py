@@ -2826,7 +2826,7 @@ class DATA:
                 ):
                     time.sleep(1)
                     self.transmit_session_heartbeat()
-                    time.sleep(4)
+                    time.sleep(2)
 
     def send_test_frame(self) -> None:
         """Send an empty test frame"""
