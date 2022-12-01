@@ -663,7 +663,7 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
 
 
 
-    document.getElementById('hamlib_rigctld_command').value = paramList
+    document.getElementById('hamlib_rigctld_command').value = paramList.join(" ") // join removes the commas
 
     console.log(paramList)
     console.log(rigctldPath)
