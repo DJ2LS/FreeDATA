@@ -419,7 +419,6 @@ class DATA:
                 data=base64_data,
             )
         """
-        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=jsondata)
 
         # add mycallsign and dxcallsign to network message if they not exist
         # and make sure we are not overwrite them if they exist
@@ -431,7 +430,11 @@ class DATA:
         except Exception as e:
             self.log.debug("[TNC] error adding callsigns to network message", e=e)
 
+        # run json dumps
         json_data_out = json.dumps(jsondata)
+
+        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=json_data_out)
+        # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
 
     def send_ident_frame(self, transmit) -> None:
