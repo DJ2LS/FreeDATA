@@ -21,9 +21,8 @@ Please keep in mind, this project is still under development with many issues wh
 - [x] SNR operation level SNR > 0dB MPP/MPD
 - [x] file compression
 - [x] auto updater
-- [ ] channel measurement
+- [x] channel measurement
 - [ ] hybrid ARQ
-- [ ] SNR operation level SNR @ -5dB MPP/MPD
 - [ ] tbc...
 ### existing/planned Chat features
  - [x] chat messages
