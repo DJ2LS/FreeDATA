@@ -424,9 +424,9 @@ class DATA:
         # add mycallsign and dxcallsign to network message if they not exist
         # and make sure we are not overwrite them if they exist
         try:
-            if not ["mycallsign"] in jsondata:
+            if not "mycallsign" in jsondata:
                 jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
-            if not ["dxcallsign"] in jsondata:
+            if not "dxcallsign" in jsondata:
                 jsondata["dxcallsign"] = str(static.DXCALLSIGN, "UTF-8")
         except Exception as e:
             self.log.debug("[TNC] error adding callsigns to network message", e=e)
@@ -1610,7 +1610,7 @@ class DATA:
             # -> if not session master
             # --> this will be triggered by heartbeat watchdog
             # -> if not during a file transfer
-            # -> if ARQ_SESSION_STATE != disconnecting, disconnected, failed 
+            # -> if ARQ_SESSION_STATE != disconnecting, disconnected, failed
             # --> to avoid heartbeat toggle loops while disconnecting
             if (
                     not self.IS_ARQ_SESSION_MASTER
