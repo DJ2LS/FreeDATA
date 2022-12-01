@@ -204,6 +204,38 @@ def process_tnc_commands(data):
         # convert data to json object
         received_json = json.loads(data)
         log.debug("[SCK] CMD", command=received_json)
+
+        # ENABLE TNC LISTENING STATE -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "listen":
+            try:
+                static.LISTEN = received_json["state"] in ['true', 'True', True, "ON", "on"]
+                command_response("listen", True)
+
+                # if tnc is connected, force disconnect when static.LISTEN == False
+                if not static.LISTEN and static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+                    command_response("disconnect", True)
+
+            except Exception as err:
+                command_response("listen", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+        # SET ENABLE RESPOND TO CQ -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "respond_to_cq":
+            try:
+                static.RESPOND_TO_CQ = received_json["state"] in ['true', 'True', True]
+                command_response("respond_to_cq", True)
+
+            except Exception as err:
+                command_response("respond_to_cq", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
         # SET TX AUDIO LEVEL  -----------------------------------------------------
         if (
             received_json["type"] == "set"
@@ -219,18 +251,6 @@ def process_tnc_commands(data):
                     "[SCK] TX audio command execution error",
                     e=err,
                     command=received_json,
-                )
-
-        # SET ENABLE RESPOND TO CQ -----------------------------------------------------
-        if received_json["type"] == "set" and received_json["command"] == "respond_to_cq":
-            try:
-                static.RESPOND_TO_CQ = received_json["state"] in ['true', 'True', True]
-                command_response("respond_to_cq", True)
-
-            except Exception as err:
-                command_response("respond_to_cq", False)
-                log.warning(
-                    "[SCK] CQ command execution error", e=err, command=received_json
                 )
 
         # TRANSMIT TEST FRAME  ----------------------------------------------------
@@ -372,7 +392,7 @@ def process_tnc_commands(data):
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
             try:
-                if not static.ARQ_SESSION_STATE in ["disconnecting", "disconnected", "failed"]:
+                if static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
                     DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
 
                     # set early disconnecting state so we can interrupt connection attempts
@@ -558,6 +578,7 @@ def send_tnc_state():
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
         "hamlib_status": static.HAMLIB_STATUS,
+        "listen": str(static.LISTEN),
     }
 
     # add heard stations to heard stations object

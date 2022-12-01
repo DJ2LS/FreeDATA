@@ -43,7 +43,7 @@ SOCKET_TIMEOUT: int = 1  # seconds
 # ---------------------------------
 SERIAL_DEVICES: list = []
 # ---------------------------------
-
+LISTEN: bool = True
 PTT_STATE: bool = False
 TRANSMITTING: bool = False
 

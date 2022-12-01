@@ -15,7 +15,7 @@ Uses util_datac0.py in separate process to perform the data transfer.
 """
 
 import multiprocessing
-from random import randbytes
+import numpy as np
 import sys
 import time
 
@@ -68,7 +68,7 @@ def t_create_frame(frame_type: int, mycall: str, dxcall: str) -> bytearray:
     # frame[1:4] = dxcallsign_crc
     # frame[4:7] = mycallsign_crc
     # frame[7:13] = mycallsign_bytes
-    session_id = randbytes(1)
+    session_id = np.random.bytes(1)
     frame = bytearray(14)
     frame[:1] = bytes([frame_type])
     frame[1:2] = session_id
@@ -180,9 +180,9 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
 
     # close_frame = t_create_session_close_old("ZZ0ZZ-0", "ZZ0ZZ-0")
     open_session = create_frame[1:2]
-    wrong_session = randbytes(1)
+    wrong_session = np.random.bytes(1)
     while wrong_session == open_session:
-        wrong_session = randbytes(1)
+        wrong_session = np.random.bytes(1)
     close_frame = t_create_session_close(wrong_session)
     print_frame(close_frame)
 

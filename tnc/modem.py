@@ -580,12 +580,19 @@ class RF:
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
-                        self.log.debug(
-                            "[MDM] [demod_audio] Pushing received data to received_queue"
-                        )
-                        self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
-                        self.get_scatter(freedv)
-                        self.calculate_snr(freedv)
+                        # process commands only if static.LISTEN = True
+                        if static.LISTEN:
+                            self.log.debug(
+                                "[MDM] [demod_audio] Pushing received data to received_queue"
+                            )
+                            self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
+                            self.get_scatter(freedv)
+                            self.calculate_snr(freedv)
+                        else:
+                            self.log.warning(
+                                "[MDM] [demod_audio] received frame but ignored processing",
+                                listen=static.LISTEN
+                            )
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
         return nin
@@ -679,7 +686,6 @@ class RF:
             self.sig1_datac0_bytes_out,
             self.sig1_datac0_bytes_per_frame,
         )
-
 
     def audio_dat0_datac1(self) -> None:
         """Receive data encoded with datac1"""

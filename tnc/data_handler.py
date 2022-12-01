@@ -89,16 +89,21 @@ class DATA:
         self.data_channel_max_retries = 15
         self.datachannel_timeout = False
 
+        # -------------- AVAILABLE MODES START-----------
+        # IMPORTANT: LISTS MUST BE OF EQUAL LENGTH
+
+        # --------------------- LOW BANDWIDTH
+
         # List of codec2 modes to use in "low bandwidth" mode.
         self.mode_list_low_bw = [
             FREEDV_MODE.datac3.value,
         ]
-
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_low_bw = [0]
-
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [8]
+        self.time_list_low_bw = [6]
+
+        # --------------------- HIGH BANDWIDTH
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
@@ -107,9 +112,9 @@ class DATA:
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_high_bw = [0, 5]
-
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [8, 9]
+        self.time_list_high_bw = [6, 7]
+        # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
@@ -414,8 +419,22 @@ class DATA:
                 data=base64_data,
             )
         """
-        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=jsondata)
+
+        # add mycallsign and dxcallsign to network message if they not exist
+        # and make sure we are not overwrite them if they exist
+        try:
+            if not "mycallsign" in jsondata:
+                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
+            if not "dxcallsign" in jsondata:
+                jsondata["dxcallsign"] = str(static.DXCALLSIGN, "UTF-8")
+        except Exception as e:
+            self.log.debug("[TNC] error adding callsigns to network message", e=e)
+
+        # run json dumps
         json_data_out = json.dumps(jsondata)
+
+        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=json_data_out)
+        # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
 
     def send_ident_frame(self, transmit) -> None:
@@ -659,11 +678,20 @@ class DATA:
             ):
 
                 self.frame_received_counter += 1
+                # try increasing speed level only if we had two successful decodes
                 if self.frame_received_counter >= 2:
                     self.frame_received_counter = 0
-                    self.speed_level = min(
-                        self.speed_level + 1, len(self.mode_list) - 1
-                    )
+
+                    # make sure new speed level isn't higher than available modes
+                    new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
+                    # check if actual snr is higher than minimum snr for next mode
+                    if static.SNR >= self.snr_list[new_speed_level]:
+                        self.speed_level = new_speed_level
+                    else:
+                        self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
+                                         given_snr=static.SNR,
+                                         needed_snr=self.snr_list[new_speed_level]
+                                         )
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
@@ -1402,6 +1430,14 @@ class DATA:
                     state=static.ARQ_SESSION_STATE,
                 )
 
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="session",
+                    status="connecting",
+                    attempt=attempt + 1,
+                    maxattempts=self.session_connect_max_retries,
+                )
+
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
@@ -1427,6 +1463,11 @@ class DATA:
                 return False
 
         # Given the while condition, it will only exit when `static.ARQ_SESSION` is True
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+        )
         return True
 
     def received_session_opener(self, data_in: bytes) -> None:
@@ -1465,6 +1506,11 @@ class DATA:
         static.ARQ_SESSION = True
         static.TNC_STATE = "BUSY"
 
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+        )
         self.transmit_session_heartbeat()
 
     def close_session(self) -> None:
@@ -1551,6 +1597,13 @@ class DATA:
         # connection_frame[1:4] = static.DXCALLSIGN_CRC
         # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="session",
+            status="connected",
+            heartbeat="transmitting",
+        )
+
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
     def received_session_heartbeat(self, data_in: bytes) -> None:
@@ -1574,6 +1627,13 @@ class DATA:
                 static.HAMLIB_FREQUENCY,
             )
 
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="session",
+                status="connected",
+                heartbeat="received",
+            )
+
             static.ARQ_SESSION = True
             static.ARQ_SESSION_STATE = "connected"
             static.TNC_STATE = "BUSY"
@@ -1585,7 +1645,7 @@ class DATA:
             # -> if not session master
             # --> this will be triggered by heartbeat watchdog
             # -> if not during a file transfer
-            # -> if ARQ_SESSION_STATE != disconnecting, disconnected, failed 
+            # -> if ARQ_SESSION_STATE != disconnecting, disconnected, failed
             # --> to avoid heartbeat toggle loops while disconnecting
             if (
                     not self.IS_ARQ_SESSION_MASTER
@@ -2057,10 +2117,29 @@ class DATA:
           data_in:bytes:
 
         """
-        dxcallsign_CRC = bytes(data_in[4:7])
+        dxcallsign_crc = bytes(data_in[4:7])
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+
+        # check if callsign ssid override
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        if not valid:
+            # PING packet not for me.
+            self.log.debug("[TNC] received_ping: ping not for this station.")
+            return
+
+        static.DXCALLSIGN_CRC = dxcallsign_crc
+        static.DXCALLSIGN = dxcallsign
+        self.log.info(
+            "[TNC] PING REQ ["
+            + str(mycallsign, "UTF-8")
+            + "] <<< ["
+            + str(static.DXCALLSIGN, "UTF-8")
+            + "]",
+            snr=static.SNR,
+        )
+
         helpers.add_to_heard_stations(
-            dxcallsign,
+            static.DXCALLSIGN,
             static.DXGRID,
             "PING",
             static.SNR,
@@ -2073,27 +2152,8 @@ class DATA:
             ping="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
-        )
-        # check if callsign ssid override
-        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
-        if not valid:
-            # PING packet not for me.
-            self.log.debug("[TNC] received_ping: ping not for this station.")
-            return
-
-        static.DXCALLSIGN_CRC = dxcallsign_CRC
-        static.DXCALLSIGN = dxcallsign
-        self.log.info(
-            "[TNC] PING REQ ["
-            + str(mycallsign, "UTF-8")
-            + "] <<< ["
-            + str(static.DXCALLSIGN, "UTF-8")
-            + "]",
-            snr=static.SNR,
         )
 
         ping_frame = bytearray(self.length_sig0_frame)
@@ -2123,8 +2183,6 @@ class DATA:
             ping="acknowledge",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
         )
@@ -2185,8 +2243,6 @@ class DATA:
             arq="transmission",
             status="stopped",
             uuid=self.transmission_uuid,
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
         )
         self.arq_cleanup()
 
@@ -2213,6 +2269,7 @@ class DATA:
                         self.send_data_to_socket_queue(
                             freedata="tnc-message",
                             beacon="transmitting",
+                            dxcallsign="None",
                             interval=self.beacon_interval,
                         )
                         self.log.info(
@@ -2253,7 +2310,7 @@ class DATA:
 
         """
         # here we add the received station to the heard stations buffer
-        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
@@ -2261,22 +2318,21 @@ class DATA:
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
-            mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxcallsign=str(beacon_callsign, "UTF-8"),
             dxgrid=str(dxgrid, "UTF-8"),
             snr=str(static.SNR),
         )
 
         self.log.info(
             "[TNC] BEACON RCVD ["
-            + str(dxcallsign, "UTF-8")
+            + str(beacon_callsign, "UTF-8")
             + "]["
             + str(dxgrid, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
-            dxcallsign,
+            beacon_callsign,
             dxgrid,
             "BEACON",
             static.SNR,
@@ -2297,6 +2353,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="transmitting",
+            dxcallsign="None",
         )
         cq_frame = bytearray(self.length_sig0_frame)
         cq_frame[:1] = bytes([FR_TYPE.CQ.value])
@@ -2328,7 +2385,7 @@ class DATA:
             freedata="tnc-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
-            dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+            dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(static.DXGRID, "UTF-8"),
         )
         self.log.info(
@@ -2349,13 +2406,14 @@ class DATA:
         )
 
         if static.RESPOND_TO_CQ:
-            self.transmit_qrv()
+            self.transmit_qrv(dxcallsign)
 
-    def transmit_qrv(self) -> None:
+    def transmit_qrv(self, dxcallsign: bytes) -> None:
         """
         Called when we send a QRV frame
         Args:
-          self
+          self,
+          dxcallsign
 
         """
         # Sleep a random amount of time before responding to make it more likely to be
@@ -2366,6 +2424,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="transmitting",
+            dxcallsign=str(dxcallsign, "UTF-8"),
         )
         self.log.info("[TNC] Sending QRV!")
 
@@ -2395,6 +2454,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="received",
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxgrid=str(dxgrid, "UTF-8")
         )
 
         self.log.info(
@@ -2659,6 +2720,7 @@ class DATA:
                 max_attempts=self.rx_n_max_retries_per_burst,
                 speed_level=self.speed_level,
             )
+            # reduce speed level if nack counter increased
             self.frame_received_counter = 0
             self.burst_nack_counter += 1
             if self.burst_nack_counter >= 2:
