@@ -684,7 +684,11 @@ class DATA:
                     # check if actual snr is higher than minimum snr for next mode
                     if static.SNR >= self.snr_list[new_speed_level]:
                         self.speed_level = new_speed_level
-
+                    else:
+                        self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
+                                         given_snr=static.SNR,
+                                         needed_snr=self.snr_list[new_speed_level]
+                                         )
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
@@ -2675,6 +2679,7 @@ class DATA:
                 max_attempts=self.rx_n_max_retries_per_burst,
                 speed_level=self.speed_level,
             )
+            # reduce speed level if nack counter increased
             self.frame_received_counter = 0
             self.burst_nack_counter += 1
             if self.burst_nack_counter >= 2:
