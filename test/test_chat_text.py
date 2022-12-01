@@ -133,7 +133,7 @@ def analyze_results(station1: list, station2: list, call_list: list):
 @pytest.mark.parametrize("freedv_mode", ["datac1", "datac3"])
 @pytest.mark.parametrize("n_frames_per_burst", [1])  # Higher fpb is broken.
 @pytest.mark.parametrize("message_no", range(len(messages)))
-@pytest.mark.flaky(reruns=5)
+@pytest.mark.flaky(reruns=3)
 def test_chat_text(
     freedv_mode: str, n_frames_per_burst: int, message_no: int, tmp_path
 ):
