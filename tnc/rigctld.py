@@ -70,7 +70,7 @@ class radio:
             return True
 
         self.log.error(
-            "[RIGCTLD] Can't connect to rigctld!", ip=self.hostname, port=self.port
+            "[RIGCTLD] Can't connect!", ip=self.hostname, port=self.port
         )
         return False
 
@@ -88,7 +88,7 @@ class radio:
                 # ConnectionRefusedError: [Errno 111] Connection refused
                 self.close_rig()
                 self.log.warning(
-                    "[RIGCTLD] Connection to rigctld refused! Reconnect...",
+                    "[RIGCTLD] Reconnect...",
                     ip=self.hostname,
                     port=self.port,
                     e=err,
