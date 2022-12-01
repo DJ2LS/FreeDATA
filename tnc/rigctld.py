@@ -163,7 +163,7 @@ class radio:
             data = data[1].decode("utf-8")
 
             if 'RPRT' not in data:
-                self.bandwidth = data
+                self.bandwidth = int(data)
             return self.bandwidth
         except Exception:
             return self.bandwidth
