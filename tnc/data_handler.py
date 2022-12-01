@@ -1434,8 +1434,8 @@ class DATA:
                     freedata="tnc-message",
                     arq="session",
                     status="connecting",
-                    attempt=str(attempt + 1,"UTF-8"),
-                    maxattempts=str(self.session_connect_max_retries,"UTF-8"),
+                    attempt=attempt + 1,
+                    maxattempts=self.session_connect_max_retries,
                 )
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2454,6 +2454,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="received",
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            dxgrid=str(dxgrid, "UTF-8")
         )
 
         self.log.info(
