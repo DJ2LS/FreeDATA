@@ -113,7 +113,7 @@ class DATA:
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_high_bw = [0, 5]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [7, 8]
+        self.time_list_high_bw = [8, 9]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
