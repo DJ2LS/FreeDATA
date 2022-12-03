@@ -2147,7 +2147,7 @@ class DATA:
         )
 
         helpers.add_to_heard_stations(
-            static.DXCALLSIGN,
+            dxcallsign,
             static.DXGRID,
             "PING",
             static.SNR,
@@ -2184,37 +2184,50 @@ class DATA:
           data_in:bytes:
 
         """
-        static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-        static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            ping="acknowledge",
-            uuid=str(uuid.uuid4()),
-            timestamp=int(time.time()),
-            dxgrid=str(static.DXGRID, "UTF-8"),
-            snr=str(static.SNR),
-        )
+        # check if we received correct ping
 
-        helpers.add_to_heard_stations(
-            static.DXCALLSIGN,
-            static.DXGRID,
-            "PING-ACK",
-            static.SNR,
-            static.FREQ_OFFSET,
-            static.HAMLIB_FREQUENCY,
-        )
+        if static.DXCALLSIGN_CRC == bytes(data_in[4:7]):
 
-        self.log.info(
-            "[TNC] PING ACK ["
-            + str(self.mycallsign, "UTF-8")
-            + "] >|< ["
-            + str(static.DXCALLSIGN, "UTF-8")
-            + "]",
-            snr=static.SNR,
-        )
-        static.TNC_STATE = "IDLE"
+            #static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+            static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                ping="acknowledge",
+                uuid=str(uuid.uuid4()),
+                timestamp=int(time.time()),
+                dxgrid=str(static.DXGRID, "UTF-8"),
+                snr=str(static.SNR),
+            )
+
+            helpers.add_to_heard_stations(
+                static.DXCALLSIGN,
+                static.DXGRID,
+                "PING-ACK",
+                static.SNR,
+                static.FREQ_OFFSET,
+                static.HAMLIB_FREQUENCY,
+            )
+
+            self.log.info(
+                "[TNC] PING ACK ["
+                + str(self.mycallsign, "UTF-8")
+                + "] >|< ["
+                + str(static.DXCALLSIGN, "UTF-8")
+                + "]",
+                snr=static.SNR,
+            )
+            static.TNC_STATE = "IDLE"
+        else:
+            self.log.info(
+                "[TNC] FOREIGN PING ACK ["
+                + str(self.mycallsign, "UTF-8")
+                + "] ??? ["
+                + str(bytes(data_in[4:7]), "UTF-8")
+                + "]",
+                snr=static.SNR,
+            )
     def stop_transmission(self) -> None:
         """
         Force a stop of the running transmission
