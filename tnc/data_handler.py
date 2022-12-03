@@ -39,6 +39,7 @@ class DATA:
     def __init__(self) -> None:
         # Initial call sign. Will be overwritten later
         self.mycallsign = static.MYCALLSIGN
+        self.dxcallsign = static.DXCALLSIGN
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
         self.data_queue_received = DATA_QUEUE_RECEIVED
@@ -1485,7 +1486,8 @@ class DATA:
 
         self.session_id = bytes(data_in[1:2])
         static.DXCALLSIGN_CRC = bytes(data_in[5:8])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[8:14]))
+        self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[8:14]))
+        static.DXCALLSIGN = self.dxcallsign
 
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
@@ -1499,7 +1501,7 @@ class DATA:
             "[TNC] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]>>|<<["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             state=static.ARQ_SESSION_STATE,
         )
@@ -1509,6 +1511,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="connected",
         )
         self.transmit_session_heartbeat()
@@ -1521,7 +1524,7 @@ class DATA:
             "[TNC] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]<<X>>["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             state=static.ARQ_SESSION_STATE,
         )
@@ -1529,6 +1532,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="close",
         )
 
@@ -1570,7 +1574,7 @@ class DATA:
                 "[TNC] SESSION ["
                 + str(self.mycallsign, "UTF-8")
                 + "]<<X>>["
-                + str(static.DXCALLSIGN, "UTF-8")
+                + str(self.dxcallsign, "UTF-8")
                 + "]",
                 state=static.ARQ_SESSION_STATE,
             )
@@ -1578,6 +1582,7 @@ class DATA:
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 arq="session",
+                dxcallsign=str(self.dxcallsign, "UTF-8"),
                 status="close",
             )
 
@@ -1600,6 +1605,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="connected",
             heartbeat="transmitting",
         )
@@ -1614,12 +1620,12 @@ class DATA:
 
         """
         # Accept session data if the DXCALLSIGN_CRC matches the station in static or session id.
-        _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
+        _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session:
             self.log.debug("[TNC] Received session heartbeat")
             helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
+                self.dxcallsign,
                 static.DXGRID,
                 "SESSION-HB",
                 static.SNR,
@@ -1631,6 +1637,7 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="connected",
+                dxcallsign=str(self.dxcallsign, "UTF-8"),
                 heartbeat="received",
             )
 
@@ -1869,7 +1876,8 @@ class DATA:
         )
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-        static.DXCALLSIGN = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
+        static.DXCALLSIGN = self.dxcallsign
 
         # n_frames_per_burst is currently unused
         # n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
@@ -1953,7 +1961,7 @@ class DATA:
             "[TNC] ARQ | DATA | RX | ["
             + str(mycallsign, "UTF-8")
             + "]>> <<["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             channel_constellation=constellation,
         )
@@ -1990,7 +1998,7 @@ class DATA:
             "[TNC] ARQ | DATA | RX | ["
             + str(mycallsign, "UTF-8")
             + "]>>|<<["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             bandwidth="wide",
             snr=static.SNR,
@@ -2047,7 +2055,7 @@ class DATA:
                 "[TNC] ARQ | DATA | TX | ["
                 + str(self.mycallsign, "UTF-8")
                 + "]>>|<<["
-                + str(static.DXCALLSIGN, "UTF-8")
+                + str(self.dxcallsign, "UTF-8")
                 + "]",
                 snr=static.SNR,
             )
@@ -2093,7 +2101,7 @@ class DATA:
             "[TNC] PING REQ ["
             + str(self.mycallsign, "UTF-8")
             + "] >>> ["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(dxcallsign, "UTF-8")
             + "]"
         )
 
@@ -2133,7 +2141,7 @@ class DATA:
             "[TNC] PING REQ ["
             + str(mycallsign, "UTF-8")
             + "] <<< ["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(dxcallsign, "UTF-8")
             + "]",
             snr=static.SNR,
         )
@@ -2153,6 +2161,7 @@ class DATA:
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             dxgrid=str(static.DXGRID, "UTF-8"),
+            dxcallsign = str(dxcallsign, "UTF-8"),
             snr=str(static.SNR),
         )
 
@@ -2225,6 +2234,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="stopped",
         )
         self.arq_cleanup()
@@ -2241,6 +2251,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
+            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="stopped",
             uuid=self.transmission_uuid,
         )
@@ -2633,6 +2644,7 @@ class DATA:
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
+            self.dxcallsign = b"AA0AA"
 
         static.ARQ_STATE = False
         self.arq_file_transfer = False
