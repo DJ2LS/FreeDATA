@@ -2228,6 +2228,7 @@ class DATA:
                 + "]",
                 snr=static.SNR,
             )
+
     def stop_transmission(self) -> None:
         """
         Force a stop of the running transmission
