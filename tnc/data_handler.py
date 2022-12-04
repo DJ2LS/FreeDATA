@@ -262,7 +262,8 @@ class DATA:
                 # [3] N_FRAMES_PER_BURST int
                 # [4] self.transmission_uuid str
                 # [5] mycallsign with ssid
-                # [6] attempts
+                # [6] dxcallsign with ssid
+                # [7] attempts
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
 
             else:
