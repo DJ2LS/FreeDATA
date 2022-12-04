@@ -287,7 +287,7 @@ def t_datac0_2(
 
     # Allow enough time for this side to receive the disconnect frame.
     timeout = time.time() + timeout_duration
-    while '"arq":"session", "dxcallsign":"AA2BB-0", "status":"close"' not in str(sock.SOCKET_QUEUE.queue):
+    while '"arq":"session", "status":"close"' not in str(sock.SOCKET_QUEUE.queue):
 
 
 
@@ -306,5 +306,5 @@ def t_datac0_2(
             sock.SOCKET_QUEUE.queue
         ), f"{item} found in {str(sock.SOCKET_QUEUE.queue)}"
 
-    assert '"arq":"session","dxcallsign":"AA0AA","status":"close"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.warning("station2: Exiting!")
