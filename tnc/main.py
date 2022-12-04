@@ -90,14 +90,14 @@ if __name__ == "__main__":
         dest="audio_input_device",
         default=0,
         help="listening sound card",
-        type=int,
+        type=str,
     )
     PARSER.add_argument(
         "--tx",
         dest="audio_output_device",
         default=0,
         help="transmitting sound card",
-        type=int,
+        type=str,
     )
     PARSER.add_argument(
         "--port",
