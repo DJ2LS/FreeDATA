@@ -306,5 +306,5 @@ def t_datac0_2(
             sock.SOCKET_QUEUE.queue
         ), f"{item} found in {str(sock.SOCKET_QUEUE.queue)}"
 
-    assert '"arq":"session", "dxcallsign":"AA0AA", "status":"close"' in str(sock.SOCKET_QUEUE.queue)
+    assert '"arq":"session","dxcallsign":"AA0AA","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.warning("station2: Exiting!")
