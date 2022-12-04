@@ -25,7 +25,7 @@ TNCPROCESS: subprocess.Popen
 MYCALLSIGN: bytes = b"AA0AA"
 MYCALLSIGN_CRC: bytes = b"A"
 
-DXCALLSIGN: bytes = b"AA0AA"
+DXCALLSIGN: bytes = b"ZZ9YY"
 DXCALLSIGN_CRC: bytes = b"A"
 
 MYGRID: bytes = b""
