@@ -351,6 +351,15 @@ def process_tnc_commands(data):
 
             dxcallsign = received_json["dxcallsign"]
 
+            # check if specific callsign is set with different SSID than the TNC is initialized
+            try:
+                mycallsign = received_json["parameter"][0]["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = static.MYCALLSIGN
+
             # additional step for being sure our callsign is correctly
             # in case we are not getting a station ssid
             # then we are forcing a station ssid = 0
@@ -370,10 +379,8 @@ def process_tnc_commands(data):
 
                 # try connecting
                 try:
-                    static.DXCALLSIGN = dxcallsign
-                    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                    DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign, attempts])
+                    DATA_QUEUE_TRANSMIT.put(["CONNECT", mycallsign, dxcallsign, attempts])
                     command_response("connect", True)
                 except Exception as err:
                     command_response("connect", False)
@@ -384,7 +391,6 @@ def process_tnc_commands(data):
                     )
                     # allow beacon transmission again
                     static.BEACON_PAUSE = False
-
 
                 # allow beacon transmission again
                 static.BEACON_PAUSE = False
