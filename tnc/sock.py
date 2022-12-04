@@ -439,6 +439,9 @@ def process_tnc_commands(data):
                 # check if specific callsign is set with different SSID than the TNC is initialized
                 try:
                     mycallsign = received_json["parameter"][0]["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
                 except Exception:
                     mycallsign = static.MYCALLSIGN
 
@@ -462,7 +465,7 @@ def process_tnc_commands(data):
                 binarydata = base64.b64decode(base64data)
 
                 DATA_QUEUE_TRANSMIT.put(
-                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, attempts]
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
                 )
 
             except Exception as err:

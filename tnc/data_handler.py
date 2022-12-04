@@ -263,7 +263,7 @@ class DATA:
                 # [4] self.transmission_uuid str
                 # [5] mycallsign with ssid
                 # [6] attempts
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6])
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
 
             else:
                 self.log.error(
@@ -1673,6 +1673,7 @@ class DATA:
             n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
+            dxcallsign,
             attempts: int,
     ) -> bool:
         """
@@ -1692,6 +1693,7 @@ class DATA:
         """
         # overwrite mycallsign in case of different SSID
         self.mycallsign = mycallsign
+        self.dxcallsign = dxcallsign
 
         # override session connection attempts
         self.data_channel_max_retries = attempts
@@ -1773,7 +1775,6 @@ class DATA:
         if not static.ARQ_SESSION:
             # self.session_id = randbytes(1)
             self.session_id = np.random.bytes(1)
-        print(self.session_id)
 
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
@@ -1802,13 +1803,15 @@ class DATA:
                     freedata="tnc-message",
                     arq="transmission",
                     status="opening",
+                    mycallsign=str(mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign,'UTF-8'),
                 )
 
                 self.log.info(
                     "[TNC] ARQ | DATA | TX | ["
                     + str(mycallsign, "UTF-8")
                     + "]>> <<["
-                    + str(static.DXCALLSIGN, "UTF-8")
+                    + str(self.dxcallsign, "UTF-8")
                     + "]",
                     attempt=f"{str(attempt + 1)}/{str(self.data_channel_max_retries)}",
                 )
@@ -1842,7 +1845,7 @@ class DATA:
                 "[TNC] ARQ | TX | DATA ["
                 + str(mycallsign, "UTF-8")
                 + "]>>X<<["
-                + str(static.DXCALLSIGN, "UTF-8")
+                + str(self.dxcallsign, "UTF-8")
                 + "]"
             )
             self.datachannel_timeout = True
