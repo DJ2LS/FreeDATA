@@ -241,7 +241,7 @@ class DATA:
             elif data[0] == "CONNECT":
                 # [1] dxcallsign
                 # [2] attempts
-                self.arq_session_handler(data[1], data[2])
+                self.arq_session_handler(data[1], data[2], data[3])
 
             elif data[0] == "PING":
                 # [1] dxcallsign
@@ -1309,7 +1309,7 @@ class DATA:
     ############################################################################################################
     # ARQ SESSION HANDLER
     ############################################################################################################
-    def arq_session_handler(self, dxcallsign, attempts) -> bool:
+    def arq_session_handler(self, mycallsign, dxcallsign, attempts) -> bool:
         """
         Create a session with `static.DXCALLSIGN` and wait until the session is open.
 
@@ -1320,13 +1320,19 @@ class DATA:
         # override connection attempts
         self.session_connect_max_retries = attempts
 
+        self.mycallsign = mycallsign
+        self.dxcallsign = dxcallsign
+
+        static.DXCALLSIGN = self.dxcallsign
+        static.DXCALLSIGN_CRC = helpers.get_crc_24(self.dxcallsign)
+
         # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         self.log.info(
             "[TNC] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]>> <<["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             state=static.ARQ_SESSION_STATE,
         )
@@ -1338,6 +1344,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="waiting",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             # wait while timeout not reached and our busy state is busy
@@ -1353,6 +1361,8 @@ class DATA:
                     freedata="tnc-message",
                     arq="session",
                     status="failed",
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                     reason="busy",
                 )
                 return False
@@ -1367,6 +1377,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="connecting",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
         if static.ARQ_SESSION and static.ARQ_SESSION_STATE == "connected":
             # static.ARQ_SESSION_STATE = "connected"
@@ -1374,6 +1386,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="connected",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
             return True
 
@@ -1381,7 +1395,7 @@ class DATA:
             "[TNC] SESSION FAILED ["
             + str(self.mycallsign, "UTF-8")
             + "]>>X<<["
-            + str(static.DXCALLSIGN, "UTF-8")
+            + str(self.dxcallsign, "UTF-8")
             + "]",
             attempts=self.session_connect_max_retries,  # Adjust for 0-based for user display
             reason="maximum connection attempts reached",
@@ -1393,6 +1407,8 @@ class DATA:
             arq="session",
             status="failed",
             reason="timeout",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
         return False
 
@@ -1425,7 +1441,7 @@ class DATA:
                     "[TNC] SESSION ["
                     + str(self.mycallsign, "UTF-8")
                     + "]>>?<<["
-                    + str(static.DXCALLSIGN, "UTF-8")
+                    + str(self.dxcallsign, "UTF-8")
                     + "]",
                     a=str(attempt + 1) + "/" + str(self.session_connect_max_retries),  # Adjust for 0-based for user display
                     state=static.ARQ_SESSION_STATE,
@@ -1437,6 +1453,8 @@ class DATA:
                     status="connecting",
                     attempt=attempt + 1,
                     maxattempts=self.session_connect_max_retries,
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -1468,6 +1486,8 @@ class DATA:
             freedata="tnc-message",
             arq="session",
             status="connected",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
         return True
 
@@ -1511,7 +1531,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
-            dxcallsign=str(self.dxcallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
             status="connected",
         )
         self.transmit_session_heartbeat()
@@ -1605,7 +1626,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
-            dxcallsign=str(self.dxcallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
             status="connected",
             heartbeat="transmitting",
         )
@@ -1637,7 +1659,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="connected",
-                dxcallsign=str(self.dxcallsign, "UTF-8"),
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 heartbeat="received",
             )
 
@@ -1722,6 +1745,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="transmission",
                 status="waiting",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             # wait while timeout not reached and our busy state is busy
@@ -1738,6 +1763,8 @@ class DATA:
                     arq="transmission",
                     status="failed",
                     reason="busy",
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
                 static.ARQ_SESSION_STATE = "disconnected"
                 return False
@@ -1839,6 +1866,8 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             self.log.warning(
@@ -1872,15 +1901,20 @@ class DATA:
         # is intended for this station.
         self.arq_file_transfer = True
         self.is_IRS = True
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            arq="transmission",
-            status="opening",
-        )
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         static.DXCALLSIGN = self.dxcallsign
+
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="opening",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+        )
+
+
 
         # n_frames_per_burst is currently unused
         # n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
@@ -2026,6 +2060,8 @@ class DATA:
                 freedata="tnc-message",
                 arq="transmission",
                 status="opened",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
@@ -2075,6 +2111,8 @@ class DATA:
                 arq="transmission",
                 status="failed",
                 reason="protocol version missmatch",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
             # TODO: We should display a message to this effect on the UI.
             self.log.warning(
@@ -2192,7 +2230,7 @@ class DATA:
 
         if static.DXCALLSIGN_CRC == bytes(data_in[4:7]):
 
-            #static.DXCALLSIGN_CRC = bytes(data_in[4:7])
+            # static.DXCALLSIGN_CRC = bytes(data_in[4:7])
             static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
 
             self.send_data_to_socket_queue(
@@ -2251,7 +2289,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
-            dxcallsign=str(self.dxcallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
             status="stopped",
         )
         self.arq_cleanup()
@@ -2268,7 +2307,8 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
-            dxcallsign=str(self.dxcallsign, "UTF-8"),
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
             status="stopped",
             uuid=self.transmission_uuid,
         )
@@ -2661,7 +2701,8 @@ class DATA:
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
-            self.dxcallsign = b"AA0AA"
+            self.dxcallsign = b"AA0AA-0"
+            self.mycallsign = b"AA0AA-0"
 
         static.ARQ_STATE = False
         self.arq_file_transfer = False
