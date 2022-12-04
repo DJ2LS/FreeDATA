@@ -84,13 +84,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 sock_data += b"\n"  # append line limiter
 
                 # send data to all clients
-                # try:
-                for client in CONNECTED_CLIENTS:
-                    try:
-                        client.send(sock_data)
-                    except Exception as err:
-                        self.log.info("[SCK] Connection lost", e=err)
-                        self.connection_alive = False
+                try:
+                    for client in CONNECTED_CLIENTS:
+                        try:
+                            client.send(sock_data)
+                        except Exception as err:
+                            self.log.info("[SCK] Connection lost", e=err)
+                            self.connection_alive = False
+                except Exception as err:
+                    self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
 
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
