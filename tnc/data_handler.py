@@ -1361,9 +1361,9 @@ class DATA:
                     freedata="tnc-message",
                     arq="session",
                     status="failed",
+                    reason="busy",
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                    reason="busy",
                 )
                 return False
 
@@ -1531,9 +1531,9 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
+            status="connected",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            status="connected",
         )
         self.transmit_session_heartbeat()
 
@@ -1553,8 +1553,9 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
-            dxcallsign=str(self.dxcallsign, "UTF-8"),
             status="close",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
 
         self.IS_ARQ_SESSION_MASTER = False
@@ -1603,8 +1604,9 @@ class DATA:
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 arq="session",
-                dxcallsign=str(self.dxcallsign, "UTF-8"),
                 status="close",
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             self.IS_ARQ_SESSION_MASTER = False
@@ -1626,10 +1628,10 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="session",
-            mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
             status="connected",
             heartbeat="transmitting",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -1659,9 +1661,9 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="connected",
+                heartbeat="received",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                heartbeat="received",
             )
 
             static.ARQ_SESSION = True
@@ -2868,7 +2870,7 @@ class DATA:
                     "[TNC] SESSION ["
                     + str(self.mycallsign, "UTF-8")
                     + "]<<T>>["
-                    + str(static.DXCALLSIGN, "UTF-8")
+                    + str(self.dxcallsign, "UTF-8")
                     + "]"
                 )
                 self.send_data_to_socket_queue(
@@ -2876,6 +2878,8 @@ class DATA:
                     arq="session",
                     status="failed",
                     reason="timeout",
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
                 self.close_session()
 
