@@ -264,51 +264,54 @@ if __name__ == "__main__":
     if ARGS.configfile:
         # init config
         config = config.CONFIG().read_config()
-
-        # additional step for being sure our callsign is correctly
-        # in case we are not getting a station ssid
-        # then we are forcing a station ssid = 0
-        mycallsign = bytes(config['STATION']['mycall'], "utf-8")
-        mycallsign = helpers.callsign_to_bytes(mycallsign)
-        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-
-        static.SSID_LIST = config['STATION']['ssid']
-        static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
-        # check if we have an int or str as device name
         try:
-            static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
-        except ValueError:
-            static.AUDIO_INPUT_DEVICE = config['AUDIO']['rx']
-        try:
-            static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
-        except ValueError:
-            static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            mycallsign = bytes(config['STATION']['mycall'], "utf-8")
+            mycallsign = helpers.callsign_to_bytes(mycallsign)
+            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-        static.PORT = int(config['NETWORK']['tncport'])
-        # TODO: disabled because we don't need these settings anymore.
-        #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
-        #static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
-        #static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
-        #static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
-        #static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
-        #static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
-        #static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
-        #static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
-        static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
-        static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
-        static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
-        static.ENABLE_SCATTER = config['TNC']['scatter']
-        static.ENABLE_FFT = config['TNC']['fft']
-        static.ENABLE_FSK = False
-        static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband']
-        static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
-        static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
-        static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
-        static.RESPOND_TO_CQ = config['TNC']['qrv']
-        static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
-        static.ENABLE_EXPLORER = config['TNC']['explorer']
+            static.SSID_LIST = config['STATION']['ssid']
+            static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
+            # check if we have an int or str as device name
+            try:
+                static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
+            except ValueError:
+                static.AUDIO_INPUT_DEVICE = config['AUDIO']['rx']
+            try:
+                static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+            except ValueError:
+                static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
 
+            static.PORT = int(config['NETWORK']['tncport'])
+            # TODO: disabled because we don't need these settings anymore.
+            #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
+            #static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
+            #static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
+            #static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
+            #static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
+            #static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
+            #static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
+            #static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
+            static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
+            static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
+            static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
+            static.ENABLE_SCATTER = config['TNC']['scatter']
+            static.ENABLE_FFT = config['TNC']['fft']
+            static.ENABLE_FSK = False
+            static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband']
+            static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
+            static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
+            static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
+            static.RESPOND_TO_CQ = config['TNC']['qrv']
+            static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
+            static.ENABLE_EXPLORER = config['TNC']['explorer']
+        except KeyError as e:
+            log.warning("[CFG] Error reading config file near", key=str(e))
+        except Exception as e:
+            log.warning("[CFG] Error", e=e)
 
     else:
         # additional step for being sure our callsign is correctly
