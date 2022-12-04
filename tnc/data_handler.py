@@ -1499,6 +1499,10 @@ class DATA:
         Args:
           data_in:bytes:
         """
+        # if we don't want to respond to calls, return False
+        if not static.RESPOND_TO_CALL:
+            return False
+
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION_STATE = "connecting"
 
@@ -1902,6 +1906,11 @@ class DATA:
         """
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
+
+        # stop processing if we don't want to respond to a call when not in a arq session
+        if not static.RESPOND_TO_CALL and not static.ARQ_SESSION:
+            return False
+
         self.arq_file_transfer = True
         self.is_IRS = True
 
@@ -2208,18 +2217,18 @@ class DATA:
             dxcallsign = str(dxcallsign, "UTF-8"),
             snr=str(static.SNR),
         )
+        if static.RESPOND_TO_CALL:
+            ping_frame = bytearray(self.length_sig0_frame)
+            ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
+            ping_frame[1:4] = static.DXCALLSIGN_CRC
+            ping_frame[4:7] = static.MYCALLSIGN_CRC
+            ping_frame[7:13] = static.MYGRID
 
-        ping_frame = bytearray(self.length_sig0_frame)
-        ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
-        ping_frame[1:4] = static.DXCALLSIGN_CRC
-        ping_frame[4:7] = static.MYCALLSIGN_CRC
-        ping_frame[7:13] = static.MYGRID
-
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
-        if static.ENABLE_FSK:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-        else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
+            if static.ENABLE_FSK:
+                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+            else:
+                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -2476,7 +2485,7 @@ class DATA:
             static.HAMLIB_FREQUENCY,
         )
 
-        if static.RESPOND_TO_CQ:
+        if static.RESPOND_TO_CQ and static.RESPOND_TO_CALL:
             self.transmit_qrv(dxcallsign)
 
     def transmit_qrv(self, dxcallsign: bytes) -> None:
