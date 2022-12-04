@@ -275,8 +275,16 @@ if __name__ == "__main__":
 
         static.SSID_LIST = config['STATION']['ssid']
         static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
-        static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
-        static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+        # check if we have an int or str as device name
+        try:
+            static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
+        except ValueError:
+            static.AUDIO_INPUT_DEVICE = config['AUDIO']['rx']
+        try:
+            static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+        except ValueError:
+            static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
+
         static.PORT = int(config['NETWORK']['tncport'])
         # TODO: disabled because we don't need these settings anymore.
         #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
@@ -314,8 +322,17 @@ if __name__ == "__main__":
 
             static.SSID_LIST = ARGS.ssid_list
             static.MYGRID = bytes(ARGS.mygrid, "utf-8")
-            static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
-            static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+
+            # check if we have an int or str as device name
+            try:
+                static.AUDIO_INPUT_DEVICE = int(ARGS.audio_input_device)
+            except ValueError:
+                static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
+            try:
+                static.AUDIO_OUTPUT_DEVICE = int(ARGS.audio_output_device)
+            except ValueError:
+                static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+
             static.PORT = ARGS.socket_port
             static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
             static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
