@@ -822,7 +822,7 @@ class DATA:
                     self.log.info(
                         "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
                         buffer_size=RX_BUFFER.qsize(),
-                        maxsize=static.RX_BUFFER_SIZE
+                        maxsize=int(static.RX_BUFFER_SIZE)
                     )
                     RX_BUFFER.get()
 
@@ -832,15 +832,26 @@ class DATA:
                     buffer_size=RX_BUFFER.qsize() + 1,
                     maxsize=RX_BUFFER.maxsize
                 )
-                RX_BUFFER.put(
-                    [
-                        self.transmission_uuid,
-                        timestamp,
-                        static.DXCALLSIGN,
-                        static.DXGRID,
-                        base64_data,
-                    ]
-                )
+                try:
+                    RX_BUFFER.put(
+                        [
+                            self.transmission_uuid,
+                            timestamp,
+                            static.DXCALLSIGN,
+                            static.DXGRID,
+                            base64_data,
+                        ]
+                    )
+                except Exception as e:
+                    # File "/usr/lib/python3.7/queue.py", line 133, in put
+                    #    if self.maxsize > 0
+                    # TypeError: '>' not supported between instances of 'str' and 'int'
+                    #
+                    # Occurs on Raspberry Pi and Python 3.7
+                    self.log.error(
+                        "[TNC] ARQ | RX | error occured when saving data. Might be a Python bug... sorry",
+                        e=e
+                    )
 
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
