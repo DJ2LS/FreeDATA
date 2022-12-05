@@ -2840,17 +2840,28 @@ class DATA:
         ):
             return
 
+        # get modem error state
+        modem_error_state = modem.get_modem_error_state()
+
         # We want to reach this state only if connected ( == return above not called )
         if (
                 self.data_channel_last_received + self.time_list[self.speed_level]
-                <= time.time() or modem.get_modem_error_state()
+                <= time.time() or modem_error_state
         ):
-            self.log.warning(
-                "[TNC] Frame timeout",
-                attempt=self.n_retries_per_burst,
-                max_attempts=self.rx_n_max_retries_per_burst,
-                speed_level=self.speed_level,
-            )
+            if modem_error_state:
+                self.log.warning(
+                    "[TNC] Decoding Error",
+                    attempt=self.n_retries_per_burst,
+                    max_attempts=self.rx_n_max_retries_per_burst,
+                    speed_level=self.speed_level,
+                )
+            else:
+                self.log.warning(
+                    "[TNC] Frame timeout",
+                    attempt=self.n_retries_per_burst,
+                    max_attempts=self.rx_n_max_retries_per_burst,
+                    speed_level=self.speed_level,
+                )
             # reduce speed level if nack counter increased
             self.frame_received_counter = 0
             self.burst_nack_counter += 1
