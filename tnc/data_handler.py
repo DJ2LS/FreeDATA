@@ -711,6 +711,18 @@ class DATA:
                     self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
                 )
 
+                # send a network message with information
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="transmission",
+                    status="receiving",
+                    uuid=self.transmission_uuid,
+                    percent=static.ARQ_TRANSMISSION_PERCENT,
+                    bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                )
+
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
             # We have "Nones" in our rx buffer,
             # Check if we received last frame of burst - this is an indicator for missed frames.
@@ -869,6 +881,8 @@ class DATA:
                     arq="transmission",
                     status="failed",
                     uuid=self.transmission_uuid,
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
 
                 self.log.warning(
@@ -920,6 +934,8 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
 
         self.log.info(
@@ -1113,6 +1129,8 @@ class DATA:
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
                 irs_snr=self.burst_ack_snr,
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             # Stay in the while loop until we receive a data_frame_ack. Otherwise,
@@ -1135,6 +1153,8 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             self.log.info(
@@ -1152,6 +1172,8 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                mycallsign=str(self.mycallsign, 'UTF-8'),
+                dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
             self.log.info(
@@ -1270,6 +1292,8 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
         # Update data_channel timestamp
         self.arq_session_last_received = int(time.time())
@@ -2043,6 +2067,14 @@ class DATA:
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="opened",
+            mycallsign=str(mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+        )
+
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
             + str(mycallsign, "UTF-8")
@@ -2433,6 +2465,7 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="transmitting",
+            mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign="None",
         )
         cq_frame = bytearray(self.length_sig0_frame)
@@ -2714,7 +2747,7 @@ class DATA:
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
             self.dxcallsign = b"AA0AA-0"
-            self.mycallsign = b"AA0AA-0"
+            self.mycallsign = static.MYCALLSIGN
 
         static.ARQ_STATE = False
         self.arq_file_transfer = False
@@ -2860,6 +2893,8 @@ class DATA:
                     arq="transmission",
                     status="failed",
                     uuid=self.transmission_uuid,
+                    mycallsign=str(self.mycallsign, 'UTF-8'),
+                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
                 self.arq_cleanup()
 
