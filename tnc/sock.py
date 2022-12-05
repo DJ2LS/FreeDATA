@@ -333,13 +333,22 @@ def process_tnc_commands(data):
                 if not str(dxcallsign).strip():
                     raise NoCallsign
 
-                # additional step for beeing sure our callsign is correctly
+                # additional step for being sure our callsign is correctly
                 # in case we are not getting a station ssid
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
+                # check if specific callsign is set with different SSID than the TNC is initialized
+                try:
+                    mycallsign = received_json["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+                except Exception:
+                    mycallsign = static.MYCALLSIGN
+
+                DATA_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
                 command_response("ping", True)
             except NoCallsign:
                 command_response("ping", False)
@@ -367,7 +376,7 @@ def process_tnc_commands(data):
 
             # check if specific callsign is set with different SSID than the TNC is initialized
             try:
-                mycallsign = received_json["parameter"][0]["mycallsign"]
+                mycallsign = received_json["mycallsign"]
                 mycallsign = helpers.callsign_to_bytes(mycallsign)
                 mycallsign = helpers.bytes_to_callsign(mycallsign)
 

@@ -239,13 +239,15 @@ class DATA:
 
             # Dispatch commands that need more arguments.
             elif data[0] == "CONNECT":
-                # [1] dxcallsign
-                # [2] attempts
+                # [1] mycallsign
+                # [2] dxcallsign
+                # [3] attempts
                 self.arq_session_handler(data[1], data[2], data[3])
 
             elif data[0] == "PING":
-                # [1] dxcallsign
-                self.transmit_ping(data[1])
+                # [1] mycallsign
+                # [2] dxcallsign
+                self.transmit_ping(data[1], data[2])
 
             elif data[0] == "BEACON":
                 # [1] INTERVAL int
@@ -2183,10 +2185,11 @@ class DATA:
             self.arq_cleanup()
 
     # ---------- PING
-    def transmit_ping(self, dxcallsign: bytes) -> None:
+    def transmit_ping(self, mycallsign: bytes, dxcallsign: bytes) -> None:
         """
         Funktion for controlling pings
         Args:
+          mycallsign:bytes:
           dxcallsign:bytes:
 
         """
@@ -2200,7 +2203,7 @@ class DATA:
         self.send_data_to_socket_queue(freedata="tnc-message", ping="transmitting")
         self.log.info(
             "[TNC] PING REQ ["
-            + str(self.mycallsign, "UTF-8")
+            + str(mycallsign, "UTF-8")
             + "] >>> ["
             + str(dxcallsign, "UTF-8")
             + "]"
@@ -2210,7 +2213,7 @@ class DATA:
         ping_frame[:1] = bytes([FR_TYPE.PING.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
         ping_frame[4:7] = static.MYCALLSIGN_CRC
-        ping_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
+        ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
