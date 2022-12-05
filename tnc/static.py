@@ -71,7 +71,7 @@ SNR: float = 0
 FREQ_OFFSET: float = 0
 SCATTER: list = []
 ENABLE_SCATTER: bool = False
-ENABLE_FSK: bool = False
+ENABLE_FSK: bool = True
 RESPOND_TO_CQ: bool = False
 RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
 # ---------------------------------

@@ -273,7 +273,7 @@ if __name__ == "__main__":
             static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
             static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-            static.SSID_LIST = config['STATION']['ssid']
+            static.SSID_LIST = config['STATION']['ssid_list']
             static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
             # check if we have an int or str as device name
             try:
