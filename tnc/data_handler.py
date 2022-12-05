@@ -849,8 +849,13 @@ class DATA:
                     #
                     # Occurs on Raspberry Pi and Python 3.7
                     self.log.error(
-                        "[TNC] ARQ | RX | error occured when saving data. Might be a Python bug... sorry",
-                        e=e
+                        "[TNC] ARQ | RX | error occurred when saving data!",
+                        e=e,
+                        uuid = self.transmission_uuid,
+                        timestamp = timestamp,
+                        dxcall = static.DXCALLSIGN,
+                        dxgrid = static.DXGRID,
+                        data = base64_data
                     )
 
                 self.send_data_to_socket_queue(
