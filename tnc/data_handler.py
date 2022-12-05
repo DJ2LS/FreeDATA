@@ -2838,7 +2838,7 @@ class DATA:
         # We want to reach this state only if connected ( == return above not called )
         if (
                 self.data_channel_last_received + self.time_list[self.speed_level]
-                <= time.time()
+                <= time.time() or modem.get_modem_error_state()
         ):
             self.log.warning(
                 "[TNC] Frame timeout",

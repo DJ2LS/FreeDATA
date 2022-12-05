@@ -38,6 +38,13 @@ RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 RECEIVE_FSK_LDPC_1 = False
 
+# state buffer
+SIG0_DATAC0_STATE = []
+SIG1_DATAC0_STATE = []
+DAT0_DATAC1_STATE = []
+DAT0_DATAC3_STATE = []
+
+
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -550,6 +557,7 @@ class RF:
         freedv: ctypes.c_void_p,
         bytes_out,
         bytes_per_frame,
+        state_buffer,
     ) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
@@ -577,6 +585,16 @@ class RF:
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes
                     )
+                    # get current modem states and write to list
+                    # 1 trial
+                    # 2 sync
+                    # 3 trial sync
+                    # 6 decoded
+                    # 10 error decoding == NACK
+                    state = codec2.api.freedv_get_rx_status(freedv)
+                    if state == 10:
+                        state_buffer.append(state)
+
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
@@ -588,6 +606,7 @@ class RF:
                             self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
                             self.get_scatter(freedv)
                             self.calculate_snr(freedv)
+                            state_buffer = []
                         else:
                             self.log.warning(
                                 "[MDM] [demod_audio] received frame but ignored processing",
@@ -675,6 +694,7 @@ class RF:
             self.sig0_datac0_freedv,
             self.sig0_datac0_bytes_out,
             self.sig0_datac0_bytes_per_frame,
+            SIG0_DATAC0_STATE
         )
 
     def audio_sig1_datac0(self) -> None:
@@ -685,6 +705,7 @@ class RF:
             self.sig1_datac0_freedv,
             self.sig1_datac0_bytes_out,
             self.sig1_datac0_bytes_per_frame,
+            SIG1_DATAC0_STATE
         )
 
     def audio_dat0_datac1(self) -> None:
@@ -695,6 +716,7 @@ class RF:
             self.dat0_datac1_freedv,
             self.dat0_datac1_bytes_out,
             self.dat0_datac1_bytes_per_frame,
+            DAT0_DATAC1_STATE
         )
 
     def audio_dat0_datac3(self) -> None:
@@ -705,6 +727,7 @@ class RF:
             self.dat0_datac3_freedv,
             self.dat0_datac3_bytes_out,
             self.dat0_datac3_bytes_per_frame,
+            DAT0_DATAC3_STATE
         )
 
     def audio_fsk_ldpc_0(self) -> None:
@@ -1032,3 +1055,19 @@ def set_audio_volume(datalist, volume: float) -> np.int16:
     # Scale samples by the ratio of volume / 100.0
     data = np.fromstring(datalist, np.int16) * (volume / 100.0)  # type: ignore
     return data.astype(np.int16)
+
+
+def get_modem_error_state():
+    """
+    get current state buffer and return True of contains 10
+
+    """
+
+    if RECEIVE_DATAC1 and 10 in DAT0_DATAC1_STATE:
+        DAT0_DATAC1_STATE.clear()
+        return True
+    if RECEIVE_DATAC3 and 10 in DAT0_DATAC3_STATE:
+        DAT0_DATAC3_STATE.clear()
+        return True
+
+    return False

@@ -308,6 +308,7 @@ if __name__ == "__main__":
             static.RESPOND_TO_CQ = config['TNC']['qrv']
             static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
             static.ENABLE_EXPLORER = config['TNC']['explorer']
+
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:
