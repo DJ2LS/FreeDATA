@@ -71,7 +71,7 @@ SNR: float = 0
 FREQ_OFFSET: float = 0
 SCATTER: list = []
 ENABLE_SCATTER: bool = False
-ENABLE_FSK: bool = True
+ENABLE_FSK: bool = False
 RESPOND_TO_CQ: bool = False
 RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
 # ---------------------------------
@@ -86,7 +86,7 @@ BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]
-ENABLE_FFT: bool = False
+ENABLE_FFT: bool = True
 CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
