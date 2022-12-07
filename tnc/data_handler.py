@@ -818,7 +818,7 @@ class DATA:
                 # check if RX_BUFFER isn't full
                 if not RX_BUFFER.full():
                     # make sure we have always the correct buffer size
-                    RX_BUFFER.maxsize = static.RX_BUFFER_SIZE
+                    RX_BUFFER.maxsize = int(static.RX_BUFFER_SIZE)
                 else:
                     # if full, free space by getting an item
                     self.log.info(
