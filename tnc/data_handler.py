@@ -1632,7 +1632,7 @@ class DATA:
         # Close the session if the CRC matches the remote station in static.
         _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
-        if _valid_crc or _valid_session:
+        if _valid_crc or _valid_session and not static.ARQ_SESSION_STATE == "disconnected":
             static.ARQ_SESSION_STATE = "disconnected"
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
