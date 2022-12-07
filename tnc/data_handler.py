@@ -548,8 +548,7 @@ class DATA:
         disconnection_frame = bytearray(self.length_sig1_frame)
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:2] = self.session_id
-        # disconnection_frame[1:4] = static.DXCALLSIGN_CRC
-        # disconnection_frame[4:7] = static.MYCALLSIGN_CRC
+        disconnection_frame[2:5] = static.DXCALLSIGN_CRC
         # TODO: Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
         # self.enqueue_frame_for_tx([disconnection_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
         # TODO: We need to add the ident frame feature with a seperate PR after publishing latest protocol
@@ -1556,6 +1555,10 @@ class DATA:
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[8:14]))
         static.DXCALLSIGN = self.dxcallsign
 
+        # check if callsign ssid override
+        valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5])
+        self.mycallsign = mycallsign
+
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1627,7 +1630,7 @@ class DATA:
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
         # Close the session if the CRC matches the remote station in static.
-        _valid_crc, _ = helpers.check_callsign(static.DXCALLSIGN, bytes(data_in[4:7]))
+        _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session:
             static.ARQ_SESSION_STATE = "disconnected"
@@ -1641,7 +1644,7 @@ class DATA:
             )
             self.log.info(
                 "[TNC] SESSION ["
-                + str(self.mycallsign, "UTF-8")
+                + str(mycallsign, "UTF-8")
                 + "]<<X>>["
                 + str(self.dxcallsign, "UTF-8")
                 + "]",
@@ -1652,7 +1655,7 @@ class DATA:
                 freedata="tnc-message",
                 arq="session",
                 status="close",
-                mycallsign=str(self.mycallsign, 'UTF-8'),
+                mycallsign=str(mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
 
@@ -2266,6 +2269,7 @@ class DATA:
             timestamp=int(time.time()),
             dxgrid=str(static.DXGRID, "UTF-8"),
             dxcallsign = str(dxcallsign, "UTF-8"),
+            mycallsign=str(mycallsign, "UTF-8"),
             snr=str(static.SNR),
         )
         if static.RESPOND_TO_CALL:
