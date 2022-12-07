@@ -306,7 +306,7 @@ if __name__ == "__main__":
             static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
             static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
             static.RESPOND_TO_CQ = config['TNC']['qrv']
-            static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
+            static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
             static.ENABLE_EXPLORER = config['TNC']['explorer']
 
         except KeyError as e:
