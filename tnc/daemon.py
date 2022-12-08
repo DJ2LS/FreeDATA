@@ -252,8 +252,13 @@ class DAEMON:
                     if data[25] == "True":
                         options.append("--explorer")
 
-                    options.append("--ssid_list")
-                    options.append(data[26])
+                    # wen want our ssid like this: --ssid 1 2 3 4
+                    ssid_list = ""
+                    for i in data[26]:
+                        ssid_list += str(i) + " "
+                    options.append("--ssid")
+                    options.append(ssid_list)
+
 
                     # safe data to config file
                     config.write_entire_config(data)
