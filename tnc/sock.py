@@ -722,6 +722,11 @@ def process_daemon_commands(data):
             rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
             enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
 
+            # convert ssid list to python list
+            ssid_list = str(received_json["parameter"][0]["ssid_list"])
+            ssid_list = ssid_list.replace(" ", "")
+            ssid_list = ssid_list.split(",")
+
             # print some debugging parameters
             for item in received_json["parameter"][0]:
                 log.debug(
@@ -757,6 +762,7 @@ def process_daemon_commands(data):
                     respond_to_cq,
                     rx_buffer_size,
                     enable_explorer,
+                    ssid_list,
                 ]
             )
             command_response("start_tnc", True)

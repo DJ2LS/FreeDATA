@@ -156,7 +156,8 @@ class DAEMON:
                 # data[22] tx-audio-level
                 # data[23] respond_to_cq
                 # data[24] rx_buffer_size
-
+                # data[25] explorer
+                # data[26] ssid_list
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
