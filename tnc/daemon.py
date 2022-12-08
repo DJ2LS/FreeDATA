@@ -251,6 +251,9 @@ class DAEMON:
                     if data[25] == "True":
                         options.append("--explorer")
 
+                    options.append("--ssid_list")
+                    options.append(data[26])
+
                     # safe data to config file
                     config.write_entire_config(data)
 

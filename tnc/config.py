@@ -45,7 +45,8 @@ class CONFIG:
 
         self.config['STATION'] = {'#Station settings': None,
                                   'mycall': data[1],
-                                  'mygrid': data[2]
+                                  'mygrid': data[2],
+                                  'ssid_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[26])
                                   }
 
         self.config['AUDIO'] = {'#Audio settings': None,
