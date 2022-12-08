@@ -827,16 +827,16 @@ update_chat = function(obj) {
                 
                 //var file = atob(obj._attachments[filename]["data"])
                 db.getAttachment(obj._id, filename).then(function(data) {
-
-                    var file = blobUtil.arrayBufferToBinaryString(data)
+                    //console.log(data)
+                    //var file = blobUtil.arrayBufferToBinaryString(data)
                     
                     // converting back to blob for debugging
                     // length must be equal of file size
-                    var blob = blobUtil.binaryStringToBlob(file);
-                    console.log(blob)
-                    
-                                      
-                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file + split_char + doc.timestamp;
+                    //var blob = blobUtil.binaryStringToBlob(file);
+                    //console.log(blob)
+
+                    //console.log(typeof(file))
+                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + data + split_char + doc.timestamp;
                     let Data = {
                         command: "send_message",
                         dxcallsign: doc.dxcallsign,
