@@ -325,7 +325,7 @@ if __name__ == "__main__":
             static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
             static.SSID_LIST = ARGS.ssid_list
             # check if own ssid is always part of ssid list
-            own_ssid = int(mycallsign.split(b"-")[1])
+            own_ssid = int(static.MYCALLSIGN.split(b"-")[1])
             if own_ssid not in static.SSID_LIST:
                 static.SSID_LIST.append(own_ssid)
 
