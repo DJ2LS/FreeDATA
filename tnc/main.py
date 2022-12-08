@@ -323,8 +323,12 @@ if __name__ == "__main__":
             mycallsign = helpers.callsign_to_bytes(mycallsign)
             static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
             static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-
             static.SSID_LIST = ARGS.ssid_list
+            # check if own ssid is always part of ssid list
+            own_ssid = int(mycallsign.split("-")[1])
+            if own_ssid not in static.SSID_LIST:
+                static.SSID_LIST.append(own_ssid)
+
             static.MYGRID = bytes(ARGS.mygrid, "utf-8")
 
             # check if we have an int or str as device name
