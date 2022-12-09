@@ -103,9 +103,15 @@ def t_create_session_close(session_id: bytes) -> bytearray:
     :rtype: bytearray
     """
     # return t_create_frame(223, mycall, dxcall)
+    dxcallsign_bytes = helpers.callsign_to_bytes(dxcall)
+    dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
+    dxcallsign_crc = helpers.get_crc_24(dxcallsign)
+
+
     frame = bytearray(14)
     frame[:1] = bytes([223])
     frame[1:2] = session_id
+    frame[2:5] = dxcallsign_crc
 
     return frame
 
