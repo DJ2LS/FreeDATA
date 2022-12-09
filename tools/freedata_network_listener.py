@@ -69,7 +69,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                     log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", data=decoded_data[7])
 
                     try:
-                        filename = decoded_data[8].decode("utf-8")  + "_" + decoded_data[5].decode("utf-8") 
+                        filename = decoded_data[8].decode("utf-8") + "_" + decoded_data[5].decode("utf-8")
 
                         file = open(filename , "wb")
                         file.write(decoded_data[7])

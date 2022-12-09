@@ -836,7 +836,7 @@ update_chat = function(obj) {
                       console.log(err);
                       binaryString = blobUtil.arrayBufferToBinaryString(data);
                       
-                    }).then(function(data){
+                    }).then(function(){
 
                         console.log(binaryString)
                         var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
