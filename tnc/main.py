@@ -298,16 +298,16 @@ if __name__ == "__main__":
             static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
             static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
             static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
-            static.ENABLE_SCATTER = config['TNC']['scatter']
-            static.ENABLE_FFT = config['TNC']['fft']
+            static.ENABLE_SCATTER = config['TNC']['scatter'] in ["True", "true", True]
+            static.ENABLE_FFT = config['TNC']['fft'] in ["True", "true", True]
             static.ENABLE_FSK = False
-            static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband']
+            static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband'] in ["True", "true", True]
             static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
             static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
             static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
-            static.RESPOND_TO_CQ = config['TNC']['qrv']
+            static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
             static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
-            static.ENABLE_EXPLORER = config['TNC']['explorer']
+            static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
