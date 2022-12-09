@@ -112,7 +112,7 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [0, 5]
+        self.snr_list_high_bw = [0, 3]
         # List for time to wait for corresponding mode in seconds
         self.time_list_high_bw = [6, 7]
         # -------------- AVAILABLE MODES END-----------
