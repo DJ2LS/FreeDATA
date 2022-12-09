@@ -26,10 +26,11 @@ split_char = b"\x00;"
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--port', dest="socket_port", default=3000, help="Set the port, the socket is listening on.", type=int) 
+parser.add_argument('--host', dest="socket_host", default='localhost', help="Set the host, the socket is listening on.", type=str)
 
 args = parser.parse_args()
 
-ip, port = "localhost", args.socket_port
+ip, port = args.socket_host, args.socket_port
 
 connected = True
 
