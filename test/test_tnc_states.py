@@ -93,7 +93,7 @@ def t_create_session_close_old(mycall: str, dxcall: str) -> bytearray:
     return t_create_frame(223, mycall, dxcall)
 
 
-def t_create_session_close(session_id: bytes) -> bytearray:
+def t_create_session_close(session_id: bytes, dxcall: str) -> bytearray:
     """
     Generate the session_close frame.
 
@@ -106,7 +106,6 @@ def t_create_session_close(session_id: bytes) -> bytearray:
     dxcallsign_bytes = helpers.callsign_to_bytes(dxcall)
     dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
     dxcallsign_crc = helpers.get_crc_24(dxcallsign)
-
 
     frame = bytearray(14)
     frame[:1] = bytes([223])
@@ -189,7 +188,7 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
     wrong_session = np.random.bytes(1)
     while wrong_session == open_session:
         wrong_session = np.random.bytes(1)
-    close_frame = t_create_session_close(wrong_session)
+    close_frame = t_create_session_close(wrong_session, "ZZ0ZZ-0")
     print_frame(close_frame)
 
     # assert (
@@ -260,7 +259,7 @@ def t_valid_disconnect(mycall: str, dxcall: str):
     # Create packet to be 'received' by this station.
     # close_frame = t_create_session_close_old(mycall=dxcall, dxcall=mycall)
     open_session = create_frame[1:2]
-    close_frame = t_create_session_close(open_session)
+    close_frame = t_create_session_close(open_session, "ZZ0ZZ-0")
     print_frame(close_frame)
     tnc.received_session_close(close_frame)
 
