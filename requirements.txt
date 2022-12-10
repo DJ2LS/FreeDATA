@@ -17,9 +17,9 @@ autopep8
 black
 isort
 pycodestyle
-pyinstaller
 pytest
 pytest-cov
 pytest-cover
 pytest-coverage
 pytest-rerunfailures
+pick
