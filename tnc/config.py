@@ -7,13 +7,18 @@ class CONFIG:
 
     """
 
-    def __init__(self):
+    def __init__(self, configfile: str):
         # set up logger
         self.log = structlog.get_logger("CONFIG")
 
         # init configparser
         self.config = configparser.ConfigParser(inline_comment_prefixes="#", allow_no_value=True)
-        self.config_name = "config.ini"
+        
+        try:
+            self.config_name = configfile
+        
+        except Exception:
+            self.config_name = "config.ini"
 
         self.log.info("[CFG] logfile init", file=self.config_name)
 

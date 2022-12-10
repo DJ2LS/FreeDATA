@@ -416,7 +416,7 @@ if __name__ == "__main__":
         mainlog.error("[DMN] logger init error", exception=err)
 
     # init config
-    config = config.CONFIG()
+    config = config.CONFIG("config.ini")
 
     try:
         mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
