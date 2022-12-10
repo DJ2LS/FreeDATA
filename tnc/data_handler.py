@@ -2278,8 +2278,8 @@ class DATA:
             ping_frame[1:4] = static.DXCALLSIGN_CRC
             ping_frame[4:7] = static.MYCALLSIGN_CRC
             ping_frame[7:13] = static.MYGRID
+            ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
 
-            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             if static.ENABLE_FSK:
                 self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
             else:
@@ -2299,7 +2299,7 @@ class DATA:
 
             # static.DXCALLSIGN_CRC = bytes(data_in[4:7])
             static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
-
+            dxsnr = helpers.snr_from_bytes(data_in[13:14])
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 ping="acknowledge",
@@ -2307,13 +2307,15 @@ class DATA:
                 timestamp=int(time.time()),
                 dxgrid=str(static.DXGRID, "UTF-8"),
                 snr=str(static.SNR),
+                dxsnr=str(dxsnr)
             )
-
+            # combined_snr = own rx snr / snr on dx side
+            combined_snr = f"{static.SNR}/{dxsnr}"
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
                 "PING-ACK",
-                static.SNR,
+                combined_snr,
                 static.FREQ_OFFSET,
                 static.HAMLIB_FREQUENCY,
             )
@@ -2325,6 +2327,7 @@ class DATA:
                 + str(static.DXCALLSIGN, "UTF-8")
                 + "]",
                 snr=static.SNR,
+                dxsnr=dxsnr,
             )
             static.TNC_STATE = "IDLE"
         else:
