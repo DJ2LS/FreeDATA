@@ -1293,6 +1293,16 @@ class DATA:
           data_in:bytes:
 
         """
+        self.log.warning("[TNC] ARQ FRAME NACK RECEIVED - cleanup!",
+                         arq="transmission",
+                         status="failed",
+                         uuid=self.transmission_uuid,
+                         percent=static.ARQ_TRANSMISSION_PERCENT,
+                         bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                         mycallsign=str(self.mycallsign, 'UTF-8'),
+                         dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                         )
+
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -2908,10 +2918,10 @@ class DATA:
                     self.data_channel_last_received + self.transmission_timeout
                     > time.time()
             ):
-                time.sleep(5)
+
                 timeleft = (self.data_channel_last_received + self.transmission_timeout) - time.time()
                 self.log.debug("Time left until timeout", seconds=timeleft)
-
+                time.sleep(5)
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 # pass
             else:
