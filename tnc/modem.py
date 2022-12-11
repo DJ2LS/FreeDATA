@@ -402,7 +402,7 @@ class RF:
           frames:
 
         """
-        self.log.debug("[MDM] transmit", mode=mode)
+        # self.log.debug("[MDM] transmit", mode=mode)
         static.TRANSMITTING = True
         start_of_transmission = time.time()
         # Toggle ptt early to save some time and send ptt state via socket
@@ -753,9 +753,14 @@ class RF:
     def worker_transmit(self) -> None:
         """Worker for FIFO queue for processing frames to be transmitted"""
         while True:
+            # print queue size for debugging purposes
+            # TODO: Lets check why we have several frames in our transmit queue which causes sometimes a double transmission
+            # we could do a cleanup after a transmission so theres no reason sending twice
+            queuesize = self.modem_transmit_queue.qsize()
+            self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             data = self.modem_transmit_queue.get()
 
-            self.log.debug("[MDM] worker_transmit", mode=data[0])
+            # self.log.debug("[MDM] worker_transmit", mode=data[0])
             self.transmit(
                 mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
             )

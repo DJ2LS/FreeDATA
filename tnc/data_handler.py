@@ -336,7 +336,7 @@ class DATA:
             # Dispatch activity based on received frametype
             if frametype in self.rx_dispatcher:
                 # Process frames "known" by rx_dispatcher
-                self.log.debug(f"[TNC] {self.rx_dispatcher[frametype][1]} RECEIVED....")
+                # self.log.debug(f"[TNC] {self.rx_dispatcher[frametype][1]} RECEIVED....")
                 self.rx_dispatcher[frametype][0](bytes_out[:-2])
 
             # Process frametypes requiring a different set of arguments.
@@ -799,7 +799,7 @@ class DATA:
 
             # Check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCESSFULLY RECEIVED")
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED")
 
                 # Decompress the data frame
                 data_frame_decompressed = zlib.decompress(data_frame)
@@ -1093,7 +1093,7 @@ class DATA:
                     self.tx_n_retry_of_burst = 0  # reset retries
                     self.log.debug(
                         "[TNC] arq_transmit: Received BURST ACK. Sending next chunk."
-                    )
+                    , irs_snr=self.burst_ack_snr)
                     break  # break retry loop
 
                 if self.burst_nack:
@@ -1252,17 +1252,16 @@ class DATA:
             self.data_channel_last_received = int(time.time())
             # self.burst_ack_snr = int.from_bytes(bytes(data_in[2:3]), "big")
             self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
-            self.log.info("SNR ON IRS", snr=self.burst_ack_snr)
+            # self.log.info("SNR ON IRS", snr=self.burst_ack_snr)
 
             self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
 
-
-            self.log.debug(
-                f"[TNC] burst_{desc}_received:",
-                speed_level=self.speed_level,
-                c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
-            )
+            #self.log.debug(
+            #    f"[TNC] burst_{desc}_received:",
+            #    speed_level=self.speed_level,
+            #    c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
+            #)
 
     def frame_ack_received(
             self, data_in: bytes  # pylint: disable=unused-argument
