@@ -146,7 +146,7 @@ class DATA:
         self.burst_ack_timeout_seconds = 3.0  # timeout for burst  acknowledges
         self.data_frame_ack_timeout_seconds = 3.0  # timeout for data frame acknowledges
         self.rpt_ack_timeout_seconds = 3.0  # timeout for rpt frame acknowledges
-        self.transmission_timeout = 500  # transmission timeout in seconds
+        self.transmission_timeout = 180  # transmission timeout in seconds
 
         # Dictionary of functions and log messages used in process_data
         # instead of a long series of if-elif-else statements.

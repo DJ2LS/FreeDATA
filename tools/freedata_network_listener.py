@@ -53,7 +53,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             
             if jsondata.get('freedata') == "tnc-message":
                 log.info(jsondata)
-                
+
+            if jsondata.get('ping') == "acknowledge":
+                log.info(f"PING {jsondata.get('mycallsign')} >><< {jsondata.get('dxcallsign')}", snr=jsondata.get('snr'), dxsnr=jsondata.get('dxsnr'))
+
             if jsondata.get('status') == 'receiving':
                 log.info(jsondata)
                 
