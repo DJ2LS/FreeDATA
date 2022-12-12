@@ -76,7 +76,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if data != tempdata:
                     tempdata = data
                     SOCKET_QUEUE.put(data)
-                time.sleep(0.5)
+                threading.Event().wait(0.5)
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
@@ -99,7 +99,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             # we want to display INFO messages only once
             static.INFO = []
             # self.request.sendall(sock_data)
-            time.sleep(0.15)
+            threading.Event().wait(0.15)
 
     def receive_from_client(self):
         """
@@ -134,7 +134,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # we might improve this by only processing one command or
                         # doing some kind of selection to determin which commands need to be dropped
                         # and which one can be processed during a running transmission
-                        time.sleep(3)
+                        threading.Event().wait(3)
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
@@ -171,7 +171,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
-            time.sleep(1)
+            threading.Event().wait(1)
 
     def finish(self):
         """ """

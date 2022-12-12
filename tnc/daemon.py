@@ -93,7 +93,7 @@ class DAEMON:
                     "[DMN] update_audio_devices: Exception gathering audio devices:",
                     e=err1,
                 )
-            time.sleep(1)
+            threading.Event().wait(1)
 
     def update_serial_devices(self):
         """
@@ -114,7 +114,7 @@ class DAEMON:
                     )
 
                 static.SERIAL_DEVICES = serial_devices
-                time.sleep(1)
+                threading.Event().wait(1)
             except Exception as err1:
                 self.log.error(
                     "[DMN] update_serial_devices: Exception gathering serial devices:",
@@ -443,4 +443,4 @@ if __name__ == "__main__":
         version=static.VERSION,
     )
     while True:
-        time.sleep(1)
+        threading.Event().wait(1)

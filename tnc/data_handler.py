@@ -402,7 +402,7 @@ class DATA:
 
         # Wait while transmitting
         while static.TRANSMITTING:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
     def send_data_to_socket_queue(self, **jsondata):
         """
@@ -1076,7 +1076,7 @@ class DATA:
                 # while (not self.burst_ack and not self.burst_nack and
                 #         not self.rpt_request_received and not self.data_frame_ack_received and
                 #         time.time() < burstacktimeout and static.ARQ_STATE):
-                #     time.sleep(0.01)
+                #     threading.Event().wait(0.01)
 
                 # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
                 while static.ARQ_STATE and not (
@@ -1085,7 +1085,7 @@ class DATA:
                         or self.rpt_request_received
                         or self.data_frame_ack_received
                 ):
-                    time.sleep(0.01)
+                    threading.Event().wait(0.01)
 
                 # Once we receive a burst ack, reset its state and break the RETRIES loop
                 if self.burst_ack:
@@ -1162,7 +1162,7 @@ class DATA:
             # we need to wait until sending "transmitted" state
             # gui database is too slow for handling this within 0.001 seconds
             # so let's sleep a little
-            time.sleep(0.2)
+            threading.Event().wait(0.2)
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
                 arq="transmission",
@@ -1402,7 +1402,7 @@ class DATA:
             # wait while timeout not reached and our busy state is busy
             channel_busy_timeout = time.time() + 30
             while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
-                time.sleep(0.01)
+                threading.Event().wait(0.01)
 
             # if channel busy timeout reached stop connecting
             if time.time() > channel_busy_timeout:
@@ -1422,7 +1422,7 @@ class DATA:
 
         # wait until data channel is open
         while not static.ARQ_SESSION and not self.arq_session_timeout:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             static.ARQ_SESSION_STATE = "connecting"
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
@@ -1486,7 +1486,7 @@ class DATA:
         connection_frame[8:14] = helpers.callsign_to_bytes(self.mycallsign)
 
         while not static.ARQ_SESSION:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             for attempt in range(self.session_connect_max_retries):
                 self.log.info(
                     "[TNC] SESSION ["
@@ -1514,7 +1514,7 @@ class DATA:
                 # indicates we've received a positive response from the far station.
                 timeout = time.time() + 3
                 while time.time() < timeout:
-                    time.sleep(0.01)
+                    threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
                     if static.ARQ_SESSION:
                         return True
@@ -1790,7 +1790,7 @@ class DATA:
         # wait a moment for the case, a heartbeat is already on the way back to us
         # this makes channel establishment more clean
         if static.ARQ_SESSION:
-            time.sleep(2)
+            threading.Event().wait(2)
 
         self.datachannel_timeout = False
 
@@ -1813,7 +1813,7 @@ class DATA:
             # wait while timeout not reached and our busy state is busy
             channel_busy_timeout = time.time() + 30
             while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
-                time.sleep(0.01)
+                threading.Event().wait(0.01)
 
             # if channel busy timeout reached, stop connecting
             if time.time() > channel_busy_timeout:
@@ -1834,7 +1834,7 @@ class DATA:
 
         # wait until data channel is open
         while not static.ARQ_STATE and not self.datachannel_timeout:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
         if static.ARQ_STATE:
             self.arq_transmit(data_out, mode, n_frames_per_burst)
@@ -1884,7 +1884,7 @@ class DATA:
         connection_frame[13:14] = self.session_id
 
         while not static.ARQ_STATE:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             for attempt in range(self.data_channel_max_retries):
 
                 self.send_data_to_socket_queue(
@@ -1908,7 +1908,7 @@ class DATA:
 
                 timeout = time.time() + 3
                 while time.time() < timeout:
-                    time.sleep(0.01)
+                    threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
                     if static.ARQ_STATE:
                         return True
@@ -2406,7 +2406,7 @@ class DATA:
         """
         try:
             while True:
-                time.sleep(0.5)
+                threading.Event().wait(0.5)
                 while static.BEACON_STATE:
                     if (
                             not static.ARQ_SESSION
@@ -2444,7 +2444,7 @@ class DATA:
                             and static.BEACON_STATE
                             and not static.BEACON_PAUSE
                     ):
-                        time.sleep(0.01)
+                        threading.Event().wait(0.01)
 
         except Exception as err:
             self.log.debug("[TNC] run_beacon: ", exception=err)
@@ -2845,7 +2845,7 @@ class DATA:
 
         """
         while True:
-            time.sleep(0.1)
+            threading.Event().wait(0.1)
             self.data_channel_keep_alive_watchdog()
             self.burst_watchdog()
             self.arq_session_keep_alive_watchdog()
@@ -2919,7 +2919,7 @@ class DATA:
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
         if static.ARQ_STATE and static.TNC_STATE == "BUSY":
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             if (
                     self.data_channel_last_received + self.transmission_timeout
                     > time.time()
@@ -2927,7 +2927,7 @@ class DATA:
 
                 timeleft = (self.data_channel_last_received + self.transmission_timeout) - time.time()
                 self.log.debug("Time left until timeout", seconds=timeleft)
-                time.sleep(5)
+                threading.Event().wait(5)
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 # pass
             else:
@@ -2961,7 +2961,7 @@ class DATA:
                 and not self.arq_file_transfer
         ):
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
-                time.sleep(0.01)
+                threading.Event().wait(0.01)
             else:
                 self.log.info(
                     "[TNC] SESSION ["
@@ -2985,19 +2985,19 @@ class DATA:
         Heartbeat thread which auto pauses and resumes the heartbeat signal when in an arq session
         """
         while True:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             # additional check for smoother stopping if heartbeat transmission
             while not self.arq_file_transfer:
-                time.sleep(0.01)
+                threading.Event().wait(0.01)
                 if (
                         static.ARQ_SESSION
                         and self.IS_ARQ_SESSION_MASTER
                         and static.ARQ_SESSION_STATE == "connected"
                         # and not self.arq_file_transfer
                 ):
-                    time.sleep(1)
+                    threading.Event().wait(1)
                     self.transmit_session_heartbeat()
-                    time.sleep(2)
+                    threading.Event().wait(2)
 
     def send_test_frame(self) -> None:
         """Send an empty test frame"""

@@ -291,7 +291,7 @@ class RF:
         depositing the data into the codec data buffers.
         """
         while True:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             # -----read
             data_in48k = bytes()
             with open(RXCHANNEL, "rb") as fifo:
@@ -322,7 +322,7 @@ class RF:
     def mkfifo_write_callback(self) -> None:
         """Support testing by writing the audio data to a pipe."""
         while True:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
             # -----write
             if len(self.modoutqueue) <= 0 or self.mod_out_locked:
@@ -529,7 +529,7 @@ class RF:
         self.mod_out_locked = False
 
         while self.modoutqueue:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
         static.PTT_STATE = self.hamlib.set_ptt(False)
 
@@ -887,7 +887,7 @@ class RF:
         rms_counter = 0
 
         while True:
-            # time.sleep(0.01)
+            # threading.Event().wait(0.01)
             threading.Event().wait(0.01)
             # WE NEED TO OPTIMIZE THIS!
 

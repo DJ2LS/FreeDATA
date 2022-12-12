@@ -28,7 +28,7 @@ class explorer():
     def interval(self):
         while True:
             self.push()
-            time.sleep(self.publish_interval)
+            threading.Event().wait(self.publish_interval)
 
     def push(self):
 
