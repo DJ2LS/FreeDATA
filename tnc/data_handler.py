@@ -12,7 +12,7 @@ import sys
 import threading
 import time
 import uuid
-import zlib
+import lzma
 from random import randrange# , randbytes
 
 import codec2
@@ -802,7 +802,7 @@ class DATA:
                 self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED")
 
                 # Decompress the data frame
-                data_frame_decompressed = zlib.decompress(data_frame)
+                data_frame_decompressed = lzma.decompress(data_frame)
                 static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(
                     data_frame
                 )
@@ -961,7 +961,7 @@ class DATA:
         )
 
         # Compress data frame
-        data_frame_compressed = zlib.compress(data_out)
+        data_frame_compressed = lzma.compress(data_out)
         compression_factor = len(data_out) / len(data_frame_compressed)
         static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
         compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
@@ -1797,7 +1797,7 @@ class DATA:
         # we need to compress data for getting a compression factor.
         # so we are compressing twice. This is not that nice and maybe there is another way
         # for calculating transmission statistics
-        # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(zlib.compress(data_out))
+        # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(lzma.compress(data_out))
 
         # Let's check if we have a busy channel and if we are not in a running arq session.
         if static.CHANNEL_BUSY and not static.ARQ_SESSION:
