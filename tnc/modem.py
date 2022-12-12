@@ -1067,6 +1067,8 @@ def get_modem_error_state():
     get current state buffer and return True of contains 10
 
     """
+    # TODO: actually disabled for debugging purposes
+    return False
 
     if RECEIVE_DATAC1 and 10 in DAT0_DATAC1_STATE:
         DAT0_DATAC1_STATE.clear()

@@ -647,7 +647,7 @@ class DATA:
                 # static.RX_FRAME_BUFFER --> existing data
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
-                search_area = 510
+                search_area = 510 - 3  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
                 # find position of data. returns -1 if nothing found in area else >= 0
@@ -1906,7 +1906,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
-                timeout = time.time() + 4
+                timeout = time.time() + 3
                 while time.time() < timeout:
                     time.sleep(0.01)
                     # Stop waiting if data channel is opened
