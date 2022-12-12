@@ -2816,11 +2816,17 @@ class DATA:
 
         if mode == FREEDV_MODE.datac1.value:
             modem.RECEIVE_DATAC1 = True
+            modem.RECEIVE_DATAC3 = False
+            modem.RECEIVE_FSK_LDPC_1 = False
             self.log.debug("[TNC] Changing listening data mode", mode="datac1")
         elif mode == FREEDV_MODE.datac3.value:
+            modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = True
+            modem.RECEIVE_FSK_LDPC_1 = False
             self.log.debug("[TNC] Changing listening data mode", mode="datac3")
         elif mode == FREEDV_MODE.fsk_ldpc_1.value:
+            modem.RECEIVE_DATAC1 = False
+            modem.RECEIVE_DATAC3 = False
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
         else:
