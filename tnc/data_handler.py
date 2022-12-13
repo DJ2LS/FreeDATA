@@ -114,7 +114,9 @@ class DATA:
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_high_bw = [0, 3]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_high_bw = [6, 7]
+        # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
+        # TODO: Need to check why ACK frames needs more time
+        self.time_list_high_bw = [7, 8]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
@@ -531,7 +533,8 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
-
+        # Create and send ACK frame
+        self.log.info("[TNC] ARQ | RX | SENDING NACK")
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id

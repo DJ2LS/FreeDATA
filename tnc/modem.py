@@ -563,8 +563,8 @@ class RF:
         De-modulate supplied audio stream with supplied codec2 instance.
         Decoded audio is placed into `bytes_out`.
 
-        :param buffer: Incoming audio
-        :type buffer: codec2.audio_buffer
+        :param audiobuffer: Incoming audio
+        :type audiobuffer: codec2.audio_buffer
         :param nin: Number of frames codec2 is expecting
         :type nin: int
         :param freedv: codec2 instance
@@ -573,6 +573,8 @@ class RF:
         :type bytes_out: _type_
         :param bytes_per_frame: Number of bytes per frame
         :type bytes_per_frame: int
+        :param state_buffer: modem states
+        :type state_buffer: int
         :return: NIN from freedv instance
         :rtype: int
         """
@@ -601,7 +603,7 @@ class RF:
                         # process commands only if static.LISTEN = True
                         if static.LISTEN:
                             self.log.debug(
-                                "[MDM] [demod_audio] Pushing received data to received_queue"
+                                "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
                             )
                             self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
                             self.get_scatter(freedv)
