@@ -139,6 +139,7 @@ class DATA:
         self.is_IRS = False
         self.burst_nack = False
         self.burst_nack_counter = 0
+        self.frame_nack_counter = 0
         self.frame_received_counter = 0
 
         self.rx_frame_bof_received = False
@@ -533,6 +534,10 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
+
+        # increment nack counter for transmission stats
+        self.frame_nack_counter += 1
+
         # Create and send ACK frame
         self.log.info("[TNC] ARQ | RX | SENDING NACK")
         nack_frame = bytearray(self.length_sig1_frame)
@@ -802,7 +807,11 @@ class DATA:
 
             # Check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED")
+
+                # transmittion duration
+                duration = time.time() - self.rx_start_of_transmission
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, duration=duration
+)
 
                 # Decompress the data frame
                 data_frame_decompressed = lzma.decompress(data_frame)
@@ -905,12 +914,17 @@ class DATA:
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
 
+                duration = time.time() - self.rx_start_of_transmission
                 self.log.warning(
                     "[TNC] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
                     e="wrong crc",
                     expected=data_frame_crc.hex(),
                     received=data_frame_crc_received.hex(),
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
+                    nacks=self.frame_nack_counter,
+                    duration=duration,
+                    bytesperminute=static.ARQ_BYTES_PER_MINUTE
+
                 )
 
                 self.log.info("[TNC] ARQ | RX | Sending NACK")
@@ -1182,6 +1196,7 @@ class DATA:
                 BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
                 BitsPerSecond=static.ARQ_BITS_PER_SECOND,
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
+
             )
 
         else:
@@ -2768,6 +2783,7 @@ class DATA:
         self.is_IRS = False
         self.burst_nack = False
         self.burst_nack_counter = 0
+        self.frame_nack_counter = 0
         self.frame_received_counter = 0
         self.speed_level = len(self.mode_list) - 1
         static.ARQ_SPEED_LEVEL = self.speed_level
