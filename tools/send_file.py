@@ -17,7 +17,7 @@ import time
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--port', dest="socket_port", default=3000, help="Set socket listening port.", type=int)
-parser.add_argument('--host', dest="socket_host", default='192.168.178.86', help="Set the host, the socket is listening on.", type=str)
+parser.add_argument('--host', dest="socket_host", default='localhost', help="Set the host, the socket is listening on.", type=str)
 parser.add_argument('--file', dest="filename", default='', help="Select the file we want to send", type=str)
 parser.add_argument('--msg', dest="chatmessage", default='file from cli tool', help="Additional text message appended to file", type=str)
 

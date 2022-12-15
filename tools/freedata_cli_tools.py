@@ -50,19 +50,22 @@ def main_menu():
                 main_menu()
             elif option == 'STOP BEACON':
                 run_network_command(HOST, PORT, {"type": "broadcast", "command": "stop_beacon"})
-                return
+
             else:
                 run_network_command(HOST, PORT, {"type": "broadcast", "command": "start_beacon", "parameter": str(option)})
-                return
+
 
         elif option == 'PING':
             pass
 
         elif option == 'ARQ':
-            option, index = pick(['DISCONNECT', '----- BACK -----'], "Select ARQ command")
+
+            option, index = pick(['GET RX BUFFER', 'DISCONNECT', '----- BACK -----'], "Select ARQ command")
 
             if option == '----- BACK -----':
                 main_menu()
+            elif option == 'GET RX BUFFER':
+                run_network_command(HOST, PORT, {"type": "get", "command": "rx_buffer"})
             else:
                 run_network_command(HOST, PORT,{"type": "arq", "command": "disconnect"})
 

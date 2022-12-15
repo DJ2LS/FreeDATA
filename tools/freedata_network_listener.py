@@ -31,11 +31,35 @@ parser.add_argument('--host', dest="socket_host", default='localhost', help="Set
 args = parser.parse_args()
 
 ip, port = args.socket_host, args.socket_port
-
 connected = True
-
 data = bytes()
-         
+
+
+def decode_and_save_data(data):
+    decoded_data = base64.b64decode(data)
+    decoded_data = decoded_data.split(split_char)
+
+    if decoded_data[0] == b'm':
+        print(jsondata)
+        log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", uuid=decoded_data[3])
+        log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", message=decoded_data[4])
+        log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", filename=decoded_data[5])
+        log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", filetype=decoded_data[6])
+        log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", data=decoded_data[7])
+
+        try:
+            filename = decoded_data[8].decode("utf-8") + "_" + decoded_data[5].decode("utf-8")
+
+            file = open(filename, "wb")
+            file.write(decoded_data[7])
+            file.close()
+        except Exception as e:
+            print(e)
+
+    else:
+        print(decoded_data)
+
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     sock.connect((ip, port))
     
@@ -59,28 +83,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
             if jsondata.get('status') == 'receiving':
                 log.info(jsondata)
-                
+
+            if jsondata.get('command') == 'rx_buffer':
+                for rxdata in jsondata["data-array"]:
+                    log.info(f"rx buffer {rxdata.get('uuid')}")
+                    decode_and_save_data(rxdata.get('data'))
+
             if jsondata.get('status') == 'received':
-                decoded_data = base64.b64decode(jsondata["data"])
-                decoded_data = decoded_data.split(split_char)
-                
-                if decoded_data[0] == b'm':
-                    print(jsondata)
-                    log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", uuid=decoded_data[3])
-                    log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", message=decoded_data[4])
-                    log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", filename=decoded_data[5])
-                    log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", filetype=decoded_data[6])
-                    log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", data=decoded_data[7])
+                decode_and_save_data(jsondata["data"])
 
-                    try:
-                        filename = decoded_data[8].decode("utf-8") + "_" + decoded_data[5].decode("utf-8")
 
-                        file = open(filename , "wb")
-                        file.write(decoded_data[7])
-                        file.close()
-                    except Exception as e:
-                        print(e)
-                        
-                else:
-                    print(decoded_data)
-                
