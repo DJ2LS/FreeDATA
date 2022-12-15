@@ -148,6 +148,10 @@ class RF:
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
 
+        # INIT TX MODES
+        self.freedv_datac0_tx = open_codec2_instance(14)
+        self.freedv_datac1_tx = open_codec2_instance(10)
+        self.freedv_datac3_tx = open_codec2_instance(12)
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE:
             try:
@@ -402,7 +406,28 @@ class RF:
           frames:
 
         """
-        # self.log.debug("[MDM] transmit", mode=mode)
+
+        """
+        sig0 = 14
+        sig1 = 14
+        datac0 = 14
+        datac1 = 10
+        datac3 = 12
+        fsk_ldpc = 9
+        fsk_ldpc_0 = 200
+        fsk_ldpc_1 = 201
+        """
+        if mode == int(14):
+            freedv = self.freedv_datac0_tx
+        elif mode == int(14):
+            freedv = self.freedv_datac0_tx
+        elif mode == int(10):
+            freedv = self.freedv_datac1_tx
+        elif mode == int(12):
+            freedv = self.freedv_datac3_tx
+        else:
+            return False
+
         static.TRANSMITTING = True
         start_of_transmission = time.time()
         # Toggle ptt early to save some time and send ptt state via socket
@@ -413,7 +438,6 @@ class RF:
 
         # Open codec2 instance
         self.MODE = mode
-        freedv = open_codec2_instance(self.MODE)
 
         # Get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -506,8 +530,10 @@ class RF:
         txbuffer_48k = self.resampler.resample8_to_48(x)
 
         # Explicitly lock our usage of mod_out_queue if needed
-        # Deactivated for testing purposes
-        self.mod_out_locked = False
+        # This could avoid audio problems on slower CPU
+        # we will fill our modout list with all data, then start
+        # processing it in audio callback
+        self.mod_out_locked = True
 
         # -------------------------------
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
@@ -525,7 +551,7 @@ class RF:
 
             self.modoutqueue.append(c)
 
-        # Release our mod_out_lock so we can use the queue
+        # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
 
         while self.modoutqueue:
@@ -541,7 +567,6 @@ class RF:
         # After processing, set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
 
-        self.c_lib.freedv_close(freedv)
         self.modem_transmit_queue.task_done()
         static.TRANSMITTING = False
         threading.Event().set()
