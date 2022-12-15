@@ -11,12 +11,16 @@ import argparse
 import socket
 import base64
 import json
+import uuid
+import time
 
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
 parser.add_argument('--port', dest="socket_port", default=3000, help="Set socket listening port.", type=int)
-parser.add_argument('--host', dest="socket_host", default='localhost', help="Set the host, the socket is listening on.", type=str)
-parser.add_argument('--file', dest="filename", default='test.txt', help="Select the file we want to send", type=str)
+parser.add_argument('--host', dest="socket_host", default='192.168.178.86', help="Set the host, the socket is listening on.", type=str)
+parser.add_argument('--file', dest="filename", default='', help="Select the file we want to send", type=str)
+parser.add_argument('--msg', dest="chatmessage", default='file from cli tool', help="Additional text message appended to file", type=str)
+
 parser.add_argument('--dxcallsign', dest="dxcallsign", default='AA0AA', help="Select the destination callsign", type=str)
 parser.add_argument('--mycallsign', dest="mycallsign", default='AA0AA', help="Select the own callsign", type=str)
 parser.add_argument('--attempts', dest="attempts", default='5', help="Amount of connection attempts", type=int)
@@ -29,13 +33,57 @@ filename = args.filename
 dxcallsign = args.dxcallsign
 mycallsign = args.mycallsign
 attempts = args.attempts
+chatmessage = bytes(args.chatmessage, "utf-8")
 
-# open file by name
-f = open(filename, "rb")
-file = f.read()
+if filename != "":
+    # open file by name
+    f = open(filename, "rb")
+    file = f.read()
+    filename = bytes(filename, "utf-8")
+
+else:
+    file = b""
+    filename = b""
 
 # convert binary data to base64
-base64_data = base64.b64encode(file).decode("UTF-8")
+#base64_data = base64.b64encode(file).decode("UTF-8")
+split_char = b'\0;'
+
+filetype = b"unknown"
+timestamp = str(int(time.time()))
+
+# timestamp = timestamp.to_bytes(4, byteorder="big")
+timestamp = bytes(timestamp, "utf-8")
+msg_with_attachment = chatmessage + \
+                      split_char + \
+                      filename + \
+                      split_char + \
+                      filetype + \
+                      split_char + \
+                      file + \
+                      split_char + \
+                      timestamp
+
+datatype = b"m"
+command = b"send_message"
+checksum = b"123"
+uuid_4 = bytes(str(uuid.uuid4()), "utf-8")
+
+data = datatype + \
+       split_char + \
+       command + \
+       split_char + \
+       checksum + \
+       split_char + \
+       uuid_4 + \
+       split_char + \
+       msg_with_attachment
+data = base64.b64encode(data).decode("UTF-8")
+
+# message
+
+
+
 
 # our command we are going to send
 command = {"type": "arq",
@@ -46,7 +94,7 @@ command = {"type": "arq",
                  "attempts": str(attempts),
                  "mode": "255",
                  "n_frames": "1",
-                 "data": base64_data}
+                 "data": data}
                 ]
            }
 command = json.dumps(command)
