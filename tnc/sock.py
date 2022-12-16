@@ -90,6 +90,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                             client.send(sock_data)
                         except Exception as err:
                             self.log.info("[SCK] Connection lost", e=err)
+                            # TODO: Check if we really should set connection alive to false. This might disconnect all other clients as well...
                             self.connection_alive = False
                 except Exception as err:
                     self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)

@@ -329,11 +329,7 @@ class RF:
             threading.Event().wait(0.01)
 
             # -----write
-            if len(self.modoutqueue) <= 0 or self.mod_out_locked:
-                # data_out48k = np.zeros(self.AUDIO_FRAMES_PER_BUFFER_RX, dtype=np.int16)
-                pass
-
-            else:
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 data_out48k = self.modoutqueue.popleft()
                 # print(len(data_out48k))
 
@@ -417,13 +413,11 @@ class RF:
         fsk_ldpc_0 = 200
         fsk_ldpc_1 = 201
         """
-        if mode == int(14):
+        if mode == 14:
             freedv = self.freedv_datac0_tx
-        elif mode == int(14):
-            freedv = self.freedv_datac0_tx
-        elif mode == int(10):
+        elif mode == 10:
             freedv = self.freedv_datac1_tx
-        elif mode == int(12):
+        elif mode == 12:
             freedv = self.freedv_datac3_tx
         else:
             return False

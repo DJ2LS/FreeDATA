@@ -430,9 +430,9 @@ class DATA:
         # add mycallsign and dxcallsign to network message if they not exist
         # and make sure we are not overwrite them if they exist
         try:
-            if not "mycallsign" in jsondata:
+            if "mycallsign" not in jsondata:
                 jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
-            if not "dxcallsign" in jsondata:
+            if "dxcallsign" not in jsondata:
                 jsondata["dxcallsign"] = str(static.DXCALLSIGN, "UTF-8")
         except Exception as e:
             self.log.debug("[TNC] error adding callsigns to network message", e=e)

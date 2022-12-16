@@ -20,6 +20,10 @@ parser.add_argument('--host', dest="socket_host", default='localhost', help="Set
 args = parser.parse_args()
 HOST, PORT = args.socket_host, args.socket_port
 
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# Connect to server
+sock.connect((HOST, PORT))
+
 
 def main_menu():
     while True:
@@ -49,11 +53,10 @@ def main_menu():
             if option == '----- BACK -----':
                 main_menu()
             elif option == 'STOP BEACON':
-                run_network_command(HOST, PORT, {"type": "broadcast", "command": "stop_beacon"})
+                run_network_command({"type": "broadcast", "command": "stop_beacon"})
 
             else:
-                run_network_command(HOST, PORT, {"type": "broadcast", "command": "start_beacon", "parameter": str(option)})
-
+                run_network_command({"type": "broadcast", "command": "start_beacon", "parameter": str(option)})
 
         elif option == 'PING':
             pass
@@ -65,9 +68,9 @@ def main_menu():
             if option == '----- BACK -----':
                 main_menu()
             elif option == 'GET RX BUFFER':
-                run_network_command(HOST, PORT, {"type": "get", "command": "rx_buffer"})
+                run_network_command({"type": "get", "command": "rx_buffer"})
             else:
-                run_network_command(HOST, PORT,{"type": "arq", "command": "disconnect"})
+                run_network_command({"type": "arq", "command": "disconnect"})
 
         elif option == 'LIST AUDIO DEVICES':
 
@@ -88,16 +91,14 @@ def main_menu():
                 main_menu()
 
         else:
-            pass
+            print("no menu point found...")
 
 
-def run_network_command(host, port, command):
+def run_network_command(command):
     command = json.dumps(command)
     command = bytes(command + "\n", 'utf-8')
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        # Connect to server and send data
-        sock.connect((host, port))
-        sock.sendall(command)
+    sock.sendall(command)
 
 
-main_menu()
+if __name__ == "__main__":
+    main_menu()

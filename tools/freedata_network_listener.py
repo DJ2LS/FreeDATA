@@ -18,6 +18,7 @@ import structlog
 import queue
 import json
 import base64
+import os
 
 log = structlog.get_logger("CLIENT")
 
@@ -35,8 +36,8 @@ connected = True
 data = bytes()
 
 
-def decode_and_save_data(data):
-    decoded_data = base64.b64decode(data)
+def decode_and_save_data(encoded_data):
+    decoded_data = base64.b64decode(encoded_data)
     decoded_data = decoded_data.split(split_char)
 
     if decoded_data[0] == b'm':
@@ -48,11 +49,17 @@ def decode_and_save_data(data):
         log.info(f"{jsondata.get('mycallsign')} <<< {jsondata.get('dxcallsign')}", data=decoded_data[7])
 
         try:
+            folderpath = "received"
+            if not os.path.exists(folderpath):
+                os.makedirs(folderpath)
             filename = decoded_data[8].decode("utf-8") + "_" + decoded_data[5].decode("utf-8")
 
-            file = open(filename, "wb")
-            file.write(decoded_data[7])
-            file.close()
+            with open(f"{folderpath}/{filename}", "wb") as file:
+                file.write(decoded_data[7])
+
+            with open(f"{folderpath}/{decoded_data[8].decode('utf-8')}_msg.txt", "wb") as file:
+                file.write(decoded_data[4])
+
         except Exception as e:
             print(e)
 
@@ -67,7 +74,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         chunk = sock.recv(2)
         data += chunk
         
-        if data.endswith(b'\n'):
+        if data.startswith(b'{') and data.endswith(b'}\n'):
 
             jsondata = json.loads(data.split(b'\n')[0])
             data = bytes()
@@ -92,4 +99,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             if jsondata.get('status') == 'received':
                 decode_and_save_data(jsondata["data"])
 
+            # clear data buffer as soon as data has been read
+            data = bytes()
 
