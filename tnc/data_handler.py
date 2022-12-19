@@ -2607,10 +2607,11 @@ class DATA:
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
+        qrv_frame[11:12] = helpers.snr_to_bytes(static.SNR)
 
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
         if static.ENABLE_FSK:
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2625,12 +2626,17 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        dxsnr = helpers.snr_from_bytes(data_in[11:12])
+
+        combined_snr = f"{static.SNR}/{dxsnr}"
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8")
+            dxgrid=str(dxgrid, "UTF-8"),
+            snr=str(static.SNR),
+            dxsnr=str(dxsnr)
         )
 
         self.log.info(
@@ -2640,12 +2646,13 @@ class DATA:
             + str(dxgrid, "UTF-8")
             + "] ",
             snr=static.SNR,
+            dxsnr=dxsnr
         )
         helpers.add_to_heard_stations(
             dxcallsign,
             dxgrid,
             "QRV",
-            static.SNR,
+            combined_snr,
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
         )
