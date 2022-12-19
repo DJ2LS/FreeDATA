@@ -2348,7 +2348,7 @@ class DATA:
             # combined_snr = own rx snr / snr on dx side
             combined_snr = f"{static.SNR}/{dxsnr}"
             helpers.add_to_heard_stations(
-                self.dxcallsign,
+                static.DXCALLSIGN,
                 static.DXGRID,
                 "PING-ACK",
                 combined_snr,
@@ -2360,7 +2360,7 @@ class DATA:
                 "[TNC] PING ACK ["
                 + str(mycallsign, "UTF-8")
                 + "] >|< ["
-                + str(self.dxcallsign, "UTF-8")
+                + str(static.DXCALLSIGN, "UTF-8")
                 + "]",
                 snr=static.SNR,
                 dxsnr=dxsnr,
