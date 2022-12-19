@@ -2248,7 +2248,7 @@ class DATA:
         ping_frame = bytearray(self.length_sig0_frame)
         ping_frame[:1] = bytes([FR_TYPE.PING.value])
         ping_frame[1:4] = static.DXCALLSIGN_CRC
-        ping_frame[4:7] = static.MYCALLSIGN_CRC
+        ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -2327,8 +2327,9 @@ class DATA:
         """
 
         # check if we received correct ping
-
-        if static.DXCALLSIGN_CRC == bytes(data_in[4:7]):
+        # check if callsign ssid override
+        _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        if _valid:
 
             # static.DXCALLSIGN_CRC = bytes(data_in[4:7])
             static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
@@ -2339,13 +2340,15 @@ class DATA:
                 uuid=str(uuid.uuid4()),
                 timestamp=int(time.time()),
                 dxgrid=str(static.DXGRID, "UTF-8"),
+                dxcallsign = str(self.dxcallsign, "UTF-8"),
+                mycallsign=str(mycallsign, "UTF-8"),
                 snr=str(static.SNR),
                 dxsnr=str(dxsnr)
             )
             # combined_snr = own rx snr / snr on dx side
             combined_snr = f"{static.SNR}/{dxsnr}"
             helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
+                self.dxcallsign,
                 static.DXGRID,
                 "PING-ACK",
                 combined_snr,
@@ -2355,9 +2358,9 @@ class DATA:
 
             self.log.info(
                 "[TNC] PING ACK ["
-                + str(self.mycallsign, "UTF-8")
+                + str(mycallsign, "UTF-8")
                 + "] >|< ["
-                + str(static.DXCALLSIGN, "UTF-8")
+                + str(self.dxcallsign, "UTF-8")
                 + "]",
                 snr=static.SNR,
                 dxsnr=dxsnr,
