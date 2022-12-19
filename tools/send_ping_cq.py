@@ -17,8 +17,8 @@ parser.add_argument('--port', dest="socket_port", default=3000, help="Set socket
 parser.add_argument('--host', dest="socket_host", default='localhost', help="Set the host, the socket is listening on.", type=str)
 parser.add_argument('--dxcallsign', dest="dxcallsign", default='AA0AA', help="Select the destination callsign", type=str)
 parser.add_argument('--mycallsign', dest="mycallsign", default='AA0AA', help="Select the own callsign", type=str)
-parser.add_argument('--ping', dest="ping", action="store_true", help="Send PING", type=str)
-parser.add_argument('--cq', dest="cq", action="store_true", help="Send CQ", type=str)
+parser.add_argument('--ping', dest="ping", action="store_true", help="Send PING")
+parser.add_argument('--cq', dest="cq", action="store_true", help="Send CQ")
 
 args = parser.parse_args()
 
