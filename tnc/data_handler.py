@@ -1659,7 +1659,7 @@ class DATA:
         # Close the session if the CRC matches the remote station in static.
         _valid_crc, mycallsign = helpers.check_callsign(self.mycallsign, bytes(data_in[2:5]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
-        if _valid_crc or _valid_session and static.ARQ_SESSION_STATE != "disconnected":
+        if (_valid_crc or _valid_session) and static.ARQ_SESSION_STATE in ["disconnected"]:
             static.ARQ_SESSION_STATE = "disconnected"
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
@@ -1723,7 +1723,7 @@ class DATA:
         # Accept session data if the DXCALLSIGN_CRC matches the station in static or session id.
         _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
-        if _valid_crc or _valid_session:
+        if _valid_crc or _valid_session and static.ARQ_SESSION_STATE in ["connected", "connecting"]:
             self.log.debug("[TNC] Received session heartbeat")
             helpers.add_to_heard_stations(
                 self.dxcallsign,
@@ -1986,6 +1986,9 @@ class DATA:
         self.arq_file_transfer = True
         self.is_IRS = True
 
+        # check if callsign ssid override
+        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
         static.DXCALLSIGN = self.dxcallsign
@@ -1997,8 +2000,6 @@ class DATA:
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
-
-
 
         # n_frames_per_burst is currently unused
         # n_frames_per_burst = int.from_bytes(bytes(data_in[13:14]), "big")
@@ -2075,12 +2076,12 @@ class DATA:
         self.session_id = data_in[13:14]
         print(self.session_id)
 
-        # check if callsign ssid override
-        _, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+        # check again if callsign ssid override
+        _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
 
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
-            + str(mycallsign, "UTF-8")
+            + str(self.mycallsign, "UTF-8")
             + "]>> <<["
             + str(self.dxcallsign, "UTF-8")
             + "]",
@@ -2119,13 +2120,13 @@ class DATA:
             freedata="tnc-message",
             arq="transmission",
             status="opened",
-            mycallsign=str(mycallsign, 'UTF-8'),
+            mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
 
         self.log.info(
             "[TNC] ARQ | DATA | RX | ["
-            + str(mycallsign, "UTF-8")
+            + str(self.mycallsign, "UTF-8")
             + "]>>|<<["
             + str(self.dxcallsign, "UTF-8")
             + "]",
@@ -2229,8 +2230,13 @@ class DATA:
             return
         static.DXCALLSIGN = dxcallsign
         static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-
-        self.send_data_to_socket_queue(freedata="tnc-message", ping="transmitting")
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            ping="transmitting",
+            dxcallsign=str(dxcallsign, "UTF-8"),
+            mycallsign=str(mycallsign, "UTF-8"),
+            snr=str(static.SNR),
+        )
         self.log.info(
             "[TNC] PING REQ ["
             + str(mycallsign, "UTF-8")
