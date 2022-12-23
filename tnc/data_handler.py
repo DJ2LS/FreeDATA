@@ -1654,6 +1654,7 @@ class DATA:
           data_in:bytes:
 
         """
+        print(static.ARQ_SESSION_STATE)
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
         # Close the session if the CRC matches the remote station in static.
