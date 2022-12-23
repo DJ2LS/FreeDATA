@@ -941,7 +941,7 @@ class RF:
                         # calculate dbfs every 50 cycles for reducing CPU load
                         rms_counter += 1
                         if rms_counter > 50:
-                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
+                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float32)
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
