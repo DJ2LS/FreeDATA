@@ -80,8 +80,8 @@ class DATA:
         # 3 bytes for the EOF End of File indicator in a data frame
         self.data_frame_eof = b"EOF"
 
-        self.tx_n_max_retries_per_burst = 50
-        self.rx_n_max_retries_per_burst = 50
+        self.tx_n_max_retries_per_burst = 40
+        self.rx_n_max_retries_per_burst = 40
         self.n_retries_per_burst = 0
 
         # Flag to indicate if we recevied a low bandwidth mode channel opener
