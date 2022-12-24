@@ -2939,7 +2939,8 @@ class DATA:
             self.send_burst_nack_frame_watchdog(0)
 
             # Update data_channel timestamp
-            self.data_channel_last_received = time.time()
+            # TODO: Disabled this one for testing.
+            # self.data_channel_last_received = time.time()
             self.n_retries_per_burst += 1
         else:
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
