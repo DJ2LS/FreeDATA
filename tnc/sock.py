@@ -76,7 +76,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if data != tempdata:
                     tempdata = data
                     SOCKET_QUEUE.put(data)
-                time.sleep(0.5)
+                threading.Event().wait(0.5)
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
@@ -84,20 +84,23 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 sock_data += b"\n"  # append line limiter
 
                 # send data to all clients
-                # try:
-                for client in CONNECTED_CLIENTS:
-                    try:
-                        client.send(sock_data)
-                    except Exception as err:
-                        self.log.info("[SCK] Connection lost", e=err)
-                        self.connection_alive = False
+                try:
+                    for client in CONNECTED_CLIENTS:
+                        try:
+                            client.send(sock_data)
+                        except Exception as err:
+                            self.log.info("[SCK] Connection lost", e=err)
+                            # TODO: Check if we really should set connection alive to false. This might disconnect all other clients as well...
+                            self.connection_alive = False
+                except Exception as err:
+                    self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
 
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
             static.INFO = []
             # self.request.sendall(sock_data)
-            time.sleep(0.15)
+            threading.Event().wait(0.15)
 
     def receive_from_client(self):
         """
@@ -132,7 +135,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # we might improve this by only processing one command or
                         # doing some kind of selection to determin which commands need to be dropped
                         # and which one can be processed during a running transmission
-                        time.sleep(3)
+                        threading.Event().wait(3)
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
@@ -169,7 +172,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
-            time.sleep(1)
+            threading.Event().wait(1)
 
     def finish(self):
         """ """
@@ -220,6 +223,18 @@ def process_tnc_commands(data):
 
             except Exception as err:
                 command_response("listen", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+        # SET ENABLE/DISABLE RESPOND TO CALL -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "respond_to_call":
+            try:
+                static.RESPOND_TO_CALL = received_json["state"] in ['true', 'True', True]
+                command_response("respond_to_call", True)
+
+            except Exception as err:
+                command_response("respond_to_call", False)
                 log.warning(
                     "[SCK] CQ command execution error", e=err, command=received_json
                 )
@@ -319,13 +334,22 @@ def process_tnc_commands(data):
                 if not str(dxcallsign).strip():
                     raise NoCallsign
 
-                # additional step for beeing sure our callsign is correctly
+                # additional step for being sure our callsign is correctly
                 # in case we are not getting a station ssid
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
+                # check if specific callsign is set with different SSID than the TNC is initialized
+                try:
+                    mycallsign = received_json["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+                except Exception:
+                    mycallsign = static.MYCALLSIGN
+
+                DATA_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
                 command_response("ping", True)
             except NoCallsign:
                 command_response("ping", False)
@@ -351,6 +375,15 @@ def process_tnc_commands(data):
 
             dxcallsign = received_json["dxcallsign"]
 
+            # check if specific callsign is set with different SSID than the TNC is initialized
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = static.MYCALLSIGN
+
             # additional step for being sure our callsign is correctly
             # in case we are not getting a station ssid
             # then we are forcing a station ssid = 0
@@ -370,10 +403,8 @@ def process_tnc_commands(data):
 
                 # try connecting
                 try:
-                    static.DXCALLSIGN = dxcallsign
-                    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
 
-                    DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign, attempts])
+                    DATA_QUEUE_TRANSMIT.put(["CONNECT", mycallsign, dxcallsign, attempts])
                     command_response("connect", True)
                 except Exception as err:
                     command_response("connect", False)
@@ -384,7 +415,6 @@ def process_tnc_commands(data):
                     )
                     # allow beacon transmission again
                     static.BEACON_PAUSE = False
-
 
                 # allow beacon transmission again
                 static.BEACON_PAUSE = False
@@ -439,6 +469,9 @@ def process_tnc_commands(data):
                 # check if specific callsign is set with different SSID than the TNC is initialized
                 try:
                     mycallsign = received_json["parameter"][0]["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
                 except Exception:
                     mycallsign = static.MYCALLSIGN
 
@@ -462,7 +495,7 @@ def process_tnc_commands(data):
                 binarydata = base64.b64decode(base64data)
 
                 DATA_QUEUE_TRANSMIT.put(
-                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, attempts]
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
                 )
 
             except Exception as err:
@@ -690,6 +723,16 @@ def process_daemon_commands(data):
             rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
             enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
 
+            try:
+                # convert ssid list to python list
+                ssid_list = str(received_json["parameter"][0]["ssid_list"])
+                ssid_list = ssid_list.replace(" ", "")
+                ssid_list = ssid_list.split(",")
+                # convert str to int
+                ssid_list = list(map(int, ssid_list))
+            except KeyError:
+                ssid_list = [0]
+
             # print some debugging parameters
             for item in received_json["parameter"][0]:
                 log.debug(
@@ -725,6 +768,7 @@ def process_daemon_commands(data):
                     respond_to_cq,
                     rx_buffer_size,
                     enable_explorer,
+                    ssid_list,
                 ]
             )
             command_response("start_tnc", True)

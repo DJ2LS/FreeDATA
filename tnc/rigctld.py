@@ -7,6 +7,7 @@
 import socket
 import time
 import structlog
+import threading
 
 # set global hamlib version
 hamlib_version = 0
@@ -133,7 +134,7 @@ class radio:
         else:
 
             # reconnecting....
-            time.sleep(0.5)
+            threading.Event().wait(0.5)
             self.connect()
 
         return b""

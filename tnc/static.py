@@ -25,7 +25,7 @@ TNCPROCESS: subprocess.Popen
 MYCALLSIGN: bytes = b"AA0AA"
 MYCALLSIGN_CRC: bytes = b"A"
 
-DXCALLSIGN: bytes = b"AA0AA"
+DXCALLSIGN: bytes = b"ZZ9YY"
 DXCALLSIGN_CRC: bytes = b"A"
 
 MYGRID: bytes = b""
@@ -73,6 +73,7 @@ SCATTER: list = []
 ENABLE_SCATTER: bool = False
 ENABLE_FSK: bool = False
 RESPOND_TO_CQ: bool = False
+RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
 # ---------------------------------
 
 # Audio Defaults
@@ -85,11 +86,11 @@ BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]
-ENABLE_FFT: bool = False
+ENABLE_FFT: bool = True
 CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION: int = 3
+ARQ_PROTOCOL_VERSION: int = 4
 
 # ARQ statistics
 ARQ_BYTES_PER_MINUTE_BURST: int = 0

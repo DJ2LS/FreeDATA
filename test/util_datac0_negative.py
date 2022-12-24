@@ -287,7 +287,10 @@ def t_datac0_2(
 
     # Allow enough time for this side to receive the disconnect frame.
     timeout = time.time() + timeout_duration
-    while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
+    while '"arq":"session", "status":"close"' not in str(sock.SOCKET_QUEUE.queue):
+
+
+
         if time.time() > timeout:
             log.warning("station2", TIMEOUT=True, queue=str(sock.SOCKET_QUEUE.queue))
             break

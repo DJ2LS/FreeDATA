@@ -93,7 +93,7 @@ class DAEMON:
                     "[DMN] update_audio_devices: Exception gathering audio devices:",
                     e=err1,
                 )
-            time.sleep(1)
+            threading.Event().wait(1)
 
     def update_serial_devices(self):
         """
@@ -114,7 +114,7 @@ class DAEMON:
                     )
 
                 static.SERIAL_DEVICES = serial_devices
-                time.sleep(1)
+                threading.Event().wait(1)
             except Exception as err1:
                 self.log.error(
                     "[DMN] update_serial_devices: Exception gathering serial devices:",
@@ -156,7 +156,8 @@ class DAEMON:
                 # data[22] tx-audio-level
                 # data[23] respond_to_cq
                 # data[24] rx_buffer_size
-
+                # data[25] explorer
+                # data[26] ssid_list
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -250,6 +251,14 @@ class DAEMON:
 
                     if data[25] == "True":
                         options.append("--explorer")
+
+                    # wen want our ssid like this: --ssid 1 2 3 4
+                    ssid_list = ""
+                    for i in data[26]:
+                        ssid_list += str(i) + " "
+                    options.append("--ssid")
+                    options.append(ssid_list)
+
 
                     # safe data to config file
                     config.write_entire_config(data)
@@ -407,7 +416,7 @@ if __name__ == "__main__":
         mainlog.error("[DMN] logger init error", exception=err)
 
     # init config
-    config = config.CONFIG()
+    config = config.CONFIG("config.ini")
 
     try:
         mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
@@ -434,4 +443,4 @@ if __name__ == "__main__":
         version=static.VERSION,
     )
     while True:
-        time.sleep(1)
+        threading.Event().wait(1)

@@ -10,6 +10,7 @@ import crcengine
 import static
 import structlog
 import numpy as np
+import threading
 
 log = structlog.get_logger("helpers")
 
@@ -25,7 +26,7 @@ def wait(seconds: float) -> bool:
     timeout = time.time() + seconds
 
     while time.time() < timeout:
-        time.sleep(0.01)
+        threading.Event().wait(0.01)
     return True
 
 

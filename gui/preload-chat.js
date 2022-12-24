@@ -827,28 +827,32 @@ update_chat = function(obj) {
                 
                 //var file = atob(obj._attachments[filename]["data"])
                 db.getAttachment(obj._id, filename).then(function(data) {
+                    console.log(data)
+                    // convert blob data to binary string
+                    blobUtil.blobToBinaryString(data).then(function (binaryString) {
+                        console.log(binaryString)
+                    }).catch(function (err) {
+                      // error
+                      console.log(err);
+                      binaryString = blobUtil.arrayBufferToBinaryString(data);
+                      
+                    }).then(function(){
 
-                    var file = blobUtil.arrayBufferToBinaryString(data)
-                    
-                    // converting back to blob for debugging
-                    // length must be equal of file size
-                    var blob = blobUtil.binaryStringToBlob(file);
-                    console.log(blob)
-                    
-                                      
-                    var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + file + split_char + doc.timestamp;
-                    let Data = {
-                        command: "send_message",
-                        dxcallsign: doc.dxcallsign,
-                        mode: 255,
-                        frames: 1,
-                        data: data_with_attachment,
-                        checksum: doc.checksum,
-                        uuid: doc.uuid
-                    };
-                    console.log(Data)
-                    ipcRenderer.send('run-tnc-command', Data);  
+                        console.log(binaryString)
+                        var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
+                            let Data = {
+                                command: "send_message",
+                                dxcallsign: doc.dxcallsign,
+                                mode: 255,
+                                frames: 1,
+                                data: data_with_attachment,
+                                checksum: doc.checksum,
+                                uuid: doc.uuid
+                            };
+                            console.log(Data)
+                            ipcRenderer.send('run-tnc-command', Data);
 
+                    });
                 });
             }).catch(function(err) {
                 console.log(err);

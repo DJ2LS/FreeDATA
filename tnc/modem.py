@@ -38,6 +38,13 @@ RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 RECEIVE_FSK_LDPC_1 = False
 
+# state buffer
+SIG0_DATAC0_STATE = []
+SIG1_DATAC0_STATE = []
+DAT0_DATAC1_STATE = []
+DAT0_DATAC3_STATE = []
+
+
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -141,6 +148,10 @@ class RF:
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
 
+        # INIT TX MODES
+        self.freedv_datac0_tx = open_codec2_instance(14)
+        self.freedv_datac1_tx = open_codec2_instance(10)
+        self.freedv_datac3_tx = open_codec2_instance(12)
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE:
             try:
@@ -284,7 +295,7 @@ class RF:
         depositing the data into the codec data buffers.
         """
         while True:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
             # -----read
             data_in48k = bytes()
             with open(RXCHANNEL, "rb") as fifo:
@@ -315,14 +326,10 @@ class RF:
     def mkfifo_write_callback(self) -> None:
         """Support testing by writing the audio data to a pipe."""
         while True:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
             # -----write
-            if len(self.modoutqueue) <= 0 or self.mod_out_locked:
-                # data_out48k = np.zeros(self.AUDIO_FRAMES_PER_BUFFER_RX, dtype=np.int16)
-                pass
-
-            else:
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 data_out48k = self.modoutqueue.popleft()
                 # print(len(data_out48k))
 
@@ -395,7 +402,26 @@ class RF:
           frames:
 
         """
-        self.log.debug("[MDM] transmit", mode=mode)
+
+        """
+        sig0 = 14
+        sig1 = 14
+        datac0 = 14
+        datac1 = 10
+        datac3 = 12
+        fsk_ldpc = 9
+        fsk_ldpc_0 = 200
+        fsk_ldpc_1 = 201
+        """
+        if mode == 14:
+            freedv = self.freedv_datac0_tx
+        elif mode == 10:
+            freedv = self.freedv_datac1_tx
+        elif mode == 12:
+            freedv = self.freedv_datac3_tx
+        else:
+            return False
+
         static.TRANSMITTING = True
         start_of_transmission = time.time()
         # Toggle ptt early to save some time and send ptt state via socket
@@ -406,7 +432,6 @@ class RF:
 
         # Open codec2 instance
         self.MODE = mode
-        freedv = open_codec2_instance(self.MODE)
 
         # Get number of bytes per frame for mode
         bytes_per_frame = int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
@@ -499,8 +524,10 @@ class RF:
         txbuffer_48k = self.resampler.resample8_to_48(x)
 
         # Explicitly lock our usage of mod_out_queue if needed
-        # Deactivated for testing purposes
-        self.mod_out_locked = False
+        # This could avoid audio problems on slower CPU
+        # we will fill our modout list with all data, then start
+        # processing it in audio callback
+        self.mod_out_locked = True
 
         # -------------------------------
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
@@ -518,11 +545,11 @@ class RF:
 
             self.modoutqueue.append(c)
 
-        # Release our mod_out_lock so we can use the queue
+        # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
 
         while self.modoutqueue:
-            time.sleep(0.01)
+            threading.Event().wait(0.01)
 
         static.PTT_STATE = self.hamlib.set_ptt(False)
 
@@ -534,7 +561,6 @@ class RF:
         # After processing, set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
 
-        self.c_lib.freedv_close(freedv)
         self.modem_transmit_queue.task_done()
         static.TRANSMITTING = False
         threading.Event().set()
@@ -550,13 +576,14 @@ class RF:
         freedv: ctypes.c_void_p,
         bytes_out,
         bytes_per_frame,
+        state_buffer,
     ) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
         Decoded audio is placed into `bytes_out`.
 
-        :param buffer: Incoming audio
-        :type buffer: codec2.audio_buffer
+        :param audiobuffer: Incoming audio
+        :type audiobuffer: codec2.audio_buffer
         :param nin: Number of frames codec2 is expecting
         :type nin: int
         :param freedv: codec2 instance
@@ -565,6 +592,8 @@ class RF:
         :type bytes_out: _type_
         :param bytes_per_frame: Number of bytes per frame
         :type bytes_per_frame: int
+        :param state_buffer: modem states
+        :type state_buffer: int
         :return: NIN from freedv instance
         :rtype: int
         """
@@ -577,17 +606,28 @@ class RF:
                     nbytes = codec2.api.freedv_rawdatarx(
                         freedv, bytes_out, audiobuffer.buffer.ctypes
                     )
+                    # get current modem states and write to list
+                    # 1 trial
+                    # 2 sync
+                    # 3 trial sync
+                    # 6 decoded
+                    # 10 error decoding == NACK
+                    state = codec2.api.freedv_get_rx_status(freedv)
+                    if state == 10:
+                        state_buffer.append(state)
+
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
                         # process commands only if static.LISTEN = True
                         if static.LISTEN:
                             self.log.debug(
-                                "[MDM] [demod_audio] Pushing received data to received_queue"
+                                "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
                             )
                             self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
                             self.get_scatter(freedv)
                             self.calculate_snr(freedv)
+                            state_buffer = []
                         else:
                             self.log.warning(
                                 "[MDM] [demod_audio] received frame but ignored processing",
@@ -675,6 +715,7 @@ class RF:
             self.sig0_datac0_freedv,
             self.sig0_datac0_bytes_out,
             self.sig0_datac0_bytes_per_frame,
+            SIG0_DATAC0_STATE
         )
 
     def audio_sig1_datac0(self) -> None:
@@ -685,6 +726,7 @@ class RF:
             self.sig1_datac0_freedv,
             self.sig1_datac0_bytes_out,
             self.sig1_datac0_bytes_per_frame,
+            SIG1_DATAC0_STATE
         )
 
     def audio_dat0_datac1(self) -> None:
@@ -695,6 +737,7 @@ class RF:
             self.dat0_datac1_freedv,
             self.dat0_datac1_bytes_out,
             self.dat0_datac1_bytes_per_frame,
+            DAT0_DATAC1_STATE
         )
 
     def audio_dat0_datac3(self) -> None:
@@ -705,6 +748,7 @@ class RF:
             self.dat0_datac3_freedv,
             self.dat0_datac3_bytes_out,
             self.dat0_datac3_bytes_per_frame,
+            DAT0_DATAC3_STATE
         )
 
     def audio_fsk_ldpc_0(self) -> None:
@@ -730,9 +774,14 @@ class RF:
     def worker_transmit(self) -> None:
         """Worker for FIFO queue for processing frames to be transmitted"""
         while True:
+            # print queue size for debugging purposes
+            # TODO: Lets check why we have several frames in our transmit queue which causes sometimes a double transmission
+            # we could do a cleanup after a transmission so theres no reason sending twice
+            queuesize = self.modem_transmit_queue.qsize()
+            self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             data = self.modem_transmit_queue.get()
 
-            self.log.debug("[MDM] worker_transmit", mode=data[0])
+            # self.log.debug("[MDM] worker_transmit", mode=data[0])
             self.transmit(
                 mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
             )
@@ -859,7 +908,7 @@ class RF:
         rms_counter = 0
 
         while True:
-            # time.sleep(0.01)
+            # threading.Event().wait(0.01)
             threading.Event().wait(0.01)
             # WE NEED TO OPTIMIZE THIS!
 
@@ -892,7 +941,7 @@ class RF:
                         # calculate dbfs every 50 cycles for reducing CPU load
                         rms_counter += 1
                         if rms_counter > 50:
-                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float)
+                            d = np.frombuffer(self.fft_data, np.int16).astype(np.float32)
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
@@ -1032,3 +1081,19 @@ def set_audio_volume(datalist, volume: float) -> np.int16:
     # Scale samples by the ratio of volume / 100.0
     data = np.fromstring(datalist, np.int16) * (volume / 100.0)  # type: ignore
     return data.astype(np.int16)
+
+
+def get_modem_error_state():
+    """
+    get current state buffer and return True of contains 10
+
+    """
+
+    if RECEIVE_DATAC1 and 10 in DAT0_DATAC1_STATE:
+        DAT0_DATAC1_STATE.clear()
+        return True
+    if RECEIVE_DATAC3 and 10 in DAT0_DATAC3_STATE:
+        DAT0_DATAC3_STATE.clear()
+        return True
+
+    return False
