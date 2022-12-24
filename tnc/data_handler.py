@@ -590,7 +590,8 @@ class DATA:
         mycallsign = self.mycallsign
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not static.ARQ_STATE and static.TNC_STATE != "BUSY":
+        if not static.ARQ_STATE and static.TNC_STATE not in ["BUSY"]:
+            self.log.warning("[TNC] wrong tnc state - dropping data", arq_state=static.ARQ_STATE, tnc_state=static.TNC_STATE)
             return
 
         self.arq_file_transfer = True
