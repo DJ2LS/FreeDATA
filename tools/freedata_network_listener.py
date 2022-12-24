@@ -71,34 +71,41 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     sock.connect((ip, port))
     
     while connected:
-        chunk = sock.recv(2)
+        chunk = sock.recv(1024)
         data += chunk
-        
-        if data.startswith(b'{') and data.endswith(b'}\n'):
+        if data.startswith(b"{") and data.endswith(b"}\n"):
+            # split data by \n if we have multiple commands in socket buffer
+            data = data.split(b"\n")
+            # remove empty data
+            data.remove(b"")
 
-            jsondata = json.loads(data.split(b'\n')[0])
-            data = bytes()
+            # iterate thorugh data list
+            for command in data:
 
-            if jsondata.get('command') == "tnc_state":
-                pass
-            
-            if jsondata.get('freedata') == "tnc-message":
-                log.info(jsondata)
+                jsondata = json.loads(command)
+                data = bytes()
 
-            if jsondata.get('ping') == "acknowledge":
-                log.info(f"PING {jsondata.get('mycallsign')} >><< {jsondata.get('dxcallsign')}", snr=jsondata.get('snr'), dxsnr=jsondata.get('dxsnr'))
+                if jsondata.get('command') == "tnc_state":
+                    pass
 
-            if jsondata.get('status') == 'receiving':
-                log.info(jsondata)
+                if jsondata.get('freedata') == "tnc-message":
+                    log.info(jsondata)
 
-            if jsondata.get('command') == 'rx_buffer':
-                for rxdata in jsondata["data-array"]:
-                    log.info(f"rx buffer {rxdata.get('uuid')}")
-                    decode_and_save_data(rxdata.get('data'))
+                if jsondata.get('ping') == "acknowledge":
+                    log.info(f"PING {jsondata.get('mycallsign')} >><< {jsondata.get('dxcallsign')}", snr=jsondata.get('snr'), dxsnr=jsondata.get('dxsnr'))
 
-            if jsondata.get('status') == 'received':
-                decode_and_save_data(jsondata["data"])
+                if jsondata.get('status') == 'receiving':
+                    log.info(jsondata)
 
-            # clear data buffer as soon as data has been read
-            data = bytes()
+                if jsondata.get('command') == 'rx_buffer':
+                    for rxdata in jsondata["data-array"]:
+                        log.info(f"rx buffer {rxdata.get('uuid')}")
+                        decode_and_save_data(rxdata.get('data'))
+
+                if jsondata.get('status') == 'received' and jsondata.get('arq') == 'transmission':
+                    decode_and_save_data(jsondata["data"])
+
+                # clear data buffer as soon as data has been read
+                data = bytes()
+
 
