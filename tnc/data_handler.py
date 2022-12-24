@@ -2383,6 +2383,18 @@ class DATA:
         Force a stop of the running transmission
         """
         self.log.warning("[TNC] Stopping transmission!")
+
+
+        static.TNC_STATE = "IDLE"
+        static.ARQ_STATE = False
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="stopped",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+        )
+
         stop_frame = bytearray(self.length_sig0_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
@@ -2390,17 +2402,9 @@ class DATA:
         # TODO: Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
+
         self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
 
-        static.TNC_STATE = "IDLE"
-        static.ARQ_STATE = False
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            arq="transmission",
-            mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            status="stopped",
-        )
         self.arq_cleanup()
 
     def received_stop_transmission(
@@ -2415,9 +2419,9 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
+            status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            status="stopped",
             uuid=self.transmission_uuid,
         )
         self.arq_cleanup()
