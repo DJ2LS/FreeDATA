@@ -1313,6 +1313,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     }
 
+    if (typeof(arg.mycallsign) !== 'undefined') {
+        // split document title by looking for Call then split and update it
+        var documentTitle = document.title.split('Call:')
+        document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
+    }
+
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
     // deactivated this feature, beacuse its useless at this time. maybe it is getting more interesting, if we are working via network
