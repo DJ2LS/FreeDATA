@@ -798,22 +798,21 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             ipcRenderer.send('run-tnc-command', Data);        
     });
     // saveMyCall button clicked
-    document.getElementById("saveMyCall").addEventListener("click", () => {
+    document.getElementById("myCall").addEventListener("input", () => {
         callsign = document.getElementById("myCall").value;
         ssid = document.getElementById("myCallSSID").value;
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
-        
         // split document title by looking for Call then split and update it
         var documentTitle = document.title.split('Call:')
         document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
-              
+
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
 
     // saveMyGrid button clicked
-    document.getElementById("saveMyGrid").addEventListener("click", () => {
+    document.getElementById("myGrid").addEventListener("input", () => {
         grid = document.getElementById("myGrid").value;
         config.mygrid = grid;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -1312,6 +1311,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var array = JSON.parse("[" + arg.fft + "]");
         spectrum.addData(array[0]);
 
+    }
+
+    if (typeof(arg.mycallsign) !== 'undefined') {
+        // split document title by looking for Call then split and update it
+        var documentTitle = document.title.split('Call:')
+        document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
     }
 
 
