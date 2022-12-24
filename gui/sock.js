@@ -195,6 +195,7 @@ client.on('data', function(socketdata) {
                 rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
 
                 let Data = {
+                    mycallsign: data['mycallsign'],
                     ptt_state: data['ptt_state'],
                     busy_state: data['tnc_state'],
                     arq_state: data['arq_state'],
