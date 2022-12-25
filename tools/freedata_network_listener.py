@@ -79,7 +79,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             # remove empty data
             data.remove(b"")
 
-            # iterate thorugh data list
+            # iterate through data list
             for command in data:
 
                 jsondata = json.loads(command)
