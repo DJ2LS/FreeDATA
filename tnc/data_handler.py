@@ -2462,7 +2462,7 @@ class DATA:
                         beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                        beacon_frame[9:13] = static.MYGRID[:4]
+                        beacon_frame[7:13] = static.MYGRID
                         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
@@ -2494,7 +2494,7 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
+        dxgrid = bytes(data_in[7:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
