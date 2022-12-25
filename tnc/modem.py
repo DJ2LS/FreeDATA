@@ -381,6 +381,14 @@ class RF:
             data_out48k = np.zeros(frames, dtype=np.int16)
             self.fft_data = x
         else:
+            if not static.PTT_STATE:
+                # TODO: Moved to this place for testing
+                # Maybe we can avoid moments of silence before transmitting
+                static.PTT_STATE = self.hamlib.set_ptt(True)
+                jsondata = {"ptt": "True"}
+                data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(data_out)
+
             data_out48k = self.modoutqueue.popleft()
             self.fft_data = data_out48k
 
@@ -548,12 +556,6 @@ class RF:
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
 
             self.modoutqueue.append(c)
-
-        # TODO: Moved to this place for testing
-        static.PTT_STATE = self.hamlib.set_ptt(True)
-        jsondata = {"ptt": "True"}
-        data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(data_out)
 
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
