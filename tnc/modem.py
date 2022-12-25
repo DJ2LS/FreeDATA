@@ -356,7 +356,9 @@ class RF:
         x = self.resampler.resample48_to_8(x)
 
         # Avoid decoding when transmitting to reduce CPU
-        if not static.TRANSMITTING:
+        # TODO: Overriding this for testing purposes
+        # if not static.TRANSMITTING:
+        if True:
             length_x = len(x)
 
             # Avoid buffer overflow by filling only if buffer for
@@ -456,11 +458,12 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        data_delay_mseconds = 0  # milliseconds
-        data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
-        mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        txbuffer = bytes(mod_out_silence)
-
+        #data_delay_mseconds = 0  # milliseconds
+        #data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
+        #mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+        #txbuffer = bytes(mod_out_silence)
+        # TODO: Disabled this one for testing
+        txbuffer = bytes()
         self.log.debug(
             "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame
         )
