@@ -2820,8 +2820,8 @@ class DATA:
         self.n_retries_per_burst = 0
 
         # reset max retries possibly overriden by api
-        self.session_connect_max_retries = 15
-        self.data_channel_max_retries = 15
+        self.session_connect_max_retries = 10
+        self.data_channel_max_retries = 10
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
