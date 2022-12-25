@@ -426,11 +426,12 @@ class RF:
 
         static.TRANSMITTING = True
         start_of_transmission = time.time()
+        # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        static.PTT_STATE = self.hamlib.set_ptt(True)
-        jsondata = {"ptt": "True"}
-        data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(data_out)
+        # static.PTT_STATE = self.hamlib.set_ptt(True)
+        # jsondata = {"ptt": "True"}
+        # data_out = json.dumps(jsondata)
+        # sock.SOCKET_QUEUE.put(data_out)
 
         # Open codec2 instance
         self.MODE = mode
@@ -547,6 +548,12 @@ class RF:
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
 
             self.modoutqueue.append(c)
+
+        # TODO: Moved to this place for testing
+        static.PTT_STATE = self.hamlib.set_ptt(True)
+        jsondata = {"ptt": "True"}
+        data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(data_out)
 
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
