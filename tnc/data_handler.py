@@ -2445,6 +2445,9 @@ class DATA:
                             not static.ARQ_SESSION
                             and not self.arq_file_transfer
                             and not static.BEACON_PAUSE
+                            and not static.CHANNEL_BUSY
+                            and static.TNC_STATE not in ["busy"]
+                            and not static.ARQ_STATE
                     ):
                         self.send_data_to_socket_queue(
                             freedata="tnc-message",
