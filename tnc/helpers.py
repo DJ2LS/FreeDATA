@@ -331,6 +331,8 @@ def check_session_id(id: bytes, id_to_check: bytes):
         True
         False
     """
+    if id_to_check == b'\x00':
+        return False
     log.debug("[HLP] check_sessionid: Checking:", ownid=id, check=id_to_check)
     return id == id_to_check
 
