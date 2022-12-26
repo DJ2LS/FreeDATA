@@ -7,6 +7,7 @@ Created on Sun Dec 27 20:43:40 2020
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
+import os
 import base64
 import sys
 import threading
@@ -865,13 +866,33 @@ class DATA:
                     self.log.error(
                         "[TNC] ARQ | RX | error occurred when saving data!",
                         e=e,
-                        uuid = self.transmission_uuid,
-                        timestamp = timestamp,
-                        dxcall = static.DXCALLSIGN,
-                        dxgrid = static.DXGRID,
-                        data = base64_data
+                        uuid=self.transmission_uuid,
+                        timestamp=timestamp,
+                        dxcall=static.DXCALLSIGN,
+                        dxgrid=static.DXGRID,
+                        data=base64_data
                     )
 
+                if static.ARQ_SAVE_TO_FOLDER:
+                    try:
+                        self.save_data_to_folder(
+                            self.transmission_uuid,
+                            timestamp,
+                            mycallsign,
+                            static.DXCALLSIGN,
+                            static.DXGRID,
+                            data_frame
+                        )
+                    except Exception as e:
+                        self.log.error(
+                            "[TNC] ARQ | RX | can't save file to folder",
+                            e=e,
+                            uuid=self.transmission_uuid,
+                            timestamp=timestamp,
+                            dxcall=static.DXCALLSIGN,
+                            dxgrid=static.DXGRID,
+                            data=base64_data
+                        )
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -3049,3 +3070,48 @@ class DATA:
         self.enqueue_frame_for_tx(
             frame_to_tx=[bytearray(126)], c2_mode=FREEDV_MODE.datac3.value
         )
+
+    def save_data_to_folder(self,
+                            transmission_uuid,
+                            timestamp,
+                            mycallsign,
+                            dxcallsign,
+                            dxgrid,
+                            data_frame
+                            ):
+
+        """Save data to folder"""
+
+        split_char = b"\x00;"
+
+        self.log.info("[TNC] ARQ | RX | saving data to folder")
+
+        decoded_data = data_frame.split(split_char)
+        print(decoded_data)
+        #uuid=decoded_data[3]
+        message = decoded_data[4]
+        filename = decoded_data[5]
+        #filetype = decoded_data[6]
+        data = decoded_data[7]
+
+        try:
+            folder_path = "received"
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+
+            callsign_path = f"{mycallsign}_{dxcallsign}"
+            if not os.path.exists(f"{folder_path}/{callsign_path}"):
+                os.makedirs(f"{folder_path}/{callsign_path}")
+
+            # save file to folder
+            filename_complex = f"{timestamp}_{transmission_uuid}_{filename}"
+            with open(f"{folder_path}/{callsign_path}/{filename_complex}", "wb") as file:
+                file.write(data)
+
+            # save message to folder
+            message_name = f"{timestamp}_{transmission_uuid}_msg.txt"
+            with open(f"{folder_path}/{callsign_path}/{message_name}", "wb") as file:
+                file.write(message)
+
+        except Exception as e:
+            print(e)

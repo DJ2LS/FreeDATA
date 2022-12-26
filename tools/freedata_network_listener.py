@@ -35,6 +35,10 @@ ip, port = args.socket_host, args.socket_port
 connected = True
 data = bytes()
 
+"""
+Nachricht
+{'command': 'rx_buffer', 'data-array': [{'uuid': '8dde227d-3a09-4f39-b34c-5f8281d719d1', 'timestamp': 1672043316, 'dxcallsign': 'DJ2LS-1', 'dxgrid': 'JN48cs', 'data': 'bQA7c2VuZF9tZXNzYWdlADsxMjMAO2VkY2NjZDAyLTUzMTQtNDc3Ni1hMjlkLTFmY2M1ZDI4OTM4ZAA7VGVzdAoAOwA7cGxhaW4vdGV4dAA7ADsxNjcyMDQzMzA5'}]}
+"""
 
 def decode_and_save_data(encoded_data):
     decoded_data = base64.b64decode(encoded_data)
@@ -69,7 +73,7 @@ def decode_and_save_data(encoded_data):
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     sock.connect((ip, port))
-    
+    print(sock)
     while connected:
         chunk = sock.recv(1024)
         data += chunk
@@ -83,7 +87,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             for command in data:
 
                 jsondata = json.loads(command)
-                data = bytes()
 
                 if jsondata.get('command') == "tnc_state":
                     pass
@@ -105,7 +108,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 if jsondata.get('status') == 'received' and jsondata.get('arq') == 'transmission':
                     decode_and_save_data(jsondata["data"])
 
-                # clear data buffer as soon as data has been read
-                data = bytes()
+            # clear data buffer as soon as data has been read
+            data = bytes()
 
 
