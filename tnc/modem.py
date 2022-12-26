@@ -383,10 +383,7 @@ class RF:
                 audiobuffer.push(x)
         # end of "not static.TRANSMITTING" if block
 
-
-
-        if len(self.modoutqueue) <= 0 or self.mod_out_locked:
-            # if not self.modoutqueue or self.mod_out_locked:
+        if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
             self.fft_data = x
         else:
