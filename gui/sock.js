@@ -586,7 +586,11 @@ exports.sendTestFrame = function() {
     writeTncCommand(command)
 }
 
-
+// RECORD AUDIO
+exports.record_audio = function() {
+    command = '{"type" : "set", "command" : "record_audio"}'
+    writeTncCommand(command)
+}
 
 ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
     client.destroy();
