@@ -268,7 +268,7 @@ jobs:
         # if: matrix.os == 'ubuntu-20.04'
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
 
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}
