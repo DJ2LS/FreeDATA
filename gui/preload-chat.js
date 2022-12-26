@@ -61,25 +61,51 @@ try{
 }
 
 PouchDB.plugin(require('pouchdb-find'));
-var db = new PouchDB(chatDB);
-var remoteDB = new PouchDB('http://192.168.178.79:5984/chatDB')
+//PouchDB.plugin(require('pouchdb-replication'));
 
-db.sync(remoteDB, {
+var db = new PouchDB(chatDB);
+
+/*
+// REMOTE SYNC ATTEMPTS
+
+
+var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
+
+// we need express packages for running pouchdb sync "express-pouchdb"
+var express = require('express');
+var app = express();
+//app.use('/chatDB', require('express-pouchdb')(PouchDB));
+//app.listen(5984);
+
+app.use('/chatDB', require('pouchdb-express-router')(PouchDB));
+app.listen(5984);
+
+
+
+db.sync('http://172.20.10.4:5984/jojo', {
+//var sync = PouchDB.sync('chatDB', 'http://172.20.10.4:5984/chatDB', {
   live: true,
-  retry: true
+  retry: false
 }).on('change', function (change) {
   // yo, something changed!
   console.log(change)
-}).on('paused', function (info) {
+}).on('paused', function (err) {
   // replication was paused, usually because of a lost connection
-  console.log(info)
+  console.log(err)
 }).on('active', function (info) {
   // replication was resumed
   console.log(info)
 }).on('error', function (err) {
   // totally unhandled error (shouldn't happen)
-  console.log(error)
+  console.log(err)
+}).on('denied', function (err) {
+  // a document failed to replicate (e.g. due to permissions)
+  console.log(err)
+}).on('complete', function (info) {
+  // handle complete;
+  console.log(info)
 });
+*/
 
 var dxcallsigns = new Set();
 db.createIndex({
@@ -404,7 +430,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
         //handle ping
         if (item.ping == 'received') {
-            obj.timestamp = item.timestamp;
+            obj.timestamp = parseInt(item.timestamp);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.uuid = item.uuid;
@@ -421,12 +447,9 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             add_obj_to_database(obj)
             update_chat_obj_by_uuid(obj.uuid);
 
-
-
-
         // handle beacon
         } else if (item.beacon == 'received') {
-            obj.timestamp = item.timestamp;
+            obj.timestamp = parseInt(item.timestamp);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.uuid = item.uuid;
@@ -451,7 +474,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
             console.log(splitted_data)
 
-            obj.timestamp = splitted_data[8];
+            obj.timestamp = parseInt(splitted_data[8]);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.command = splitted_data[1];
@@ -939,7 +962,7 @@ update_chat_obj_by_uuid = function(uuid) {
 add_obj_to_database = function(obj){
     db.put({
         _id: obj.uuid,
-        timestamp: obj.timestamp,
+        timestamp: parseInt(obj.timestamp),
         uuid: obj.uuid,
         dxcallsign: obj.dxcallsign,
         dxgrid: obj.dxgrid,
