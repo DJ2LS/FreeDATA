@@ -43,7 +43,14 @@ class explorer():
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
+
+        for i in static.HEARD_STATIONS:
+            callsign = str(i[0], "UTF-8")
+            grid = str(i[1], "UTF-8")
+            snr = i[4].split("/")[1]
+            station_data["lastheard"].append({"callsign": callsign, "grid": grid, "snr": snr})
+
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
