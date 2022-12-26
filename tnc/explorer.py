@@ -32,11 +32,7 @@ class explorer():
 
     def push(self):
 
-
-        if static.HAMLIB_FREQUENCY is not None:
-            frequency = static.HAMLIB_FREQUENCY
-        else:
-            frequency = 0
+        frequency = 0 if static.HAMLIB_FREQUENCY is None else static.HAMLIB_FREQUENCY
         band = "USB"
         callsign = str(static.MYCALLSIGN, "utf-8")
         gridsquare = str(static.MYGRID, "utf-8")

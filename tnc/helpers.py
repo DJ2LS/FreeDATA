@@ -394,11 +394,7 @@ def decode_grid(b_code_word: bytes):
 
     int_val = int(code_word & 0b111111111)
     int_first, int_sec = divmod(int_val, 18)
-    # int_first = int_val // 18
-    # int_sec   = int_val % 18
-    grid = chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
-
-    return grid
+    return chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
 
 
 def encode_call(call):
