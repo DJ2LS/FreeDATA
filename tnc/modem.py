@@ -5,6 +5,7 @@ Created on Wed Dec 23 07:04:24 2020
 
 @author: DJ2LS
 """
+
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel
 
@@ -17,6 +18,7 @@ import time
 from collections import deque
 
 import codec2
+import itertools
 import numpy as np
 import sock
 import sounddevice as sd
@@ -363,23 +365,25 @@ class RF:
         # Avoid decoding when transmitting to reduce CPU
         # TODO: Overriding this for testing purposes
         # if not static.TRANSMITTING:
-        if True:
-            length_x = len(x)
+        length_x = len(x)
 
-            # Avoid buffer overflow by filling only if buffer for
-            # selected datachannel mode is not full
-            for audiobuffer, receive, index in [
-                (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
-                (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
-                (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
-                (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
-                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
-                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
-            ]:
-                if audiobuffer.nbuffer + length_x > audiobuffer.size:
-                    static.BUFFER_OVERFLOW_COUNTER[index] += 1
-                elif receive:
-                    audiobuffer.push(x)
+        # Avoid buffer overflow by filling only if buffer for
+        # selected datachannel mode is not full
+        for audiobuffer, receive, index in [
+            (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
+            (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
+            (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
+            (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
+            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
+            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
+        ]:
+            if audiobuffer.nbuffer + length_x > audiobuffer.size:
+                static.BUFFER_OVERFLOW_COUNTER[index] += 1
+            elif receive:
+                audiobuffer.push(x)
+        # end of "not static.TRANSMITTING" if block
+
+
 
         if len(self.modoutqueue) <= 0 or self.mod_out_locked:
             # if not self.modoutqueue or self.mod_out_locked:
@@ -849,13 +853,21 @@ class RF:
         )
 
         scatterdata = []
-        for i in range(codec2.MODEM_STATS_NC_MAX):
-            for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
-                # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
-                xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
-                ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
-                if xsymbols != 0.0 and ysymbols != 0.0:
-                    scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
+        # original function before itertool
+        #for i in range(codec2.MODEM_STATS_NC_MAX):
+        #    for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
+        #        # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+        #        xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+        #        ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
+        #        if xsymbols != 0.0 and ysymbols != 0.0:
+        #            scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
+
+        for i, j in itertools.product(range(codec2.MODEM_STATS_NC_MAX), range(1, codec2.MODEM_STATS_NR_MAX, 2)):
+            # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+            xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+            ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
+            if xsymbols != 0.0 and ysymbols != 0.0:
+                scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
@@ -985,11 +997,7 @@ class RF:
                     # 3200Hz = 315
 
                     # define the area, we are detecting busy state
-                    if static.LOW_BANDWIDTH_MODE:
-                        dfft = dfft[120:176]
-                    else:
-                        dfft = dfft[65:231]
-
+                    dfft = dfft[120:176] if static.LOW_BANDWIDTH_MODE else dfft[65:231]
 
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter
