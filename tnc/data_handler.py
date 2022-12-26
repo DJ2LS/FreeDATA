@@ -3086,6 +3086,9 @@ class DATA:
 
         self.log.info("[TNC] ARQ | RX | saving data to folder")
 
+        mycallsign = str(mycallsign, "UTF-8")
+        dxcallsign = str(dxcallsign, "UTF-8")
+
         decoded_data = data_frame.split(split_char)
         print(decoded_data)
         #uuid=decoded_data[3]
@@ -3104,14 +3107,17 @@ class DATA:
                 os.makedirs(f"{folder_path}/{callsign_path}")
 
             # save file to folder
-            filename_complex = f"{timestamp}_{transmission_uuid}_{filename}"
-            with open(f"{folder_path}/{callsign_path}/{filename_complex}", "wb") as file:
-                file.write(data)
+            if filename not in [b'', b'undefined']:
+                filename = str(filename, "UTF-8")
+                filename_complex = f"{timestamp}_{transmission_uuid}_{filename}"
+                with open(f"{folder_path}/{callsign_path}/{filename_complex}", "wb") as file:
+                    file.write(data)
 
-            # save message to folder
-            message_name = f"{timestamp}_{transmission_uuid}_msg.txt"
-            with open(f"{folder_path}/{callsign_path}/{message_name}", "wb") as file:
-                file.write(message)
+            if message not in [b'', b'undefined']:
+                # save message to folder
+                message_name = f"{timestamp}_{transmission_uuid}_msg.txt"
+                with open(f"{folder_path}/{callsign_path}/{message_name}", "wb") as file:
+                    file.write(message)
 
         except Exception as e:
             print(e)
