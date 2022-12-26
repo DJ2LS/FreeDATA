@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.6.8-alpha.1"
+VERSION = "0.6.9-alpha.1-exp"
 
 ENABLE_EXPLORER = False
 
@@ -101,6 +101,8 @@ ARQ_COMPRESSION_FACTOR: int = 0
 ARQ_TRANSMISSION_PERCENT: int = 0
 ARQ_SPEED_LEVEL: int = 0
 TOTAL_BYTES: int = 0
+# set save to folder state for allowing downloading files to local file system
+ARQ_SAVE_TO_FOLDER: bool = False
 
 # CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 TNC_STATE: str = "IDLE"
