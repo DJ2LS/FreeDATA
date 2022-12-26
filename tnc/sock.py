@@ -230,8 +230,8 @@ def process_tnc_commands(data):
         # START STOP AUDIO RECORDING -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "record_audio":
             try:
-                if received_json["state"] in ['true', 'True', True]:
-                    static.AUDIO_RECORD_FILE = open(f"{int(time.time())}_audio_recording", 'wb')
+                if not static.AUDIO_RECORD:
+                    static.AUDIO_RECORD_FILE = open(f"{int(time.time())}_audio_recording.raw", 'wb')
                     static.AUDIO_RECORD = True
                 else:
                     static.AUDIO_RECORD = False

@@ -45,7 +45,6 @@ window.addEventListener('DOMContentLoaded', () => {
             let Data = {
                 type: "set",
                 command: "record_audio",
-                state: "True",
             };
             ipcRenderer.send('run-tnc-command', Data);
 
@@ -2104,6 +2103,9 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
     if (arg.command == 'set_tx_audio_level') {
         sock.setTxAudioLevel(arg.tx_audio_level);
+    }
+    if (arg.command == 'record_audio') {
+        sock.record_audio();
     }
     if (arg.command == 'send_test_frame') {
         sock.sendTestFrame();
