@@ -227,6 +227,25 @@ def process_tnc_commands(data):
                     "[SCK] CQ command execution error", e=err, command=received_json
                 )
 
+        # START STOP AUDIO RECORDING -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "record_audio":
+            try:
+                if received_json["state"] in ['true', 'True', True]:
+                    static.AUDIO_RECORD_FILE = open(f"{int(time.time())}_audio_recording", 'wb')
+                    static.AUDIO_RECORD = True
+                else:
+                    static.AUDIO_RECORD = False
+                    static.AUDIO_RECORD_FILE.close()
+
+                command_response("respond_to_call", True)
+
+            except Exception as err:
+                command_response("respond_to_call", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+
         # SET ENABLE/DISABLE RESPOND TO CALL -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "respond_to_call":
             try:
@@ -612,6 +631,7 @@ def send_tnc_state():
         "dxgrid": str(static.DXGRID, encoding),
         "hamlib_status": static.HAMLIB_STATUS,
         "listen": str(static.LISTEN),
+        "audio_recording": str(static.AUDIO_RECORD),
     }
 
     # add heard stations to heard stations object

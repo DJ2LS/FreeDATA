@@ -227,6 +227,8 @@ client.on('data', function(socketdata) {
                     stations: data['stations'],
                     beacon_state: data['beacon_state'],
                     hamlib_status: data['hamlib_status'],
+                    listen: data['listen'],
+                    audio_recording: data['audio_recording'],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);

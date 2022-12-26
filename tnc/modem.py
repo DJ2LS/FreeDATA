@@ -67,6 +67,7 @@ class RF:
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
 
+
         # Locking state for mod out so buffer will be filled before we can use it
         # https://github.com/DJ2LS/FreeDATA/issues/127
         # https://github.com/DJ2LS/FreeDATA/issues/99
@@ -354,6 +355,10 @@ class RF:
         # self.log.debug("[MDM] callback")
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
+
+        # audio recording for debugging purposes
+        if static.AUDIO_RECORD:
+            static.AUDIO_RECORD_FILE.write(x)
 
         # Avoid decoding when transmitting to reduce CPU
         # TODO: Overriding this for testing purposes
