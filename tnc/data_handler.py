@@ -3080,24 +3080,18 @@ class DATA:
                             data_frame
                             ):
 
-        """Save data to folder"""
-
-        split_char = b"\x00;"
-
-        self.log.info("[TNC] ARQ | RX | saving data to folder")
-
-        mycallsign = str(mycallsign, "UTF-8")
-        dxcallsign = str(dxcallsign, "UTF-8")
-
-        decoded_data = data_frame.split(split_char)
-        print(decoded_data)
-        #uuid=decoded_data[3]
-        message = decoded_data[4]
-        filename = decoded_data[5]
-        #filetype = decoded_data[6]
-        data = decoded_data[7]
+        """
+        Save received data to folder
+        Also supports chat messages
+        """
 
         try:
+
+            self.log.info("[TNC] ARQ | RX | saving data to folder")
+
+            mycallsign = str(mycallsign, "UTF-8")
+            dxcallsign = str(dxcallsign, "UTF-8")
+
             folder_path = "received"
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path)
@@ -3105,6 +3099,19 @@ class DATA:
             callsign_path = f"{mycallsign}_{dxcallsign}"
             if not os.path.exists(f"{folder_path}/{callsign_path}"):
                 os.makedirs(f"{folder_path}/{callsign_path}")
+
+            split_char = b"\x00;"
+            decoded_data = data_frame.split(split_char)
+
+            if decoded_data[0] in [b'm']:
+                #uuid=decoded_data[3]
+                message = decoded_data[4]
+                filename = decoded_data[5]
+                #filetype = decoded_data[6]
+                data = decoded_data[7]
+            else:
+                message = b''
+                filename = b'reveived'
 
             # save file to folder
             if filename not in [b'', b'undefined']:
@@ -3120,4 +3127,4 @@ class DATA:
                     file.write(message)
 
         except Exception as e:
-            print(e)
+            self.log.error("[TNC] error saving data to folder", e=e)
