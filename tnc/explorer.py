@@ -49,7 +49,10 @@ class explorer():
             try:
                 callsign = str(i[0], "UTF-8")
                 grid = str(i[1], "UTF-8")
-                snr = i[4].split("/")[1]
+                try:
+                    snr = i[4].split("/")[1]
+                except AttributeError:
+                    snr = str(i[4])
                 station_data["lastheard"].append({"callsign": callsign, "grid": grid, "snr": snr})
             except Exception as e:
                 log.debug("[EXPLORER] not publishing station", e=e)
