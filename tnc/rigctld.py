@@ -122,7 +122,7 @@ class radio:
                 self.connected = False
 
             try:
-                return self.connection.recv(128)
+                return self.connection.recv(16)
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
