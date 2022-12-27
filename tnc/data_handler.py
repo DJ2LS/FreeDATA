@@ -3106,7 +3106,7 @@ class DATA:
             decoded_data = data_frame.split(split_char)
 
             if decoded_data[0] in [b'm']:
-                checksum_delivered = decoded_data[2].lower()
+                checksum_delivered = str(decoded_data[2], "utf-8").lower()
                 # transmission_uuid = decoded_data[3]
                 message = decoded_data[4]
                 filename = decoded_data[5]
