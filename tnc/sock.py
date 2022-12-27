@@ -24,6 +24,7 @@ import socketserver
 import sys
 import threading
 import time
+import wave
 
 import helpers
 import static
@@ -231,7 +232,10 @@ def process_tnc_commands(data):
         if received_json["type"] == "set" and received_json["command"] == "record_audio":
             try:
                 if not static.AUDIO_RECORD:
-                    static.AUDIO_RECORD_FILE = open(f"{int(time.time())}_audio_recording.raw", 'wb')
+                    static.AUDIO_RECORD_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                    static.AUDIO_RECORD_FILE.setnchannels(1)
+                    static.AUDIO_RECORD_FILE.setsampwidth(2)
+                    static.AUDIO_RECORD_FILE.setframerate(8000)
                     static.AUDIO_RECORD = True
                 else:
                     static.AUDIO_RECORD = False
