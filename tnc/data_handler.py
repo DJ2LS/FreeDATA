@@ -3121,7 +3121,7 @@ class DATA:
                 # doing crc check
                 crc = helpers.get_crc_32(data).hex().lower()
                 validity = checksum_delivered == crc
-                logging.info(
+                self.log.info(
                     "[TNC] ARQ | RX | checking data crc",
                     crc_delivered=checksum_delivered,
                     crc_calculated=crc,
