@@ -518,9 +518,13 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, command) {
     socketLog.info(data) 
+
+    // Disabled this here
     // convert message to plain utf8 because of unicode emojis
-    data = utf8.encode(data)
-    socketLog.info(data) 
+    //data = utf8.encode(data)
+
+    //socketLog.info(data)
+
     
     var datatype = "m"
     data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data

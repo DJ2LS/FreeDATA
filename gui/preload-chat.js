@@ -862,7 +862,9 @@ update_chat = function(obj) {
                     }).then(function(){
 
                         console.log(binaryString)
-                        var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
+                        console.log(binaryString.length)
+
+                        var data_with_attachment = utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
                             let Data = {
                                 command: "send_message",
                                 dxcallsign: doc.dxcallsign,
