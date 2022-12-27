@@ -4,6 +4,7 @@
 #
 # modified and adjusted to FreeDATA needs by DJ2LS
 
+import contextlib
 import socket
 import time
 import structlog
@@ -124,10 +125,7 @@ class radio:
             try:
                 # recv seems to be blocking so in case of ptt we dont need the response
                 # maybe this speeds things up and avoids blocking states
-                if expect_answer:
-                    return self.connection.recv(16)
-                else:
-                    return True
+                return self.connection.recv(16) if expect_answer else True
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
@@ -171,11 +169,9 @@ class radio:
             data = data.split(b"\n")
             data = data[1].decode("utf-8")
 
-            if 'RPRT' not in data:
-                try:
+            if 'RPRT' not in data and data not in ['']:
+                with contextlib.suppress(ValueError):
                     self.bandwidth = int(data)
-                except ValueError:
-                    pass
             return self.bandwidth
         except Exception:
             return self.bandwidth
@@ -186,11 +182,11 @@ class radio:
             data = self.send_command(b"f", True)
             data = data.decode("utf-8")
             if 'RPRT' not in data and data not in [0, '0', '']:
-                try:
-                    self.frequency = int(data)
-                except ValueError:
-                    pass
-
+                with contextlib.suppress(ValueError):
+                    data = int(data)
+                    # make sure we have a frequency and not bandwidth
+                    if data >= 10000:
+                        self.frequency = data
             return self.frequency
         except Exception:
             return self.frequency
