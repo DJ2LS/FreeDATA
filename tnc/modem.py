@@ -16,7 +16,7 @@ import sys
 import threading
 import time
 from collections import deque
-
+import wave
 import codec2
 import itertools
 import numpy as np
@@ -360,7 +360,8 @@ class RF:
 
         # audio recording for debugging purposes
         if static.AUDIO_RECORD:
-            static.AUDIO_RECORD_FILE.write(x)
+            #static.AUDIO_RECORD_FILE.write(x)
+            static.AUDIO_RECORD_FILE.writeframes(x)
 
         # Avoid decoding when transmitting to reduce CPU
         # TODO: Overriding this for testing purposes
