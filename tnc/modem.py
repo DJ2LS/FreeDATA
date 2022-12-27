@@ -970,8 +970,13 @@ class RF:
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                            rms = int(np.sqrt(np.max(d ** 2)))
-                            static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
+                            # try except for avoiding runtime errors by division/0
+                            try:
+                                rms = int(np.sqrt(np.max(d ** 2)))
+                                static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
+                            except Exception as e:
+                                self.log.warning(f"[MDM] fft calculation error - please check your audio setup", e=e)
+                                static.AUDIO_DBFS = -100
 
                             rms_counter = 0
 
