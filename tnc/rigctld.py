@@ -155,7 +155,7 @@ class radio:
             data = data.split(b"\n")
             data = data[0].decode("utf-8")
             if 'RPRT' not in data:
-                self.mode = data
+                self.mode = str(data)
 
             return self.mode
         except Exception:
@@ -180,7 +180,7 @@ class radio:
             data = self.send_command(b"f", True)
             data = data.decode("utf-8")
             if 'RPRT' not in data:
-                self.frequency = data
+                self.frequency = int(data)
 
             return self.frequency
         except Exception:
