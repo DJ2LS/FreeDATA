@@ -975,7 +975,10 @@ class RF:
                                 rms = int(np.sqrt(np.max(d ** 2)))
                                 static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
                             except Exception as e:
-                                self.log.warning(f"[MDM] fft calculation error - please check your audio setup", e=e)
+                                self.log.warning(
+                                    "[MDM] fft calculation error - please check your audio setup",
+                                    e=e,
+                                )
                                 static.AUDIO_DBFS = -100
 
                             rms_counter = 0
