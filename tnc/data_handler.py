@@ -3106,7 +3106,8 @@ class DATA:
             decoded_data = data_frame.split(split_char)
 
             if decoded_data[0] in [b'm']:
-                #uuid=decoded_data[3]
+                checksum_delivered = decoded_data[2].uppercase()
+                # transmission_uuid = decoded_data[3]
                 message = decoded_data[4]
                 filename = decoded_data[5]
                 #filetype = decoded_data[6]
@@ -3117,6 +3118,15 @@ class DATA:
 
             # save file to folder
             if filename not in [b'', b'undefined']:
+                 doing crc check
+                crc = helpers.get_crc_32(data).hex().uppercase()
+                validity = checksum_delivered == crc
+                logging.info(
+                    "[TNC] ARQ | RX | checking data crc",
+                    crc_delivered=checksum_delivered,
+                    crc_calculated=crc,
+                    valid=validity,
+                )
                 filename = str(filename, "UTF-8")
                 filename_complex = f"{timestamp}_{transmission_uuid}_{filename}"
                 with open(f"{folder_path}/{callsign_path}/{filename_complex}", "wb") as file:

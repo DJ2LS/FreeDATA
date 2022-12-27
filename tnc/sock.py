@@ -888,3 +888,4 @@ def command_response(command, status):
     jsondata = {"command_response": command, "status": s_status}
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
+
