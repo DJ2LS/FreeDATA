@@ -3106,7 +3106,7 @@ class DATA:
             decoded_data = data_frame.split(split_char)
 
             if decoded_data[0] in [b'm']:
-                checksum_delivered = decoded_data[2].uppercase()
+                checksum_delivered = decoded_data[2].lower()
                 # transmission_uuid = decoded_data[3]
                 message = decoded_data[4]
                 filename = decoded_data[5]
@@ -3119,7 +3119,7 @@ class DATA:
             # save file to folder
             if filename not in [b'', b'undefined']:
                 # doing crc check
-                crc = helpers.get_crc_32(data).hex().uppercase()
+                crc = helpers.get_crc_32(data).hex().lower()
                 validity = checksum_delivered == crc
                 logging.info(
                     "[TNC] ARQ | RX | checking data crc",
