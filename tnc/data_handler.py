@@ -812,7 +812,7 @@ class DATA:
 
                 # transmittion duration
                 duration = time.time() - self.rx_start_of_transmission
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, duration=duration
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration
 )
 
                 # Decompress the data frame
@@ -1216,6 +1216,7 @@ class DATA:
             self.log.info(
                 "[TNC] ARQ | TX | DATA TRANSMITTED!",
                 BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
+                total_bytes=static.TOTAL_BYTES,
                 BitsPerSecond=static.ARQ_BITS_PER_SECOND,
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
 
