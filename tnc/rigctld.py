@@ -185,7 +185,7 @@ class radio:
         try:
             data = self.send_command(b"f", True)
             data = data.decode("utf-8")
-            if 'RPRT' not in data:
+            if 'RPRT' not in data and data not in [0, '0', '']:
                 try:
                     self.frequency = int(data)
                 except ValueError:
