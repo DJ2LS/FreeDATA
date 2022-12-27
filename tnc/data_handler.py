@@ -3118,7 +3118,7 @@ class DATA:
 
             # save file to folder
             if filename not in [b'', b'undefined']:
-                 doing crc check
+                # doing crc check
                 crc = helpers.get_crc_32(data).hex().uppercase()
                 validity = checksum_delivered == crc
                 logging.info(
