@@ -13,6 +13,7 @@ import base64
 import json
 import uuid
 import time
+import crcengine
 
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
@@ -64,9 +65,15 @@ msg_with_attachment = chatmessage + \
                       split_char + \
                       timestamp
 
+# calculate checksum
+crc_algorithm = crcengine.new("crc32")  # load crc32 library
+crc_data = crc_algorithm(file)
+crc_data = crc_data.to_bytes(4, byteorder="big")
+
+
 datatype = b"m"
 command = b"send_message"
-checksum = b"123"
+checksum = bytes(crc_data.hex(), "utf-8")
 uuid_4 = bytes(str(uuid.uuid4()), "utf-8")
 
 data = datatype + \
@@ -98,9 +105,13 @@ command = {"type": "arq",
                 ]
            }
 command = json.dumps(command)
+print(command)
 command = bytes(command + "\n", 'utf-8')
 # Create a socket (SOCK_STREAM means a TCP socket)
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     # Connect to server and send data
     sock.connect((HOST, PORT))
     sock.sendall(command)
+    timeout = time.time() + 5
+    while time.time() < timeout:
+        pass
