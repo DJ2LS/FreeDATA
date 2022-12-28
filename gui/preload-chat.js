@@ -325,7 +325,7 @@ db.post({
 
         var file_checksum = crc32(file).toString(16).toUpperCase();
         console.log(file_checksum)
-        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + timstamp + split_char + file;
+        var data_with_attachment = timestamp + split_char + chatmessage + split_char + filename + split_char + filetype + split_char + file;
 
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
@@ -476,20 +476,20 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
             console.log(splitted_data)
 
-            obj.timestamp = parseInt(splitted_data[8]);
+            obj.timestamp = parseInt(splitted_data[4]);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.command = splitted_data[1];
             obj.checksum = splitted_data[2];
             // convert message to unicode from utf8 because of emojis
             obj.uuid = utf8.decode(splitted_data[3]);
-            obj.msg = utf8.decode(splitted_data[4]);
+            obj.msg = utf8.decode(splitted_data[5]);
             obj.status = 'null';
             obj.snr = 'null';
             obj.type = 'received';
-            obj.filename = utf8.decode(splitted_data[5]);
-            obj.filetype = utf8.decode(splitted_data[6]);
-            obj.file = btoa(utf8.decode(splitted_data[7]));
+            obj.filename = utf8.decode(splitted_data[6]);
+            obj.filetype = utf8.decode(splitted_data[7]);
+            obj.file = btoa(utf8.decode(splitted_data[8]));
 
             add_obj_to_database(obj);
             update_chat_obj_by_uuid(obj.uuid);
@@ -866,7 +866,7 @@ update_chat = function(obj) {
                         console.log(binaryString)
                         console.log(binaryString.length)
 
-                        var data_with_attachment = utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + doc.timestamp + split_char + binaryString;
+                        var data_with_attachment = doc.timestamp + split_char + utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + binaryString;
                             let Data = {
                                 command: "send_message",
                                 dxcallsign: doc.dxcallsign,

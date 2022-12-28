@@ -3116,7 +3116,7 @@ class DATA:
                 data = decoded_data[8]
             else:
                 message = b''
-                filename = b'reveived'
+                filename = b''
 
             # save file to folder
             if filename not in [b'', b'undefined']:
