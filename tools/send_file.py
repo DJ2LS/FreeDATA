@@ -55,15 +55,15 @@ timestamp = str(int(time.time()))
 
 # timestamp = timestamp.to_bytes(4, byteorder="big")
 timestamp = bytes(timestamp, "utf-8")
-msg_with_attachment = chatmessage + \
+msg_with_attachment = timestamp + \
+                      split_char + \
+                      chatmessage + \
                       split_char + \
                       filename + \
                       split_char + \
                       filetype + \
                       split_char + \
-                      file + \
-                      split_char + \
-                      timestamp
+                      file
 
 # calculate checksum
 crc_algorithm = crcengine.new("crc32")  # load crc32 library
