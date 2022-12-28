@@ -19,7 +19,7 @@ var client = new net.Socket();
 var socketchunk = ''; // Current message, per connection.
 
 // split character
-const split_char = '\0;'
+const split_char = '\0;\1;'
 
 // globals for getting new data only if available so we are saving bandwidth
 var rxBufferLengthTnc = 0

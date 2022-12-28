@@ -3103,7 +3103,7 @@ class DATA:
             if not os.path.exists(f"{folder_path}/{callsign_path}"):
                 os.makedirs(f"{folder_path}/{callsign_path}")
 
-            split_char = b"\x00;"
+            split_char = b"\0;\0;"
             decoded_data = data_frame.split(split_char)
 
             if decoded_data[0] in [b'm']:
@@ -3111,8 +3111,9 @@ class DATA:
                 # transmission_uuid = decoded_data[3]
                 message = decoded_data[4]
                 filename = decoded_data[5]
-                #filetype = decoded_data[6]
-                data = decoded_data[7]
+                # filetype = decoded_data[6]
+                # timestamp = decoded_data[7]
+                data = decoded_data[8]
             else:
                 message = b''
                 filename = b'reveived'

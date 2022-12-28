@@ -34,7 +34,7 @@ const dateFormatHours = new Intl.DateTimeFormat('en-GB', {
     hour12: false,
 });
 // split character
-const split_char = '\0;'
+const split_char = '\0;\1;'
 // global for our selected file we want to transmit
 // ----------------- some chat globals
 var filetype = '';
@@ -325,7 +325,7 @@ db.post({
 
         var file_checksum = crc32(file).toString(16).toUpperCase();
         console.log(file_checksum)
-        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file + split_char + timestamp;
+        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + timstamp + split_char + file;
 
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
@@ -866,7 +866,7 @@ update_chat = function(obj) {
                         console.log(binaryString)
                         console.log(binaryString.length)
 
-                        var data_with_attachment = utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
+                        var data_with_attachment = utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + doc.timestamp + split_char + binaryString;
                             let Data = {
                                 command: "send_message",
                                 dxcallsign: doc.dxcallsign,
