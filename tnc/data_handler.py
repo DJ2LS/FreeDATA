@@ -3109,10 +3109,10 @@ class DATA:
             if decoded_data[0] in [b'm']:
                 checksum_delivered = str(decoded_data[2], "utf-8").lower()
                 # transmission_uuid = decoded_data[3]
-                message = decoded_data[4]
-                filename = decoded_data[5]
-                # filetype = decoded_data[6]
-                # timestamp = decoded_data[7]
+                message = decoded_data[5]
+                filename = decoded_data[6]
+                # filetype = decoded_data[7]
+                # timestamp = decoded_data[4]
                 data = decoded_data[8]
             else:
                 message = b''
