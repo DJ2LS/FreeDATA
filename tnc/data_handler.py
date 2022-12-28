@@ -1841,8 +1841,6 @@ class DATA:
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(lzma.compress(data_out))
 
-
-
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
         # wait until data channel is open
@@ -1956,6 +1954,8 @@ class DATA:
                     # Stop waiting if data channel is opened
                     if static.ARQ_STATE:
                         return True
+                    if static.TNC_STATE in ["IDLE"]:
+                        return False
 
             # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
 
