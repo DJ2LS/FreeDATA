@@ -3103,7 +3103,7 @@ class DATA:
             if not os.path.exists(f"{folder_path}/{callsign_path}"):
                 os.makedirs(f"{folder_path}/{callsign_path}")
 
-            split_char = b"\0;\0;"
+            split_char = b"\0;\1;"
             decoded_data = data_frame.split(split_char)
 
             if decoded_data[0] in [b'm']:
