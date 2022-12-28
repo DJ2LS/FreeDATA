@@ -3104,7 +3104,7 @@ class DATA:
                 os.makedirs(f"{folder_path}/{callsign_path}")
 
             split_char = b"\0;\1;"
-            n_objects = 8
+            n_objects = 9
             decoded_data = data_frame.split(split_char)
             # if we have a false positive in case our split_char is available in data
             # lets stick the data together, so we are not loosing it
