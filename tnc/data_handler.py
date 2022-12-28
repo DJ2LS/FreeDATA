@@ -3109,7 +3109,7 @@ class DATA:
             # if we have a false positive in case our split_char is available in data
             # lets stick the data together, so we are not loosing it
             if len(decoded_data) > n_objects:
-                file_data = b''.join(list[n_objects:])
+                file_data = b''.join(decoded_data[n_objects:])
 
                 # slice is crashing nuitka
                 # decoded_data = [*decoded_data[:n_objects], file_data]
