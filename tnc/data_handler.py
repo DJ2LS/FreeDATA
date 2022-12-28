@@ -3110,7 +3110,10 @@ class DATA:
             # lets stick the data together, so we are not loosing it
             if len(decoded_data) > n_objects:
                 file_data = b''.join(list[n_objects:])
-                decoded_data = [*decoded_data[:n_objects], file_data]
+
+                # slice is crashing nuitka
+                # decoded_data = [*decoded_data[:n_objects], file_data]
+                decoded_data = decoded_data[:n_objects] + [file_data]
 
             if decoded_data[0] in [b'm']:
                 checksum_delivered = str(decoded_data[2], "utf-8").lower()
