@@ -48,7 +48,7 @@ else:
 
 # convert binary data to base64
 #base64_data = base64.b64encode(file).decode("UTF-8")
-split_char = b'\0;'
+split_char = b'\0;\1;'
 
 filetype = b"unknown"
 timestamp = str(int(time.time()))
