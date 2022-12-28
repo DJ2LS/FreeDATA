@@ -489,7 +489,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.type = 'received';
             obj.filename = utf8.decode(splitted_data[6]);
             obj.filetype = utf8.decode(splitted_data[7]);
-            obj.file = btoa(utf8.decode(splitted_data[8]));
+            obj.file = btoa(splitted_data[8]);
 
             add_obj_to_database(obj);
             update_chat_obj_by_uuid(obj.uuid);
