@@ -3104,7 +3104,13 @@ class DATA:
                 os.makedirs(f"{folder_path}/{callsign_path}")
 
             split_char = b"\0;\1;"
+            n_objects = 8
             decoded_data = data_frame.split(split_char)
+            # if we have a false positive in case our split_char is available in data
+            # lets stick the data together, so we are not loosing it
+            if len(decoded_data) > n_objects:
+                file_data = b''.join(list[n_objects:])
+                decoded_data = [*decoded_data[:n_objects], file_data]
 
             if decoded_data[0] in [b'm']:
                 checksum_delivered = str(decoded_data[2], "utf-8").lower()
