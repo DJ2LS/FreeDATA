@@ -7,6 +7,7 @@ Created on Sun Dec 27 20:43:40 2020
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
+import os
 import base64
 import sys
 import threading
@@ -80,8 +81,8 @@ class DATA:
         # 3 bytes for the EOF End of File indicator in a data frame
         self.data_frame_eof = b"EOF"
 
-        self.tx_n_max_retries_per_burst = 50
-        self.rx_n_max_retries_per_burst = 50
+        self.tx_n_max_retries_per_burst = 40
+        self.rx_n_max_retries_per_burst = 40
         self.n_retries_per_burst = 0
 
         # Flag to indicate if we recevied a low bandwidth mode channel opener
@@ -590,7 +591,8 @@ class DATA:
         mycallsign = self.mycallsign
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not static.ARQ_STATE and static.TNC_STATE != "BUSY":
+        if not static.ARQ_STATE and static.TNC_STATE not in ["BUSY"]:
+            self.log.warning("[TNC] wrong tnc state - dropping data", arq_state=static.ARQ_STATE, tnc_state=static.TNC_STATE)
             return
 
         self.arq_file_transfer = True
@@ -810,7 +812,7 @@ class DATA:
 
                 # transmittion duration
                 duration = time.time() - self.rx_start_of_transmission
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, duration=duration
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration
 )
 
                 # Decompress the data frame
@@ -864,13 +866,33 @@ class DATA:
                     self.log.error(
                         "[TNC] ARQ | RX | error occurred when saving data!",
                         e=e,
-                        uuid = self.transmission_uuid,
-                        timestamp = timestamp,
-                        dxcall = static.DXCALLSIGN,
-                        dxgrid = static.DXGRID,
-                        data = base64_data
+                        uuid=self.transmission_uuid,
+                        timestamp=timestamp,
+                        dxcall=static.DXCALLSIGN,
+                        dxgrid=static.DXGRID,
+                        data=base64_data
                     )
 
+                if static.ARQ_SAVE_TO_FOLDER:
+                    try:
+                        self.save_data_to_folder(
+                            self.transmission_uuid,
+                            timestamp,
+                            mycallsign,
+                            static.DXCALLSIGN,
+                            static.DXGRID,
+                            data_frame
+                        )
+                    except Exception as e:
+                        self.log.error(
+                            "[TNC] ARQ | RX | can't save file to folder",
+                            e=e,
+                            uuid=self.transmission_uuid,
+                            timestamp=timestamp,
+                            dxcall=static.DXCALLSIGN,
+                            dxgrid=static.DXGRID,
+                            data=base64_data
+                        )
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -1194,6 +1216,7 @@ class DATA:
             self.log.info(
                 "[TNC] ARQ | TX | DATA TRANSMITTED!",
                 BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
+                total_bytes=static.TOTAL_BYTES,
                 BitsPerSecond=static.ARQ_BITS_PER_SECOND,
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
 
@@ -1512,7 +1535,7 @@ class DATA:
                     + "]>>?<<["
                     + str(self.dxcallsign, "UTF-8")
                     + "]",
-                    a=str(attempt + 1) + "/" + str(self.session_connect_max_retries),  # Adjust for 0-based for user display
+                    a=f"{str(attempt + 1)}/{str(self.session_connect_max_retries)}",
                     state=static.ARQ_SESSION_STATE,
                 )
 
@@ -1818,37 +1841,6 @@ class DATA:
         # for calculating transmission statistics
         # static.ARQ_COMPRESSION_FACTOR = len(data_out) / len(lzma.compress(data_out))
 
-        # Let's check if we have a busy channel and if we are not in a running arq session.
-        if static.CHANNEL_BUSY and not static.ARQ_SESSION:
-            self.log.warning("[TNC] Channel busy, waiting until free...")
-            self.send_data_to_socket_queue(
-                freedata="tnc-message",
-                arq="transmission",
-                status="waiting",
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            )
-
-            # wait while timeout not reached and our busy state is busy
-            channel_busy_timeout = time.time() + 30
-            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
-                threading.Event().wait(0.01)
-
-            # if channel busy timeout reached, stop connecting
-            if time.time() > channel_busy_timeout:
-                self.log.warning("[TNC] Channel busy, try again later...")
-                static.ARQ_SESSION_STATE = "failed"
-                self.send_data_to_socket_queue(
-                    freedata="tnc-message",
-                    arq="transmission",
-                    status="failed",
-                    reason="busy",
-                    mycallsign=str(self.mycallsign, 'UTF-8'),
-                    dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                )
-                static.ARQ_SESSION_STATE = "disconnected"
-                return False
-
         self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
 
         # wait until data channel is open
@@ -1923,6 +1915,37 @@ class DATA:
                     attempt=f"{str(attempt + 1)}/{str(self.data_channel_max_retries)}",
                 )
 
+                # Let's check if we have a busy channel and if we are not in a running arq session.
+                if static.CHANNEL_BUSY and not static.ARQ_STATE:
+                    self.log.warning("[TNC] Channel busy, waiting until free...")
+                    self.send_data_to_socket_queue(
+                        freedata="tnc-message",
+                        arq="transmission",
+                        status="waiting",
+                        mycallsign=str(self.mycallsign, 'UTF-8'),
+                        dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                    )
+
+                    # wait while timeout not reached and our busy state is busy
+                    channel_busy_timeout = time.time() + 30
+                    while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+                        threading.Event().wait(0.01)
+
+                    # if channel busy timeout reached, stop connecting
+                    if time.time() > channel_busy_timeout:
+                        self.log.warning("[TNC] Channel busy, try again later...")
+                        static.ARQ_SESSION_STATE = "failed"
+                        self.send_data_to_socket_queue(
+                            freedata="tnc-message",
+                            arq="transmission",
+                            status="failed",
+                            reason="busy",
+                            mycallsign=str(self.mycallsign, 'UTF-8'),
+                            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                        )
+                        static.ARQ_SESSION_STATE = "disconnected"
+                        return False
+
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 timeout = time.time() + 3
@@ -1931,6 +1954,8 @@ class DATA:
                     # Stop waiting if data channel is opened
                     if static.ARQ_STATE:
                         return True
+                    if static.TNC_STATE in ["IDLE"]:
+                        return False
 
             # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
 
@@ -2214,6 +2239,7 @@ class DATA:
                 received=protocol_version,
                 own=static.ARQ_PROTOCOL_VERSION,
             )
+            self.stop_transmission()
             self.arq_cleanup()
 
     # ---------- PING
@@ -2382,6 +2408,18 @@ class DATA:
         Force a stop of the running transmission
         """
         self.log.warning("[TNC] Stopping transmission!")
+
+
+        static.TNC_STATE = "IDLE"
+        static.ARQ_STATE = False
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="stopped",
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+        )
+
         stop_frame = bytearray(self.length_sig0_frame)
         stop_frame[:1] = bytes([FR_TYPE.ARQ_STOP.value])
         stop_frame[1:4] = static.DXCALLSIGN_CRC
@@ -2389,17 +2427,9 @@ class DATA:
         # TODO: Not sure if we really need the session id when disconnecting
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
+
         self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
 
-        static.TNC_STATE = "IDLE"
-        static.ARQ_STATE = False
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            arq="transmission",
-            mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            status="stopped",
-        )
         self.arq_cleanup()
 
     def received_stop_transmission(
@@ -2414,9 +2444,9 @@ class DATA:
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
+            status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            status="stopped",
             uuid=self.transmission_uuid,
         )
         self.arq_cleanup()
@@ -2440,6 +2470,9 @@ class DATA:
                             not static.ARQ_SESSION
                             and not self.arq_file_transfer
                             and not static.BEACON_PAUSE
+                            and not static.CHANNEL_BUSY
+                            and static.TNC_STATE not in ["busy"]
+                            and not static.ARQ_STATE
                     ):
                         self.send_data_to_socket_queue(
                             freedata="tnc-message",
@@ -2454,7 +2487,7 @@ class DATA:
                         beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                        beacon_frame[9:13] = static.MYGRID[:4]
+                        beacon_frame[7:13] = static.MYGRID
                         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
@@ -2486,7 +2519,7 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[9:13]).rstrip(b"\x00")
+        dxgrid = bytes(data_in[7:13]).rstrip(b"\x00")
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -2812,8 +2845,8 @@ class DATA:
         self.n_retries_per_burst = 0
 
         # reset max retries possibly overriden by api
-        self.session_connect_max_retries = 15
-        self.data_channel_max_retries = 15
+        self.session_connect_max_retries = 10
+        self.data_channel_max_retries = 10
 
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
@@ -2938,7 +2971,8 @@ class DATA:
             self.send_burst_nack_frame_watchdog(0)
 
             # Update data_channel timestamp
-            self.data_channel_last_received = time.time()
+            # TODO: Disabled this one for testing.
+            # self.data_channel_last_received = time.time()
             self.n_retries_per_burst += 1
         else:
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
@@ -3040,3 +3074,81 @@ class DATA:
         self.enqueue_frame_for_tx(
             frame_to_tx=[bytearray(126)], c2_mode=FREEDV_MODE.datac3.value
         )
+
+    def save_data_to_folder(self,
+                            transmission_uuid,
+                            timestamp,
+                            mycallsign,
+                            dxcallsign,
+                            dxgrid,
+                            data_frame
+                            ):
+
+        """
+        Save received data to folder
+        Also supports chat messages
+        """
+
+        try:
+
+            self.log.info("[TNC] ARQ | RX | saving data to folder")
+
+            mycallsign = str(mycallsign, "UTF-8")
+            dxcallsign = str(dxcallsign, "UTF-8")
+
+            folder_path = "received"
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
+
+            callsign_path = f"{mycallsign}_{dxcallsign}"
+            if not os.path.exists(f"{folder_path}/{callsign_path}"):
+                os.makedirs(f"{folder_path}/{callsign_path}")
+
+            split_char = b"\0;\1;"
+            n_objects = 9
+            decoded_data = data_frame.split(split_char)
+            # if we have a false positive in case our split_char is available in data
+            # lets stick the data together, so we are not loosing it
+            if len(decoded_data) > n_objects:
+                file_data = b''.join(decoded_data[n_objects:])
+
+                # slice is crashing nuitka
+                # decoded_data = [*decoded_data[:n_objects], file_data]
+                decoded_data = decoded_data[:n_objects] + [file_data]
+
+            if decoded_data[0] in [b'm']:
+                checksum_delivered = str(decoded_data[2], "utf-8").lower()
+                # transmission_uuid = decoded_data[3]
+                message = decoded_data[5]
+                filename = decoded_data[6]
+                # filetype = decoded_data[7]
+                # timestamp = decoded_data[4]
+                data = decoded_data[8]
+            else:
+                message = b''
+                filename = b''
+
+            # save file to folder
+            if filename not in [b'', b'undefined']:
+                # doing crc check
+                crc = helpers.get_crc_32(data).hex().lower()
+                validity = checksum_delivered == crc
+                self.log.info(
+                    "[TNC] ARQ | RX | checking data crc",
+                    crc_delivered=checksum_delivered,
+                    crc_calculated=crc,
+                    valid=validity,
+                )
+                filename = str(filename, "UTF-8")
+                filename_complex = f"{timestamp}_{transmission_uuid}_{filename}"
+                with open(f"{folder_path}/{callsign_path}/{filename_complex}", "wb") as file:
+                    file.write(data)
+
+            if message not in [b'', b'undefined']:
+                # save message to folder
+                message_name = f"{timestamp}_{transmission_uuid}_msg.txt"
+                with open(f"{folder_path}/{callsign_path}/{message_name}", "wb") as file:
+                    file.write(message)
+
+        except Exception as e:
+            self.log.error("[TNC] error saving data to folder", e=e)

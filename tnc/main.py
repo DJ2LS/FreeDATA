@@ -70,6 +70,15 @@ if __name__ == "__main__":
         type=str,
         help="Use the default config file config.ini",
     )
+
+    PARSER.add_argument(
+        "--save-to-folder",
+        dest="savetofolder",
+        default=False,
+        action="store_true",
+        help="Save received data to local folder",
+    )
+
     PARSER.add_argument(
         "--mycall",
         dest="mycall",
@@ -269,8 +278,9 @@ if __name__ == "__main__":
     )
     ARGS = PARSER.parse_args()
 
-    
-    
+    # set save to folder state for allowing downloading files to local file system
+    static.ARQ_SAVE_TO_FOLDER = ARGS.savetofolder
+
     if not ARGS.configfile:
     
     

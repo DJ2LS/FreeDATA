@@ -4,6 +4,7 @@
 #
 # modified and adjusted to FreeDATA needs by DJ2LS
 
+import contextlib
 import socket
 import time
 import structlog
@@ -101,7 +102,7 @@ class radio:
         self.sock.close()
         self.connected = False
 
-    def send_command(self, command) -> bytes:
+    def send_command(self, command, expect_answer) -> bytes:
         """Send a command to the connected rotctld instance,
             and return the return value.
 
@@ -122,7 +123,9 @@ class radio:
                 self.connected = False
 
             try:
-                return self.connection.recv(1024)
+                # recv seems to be blocking so in case of ptt we dont need the response
+                # maybe this speeds things up and avoids blocking states
+                return self.connection.recv(16) if expect_answer else True
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
@@ -146,11 +149,14 @@ class radio:
     def get_mode(self):
         """ """
         try:
-            data = self.send_command(b"m")
+            data = self.send_command(b"m", True)
             data = data.split(b"\n")
             data = data[0].decode("utf-8")
             if 'RPRT' not in data:
-                self.mode = data
+                try:
+                    data = int(data)
+                except ValueError:
+                    self.mode = str(data)
 
             return self.mode
         except Exception:
@@ -159,12 +165,13 @@ class radio:
     def get_bandwidth(self):
         """ """
         try:
-            data = self.send_command(b"m")
+            data = self.send_command(b"m", True)
             data = data.split(b"\n")
             data = data[1].decode("utf-8")
 
-            if 'RPRT' not in data:
-                self.bandwidth = int(data)
+            if 'RPRT' not in data and data not in ['']:
+                with contextlib.suppress(ValueError):
+                    self.bandwidth = int(data)
             return self.bandwidth
         except Exception:
             return self.bandwidth
@@ -172,11 +179,14 @@ class radio:
     def get_frequency(self):
         """ """
         try:
-            data = self.send_command(b"f")
+            data = self.send_command(b"f", True)
             data = data.decode("utf-8")
-            if 'RPRT' not in data:
-                self.frequency = data
-
+            if 'RPRT' not in data and data not in [0, '0', '']:
+                with contextlib.suppress(ValueError):
+                    data = int(data)
+                    # make sure we have a frequency and not bandwidth
+                    if data >= 10000:
+                        self.frequency = data
             return self.frequency
         except Exception:
             return self.frequency
@@ -184,7 +194,7 @@ class radio:
     def get_ptt(self):
         """ """
         try:
-            return self.send_command(b"t")
+            return self.send_command(b"t", True)
         except Exception:
             return False
 
@@ -199,9 +209,9 @@ class radio:
         """
         try:
             if state:
-                self.send_command(b"T 1")
+                self.send_command(b"T 1", False)
             else:
-                self.send_command(b"T 0")
+                self.send_command(b"T 0", False)
             return state
         except Exception:
             return False

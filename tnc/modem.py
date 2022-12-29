@@ -5,6 +5,7 @@ Created on Wed Dec 23 07:04:24 2020
 
 @author: DJ2LS
 """
+
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel
 
@@ -15,8 +16,9 @@ import sys
 import threading
 import time
 from collections import deque
-
+import wave
 import codec2
+import itertools
 import numpy as np
 import sock
 import sounddevice as sd
@@ -66,6 +68,7 @@ class RF:
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
+
 
         # Locking state for mod out so buffer will be filled before we can use it
         # https://github.com/DJ2LS/FreeDATA/issues/127
@@ -355,30 +358,44 @@ class RF:
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
 
+        # audio recording for debugging purposes
+        if static.AUDIO_RECORD:
+            #static.AUDIO_RECORD_FILE.write(x)
+            static.AUDIO_RECORD_FILE.writeframes(x)
+
         # Avoid decoding when transmitting to reduce CPU
-        if not static.TRANSMITTING:
-            length_x = len(x)
+        # TODO: Overriding this for testing purposes
+        # if not static.TRANSMITTING:
+        length_x = len(x)
 
-            # Avoid buffer overflow by filling only if buffer for
-            # selected datachannel mode is not full
-            for audiobuffer, receive, index in [
-                (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
-                (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
-                (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
-                (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
-                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
-                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
-            ]:
-                if audiobuffer.nbuffer + length_x > audiobuffer.size:
-                    static.BUFFER_OVERFLOW_COUNTER[index] += 1
-                elif receive:
-                    audiobuffer.push(x)
+        # Avoid buffer overflow by filling only if buffer for
+        # selected datachannel mode is not full
+        for audiobuffer, receive, index in [
+            (self.sig0_datac0_buffer, RECEIVE_SIG0, 0),
+            (self.sig1_datac0_buffer, RECEIVE_SIG1, 1),
+            (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
+            (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
+            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
+            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
+        ]:
+            if audiobuffer.nbuffer + length_x > audiobuffer.size:
+                static.BUFFER_OVERFLOW_COUNTER[index] += 1
+            elif receive:
+                audiobuffer.push(x)
+        # end of "not static.TRANSMITTING" if block
 
-        if len(self.modoutqueue) <= 0 or self.mod_out_locked:
-            # if not self.modoutqueue or self.mod_out_locked:
+        if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
             self.fft_data = x
         else:
+            if not static.PTT_STATE:
+                # TODO: Moved to this place for testing
+                # Maybe we can avoid moments of silence before transmitting
+                static.PTT_STATE = self.hamlib.set_ptt(True)
+                jsondata = {"ptt": "True"}
+                data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(data_out)
+
             data_out48k = self.modoutqueue.popleft()
             self.fft_data = data_out48k
 
@@ -424,11 +441,12 @@ class RF:
 
         static.TRANSMITTING = True
         start_of_transmission = time.time()
+        # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        static.PTT_STATE = self.hamlib.set_ptt(True)
-        jsondata = {"ptt": "True"}
-        data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(data_out)
+        # static.PTT_STATE = self.hamlib.set_ptt(True)
+        # jsondata = {"ptt": "True"}
+        # data_out = json.dumps(jsondata)
+        # sock.SOCKET_QUEUE.put(data_out)
 
         # Open codec2 instance
         self.MODE = mode
@@ -456,11 +474,12 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        data_delay_mseconds = 0  # milliseconds
-        data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
-        mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        txbuffer = bytes(mod_out_silence)
-
+        #data_delay_mseconds = 0  # milliseconds
+        #data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
+        #mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+        #txbuffer = bytes(mod_out_silence)
+        # TODO: Disabled this one for testing
+        txbuffer = bytes()
         self.log.debug(
             "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame
         )
@@ -832,13 +851,21 @@ class RF:
         )
 
         scatterdata = []
-        for i in range(codec2.MODEM_STATS_NC_MAX):
-            for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
-                # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
-                xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
-                ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
-                if xsymbols != 0.0 and ysymbols != 0.0:
-                    scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
+        # original function before itertool
+        #for i in range(codec2.MODEM_STATS_NC_MAX):
+        #    for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
+        #        # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+        #        xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+        #        ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
+        #        if xsymbols != 0.0 and ysymbols != 0.0:
+        #            scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
+
+        for i, j in itertools.product(range(codec2.MODEM_STATS_NC_MAX), range(1, codec2.MODEM_STATS_NR_MAX, 2)):
+            # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
+            xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
+            ysymbols = round(modemStats.rx_symbols[i][j] // 1000)
+            if xsymbols != 0.0 and ysymbols != 0.0:
+                scatterdata.append({"x": str(xsymbols), "y": str(ysymbols)})
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
@@ -890,12 +917,11 @@ class RF:
           - static.HAMLIB_BANDWIDTH
         """
         while True:
-            threading.Event().wait(0.5)
+            threading.Event().wait(0.25)
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
             static.HAMLIB_STATUS = self.hamlib.get_status()
-
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
@@ -945,8 +971,16 @@ class RF:
                             # calculate RMS and then dBFS
                             # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
-                            rms = int(np.sqrt(np.max(d ** 2)))
-                            static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
+                            # try except for avoiding runtime errors by division/0
+                            try:
+                                rms = int(np.sqrt(np.max(d ** 2)))
+                                static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
+                            except Exception as e:
+                                self.log.warning(
+                                    "[MDM] fft calculation error - please check your audio setup",
+                                    e=e,
+                                )
+                                static.AUDIO_DBFS = -100
 
                             rms_counter = 0
 
@@ -968,11 +1002,7 @@ class RF:
                     # 3200Hz = 315
 
                     # define the area, we are detecting busy state
-                    if static.LOW_BANDWIDTH_MODE:
-                        dfft = dfft[120:176]
-                    else:
-                        dfft = dfft[65:231]
-
+                    dfft = dfft[120:176] if static.LOW_BANDWIDTH_MODE else dfft[65:231]
 
                     # Check for signals higher than average by checking for "100"
                     # If we have a signal, increment our channel_busy delay counter

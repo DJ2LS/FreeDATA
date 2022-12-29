@@ -38,6 +38,19 @@ var dbfs_level_raw = 0
 window.addEventListener('DOMContentLoaded', () => {
 
 
+
+
+    // start stop audio recording event listener
+    document.getElementById("startStopRecording").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "record_audio",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+
+    });
+
+
 document.getElementById('received_files_folder').addEventListener('click', () => {
 
     ipcRenderer.send('get-folder-path',{
@@ -96,8 +109,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // hamlib settings
     document.getElementById('hamlib_deviceid').value = config.hamlib_deviceid;
 
-set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
-set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
+    set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
+    set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
 
     document.getElementById('hamlib_serialspeed').value = config.hamlib_serialspeed;
     set_setting_switch("enable_hamlib_serialspeed", "hamlib_serialspeed", config.enable_hamlib_serialspeed)
@@ -1441,6 +1454,22 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
     }
 
+    // AUDIO RECORDING
+    if (arg.audio_recording == 'True') {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Stop Rec"
+    } else if (arg.ptt_state == 'False') {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+    } else {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+    }
+
+
+
+
+
     // CHANNEL BUSY STATE
     if (arg.channel_busy == 'True') {
         document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
@@ -2074,6 +2103,9 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
     if (arg.command == 'set_tx_audio_level') {
         sock.setTxAudioLevel(arg.tx_audio_level);
+    }
+    if (arg.command == 'record_audio') {
+        sock.record_audio();
     }
     if (arg.command == 'send_test_frame') {
         sock.sendTestFrame();

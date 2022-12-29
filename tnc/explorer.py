@@ -32,11 +32,7 @@ class explorer():
 
     def push(self):
 
-
-        if static.HAMLIB_FREQUENCY is not None:
-            frequency = static.HAMLIB_FREQUENCY
-        else:
-            frequency = 0
+        frequency = 0 if static.HAMLIB_FREQUENCY is None else static.HAMLIB_FREQUENCY
         band = "USB"
         callsign = str(static.MYCALLSIGN, "utf-8")
         gridsquare = str(static.MYGRID, "utf-8")
@@ -47,7 +43,20 @@ class explorer():
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
+
+        for i in static.HEARD_STATIONS:
+            try:
+                callsign = str(i[0], "UTF-8")
+                grid = str(i[1], "UTF-8")
+                try:
+                    snr = i[4].split("/")[1]
+                except AttributeError:
+                    snr = str(i[4])
+                station_data["lastheard"].append({"callsign": callsign, "grid": grid, "snr": snr})
+            except Exception as e:
+                log.debug("[EXPLORER] not publishing station", e=e)
+
         station_data = json.dumps(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)

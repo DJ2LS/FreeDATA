@@ -24,6 +24,7 @@ import socketserver
 import sys
 import threading
 import time
+import wave
 
 import helpers
 import static
@@ -226,6 +227,28 @@ def process_tnc_commands(data):
                 log.warning(
                     "[SCK] CQ command execution error", e=err, command=received_json
                 )
+
+        # START STOP AUDIO RECORDING -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "record_audio":
+            try:
+                if not static.AUDIO_RECORD:
+                    static.AUDIO_RECORD_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                    static.AUDIO_RECORD_FILE.setnchannels(1)
+                    static.AUDIO_RECORD_FILE.setsampwidth(2)
+                    static.AUDIO_RECORD_FILE.setframerate(8000)
+                    static.AUDIO_RECORD = True
+                else:
+                    static.AUDIO_RECORD = False
+                    static.AUDIO_RECORD_FILE.close()
+
+                command_response("respond_to_call", True)
+
+            except Exception as err:
+                command_response("respond_to_call", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
 
         # SET ENABLE/DISABLE RESPOND TO CALL -----------------------------------------------------
         if received_json["type"] == "set" and received_json["command"] == "respond_to_call":
@@ -612,6 +635,7 @@ def send_tnc_state():
         "dxgrid": str(static.DXGRID, encoding),
         "hamlib_status": static.HAMLIB_STATUS,
         "listen": str(static.LISTEN),
+        "audio_recording": str(static.AUDIO_RECORD),
     }
 
     # add heard stations to heard stations object
@@ -864,3 +888,4 @@ def command_response(command, status):
     jsondata = {"command_response": command, "status": s_status}
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
+

@@ -19,7 +19,7 @@ var client = new net.Socket();
 var socketchunk = ''; // Current message, per connection.
 
 // split character
-const split_char = '\0;'
+const split_char = '\0;\1;'
 
 // globals for getting new data only if available so we are saving bandwidth
 var rxBufferLengthTnc = 0
@@ -227,6 +227,8 @@ client.on('data', function(socketdata) {
                     stations: data['stations'],
                     beacon_state: data['beacon_state'],
                     hamlib_status: data['hamlib_status'],
+                    listen: data['listen'],
+                    audio_recording: data['audio_recording'],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
@@ -515,19 +517,24 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, command) {
-    socketLog.info(data) 
+    //socketLog.info(data)
+
+    // Disabled this here
     // convert message to plain utf8 because of unicode emojis
-    data = utf8.encode(data)
-    socketLog.info(data) 
+    //data = utf8.encode(data)
+
+    //socketLog.info(data)
+
     
     var datatype = "m"
     data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data
-    socketLog.info(data)
-    
-    
-    
-    socketLog.info(btoa(data))
+    //socketLog.info(data)
+    console.log(data)
+
+    console.log("CHECKSUM" + checksum)
+    //socketLog.info(btoa(data))
     data = btoa(data)
+
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
     command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
@@ -584,7 +591,11 @@ exports.sendTestFrame = function() {
     writeTncCommand(command)
 }
 
-
+// RECORD AUDIO
+exports.record_audio = function() {
+    command = '{"type" : "set", "command" : "record_audio"}'
+    writeTncCommand(command)
+}
 
 ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
     client.destroy();
@@ -603,3 +614,11 @@ ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
     connectTNC();
 
 });
+
+
+
+// https://stackoverflow.com/a/50579690
+// crc32 calculation
+//console.log(crc32('abc'));
+//console.log(crc32('abc').toString(16).toUpperCase()); // hex
+var crc32=function(r){for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}for(var n=-1,t=0;t<r.length;t++)n=n>>>8^o[255&(n^r.charCodeAt(t))];return(-1^n)>>>0};

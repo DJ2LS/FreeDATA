@@ -331,6 +331,8 @@ def check_session_id(id: bytes, id_to_check: bytes):
         True
         False
     """
+    if id_to_check == b'\x00':
+        return False
     log.debug("[HLP] check_sessionid: Checking:", ownid=id, check=id_to_check)
     return id == id_to_check
 
@@ -392,11 +394,7 @@ def decode_grid(b_code_word: bytes):
 
     int_val = int(code_word & 0b111111111)
     int_first, int_sec = divmod(int_val, 18)
-    # int_first = int_val // 18
-    # int_sec   = int_val % 18
-    grid = chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
-
-    return grid
+    return chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
 
 
 def encode_call(call):

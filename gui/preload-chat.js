@@ -34,7 +34,7 @@ const dateFormatHours = new Intl.DateTimeFormat('en-GB', {
     hour12: false,
 });
 // split character
-const split_char = '\0;'
+const split_char = '\0;\1;'
 // global for our selected file we want to transmit
 // ----------------- some chat globals
 var filetype = '';
@@ -61,25 +61,51 @@ try{
 }
 
 PouchDB.plugin(require('pouchdb-find'));
-var db = new PouchDB(chatDB);
-var remoteDB = new PouchDB('http://192.168.178.79:5984/chatDB')
+//PouchDB.plugin(require('pouchdb-replication'));
 
-db.sync(remoteDB, {
+var db = new PouchDB(chatDB);
+
+/*
+// REMOTE SYNC ATTEMPTS
+
+
+var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
+
+// we need express packages for running pouchdb sync "express-pouchdb"
+var express = require('express');
+var app = express();
+//app.use('/chatDB', require('express-pouchdb')(PouchDB));
+//app.listen(5984);
+
+app.use('/chatDB', require('pouchdb-express-router')(PouchDB));
+app.listen(5984);
+
+
+
+db.sync('http://172.20.10.4:5984/jojo', {
+//var sync = PouchDB.sync('chatDB', 'http://172.20.10.4:5984/chatDB', {
   live: true,
-  retry: true
+  retry: false
 }).on('change', function (change) {
   // yo, something changed!
   console.log(change)
-}).on('paused', function (info) {
+}).on('paused', function (err) {
   // replication was paused, usually because of a lost connection
-  console.log(info)
+  console.log(err)
 }).on('active', function (info) {
   // replication was resumed
   console.log(info)
 }).on('error', function (err) {
   // totally unhandled error (shouldn't happen)
-  console.log(error)
+  console.log(err)
+}).on('denied', function (err) {
+  // a document failed to replicate (e.g. due to permissions)
+  console.log(err)
+}).on('complete', function (info) {
+  // handle complete;
+  console.log(info)
 });
+*/
 
 var dxcallsigns = new Set();
 db.createIndex({
@@ -297,7 +323,9 @@ db.post({
         }
         var timestamp = Math.floor(Date.now() / 1000);
 
-        var data_with_attachment = chatmessage + split_char + filename + split_char + filetype + split_char + file + split_char + timestamp;
+        var file_checksum = crc32(file).toString(16).toUpperCase();
+        console.log(file_checksum)
+        var data_with_attachment = timestamp + split_char + chatmessage + split_char + filename + split_char + filetype + split_char + file;
 
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
@@ -308,7 +336,7 @@ db.post({
             mode: 255,
             frames: 1,
             data: data_with_attachment,
-            checksum: '123',
+            checksum: file_checksum,
             uuid: uuid
         };
         ipcRenderer.send('run-tnc-command', Data);
@@ -318,7 +346,7 @@ db.post({
             dxcallsign: dxcallsign,
             dxgrid: 'null',
             msg: chatmessage,
-            checksum: 'null',
+            checksum: file_checksum,
             type: "transmit",
             status: 'transmit',
             uuid: uuid,
@@ -404,7 +432,7 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
         //handle ping
         if (item.ping == 'received') {
-            obj.timestamp = item.timestamp;
+            obj.timestamp = parseInt(item.timestamp);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.uuid = item.uuid;
@@ -421,12 +449,9 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             add_obj_to_database(obj)
             update_chat_obj_by_uuid(obj.uuid);
 
-
-
-
         // handle beacon
         } else if (item.beacon == 'received') {
-            obj.timestamp = item.timestamp;
+            obj.timestamp = parseInt(item.timestamp);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.uuid = item.uuid;
@@ -451,20 +476,20 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
             console.log(splitted_data)
 
-            obj.timestamp = splitted_data[8];
+            obj.timestamp = parseInt(splitted_data[4]);
             obj.dxcallsign = item.dxcallsign;
             obj.dxgrid = item.dxgrid;
             obj.command = splitted_data[1];
             obj.checksum = splitted_data[2];
             // convert message to unicode from utf8 because of emojis
             obj.uuid = utf8.decode(splitted_data[3]);
-            obj.msg = utf8.decode(splitted_data[4]);
+            obj.msg = utf8.decode(splitted_data[5]);
             obj.status = 'null';
             obj.snr = 'null';
             obj.type = 'received';
-            obj.filename = utf8.decode(splitted_data[5]);
-            obj.filetype = utf8.decode(splitted_data[6]);
-            obj.file = btoa(utf8.decode(splitted_data[7]));
+            obj.filename = utf8.decode(splitted_data[6]);
+            obj.filetype = utf8.decode(splitted_data[7]);
+            obj.file = btoa(splitted_data[8]);
 
             add_obj_to_database(obj);
             update_chat_obj_by_uuid(obj.uuid);
@@ -839,7 +864,9 @@ update_chat = function(obj) {
                     }).then(function(){
 
                         console.log(binaryString)
-                        var data_with_attachment = doc.msg + split_char + filename + split_char + filetype + split_char + binaryString + split_char + doc.timestamp;
+                        console.log(binaryString.length)
+
+                        var data_with_attachment = doc.timestamp + split_char + utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + binaryString;
                             let Data = {
                                 command: "send_message",
                                 dxcallsign: doc.dxcallsign,
@@ -939,7 +966,7 @@ update_chat_obj_by_uuid = function(uuid) {
 add_obj_to_database = function(obj){
     db.put({
         _id: obj.uuid,
-        timestamp: obj.timestamp,
+        timestamp: parseInt(obj.timestamp),
         uuid: obj.uuid,
         dxcallsign: obj.dxcallsign,
         dxgrid: obj.dxgrid,
@@ -969,3 +996,36 @@ function scrollMessagesToBottom() {
     var messageBody = document.getElementById('message-container');
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
 }
+
+
+
+// CRC CHECKSUMS
+// https://stackoverflow.com/a/50579690
+// crc32 calculation
+//console.log(crc32('abc'));
+//var crc32=function(r){for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}for(var n=-1,t=0;t<r.length;t++)n=n>>>8^o[255&(n^r.charCodeAt(t))];return(-1^n)>>>0};
+//console.log(crc32('abc').toString(16).toUpperCase()); // hex
+
+var makeCRCTable = function(){
+    var c;
+    var crcTable = [];
+    for(var n =0; n < 256; n++){
+        c = n;
+        for(var k =0; k < 8; k++){
+            c = ((c&1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1));
+        }
+        crcTable[n] = c;
+    }
+    return crcTable;
+}
+
+var crc32 = function(str) {
+    var crcTable = window.crcTable || (window.crcTable = makeCRCTable());
+    var crc = 0 ^ (-1);
+
+    for (var i = 0; i < str.length; i++ ) {
+        crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xFF];
+    }
+
+    return (crc ^ (-1)) >>> 0;
+};
