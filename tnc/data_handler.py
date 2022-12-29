@@ -1627,9 +1627,8 @@ class DATA:
         # Station B already tries connecting to Station A.
         # For avoiding ignoring repeated connect request in case of packet loss
         # we are only ignoring packets in case we are ISS
-        if static.ARQ_SESSION and not self.IS_ARQ_SESSION_MASTER:
+        if static.ARQ_SESSION and self.IS_ARQ_SESSION_MASTER:
             return False
-
 
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION_STATE = "connecting"
