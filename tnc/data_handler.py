@@ -470,6 +470,11 @@ class DATA:
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
 
+        # wait while timeout not reached and our busy state is busy
+        channel_busy_timeout = time.time() + 5
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            threading.Event().wait(0.01)
+
         # Transmit frame
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
@@ -484,6 +489,11 @@ class DATA:
         # ack_frame[4:7] = static.MYCALLSIGN_CRC
         # ack_frame[7:8] = bytes([int(snr)])
         # ack_frame[8:9] = bytes([int(self.speed_level)])
+
+        # wait while timeout not reached and our busy state is busy
+        channel_busy_timeout = time.time() + 5
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            threading.Event().wait(0.01)
 
         # Transmit frame
         # TODO: Do we have to send , self.send_ident_frame(False) ?
@@ -532,7 +542,14 @@ class DATA:
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
+
+        # wait while timeout not reached and our busy state is busy
+        channel_busy_timeout = time.time() + 5
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            threading.Event().wait(0.01)
+
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
+
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
@@ -549,6 +566,11 @@ class DATA:
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
+        # wait while timeout not reached and our busy state is busy
+        channel_busy_timeout = time.time() + 5
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            threading.Event().wait(0.01)
+
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
@@ -563,6 +585,12 @@ class DATA:
         # TODO: We need to add the ident frame feature with a seperate PR after publishing latest protocol
         # TODO: We need to wait some time between last arq related signalling frame and ident frame
         # TODO: Maybe about 500ms - 1500ms to avoid confusion and too much PTT toggles
+
+        # wait while timeout not reached and our busy state is busy
+        channel_busy_timeout = time.time() + 5
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            threading.Event().wait(0.01)
+
         self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=6, repeat_delay=0)
 
     def arq_data_received(
