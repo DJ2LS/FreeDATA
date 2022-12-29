@@ -1622,6 +1622,15 @@ class DATA:
         if not static.RESPOND_TO_CALL:
             return False
 
+        # ignore channel opener if already in ARQ STATE
+        # use case: Station A is connecting to Station B while
+        # Station B already tries connecting to Station A.
+        # For avoiding ignoring repeated connect request in case of packet loss
+        # we are only ignoring packets in case we are ISS
+        if static.ARQ_SESSION and not self.IS_ARQ_SESSION_MASTER:
+            return False
+
+
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION_STATE = "connecting"
 
@@ -2042,6 +2051,14 @@ class DATA:
 
         # check if callsign ssid override
         _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
+
+        # ignore channel opener if already in ARQ STATE
+        # use case: Station A is connecting to Station B while
+        # Station B already tries connecting to Station A.
+        # For avoiding ignoring repeated connect request in case of packet loss
+        # we are only ignoring packets in case we are ISS
+        if static.ARQ_STATE and not self.is_IRS:
+            return False
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
