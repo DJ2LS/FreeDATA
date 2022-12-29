@@ -316,7 +316,7 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
             return [True, bytes(call_with_ssid)]
 
-    return [False, ""]
+    return [False, b'']
 
 
 def check_session_id(id: bytes, id_to_check: bytes):
