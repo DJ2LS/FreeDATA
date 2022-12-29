@@ -974,6 +974,8 @@ class RF:
                             # try except for avoiding runtime errors by division/0
                             try:
                                 rms = int(np.sqrt(np.max(d ** 2)))
+                                if rms == 0:
+                                    raise ZeroDivisionError
                                 static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
                             except Exception as e:
                                 self.log.warning(
