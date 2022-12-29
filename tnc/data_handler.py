@@ -2239,6 +2239,7 @@ class DATA:
                 received=protocol_version,
                 own=static.ARQ_PROTOCOL_VERSION,
             )
+            self.stop_transmission()
             self.arq_cleanup()
 
     # ---------- PING
