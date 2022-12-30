@@ -1469,7 +1469,7 @@ class DATA:
             )
 
             # wait while timeout not reached and our busy state is busy
-            channel_busy_timeout = time.time() + 30
+            channel_busy_timeout = time.time() + 15
             while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                 threading.Event().wait(0.01)
 
@@ -1963,7 +1963,7 @@ class DATA:
                     )
 
                     # wait while timeout not reached and our busy state is busy
-                    channel_busy_timeout = time.time() + 30
+                    channel_busy_timeout = time.time() + 15
                     while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                         threading.Event().wait(0.01)
 
