@@ -978,7 +978,8 @@ class DATA:
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                     nacks=self.frame_nack_counter,
                     duration=duration,
-                    bytesperminute=static.ARQ_BYTES_PER_MINUTE
+                    bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    data=data_frame,
 
                 )
 
