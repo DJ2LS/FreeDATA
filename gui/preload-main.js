@@ -1598,12 +1598,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var hours = Math.floor(arq_seconds_until_finish / 3600);
         var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
         var seconds = arq_seconds_until_finish % 60;
-
         var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
-
-
     }
-    console.log(time_left);
     document.getElementById("transmission_timeleft").innerHTML = time_left;
 
 
