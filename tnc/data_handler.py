@@ -1052,7 +1052,7 @@ class DATA:
                 + data_out
                 + self.data_frame_eof
         )
-
+        self.log.debug("[TNC] frame raw data:", data=data_out)
         # Initial bufferposition is 0
         bufferposition = bufferposition_end = 0
 
