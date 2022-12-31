@@ -625,6 +625,7 @@ def send_tnc_state():
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
         "arq_bytes_per_minute": str(static.ARQ_BYTES_PER_MINUTE),
         "arq_bytes_per_minute_burst": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+        "arq_seconds_until_finish": str(static.ARQ_SECONDS_UNTIL_FINISH),
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
         "total_bytes": str(static.TOTAL_BYTES),

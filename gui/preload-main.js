@@ -1589,7 +1589,30 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
     document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
-    
+
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(arg.arq_seconds_until_finish) == 'undefined') {
+        var time_left = 0;
+    } else {
+        var arq_seconds_until_finish = arg.arq_seconds_until_finish
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+    }
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
+
+
     
     // SET SPEED LEVEL
 
@@ -1608,6 +1631,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if(arg.speed_level >= 4) {
         document.getElementById("speed_level").className = "bi bi-reception-4";
     }
+
     
     
     

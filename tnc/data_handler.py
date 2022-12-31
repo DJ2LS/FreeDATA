@@ -685,6 +685,11 @@ class DATA:
                 # static.RX_FRAME_BUFFER --> existing data
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
+
+
+                #data_mode = self.mode_list[self.speed_level]
+                #payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
+                #search_area = payload_per_frame - 3  # (3 bytes arq frame header)
                 search_area = 510 - 3  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
@@ -739,7 +744,7 @@ class DATA:
                 self.set_listening_modes(False, True, self.mode_list[self.speed_level])
 
                 # Create and send ACK frame
-                self.log.info("[TNC] ARQ | RX | SENDING ACK")
+                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_ack_frame(snr)
 
                 # Reset n retries per burst counter
@@ -760,6 +765,7 @@ class DATA:
                     bytesperminute=static.ARQ_BYTES_PER_MINUTE,
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                    finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 )
 
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
@@ -840,8 +846,10 @@ class DATA:
 
                 # transmittion duration
                 duration = time.time() - self.rx_start_of_transmission
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration
-)
+                self.calculate_transfer_rate_rx(
+                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+                )
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
 
                 # Decompress the data frame
                 data_frame_decompressed = lzma.decompress(data_frame)
@@ -973,11 +981,12 @@ class DATA:
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                     nacks=self.frame_nack_counter,
                     duration=duration,
-                    bytesperminute=static.ARQ_BYTES_PER_MINUTE
+                    bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    data=data_frame,
 
                 )
 
-                self.log.info("[TNC] ARQ | RX | Sending NACK")
+                self.log.info("[TNC] ARQ | RX | Sending NACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_nack_frame(snr)
 
             # Update arq_session timestamp
@@ -1018,6 +1027,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            finished=static.ARQ_SECONDS_UNTIL_FINISH,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
@@ -1212,6 +1222,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 irs_snr=self.burst_ack_snr,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1237,6 +1248,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
@@ -1469,7 +1481,7 @@ class DATA:
             )
 
             # wait while timeout not reached and our busy state is busy
-            channel_busy_timeout = time.time() + 30
+            channel_busy_timeout = time.time() + 15
             while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                 threading.Event().wait(0.01)
 
@@ -1963,7 +1975,7 @@ class DATA:
                     )
 
                     # wait while timeout not reached and our busy state is busy
-                    channel_busy_timeout = time.time() + 30
+                    channel_busy_timeout = time.time() + 15
                     while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                         threading.Event().wait(0.01)
 
@@ -2772,10 +2784,12 @@ class DATA:
                 static.ARQ_BYTES_PER_MINUTE = int(
                     receivedbytes / (transmissiontime / 60)
                 )
+                static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60) -20 # offset because of frame ack/nack
 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
+                static.ARQ_SECONDS_UNTIL_FINISH = 0
         except Exception as err:
             self.log.error(f"[TNC] calculate_transfer_rate_rx: Exception: {err}")
             static.ARQ_TRANSMISSION_PERCENT = 0.0
@@ -2799,6 +2813,7 @@ class DATA:
         static.ARQ_BITS_PER_SECOND = 0
         static.ARQ_TRANSMISSION_PERCENT = 0
         static.TOTAL_BYTES = 0
+        static.ARQ_SECONDS_UNTIL_FINISH = 0
 
     def calculate_transfer_rate_tx(
             self, tx_start_of_transmission: float, sentbytes: int, tx_buffer_length: int
@@ -2825,10 +2840,11 @@ class DATA:
             if sentbytes > 0:
                 static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)
                 static.ARQ_BYTES_PER_MINUTE = int(sentbytes / (transmissiontime / 60))
-
+                static.ARQ_SECONDS_UNTIL_FINISH = int(((tx_buffer_length - sentbytes) / (static.ARQ_BYTES_PER_MINUTE* static.ARQ_COMPRESSION_FACTOR)) * 60 )
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
+                static.ARQ_SECONDS_UNTIL_FINISH = 0
 
         except Exception as err:
             self.log.error(f"[TNC] calculate_transfer_rate_tx: Exception: {err}")
