@@ -101,6 +101,7 @@ ARQ_BITS_PER_SECOND_BURST: int = 0
 ARQ_BITS_PER_SECOND: int = 0
 ARQ_COMPRESSION_FACTOR: int = 0
 ARQ_TRANSMISSION_PERCENT: int = 0
+ARQ_SECONDS_UNTIL_FINISH: int = 0
 ARQ_SPEED_LEVEL: int = 0
 TOTAL_BYTES: int = 0
 # set save to folder state for allowing downloading files to local file system
