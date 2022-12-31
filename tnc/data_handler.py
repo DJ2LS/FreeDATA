@@ -687,10 +687,10 @@ class DATA:
                 # search_area --> area where we want to search
 
 
-                data_mode = self.mode_list[self.speed_level]
-                payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
-                search_area = payload_per_frame - 3  # (3 bytes arq frame header)
-                # search_area = 510 - 3  # (3 bytes arq frame header)
+                #data_mode = self.mode_list[self.speed_level]
+                #payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
+                #search_area = payload_per_frame - 3  # (3 bytes arq frame header)
+                search_area = 510 - 3  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
                 # find position of data. returns -1 if nothing found in area else >= 0
