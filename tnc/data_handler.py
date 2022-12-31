@@ -846,8 +846,10 @@ class DATA:
 
                 # transmittion duration
                 duration = time.time() - self.rx_start_of_transmission
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration
-)
+                self.calculate_transfer_rate_rx(
+                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+                )
+                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
 
                 # Decompress the data frame
                 data_frame_decompressed = lzma.decompress(data_frame)
@@ -2782,7 +2784,7 @@ class DATA:
                 static.ARQ_BYTES_PER_MINUTE = int(
                     receivedbytes / (transmissiontime / 60)
                 )
-                static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / static.ARQ_BYTES_PER_MINUTE) * 60)
+                static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60)
 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
@@ -2838,7 +2840,7 @@ class DATA:
             if sentbytes > 0:
                 static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)
                 static.ARQ_BYTES_PER_MINUTE = int(sentbytes / (transmissiontime / 60))
-                static.ARQ_SECONDS_UNTIL_FINISH = int(((tx_buffer_length - sentbytes) / static.ARQ_BYTES_PER_MINUTE) * 60 )
+                static.ARQ_SECONDS_UNTIL_FINISH = int(((tx_buffer_length - sentbytes) / (static.ARQ_BYTES_PER_MINUTE* static.ARQ_COMPRESSION_FACTOR)) * 60 )
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
