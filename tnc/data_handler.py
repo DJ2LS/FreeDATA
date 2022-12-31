@@ -2784,7 +2784,7 @@ class DATA:
                 static.ARQ_BYTES_PER_MINUTE = int(
                     receivedbytes / (transmissiontime / 60)
                 )
-                static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60)
+                static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60) -20 # offset because of frame ack/nack
 
             else:
                 static.ARQ_BITS_PER_SECOND = 0
