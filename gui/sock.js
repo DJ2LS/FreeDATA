@@ -221,6 +221,7 @@ client.on('data', function(socketdata) {
                     arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
                     arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
                     arq_bytes_per_minute: data['arq_bytes_per_minute'],
+                    arq_seconds_until_finish: data['arq_seconds_until_finish'],
                     arq_compression_factor: data['arq_compression_factor'],
                     total_bytes: data['total_bytes'],
                     arq_transmission_percent: data['arq_transmission_percent'],
