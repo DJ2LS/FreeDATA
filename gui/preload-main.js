@@ -1598,6 +1598,16 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var hours = Math.floor(arq_seconds_until_finish / 3600);
         var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
         var seconds = arq_seconds_until_finish % 60;
+
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
         var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
     }
     document.getElementById("transmission_timeleft").innerHTML = time_left;
@@ -1621,6 +1631,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if(arg.speed_level >= 4) {
         document.getElementById("speed_level").className = "bi bi-reception-4";
     }
+
     
     
     
