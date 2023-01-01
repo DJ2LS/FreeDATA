@@ -669,6 +669,26 @@ class DATA:
                 # static.RX_FRAME_BUFFER += static.RX_BURST_BUFFER[i]
                 temp_burst_buffer += bytes(value)  # type: ignore
 
+            # TODO: Needs to be removed as soon as mode error is fixed
+            # catch possible modem error which leads into false byteorder
+            # modem possibly decodes too late - data then is pushed to buffer
+            # which leads into wrong byteorder
+            # Lets put this in try/except so we are not crashing tnc as its hihgly experimental
+            # This might only work for datac1 and datac3
+            try:
+                #area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
+                if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer[:246] and len(temp_burst_buffer) >= 246):
+                    self.log.warning(
+                        "[TNC] ARQ | RX | wrong byteorder received - dropping data"
+                    )
+                    # we need to run a return here, so we are not sending an ACK
+                    return
+            except Exception as e:
+                self.log.warning(
+                    "[TNC] ARQ | RX | wrong byteorder check failed", e=e
+                )
+
+
             # if frame buffer ends not with the current frame, we are going to append new data
             # if data already exists, we received the frame correctly,
             # but the ACK frame didn't receive its destination (ISS)
