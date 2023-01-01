@@ -632,8 +632,20 @@ class RF:
                     # 6 decoded
                     # 10 error decoding == NACK
                     state = codec2.api.freedv_get_rx_status(freedv)
+
                     if state == 10:
-                        state_buffer.append(state)
+                        # TODO: This is just a temporary fix, needs to be removed, soon
+                        # if in state 10, we try to rerun decoding with a
+                        # chance of recovering the frame
+                        nbytes = codec2.api.freedv_rawdatarx(
+                            freedv, bytes_out, audiobuffer.buffer.ctypes
+                        )
+                        if nbytes == bytes_per_frame:
+                            self.log.warning(
+                                "[MDM] [demod_audio] recovered lost frame", nbytes=nbytes
+                            )
+                        else:
+                            state_buffer.append(state)
 
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
