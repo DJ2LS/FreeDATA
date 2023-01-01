@@ -677,7 +677,7 @@ class DATA:
             # This might only work for datac1 and datac3
             try:
                 #area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
-                if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer[:246] and len(temp_burst_buffer) >= 246):
+                if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer[:246]) and len(temp_burst_buffer) >= 246:
                     self.log.warning(
                         "[TNC] ARQ | RX | wrong byteorder received - dropping data"
                     )
