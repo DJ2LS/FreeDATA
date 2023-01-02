@@ -321,7 +321,7 @@ class RF:
                             # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
                         ]:
                             if (
-                                not data_buffer.nbuffer + length_x > data_buffer.size
+                                not (data_buffer.nbuffer + length_x) > data_buffer.size
                                 and receive
                             ):
                                 data_buffer.push(x)
@@ -378,7 +378,7 @@ class RF:
             (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
             (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
         ]:
-            if audiobuffer.nbuffer + length_x > audiobuffer.size:
+            if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                 static.BUFFER_OVERFLOW_COUNTER[index] += 1
             elif receive:
                 audiobuffer.push(x)
@@ -596,6 +596,7 @@ class RF:
         bytes_out,
         bytes_per_frame,
         state_buffer,
+        mode_name,
     ) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
@@ -613,6 +614,8 @@ class RF:
         :type bytes_per_frame: int
         :param state_buffer: modem states
         :type state_buffer: int
+        :param mode_name: mode name
+        :type mode_name: str
         :return: NIN from freedv instance
         :rtype: int
         """
@@ -631,10 +634,17 @@ class RF:
                     # 3 trial sync
                     # 6 decoded
                     # 10 error decoding == NACK
-                    state = codec2.api.freedv_get_rx_status(freedv)
+                    rx_status = codec2.api.freedv_get_rx_status(freedv)
 
-                    if state == 10:
-                        state_buffer.append(state)
+                    if rx_status != 0:
+                        self.log.debug(
+                            "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
+                        )
+
+                    if rx_status == 10:
+                        state_buffer.append(rx_status)
+
+
 
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
@@ -735,7 +745,8 @@ class RF:
             self.sig0_datac0_freedv,
             self.sig0_datac0_bytes_out,
             self.sig0_datac0_bytes_per_frame,
-            SIG0_DATAC0_STATE
+            SIG0_DATAC0_STATE,
+            "sig0-datac0"
         )
 
     def audio_sig1_datac0(self) -> None:
@@ -746,7 +757,8 @@ class RF:
             self.sig1_datac0_freedv,
             self.sig1_datac0_bytes_out,
             self.sig1_datac0_bytes_per_frame,
-            SIG1_DATAC0_STATE
+            SIG1_DATAC0_STATE,
+            "sig1-datac0"
         )
 
     def audio_dat0_datac1(self) -> None:
@@ -757,7 +769,8 @@ class RF:
             self.dat0_datac1_freedv,
             self.dat0_datac1_bytes_out,
             self.dat0_datac1_bytes_per_frame,
-            DAT0_DATAC1_STATE
+            DAT0_DATAC1_STATE,
+            "dat0-datac1"
         )
 
     def audio_dat0_datac3(self) -> None:
@@ -768,7 +781,8 @@ class RF:
             self.dat0_datac3_freedv,
             self.dat0_datac3_bytes_out,
             self.dat0_datac3_bytes_per_frame,
-            DAT0_DATAC3_STATE
+            DAT0_DATAC3_STATE,
+            "dat0-datac3"
         )
 
     def audio_fsk_ldpc_0(self) -> None:
