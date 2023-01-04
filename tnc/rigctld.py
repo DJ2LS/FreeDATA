@@ -204,7 +204,6 @@ class radio:
         """ """
         try:
             data = self.send_data_command(b"m", True)
-            print(data)
             data = data.split(b"\n")
             data = data[0].decode("utf-8")
             if 'RPRT' not in data:
