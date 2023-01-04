@@ -14,7 +14,7 @@ def setup_logging(filename: str = "", level: str = "DEBUG"):
 
     """
 
-    timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S")
+    timestamper = structlog.processors.TimeStamper(fmt="iso")
     pre_chain = [
         # Add the log level and a timestamp to the event_dict if the log entry
         # is not from structlog.
