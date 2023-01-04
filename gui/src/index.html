@@ -1094,7 +1094,7 @@
 							<div class="input-group input-group-sm">
 								<input type="text" class="form-control" style="max-width: 6rem;" placeholder="0.0" pattern="[0-9]*" id="newFrequency" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
 								<span class="input-group-text">Hz</span>
-								<button class="btn btn-sm btn-success" id="saveFrequency" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="connect to a remote station"> <i class="bi bi-check-lg" style="font-size: 0.8rem; color: white;"></i> </button>
+								<button class="btn btn-sm btn-success" id="saveFrequency" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="save frequency"> <i class="bi bi-check-lg" style="font-size: 0.8rem; color: white;"></i> </button>
 							</div>
 						 </form>
 					</div>
@@ -1104,14 +1104,12 @@
 						---
 						</button>
 						<form class="dropdown-menu p-2">
-								<button type="button m-1" class="btn btn-sm btn-secondary">FM</button>
-								<button type="button m-1" class="btn btn-sm btn-secondary">AM</button>
-								<button type="button m-1" class="btn btn-sm btn-secondary">LSB</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set FM" id="saveModeFM">FM</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set AM" type="button" id="saveModeAM">AM</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set LSB" type="button" id="saveModeLSB">LSB</button>
 								<hr>
-								<button type="button m-1" class="btn btn-sm btn-secondary">USB</button>
-								<button type="button m-1" class="btn btn-sm btn-secondary">PKTUSB</button>
-								<hr>
-								...soon... :-)
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set USB" type="button" id="saveModeUSB">USB</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set PKTUSB" type="button" id="saveModePKTUSB">PKTUSB</button>
 						 </form>
 					</div>
 

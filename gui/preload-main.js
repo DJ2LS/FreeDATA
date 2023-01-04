@@ -49,7 +49,55 @@ window.addEventListener('DOMContentLoaded', () => {
             ipcRenderer.send('run-tnc-command', Data);
 
     });
+    // save mode event listener
+    document.getElementById("saveModePKTUSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "PKTUSB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
 
+    // save mode event listener
+    document.getElementById("saveModeUSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "USB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeLSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "LSB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeAM").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "AM",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeFM").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "FM",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
 
     // start stop audio recording event listener
     document.getElementById("startStopRecording").addEventListener("click", () => {
@@ -2152,7 +2200,10 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'frequency') {
         sock.set_frequency(arg.frequency);
     }
-                  
+
+    if (arg.command == 'mode') {
+        sock.set_mode(arg.mode);
+    }
     
 
 });
