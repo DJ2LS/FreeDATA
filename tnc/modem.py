@@ -25,7 +25,7 @@ import sounddevice as sd
 import static
 import structlog
 import ujson as json
-from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -279,6 +279,13 @@ class RF:
             target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
         )
         hamlib_thread.start()
+
+        hamlib_set_thread = threading.Thread(
+            target=self.set_rig_data, name="HAMLIB_SET_THREAD", daemon=True
+        )
+        hamlib_set_thread.start()
+
+
 
         # self.log.debug("[MDM] Starting worker_receive")
         worker_received = threading.Thread(
@@ -923,6 +930,17 @@ class RF:
             static.SNR = 0
             return static.SNR
 
+    def set_rig_data(self) -> None:
+        """
+            Set rigctld parameters like frequency, mode
+            THis needs to be processed in a queue
+        """
+        while True:
+            cmd = RIGCTLD_COMMAND_QUEUE.get()
+            if cmd[0] == "set_frequency":
+                # [1] = Frequency
+                self.hamlib.set_frequency(cmd[1])
+
     def update_rig_data(self) -> None:
         """
         Request information about the current state of the radio via hamlib
@@ -937,6 +955,7 @@ class RF:
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
             static.HAMLIB_STATUS = self.hamlib.get_status()
+
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess

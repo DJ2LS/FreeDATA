@@ -37,7 +37,18 @@ var dbfs_level_raw = 0
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
 
+    // save frequency event listener
+    document.getElementById("saveFrequency").addEventListener("click", () => {
+            var freq = document.getElementById("newFrequency").value;
+            console.log(freq)
+            let Data = {
+                type: "set",
+                command: "frequency",
+                frequency: freq,
+            };
+            ipcRenderer.send('run-tnc-command', Data);
 
+    });
 
 
     // start stop audio recording event listener
@@ -1566,7 +1577,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
 
     // SET FREQUENCY
-    document.getElementById("frequency").innerHTML = arg.frequency;
+    // https://stackoverflow.com/a/2901298
+    var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    document.getElementById("frequency").innerHTML = freq;
+    document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
     document.getElementById("mode").innerHTML = arg.mode;
@@ -2133,7 +2147,11 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     }
     if (arg.command == 'send_test_frame') {
         sock.sendTestFrame();
-    }    
+    }
+
+    if (arg.command == 'frequency') {
+        sock.set_frequency(arg.frequency);
+    }
                   
     
 
