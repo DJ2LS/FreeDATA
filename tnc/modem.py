@@ -896,7 +896,6 @@ class RF:
             # only take every tenth data point
             static.SCATTER = scatterdata[::10]
 
-
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for data about the received signal and calculate

@@ -1628,7 +1628,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // https://stackoverflow.com/a/2901298
     var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     document.getElementById("frequency").innerHTML = freq;
-    document.getElementById("newFrequency").value = arg.frequency;
+    //document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
     document.getElementById("mode").innerHTML = arg.mode;
