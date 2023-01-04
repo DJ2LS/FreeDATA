@@ -64,6 +64,7 @@ class DATA:
 
         self.transmission_uuid = ""
 
+        self.burst_last_received = 0.0 # time of last "live sign" of a burst
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received burst ack frames
 
@@ -630,6 +631,7 @@ class DATA:
 
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
+        self.burst_last_received = int(time.time())
 
         # Extract some important data from the frame
         # Get sequence number of burst frame
@@ -3018,10 +3020,13 @@ class DATA:
         modem_error_state = modem.get_modem_error_state()
 
         # We want to reach this state only if connected ( == return above not called )
-        if (
-                self.data_channel_last_received + self.time_list[self.speed_level]
-                <= time.time() or modem_error_state
-        ):
+        timeout = self.burst_last_received + self.time_list[self.speed_level]
+        if timeout <= time.time() or modem_error_state:
+            print("timeout----------------")
+            print(time.time() - timeout)
+            print(time.time() - (self.burst_last_received + self.time_list[self.speed_level]))
+
+            print("-----------------------")
             if modem_error_state:
                 self.log.warning(
                     "[TNC] Decoding Error",
@@ -3031,11 +3036,15 @@ class DATA:
                 )
             else:
                 self.log.warning(
-                    "[TNC] Frame timeout",
+                    "[TNC] Burst timeout",
                     attempt=self.n_retries_per_burst,
                     max_attempts=self.rx_n_max_retries_per_burst,
                     speed_level=self.speed_level,
                 )
+
+            # reset self.burst_last_received
+            self.burst_last_received = time.time() + self.time_list[self.speed_level]
+
             # reduce speed level if nack counter increased
             self.frame_received_counter = 0
             self.burst_nack_counter += 1
@@ -3075,9 +3084,11 @@ class DATA:
                     > time.time()
             ):
 
-                timeleft = (self.data_channel_last_received + self.transmission_timeout) - time.time()
-                self.log.debug("Time left until timeout", seconds=timeleft)
-                threading.Event().wait(5)
+                timeleft = int((self.data_channel_last_received + self.transmission_timeout) - time.time())
+                if timeleft % 10 == 0:
+                    self.log.debug("Time left until timeout", seconds=timeleft)
+
+                # threading.Event().wait(5)
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
                 # pass
             else:
