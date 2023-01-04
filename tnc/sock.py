@@ -31,7 +31,7 @@ import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -590,6 +590,19 @@ def process_tnc_commands(data):
                 command_response("del_rx_buffer", False)
                 log.warning(
                     "[SCK] Delete RX buffer command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
+        # SET FREQUENCY -----------------------------------------------------
+        if received_json["command"] == "frequency" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_frequency", received_json["frequency"]])
+                command_response("set_frequency", True)
+            except Exception as err:
+                command_response("set_frequency", False)
+                log.warning(
+                    "[SCK] Stop beacon command execution error",
                     e=err,
                     command=received_json,
                 )

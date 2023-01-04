@@ -598,6 +598,12 @@ exports.record_audio = function() {
     writeTncCommand(command)
 }
 
+// SET FREQUENCY
+exports.set_frequency = function(frequency) {
+    command = '{"type" : "set", "command" : "frequency", "frequency": '+ frequency +'}'
+    writeTncCommand(command)
+}
+
 ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
     client.destroy();
     let Data = {

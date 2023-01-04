@@ -80,7 +80,7 @@ class radio:
         # wait some time
         threading.Event().wait(0.5)
 
-        if self.ptt_connection and self.data_connection:
+        if self.ptt_connected and self.data_connected:
             self.log.debug("Rigctl DATA/PTT initialized")
             return True
 
@@ -139,7 +139,6 @@ class radio:
         self.data_sock.close()
         self.ptt_connected = False
         self.data_connected = False
-
 
     def send_ptt_command(self, command, expect_answer) -> bytes:
         """Send a command to the connected rotctld instance,
@@ -267,5 +266,20 @@ class radio:
             else:
                 self.send_ptt_command(b"T 0", False)
             return state
+        except Exception:
+            return False
+
+    def set_frequency(self, frequency):
+        """
+
+        Args:
+          frequency:
+
+        Returns:
+
+        """
+        try:
+            command = bytes(f"F {frequency}", "utf-8")
+            self.send_data_command(command, False)
         except Exception:
             return False
