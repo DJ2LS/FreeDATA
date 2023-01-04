@@ -604,6 +604,13 @@ exports.set_frequency = function(frequency) {
     writeTncCommand(command)
 }
 
+// SET MODE
+exports.set_mode = function(mode) {
+    command = '{"type" : "set", "command" : "mode", "mode": "'+ mode +'"}'
+    console.log(command)
+    writeTncCommand(command)
+}
+
 ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
     client.destroy();
     let Data = {

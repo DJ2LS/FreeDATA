@@ -940,6 +940,9 @@ class RF:
             if cmd[0] == "set_frequency":
                 # [1] = Frequency
                 self.hamlib.set_frequency(cmd[1])
+            if cmd[0] == "set_mode":
+                # [1] = Mode
+                self.hamlib.set_mode(cmd[1])
 
     def update_rig_data(self) -> None:
         """

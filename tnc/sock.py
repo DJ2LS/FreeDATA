@@ -602,7 +602,20 @@ def process_tnc_commands(data):
             except Exception as err:
                 command_response("set_frequency", False)
                 log.warning(
-                    "[SCK] Stop beacon command execution error",
+                    "[SCK] Set frequency command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
+        # SET MODE -----------------------------------------------------
+        if received_json["command"] == "mode" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_mode", received_json["mode"]])
+                command_response("set_mode", True)
+            except Exception as err:
+                command_response("set_mode", False)
+                log.warning(
+                    "[SCK] Set mode command execution error",
                     e=err,
                     command=received_json,
                 )

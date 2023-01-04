@@ -283,3 +283,18 @@ class radio:
             self.send_data_command(command, False)
         except Exception:
             return False
+
+    def set_mode(self, mode):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        try:
+            command = bytes(f"M {mode} {self.bandwidth}", "utf-8")
+            self.send_data_command(command, False)
+        except Exception:
+            return False
