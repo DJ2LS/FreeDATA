@@ -21,9 +21,11 @@ class radio:
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
         """Open a connection to rigctld, and test it for validity"""
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.ptt_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.data_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        self.connected = False
+        self.ptt_connected = False
+        self.data_connected = False
         self.hostname = hostname
         self.port = port
         self.connection_attempts = 5
@@ -32,7 +34,6 @@ class radio:
         self.bandwidth = ''
         self.frequency = ''
         self.mode = ''
-
 
     def open_rig(
         self,
@@ -67,8 +68,20 @@ class radio:
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
 
-        if self.connect():
-            self.log.debug("Rigctl initialized")
+        #_ptt_connect = self.ptt_connect()
+        #_data_connect = self.data_connect()
+
+        ptt_thread = threading.Thread(target=self.ptt_connect, args=[], daemon=True)
+        ptt_thread.start()
+
+        data_thread = threading.Thread(target=self.data_connect, args=[], daemon=True)
+        data_thread.start()
+
+        # wait some time
+        threading.Event().wait(0.5)
+
+        if self.ptt_connection and self.data_connection:
+            self.log.debug("Rigctl DATA/PTT initialized")
             return True
 
         self.log.error(
@@ -76,33 +89,59 @@ class radio:
         )
         return False
 
-    def connect(self):
+    def ptt_connect(self):
         """Connect to rigctld instance"""
-        if not self.connected:
-            try:
-                self.connection = socket.create_connection((self.hostname, self.port))
-                self.connected = True
-                self.log.info(
-                    "[RIGCTLD] Connected to rigctld!", ip=self.hostname, port=self.port
-                )
-                return True
-            except Exception as err:
-                # ConnectionRefusedError: [Errno 111] Connection refused
-                self.close_rig()
-                self.log.warning(
-                    "[RIGCTLD] Reconnect...",
-                    ip=self.hostname,
-                    port=self.port,
-                    e=err,
-                )
-                return False
+        while True:
+
+            if not self.ptt_connected:
+                try:
+                    self.ptt_connection = socket.create_connection((self.hostname, self.port))
+                    self.ptt_connected = True
+                    self.log.info(
+                        "[RIGCTLD] Connected PTT instance to rigctld!", ip=self.hostname, port=self.port
+                    )
+                except Exception as err:
+                    # ConnectionRefusedError: [Errno 111] Connection refused
+                    self.close_rig()
+                    self.log.warning(
+                        "[RIGCTLD] PTT Reconnect...",
+                        ip=self.hostname,
+                        port=self.port,
+                        e=err,
+                    )
+
+            threading.Event().wait(0.5)
+
+    def data_connect(self):
+        """Connect to rigctld instance"""
+        while True:
+            if not self.data_connected:
+                try:
+                    self.data_connection = socket.create_connection((self.hostname, self.port))
+                    self.data_connected = True
+                    self.log.info(
+                        "[RIGCTLD] Connected DATA instance to rigctld!", ip=self.hostname, port=self.port
+                    )
+                except Exception as err:
+                    # ConnectionRefusedError: [Errno 111] Connection refused
+                    self.close_rig()
+                    self.log.warning(
+                        "[RIGCTLD] DATA Reconnect...",
+                        ip=self.hostname,
+                        port=self.port,
+                        e=err,
+                    )
+            threading.Event().wait(0.5)
 
     def close_rig(self):
         """ """
-        self.sock.close()
-        self.connected = False
+        self.ptt_sock.close()
+        self.data_sock.close()
+        self.ptt_connected = False
+        self.data_connected = False
 
-    def send_command(self, command, expect_answer) -> bytes:
+
+    def send_ptt_command(self, command, expect_answer) -> bytes:
         """Send a command to the connected rotctld instance,
             and return the return value.
 
@@ -110,9 +149,9 @@ class radio:
           command:
 
         """
-        if self.connected:
+        if self.ptt_connected:
             try:
-                self.connection.sendall(command + b"\n")
+                self.ptt_connection.sendall(command + b"\n")
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] Command not executed!",
@@ -120,12 +159,33 @@ class radio:
                     ip=self.hostname,
                     port=self.port,
                 )
-                self.connected = False
+                self.ptt_connected = False
+        return b""
+
+    def send_data_command(self, command, expect_answer) -> bytes:
+        """Send a command to the connected rotctld instance,
+            and return the return value.
+
+        Args:
+          command:
+
+        """
+        if self.data_connected:
+            try:
+                self.data_connection.sendall(command + b"\n")
+            except Exception:
+                self.log.warning(
+                    "[RIGCTLD] Command not executed!",
+                    command=command,
+                    ip=self.hostname,
+                    port=self.port,
+                )
+                self.data_connected = False
 
             try:
-                # recv seems to be blocking so in case of ptt we dont need the response
+                # recv seems to be blocking so in case of ptt we don't need the response
                 # maybe this speeds things up and avoids blocking states
-                return self.connection.recv(16) if expect_answer else True
+                return self.data_connection.recv(64) if expect_answer else True
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
@@ -133,23 +193,18 @@ class radio:
                     ip=self.hostname,
                     port=self.port,
                 )
-                self.connected = False
-        else:
-
-            # reconnecting....
-            threading.Event().wait(0.5)
-            self.connect()
-
+                self.data_connected = False
         return b""
 
     def get_status(self):
         """ """
-        return "connected" if self.connected else "unknown/disconnected"
+        return "connected" if self.data_connected and self.ptt_connected else "unknown/disconnected"
 
     def get_mode(self):
         """ """
         try:
-            data = self.send_command(b"m", True)
+            data = self.send_data_command(b"m", True)
+            print(data)
             data = data.split(b"\n")
             data = data[0].decode("utf-8")
             if 'RPRT' not in data:
@@ -165,7 +220,7 @@ class radio:
     def get_bandwidth(self):
         """ """
         try:
-            data = self.send_command(b"m", True)
+            data = self.send_data_command(b"m", True)
             data = data.split(b"\n")
             data = data[1].decode("utf-8")
 
@@ -179,7 +234,7 @@ class radio:
     def get_frequency(self):
         """ """
         try:
-            data = self.send_command(b"f", True)
+            data = self.send_data_command(b"f", True)
             data = data.decode("utf-8")
             if 'RPRT' not in data and data not in [0, '0', '']:
                 with contextlib.suppress(ValueError):
@@ -209,9 +264,9 @@ class radio:
         """
         try:
             if state:
-                self.send_command(b"T 1", False)
+                self.send_ptt_command(b"T 1", False)
             else:
-                self.send_command(b"T 0", False)
+                self.send_ptt_command(b"T 0", False)
             return state
         except Exception:
             return False
