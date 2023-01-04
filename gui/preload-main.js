@@ -49,6 +49,15 @@ window.addEventListener('DOMContentLoaded', () => {
             ipcRenderer.send('run-tnc-command', Data);
 
     });
+
+    // enter button for input field
+    document.getElementById("newFrequency").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        document.getElementById("saveFrequency").click();
+      }
+    });
+
     // save mode event listener
     document.getElementById("saveModePKTUSB").addEventListener("click", () => {
             let Data = {
