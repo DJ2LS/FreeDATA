@@ -1997,24 +1997,9 @@ class DATA:
                     )
 
                     # wait while timeout not reached and our busy state is busy
-                    channel_busy_timeout = time.time() + 15
+                    channel_busy_timeout = time.time() + 10
                     while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                         threading.Event().wait(0.01)
-
-                    # if channel busy timeout reached, stop connecting
-                    if time.time() > channel_busy_timeout:
-                        self.log.warning("[TNC] Channel busy, try again later...")
-                        static.ARQ_SESSION_STATE = "failed"
-                        self.send_data_to_socket_queue(
-                            freedata="tnc-message",
-                            arq="transmission",
-                            status="failed",
-                            reason="busy",
-                            mycallsign=str(self.mycallsign, 'UTF-8'),
-                            dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                        )
-                        static.ARQ_SESSION_STATE = "disconnected"
-                        return False
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
