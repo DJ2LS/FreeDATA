@@ -5,7 +5,7 @@ Created on Fri Dec 25 21:25:14 2020
 @author: DJ2LS
 """
 import time
-
+from datetime import datetime,timezone
 import crcengine
 import static
 import structlog
@@ -132,7 +132,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
         static.HEARD_STATIONS.append(
-            [dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency]
+            [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
