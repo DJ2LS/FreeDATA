@@ -1400,6 +1400,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
     }
 
+    // update mygrid information with data from tnc
+    if (typeof(arg.mygrid) !== 'undefined') {
+        document.getElementById("myGrid").value = arq.mygrid;
+    }
+
+
 
     // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
     // deactivated this feature, beacuse its useless at this time. maybe it is getting more interesting, if we are working via network
