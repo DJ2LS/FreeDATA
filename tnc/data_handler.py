@@ -3159,8 +3159,10 @@ class DATA:
 
     def send_test_frame(self) -> None:
         """Send an empty test frame"""
+        test_frame = bytearray(126)
+        test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         self.enqueue_frame_for_tx(
-            frame_to_tx=[bytearray(126)], c2_mode=FREEDV_MODE.datac3.value
+            frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac3.value
         )
 
     def save_data_to_folder(self,
