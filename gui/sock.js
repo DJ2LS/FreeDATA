@@ -196,6 +196,7 @@ client.on('data', function(socketdata) {
 
                 let Data = {
                     mycallsign: data['mycallsign'],
+                    mygrid: data['mygrid'],
                     ptt_state: data['ptt_state'],
                     busy_state: data['tnc_state'],
                     arq_state: data['arq_state'],

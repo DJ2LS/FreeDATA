@@ -658,6 +658,7 @@ def send_tnc_state():
         "beacon_state": str(static.BEACON_STATE),
         "stations": [],
         "mycallsign": str(static.MYCALLSIGN, encoding),
+        "mygrid": str(static.MYGRID, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
         "hamlib_status": static.HAMLIB_STATUS,
