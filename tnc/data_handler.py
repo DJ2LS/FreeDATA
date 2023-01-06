@@ -477,9 +477,12 @@ class DATA:
         while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
             threading.Event().wait(0.01)
 
+
         # Transmit frame
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
+        # reset burst timeout in case we had to wait too long
+        self.burst_last_received = time.time()
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
 
@@ -501,6 +504,9 @@ class DATA:
         # TODO: Do we have to send , self.send_ident_frame(False) ?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
+
+        # reset burst timeout in case we had to wait too long
+        self.burst_last_received = time.time()
 
     def send_retransmit_request_frame(self, freedv) -> None:
         # check where a None is in our burst buffer and do frame+1, because lists start at 0
@@ -551,7 +557,8 @@ class DATA:
             threading.Event().wait(0.01)
 
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
-
+        # reset burst timeout in case we had to wait too long
+        self.burst_last_received = time.time()
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
@@ -575,7 +582,8 @@ class DATA:
 
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
-
+        # reset burst timeout in case we had to wait too long
+        self.burst_last_received = time.time()
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
         disconnection_frame = bytearray(self.length_sig1_frame)
