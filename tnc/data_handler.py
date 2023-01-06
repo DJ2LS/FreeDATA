@@ -2163,7 +2163,6 @@ class DATA:
         )
 
         self.session_id = data_in[13:14]
-        print(self.session_id)
 
         # check again if callsign ssid override
         _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
@@ -2177,13 +2176,16 @@ class DATA:
             channel_constellation=constellation,
         )
 
+        # Reset data_channel/burst timestamps
+        self.data_channel_last_received = int(time.time())
+        self.burst_last_received = int(time.time())
+
+        # Set ARQ State AFTER resetting timeouts
+        # this avoids timeouts starting too early
         static.ARQ_STATE = True
         static.TNC_STATE = "BUSY"
 
         self.reset_statistics()
-
-        # Update data_channel timestamp
-        self.data_channel_last_received = int(time.time())
 
         # Select the frame type based on the current TNC mode
         if static.LOW_BANDWIDTH_MODE or self.received_LOW_BANDWIDTH_MODE:
@@ -2226,8 +2228,9 @@ class DATA:
         # set start of transmission for our statistics
         self.rx_start_of_transmission = time.time()
 
-        # Update data_channel timestamp
+        # Reset data_channel/burst timestamps once again for avoiding running into timeout
         self.data_channel_last_received = int(time.time())
+        self.burst_last_received = int(time.time())
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
         """
