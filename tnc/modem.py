@@ -1047,9 +1047,9 @@ class RF:
                     # so we have a smoother state toggle
                     if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
                         static.CHANNEL_BUSY = True
-                        # Limit delay counter to a maximum of 250. The higher this value,
+                        # Limit delay counter to a maximum of 200. The higher this value,
                         # the longer we will wait until releasing state
-                        channel_busy_delay = min(channel_busy_delay + 10, 250)
+                        channel_busy_delay = min(channel_busy_delay + 10, 200)
                     else:
                         # Decrement channel busy counter if no signal has been detected.
                         channel_busy_delay = max(channel_busy_delay - 1, 0)
