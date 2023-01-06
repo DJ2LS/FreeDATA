@@ -398,7 +398,8 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name)
+        frame_type=FR_TYPE(int.from_bytes(frame_to_tx[:1], byteorder="big")).name
+        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx, type=frame_type)
 
         # Set the TRANSMITTING flag before adding an object to the transmit queue
         # TODO: This is not that nice, we could improve this somehow
