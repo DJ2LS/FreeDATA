@@ -1402,7 +1402,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // update mygrid information with data from tnc
     if (typeof(arg.mygrid) !== 'undefined') {
-        document.getElementById("myGrid").value = arq.mygrid;
+        document.getElementById("myGrid").value = arg.mygrid;
     }
 
 
