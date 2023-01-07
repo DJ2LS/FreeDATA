@@ -1,5 +1,5 @@
 const path = require('path');
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, shell} = require('electron');
 const exec = require('child_process').spawn;
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
@@ -1074,6 +1074,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     // Stop beacon button clicked
     document.getElementById("stopBeacon").addEventListener("click", () => {
         sock.stopBeacon();
+    });
+
+    // Explorer button clicked
+    document.getElementById("openExplorer").addEventListener("click", () => {
+        shell.openExternal('https://explorer.freedata.app/?myCall=' + document.getElementById("myCall").value);
     });
 
     // startTNC button clicked
