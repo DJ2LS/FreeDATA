@@ -644,6 +644,9 @@ class RF:
                     rx_status = codec2.api.freedv_get_rx_status(freedv)
 
                     if rx_status != 0:
+                        # if we're receiving FreeDATA signals, reset channel busy state
+                        static.CHANNEL_BUSY = False
+
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
