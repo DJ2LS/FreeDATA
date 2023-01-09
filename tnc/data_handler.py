@@ -2388,6 +2388,8 @@ class DATA:
             snr=static.SNR,
         )
 
+        static.DXGRID = b'------'
+
         helpers.add_to_heard_stations(
             dxcallsign,
             static.DXGRID,
