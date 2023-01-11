@@ -136,7 +136,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # we might improve this by only processing one command or
                         # doing some kind of selection to determin which commands need to be dropped
                         # and which one can be processed during a running transmission
-                        threading.Event().wait(3)
+                        threading.Event().wait(0.5)
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()

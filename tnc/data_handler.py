@@ -584,6 +584,7 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
         disconnection_frame = bytearray(self.length_sig1_frame)
@@ -2890,7 +2891,7 @@ class DATA:
 
         self.log.debug("[TNC] arq_cleanup")
 
-        self.session_id = bytes(1)
+
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False
         self.burst_ack = False
@@ -2929,10 +2930,12 @@ class DATA:
         self.session_connect_max_retries = 10
         self.data_channel_max_retries = 10
 
+        # we need to keep these values if in ARQ_SESSION
         if not static.ARQ_SESSION:
             static.TNC_STATE = "IDLE"
             self.dxcallsign = b"AA0AA-0"
             self.mycallsign = static.MYCALLSIGN
+            self.session_id = bytes(1)
 
         static.ARQ_STATE = False
         self.arq_file_transfer = False
