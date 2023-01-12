@@ -289,16 +289,57 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
         document.getElementById("waterfall-scatter-switch2").checked = false;
-        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("waterfall-scatter-switch3").checked = false;
+
         document.getElementById("waterfall").style.visibility = 'visible';
         document.getElementById("waterfall").style.height = '100%';
-    } else {
+        document.getElementById("waterfall").style.display = 'block';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.display = 'none';
+
+    } else if (config.spectrum == 'scatter'){
 
         document.getElementById("waterfall-scatter-switch1").checked = false;
         document.getElementById("waterfall-scatter-switch2").checked = true;
-        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("waterfall-scatter-switch3").checked = false;
+
         document.getElementById("waterfall").style.visibility = 'hidden';
         document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+
+        document.getElementById("scatter").style.height = '100%';
+        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("scatter").style.display = 'block';
+
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.display = 'none';
+
+    } else {
+
+        document.getElementById("waterfall-scatter-switch1").checked = false;
+        document.getElementById("waterfall-scatter-switch2").checked = false;
+        document.getElementById("waterfall-scatter-switch3").checked = true;
+
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.visibility = 'visible';
+        document.getElementById("chart").style.height = '100%';
+        document.getElementById("chart").style.display = 'block';
+
     }
 
     // radio control element
@@ -771,21 +812,55 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     // on click waterfall scatter toggle view
     // waterfall
     document.getElementById("waterfall-scatter-switch1").addEventListener("click", () => {
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.display = 'none';
+        document.getElementById("chart").style.height = '0px';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.display = 'none';
         document.getElementById("scatter").style.visibility = 'hidden';
+
+        document.getElementById("waterfall").style.display = 'block';
         document.getElementById("waterfall").style.visibility = 'visible';
         document.getElementById("waterfall").style.height = '100%';
+
         config.spectrum = 'waterfall';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     // scatter
     document.getElementById("waterfall-scatter-switch2").addEventListener("click", () => {
+        document.getElementById("scatter").style.display = 'block';
         document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("scatter").style.height = '100%';
+
         document.getElementById("waterfall").style.visibility = 'hidden';
         document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.display = 'none';
+
         config.spectrum = 'scatter';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    // chart
+    document.getElementById("waterfall-scatter-switch3").addEventListener("click", () => {
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
 
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.height = '100%';
+        document.getElementById("chart").style.display = 'block';
+        document.getElementById("chart").style.visibility = 'visible';
+
+        config.spectrum = 'chart';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
 
     // on click remote tnc toggle view
@@ -1410,29 +1485,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("myGrid").value = arg.mygrid;
     }
 
-
-
-    // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
-    // deactivated this feature, beacuse its useless at this time. maybe it is getting more interesting, if we are working via network
-    // but for this we need to find a nice place for this on the screen
-    /*
-    if (typeof(arg.toe) == 'undefined') {
-        var toe = 0
-    } else {
-        var toe = arg.toe
-    }
-    document.getElementById("toe").innerHTML = toe + ' ms'
-    */
-    
     // DATA STATE
     global.rxBufferLengthTnc = arg.rx_buffer_length
 
-    // SCATTER DIAGRAM PLOTTING
-    //global.myChart.destroy();
 
-    //console.log(arg.scatter.length)
+    // START OF SCATTER CHART
 
-        const config = {
+    const scatterConfig = {
                 plugins: {
                     legend: {
                         display: false,
@@ -1486,16 +1545,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     }
                 }
         }
-
-
-
-
-    var data = arg.scatter
-    var newdata = {
+    var scatterData = arg.scatter
+    var newScatterData = {
         datasets: [{
             //label: 'constellation diagram',
-            data: data,
-            options: config,
+            data: scatterData,
+            options: scatterConfig,
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
@@ -1505,24 +1560,119 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var scatterSize = arg.scatter.length;
     }
-    if (global.data != newdata && scatterSize > 0) {
-        try {
-            global.myChart.destroy();
-        } catch (e) {
-            // myChart not yet created
-            console.log(e);
+
+     if (global.scatterData != newScatterData && scatterSize > 0) {
+     global.scatterData = newScatterData;
+
+        if (typeof(global.scatterChart) == 'undefined') {
+        var scatterCtx = document.getElementById('scatter').getContext('2d');
+        global.scatterChart = new Chart(scatterCtx, {
+            type: 'scatter',
+            data: global.scatterData,
+            options: scatterConfig
+        });
+    } else {
+        global.scatterChart.data = global.scatterData;
+        global.scatterChart.update();
+    }
+}
+    // END OF SCATTER CHART
+
+    // START OF SPEED CHART
+
+    var speedDataTime = []
+
+    if (typeof(arg.speed_list) == 'undefined') {
+        var speed_listSize = 0;
+    } else {
+        var speed_listSize = arg.speed_list.length;
+    }
+
+    for (var i=0; i < speed_listSize; i++) {
+        var timestamp = arg.speed_list[i].timestamp * 1000
+        var h = new Date(timestamp).getHours();
+        var m = new Date(timestamp).getMinutes();
+        var s = new Date(timestamp).getSeconds();
+        var time = h + ':' + m + ':' + s;
+        speedDataTime.push(time)
+    }
+
+    var speedDataBpm = []
+    for (var i=0; i < speed_listSize; i++) {
+        speedDataBpm.push(arg.speed_list[i].bpm)
+
+    }
+
+    var speedDataSnr = []
+    for (var i=0; i < speed_listSize; i++) {
+        speedDataSnr.push(arg.speed_list[i].snr)
+    }
+
+
+    var speedChartConfig = {
+      type: 'line',
+    };
+
+    var newSpeedData = {
+        labels: speedDataTime,
+        datasets: [
+            {
+                type: 'line',
+                label: 'SNR[dB]',
+                data: speedDataSnr,
+                borderColor: 'rgb(255, 99, 132, 1.0)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                order: 1,
+                yAxisID: 'SNR',
+            },
+            {
+                type: 'bar',
+                label: 'Speed[bpm]',
+                data: speedDataBpm,
+                borderColor: 'rgb(120, 100, 120, 1.0)',
+                backgroundColor: 'rgba(120, 100, 120, 0.2)',
+                order: 0,
+                yAxisID: 'SPEED',
+            }
+        ],
+
+    };
+
+var speedChartOptions = {
+            responsive: true,
+            animations: true,
+            cubicInterpolationMode: 'monotone',
+            tension: 0.4,
+            scales: {
+              SNR:{
+                type: 'linear',
+                ticks: { beginAtZero: true, color: 'rgb(255, 99, 132)' },
+                position: 'right',
+              },
+              SPEED :{
+                type: 'linear',
+                ticks: { beginAtZero: true, color: 'rgb(120, 100, 120)' },
+                position: 'left',
+                grid: {
+                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                },
+              },
+              x: { ticks: { beginAtZero: true } },
+            }
         }
 
-        global.data = newdata;
-
-
-        var ctx = document.getElementById('scatter').getContext('2d');
-        global.myChart = new Chart(ctx, {
-            type: 'scatter',
-            data: global.data,
-            options: config
+    if (typeof(global.speedChart) == 'undefined') {
+        var speedCtx = document.getElementById('chart').getContext('2d');
+        global.speedChart = new Chart(speedCtx, {
+            data: newSpeedData,
+            options: speedChartOptions
         });
+    } else {
+        global.speedChart.data = newSpeedData;
+        global.speedChart.update();
     }
+
+    // END OF SPEED CHART
 
     // PTT STATE
     if (arg.ptt_state == 'True') {

@@ -654,6 +654,7 @@ def send_tnc_state():
         "arq_seconds_until_finish": str(static.ARQ_SECONDS_UNTIL_FINISH),
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
+        "speed_list": static.SPEED_LIST,
         "total_bytes": str(static.TOTAL_BYTES),
         "beacon_state": str(static.BEACON_STATE),
         "stations": [],
@@ -679,7 +680,6 @@ def send_tnc_state():
                 "frequency": heard[6],
             }
         )
-
     return json.dumps(output)
 
 
