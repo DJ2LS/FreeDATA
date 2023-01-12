@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.6.10-alpha.1-exp"
+VERSION = "0.6.11-alpha.1-exp"
 
 ENABLE_EXPLORER = False
 
@@ -95,6 +95,7 @@ CHANNEL_BUSY: bool = False
 ARQ_PROTOCOL_VERSION: int = 5
 
 # ARQ statistics
+SPEED_LIST: list = []
 ARQ_BYTES_PER_MINUTE_BURST: int = 0
 ARQ_BYTES_PER_MINUTE: int = 0
 ARQ_BITS_PER_SECOND_BURST: int = 0

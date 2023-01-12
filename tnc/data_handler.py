@@ -2807,7 +2807,7 @@ class DATA:
                     receivedbytes / (transmissiontime / 60)
                 )
                 static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60) -20 # offset because of frame ack/nack
-
+                static.SPEED_LIST.append({"snr": static.SNR, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())})
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
@@ -2863,6 +2863,7 @@ class DATA:
                 static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)
                 static.ARQ_BYTES_PER_MINUTE = int(sentbytes / (transmissiontime / 60))
                 static.ARQ_SECONDS_UNTIL_FINISH = int(((tx_buffer_length - sentbytes) / (static.ARQ_BYTES_PER_MINUTE* static.ARQ_COMPRESSION_FACTOR)) * 60 )
+                static.SPEED_LIST.append({"snr": self.burst_ack_snr, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())})
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
@@ -2899,7 +2900,7 @@ class DATA:
         self.data_frame_ack_received = False
         static.RX_BURST_BUFFER = []
         static.RX_FRAME_BUFFER = b""
-        self.burst_ack_snr = 255
+        self.burst_ack_snr = 0
 
         # reset modem receiving state to reduce cpu load
         modem.RECEIVE_SIG0 = True
@@ -2937,6 +2938,7 @@ class DATA:
             self.mycallsign = static.MYCALLSIGN
             self.session_id = bytes(1)
 
+        static.SPEED_LIST = []
         static.ARQ_STATE = False
         self.arq_file_transfer = False
 

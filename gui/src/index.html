@@ -838,37 +838,19 @@
 						<div class="card-header p-1">
 							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
 								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch1" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch1"><strong>WATERFALL</strong> </label>
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch1"><strong><i class="bi bi-water"></i></strong> </label>
 								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch2" autocomplete="off">
-								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong>SCATTER</strong> </label>
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong><i class="bi bi-border-outer"></i></strong> </label>
+								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch3" autocomplete="off">
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch3"><strong><i class="bi bi-graph-up-arrow"></i></strong> </label>
 							</div>
 							<button class="btn btn-sm btn-secondary" id="channel_busy" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>">busy</button>
 						</div>
 						<div class="card-body p-1" style="height: 200px">
-							<!-- TEST FOR WATERFALL OVERLAY
-                           <div class="opacity-100 w-100 h-100 p-0 m-0 position-absolute" style="height: 190px;z-index: 10">
-                                                   <div class="row m-0 p-0 w-100 h-100">
-                                                     <div class="col m-0 p-0 col-3 ">
-                                                       -
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0 col-2">
-                                                       1800Hz
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0" style="width: 190px;">
-                                                       500Hz
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0 col-2">
-                                                       -
-                                                     </div>
-                                                     <div class="col m-0 p-0 col-3">
-                                                       -
-                                                     </div>
-                                                   </div>
-                           </div>
-                           -->
 							<!--278px-->
 							<canvas id="waterfall" style="position: relative; z-index: 2; transform: translateZ(0);"></canvas>
 							<canvas id="scatter" style="position: relative; z-index: 1; transform: translateZ(0);"></canvas>
+							<canvas id="chart" style="position: relative; z-index: 1; transform: translateZ(0);"></canvas>
 						</div>
 					</div>
 				</div>
@@ -1145,8 +1127,8 @@
 	<!-- bootstrap -->
 	<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<!-- chart.js -->
-	<script src="../node_modules/chart.js/dist/chart.min.js"></script>
-	<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
+	<script src="../node_modules/chart.js/dist/chart.umd.js"></script>
+	<!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
 	<!--<script src="../ui.js"></script>-->
 	<!-- WATERFALL -->
 	<script src="waterfall/colormap.js"></script>

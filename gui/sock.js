@@ -231,6 +231,8 @@ client.on('data', function(socketdata) {
                     hamlib_status: data['hamlib_status'],
                     listen: data['listen'],
                     audio_recording: data['audio_recording'],
+                    speed_list: data['speed_list'],
+                    //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
