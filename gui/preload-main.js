@@ -982,8 +982,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     });
 
-      // Waterfall theme selector clicked
-      document.getElementById("wftheme_selector").addEventListener("click", () => {
+      // Waterfall theme selector value changed
+      document.getElementById("wftheme_selector").addEventListener("change", () => {
         var wftheme = document.getElementById("wftheme_selector").value;
         spectrum.setColorMap(wftheme);
         config.wftheme = wftheme;
