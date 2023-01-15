@@ -1580,6 +1580,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     // SET FREQUENCY
     document.getElementById("frequency").textContent = arg.frequency;
+    //document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
     document.getElementById("mode").textContent = arg.mode;
