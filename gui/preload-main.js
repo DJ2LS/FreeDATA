@@ -1668,8 +1668,10 @@ var speedChartOptions = {
             options: speedChartOptions
         });
     } else {
-        global.speedChart.data = newSpeedData;
-        global.speedChart.update();
+        if(newSpeedData.length > 0){
+            global.speedChart.data = newSpeedData;
+            global.speedChart.update();
+        }
     }
 
     // END OF SPEED CHART
