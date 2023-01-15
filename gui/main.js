@@ -318,13 +318,16 @@ app.whenReady().then(() => {
 
     // start daemon by checking os
     mainLog.info('Starting freedata-daemon binary; if it exists....');
-
+    
     if(os.platform()=='darwin'){
+
+        if (fs.existsSync(path.join(process.resourcesPath,'tnc','freedata-daemon'))){    
         daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
             {   
                 cwd: path.join(process.resourcesPath, 'tnc'),              
             });                
-    }    
+        }
+    }
     
     /*
     process.resourcesPath -->
