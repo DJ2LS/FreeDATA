@@ -1579,12 +1579,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     }
 
     // SET FREQUENCY
-<<<<<<< HEAD
-    document.getElementById("frequency").innerHTML = arg.frequency;
-=======
     document.getElementById("frequency").textContent = arg.frequency;
-    //document.getElementById("newFrequency").value = arg.frequency;
->>>>>>> 2994be2 (Some optimizations)
 
     // SET MODE
     document.getElementById("mode").textContent = arg.mode;
@@ -1606,13 +1601,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
-<<<<<<< HEAD
-    document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
-    
-=======
     document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
- 
->>>>>>> 2994be2 (Some optimizations)
     
     // SET SPEED LEVEL
 
