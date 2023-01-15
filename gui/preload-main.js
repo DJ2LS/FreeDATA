@@ -268,9 +268,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         document.getElementById("theme_selector").value = 'default';
         document.getElementById("bootstrap_theme").href = escape(theme_path);
     }
-    
 
-    // Update channel selector
+
+        // Update channel selector
     document.getElementById("update_channel_selector").value = config.update_channel;
     document.getElementById("updater_channel").innerHTML = escape(config.update_channel);
 
@@ -413,10 +413,15 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // Create spectrum object on canvas with ID "waterfall"
     global.spectrum = new Spectrum(
         "waterfall", {
-            spectrumPercent: 0
+            spectrumPercent: 0,
+            wf_rows: 192  //Defaults to 1024, no point in having more than what is visible
         });
 
-
+        //Set waterfall theme from config
+        if (config.wftheme != 2){
+            document.getElementById("wftheme_selector").value = config.wftheme;
+            spectrum.setColorMap(config.wftheme);
+        }
 
     // on click radio control toggle view
     // disabled
@@ -1120,6 +1125,14 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.theme = theme;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
+    });
+
+      // Waterfall theme selector clicked
+      document.getElementById("wftheme_selector").addEventListener("click", () => {
+        var wftheme = document.getElementById("wftheme_selector").value;
+        spectrum.setColorMap(wftheme);
+        config.wftheme = wftheme;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
     // Update channel selector clicked
