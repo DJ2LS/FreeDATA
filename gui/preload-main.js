@@ -308,11 +308,9 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
             wf_rows: 192  //Defaults to 1024, no point in having more than what is visible
         });
 
-        //Set waterfall theme from config
-        if (config.wftheme != 2){
-            document.getElementById("wftheme_selector").value = config.wftheme;
-            spectrum.setColorMap(config.wftheme);
-        }
+    //Set waterfall theme from config
+    document.getElementById("wftheme_selector").value = config.wftheme;
+    spectrum.setColorMap(config.wftheme);
 
     // on click radio control toggle view
     // disabled
