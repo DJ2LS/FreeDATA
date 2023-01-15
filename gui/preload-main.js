@@ -1301,7 +1301,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             ipcRenderer.send('run-tnc-command', Data);    
     })
     
-    // STOP TRANSMISSION AND CONNECRTION
+    // STOP TRANSMISSION AND CONNECTION
     document.getElementById("stop_transmission_connection").addEventListener("click", () => {
             let Data = {
                 command: "stop_transmission"
@@ -1342,6 +1342,8 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (typeof(arg.mycallsign) !== 'undefined') {
         // split document title by looking for Call then split and update it
         var documentTitle = document.title.split('Call:')
+        // Updating title seems costly, only update if it doesn't match
+        if (document.title != documentTitle[0]+ 'Call: ' + arg.mycallsign )
         document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
     }
 
@@ -1470,13 +1472,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Stop Rec"
+        document.getElementById("startStopRecording").textContent = "Stop Rec"
     } else if (arg.ptt_state == 'False') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     } else {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
 
@@ -1573,19 +1575,24 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         dbfs_level_raw = arg.dbfs_level
         dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
 
-        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
+        document.getElementById("dbfs_level_value").textContent = Math.round(arg.dbfs_level) + ' dBFS'
         document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
         document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
     }
 
     // SET FREQUENCY
+<<<<<<< HEAD
     document.getElementById("frequency").innerHTML = arg.frequency;
+=======
+    document.getElementById("frequency").textContent = arg.frequency;
+    //document.getElementById("newFrequency").value = arg.frequency;
+>>>>>>> 2994be2 (Some optimizations)
 
     // SET MODE
-    document.getElementById("mode").innerHTML = arg.mode;
+    document.getElementById("mode").textContent = arg.mode;
 
     // SET bandwidth
-    document.getElementById("bandwidth").innerHTML = arg.bandwidth;
+    document.getElementById("bandwidth").textContent = arg.bandwidth;
 
     // SET BYTES PER MINUTE
     if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
@@ -1593,7 +1600,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var arq_bytes_per_minute = arg.arq_bytes_per_minute;
     }
-    document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute;
+    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
 
     // SET BYTES PER MINUTE COMPRESSED
     if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
@@ -1601,8 +1608,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
+<<<<<<< HEAD
     document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
     
+=======
+    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
+ 
+>>>>>>> 2994be2 (Some optimizations)
     
     // SET SPEED LEVEL
 
@@ -1630,7 +1642,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var total_bytes = arg.total_bytes;
     }
-    document.getElementById("total_bytes").innerHTML = total_bytes;
+    document.getElementById("total_bytes").textContent = total_bytes;
     document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent);
     document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;");
 
@@ -1652,14 +1664,14 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
             var myGrid = document.getElementById("myGrid").value;
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-                document.getElementById("pingDistance").innerHTML = dist;
-                document.getElementById("dataModalPingDistance").innerHTML = dist;
+                document.getElementById("pingDistance").textContent = dist;
+                document.getElementById("dataModalPingDistance").textContent = dist;
             } catch {
-                document.getElementById("pingDistance").innerHTML = '---';
-                document.getElementById("dataModalPingDistance").innerHTML = '---';
+                document.getElementById("pingDistance").textContent = '---';
+                document.getElementById("dataModalPingDistance").textContent = '---';
             }
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
-            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
+            document.getElementById("pingDB").textContent = arg.stations[i]['snr'];
+            document.getElementById("dataModalPingDB").textContent = arg.stations[i]['snr'];
         }
 
         // now we update the heard stations list
@@ -1709,7 +1721,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-
+        
         if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
             dataTypeText.innerText = 'DATA-C';
             dataType.appendChild(dataTypeText);
