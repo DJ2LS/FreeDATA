@@ -88,40 +88,34 @@ Spectrum.prototype.drawSpectrum = function(bins) {
     this.ctx_wf.stroke()
     */
 
-    // 586Hz LINES
-    var bandwidth = 568;
-    var linePositionLow = 150 - ((bandwidth/2)/10);
-    var linePositionHigh = 150 + ((bandwidth/2)/10);
+    // 586Hz and 1700Hz LINES
+    var linePositionLow = 121.6;     //150 - bandwith/20
+    var linePositionHigh = 178.4;    //150 + bandwidth/20
+    var linePositionLow2 = 65;       //150 - bandwith/20
+    var linePositionHigh2 = 235;     //150 + bandwith/20  
     this.ctx_wf.beginPath();
     this.ctx_wf.moveTo(linePositionLow,0);
     this.ctx_wf.lineTo(linePositionLow, height);
     this.ctx_wf.moveTo(linePositionHigh,0);
     this.ctx_wf.lineTo(linePositionHigh, height);
+    this.ctx_wf.moveTo(linePositionLow2,0);
+    this.ctx_wf.lineTo(linePositionLow2, height);
+    this.ctx_wf.moveTo(linePositionHigh2,0);
+    this.ctx_wf.lineTo(linePositionHigh2, height);
     this.ctx_wf.lineWidth = 1;
     this.ctx_wf.strokeStyle = '#C3C3C3';
     this.ctx_wf.stroke()
 
-    // 1700Hz LINES
-    var bandwidth = 1700;
-    var linePositionLow = 150 - ((bandwidth/2)/10);
-    var linePositionHigh = 150 + ((bandwidth/2)/10);
-    this.ctx_wf.beginPath();
-    this.ctx_wf.moveTo(linePositionLow,0);
-    this.ctx_wf.lineTo(linePositionLow, height);
-    this.ctx_wf.moveTo(linePositionHigh,0);
-    this.ctx_wf.lineTo(linePositionHigh, height);
-    this.ctx_wf.lineWidth = 1;
-    this.ctx_wf.strokeStyle = '#C3C3C3';
-    this.ctx_wf.stroke()
-
-
-    // ---- END OF MODIFICATION ------
+   // ---- END OF MODIFICATION ------
 
 
     // Fill with black
     this.ctx.fillStyle = "white";
     this.ctx.fillRect(0, 0, width, height);
 
+    //Commenting out the remainder of this code, it's not needed and unused as of 6.9.11 and saves three if statements
+    return;
+    /*
     // FFT averaging
     if (this.averaging > 0) {
         if (!this.binsAverage || this.binsAverage.length != bins.length) {
@@ -174,6 +168,12 @@ Spectrum.prototype.drawSpectrum = function(bins) {
 
     // Copy axes from offscreen canvas
     this.ctx.drawImage(this.ctx_axes.canvas, 0, 0);
+    */
+}
+
+//Allow setting colormap
+Spectrum.prototype.setColorMap = function(index) {
+    this.colormap = colormaps[index];
 }
 
 Spectrum.prototype.updateAxes = function() {
