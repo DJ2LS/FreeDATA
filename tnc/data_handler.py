@@ -2316,7 +2316,6 @@ class DATA:
                 own=static.ARQ_PROTOCOL_VERSION,
             )
             self.stop_transmission()
-            self.arq_cleanup()
 
     # ---------- PING
     def transmit_ping(self, mycallsign: bytes, dxcallsign: bytes) -> None:
@@ -2486,7 +2485,6 @@ class DATA:
         Force a stop of the running transmission
         """
         self.log.warning("[TNC] Stopping transmission!")
-
 
         static.TNC_STATE = "IDLE"
         static.ARQ_STATE = False
@@ -2807,7 +2805,11 @@ class DATA:
                     receivedbytes / (transmissiontime / 60)
                 )
                 static.ARQ_SECONDS_UNTIL_FINISH = int(((static.TOTAL_BYTES - receivedbytes) / (static.ARQ_BYTES_PER_MINUTE * static.ARQ_COMPRESSION_FACTOR)) * 60) -20 # offset because of frame ack/nack
-                static.SPEED_LIST.append({"snr": static.SNR, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())})
+
+                speed_chart = {"snr": static.SNR, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())}
+                # check if data already in list
+                if speed_chart not in static.SPEED_LIST:
+                    static.SPEED_LIST.append(speed_chart)
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
@@ -2863,7 +2865,13 @@ class DATA:
                 static.ARQ_BITS_PER_SECOND = int((sentbytes * 8) / transmissiontime)
                 static.ARQ_BYTES_PER_MINUTE = int(sentbytes / (transmissiontime / 60))
                 static.ARQ_SECONDS_UNTIL_FINISH = int(((tx_buffer_length - sentbytes) / (static.ARQ_BYTES_PER_MINUTE* static.ARQ_COMPRESSION_FACTOR)) * 60 )
-                static.SPEED_LIST.append({"snr": self.burst_ack_snr, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())})
+
+
+                speed_chart = {"snr": self.burst_ack_snr, "bpm": static.ARQ_BYTES_PER_MINUTE, "timestamp": int(time.time())}
+                # check if data already in list
+                if speed_chart not in static.SPEED_LIST:
+                    static.SPEED_LIST.append(speed_chart)
+
             else:
                 static.ARQ_BITS_PER_SECOND = 0
                 static.ARQ_BYTES_PER_MINUTE = 0
@@ -3073,7 +3081,6 @@ class DATA:
 
         if self.n_retries_per_burst >= self.rx_n_max_retries_per_burst:
             self.stop_transmission()
-            self.arq_cleanup()
 
     def data_channel_keep_alive_watchdog(self) -> None:
         """
