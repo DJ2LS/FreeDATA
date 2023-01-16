@@ -1668,7 +1668,7 @@ var speedChartOptions = {
             options: speedChartOptions
         });
     } else {
-        if(newSpeedData.length > 0){
+        if(speedDataSnr.length > 0){
             global.speedChart.data = newSpeedData;
             global.speedChart.update();
         }
