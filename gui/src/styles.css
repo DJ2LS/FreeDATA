@@ -8,6 +8,7 @@ body {
 /*Progress bars with centered text*/
 .progress {
     position: relative;
+    transform: translateZ(0);
 }
 
 .progress span {

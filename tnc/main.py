@@ -31,6 +31,7 @@ import modem
 import static
 import structlog
 import explorer
+import json
 
 log = structlog.get_logger("main")
 
@@ -348,7 +349,9 @@ if __name__ == "__main__":
             static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
             static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-            static.SSID_LIST = config['STATION']['ssid_list']
+            #json.loads = for converting str list to list
+            static.SSID_LIST = json.loads(config['STATION']['ssid_list'])
+
             static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
             # check if we have an int or str as device name
             try:
@@ -388,6 +391,11 @@ if __name__ == "__main__":
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:
             log.warning("[CFG] Error", e=e)
+
+    # make sure the own ssid is always part of the ssid list
+    my_ssid = int(static.MYCALLSIGN.split(b'-')[1])
+    if my_ssid not in static.SSID_LIST:
+        static.SSID_LIST.append(my_ssid)
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock

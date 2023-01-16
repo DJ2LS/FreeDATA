@@ -31,7 +31,7 @@ import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -136,7 +136,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # we might improve this by only processing one command or
                         # doing some kind of selection to determin which commands need to be dropped
                         # and which one can be processed during a running transmission
-                        threading.Event().wait(3)
+                        threading.Event().wait(0.5)
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
@@ -594,6 +594,32 @@ def process_tnc_commands(data):
                     command=received_json,
                 )
 
+        # SET FREQUENCY -----------------------------------------------------
+        if received_json["command"] == "frequency" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_frequency", received_json["frequency"]])
+                command_response("set_frequency", True)
+            except Exception as err:
+                command_response("set_frequency", False)
+                log.warning(
+                    "[SCK] Set frequency command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
+        # SET MODE -----------------------------------------------------
+        if received_json["command"] == "mode" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_mode", received_json["mode"]])
+                command_response("set_mode", True)
+            except Exception as err:
+                command_response("set_mode", False)
+                log.warning(
+                    "[SCK] Set mode command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
     # exception, if JSON cant be decoded
     except Exception as err:
         log.error("[SCK] JSON decoding error", e=err)
@@ -625,12 +651,15 @@ def send_tnc_state():
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
         "arq_bytes_per_minute": str(static.ARQ_BYTES_PER_MINUTE),
         "arq_bytes_per_minute_burst": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+        "arq_seconds_until_finish": str(static.ARQ_SECONDS_UNTIL_FINISH),
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
+        "speed_list": static.SPEED_LIST,
         "total_bytes": str(static.TOTAL_BYTES),
         "beacon_state": str(static.BEACON_STATE),
         "stations": [],
         "mycallsign": str(static.MYCALLSIGN, encoding),
+        "mygrid": str(static.MYGRID, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
         "hamlib_status": static.HAMLIB_STATUS,
@@ -651,7 +680,6 @@ def send_tnc_state():
                 "frequency": heard[6],
             }
         )
-
     return json.dumps(output)
 
 

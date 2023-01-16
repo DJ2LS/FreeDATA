@@ -13,3 +13,6 @@ MODEM_TRANSMIT_QUEUE = queue.Queue()
 
 # Initialize FIFO queue to finally store received data
 RX_BUFFER = queue.Queue(maxsize=static.RX_BUFFER_SIZE)
+
+# Commands we want to send to rigctld
+RIGCTLD_COMMAND_QUEUE = queue.Queue()
