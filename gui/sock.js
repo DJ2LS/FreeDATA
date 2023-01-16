@@ -196,6 +196,7 @@ client.on('data', function(socketdata) {
 
                 let Data = {
                     mycallsign: data['mycallsign'],
+                    mygrid: data['mygrid'],
                     ptt_state: data['ptt_state'],
                     busy_state: data['tnc_state'],
                     arq_state: data['arq_state'],
@@ -221,6 +222,7 @@ client.on('data', function(socketdata) {
                     arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
                     arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
                     arq_bytes_per_minute: data['arq_bytes_per_minute'],
+                    arq_seconds_until_finish: data['arq_seconds_until_finish'],
                     arq_compression_factor: data['arq_compression_factor'],
                     total_bytes: data['total_bytes'],
                     arq_transmission_percent: data['arq_transmission_percent'],
@@ -229,6 +231,8 @@ client.on('data', function(socketdata) {
                     hamlib_status: data['hamlib_status'],
                     listen: data['listen'],
                     audio_recording: data['audio_recording'],
+                    speed_list: data['speed_list'],
+                    //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
@@ -594,6 +598,19 @@ exports.sendTestFrame = function() {
 // RECORD AUDIO
 exports.record_audio = function() {
     command = '{"type" : "set", "command" : "record_audio"}'
+    writeTncCommand(command)
+}
+
+// SET FREQUENCY
+exports.set_frequency = function(frequency) {
+    command = '{"type" : "set", "command" : "frequency", "frequency": '+ frequency +'}'
+    writeTncCommand(command)
+}
+
+// SET MODE
+exports.set_mode = function(mode) {
+    command = '{"type" : "set", "command" : "mode", "mode": "'+ mode +'"}'
+    console.log(command)
     writeTncCommand(command)
 }
 

@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.6.9-alpha.1"
+VERSION = "0.6.11-alpha.2"
 
 ENABLE_EXPLORER = False
 
@@ -95,12 +95,14 @@ CHANNEL_BUSY: bool = False
 ARQ_PROTOCOL_VERSION: int = 5
 
 # ARQ statistics
+SPEED_LIST: list = []
 ARQ_BYTES_PER_MINUTE_BURST: int = 0
 ARQ_BYTES_PER_MINUTE: int = 0
 ARQ_BITS_PER_SECOND_BURST: int = 0
 ARQ_BITS_PER_SECOND: int = 0
 ARQ_COMPRESSION_FACTOR: int = 0
 ARQ_TRANSMISSION_PERCENT: int = 0
+ARQ_SECONDS_UNTIL_FINISH: int = 0
 ARQ_SPEED_LEVEL: int = 0
 TOTAL_BYTES: int = 0
 # set save to folder state for allowing downloading files to local file system

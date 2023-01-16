@@ -25,7 +25,7 @@ import sounddevice as sd
 import static
 import structlog
 import ujson as json
-from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -280,6 +280,13 @@ class RF:
         )
         hamlib_thread.start()
 
+        hamlib_set_thread = threading.Thread(
+            target=self.set_rig_data, name="HAMLIB_SET_THREAD", daemon=True
+        )
+        hamlib_set_thread.start()
+
+
+
         # self.log.debug("[MDM] Starting worker_receive")
         worker_received = threading.Thread(
             target=self.worker_received, name="WORKER_THREAD", daemon=True
@@ -321,7 +328,7 @@ class RF:
                             # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
                         ]:
                             if (
-                                not data_buffer.nbuffer + length_x > data_buffer.size
+                                not (data_buffer.nbuffer + length_x) > data_buffer.size
                                 and receive
                             ):
                                 data_buffer.push(x)
@@ -378,7 +385,7 @@ class RF:
             (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 4),
             (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 5),
         ]:
-            if audiobuffer.nbuffer + length_x > audiobuffer.size:
+            if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                 static.BUFFER_OVERFLOW_COUNTER[index] += 1
             elif receive:
                 audiobuffer.push(x)
@@ -596,6 +603,7 @@ class RF:
         bytes_out,
         bytes_per_frame,
         state_buffer,
+        mode_name,
     ) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
@@ -613,6 +621,8 @@ class RF:
         :type bytes_per_frame: int
         :param state_buffer: modem states
         :type state_buffer: int
+        :param mode_name: mode name
+        :type mode_name: str
         :return: NIN from freedv instance
         :rtype: int
         """
@@ -631,9 +641,20 @@ class RF:
                     # 3 trial sync
                     # 6 decoded
                     # 10 error decoding == NACK
-                    state = codec2.api.freedv_get_rx_status(freedv)
-                    if state == 10:
-                        state_buffer.append(state)
+                    rx_status = codec2.api.freedv_get_rx_status(freedv)
+
+                    if rx_status != 0:
+                        # if we're receiving FreeDATA signals, reset channel busy state
+                        static.CHANNEL_BUSY = False
+
+                        self.log.debug(
+                            "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
+                        )
+
+                    if rx_status == 10:
+                        state_buffer.append(rx_status)
+
+
 
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
@@ -734,7 +755,8 @@ class RF:
             self.sig0_datac0_freedv,
             self.sig0_datac0_bytes_out,
             self.sig0_datac0_bytes_per_frame,
-            SIG0_DATAC0_STATE
+            SIG0_DATAC0_STATE,
+            "sig0-datac0"
         )
 
     def audio_sig1_datac0(self) -> None:
@@ -745,7 +767,8 @@ class RF:
             self.sig1_datac0_freedv,
             self.sig1_datac0_bytes_out,
             self.sig1_datac0_bytes_per_frame,
-            SIG1_DATAC0_STATE
+            SIG1_DATAC0_STATE,
+            "sig1-datac0"
         )
 
     def audio_dat0_datac1(self) -> None:
@@ -756,7 +779,8 @@ class RF:
             self.dat0_datac1_freedv,
             self.dat0_datac1_bytes_out,
             self.dat0_datac1_bytes_per_frame,
-            DAT0_DATAC1_STATE
+            DAT0_DATAC1_STATE,
+            "dat0-datac1"
         )
 
     def audio_dat0_datac3(self) -> None:
@@ -767,7 +791,8 @@ class RF:
             self.dat0_datac3_freedv,
             self.dat0_datac3_bytes_out,
             self.dat0_datac3_bytes_per_frame,
-            DAT0_DATAC3_STATE
+            DAT0_DATAC3_STATE,
+            "dat0-datac3"
         )
 
     def audio_fsk_ldpc_0(self) -> None:
@@ -874,7 +899,6 @@ class RF:
             # only take every tenth data point
             static.SCATTER = scatterdata[::10]
 
-
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for data about the received signal and calculate
@@ -908,6 +932,20 @@ class RF:
             static.SNR = 0
             return static.SNR
 
+    def set_rig_data(self) -> None:
+        """
+            Set rigctld parameters like frequency, mode
+            THis needs to be processed in a queue
+        """
+        while True:
+            cmd = RIGCTLD_COMMAND_QUEUE.get()
+            if cmd[0] == "set_frequency":
+                # [1] = Frequency
+                self.hamlib.set_frequency(cmd[1])
+            if cmd[0] == "set_mode":
+                # [1] = Mode
+                self.hamlib.set_mode(cmd[1])
+
     def update_rig_data(self) -> None:
         """
         Request information about the current state of the radio via hamlib
@@ -922,6 +960,7 @@ class RF:
             static.HAMLIB_MODE = self.hamlib.get_mode()
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
             static.HAMLIB_STATUS = self.hamlib.get_status()
+
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
@@ -974,6 +1013,8 @@ class RF:
                             # try except for avoiding runtime errors by division/0
                             try:
                                 rms = int(np.sqrt(np.max(d ** 2)))
+                                if rms == 0:
+                                    raise ZeroDivisionError
                                 static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
                             except Exception as e:
                                 self.log.warning(
@@ -1009,9 +1050,9 @@ class RF:
                     # so we have a smoother state toggle
                     if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
                         static.CHANNEL_BUSY = True
-                        # Limit delay counter to a maximum of 250. The higher this value,
+                        # Limit delay counter to a maximum of 200. The higher this value,
                         # the longer we will wait until releasing state
-                        channel_busy_delay = min(channel_busy_delay + 10, 250)
+                        channel_busy_delay = min(channel_busy_delay + 10, 200)
                     else:
                         # Decrement channel busy counter if no signal has been detected.
                         channel_busy_delay = max(channel_busy_delay - 1, 0)
