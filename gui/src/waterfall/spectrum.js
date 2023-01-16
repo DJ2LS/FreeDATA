@@ -68,7 +68,8 @@ Spectrum.prototype.drawFFT = function(bins) {
     this.ctx.stroke();
 }
 
-Spectrum.prototype.drawSpectrum = function(bins) {
+//Spectrum.prototype.drawSpectrum = function(bins) {
+    Spectrum.prototype.drawSpectrum = function() {
     var width = this.ctx.canvas.width;
     var height = this.ctx.canvas.height;
 
@@ -242,7 +243,8 @@ Spectrum.prototype.addData = function(data) {
             this.ctx_wf.fillRect(0, 0, this.wf.width, this.wf.height);
             this.imagedata = this.ctx_wf.createImageData(data.length, 1);
         }
-        this.drawSpectrum(data);
+        //this.drawSpectrum(data);
+        this.drawSpectrum();
         this.addWaterfallRow(data);
         this.resize();
     }
