@@ -233,51 +233,54 @@ jobs:
         with:
           python-version: 3.9
 
+      - name: Install Node.js, NPM and Yarn
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
       - name: Create tnc/dist
         working-directory: tnc
         run: |
           mkdir -p dist
 
-      - name: Download libcodec2 artifact
+      - name: Create tnc/dist/tnc
+        working-directory: tnc
+        run: |
+          mkdir -p dist/tnc
+
+      ##- name: Download libcodec2 artifact TNC DIST
+      ##  uses: actions/download-artifact@v3
+      ##  with:
+      ##    path: tnc/dist/codec2
+
+      - name: create tnc/lib/codec2
+        working-directory: tnc/lib/
+        run: |
+          mkdir codec2
+
+      - name: Download libcodec2 artifact TNC LIB
         uses: actions/download-artifact@v3
         with:
-          path: tnc/dist/codec2
+          path: tnc/lib/codec2
+
 
       - name: Install Linux dependencies
         # if: matrix.os == 'ubuntu-20.04'
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         run: |
-          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2
+          sudo apt install -y portaudio19-dev libhamlib-dev libhamlib-utils build-essential cmake python3-libhamlib2 patchelf
 
       - name: Install MacOS pyAudio
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
-          #brew install virtualenv
-          #virtualenv -p python3 venv
-          #cd venv
-          #source ./bin/activate
           brew install portaudio
           python -m pip install --upgrade pip
           pip3 install pyaudio
 
-
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install psutil
-          pip install crcengine
-          # pip install 'pyinstaller<5.1'
-          pip install ujson
-          pip install pyserial
-          pip install numpy
-          pip install structlog
-          pip install colorama
-          pip install sounddevice
-          # curl.exe --output PyAudio-0.2.11-cp39-cp39-win_amd64.whl --url https://download.lfd.uci.edu/pythonlibs/y2rycu7g/PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-          # pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-          pip install nuitka
-          pip install pyinstaller
-          pip install ordered-set
+          pip install -r requirements.txt
 
 
       # - name: Install Pyaudio Windows
@@ -299,8 +302,6 @@ jobs:
       #   with:
       #     path: tnc/lib/codec2
 
-      - name: Display structure of downloaded files
-        run: ls -R
 
       - name: Build binaries macOS
         if: ${{startsWith(matrix.os, 'macos')}}
@@ -322,104 +323,43 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-      - name: LIST ALL FILES
-        run: ls -R
+
 
       - name: Copy binaries - Linux
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         working-directory: tnc
         run: |
-          cp -r -f daemon.dist/* dist/
-          cp -r -f main.dist/* dist/
-
-      - name: LIST ALL FILES
-        run: ls -R
+          cp -r -f daemon.dist/* dist/tnc
+          cp -r -f main.dist/* dist/tnc
 
       - name: Copy binaries - Windows
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         # These are powershell aliases, not UNIX commands.
         run: |
-          cp -r -Force daemon.dist/* dist/
-          cp -r -Force main.dist/* dist/
+          cp -r -Force daemon.dist/* dist/tnc
+          cp -r -Force main.dist/* dist/tnc
 
       - name: Rename tnc binaries
-        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
-          mv dist/daemon* dist/${{ matrix.daemon_binary_name }}
-          mv dist/main* dist/${{ matrix.tnc_binary_name }}
+          mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
+          mv dist/tnc/main* dist/tnc/${{ matrix.tnc_binary_name }}
 
-      - name: Download Portaudio binaries Linux macOS
-        if: ${{!startsWith(matrix.os, 'windows')}}
-        working-directory: tnc
-        run: |
-          if ! test -d "dist/_sounddevice_data"; then
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
-          fi
-
-      - name: Download Portaudio binaries Windows
-        if: ${{startsWith(matrix.os, 'windows')}}
-        working-directory: tnc
-        run: |
-          if(Test-Path -Path "dist/_sounddevice_data"){
-          echo "already exists"
-          } else {
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
-          }
-      #- uses: actions/download-artifact@v3
-      #  with:
-      #    path: tnc/dist/codec2
+      - uses: actions/download-artifact@v3
+        with:
+           path: tnc/dist/tnc
 
       - name: LIST ALL FILES
         run: ls -R
 
-      #- name: Compress TNC
-      #  # if: ${{!startsWith(matrix.os, 'windows') }}
-      #  shell: bash
-      #  run: |
-      #    cd ./tnc/dist
-      #    zip -r ./${{ matrix.zip_name }}.zip *
-
-      - name: Copy TNC to GUI
+      - name: Download Portaudio binaries
+        working-directory: tnc
         run: |
-          # cp -R ./tnc/dist/tnc ./gui/tnc
-          cp -R ./tnc/dist ./gui/tnc
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
 
       - name: LIST ALL FILES
         run: ls -R
-
-      - name: Compress TNC
-        uses: thedoctor0/zip-release@master
-        with:
-            type: 'zip'
-            filename: '${{ matrix.zip_name }}.zip'
-            # directory: ./tnc/dist/tnc
-            directory: ./tnc/dist
-            path: .
-            # exclusions: '*.git* /*node_modules/* .editorconfig'
-
-      - name: LIST ALL FILES
-        run: ls -R
-
-      - name: Upload TNC artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.zip_name }}.zip
-          # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          path: ./tnc/dist/${{ matrix.zip_name }}.zip
-
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v3
-        with:
-          node-version: 16
-
-      - name: Release TNC
-        uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v')
-        with:
-          # files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          files: ./tnc/dist/${{ matrix.zip_name }}.zip
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
@@ -431,12 +371,38 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: ${{ matrix.electron_parameters }}
 
+      - name: Compress TNC
+        uses: thedoctor0/zip-release@master
+        with:
+            type: 'zip'
+            filename: '${{ matrix.zip_name }}.zip'
+            # directory: ./tnc/dist/tnc
+            directory: ./tnc/dist/tnc
+            path: .
+            # exclusions: '*.git* /*node_modules/* .editorconfig'
+
+      - name: Release TNC
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+          #files: ./tnc/dist/${{ matrix.zip_name }}.zip
+
       - name: LIST ALL FILES
         run: ls -R
 
-      - name: Upload App bundle artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: app_bundle_${{ matrix.os }}.zip
-          # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          path: ./gui/dist/*
+      #- name: Upload TNC artifacts
+      #  uses: actions/upload-artifact@v3
+      #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
+      #  with:
+      #    name: ${{ matrix.zip_name }}.zip
+      #    # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+      #    path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip#
+
+      #- name: Upload App bundle artifacts
+      #  uses: actions/upload-artifact@v3
+      #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
+      #  with:
+      #    name: app_bundle_${{ matrix.os }}.zip
+      #     # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+      #    path: ./gui/dist/*
