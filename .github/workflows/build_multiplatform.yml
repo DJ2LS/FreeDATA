@@ -309,7 +309,7 @@ jobs:
         run: |
           #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
-          pyinstaller freedata.spec
+          pyinstaller -y freedata.spec
           cp -r -f dist/tnc/* dist/
           rm -r dist/tnc
 
