@@ -5,9 +5,12 @@
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
-      <!-- Bootstrap CSS -->
-      <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
 
+
+
+       <!-- Bootstrap CSS -->
+      <link rel="stylesheet" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="styles.css" />
       <title>FreeDATA - Live Log</title>
    </head>
    <body>
@@ -17,10 +20,32 @@
       <!-- chart.js -->
 
 
+      <nav class="navbar fixed-top bg-light">
+  <div class="container-fluid">
+                <input type="checkbox" class="btn-check" id="enable_filter_info" autocomplete="off" checked>
+            <label class="btn btn-outline-info" for="enable_filter_info">info</label>
+
+            <input type="checkbox" class="btn-check" id="enable_filter_debug" autocomplete="off">
+            <label class="btn btn-outline-primary" for="enable_filter_debug">debug</label>
+
+            <input type="checkbox" class="btn-check" id="enable_filter_warning" autocomplete="off">
+            <label class="btn btn-outline-warning" for="enable_filter_warning">warning</label>
+
+            <input type="checkbox" class="btn-check" id="enable_filter_error" autocomplete="off">
+            <label class="btn btn-outline-danger" for="enable_filter_error">error</label>
+
+  </div>
+</nav>
+
+
+<div class="container-fluid mt-5">
+            <div class="tableFixHead">
             <table class="table table-hover">
                <thead>
                   <tr>
                      <th scope="col">Timestamp</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Area</th>
                      <th scope="col">Log entry</th>                     
                   </tr>
                </thead>
@@ -35,6 +60,7 @@
                          -->
                </tbody>
             </table>
-          
+</div>
+   </div>
    </body>
 </html>

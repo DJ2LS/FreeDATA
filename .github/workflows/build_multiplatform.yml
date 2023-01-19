@@ -323,8 +323,6 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-
-
       - name: Copy binaries - Linux
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         working-directory: tnc
@@ -350,6 +348,7 @@ jobs:
         with:
            path: tnc/dist/tnc
 
+
       - name: LIST ALL FILES
         run: ls -R
 
@@ -360,6 +359,16 @@ jobs:
 
       - name: LIST ALL FILES
         run: ls -R
+
+      - name: Build/release Electron app
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          package_root: "./gui/"
+          github_token: ${{ secrets.github_token }}
+          # If the commit is tagged with a version (e.g. "v1.0.0"),
+          # release the app after building
+          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          args: ${{ matrix.electron_parameters }}
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1

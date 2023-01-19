@@ -19,7 +19,7 @@ var client = new net.Socket();
 var socketchunk = ''; // Current message, per connection.
 
 // split character
-const split_char = '\0;'
+const split_char = '\0;\1;'
 
 // globals for getting new data only if available so we are saving bandwidth
 var rxBufferLengthTnc = 0
@@ -30,6 +30,10 @@ var rxMsgBufferLengthGui = 0
 // global to keep track of TNC connection error emissions
 var tncShowConnectStateError = 1
 
+// global for storing ip information
+var tnc_port = config.tnc_port;
+var tnc_host = config.tnc_host;
+
 // network connection Timeout
 setTimeout(connectTNC, 2000)
 
@@ -37,13 +41,13 @@ function connectTNC() {
     //exports.connectTNC = function(){
     //socketLog.info('connecting to TNC...')
 
-    //clear message buffer after reconnecting or inital connection
+    //clear message buffer after reconnecting or initial connection
     socketchunk = '';
 
     if (config.tnclocation == 'localhost') {
         client.connect(3000, '127.0.0.1')
     } else {
-        client.connect(config.tnc_port, config.tnc_host)
+        client.connect(tnc_port, tnc_host)
     }
 }
 
@@ -56,7 +60,7 @@ client.on('connect', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
     };
     ipcRenderer.send('request-update-tnc-state', Data);
     
@@ -85,7 +89,7 @@ client.on('error', function(data) {
         frequency: "-",
         mode: "-",
         bandwidth: "-",
-        rms_level: 0
+        dbfs_level: 0
 
     };
     ipcRenderer.send('request-update-tnc-state', Data);
@@ -191,6 +195,8 @@ client.on('data', function(socketdata) {
                 rxMsgBufferLengthTnc = data['rx_msg_buffer_length']
 
                 let Data = {
+                    mycallsign: data['mycallsign'],
+                    mygrid: data['mygrid'],
                     ptt_state: data['ptt_state'],
                     busy_state: data['tnc_state'],
                     arq_state: data['arq_state'],
@@ -200,7 +206,7 @@ client.on('data', function(socketdata) {
                     speed_level: data['speed_level'],
                     mode: data['mode'],
                     bandwidth: data['bandwidth'],
-                    rms_level: data['audio_rms'],
+                    dbfs_level: data['audio_dbfs'],
                     fft: data['fft'],
                     channel_busy: data['channel_busy'],
                     scatter: data['scatter'],
@@ -216,11 +222,17 @@ client.on('data', function(socketdata) {
                     arq_rx_n_current_arq_frame: data['arq_rx_n_current_arq_frame'],
                     arq_n_arq_frames_per_data_frame: data['arq_n_arq_frames_per_data_frame'],
                     arq_bytes_per_minute: data['arq_bytes_per_minute'],
+                    arq_seconds_until_finish: data['arq_seconds_until_finish'],
                     arq_compression_factor: data['arq_compression_factor'],
                     total_bytes: data['total_bytes'],
                     arq_transmission_percent: data['arq_transmission_percent'],
                     stations: data['stations'],
                     beacon_state: data['beacon_state'],
+                    hamlib_status: data['hamlib_status'],
+                    listen: data['listen'],
+                    audio_recording: data['audio_recording'],
+                    speed_list: data['speed_list'],
+                    //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
@@ -306,6 +318,10 @@ client.on('data', function(socketdata) {
                         ipcRenderer.send('request-show-arq-toast-session-connected', {data: [data]});
 
                     // ARQ OPENING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-session-waiting', {data: [data]});
+
+                    // ARQ OPENING
                     } else if (data['status'] == 'close') {
                         ipcRenderer.send('request-show-arq-toast-session-close', {data: [data]});
 
@@ -325,6 +341,10 @@ client.on('data', function(socketdata) {
                     // ARQ OPENING
                     } else if (data['status'] == 'opening') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
+
+                    // ARQ WAITING
+                    } else if (data['status'] == 'waiting') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-waiting', {data: [data]});
 
 
                     // ARQ TRANSMISSION FAILED
@@ -501,22 +521,27 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, command) {
-    socketLog.info(data) 
+    //socketLog.info(data)
+
+    // Disabled this here
     // convert message to plain utf8 because of unicode emojis
-    data = utf8.encode(data)
-    socketLog.info(data) 
+    //data = utf8.encode(data)
+
+    //socketLog.info(data)
+
     
     var datatype = "m"
     data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data
-    socketLog.info(data)
-    
-    
-    
-    socketLog.info(btoa(data))
+    //socketLog.info(data)
+    console.log(data)
+
+    console.log("CHECKSUM" + checksum)
+    //socketLog.info(btoa(data))
     data = btoa(data)
 
+
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
-    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
+    command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
     socketLog.info(command)
     socketLog.info("-------------------------------------")
     writeTncCommand(command)
@@ -554,7 +579,7 @@ exports.stopBeacon = function() {
 
 // OPEN ARQ SESSION
 exports.connectARQ = function(dxcallsign) {
-    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '"}'
+    command = '{"type" : "arq", "command" : "connect", "dxcallsign": "'+ dxcallsign + '", "attempts": "15"}'
     writeTncCommand(command)
 }
 
@@ -564,8 +589,53 @@ exports.disconnectARQ = function() {
     writeTncCommand(command)
 }
 
-// SEND SINE
+// SEND TEST FRAME
 exports.sendTestFrame = function() {
     command = '{"type" : "set", "command" : "send_test_frame"}'
     writeTncCommand(command)
 }
+
+// RECORD AUDIO
+exports.record_audio = function() {
+    command = '{"type" : "set", "command" : "record_audio"}'
+    writeTncCommand(command)
+}
+
+// SET FREQUENCY
+exports.set_frequency = function(frequency) {
+    command = '{"type" : "set", "command" : "frequency", "frequency": '+ frequency +'}'
+    writeTncCommand(command)
+}
+
+// SET MODE
+exports.set_mode = function(mode) {
+    command = '{"type" : "set", "command" : "mode", "mode": "'+ mode +'"}'
+    console.log(command)
+    writeTncCommand(command)
+}
+
+ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
+    client.destroy();
+    let Data = {
+        busy_state: "-",
+        arq_state: "-",
+        //channel_state: "-",
+        frequency: "-",
+        mode: "-",
+        bandwidth: "-",
+        dbfs_level: 0
+    };
+    ipcRenderer.send('request-update-tnc-state', Data);
+    tnc_port = arg.port;
+    tnc_host = arg.adress;
+    connectTNC();
+
+});
+
+
+
+// https://stackoverflow.com/a/50579690
+// crc32 calculation
+//console.log(crc32('abc'));
+//console.log(crc32('abc').toString(16).toUpperCase()); // hex
+var crc32=function(r){for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}for(var n=-1,t=0;t<r.length;t++)n=n>>>8^o[255&(n^r.charCodeAt(t))];return(-1^n)>>>0};

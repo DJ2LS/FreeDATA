@@ -6,15 +6,21 @@ pyserial
 sounddevice
 structlog
 ujson
+requests
+chardet
+colorama
+ordered-set
+nuitka
+pyinstaller
 
 # Development and test dependencies
 autopep8
 black
 isort
 pycodestyle
-pyinstaller
 pytest
 pytest-cov
 pytest-cover
 pytest-coverage
 pytest-rerunfailures
+pick

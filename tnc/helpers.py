@@ -5,10 +5,12 @@ Created on Fri Dec 25 21:25:14 2020
 @author: DJ2LS
 """
 import time
-
+from datetime import datetime,timezone
 import crcengine
 import static
 import structlog
+import numpy as np
+import threading
 
 log = structlog.get_logger("helpers")
 
@@ -24,7 +26,7 @@ def wait(seconds: float) -> bool:
     timeout = time.time() + seconds
 
     while time.time() < timeout:
-        time.sleep(0.01)
+        threading.Event().wait(0.01)
     return True
 
 
@@ -130,7 +132,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
     # check if buffer empty
     if len(static.HEARD_STATIONS) == 0:
         static.HEARD_STATIONS.append(
-            [dxcallsign, dxgrid, int(time.time()), datatype, snr, offset, frequency]
+            [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
@@ -314,7 +316,25 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
             log.debug("[HLP] check_callsign matched:", call_with_ssid=call_with_ssid)
             return [True, bytes(call_with_ssid)]
 
-    return [False, ""]
+    return [False, b'']
+
+
+def check_session_id(id: bytes, id_to_check: bytes):
+    """
+    Funktion to check if we received the correct session id
+
+    Args:
+        id: our own session id
+        id_to_check: The session id byte we want to check
+
+    Returns:
+        True
+        False
+    """
+    if id_to_check == b'\x00':
+        return False
+    log.debug("[HLP] check_sessionid: Checking:", ownid=id, check=id_to_check)
+    return id == id_to_check
 
 
 def encode_grid(grid):
@@ -374,11 +394,7 @@ def decode_grid(b_code_word: bytes):
 
     int_val = int(code_word & 0b111111111)
     int_first, int_sec = divmod(int_val, 18)
-    # int_first = int_val // 18
-    # int_sec   = int_val % 18
-    grid = chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
-
-    return grid
+    return chr(int(int_first) + 65) + chr(int(int_sec) + 65) + grid
 
 
 def encode_call(call):
@@ -428,3 +444,21 @@ def decode_call(b_code_word: bytes):
     call = call[:-1] + ssid  # remove the last char from call and replace with SSID
 
     return call
+
+
+def snr_to_bytes(snr):
+    """create a byte from snr value """
+    # make sure we have onl 1 byte snr
+    # min max = -12.7 / 12.7
+    # enough for detecting if a channel is good or bad
+    snr = snr * 10
+    snr = np.clip(snr, -127, 127)
+    snr = int(snr).to_bytes(1, byteorder='big', signed=True)
+    return snr
+
+
+def snr_from_bytes(snr):
+    """create int from snr byte"""
+    snr = int.from_bytes(snr, byteorder='big', signed=True)
+    snr = snr / 10
+    return snr

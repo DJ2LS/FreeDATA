@@ -44,7 +44,10 @@
 				<button class="btn btn-sm btn-danger" id="stop_transmission_connection" type="button"> <i class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i> STOP </button>
 			</div>
 			<div class="btn-toolbar" role="toolbar">
+				<button class="btn btn-sm btn-primary me-4  position-relative" id="openExplorer" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View explorer map"> <strong>Explorer</strong> <i class="bi bi-pin-map-fill" style="font-size: 1rem; color: white;"></i></button>
 				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i> <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">.</span> </button> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View the received files. This is currently under development!">
+           				<!--
+
                <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
                <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
                <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
@@ -52,7 +55,8 @@
                </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
                <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
                <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-               </button>			
+               </button>
+               -->
                </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true" title="Settings and Info">
                <button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="btn btn-sm btn-secondary"><strong>Settings </strong>
                <i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
@@ -136,6 +140,15 @@
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
+
+				<!-- DATACHANNEL WAITING -->
+				<div class="toast align-items-center text-white bg-warning border-0" id="toastDATACHANNELwaiting" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">DATACHANNEL BUSY! Waiting...</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+
 				<!-- STOPPING TRANSMISSION -->
 				<div class="toast align-items-center text-white bg-danger border-0" id="toastTRANSMISSIONstopped" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
@@ -181,10 +194,19 @@
 				<!-- ARQ TRANSMITTING -->
 				<div class="toast align-items-center text-white bg-secondary border-0" id="toastARQtransmitting" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
-						<div class="toast-body">TRANSMITTING FILE...</div>
+						<div class="toast-body">TRANSMITTING...</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
+
+				<!-- ARQ SNR INFORMATION -->
+				<div class="toast align-items-center text-white bg-secondary border-0" id="toastARQtransmittingSNR" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">TRANSMITTING - SNR IRS:<span id="toastARQtransmittingSNRValue"></span></div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+
 				<!-- ARQ TRANSMITTING FAILED -->
 				<div class="toast align-items-center text-white bg-danger border-0" id="toastARQtransmittingfailed" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
@@ -210,6 +232,13 @@
 				<div class="toast align-items-center text-white bg-success border-0" id="toastARQsessionconnected" role="alert" aria-live="assertive" aria-atomic="true">
 					<div class="d-flex">
 						<div class="toast-body">CONNECTED / ARQ SESSION</div>
+						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+					</div>
+				</div>
+				<!-- ARQ SESSION WAITING-->
+				<div class="toast align-items-center text-white bg-warning border-0" id="toastARQsessionwaiting" role="alert" aria-live="assertive" aria-atomic="true">
+					<div class="d-flex">
+						<div class="toast-body">CHANNEL BUSY - Waiting...</div>
 						<button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
 					</div>
 				</div>
@@ -703,7 +732,6 @@
 											<option value="14">14</option>
 											<option value="15">15</option>
 										</select>
-										<button class="btn btn-sm btn-success" id="saveMyCall" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
 								</div>
 								<div class="col-md-auto">
@@ -711,7 +739,6 @@
                                  <i class="bi bi-house-fill" style="font-size: 1rem; color: black;"></i>
                                  </span>
 										<input type="text" class="form-control mr-1" style="max-width: 6rem" placeholder="locator" id="myGrid" maxlength="6" aria-label="Input group" aria-describedby="btnGroupAddon">
-										<button class="btn btn-sm btn-success" id="saveMyGrid" type="button"> <i class="bi bi-check2" style="font-size: 1rem; color: white;"></i> </button>
 									</div>
 								</div>
 							</div>
@@ -742,16 +769,19 @@
 					<div class="card text-dark mb-1">
 						<div class="card-header p-1"><i class="bi bi-volume-up" style="font-size: 1rem; color: black;"></i> <strong>AUDIO LEVEL</strong>
 							<button type="button" id="audioModalButton" data-bs-toggle="modal" data-bs-target="#audioModal" class="btn btn-sm btn-secondary">Tune</button>
+							<button type="button" id="startStopRecording" class="btn btn-sm btn-danger">Rec</button>
+
 						</div>
 						<div class="card-body p-2">
 							<div class="progress mb-0" style="height: 15px;">
-								<div class="progress-bar progress-bar-striped bg-primary" id="rms_level" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-								<p class="justify-content-center d-flex position-absolute w-100">RX AUDIO LEVEL - not implemented yet</p>
+								<div class="progress-bar progress-bar-striped bg-primary" id="dbfs_level" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+								<p class="justify-content-center d-flex position-absolute w-100" id="dbfs_level_value">dBFS</p>
 							</div>
 							<div class="progress mb-0" style="height: 5px;">
-								<div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-								<div class="progress-bar bg-success" role="progressbar" style="width: 80%" aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-								<div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+								<div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 1%" aria-valuenow="1" aria-valuemin="0" aria-valuemax="100"></div>
+								<div class="progress-bar bg-success" role="progressbar" style="width: 89%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+								<div class="progress-bar progress-bar-striped bg-warning" role="progressbar" style="width: 20%" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+								<div class="progress-bar progress-bar-striped bg-danger" role="progressbar" style="width: 29%" aria-valuenow="29" aria-valuemin="0" aria-valuemax="100"></div>
 							</div>
 						</div>
 					</div>
@@ -808,37 +838,19 @@
 						<div class="card-header p-1">
 							<div class="btn-group btn-group-sm" role="group" aria-label="waterfall-scatter-switch toggle button group">
 								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch1" autocomplete="off" checked>
-								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch1"><strong>WATERFALL</strong> </label>
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch1"><strong><i class="bi bi-water"></i></strong> </label>
 								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch2" autocomplete="off">
-								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong>SCATTER</strong> </label>
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch2"><strong><i class="bi bi-border-outer"></i></strong> </label>
+								<input type="radio" class="btn-check" name="waterfall-scatter-switch" id="waterfall-scatter-switch3" autocomplete="off">
+								<label class="btn btn-sm btn-outline-secondary" for="waterfall-scatter-switch3"><strong><i class="bi bi-graph-up-arrow"></i></strong> </label>
 							</div>
 							<button class="btn btn-sm btn-secondary" id="channel_busy" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>">busy</button>
 						</div>
 						<div class="card-body p-1" style="height: 200px">
-							<!-- TEST FOR WATERFALL OVERLAY
-                           <div class="opacity-100 w-100 h-100 p-0 m-0 position-absolute" style="height: 190px;z-index: 10">
-                                                   <div class="row m-0 p-0 w-100 h-100">
-                                                     <div class="col m-0 p-0 col-3 ">
-                                                       -
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0 col-2">
-                                                       1800Hz
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0" style="width: 190px;">
-                                                       500Hz
-                                                     </div>
-                                                     <div class="col border border-danger m-0 p-0 col-2">
-                                                       -
-                                                     </div>
-                                                     <div class="col m-0 p-0 col-3">
-                                                       -
-                                                     </div>
-                                                   </div>
-                           </div>
-                           -->
 							<!--278px-->
-							<canvas id="waterfall" style="position: relative; z-index: 2;"></canvas>
-							<canvas id="scatter" style="position: relative; z-index: 1;"></canvas>
+							<canvas id="waterfall" style="position: relative; z-index: 2; transform: translateZ(0);"></canvas>
+							<canvas id="scatter" style="position: relative; z-index: 1; transform: translateZ(0);"></canvas>
+							<canvas id="chart" style="position: relative; z-index: 1; transform: translateZ(0);"></canvas>
 						</div>
 					</div>
 				</div>
@@ -1037,24 +1049,64 @@
 	<nav class="navbar fixed-bottom navbar-light bg-light">
 		<div class="container-fluid">
 			<div class="btn-toolbar" role="toolbar">
-				<div class="btn-group btn-group-sm me-2" role="group">
+				<div class="btn-group btn-group-sm me-1" role="group">
 					<button class="btn btn-sm btn-secondary" id="ptt_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"> <i class="bi bi-broadcast-pin" style="font-size: 0.8rem; color: white;"></i> </button>
 				</div>
-				<div class="btn-group btn-group-sm me-2" role="group">
+				<div class="btn-group btn-group-sm me-1" role="group">
 					<button class="btn btn-sm btn-secondary" id="busy_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"> <i class="bi bi-cpu" style="font-size: 0.8rem; color: white;"></i> </button>
 				</div>
-				<div class="btn-group btn-group-sm me-2" role="group">
+				<div class="btn-group btn-group-sm me-1" role="group">
 					<button class="btn btn-sm btn-secondary" id="arq_session" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"> <i class="bi bi-arrow-left-right" style="font-size: 0.8rem; color: white;"></i> </button>
 				</div>
-				<div class="btn-group btn-group-sm me-2" role="group">
+				<div class="btn-group btn-group-sm me-1" role="group">
 					<button class="btn btn-sm btn-secondary" id="arq_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"> <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem; color: white;"></i> </button>
 				</div>
+
+				<div class="btn-group btn-group-sm me-1" role="group">
+					<button class="btn btn-sm btn-secondary" id="rigctld_state" type="button" data-bs-placement="top" data-bs-toggle="tooltip" data-bs-html="true" title="rigctld state: <strong class='text-success'>CONNECTED</strong> / <strong class='text-secondary'>UNKNOWN</strong>"> <i class="bi bi-usb-symbol" style="font-size: 0.8rem; color: white;"></i> </button>
+				</div>
 			</div>
-			<div class="container-fluid p-0" style="width:15rem">
+			<div class="container-fluid p-0" style="width:20rem">
 				<div class="input-group input-group-sm">
-					<!--<span class="input-group-text" id="basic-addon1"><strong>Freq</strong></span>--><span class="input-group-text" id="frequency">---</span>
-					<!--<span class="input-group-text" id="basic-addon1"><strong>Mode</strong></span>--><span class="input-group-text" id="mode">---</span>
-					<!--<span class="input-group-text" id="basic-addon1"><strong>BW</strong></span>--><span class="input-group-text" id="bandwidth">---</span> </div>
+
+					<div class="btn-group dropup me-1">
+						<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="frequency">
+						---
+						</button>
+						<form class="dropdown-menu p-2">
+							<div class="input-group input-group-sm">
+								<input type="text" class="form-control" style="max-width: 6rem;" placeholder="7063000" pattern="[0-9]*" id="newFrequency" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
+								<span class="input-group-text">Hz</span>
+								<button class="btn btn-sm btn-success" id="saveFrequency" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="save frequency"> <i class="bi bi-check-lg" style="font-size: 0.8rem; color: white;"></i> </button>
+							</div>
+						 </form>
+					</div>
+
+					<div class="btn-group dropup me-1">
+						<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="mode">
+						---
+						</button>
+						<form class="dropdown-menu p-2">
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set FM" id="saveModeFM">FM</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set AM" type="button" id="saveModeAM">AM</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set LSB" type="button" id="saveModeLSB">LSB</button>
+								<hr>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set USB" type="button" id="saveModeUSB">USB</button>
+								<button type="button" class="btn btn-sm btn-secondary" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="set PKTUSB" type="button" id="saveModePKTUSB">PKTUSB</button>
+						 </form>
+					</div>
+
+					<div class="btn-group dropup">
+						<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="bandwidth">
+						---
+						</button>
+						<form class="dropdown-menu p-2">
+							<div class="input-group input-group-sm">
+								...soon...
+							</div>
+						 </form>
+					</div>
+				</div>
 			</div>
 			<div class="container-fluid p-0" style="width:12rem">
 				<div class="input-group input-group-sm"> <span class="input-group-text" id="basic-addon1"><i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i></span> <span class="input-group-text" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="actual speed level">
@@ -1067,6 +1119,7 @@
 				<div class="progress" style="height: 30px;">
 					<div class="progress-bar progress-bar-striped bg-primary" id="transmission_progress" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 					<!--<p class="justify-content-center d-flex position-absolute w-100">PROGRESS</p>-->
+					<p class="justify-content-center mt-2 d-flex position-absolute w-100" id="transmission_timeleft">---</p>
 				</div>
 			</div>
 		</div>
@@ -1074,8 +1127,8 @@
 	<!-- bootstrap -->
 	<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<!-- chart.js -->
-	<script src="../node_modules/chart.js/dist/chart.min.js"></script>
-	<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>
+	<script src="../node_modules/chart.js/dist/chart.umd.js"></script>
+	<!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
 	<!--<script src="../ui.js"></script>-->
 	<!-- WATERFALL -->
 	<script src="waterfall/colormap.js"></script>
@@ -1139,6 +1192,17 @@
 							<option value="zephyr">Zephyr</option>
 						</select>
 					</div>
+					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Waterfall Theme</span>
+						<select class="form-select form-select-sm w-50" id="wftheme_selector">
+							<option value="2">Default</option>
+							<option value="0">Turbo</option>
+							<option value="1">Fosphor</option>
+							<option value="3">Inferno</option>
+							<option value="4">Magma</option>
+							<option value="5">Jet</option>
+							<option value="6">Binary</option>
+						</select>
+					</div>
 					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Update channel</span>
 						<select class="form-select form-select-sm w-50" id="update_channel_selector">
 							<option value="latest">stable</option>
@@ -1196,11 +1260,20 @@
 						</label>
 					</div>
 					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable 563Hz mode</label>
+						<label class="input-group-text w-50">Enable 563Hz only mode</label>
 						<label class="input-group-text bg-white w-50">
 							<div class="form-check form-switch form-check-inline">
 								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
 								<label class="form-check-label" for="500HzModeSwitch">563Hz</label>
+							</div>
+						</label>
+					</div>
+					<div class="input-group  input-group-sm mb-1">
+						<label class="input-group-text w-50">Enable Explorer Publishing <br> (https://explorer.freedata.app) </label>
+						<label class="input-group-text bg-white w-50">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="ExplorerSwitch">
+								<label class="form-check-label" for="ExplorerSwitch">Publish</label>
 							</div>
 						</label>
 					</div>

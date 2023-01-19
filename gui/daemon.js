@@ -20,6 +20,10 @@ var socketchunk = ''; // Current message, per connection.
 // global to keep track of daemon connection error emissions
 var daemonShowConnectStateError = 1
 
+// global for storing ip information
+var daemon_port = config.daemon_port;
+var daemon_host = config.daemon_host;
+
 setTimeout(connectDAEMON, 500)
 
 function connectDAEMON() {
@@ -27,13 +31,13 @@ function connectDAEMON() {
         daemonLog.info('connecting to daemon');
     }
 
-    //clear message buffer after reconnecting or inital connection
+    //clear message buffer after reconnecting or initial connection
     socketchunk = '';
     
     if (config.tnclocation == 'localhost') {
         daemon.connect(3001, '127.0.0.1')
     } else {
-        daemon.connect(config.daemon_port, config.daemon_host)
+        daemon.connect(daemon_port, daemon_host)
 
     }
 
@@ -217,7 +221,7 @@ exports.getDaemonState = function() {
 // START TNC
 // ` `== multi line string
 
-exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size) {
+exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, devicename, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer) {
     var json_command = JSON.stringify({
         type: 'set',
         command: 'start_tnc',
@@ -245,7 +249,8 @@ exports.startTNC = function(mycall, mygrid, rx_audio, tx_audio, radiocontrol, de
             tuning_range_fmax : tuning_range_fmax,
             tx_audio_level : tx_audio_level,
             respond_to_cq : respond_to_cq,
-            rx_buffer_size : rx_buffer_size
+            rx_buffer_size : rx_buffer_size,
+            enable_explorer : enable_explorer
         }]
     })
 
@@ -298,4 +303,19 @@ exports.saveMyGrid = function(grid) {
     writeDaemonCommand(command)
 }
 
-
+ipcRenderer.on('action-update-daemon-ip', (event, arg) => {
+    daemon.destroy();
+    let Data = {
+        busy_state: "-",
+        arq_state: "-",
+        //channel_state: "-",
+        frequency: "-",
+        mode: "-",
+        bandwidth: "-",
+        dbfs_level: 0
+    };
+    ipcRenderer.send('request-update-tnc-state', Data);
+    daemon_port = arg.port;
+    daemon_host = arg.adress;
+    connectDAEMON();
+});

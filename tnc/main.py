@@ -7,6 +7,14 @@ Created on Tue Dec 22 16:58:45 2020
 
 main module for running the tnc
 """
+
+
+# run tnc self test on startup before we are doing other things
+# import selftest
+# selftest.TEST()
+
+# continue if we passed the test
+
 import argparse
 import multiprocessing
 import os
@@ -22,9 +30,10 @@ import log_handler
 import modem
 import static
 import structlog
+import explorer
+import json
 
 log = structlog.get_logger("main")
-
 
 def signal_handler(sig, frame):
     """
@@ -49,12 +58,28 @@ if __name__ == "__main__":
     # --------------------------------------------GET PARAMETER INPUTS
     PARSER = argparse.ArgumentParser(description="FreeDATA TNC")
 
+    #PARSER.add_argument(
+    #    "--use-config",
+    #    dest="configfile",
+    #    action="store_true",
+    #    help="Use the default config file config.ini",
+    #)
     PARSER.add_argument(
         "--use-config",
         dest="configfile",
-        action="store_true",
+        default=False,
+        type=str,
         help="Use the default config file config.ini",
     )
+
+    PARSER.add_argument(
+        "--save-to-folder",
+        dest="savetofolder",
+        default=False,
+        action="store_true",
+        help="Save received data to local folder",
+    )
+
     PARSER.add_argument(
         "--mycall",
         dest="mycall",
@@ -68,7 +93,7 @@ if __name__ == "__main__":
         nargs="*",
         default=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
         help="SSID list we are responding to",
-        type=str,
+        type=int,
     )
     PARSER.add_argument(
         "--mygrid",
@@ -82,14 +107,14 @@ if __name__ == "__main__":
         dest="audio_input_device",
         default=0,
         help="listening sound card",
-        type=int,
+        type=str,
     )
     PARSER.add_argument(
         "--tx",
         dest="audio_output_device",
         default=0,
         help="transmitting sound card",
-        type=int,
+        type=str,
     )
     PARSER.add_argument(
         "--port",
@@ -246,81 +271,131 @@ if __name__ == "__main__":
         help="Set the maximum size of rx buffer.",
         type=int,
     )
-
+    PARSER.add_argument(
+        "--explorer",
+        dest="enable_explorer",
+        action="store_true",
+        help="Enable sending tnc data to https://explorer.freedata.app",
+    )
     ARGS = PARSER.parse_args()
-    if ARGS.configfile:
-        # init config
-        config = config.CONFIG().read_config()
 
+    # set save to folder state for allowing downloading files to local file system
+    static.ARQ_SAVE_TO_FOLDER = ARGS.savetofolder
+
+    if not ARGS.configfile:
+    
+    
         # additional step for being sure our callsign is correctly
         # in case we are not getting a station ssid
         # then we are forcing a station ssid = 0
-        mycallsign = bytes(config['STATION']['mycall'], "utf-8")
-        mycallsign = helpers.callsign_to_bytes(mycallsign)
-        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+        try:
+            mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
+            mycallsign = helpers.callsign_to_bytes(mycallsign)
+            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+            static.SSID_LIST = ARGS.ssid_list
+            # check if own ssid is always part of ssid list
+            own_ssid = int(static.MYCALLSIGN.split(b"-")[1])
+            if own_ssid not in static.SSID_LIST:
+                static.SSID_LIST.append(own_ssid)
 
-        static.SSID_LIST = [] ####
-        static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
-        static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
-        static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
-        static.PORT = int(config['NETWORK']['tncport'])
-        static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
-        static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
-        static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
-        static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
-        static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
-        static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
-        static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
-        static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
-        static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
-        static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
-        static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
-        static.ENABLE_SCATTER = config['TNC']['scatter']
-        static.ENABLE_FFT = config['TNC']['fft']
-        static.ENABLE_FSK = False
-        static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband']
-        static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
-        static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
-        static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
-        static.RESPOND_TO_CQ = config['TNC']['qrv']
-        static.RX_BUFFER_SIZE = config['TNC']['rxbuffersize']
+            static.MYGRID = bytes(ARGS.mygrid, "utf-8")
 
+            # check if we have an int or str as device name
+            try:
+                static.AUDIO_INPUT_DEVICE = int(ARGS.audio_input_device)
+            except ValueError:
+                static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
+            try:
+                static.AUDIO_OUTPUT_DEVICE = int(ARGS.audio_output_device)
+            except ValueError:
+                static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+
+            static.PORT = ARGS.socket_port
+            static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
+            static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
+            static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
+            static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
+            static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
+            static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
+            static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
+            static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
+            static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
+            static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
+            static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
+            static.ENABLE_SCATTER = ARGS.send_scatter
+            static.ENABLE_FFT = ARGS.send_fft
+            static.ENABLE_FSK = ARGS.enable_fsk
+            static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
+            static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
+            static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
+            static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
+            static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
+            static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
+            static.ENABLE_EXPLORER = ARGS.enable_explorer
+        except Exception as e:
+            log.error("[DMN] Error reading config file", exception=e)
 
     else:
-        # additional step for being sure our callsign is correctly
-        # in case we are not getting a station ssid
-        # then we are forcing a station ssid = 0
-        mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
-        mycallsign = helpers.callsign_to_bytes(mycallsign)
-        static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-        static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+        configfile = ARGS.configfile
+        # init config
+        config = config.CONFIG(configfile).read_config()
+        try:
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            mycallsign = bytes(config['STATION']['mycall'], "utf-8")
+            mycallsign = helpers.callsign_to_bytes(mycallsign)
+            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
+            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
-        static.SSID_LIST = ARGS.ssid_list
-        static.MYGRID = bytes(ARGS.mygrid, "utf-8")
-        static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
-        static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
-        static.PORT = ARGS.socket_port
-        static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
-        static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
-        static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-        static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
-        static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
-        static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
-        static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
-        static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
-        static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
-        static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
-        static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
-        static.ENABLE_SCATTER = ARGS.send_scatter
-        static.ENABLE_FFT = ARGS.send_fft
-        static.ENABLE_FSK = ARGS.enable_fsk
-        static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
-        static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
-        static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
-        static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
-        static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
-        static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
+            #json.loads = for converting str list to list
+            static.SSID_LIST = json.loads(config['STATION']['ssid_list'])
+
+            static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
+            # check if we have an int or str as device name
+            try:
+                static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
+            except ValueError:
+                static.AUDIO_INPUT_DEVICE = config['AUDIO']['rx']
+            try:
+                static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+            except ValueError:
+                static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
+
+            static.PORT = int(config['NETWORK']['tncport'])
+            # TODO: disabled because we don't need these settings anymore.
+            #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
+            #static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
+            #static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
+            #static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
+            #static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
+            #static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
+            #static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
+            #static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
+            static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
+            static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
+            static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
+            static.ENABLE_SCATTER = config['TNC']['scatter'] in ["True", "true", True]
+            static.ENABLE_FFT = config['TNC']['fft'] in ["True", "true", True]
+            static.ENABLE_FSK = False
+            static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband'] in ["True", "true", True]
+            static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
+            static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
+            static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
+            static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
+            static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
+            static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
+
+        except KeyError as e:
+            log.warning("[CFG] Error reading config file near", key=str(e))
+        except Exception as e:
+            log.warning("[CFG] Error", e=e)
+
+    # make sure the own ssid is always part of the ssid list
+    my_ssid = int(static.MYCALLSIGN.split(b'-')[1])
+    if my_ssid not in static.SSID_LIST:
+        static.SSID_LIST.append(my_ssid)
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock
@@ -358,6 +433,11 @@ if __name__ == "__main__":
     # start modem
     modem = modem.RF()
 
+    # optionally start explorer module
+    if static.ENABLE_EXPLORER:
+        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=static.ENABLE_EXPLORER)
+        explorer = explorer.explorer()
+
     # --------------------------------------------START CMD SERVER
     try:
         log.info("[TNC] Starting TCP/IP socket", port=static.PORT)
@@ -375,4 +455,4 @@ if __name__ == "__main__":
         log.error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
         sys.exit(1)
     while True:
-        time.sleep(1)
+        threading.Event().wait(1)

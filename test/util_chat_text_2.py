@@ -41,6 +41,8 @@ def t_setup(
     static.MYGRID = bytes("AA12aa", "utf-8")
     static.RESPOND_TO_CQ = True
     static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    # override ARQ SESSION STATE for allowing disconnect command
+    static.ARQ_SESSION_STATE = "connected"
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)

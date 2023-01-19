@@ -10,12 +10,13 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 const spawn = require('child_process').spawn;
-const exec = require('child_process').exec;
 
 const log = require('electron-log');
 const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
 const mime = require('mime');
+const net = require('net');
+
   
 const sysInfo = log.scope('system information');
 sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
@@ -90,7 +91,9 @@ const configDefaultSettings = '{\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16" \
+                  "rx_buffer_size" : "16", \
+                  "enable_explorer" : "False", \
+                  "wftheme": 2 \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -167,14 +170,31 @@ let data = null;
 let logViewer = null;
 var daemonProcess = null;
 
+
+// create a splash screen
+function createSplashScreen(){
+    splashScreen = new BrowserWindow({
+        height: 250,
+        width: 250,
+        transparent: true,
+        frame: false,
+        alwaysOnTop: true
+    });
+    splashScreen.loadFile('src/splash.html');
+    splashScreen.center();
+}
+
+
 function createWindow() {
     win = new BrowserWindow({
         width: config.screen_width,
         height: config.screen_height,
+        show: false,
         autoHideMenuBar: true,
         icon: 'src/img/icon.png',
         webPreferences: {
             //preload: path.join(__dirname, 'preload-main.js'),
+            backgroundThrottle: false,
             preload: require.resolve('./preload-main.js'),
             nodeIntegration: true,
             contextIsolation: false,
@@ -283,7 +303,18 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+
+    // show splash screen
+    createSplashScreen();
+
+    // create main window
     createWindow();
+
+   // wait some time, then close splash screen and show main windows
+    setTimeout(function() {
+        splashScreen.close();
+        win.show();
+    }, 3000);
 
     // start daemon by checking os
     mainLog.info('Starting freedata-daemon binary');
@@ -394,6 +425,16 @@ app.on('window-all-closed', () => {
 ipcMain.on('request-show-chat-window', () => {
     chat.show();
  });
+
+// UPDATE TNC CONNECTION
+ipcMain.on('request-update-tnc-ip',(event,data)=>{
+    win.webContents.send('action-update-tnc-ip', data);
+});
+
+// UPDATE DAEMON CONNECTION
+ipcMain.on('request-update-daemon-ip',(event,data)=>{
+    win.webContents.send('action-update-daemon-ip', data);
+});
 
 
 ipcMain.on('request-update-tnc-state', (event, arg) => {
@@ -519,7 +560,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
         console.log(data.file)        
 
               try {
-              
+
                 let buffer = Buffer.from(data.file);
                 let arraybuffer = Uint8Array.from(buffer);
                 console.log(arraybuffer)
@@ -538,6 +579,7 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
       
       
 });
+
 
 
 //tnc messages START --------------------------------------
@@ -592,6 +634,12 @@ ipcMain.on('request-show-arq-toast-datachannel-opening',(event,data)=>{
     win.webContents.send('action-show-arq-toast-datachannel-opening', data);
 });
 
+// ARQ DATA CHANNEL WAITING
+ipcMain.on('request-show-arq-toast-datachannel-waiting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-datachannel-waiting', data);
+});
+
+
 // ARQ DATA CHANNEL OPEN
 ipcMain.on('request-show-arq-toast-datachannel-opened',(event,data)=>{
     win.webContents.send('action-show-arq-toast-datachannel-opened', data);
@@ -630,6 +678,11 @@ ipcMain.on('request-show-arq-toast-transmission-transmitted',(event,data)=>{
 // ARQ SESSION CONNECTING
 ipcMain.on('request-show-arq-toast-session-connecting',(event,data)=>{
     win.webContents.send('action-show-arq-toast-session-connecting', data);
+});
+
+// ARQ SESSION WAITING
+ipcMain.on('request-show-arq-toast-session-waiting',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-session-waiting', data);
 });
 
 // ARQ SESSION CONNECTED
@@ -781,14 +834,23 @@ function close_all() {
 // RUN RIGCTLD
 ipcMain.on('request-start-rigctld',(event, data)=>{
 
-
     try{
-        spawn(data.path, data.parameters);
+        let rigctld_proc = spawn(data.path, data.parameters);
+
+        rigctld_proc.on('exit', function (code) {
+            console.log('rigctld process exited with code ' + code);
+
+            // if rigctld crashes, error code is -2
+            // then we are going to restart rigctld
+            // this "fixes" a problem with latest rigctld on raspberry pi
+            //if (code == -2){
+            //    setTimeout(ipcRenderer.send('request-start-rigctld', data), 500);
+            //}
+            //let rigctld_proc = spawn(data.path, data.parameters);
+        });
     } catch (e) {
      console.log(e);
     }
-
-
 
     /*
     const rigctld = exec(data.path, data.parameters);
@@ -828,53 +890,60 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 
 
 
-// CHECK RIGCTLD
-ipcMain.on('request-check-rigctld',(data)=>{
-    try {
+// CHECK RIGCTLD CONNECTION
+// create new socket so we are not reopening every time a new one
+var rigctld_connection = new net.Socket();
+var rigctld_connection_state = false;
+ipcMain.on('request-check-rigctld',(event, data)=>{
+
+    try{
+
         let Data = {
-            state: "unknown",
+                state: "unknown",
         };
 
-        isRunning('rigctld', (status) => {
-            if (status){
-                Data["state"] = "running";
-            } else {
-                Data["state"] = "unknown/stopped";
+        if(!rigctld_connection_state){
+            rigctld_connection = new net.Socket();
+            rigctld_connection.connect(data.port, data.ip)
+        }
+
+        // check if we have created a new socket object
+        if (typeof(rigctld_connection) != 'undefined') {
+
+        rigctld_connection.on('connect', function() {
+            rigctld_connection_state = true;
+            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
             }
-            win.webContents.send('action-check-rigctld', Data);
         })
 
-    } catch (e) {
-        mainLog.error(e)
+        rigctld_connection.on('error', function() {
+            rigctld_connection_state = false;
+            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+            if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                // try catch for being sure we have a clean app close
+                try{
+                    win.webContents.send('action-check-rigctld', Data);
+                } catch(e){
+                    console.log(e)
+                }
+            }
+        })
+
+        rigctld_connection.on('end', function() {
+            rigctld_connection_state = false;
+        })
+
+        }
+
+    } catch(e) {
+        console.log(e)
     }
+
 });
-
-
-
-
-// https://stackoverflow.com/a/51084163
-// Function for checking if a process is running or not
-/*
-isRunning('rigctld', (status) => {
-            if (status){
-                Data["state"] = "running";
-            } else {
-                Data["state"] = "unknown";
-            }
-            win.webContents.send('action-check-rigctld', Data);
-        })
-*/
-const isRunning = (query, cb) => {
-    let platform = process.platform;
-    let cmd = '';
-    switch (platform) {
-        case 'win32' : cmd = `tasklist`; break;
-        case 'darwin' : cmd = `ps -ax | grep ${query}`; break;
-        case 'linux' : cmd = `ps -A`; break;
-        default: break;
-    }
-    exec(cmd, (err, stdout) => {
-        cb(stdout.toLowerCase().indexOf(query.toLowerCase()) > -1);
-    });
-}
-

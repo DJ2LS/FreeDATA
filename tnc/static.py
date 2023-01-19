@@ -11,7 +11,10 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.5.0-alpha"
+VERSION = "0.6.11-alpha.2"
+
+ENABLE_EXPLORER = False
+
 
 # DAEMON
 DAEMONPORT: int = 3001
@@ -22,7 +25,7 @@ TNCPROCESS: subprocess.Popen
 MYCALLSIGN: bytes = b"AA0AA"
 MYCALLSIGN_CRC: bytes = b"A"
 
-DXCALLSIGN: bytes = b"AA0AA"
+DXCALLSIGN: bytes = b"ZZ9YY"
 DXCALLSIGN_CRC: bytes = b"A"
 
 MYGRID: bytes = b""
@@ -40,7 +43,7 @@ SOCKET_TIMEOUT: int = 1  # seconds
 # ---------------------------------
 SERIAL_DEVICES: list = []
 # ---------------------------------
-
+LISTEN: bool = True
 PTT_STATE: bool = False
 TRANSMITTING: bool = False
 
@@ -57,6 +60,7 @@ HAMLIB_RADIOCONTROL: str = "direct"
 HAMLIB_RIGCTLD_IP: str = "127.0.0.1"
 HAMLIB_RIGCTLD_PORT: str = "4532"
 
+HAMLIB_STATUS: str = "unknown/disconnected"
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0
@@ -69,6 +73,7 @@ SCATTER: list = []
 ENABLE_SCATTER: bool = False
 ENABLE_FSK: bool = False
 RESPOND_TO_CQ: bool = False
+RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
 # ---------------------------------
 
 # Audio Defaults
@@ -77,25 +82,31 @@ AUDIO_INPUT_DEVICES: list = []
 AUDIO_OUTPUT_DEVICES: list = []
 AUDIO_INPUT_DEVICE: int = -2
 AUDIO_OUTPUT_DEVICE: int = -2
+AUDIO_RECORD: bool = False
+AUDIO_RECORD_FILE = ''
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 
-AUDIO_RMS: int = 0
+AUDIO_DBFS: int = 0
 FFT: list = [0]
-ENABLE_FFT: bool = False
+ENABLE_FFT: bool = True
 CHANNEL_BUSY: bool = False
 
 # ARQ PROTOCOL VERSION
-ARQ_PROTOCOL_VERSION: int = 2
+ARQ_PROTOCOL_VERSION: int = 5
 
 # ARQ statistics
+SPEED_LIST: list = []
 ARQ_BYTES_PER_MINUTE_BURST: int = 0
 ARQ_BYTES_PER_MINUTE: int = 0
 ARQ_BITS_PER_SECOND_BURST: int = 0
 ARQ_BITS_PER_SECOND: int = 0
 ARQ_COMPRESSION_FACTOR: int = 0
 ARQ_TRANSMISSION_PERCENT: int = 0
+ARQ_SECONDS_UNTIL_FINISH: int = 0
 ARQ_SPEED_LEVEL: int = 0
 TOTAL_BYTES: int = 0
+# set save to folder state for allowing downloading files to local file system
+ARQ_SAVE_TO_FOLDER: bool = False
 
 # CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 TNC_STATE: str = "IDLE"
@@ -149,4 +160,5 @@ class FRAME_TYPE(Enum):
     ARQ_DC_OPEN_ACK_N = 228
     ARQ_STOP = 249
     BEACON = 250
+    IDENT = 254
     TEST_FRAME = 255

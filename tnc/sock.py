@@ -24,13 +24,14 @@ import socketserver
 import sys
 import threading
 import time
+import wave
 
 import helpers
 import static
 import structlog
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -76,7 +77,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if data != tempdata:
                     tempdata = data
                     SOCKET_QUEUE.put(data)
-                time.sleep(0.5)
+                threading.Event().wait(0.5)
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
@@ -84,20 +85,23 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 sock_data += b"\n"  # append line limiter
 
                 # send data to all clients
-                # try:
-                for client in CONNECTED_CLIENTS:
-                    try:
-                        client.send(sock_data)
-                    except Exception as err:
-                        self.log.info("[SCK] Connection lost", e=err)
-                        self.connection_alive = False
+                try:
+                    for client in CONNECTED_CLIENTS:
+                        try:
+                            client.send(sock_data)
+                        except Exception as err:
+                            self.log.info("[SCK] Connection lost", e=err)
+                            # TODO: Check if we really should set connection alive to false. This might disconnect all other clients as well...
+                            self.connection_alive = False
+                except Exception as err:
+                    self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
 
             # we want to transmit scatter data only once to reduce network traffic
             static.SCATTER = []
             # we want to display INFO messages only once
             static.INFO = []
             # self.request.sendall(sock_data)
-            time.sleep(0.15)
+            threading.Event().wait(0.15)
 
     def receive_from_client(self):
         """
@@ -132,7 +136,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # we might improve this by only processing one command or
                         # doing some kind of selection to determin which commands need to be dropped
                         # and which one can be processed during a running transmission
-                        time.sleep(3)
+                        threading.Event().wait(0.5)
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
@@ -169,7 +173,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
         # keep connection alive until we close it
         while self.connection_alive and not CLOSE_SIGNAL:
-            time.sleep(1)
+            threading.Event().wait(1)
 
     def finish(self):
         """ """
@@ -204,6 +208,72 @@ def process_tnc_commands(data):
         # convert data to json object
         received_json = json.loads(data)
         log.debug("[SCK] CMD", command=received_json)
+
+        # ENABLE TNC LISTENING STATE -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "listen":
+            try:
+                static.LISTEN = received_json["state"] in ['true', 'True', True, "ON", "on"]
+                command_response("listen", True)
+
+                # if tnc is connected, force disconnect when static.LISTEN == False
+                if not static.LISTEN and static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+                    command_response("disconnect", True)
+
+            except Exception as err:
+                command_response("listen", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+        # START STOP AUDIO RECORDING -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "record_audio":
+            try:
+                if not static.AUDIO_RECORD:
+                    static.AUDIO_RECORD_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                    static.AUDIO_RECORD_FILE.setnchannels(1)
+                    static.AUDIO_RECORD_FILE.setsampwidth(2)
+                    static.AUDIO_RECORD_FILE.setframerate(8000)
+                    static.AUDIO_RECORD = True
+                else:
+                    static.AUDIO_RECORD = False
+                    static.AUDIO_RECORD_FILE.close()
+
+                command_response("respond_to_call", True)
+
+            except Exception as err:
+                command_response("respond_to_call", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+
+        # SET ENABLE/DISABLE RESPOND TO CALL -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "respond_to_call":
+            try:
+                static.RESPOND_TO_CALL = received_json["state"] in ['true', 'True', True]
+                command_response("respond_to_call", True)
+
+            except Exception as err:
+                command_response("respond_to_call", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
+        # SET ENABLE RESPOND TO CQ -----------------------------------------------------
+        if received_json["type"] == "set" and received_json["command"] == "respond_to_cq":
+            try:
+                static.RESPOND_TO_CQ = received_json["state"] in ['true', 'True', True]
+                command_response("respond_to_cq", True)
+
+            except Exception as err:
+                command_response("respond_to_cq", False)
+                log.warning(
+                    "[SCK] CQ command execution error", e=err, command=received_json
+                )
+
         # SET TX AUDIO LEVEL  -----------------------------------------------------
         if (
             received_json["type"] == "set"
@@ -287,13 +357,22 @@ def process_tnc_commands(data):
                 if not str(dxcallsign).strip():
                     raise NoCallsign
 
-                # additional step for beeing sure our callsign is correctly
+                # additional step for being sure our callsign is correctly
                 # in case we are not getting a station ssid
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["PING", dxcallsign])
+                # check if specific callsign is set with different SSID than the TNC is initialized
+                try:
+                    mycallsign = received_json["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+                except Exception:
+                    mycallsign = static.MYCALLSIGN
+
+                DATA_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
                 command_response("ping", True)
             except NoCallsign:
                 command_response("ping", False)
@@ -306,36 +385,79 @@ def process_tnc_commands(data):
 
         # CONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "connect":
+
+            # pause our beacon first
             static.BEACON_PAUSE = True
-            # send ping frame and wait for ACK
+
+            # check for connection attempts key
             try:
-                dxcallsign = received_json["dxcallsign"]
+                attempts = int(received_json["attempts"])
+            except Exception:
+                # 15 == self.session_connect_max_retries
+                attempts = 15
 
-                # additional step for beeing sure our callsign is correctly
-                # in case we are not getting a station ssid
-                # then we are forcing a station ssid = 0
-                dxcallsign = helpers.callsign_to_bytes(dxcallsign)
-                dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+            dxcallsign = received_json["dxcallsign"]
 
-                static.DXCALLSIGN = dxcallsign
-                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+            # check if specific callsign is set with different SSID than the TNC is initialized
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
 
-                DATA_QUEUE_TRANSMIT.put(["CONNECT", dxcallsign])
-                command_response("connect", True)
-            except Exception as err:
+            except Exception:
+                mycallsign = static.MYCALLSIGN
+
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+
+            if static.ARQ_SESSION_STATE not in ["disconnected", "failed"]:
                 command_response("connect", False)
                 log.warning(
                     "[SCK] Connect command execution error",
-                    e=err,
+                    e=f"already connected to station:{static.DXCALLSIGN}",
                     command=received_json,
                 )
+            else:
+
+                # finally check again if we are disconnected or failed
+
+                # try connecting
+                try:
+
+                    DATA_QUEUE_TRANSMIT.put(["CONNECT", mycallsign, dxcallsign, attempts])
+                    command_response("connect", True)
+                except Exception as err:
+                    command_response("connect", False)
+                    log.warning(
+                        "[SCK] Connect command execution error",
+                        e=err,
+                        command=received_json,
+                    )
+                    # allow beacon transmission again
+                    static.BEACON_PAUSE = False
+
+                # allow beacon transmission again
+                static.BEACON_PAUSE = False
 
         # DISCONNECT ----------------------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "disconnect":
-            # send ping frame and wait for ACK
             try:
-                DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
-                command_response("disconnect", True)
+                if static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
+                    DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
+
+                    # set early disconnecting state so we can interrupt connection attempts
+                    static.ARQ_SESSION_STATE = "disconnecting"
+                    command_response("disconnect", True)
+                else:
+                    command_response("disconnect", False)
+                    log.warning(
+                        "[SCK] Disconnect command not possible",
+                        state=static.ARQ_SESSION_STATE,
+                        command=received_json,
+                    )
             except Exception as err:
                 command_response("disconnect", False)
                 log.warning(
@@ -347,6 +469,7 @@ def process_tnc_commands(data):
         # TRANSMIT RAW DATA -------------------------------------------
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
+
             try:
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]
@@ -369,8 +492,19 @@ def process_tnc_commands(data):
                 # check if specific callsign is set with different SSID than the TNC is initialized
                 try:
                     mycallsign = received_json["parameter"][0]["mycallsign"]
+                    mycallsign = helpers.callsign_to_bytes(mycallsign)
+                    mycallsign = helpers.bytes_to_callsign(mycallsign)
+
                 except Exception:
                     mycallsign = static.MYCALLSIGN
+
+                # check for connection attempts key
+                try:
+                    attempts = int(received_json["parameter"][0]["attempts"])
+
+                except Exception:
+                    # 15 == self.session_connect_max_retries
+                    attempts = 15
 
                 # check if transmission uuid provided else set no-uuid
                 try:
@@ -384,7 +518,7 @@ def process_tnc_commands(data):
                 binarydata = base64.b64decode(base64data)
 
                 DATA_QUEUE_TRANSMIT.put(
-                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign]
+                    ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
                 )
 
             except Exception as err:
@@ -460,6 +594,32 @@ def process_tnc_commands(data):
                     command=received_json,
                 )
 
+        # SET FREQUENCY -----------------------------------------------------
+        if received_json["command"] == "frequency" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_frequency", received_json["frequency"]])
+                command_response("set_frequency", True)
+            except Exception as err:
+                command_response("set_frequency", False)
+                log.warning(
+                    "[SCK] Set frequency command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
+        # SET MODE -----------------------------------------------------
+        if received_json["command"] == "mode" and received_json["type"] == "set":
+            try:
+                RIGCTLD_COMMAND_QUEUE.put(["set_mode", received_json["mode"]])
+                command_response("set_mode", True)
+            except Exception as err:
+                command_response("set_mode", False)
+                log.warning(
+                    "[SCK] Set mode command execution error",
+                    e=err,
+                    command=received_json,
+                )
+
     # exception, if JSON cant be decoded
     except Exception as err:
         log.error("[SCK] JSON decoding error", e=err)
@@ -478,7 +638,7 @@ def send_tnc_state():
         "arq_state": str(static.ARQ_STATE),
         "arq_session": str(static.ARQ_SESSION),
         "arq_session_state": str(static.ARQ_SESSION_STATE),
-        "audio_rms": str(static.AUDIO_RMS),
+        "audio_dbfs": str(static.AUDIO_DBFS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
@@ -491,14 +651,20 @@ def send_tnc_state():
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
         "arq_bytes_per_minute": str(static.ARQ_BYTES_PER_MINUTE),
         "arq_bytes_per_minute_burst": str(static.ARQ_BYTES_PER_MINUTE_BURST),
+        "arq_seconds_until_finish": str(static.ARQ_SECONDS_UNTIL_FINISH),
         "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
         "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
+        "speed_list": static.SPEED_LIST,
         "total_bytes": str(static.TOTAL_BYTES),
         "beacon_state": str(static.BEACON_STATE),
         "stations": [],
         "mycallsign": str(static.MYCALLSIGN, encoding),
+        "mygrid": str(static.MYGRID, encoding),
         "dxcallsign": str(static.DXCALLSIGN, encoding),
         "dxgrid": str(static.DXGRID, encoding),
+        "hamlib_status": static.HAMLIB_STATUS,
+        "listen": str(static.LISTEN),
+        "audio_recording": str(static.AUDIO_RECORD),
     }
 
     # add heard stations to heard stations object
@@ -514,7 +680,6 @@ def send_tnc_state():
                 "frequency": heard[6],
             }
         )
-
     return json.dumps(output)
 
 
@@ -608,6 +773,17 @@ def process_daemon_commands(data):
             tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
             respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
             rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
+            enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
+
+            try:
+                # convert ssid list to python list
+                ssid_list = str(received_json["parameter"][0]["ssid_list"])
+                ssid_list = ssid_list.replace(" ", "")
+                ssid_list = ssid_list.split(",")
+                # convert str to int
+                ssid_list = list(map(int, ssid_list))
+            except KeyError:
+                ssid_list = [0]
 
             # print some debugging parameters
             for item in received_json["parameter"][0]:
@@ -643,6 +819,8 @@ def process_daemon_commands(data):
                     tx_audio_level,
                     respond_to_cq,
                     rx_buffer_size,
+                    enable_explorer,
+                    ssid_list,
                 ]
             )
             command_response("start_tnc", True)
@@ -738,3 +916,4 @@ def command_response(command, status):
     jsondata = {"command_response": command, "status": s_status}
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
+

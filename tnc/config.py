@@ -7,13 +7,18 @@ class CONFIG:
 
     """
 
-    def __init__(self):
+    def __init__(self, configfile: str):
         # set up logger
         self.log = structlog.get_logger("CONFIG")
 
         # init configparser
         self.config = configparser.ConfigParser(inline_comment_prefixes="#", allow_no_value=True)
-        self.config_name = "config.ini"
+        
+        try:
+            self.config_name = configfile
+        
+        except Exception:
+            self.config_name = "config.ini"
 
         self.log.info("[CFG] logfile init", file=self.config_name)
 
@@ -45,7 +50,8 @@ class CONFIG:
 
         self.config['STATION'] = {'#Station settings': None,
                                   'mycall': data[1],
-                                  'mygrid': data[2]
+                                  'mygrid': data[2],
+                                  'ssid_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[26])
                                   }
 
         self.config['AUDIO'] = {'#Audio settings': None,
@@ -56,14 +62,15 @@ class CONFIG:
                                 }
         self.config['RADIO'] = {'#Radio settings': None,
                                 'radiocontrol': data[13],
-                                'devicename': data[5],
-                                'deviceport': data[6],
-                                'serialspeed': data[7],
-                                'pttprotocol': data[8],
-                                'pttport': data[9],
-                                'data_bits': data[10],
-                                'stop_bits': data[11],
-                                'handshake': data[12],
+                                # TODO: disabled because we dont need these settings anymore
+                                #'devicename': data[5],
+                                #'deviceport': data[6],
+                                #'serialspeed': data[7],
+                                #'pttprotocol': data[8],
+                                #'pttport': data[9],
+                                #'data_bits': data[10],
+                                #'stop_bits': data[11],
+                                #'handshake': data[12],
                                 'rigctld_ip': data[14],
                                 'rigctld_port': data[15]
                                 }
@@ -74,7 +81,8 @@ class CONFIG:
                               'fmin': data[19],
                               'fmax': data[20],
                               'qrv': data[23],
-                              'rxbuffersize': data[24]
+                              'rxbuffersize': data[24],
+                              'explorer': data[25]
                               }
         try:
             with open(self.config_name, 'w') as configfile:

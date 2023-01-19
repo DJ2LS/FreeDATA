@@ -9,16 +9,34 @@ jobs:
     # cross-platform coverage.
     # See: https://docs.github.com/en/free-pro-team@latest/actions/learn-github-actions/managing-complex-workflows#using-a-build-matrix
     runs-on: ubuntu-latest
+    strategy:
+      # By default, GitHub will maximize the number of jobs run in parallel
+      # depending on the available runners on GitHub-hosted virtual machines.
+      # max-parallel: 8
+      fail-fast: false
+      matrix:
+        include:
+          - python-version: "3.7"
+          - python-version: "3.8"
+          - python-version: "3.9"
+          - python-version: "3.10"
+          - python-version: "3.11"
 
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
 
       - name: Install packages
         shell: bash
         run: |
           sudo apt-get update
-          sudo apt-get install octave octave-common octave-signal sox python3 python3-pip portaudio19-dev python3-pyaudio
-          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice
+          sudo apt-get install octave octave-common octave-signal sox portaudio19-dev python3-pyaudio
+          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice pyaudio
           pip3 install pytest pytest-rerunfailures
 
       - name: Build codec2

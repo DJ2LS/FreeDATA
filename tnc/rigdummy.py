@@ -30,6 +30,9 @@ class radio:
         """ """
         return None
 
+    def set_bandwidth(self):
+        """ """
+        return None
     def set_mode(self, mode):
         """
 
@@ -41,6 +44,26 @@ class radio:
         """
         return None
 
+    def set_frequency(self, frequency):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return None
+    def get_status(self):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return "connected"
     def get_ptt(self):
         """ """
         return None

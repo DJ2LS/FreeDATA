@@ -1,5 +1,5 @@
 const path = require('path');
-const {ipcRenderer} = require('electron');
+const {ipcRenderer, shell} = require('electron');
 const exec = require('child_process').spawn;
 const sock = require('./sock.js');
 const daemon = require('./daemon.js');
@@ -12,7 +12,7 @@ const {
 } = require('qth-locator');
 const os = require('os');
 
-// split character used for appending addiotional data to files
+// split character used for appending additional data to files
 const split_char = '\0;';
 
 
@@ -22,12 +22,101 @@ var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
 
+
+// SET dbfs LEVEL GLOBAL
+// this is an attempt of reducing CPU LOAD
+// we are going to check if we have unequal values before we start calculating again
+var dbfs_level_raw = 0
+
+
+
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
 
 
 // WINDOW LISTENER
 window.addEventListener('DOMContentLoaded', () => {
+
+    // save frequency event listener
+    document.getElementById("saveFrequency").addEventListener("click", () => {
+            var freq = document.getElementById("newFrequency").value;
+            console.log(freq)
+            let Data = {
+                type: "set",
+                command: "frequency",
+                frequency: freq,
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+
+    });
+
+    // enter button for input field
+    document.getElementById("newFrequency").addEventListener("keypress", function(event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        document.getElementById("saveFrequency").click();
+      }
+    });
+
+    // save mode event listener
+    document.getElementById("saveModePKTUSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "PKTUSB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeUSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "USB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeLSB").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "LSB",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeAM").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "AM",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // save mode event listener
+    document.getElementById("saveModeFM").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "mode",
+                mode: "FM",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+    });
+
+    // start stop audio recording event listener
+    document.getElementById("startStopRecording").addEventListener("click", () => {
+            let Data = {
+                type: "set",
+                command: "record_audio",
+            };
+            ipcRenderer.send('run-tnc-command', Data);
+
+    });
 
 
 document.getElementById('received_files_folder').addEventListener('click', () => {
@@ -88,8 +177,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     // hamlib settings
     document.getElementById('hamlib_deviceid').value = config.hamlib_deviceid;
 
-set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
-set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
+    set_setting_switch("enable_hamlib_deviceport", "hamlib_deviceport", config.enable_hamlib_deviceport)
+    set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_hamlib_ptt_port)
 
     document.getElementById('hamlib_serialspeed').value = config.hamlib_serialspeed;
     set_setting_switch("enable_hamlib_serialspeed", "hamlib_serialspeed", config.enable_hamlib_serialspeed)
@@ -160,7 +249,13 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
         document.getElementById("respondCQSwitch").checked = true;
     } else {
         document.getElementById("respondCQSwitch").checked = false;
-    }  
+    }
+
+    if(config.enable_explorer == 'True'){
+        document.getElementById("ExplorerSwitch").checked = true;
+    } else {
+        document.getElementById("ExplorerSwitch").checked = false;
+    }
     // theme selector
 
     if(config.theme != 'default'){
@@ -194,16 +289,57 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     if (config.spectrum == 'waterfall') {
         document.getElementById("waterfall-scatter-switch1").checked = true;
         document.getElementById("waterfall-scatter-switch2").checked = false;
-        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("waterfall-scatter-switch3").checked = false;
+
         document.getElementById("waterfall").style.visibility = 'visible';
         document.getElementById("waterfall").style.height = '100%';
-    } else {
+        document.getElementById("waterfall").style.display = 'block';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.display = 'none';
+
+    } else if (config.spectrum == 'scatter'){
 
         document.getElementById("waterfall-scatter-switch1").checked = false;
         document.getElementById("waterfall-scatter-switch2").checked = true;
-        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("waterfall-scatter-switch3").checked = false;
+
         document.getElementById("waterfall").style.visibility = 'hidden';
         document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+
+        document.getElementById("scatter").style.height = '100%';
+        document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("scatter").style.display = 'block';
+
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.display = 'none';
+
+    } else {
+
+        document.getElementById("waterfall-scatter-switch1").checked = false;
+        document.getElementById("waterfall-scatter-switch2").checked = false;
+        document.getElementById("waterfall-scatter-switch3").checked = true;
+
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.visibility = 'visible';
+        document.getElementById("chart").style.height = '100%';
+        document.getElementById("chart").style.display = 'block';
+
     }
 
     // radio control element
@@ -277,10 +413,13 @@ set_setting_switch("enable_hamlib_ptt_port", "hamlib_ptt_port", config.enable_ha
     // Create spectrum object on canvas with ID "waterfall"
     global.spectrum = new Spectrum(
         "waterfall", {
-            spectrumPercent: 0
+            spectrumPercent: 0,
+            wf_rows: 192    //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
         });
 
-
+    //Set waterfalltheme
+    document.getElementById("wftheme_selector").value = config.wftheme;
+    spectrum.setColorMap(config.wftheme);
 
     // on click radio control toggle view
     // disabled
@@ -649,7 +788,7 @@ document.getElementById('hamlib_rigctld_start').addEventListener('click', () => 
 
 
 
-    document.getElementById('hamlib_rigctld_command').value = paramList
+    document.getElementById('hamlib_rigctld_command').value = paramList.join(" ") // join removes the commas
 
     console.log(paramList)
     console.log(rigctldPath)
@@ -676,21 +815,55 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     // on click waterfall scatter toggle view
     // waterfall
     document.getElementById("waterfall-scatter-switch1").addEventListener("click", () => {
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.display = 'none';
+        document.getElementById("chart").style.height = '0px';
+
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.display = 'none';
         document.getElementById("scatter").style.visibility = 'hidden';
+
+        document.getElementById("waterfall").style.display = 'block';
         document.getElementById("waterfall").style.visibility = 'visible';
         document.getElementById("waterfall").style.height = '100%';
+
         config.spectrum = 'waterfall';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     // scatter
     document.getElementById("waterfall-scatter-switch2").addEventListener("click", () => {
+        document.getElementById("scatter").style.display = 'block';
         document.getElementById("scatter").style.visibility = 'visible';
+        document.getElementById("scatter").style.height = '100%';
+
         document.getElementById("waterfall").style.visibility = 'hidden';
         document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
+
+        document.getElementById("chart").style.visibility = 'hidden';
+        document.getElementById("chart").style.height = '0px';
+        document.getElementById("chart").style.display = 'none';
+
         config.spectrum = 'scatter';
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    // chart
+    document.getElementById("waterfall-scatter-switch3").addEventListener("click", () => {
+        document.getElementById("waterfall").style.visibility = 'hidden';
+        document.getElementById("waterfall").style.height = '0px';
+        document.getElementById("waterfall").style.display = 'none';
 
+        document.getElementById("scatter").style.height = '0px';
+        document.getElementById("scatter").style.visibility = 'hidden';
+        document.getElementById("scatter").style.display = 'none';
+
+        document.getElementById("chart").style.height = '100%';
+        document.getElementById("chart").style.display = 'block';
+        document.getElementById("chart").style.visibility = 'visible';
+
+        config.spectrum = 'chart';
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
 
     // on click remote tnc toggle view
@@ -709,13 +882,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-    // on change port and host
-    document.getElementById("tnc_adress").addEventListener("change", () => {
-        console.log(document.getElementById("tnc_adress").value);
-        config.tnc_host = document.getElementById("tnc_adress").value;
-        config.daemon_host = document.getElementById("tnc_adress").value;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    });
+
 
     // on change ping callsign
         document.getElementById("dxCall").addEventListener("change", () => {
@@ -727,12 +894,44 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         
             });
         
-    
+     // on change port and host
+    document.getElementById("tnc_adress").addEventListener("change", () => {
+        console.log(document.getElementById("tnc_adress").value);
+        config.tnc_host = document.getElementById("tnc_adress").value;
+        config.daemon_host = document.getElementById("tnc_adress").value;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+        let Data = {
+            port: document.getElementById("tnc_port").value,
+            adress: document.getElementById("tnc_adress").value,
+        };
+        ipcRenderer.send('request-update-tnc-ip', Data);
+
+        Data = {
+            port: parseInt(document.getElementById("tnc_port").value) + 1,
+            adress: document.getElementById("tnc_adress").value,
+        };
+        ipcRenderer.send('request-update-daemon-ip', Data);
+    });
+
     // on change tnc port
     document.getElementById("tnc_port").addEventListener("change", () => {
+
         config.tnc_port = document.getElementById("tnc_port").value;
         config.daemon_port = parseInt(document.getElementById("tnc_port").value) + 1;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+            let Data = {
+                port: document.getElementById("tnc_port").value,
+                adress: document.getElementById("tnc_adress").value,
+            };
+            ipcRenderer.send('request-update-tnc-ip', Data);
+
+            Data = {
+                port: parseInt(document.getElementById("tnc_port").value) + 1,
+                adress: document.getElementById("tnc_adress").value,
+            };
+            ipcRenderer.send('request-update-daemon-ip', Data);
 
     });
     
@@ -758,22 +957,21 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             ipcRenderer.send('run-tnc-command', Data);        
     });
     // saveMyCall button clicked
-    document.getElementById("saveMyCall").addEventListener("click", () => {
+    document.getElementById("myCall").addEventListener("input", () => {
         callsign = document.getElementById("myCall").value;
         ssid = document.getElementById("myCallSSID").value;
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
-        
         // split document title by looking for Call then split and update it
         var documentTitle = document.title.split('Call:')
         document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
-              
+
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
 
     // saveMyGrid button clicked
-    document.getElementById("saveMyGrid").addEventListener("click", () => {
+    document.getElementById("myGrid").addEventListener("input", () => {
         grid = document.getElementById("myGrid").value;
         config.mygrid = grid;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -872,7 +1070,16 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });    
-    
+
+    // enable explorer Switch clicked
+    document.getElementById("ExplorerSwitch").addEventListener("click", () => {
+        if(document.getElementById("ExplorerSwitch").checked == true){
+            config.enable_explorer = "True";
+        } else {
+            config.enable_explorer = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -917,8 +1124,16 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
     });
+
+    // Waterfall theme selector changed
+    document.getElementById("wftheme_selector").addEventListener("change", () => {
+        var wftheme = document.getElementById("wftheme_selector").value;
+        spectrum.setColorMap(wftheme);
+        config.wftheme = wftheme;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
     
-    // Update channel selector clicked
+        // Update channel selector clicked
     document.getElementById("update_channel_selector").addEventListener("click", () => {
         config.update_channel = document.getElementById("update_channel_selector").value;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -945,6 +1160,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     // Stop beacon button clicked
     document.getElementById("stopBeacon").addEventListener("click", () => {
         sock.stopBeacon();
+    });
+
+    // Explorer button clicked
+    document.getElementById("openExplorer").addEventListener("click", () => {
+        shell.openExternal('https://explorer.freedata.app/?myCall=' + document.getElementById("myCall").value);
     });
 
     // startTNC button clicked
@@ -1008,6 +1228,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             var respond_to_cq = "False";
         } 
 
+        if (document.getElementById("ExplorerSwitch").checked == true){
+            var enable_explorer = "True";
+        } else {
+            var enable_explorer = "False";
+        }
        
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
@@ -1067,6 +1292,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.tx_audio_level = tx_audio_level;
         config.respond_to_cq = respond_to_cq;
         config.rx_buffer_size = rx_buffer_size;
+        config.enable_explorer = enable_explorer;
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -1085,7 +1311,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
         
         
     })
@@ -1259,28 +1485,24 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     }
 
-
-    // TOE TIME OF EXECUTION --> How many time needs a command to be executed until data arrives
-    // deactivated this feature, beacuse its useless at this time. maybe it is getting more interesting, if we are working via network
-    // but for this we need to find a nice place for this on the screen
-    /*
-    if (typeof(arg.toe) == 'undefined') {
-        var toe = 0
-    } else {
-        var toe = arg.toe
+    if (typeof(arg.mycallsign) !== 'undefined') {
+        // split document title by looking for Call then split and update it
+        var documentTitle = document.title.split('Call:')
+        document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
     }
-    document.getElementById("toe").innerHTML = toe + ' ms'
-    */
-    
+
+    // update mygrid information with data from tnc
+    if (typeof(arg.mygrid) !== 'undefined') {
+        document.getElementById("myGrid").value = arg.mygrid;
+    }
+
     // DATA STATE
     global.rxBufferLengthTnc = arg.rx_buffer_length
 
-    // SCATTER DIAGRAM PLOTTING
-    //global.myChart.destroy();
 
-    //console.log(arg.scatter.length)
+    // START OF SCATTER CHART
 
-        const config = {
+    const scatterConfig = {
                 plugins: {
                     legend: {
                         display: false,
@@ -1334,16 +1556,12 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     }
                 }
         }
-
-
-
-
-    var data = arg.scatter
-    var newdata = {
+    var scatterData = arg.scatter
+    var newScatterData = {
         datasets: [{
             //label: 'constellation diagram',
-            data: data,
-            options: config,
+            data: scatterData,
+            options: scatterConfig,
             backgroundColor: 'rgb(255, 99, 132)'
         }],
     };
@@ -1353,24 +1571,121 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         var scatterSize = arg.scatter.length;
     }
-    if (global.data != newdata && scatterSize > 0) {
-        try {
-            global.myChart.destroy();
-        } catch (e) {
-            // myChart not yet created
-            console.log(e);
+
+     if (global.scatterData != newScatterData && scatterSize > 0) {
+     global.scatterData = newScatterData;
+
+        if (typeof(global.scatterChart) == 'undefined') {
+        var scatterCtx = document.getElementById('scatter').getContext('2d');
+        global.scatterChart = new Chart(scatterCtx, {
+            type: 'scatter',
+            data: global.scatterData,
+            options: scatterConfig
+        });
+    } else {
+        global.scatterChart.data = global.scatterData;
+        global.scatterChart.update();
+    }
+}
+    // END OF SCATTER CHART
+
+    // START OF SPEED CHART
+
+    var speedDataTime = []
+
+    if (typeof(arg.speed_list) == 'undefined') {
+        var speed_listSize = 0;
+    } else {
+        var speed_listSize = arg.speed_list.length;
+    }
+
+    for (var i=0; i < speed_listSize; i++) {
+        var timestamp = arg.speed_list[i].timestamp * 1000
+        var h = new Date(timestamp).getHours();
+        var m = new Date(timestamp).getMinutes();
+        var s = new Date(timestamp).getSeconds();
+        var time = h + ':' + m + ':' + s;
+        speedDataTime.push(time)
+    }
+
+    var speedDataBpm = []
+    for (var i=0; i < speed_listSize; i++) {
+        speedDataBpm.push(arg.speed_list[i].bpm)
+
+    }
+
+    var speedDataSnr = []
+    for (var i=0; i < speed_listSize; i++) {
+        speedDataSnr.push(arg.speed_list[i].snr)
+    }
+
+
+    var speedChartConfig = {
+      type: 'line',
+    };
+
+    var newSpeedData = {
+        labels: speedDataTime,
+        datasets: [
+            {
+                type: 'line',
+                label: 'SNR[dB]',
+                data: speedDataSnr,
+                borderColor: 'rgb(255, 99, 132, 1.0)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                order: 1,
+                yAxisID: 'SNR',
+            },
+            {
+                type: 'bar',
+                label: 'Speed[bpm]',
+                data: speedDataBpm,
+                borderColor: 'rgb(120, 100, 120, 1.0)',
+                backgroundColor: 'rgba(120, 100, 120, 0.2)',
+                order: 0,
+                yAxisID: 'SPEED',
+            }
+        ],
+
+    };
+
+var speedChartOptions = {
+            responsive: true,
+            animations: true,
+            cubicInterpolationMode: 'monotone',
+            tension: 0.4,
+            scales: {
+              SNR:{
+                type: 'linear',
+                ticks: { beginAtZero: true, color: 'rgb(255, 99, 132)' },
+                position: 'right',
+              },
+              SPEED :{
+                type: 'linear',
+                ticks: { beginAtZero: true, color: 'rgb(120, 100, 120)' },
+                position: 'left',
+                grid: {
+                    drawOnChartArea: false, // only want the grid lines for one axis to show up
+                },
+              },
+              x: { ticks: { beginAtZero: true } },
+            }
         }
 
-        global.data = newdata;
-
-
-        var ctx = document.getElementById('scatter').getContext('2d');
-        global.myChart = new Chart(ctx, {
-            type: 'scatter',
-            data: global.data,
-            options: config
+    if (typeof(global.speedChart) == 'undefined') {
+        var speedCtx = document.getElementById('chart').getContext('2d');
+        global.speedChart = new Chart(speedCtx, {
+            data: newSpeedData,
+            options: speedChartOptions
         });
+    } else {
+        if(speedDataSnr.length > 0){
+            global.speedChart.data = newSpeedData;
+            global.speedChart.update();
+        }
     }
+
+    // END OF SPEED CHART
 
     // PTT STATE
     if (arg.ptt_state == 'True') {
@@ -1380,6 +1695,22 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     } else {
         document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
     }
+
+    // AUDIO RECORDING
+    if (arg.audio_recording == 'True') {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Stop Rec"
+    } else if (arg.ptt_state == 'False') {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+    } else {
+        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
+        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+    }
+
+
+
+
 
     // CHANNEL BUSY STATE
     if (arg.channel_busy == 'True') {
@@ -1438,6 +1769,14 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     }
 
+    // HAMLIB STATUS
+    if (arg.hamlib_status == 'connected') {
+        document.getElementById("rigctld_state").className = "btn btn-success btn-sm";
+
+    } else {
+        document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
+    }
+
 
 
     // BEACON STATE
@@ -1457,15 +1796,22 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
     }
-    // RMS
-    /*
-    var rms_level = Math.round((arg.rms_level/60) * 100)
-    document.getElementById("rms_level").setAttribute("aria-valuenow", rms_level);
-    document.getElementById("rms_level").setAttribute("style", "width:" + rms_level + "%;");
-    */
+    // dbfs
+    // https://www.moellerstudios.org/converting-amplitude-representations/
+    if (dbfs_level_raw != arg.dbfs_level){
+        dbfs_level_raw = arg.dbfs_level
+        dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
+
+        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
+        document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
+        document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
+    }
 
     // SET FREQUENCY
-    document.getElementById("frequency").innerHTML = arg.frequency;
+    // https://stackoverflow.com/a/2901298
+    var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    document.getElementById("frequency").innerHTML = freq;
+    //document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
     document.getElementById("mode").innerHTML = arg.mode;
@@ -1488,7 +1834,30 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
     document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
-    
+
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(arg.arq_seconds_until_finish) == 'undefined') {
+        var time_left = 0;
+    } else {
+        var arq_seconds_until_finish = arg.arq_seconds_until_finish
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+    }
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
+
+
     
     // SET SPEED LEVEL
 
@@ -1507,6 +1876,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if(arg.speed_level >= 4) {
         document.getElementById("speed_level").className = "bi bi-reception-4";
     }
+
     
     
     
@@ -2003,10 +2373,20 @@ ipcRenderer.on('run-tnc-command', (event, arg) => {
     if (arg.command == 'set_tx_audio_level') {
         sock.setTxAudioLevel(arg.tx_audio_level);
     }
+    if (arg.command == 'record_audio') {
+        sock.record_audio();
+    }
     if (arg.command == 'send_test_frame') {
         sock.sendTestFrame();
-    }    
-                  
+    }
+
+    if (arg.command == 'frequency') {
+        sock.set_frequency(arg.frequency);
+    }
+
+    if (arg.command == 'mode') {
+        sock.set_mode(arg.mode);
+    }
     
 
 });
@@ -2152,6 +2532,14 @@ ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
     toast.show();
 });
 
+// DATA CHANNEL WAITING TOAST
+ipcRenderer.on('action-show-arq-toast-datachannel-waiting', (event, data) => {
+    var toastDATACHANNELwaiting = document.getElementById('toastDATACHANNELwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // DATA CHANNEL OPEN TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
     var toastDATACHANNELopen = document.getElementById('toastDATACHANNELopen');
@@ -2204,10 +2592,43 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) =
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
 
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQtransmitting = document.getElementById('toastARQtransmitting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting); // Returns a Bootstrap toast instance
-    toast.show();
+    //document.getElementById("toastARQtransmittingSNR").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+    var toastARQtransmittingSNR = document.getElementById('toastARQtransmittingSNR');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingSNR); // Returns a Bootstrap toast instance
+
+    var irs_snr = data["data"][0].irs_snr;
+
+    if(irs_snr <= 0){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-danger border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " low " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr > 0 && irs_snr <= 5){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-warning border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " okay " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr > 5  && irs_snr < 12.7){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " good " + irs_snr;
+        toast.show();
+
+    } else if(irs_snr >= 12.7){
+        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
+        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " really good 12.7+";
+        toast.show();
+
+    } else {
+        console.log("no snr info available")
+        document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
+        var toastARQtransmitting = document.getElementById('toastARQtransmitting');
+        var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting); // Returns a Bootstrap toast instance
+        toast.show();
+
+    }
+
+
+
 });
 
 // ARQ TRANSMISSION RECEIVED
@@ -2223,15 +2644,15 @@ ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
 ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => {
 
     document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQreceiving = document.getElementById('toastARQreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceiving); // Returns a Bootstrap toast instance
+    var toastARQsessionreceiving = document.getElementById('toastARQreceiving');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionreceiving); // Returns a Bootstrap toast instance
     toast.show();
 });
 
 // ARQ SESSION CONNECTING
 ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnecting');
+    var toastARQsessionconnecting = document.getElementById('toastARQsessionconnecting');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnecting); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2239,15 +2660,24 @@ ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionconnected');
+    var toastARQsessionconnected = document.getElementById('toastARQsessionconnected');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnected); // Returns a Bootstrap toast instance
     toast.show();
 });
 
+// ARQ SESSION CONNECTED
+ipcRenderer.on('action-show-arq-toast-session-waiting', (event, data) => {
+
+    var toastARQsessionwaiting = document.getElementById('toastARQsessionwaiting');
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionwaiting); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
+
 // ARQ SESSION CLOSE
 ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionclose');
+    var toastARQsessionclose = document.getElementById('toastARQsessionclose');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionclose); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2255,7 +2685,7 @@ ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
 // ARQ SESSION FAILED
 ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
 
-    var toastARQreceiving = document.getElementById('toastARQsessionfailed');
+    var toastARQsessionfailed = document.getElementById('toastARQsessionfailed');
     var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionfailed); // Returns a Bootstrap toast instance
     toast.show();
 });
@@ -2286,9 +2716,17 @@ function set_setting_switch(setting_switch, enable_object, state){
 
 setInterval(checkRigctld, 500)
 function checkRigctld(){
-    ipcRenderer.send('request-check-rigctld');
+
+    var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
+    var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+
+    let Data = {
+                ip: rigctld_ip,
+                port: rigctld_port
+            };
+    ipcRenderer.send('request-check-rigctld', Data);
 }
+
 ipcRenderer.on('action-check-rigctld', (event, data) => {
-        console.log(data)
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });
