@@ -1805,8 +1805,9 @@ var speedChartOptions = {
         dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
 
         document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
-        document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
-        document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
+        var dbfscntrl = document.getElementById("dbfs_level");
+        dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
+        dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
     }
 
     // SET FREQUENCY
@@ -1889,8 +1890,12 @@ var speedChartOptions = {
         var total_bytes = arg.total_bytes;
     }
     document.getElementById("total_bytes").innerHTML = total_bytes;
-    document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent);
-    document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;");
+    //Only update if values differ to prevent re-rendering control
+    var txprog = document.getElementById("transmission_progress")
+    if (txprog.getAttribute("aria-valuenow") != arg.arq_transmission_percent)
+        txprog.setAttribute("aria-valuenow", arg.arq_transmission_percent);
+    if (txprog.getAttribute("style") !=  "width:" + arg.arq_transmission_percent + "%;")
+        txprog.setAttribute("style", "width:" + arg.arq_transmission_percent + "%;");
 
     // UPDATE HEARD STATIONS
     var tbl = document.getElementById("heardstations");
