@@ -339,6 +339,8 @@ jobs:
           cp -r -Force main.dist/* dist/tnc
 
       - name: Rename tnc binaries
+        # we don't need renaming for pyinstaller builds as output name is defined
+        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
           mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
