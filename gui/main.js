@@ -316,104 +316,72 @@ app.whenReady().then(() => {
         win.show();
     }, 3000);
 
-    // start daemon by checking os
-    mainLog.info('Starting freedata-daemon binary');
+    //Generate daemon binary path
+    var daemonPath = "";
+    switch (os.platform().toLowerCase()){
+        case "darwin":
+        case "linux":
+            daemonPath = path.join(process.resourcesPath, 'tnc', 'freedata-daemon')
+            
+            break;
+        case "win32":
+        case "win64":
+            daemonPath = path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe')
+            break;
+        default:
 
-    if(os.platform()=='darwin'){
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
-            });                
-    }    
-    
-    /*
-    process.resourcesPath -->
-    /tmp/.mount_FreeDAUQYfKb/resources
-    
-    __dirname -->
-    /tmp/.mount_FreeDAUQYfKb/resources/app.asar
-    */
-
-    if(os.platform()=='linux'){
-
-    /*
-    var folder = path.join(process.resourcesPath, 'tnc');
-    //var folder = path.join(__dirname, 'extraResources', 'tnc');
-    console.log(folder);
-    fs.readdir(folder, (err, files) => {
-        console.log(files);
-    });
-    */
-
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
-            });        
+            break;
     }
 
-    
-    if(os.platform()=='win32' || os.platform()=='win64'){
-        // for windows the relative path via path.join(__dirname) is not needed for some reason 
-        //daemonProcess = exec('\\tnc\\daemon.exe', [])
-        
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
+    //Start daemon binary if it exists
+    if (fs.existsSync(daemonPath)){
+        mainLog.info('Starting freedata-daemon binary');
+        daemonProcess = spawn(daemonPath,[],
+            {
+                cwd: path.join(daemonPath,".."),
             });
-                
-    }
-
-    // return process messages
-    
-    daemonProcess.on('error', (err) => {
-      daemonProcessLog.error(`error when starting daemon: ${err}`);
-    });
-        
-    daemonProcess.on('message', (data) => {
-      daemonProcessLog.info(`${data}`);      
-    });
-    
-    daemonProcess.stdout.on('data', (data) => {
-      daemonProcessLog.info(`${data}`);  
-    });
-
-
-
-
-
-    daemonProcess.stderr.on('data', (data) => {
-      daemonProcessLog.info(`${data}`);
-
+        // return process messages
+        daemonProcess.on('error', (err) => {
+            daemonProcessLog.error(`error when starting daemon: ${err}`);
+        });
+        daemonProcess.on('message', (data) => {
+            daemonProcessLog.info(`${data}`);      
+        });
+        daemonProcess.stdout.on('data', (data) => {
+            daemonProcessLog.info(`${data}`);  
+        });
+        daemonProcess.stderr.on('data', (data) => {
+            daemonProcessLog.info(`${data}`);
             let arg = {
-        entry: `${data}`
-      };
-        // send info to log only if log screen available
-        // it seems an error occurs when updating
-        if (logViewer !== null && logViewer !== ''){
-            try{
-                logViewer.webContents.send('action-update-log', arg);
-            } catch (e) {
-                // empty for keeping error stuff silent
-                // this is important to avoid error messages if we are going to close the app while
-                // an logging information will be pushed to the logger
+                entry: `${data}`
+            };
+            // send info to log only if log screen available
+            // it seems an error occurs when updating
+            if (logViewer !== null && logViewer !== ''){
+                try{
+                    logViewer.webContents.send('action-update-log', arg);
+                } catch (e) {
+                    // empty for keeping error stuff silent
+                    // this is important to avoid error messages if we are going to close the app while
+                    // an logging information will be pushed to the logger
+                }
             }
-        }
-      
-    });
+        });
+        daemonProcess.on('close', (code) => {
+            daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
+        });
+    } else {
+        daemonProcess=null;
+        daemonPath=null;
+        mainLog.info("Daemon binary doesn't exist--normal for dev environments.")
+    }
+});
 
-    daemonProcess.on('close', (code) => {
-      daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
-    });
-
-
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    })
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
 })
-
 
 app.on('window-all-closed', () => {
     close_all();
@@ -782,7 +750,8 @@ function close_sub_processes(){
 
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
-        daemonProcess.kill();
+        if (daemonProcess != null) 
+            daemonProcess.kill();
     } catch (e) {   
         mainLog.error(e)
     }
