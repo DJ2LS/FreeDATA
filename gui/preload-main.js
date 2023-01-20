@@ -169,7 +169,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     ssid = callsign_and_ssid[1];
     
     document.getElementById("myCall").value = callsign;
-    document.title = document.title + ' - Call: ' + config.mycall;
+    //document.title = document.title + ' - Call: ' + config.mycall;
+    updateTitle();
     
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
@@ -963,9 +964,9 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
         // split document title by looking for Call then split and update it
-        var documentTitle = document.title.split('Call:')
-        document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
-
+        //var documentTitle = document.title.split('Call:')
+        //document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
+        updateTitle(callsign_ssid);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
@@ -1487,8 +1488,9 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
 
     if (typeof(arg.mycallsign) !== 'undefined') {
         // split document title by looking for Call then split and update it
-        var documentTitle = document.title.split('Call:')
-        document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
+        //var documentTitle = document.title.split('Call:')
+        //document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
+        updateTitle(arg.mycallsign);
     }
 
     // update mygrid information with data from tnc
@@ -2413,13 +2415,10 @@ ipcRenderer.on('action-updater', (event, arg) => {
         }   
 
         if (arg.status == "checking-for-update"){
-
-            document.title = document.title + ' - v' + arg.version;
+            
+            //document.title = document.title + ' - v' + arg.version;
+            updateTitle(config.myCall,config.tnc_host,config.tnc_port, " -v " + arg.version);
             document.getElementById("updater_status").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
-            
-             
-            
-            
             
             document.getElementById("updater_status").className = "btn btn-secondary btn-sm";
             document.getElementById("update_and_install").style.display = 'none';
@@ -2691,11 +2690,6 @@ ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
 });
 
 
-
-
-
-
-
 // enable or disable a setting by given switch and element
 function enable_setting(enable_switch, enable_object){
         if(document.getElementById(enable_switch).checked){
@@ -2730,3 +2724,9 @@ function checkRigctld(){
 ipcRenderer.on('action-check-rigctld', (event, data) => {
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });
+function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = config.tnc_port, appender = ""){
+    //Multiple consecutive  spaces get converted to a single space
+    var title ="FreeDATA by DJ2LS - Call: " + mycall + " - TNC: " + tnc +":" + tncport + appender;
+    if (title != document.title)
+        document.title=title;
+}
