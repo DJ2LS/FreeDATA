@@ -77,7 +77,11 @@
           "type": "link",
           "path": "/Applications"
         }
-      ]
+      ],
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.plist",
+      "entitlementsInherit": "build/entitlements.plist",
+      "gatekeeperAssess": false
     },
     "win": {
       "icon": "build/icon.png",
