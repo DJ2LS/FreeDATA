@@ -28,6 +28,8 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
+    "@electron/asar": "^3.2.3",
+    "@electron/osx-sign": "^1.0.4",
     "@popperjs/core": "^2.11.6",
     "blob-util": "^2.0.2",
     "bootstrap": "^5.2.1",
@@ -42,7 +44,7 @@
     "express-pouchdb": "^4.2.0",
     "mime": "^3.0.0",
     "pouchdb": "^7.3.0",
-    "pouchdb-browser": "^7.3.0",
+    "pouchdb-browser": "^7.3.0",e
     "pouchdb-express-router": "^0.0.11",
     "pouchdb-find": "^7.3.0",
     "pouchdb-replication": "^8.0.0",
@@ -99,7 +101,8 @@
         "from": "../tnc/dist/tnc/",
         "to": "tnc",
         "filter": [
-          "**/*"
+          "**/*",
+          "!git/*"
         ]
       }
     ]
