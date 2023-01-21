@@ -362,6 +362,7 @@ jobs:
           # release the app after building
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: ${{ matrix.electron_parameters }}
+          max_attempts: 3
 
       - name: Compress TNC
         uses: thedoctor0/zip-release@master
