@@ -64,25 +64,17 @@
       "buildResources": "build",
       "output": "dist"
     },
-    "dmg": {
-      "icon": "build/icon.png",
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
+    "mac": {
+      "target": [
+        "default"
       ],
+      "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false
     },
+
     "win": {
       "icon": "build/icon.png",
       "target": [
