@@ -2741,7 +2741,7 @@ ipcRenderer.on('action-check-rigctld', (event, data) => {
 });
 function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = config.tnc_port, appender = ""){
     //Multiple consecutive  spaces get converted to a single space
-    var title ="FreeDATA by DJ2LS - Call: " + mycall + " - TNC: " + tnc +":" + tncport + appender;
+    var title ="FreeDATA - Call: " + mycall + " - TNC: " + tnc +":" + tncport + appender;
     if (title != document.title)
         document.title=title;
 }
