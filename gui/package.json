@@ -1,6 +1,6 @@
 {
   "name": "FreeDATA",
-  "version": "0.6.11-alpha.2",
+  "version": "0.6.11-alpha.5",
   "description": "FreeDATA ",
   "main": "main.js",
   "scripts": {
@@ -28,6 +28,9 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
+    "@electron/asar": "^3.2.3",
+    "@electron/osx-sign": "^1.0.4",
+    "@popperjs/core": "^2.11.6",
     "blob-util": "^2.0.2",
     "bootstrap": "^5.2.3",
     "bootstrap-icons": "^1.10.3",
@@ -50,31 +53,30 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+
     "electron": "^22.0.2",
     "electron-builder": "^23.6.0"
+    "@electron/notarize": "^1.2.3",
+    "electron-builder-notarize": "^1.5.0"
   },
   "build": {
     "productName": "FreeDATA",
     "appId": "app.freedata",
+    "afterSign": "electron-builder-notarize",
     "npmRebuild": "false",
     "directories": {
       "buildResources": "build",
       "output": "dist"
     },
-    "dmg": {
+    "mac": {
+      "target": [
+        "default"
+      ],
       "icon": "build/icon.png",
-      "contents": [
-        {
-          "x": 130,
-          "y": 220
-        },
-        {
-          "x": 410,
-          "y": 220,
-          "type": "link",
-          "path": "/Applications"
-        }
-      ]
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.plist",
+      "entitlementsInherit": "build/entitlements.plist",
+      "gatekeeperAssess": false
     },
     "win": {
       "icon": "build/icon.png",
@@ -98,7 +100,8 @@
         "from": "../tnc/dist/tnc/",
         "to": "tnc",
         "filter": [
-          "**/*"
+          "**/*",
+          "!**/.git"
         ]
       }
     ]
