@@ -1478,8 +1478,13 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
   
 })
 
-  
-
+//Listen for events caused by tnc 'tnc-message's
+ipcRenderer.on('action-update-transmission-status', (event, arg) => {
+    var data =arg["data"][0];
+    var txprog = document.getElementById("transmission_progress")
+    txprog.setAttribute("aria-valuenow", data.percent);
+    txprog.setAttribute("style", "width:" + data.percent + "%;");
+});
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
@@ -1893,12 +1898,7 @@ var speedChartOptions = {
         var total_bytes = arg.total_bytes;
     }
     document.getElementById("total_bytes").innerHTML = total_bytes;
-    //Only update if values differ to prevent re-rendering control
-    var txprog = document.getElementById("transmission_progress")
-    if (txprog.getAttribute("aria-valuenow") != arg.arq_transmission_percent)
-        txprog.setAttribute("aria-valuenow", arg.arq_transmission_percent);
-    if (txprog.getAttribute("style") !=  "width:" + arg.arq_transmission_percent + "%;")
-        txprog.setAttribute("style", "width:" + arg.arq_transmission_percent + "%;");
+
 
     // UPDATE HEARD STATIONS
     var tbl = document.getElementById("heardstations");
