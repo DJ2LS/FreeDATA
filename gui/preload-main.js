@@ -1913,18 +1913,19 @@ var speedChartOptions = {
     for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
-        if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value) {
+        //if (arg.stations[i]['dxcallsign'].split('-',2)[0] == document.getElementById("dxCall").value.split['-',2][0]) {
+        if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value.toUpperCase()) {
             var dxGrid = arg.stations[i]['dxgrid'];
             var myGrid = document.getElementById("myGrid").value;
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-                document.getElementById("pingDistance").innerHTML = dist;
+                //document.getElementById("pingDistance").innerHTML = dist;
                 document.getElementById("dataModalPingDistance").innerHTML = dist;
             } catch {
-                document.getElementById("pingDistance").innerHTML = '---';
+                //document.getElementById("pingDistance").innerHTML = '---';
                 document.getElementById("dataModalPingDistance").innerHTML = '---';
             }
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
+            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
             document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
         }
 
@@ -1954,6 +1955,9 @@ var speedChartOptions = {
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['dxcallsign'];
+        row.addEventListener("click", function(e) {
+            document.getElementById("dxCall").value = dxCallText.innerText;
+          });
         dxCall.appendChild(dxCallText);
 
         var dxGrid = document.createElement("td");
@@ -2259,15 +2263,15 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
     for (i = 0; i < arg.data.length; i++) {
 
         // first we update the PING window
-        if (arg.data[i]['dxcallsign'] == document.getElementById("dxCall").value) {
+        if (arg.data[i]['dxcallsign'] == document.getElementById("dxCall").value.toUpperCase()) {
             /*
             // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
             if(arg.data[i]['DXGRID'] != ''){
                 document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
             }
             */
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
-
+            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
+            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
         }
 
 
