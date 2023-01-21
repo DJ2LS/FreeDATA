@@ -983,8 +983,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // startPing button clicked
     document.getElementById("sendPing").addEventListener("click", () => {
-        var dxcallsign = document.getElementById("dxCall").value;
-        dxcallsign = dxcallsign.toUpperCase();
+        var dxcallsign = document.getElementById("dxCall").value.toUpperCase();
+        if (dxcallsign == "" || dxcallsign == null || dxcallsign == undefined)
+            return;
+        pauseButton(document.getElementById("sendPing"),500);
         sock.sendPing(dxcallsign);
     });
 
@@ -1019,6 +1021,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // sendCQ button clicked
     document.getElementById("sendCQ").addEventListener("click", () => {
+        pauseButton(document.getElementById("sendCQ"),500);
         sock.sendCQ();
     });
 
@@ -2734,4 +2737,14 @@ function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = c
     var title ="FreeDATA by DJ2LS - Call: " + mycall + " - TNC: " + tnc +":" + tncport + appender;
     if (title != document.title)
         document.title=title;
+}
+
+//Teomporarily disable a button with timeout
+function pauseButton(btn, timems) {
+    btn.disabled = true;
+    var curText = btn.innerHTML;
+    btn.innerHTML = "<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\">";
+  setTimeout(()=>{
+    btn.innerHTML=curText;
+    btn.disabled = false;}, timems)
 }
