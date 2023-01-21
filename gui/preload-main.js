@@ -1484,6 +1484,29 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     var txprog = document.getElementById("transmission_progress")
     txprog.setAttribute("aria-valuenow", data.percent);
     txprog.setAttribute("style", "width:" + data.percent + "%;");
+
+     // SET TIME LEFT UNTIL FINIHED
+     if (typeof(data.finished) == 'undefined') {
+        var time_left = 0;
+    } else {
+        var arq_seconds_until_finish = data.finished
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+    }
+    document.getElementById("transmission_timeleft").textContent = time_left;
+
 });
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
@@ -1846,27 +1869,7 @@ var speedChartOptions = {
     }
     document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
 
-    // SET TIME LEFT UNTIL FINIHED
-    if (typeof(arg.arq_seconds_until_finish) == 'undefined') {
-        var time_left = 0;
-    } else {
-        var arq_seconds_until_finish = arg.arq_seconds_until_finish
-        var hours = Math.floor(arq_seconds_until_finish / 3600);
-        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
-        var seconds = arq_seconds_until_finish % 60;
-
-        if(hours < 0) {
-            hours = 0;
-        }
-        if(minutes < 0) {
-            minutes = 0;
-        }
-        if(seconds < 0) {
-            seconds = 0;
-        }
-        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
-    }
-    document.getElementById("transmission_timeleft").innerHTML = time_left;
+   
 
 
     
