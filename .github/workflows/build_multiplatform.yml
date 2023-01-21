@@ -290,8 +290,6 @@ jobs:
         if: ${{startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
-          # remove .git folder from codec2 which causes app signing to fail
-          ls -R
           # now build tnc binaries
           pyinstaller -y freedata.spec
           # and to some final cleanup
@@ -350,8 +348,9 @@ jobs:
       - name: cleanup on macos before code signing
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
-          # find . -type d -name .git -exec rm -r {} \;
-          find . -type d -name .git -delete
+          ls -l
+          find . -type d -name .git -exec rm -r {} \;
+          # find . -type d -name .git -delete
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
