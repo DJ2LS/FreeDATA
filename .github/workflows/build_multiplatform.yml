@@ -196,6 +196,7 @@ jobs:
     name: Build FreeDATA packages
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-20.04, macos-11, windows-latest]
         include:
