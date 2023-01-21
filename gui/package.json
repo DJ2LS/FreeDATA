@@ -99,7 +99,8 @@
         "from": "../tnc/dist/tnc/",
         "to": "tnc",
         "filter": [
-          "**/*"
+          "**/*",
+          "!**/.git"
         ]
       }
     ]
