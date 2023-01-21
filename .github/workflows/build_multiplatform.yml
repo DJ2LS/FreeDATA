@@ -100,9 +100,6 @@ jobs:
           name: libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
           path: codec2/tempfiles/*
 
-
-
-
   BUILD_ARM:
     # The host should always be linux
     runs-on: ubuntu-latest
@@ -236,7 +233,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Create tnc/dist
         working-directory: tnc
@@ -282,27 +279,25 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Add MacOS certs
+        if: ${{startsWith(matrix.os, 'macos')}}
+        run: chmod +x add-osx-cert.sh && ./add-osx-cert.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
-      # - name: Install Pyaudio Windows
-      #   if: ${{startsWith(matrix.os, 'windows')}}
-      #   working-directory: tnc/lib/pyaudio/windows
-      #   run: |
-      #     pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
+      - name: Build binaries macOS
+        if: ${{startsWith(matrix.os, 'macos')}}
+        working-directory: tnc
+        run: |
+          # now build tnc binaries
+          pyinstaller -y freedata.spec
+          # and to some final cleanup
+          cp -r -f dist/tnc/* dist/
+          rm -r dist/tnc
 
-      # - name: Display structure of downloaded files
-      #   run: ls -R
-
-      # - name: cleanup codec2
-      #   working-directory: tnc/lib/
-      #   run: |
-      #     mkdir codec2
-      #     cd codec2
-
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     path: tnc/lib/codec2
-
-      - name: Build binaries
+      - name: Build binaries Linux and Windows
+        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
           # pyinstaller freedata.spec
@@ -311,8 +306,8 @@ jobs:
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
-      - name: Copy binaries - Linux and MacOS
-        if: ${{!startsWith(matrix.os, 'windows')}}
+      - name: Copy binaries - Linux
+        if: ${{startsWith(matrix.os, 'ubuntu')}}
         working-directory: tnc
         run: |
           cp -r -f daemon.dist/* dist/tnc
@@ -327,6 +322,8 @@ jobs:
           cp -r -Force main.dist/* dist/tnc
 
       - name: Rename tnc binaries
+        # we don't need renaming for pyinstaller builds as output name is defined
+        if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
           mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
@@ -335,6 +332,7 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
            path: tnc/dist/tnc
+
 
       - name: LIST ALL FILES
         run: ls -R
@@ -347,48 +345,12 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      #- name: Compress TNC
-      #  # if: ${{!startsWith(matrix.os, 'windows') }}
-      #  shell: bash
-      #  run: |
-      #    cd ./tnc/dist
-      #    zip -r ./${{ matrix.zip_name }}.zip *
-
-      ##- name: Copy TNC to GUI
-      ##  run: |
-      ##    # cp -R ./tnc/dist/tnc ./gui/tnc
-      ##    cp -R ./tnc/dist ./gui/tnc
-
-      ##- name: LIST ALL FILES
-      ##  run: ls -R
-
-      ##- name: Compress TNC
-      ##  uses: thedoctor0/zip-release@master
-      ##  with:
-      ##      type: 'zip'
-      ##      filename: '${{ matrix.zip_name }}'
-      ##      # directory: ./tnc/dist/tnc
-      ##      directory: ./tnc/dist/tnc
-      ##      path: .
-      ##      # exclusions: '*.git* /*node_modules/* .editorconfig'
-
-      ##- name: LIST ALL FILES
-      ##  run: ls -R
-
-      ##- name: Upload TNC artifacts
-      ##  uses: actions/upload-artifact@v3
-      ##  with:
-      ##    name: ${{ matrix.zip_name }}.zip
-      ##    # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-      ##    path: ./tnc/dist/${{ matrix.zip_name }}.zip
-
-
-      ##- name: Release TNC
-      ##  uses: softprops/action-gh-release@v1
-      ##  if: startsWith(github.ref, 'refs/tags/v')
-      ##  with:
-      ##    files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-      ##    #files: ./tnc/dist/${{ matrix.zip_name }}.zip
+      - name: cleanup on macos before code signing
+        if: ${{startsWith(matrix.os, 'macos')}}
+        run: |
+          ls -l
+          # find . -type d -name .git -exec rm -r {} \;
+          find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1

@@ -28,6 +28,9 @@
   },
   "homepage": "https://freedata.app",
   "dependencies": {
+    "@electron/asar": "^3.2.3",
+    "@electron/osx-sign": "^1.0.4",
+    "@popperjs/core": "^2.11.6",
     "blob-util": "^2.0.2",
     "bootstrap": "^5.2.1",
     "bootstrap-icons": "^1.9.1",
@@ -98,7 +101,8 @@
         "from": "../tnc/dist/tnc/",
         "to": "tnc",
         "filter": [
-          "**/*"
+          "**/*",
+          "!**/.git"
         ]
       }
     ]
