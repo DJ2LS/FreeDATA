@@ -299,6 +299,12 @@ jobs:
       #   with:
       #     path: tnc/lib/codec2
 
+      - name: Add MacOS certs
+        if: ${{startsWith(matrix.os, 'macos')}}
+        run: chmod +x add-osx-cert.sh && ./add-osx-cert.sh
+        env:
+          CERTIFICATE_OSX_APPLICATION: ${{ secrets.CERTIFICATE_OSX_APPLICATION }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
 
       - name: Build binaries macOS
         if: ${{startsWith(matrix.os, 'macos')}}
