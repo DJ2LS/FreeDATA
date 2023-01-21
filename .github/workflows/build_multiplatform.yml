@@ -349,8 +349,8 @@ jobs:
         if: ${{startsWith(matrix.os, 'macos')}}
         run: |
           ls -l
-          find . -type d -name .git -exec rm -r {} \;
-          # find . -type d -name .git -delete
+          # find . -type d -name .git -exec rm -r {} \;
+          find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
