@@ -279,26 +279,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-
-      # - name: Install Pyaudio Windows
-      #   if: ${{startsWith(matrix.os, 'windows')}}
-      #   working-directory: tnc/lib/pyaudio/windows
-      #   run: |
-      #     pip install PyAudio-0.2.11-cp39-cp39-win_amd64.whl
-
-      # - name: Display structure of downloaded files
-      #   run: ls -R
-
-      # - name: cleanup codec2
-      #   working-directory: tnc/lib/
-      #   run: |
-      #     mkdir codec2
-      #     cd codec2
-
-      # - uses: actions/download-artifact@v3
-      #   with:
-      #     path: tnc/lib/codec2
-
       - name: Add MacOS certs
         if: ${{startsWith(matrix.os, 'macos')}}
         run: chmod +x add-osx-cert.sh && ./add-osx-cert.sh
@@ -311,7 +291,7 @@ jobs:
         working-directory: tnc
         run: |
           # remove .git folder from codec2 which causes app signing to fail
-          rm -r lib/codec2/.git
+          ls -R
           # now build tnc binaries
           pyinstaller -y freedata.spec
           # and to some final cleanup
@@ -366,6 +346,11 @@ jobs:
 
       - name: LIST ALL FILES
         run: ls -R
+
+      - name: cleanup on macos before code signing
+        if: ${{startsWith(matrix.os, 'macos')}}
+        run: |
+          find . -type d -name .git -exec rm -r {} \;
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
