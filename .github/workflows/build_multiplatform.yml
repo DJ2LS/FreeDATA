@@ -310,9 +310,11 @@ jobs:
         if: ${{startsWith(matrix.os, 'macos')}}
         working-directory: tnc
         run: |
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
-          #python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
+          # remove .git folder from codec2 which causes app signing to fail
+          rm -r lib/codec2/.git
+          # now build tnc binaries
           pyinstaller -y freedata.spec
+          # and to some final cleanup
           cp -r -f dist/tnc/* dist/
           rm -r dist/tnc
 
