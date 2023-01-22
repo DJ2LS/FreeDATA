@@ -1141,7 +1141,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("update_channel_selector").addEventListener("change", () => {
         config.update_channel = document.getElementById("update_channel_selector").value;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
+        console.log("Autoupdate channel changed to ", config.update_channel);
     });    
 
     // rx buffer size selector clicked

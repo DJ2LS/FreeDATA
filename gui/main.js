@@ -329,7 +329,7 @@ app.whenReady().then(() => {
             daemonPath = path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe')
             break;
         default:
-
+            console.log("Unhandled OS Platform: ", os.platform());
             break;
     }
 
