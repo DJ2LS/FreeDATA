@@ -1137,8 +1137,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
-        // Update channel selector clicked
-    document.getElementById("update_channel_selector").addEventListener("click", () => {
+        // Update channel selector changed
+    document.getElementById("update_channel_selector").addEventListener("change", () => {
         config.update_channel = document.getElementById("update_channel_selector").value;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
