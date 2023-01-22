@@ -294,8 +294,8 @@ jobs:
           # now build tnc binaries
           pyinstaller -y freedata.spec
           # and to some final cleanup
-          cp -r -f dist/tnc/* dist/
-          rm -r dist/tnc
+          # cp -r -f dist/tnc/* dist/
+          # rm -r dist/tnc
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
