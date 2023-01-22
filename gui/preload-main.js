@@ -2576,6 +2576,13 @@ ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
     toast.show();
 });
 
+// ARQ TRANSMISSION FAILED (Version mismatch)
+ipcRenderer.on('action-show-arq-toast-transmission-failed-ver', (event, data) => {
+    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailedver); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
 // ARQ TRANSMISSION STOPPED
 // TODO: RENAME ID -- WRONG
 ipcRenderer.on('action-show-arq-toast-transmission-stopped', (event, data) => {

@@ -624,6 +624,11 @@ ipcMain.on('request-show-arq-toast-transmission-failed',(event,data)=>{
     win.webContents.send('action-show-arq-toast-transmission-failed', data);
 });
 
+// ARQ TRANSMISSION FAILED
+ipcMain.on('request-show-arq-toast-transmission-failed-ver',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-failed-ver', data);
+});
+
 // ARQ TRANSMISSION RECEIVING
 ipcMain.on('request-show-arq-toast-transmission-receiving',(event,data)=>{
     win.webContents.send('action-show-arq-toast-transmission-receiving', data);
