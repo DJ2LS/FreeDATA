@@ -273,7 +273,7 @@ class DAEMON:
                     try:
                         command = []
 
-                        if getattr(sys, 'frozen', False):
+                        if (getattr(sys, 'frozen', False) or hasattr(sys, "_MEIPASS")) and sys.platform in ["darwin"]:
                             # If the application is run as a bundle, the PyInstaller bootloader
                             # extends the sys module by a flag frozen=True and sets the app
                             # path into variable _MEIPASS'.
