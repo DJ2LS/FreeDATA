@@ -1606,7 +1606,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var scatterSize = arg.scatter.length;
     }
 
-     if (global.scatterData != newScatterData && scatterSize > 0) {
+     if (scatterSize > 0 && global.scatterData != newScatterData) {
      global.scatterData = newScatterData;
 
         if (typeof(global.scatterChart) == 'undefined') {
@@ -1733,13 +1733,13 @@ var speedChartOptions = {
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Stop Rec"
+        document.getElementById("startStopRecording").textContent = "Stop Rec"
     } else if (arg.ptt_state == 'False') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     } else {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
 
@@ -1836,7 +1836,7 @@ var speedChartOptions = {
         dbfs_level_raw = arg.dbfs_level
         dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
 
-        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
+        document.getElementById("dbfs_level_value").textContent = Math.round(arg.dbfs_level) + ' dBFS'
         var dbfscntrl = document.getElementById("dbfs_level");
         dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
         dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
@@ -1845,14 +1845,14 @@ var speedChartOptions = {
     // SET FREQUENCY
     // https://stackoverflow.com/a/2901298
     var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    document.getElementById("frequency").innerHTML = freq;
+    document.getElementById("frequency").textContent = freq;
     //document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
-    document.getElementById("mode").innerHTML = arg.mode;
+    document.getElementById("mode").textContent = arg.mode;
 
     // SET bandwidth
-    document.getElementById("bandwidth").innerHTML = arg.bandwidth;
+    document.getElementById("bandwidth").textContent = arg.bandwidth;
 
     // SET BYTES PER MINUTE
     if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
@@ -1860,7 +1860,7 @@ var speedChartOptions = {
     } else {
         var arq_bytes_per_minute = arg.arq_bytes_per_minute;
     }
-    document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute;
+    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
 
     // SET BYTES PER MINUTE COMPRESSED
     if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
@@ -1868,7 +1868,7 @@ var speedChartOptions = {
     } else {
         var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
     }
-    document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
+    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
 
    
 
@@ -1901,7 +1901,7 @@ var speedChartOptions = {
     } else {
         var total_bytes = arg.total_bytes;
     }
-    document.getElementById("total_bytes").innerHTML = total_bytes;
+    document.getElementById("total_bytes").textContent = total_bytes;
 
 
     // UPDATE HEARD STATIONS
@@ -1924,13 +1924,13 @@ var speedChartOptions = {
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
                 //document.getElementById("pingDistance").innerHTML = dist;
-                document.getElementById("dataModalPingDistance").innerHTML = dist;
+                document.getElementById("dataModalPingDistance").textContent = dist;
             } catch {
                 //document.getElementById("pingDistance").innerHTML = '---';
-                document.getElementById("dataModalPingDistance").innerHTML = '---';
+                document.getElementById("dataModalPingDistance").textContent = '---';
             }
             //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
-            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
+            document.getElementById("dataModalPingDB").textContent = arg.stations[i]['snr'];
         }
 
         // now we update the heard stations list
