@@ -28,7 +28,8 @@ const config = require(configPath);
 // we are going to check if we have unequal values before we start calculating again
 var dbfs_level_raw = 0
 
-
+//Global version variable
+var appVer = null;
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
@@ -2747,9 +2748,14 @@ function checkRigctld(){
 ipcRenderer.on('action-check-rigctld', (event, data) => {
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });
+
+ipcRenderer.on('action-set-app-version', (event, data) => {
+    appVer = data;
+});
+
 function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = config.tnc_port, appender = ""){
     //Multiple consecutive  spaces get converted to a single space
-    var title ="FreeDATA - Call: " + mycall + " - TNC: " + tnc +":" + tncport + appender;
+    var title ="FreeDATA " + appVer + " - Call: " + mycall + " - TNC: " + tnc +  ":" + tncport + appender;
     if (title != document.title)
         document.title=title;
 }

@@ -375,6 +375,7 @@ app.whenReady().then(() => {
         daemonPath=null;
         mainLog.info("Daemon binary doesn't exist--normal for dev environments.")
     }
+    win.send("action-set-app-version",app.getVersion());
 });
 
 app.on('activate', () => {
