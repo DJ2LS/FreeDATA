@@ -294,8 +294,8 @@ jobs:
           # now build tnc binaries
           pyinstaller -y freedata.spec
           # and to some final cleanup
-          cp -r -f dist/tnc/* dist/
-          rm -r dist/tnc
+          # cp -r -f dist/tnc/* dist/
+          # rm -r dist/tnc
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
@@ -338,10 +338,23 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      - name: Download Portaudio binaries
+      - name: Download Portaudio binaries Linux macOS
+        if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
+          if ! test -d "dist/_sounddevice_data"; then
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
+          fi
+
+      - name: Download Portaudio binaries Windows
+        if: ${{startsWith(matrix.os, 'windows')}}
+        working-directory: tnc
+        run: |
+          if(Test-Path -Path "dist/_sounddevice_data"){
+          echo "sounddevice folder already exists"
+          } else {
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/_sounddevice_data/portaudio-binaries
+          }
 
       - name: LIST ALL FILES
         run: ls -R
@@ -355,9 +368,6 @@ jobs:
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         with:
           package_root: "./gui/"
           github_token: ${{ secrets.github_token }}
