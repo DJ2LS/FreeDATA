@@ -1482,6 +1482,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     var data =arg["data"][0];
     var txprog = document.getElementById("transmission_progress")
+    ipcRenderer.send('request-show-electron-progressbar',data.percent);
     txprog.setAttribute("aria-valuenow", data.percent);
     txprog.setAttribute("style", "width:" + data.percent + "%;");
 

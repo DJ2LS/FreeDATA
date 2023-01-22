@@ -206,7 +206,7 @@ function createWindow() {
     })
     // hide menu bar
     win.setMenuBarVisibility(false)
-
+    
     //open dev tools
     /*win.webContents.openDevTools({
         mode: 'undocked',
@@ -389,6 +389,10 @@ app.on('window-all-closed', () => {
 })
 
 // IPC HANDLER
+//Show/update task bar/button progressbar
+ipcMain.on('request-show-electron-progressbar',(event,data)=>{
+        win.setProgressBar(data/100);
+});
 
 ipcMain.on('request-show-chat-window', () => {
     chat.show();
