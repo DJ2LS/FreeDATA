@@ -470,10 +470,20 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
 
+            # we need to reject a command processing if already in arq state
+            if static.ARQ_STATE:
+                command_response("send_raw", False)
+                log.warning(
+                    "[SCK] Send raw command execution error",
+                    e="already in arq state",
+                    command=received_json,
+                )
+                return False
+
             try:
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]
-                    # additional step for beeing sure our callsign is correctly
+                    # additional step for being sure our callsign is correctly
                     # in case we are not getting a station ssid
                     # then we are forcing a station ssid = 0
                     dxcallsign = helpers.callsign_to_bytes(dxcallsign)
@@ -504,7 +514,7 @@ def process_tnc_commands(data):
 
                 except Exception:
                     # 15 == self.session_connect_max_retries
-                    attempts = 15
+                    attempts = 10
 
                 # check if transmission uuid provided else set no-uuid
                 try:
@@ -516,6 +526,9 @@ def process_tnc_commands(data):
                     raise TypeError
 
                 binarydata = base64.b64decode(base64data)
+
+                # wait some random time which acts as collision detection
+                helpers.wait(randrange(0, 20, 5) / 10.0)
 
                 DATA_QUEUE_TRANSMIT.put(
                     ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
