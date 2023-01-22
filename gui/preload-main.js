@@ -986,7 +986,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var dxcallsign = document.getElementById("dxCall").value.toUpperCase();
         if (dxcallsign == "" || dxcallsign == null || dxcallsign == undefined)
             return;
-        pauseButton(document.getElementById("sendPing"),500);
+        pauseButton(document.getElementById("sendPing"),2000);
         sock.sendPing(dxcallsign);
     });
 
@@ -1021,7 +1021,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // sendCQ button clicked
     document.getElementById("sendCQ").addEventListener("click", () => {
-        pauseButton(document.getElementById("sendCQ"),500);
+        pauseButton(document.getElementById("sendCQ"),2000);
         sock.sendCQ();
     });
 
