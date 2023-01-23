@@ -665,7 +665,6 @@ def send_tnc_state():
         "hamlib_status": static.HAMLIB_STATUS,
         "listen": str(static.LISTEN),
         "audio_recording": str(static.AUDIO_RECORD),
-        "tx_delay": str(static.TX_DELAY),
     }
 
     # add heard stations to heard stations object
@@ -775,7 +774,6 @@ def process_daemon_commands(data):
             respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
             rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
             enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
-            tx_delay = str(received_json["parameter"][0]["tx_delay"])
 
             try:
                 # convert ssid list to python list
@@ -823,7 +821,6 @@ def process_daemon_commands(data):
                     rx_buffer_size,
                     enable_explorer,
                     ssid_list,
-                    tx_delay,
                 ]
             )
             command_response("start_tnc", True)

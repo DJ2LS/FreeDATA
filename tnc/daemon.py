@@ -158,7 +158,6 @@ class DAEMON:
                 # data[24] rx_buffer_size
                 # data[25] explorer
                 # data[26] ssid_list
-                # data[27] tx_delay
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -259,9 +258,6 @@ class DAEMON:
                         ssid_list += str(i) + " "
                     options.append("--ssid")
                     options.append(ssid_list)
-
-                    options.append("--tx-delay")
-                    options.append(data[27])
 
 
                     # safe data to config file
@@ -373,7 +369,7 @@ class DAEMON:
                         rigctld_ip=rigctld_ip,
                         rigctld_port=rigctld_port,
                     )
-                    hamlib.set_tx_delay(static.TX_DELAY)
+
                     # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)

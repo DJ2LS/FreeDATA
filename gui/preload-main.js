@@ -165,9 +165,6 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     document.getElementById("tnc_adress").value = config.tnc_host;
     document.getElementById("tnc_port").value = config.tnc_port;
     
-    //Set tx_delay
-    document.getElementById("tx_delay").value = config.tx_delay;
-
     callsign_and_ssid = config.mycall.split("-");
     callsign = callsign_and_ssid[0];
     ssid = callsign_and_ssid[1];
@@ -1141,17 +1138,6 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
-    document.getElementById("tx_delay").addEventListener("change", () => {
-        var tx_delay = document.getElementById("tx_delay").value;
-        if (tx_delay == undefined || isNaN(tx_delay)) {
-            tx_delay=50;
-            document.getElementById("tx_delay").value=50;
-            //console.log("tx_delay is nan");
-        }
-        config.tx_delay = tx_delay;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    });
-
         // Update channel selector changed
     document.getElementById("update_channel_selector").addEventListener("change", () => {
         config.update_channel = document.getElementById("update_channel_selector").value;
@@ -1282,10 +1268,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var tx_audio_level = document.getElementById("audioLevelTX").value;
         var rx_buffer_size = document.getElementById("rx_buffer_size").value;
 
-        var tx_delay = document.getElementById("tx_delay").value;
 
-        if (isNaN(tx_delay))
-            tx_delay=0;
 
 
         config.radiocontrol = radiocontrol;
@@ -1315,7 +1298,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.respond_to_cq = respond_to_cq;
         config.rx_buffer_size = rx_buffer_size;
         config.enable_explorer = enable_explorer;
-        config.tx_delay = tx_delay;
+
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
 
@@ -1333,7 +1316,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer,tx_delay);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
         
         
     })

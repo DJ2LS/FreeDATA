@@ -236,8 +236,7 @@ class RF:
             rigctld_ip=static.HAMLIB_RIGCTLD_IP,
             rigctld_port=static.HAMLIB_RIGCTLD_PORT,
         )
-        self.hamlib.set_tx_delay(static.TX_DELAY)
-        
+
         # --------------------------------------------START DECODER THREAD
         if static.ENABLE_FFT:
             fft_thread = threading.Thread(

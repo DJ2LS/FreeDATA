@@ -93,8 +93,7 @@ const configDefaultSettings = '{\
                   "respond_to_cq" : "True",\
                   "rx_buffer_size" : "16", \
                   "enable_explorer" : "False", \
-                  "wftheme": 2, \
-                  "tx_delay": 50 \
+                  "wftheme": 2 \
                   }';
 
 if (!fs.existsSync(configPath)) {

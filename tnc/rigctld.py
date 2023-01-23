@@ -12,7 +12,7 @@ import threading
 
 # set global hamlib version
 hamlib_version = 0
-tx_delay = 50
+
 
 class radio:
     """rigctld (hamlib) communication class"""
@@ -88,10 +88,6 @@ class radio:
             "[RIGCTLD] Can't connect!", ip=self.hostname, port=self.port
         )
         return False
-
-    def set_tx_delay(self,ms):
-        self.tx_delay=ms
-        self.log.debug("Set tx delay to (ms) " + str(ms))
 
     def ptt_connect(self):
         """Connect to rigctld instance"""
@@ -267,9 +263,7 @@ class radio:
         try:
             if state:
                 self.send_ptt_command(b"T 1", False)
-                time.sleep(tx_delay/1000)
             else:
-                #time.sleep(tx_delay/2000)
                 self.send_ptt_command(b"T 0", False)
             return state
         except Exception:
