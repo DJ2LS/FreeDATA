@@ -277,6 +277,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable sending tnc data to https://explorer.freedata.app",
     )
+    PARSER.add_argument(
+        "--tx-delay",
+        dest="tx_delay_ms",
+        default=50,
+        help="Set the amount of time (ms) to wait after activating PTT to send audio",
+        type=int,
+    )
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -333,6 +340,7 @@ if __name__ == "__main__":
             static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
             static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
             static.ENABLE_EXPLORER = ARGS.enable_explorer
+            static.TX_DELAY = ARGS.tx_delay_ms
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
 
@@ -386,6 +394,7 @@ if __name__ == "__main__":
             static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
             static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
             static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
+            static.TX_DELAY = int(config['RADIO']['tx_delay'])
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
