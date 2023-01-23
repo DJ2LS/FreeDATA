@@ -16,7 +16,7 @@ tx_delay = 50
 
 class radio:
     """rigctld (hamlib) communication class"""
-
+    
     log = structlog.get_logger("radio (rigctld)")
 
     def __init__(self, hostname="localhost", port=4532, poll_rate=5, timeout=5):
@@ -90,8 +90,8 @@ class radio:
         return False
 
     def set_tx_delay(self,ms):
-        self.tx_delay=ms
-        self.log.debug("Set tx delay to (ms) " + str(ms))
+        tx_delay=ms
+        self.log.debug("Set tx delay to (ms) " + str(tx_delay))
 
     def ptt_connect(self):
         """Connect to rigctld instance"""

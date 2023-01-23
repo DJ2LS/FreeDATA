@@ -373,7 +373,7 @@ class DAEMON:
                         rigctld_ip=rigctld_ip,
                         rigctld_port=rigctld_port,
                     )
-                    hamlib.set_tx_delay(static.TX_DELAY)
+                    hamlib.set_tx_delay(self,static.TX_DELAY)
                     # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)
