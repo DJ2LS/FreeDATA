@@ -1509,6 +1509,18 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     }
     document.getElementById("transmission_timeleft").textContent = time_left;
 
+    // SET BYTES PER MINUTE
+    if (typeof(data.bytesperminute) == 'undefined') {
+        var arq_bytes_per_minute = 0;
+    } else {
+        var arq_bytes_per_minute = data.bytesperminute;
+    }
+    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
+    
+    // SET BYTES PER MINUTE COMPRESSED
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * data.compression_factor);
+    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
+    
 });
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
@@ -1855,26 +1867,6 @@ var speedChartOptions = {
     // SET bandwidth
     document.getElementById("bandwidth").textContent = arg.bandwidth;
 
-    // SET BYTES PER MINUTE
-    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
-        var arq_bytes_per_minute = 0;
-    } else {
-        var arq_bytes_per_minute = arg.arq_bytes_per_minute;
-    }
-    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
-
-    // SET BYTES PER MINUTE COMPRESSED
-    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
-        var arq_bytes_per_minute_compressed = 0;
-    } else {
-        var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
-    }
-    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
-
-   
-
-
-    
     // SET SPEED LEVEL
 
     if(arg.speed_level >= 0) {

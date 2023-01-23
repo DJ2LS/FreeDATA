@@ -1052,6 +1052,12 @@ class DATA:
         static.TOTAL_BYTES = len(data_out)
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
 
+        # Compress data frame
+        data_frame_compressed = lzma.compress(data_out)
+        compression_factor = len(data_out) / len(data_frame_compressed)
+        static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
+        compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
@@ -1059,6 +1065,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression_factor=static.ARQ_COMPRESSION_FACTOR,
             finished=static.ARQ_SECONDS_UNTIL_FINISH,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1068,12 +1075,6 @@ class DATA:
             "[TNC] | TX | DATACHANNEL",
             Bytes=static.TOTAL_BYTES,
         )
-
-        # Compress data frame
-        data_frame_compressed = lzma.compress(data_out)
-        compression_factor = len(data_out) / len(data_frame_compressed)
-        static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
-        compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
 
         data_out = data_frame_compressed
 
@@ -1254,6 +1255,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression_factor=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 irs_snr=self.burst_ack_snr,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1280,6 +1282,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression_factor=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
