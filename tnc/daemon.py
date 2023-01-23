@@ -262,15 +262,30 @@ class DAEMON:
 
                     # safe data to config file
                     config.write_entire_config(data)
+                    import os, sys
+                    import sys
+
+
+
 
                     # Try running tnc from binary, else run from source
                     # This helps running the tnc in a developer environment
                     try:
                         command = []
-                        if sys.platform in ["linux", "darwin"]:
-                            command.append("./freedata-tnc")
-                        elif sys.platform in ["win32", "win64"]:
-                            command.append("freedata-tnc.exe")
+
+                        if (getattr(sys, 'frozen', False) or hasattr(sys, "_MEIPASS")) and sys.platform in ["darwin"]:
+                            # If the application is run as a bundle, the PyInstaller bootloader
+                            # extends the sys module by a flag frozen=True and sets the app
+                            # path into variable _MEIPASS'.
+                            application_path = sys._MEIPASS
+                            command.append(application_path + '/freedata-tnc')
+
+                        else:
+
+                            if sys.platform in ["linux", "darwin"]:
+                                command.append("./freedata-tnc")
+                            elif sys.platform in ["win32", "win64"]:
+                                command.append("freedata-tnc.exe")
 
                         command += options
                         proc = subprocess.Popen(command)
@@ -281,6 +296,7 @@ class DAEMON:
                     except FileNotFoundError as err1:
                         self.log.info("[DMN] worker: ", e=err1)
                         command = []
+
                         if sys.platform in ["linux", "darwin"]:
                             command.append("python3")
                         elif sys.platform in ["win32", "win64"]:
@@ -288,6 +304,7 @@ class DAEMON:
 
                         command.append("main.py")
                         command += options
+                        print(command)
                         proc = subprocess.Popen(command)
                         atexit.register(proc.kill)
 
