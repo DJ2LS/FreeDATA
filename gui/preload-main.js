@@ -1518,7 +1518,10 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
     
     // SET BYTES PER MINUTE COMPRESSED
-    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * data.compression_factor);
+    var compress = data.compression_factor;
+    if (isNaN(compress))
+        compress=0;
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
     document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
     
 });
