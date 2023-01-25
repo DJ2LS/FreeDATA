@@ -783,6 +783,7 @@ class DATA:
                     uuid=self.transmission_uuid,
                     percent=static.ARQ_TRANSMISSION_PERCENT,
                     bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    compression=static.ARQ_COMPRESSION_FACTOR,
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
@@ -1002,6 +1003,7 @@ class DATA:
                     nacks=self.frame_nack_counter,
                     duration=duration,
                     bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    compression=static.ARQ_COMPRESSION_FACTOR,
                     data=data_frame,
 
                 )
@@ -1047,6 +1049,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
             finished=static.ARQ_SECONDS_UNTIL_FINISH,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1240,6 +1243,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 irs_snr=self.burst_ack_snr,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1266,6 +1270,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1288,6 +1293,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
@@ -1420,6 +1426,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
@@ -2025,6 +2032,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
