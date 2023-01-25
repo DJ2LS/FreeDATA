@@ -466,8 +466,6 @@ class DATA:
 
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
-        # ack_frame[1:4] = static.DXCALLSIGN_CRC
-        # ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
@@ -490,10 +488,6 @@ class DATA:
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
-        # ack_frame[1:4] = static.DXCALLSIGN_CRC
-        # ack_frame[4:7] = static.MYCALLSIGN_CRC
-        # ack_frame[7:8] = bytes([int(snr)])
-        # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
@@ -528,9 +522,6 @@ class DATA:
         rpt_frame = bytearray(self.length_sig1_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:2] = self.session_id
-        # rpt_frame[1:4] = static.DXCALLSIGN_CRC
-        # rpt_frame[4:7] = static.MYCALLSIGN_CRC
-        # rpt_frame[7:13] = missing_frames
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
@@ -542,8 +533,6 @@ class DATA:
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:2] = self.session_id
-        # nack_frame[1:4] = static.DXCALLSIGN_CRC
-        # nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
@@ -570,8 +559,6 @@ class DATA:
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
-        # nack_frame[1:4] = static.DXCALLSIGN_CRC
-        # nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
@@ -1149,8 +1136,6 @@ class DATA:
                 arqheader[:1] = bytes([FR_TYPE.BURST_01.value])
                 arqheader[1:2] = bytes([n_frames_per_burst])
                 arqheader[2:3] = self.session_id
-                # arqheader[2:5] = static.DXCALLSIGN_CRC
-                # arqheader[5:8] = static.MYCALLSIGN_CRC
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
@@ -1593,7 +1578,6 @@ class DATA:
         static.ARQ_SESSION_STATE = "connecting"
 
         # create a random session id
-        # self.session_id = randbytes(1)
         self.session_id = np.random.bytes(1)
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -1809,8 +1793,6 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:2] = self.session_id
-        # connection_frame[1:4] = static.DXCALLSIGN_CRC
-        # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -2215,8 +2197,6 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
         connection_frame[1:2] = self.session_id
-        # connection_frame[1:4] = static.DXCALLSIGN_CRC
-        # connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[8:9] = bytes([self.speed_level])
 
         # For checking protocol version on the receiving side
