@@ -1913,7 +1913,6 @@ var speedChartOptions = {
     for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
-        //if (arg.stations[i]['dxcallsign'].split('-',2)[0] == document.getElementById("dxCall").value.split['-',2][0]) {
         if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value.toUpperCase()) {
             var dxGrid = arg.stations[i]['dxgrid'];
             var myGrid = document.getElementById("myGrid").value;
@@ -1951,12 +1950,12 @@ var speedChartOptions = {
         frequencyText.innerText = arg.stations[i]['frequency'];
         frequency.appendChild(frequencyText);
         
-        
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['dxcallsign'];
-        row.addEventListener("click", function(e) {
-            document.getElementById("dxCall").value = dxCallText.innerText;
+        let dxCallTextCall = dxCallText.innerText;
+        row.addEventListener("click", function() {
+            document.getElementById("dxCall").value = dxCallTextCall;
           });
         dxCall.appendChild(dxCallText);
 
@@ -1993,7 +1992,6 @@ var speedChartOptions = {
 
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
-
         }
 
         if (dataTypeText.innerText == 'DATA-C') {
