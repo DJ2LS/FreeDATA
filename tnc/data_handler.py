@@ -249,8 +249,6 @@ class DATA:
                     freedata="tnc-message",
                     command=data[0],
                     status="queued",
-                    mycallsign=str(data[5], 'UTF-8'),
-                    dxcallsign=str(data[6], 'UTF-8'),
                 )
             # now stay in while loop until state released
             while static.ARQ_STATE:
