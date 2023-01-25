@@ -247,9 +247,9 @@ class DATA:
 
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
-                    arq="transmission",
+                    arq="command",
                     status="queued",
-                    uuid=data[4],
+                    command=data[0],
                     mycallsign=str(data[5], 'UTF-8'),
                     dxcallsign=str(data[6], 'UTF-8'),
                 )
