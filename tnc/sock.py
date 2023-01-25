@@ -25,7 +25,6 @@ import sys
 import threading
 import time
 import wave
-from random import randrange
 import helpers
 import static
 import structlog
@@ -470,15 +469,15 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
 
-            # we need to reject a command processing if already in arq state
+            # we need to warn if already in arq state
             if static.ARQ_STATE:
                 command_response("send_raw", False)
                 log.warning(
-                    "[SCK] Send raw command execution error",
+                    "[SCK] Send raw command execution warning",
                     e="already in arq state",
+                    i="command queued",
                     command=received_json,
                 )
-                return False
 
             try:
                 if not static.ARQ_SESSION:
@@ -526,9 +525,6 @@ def process_tnc_commands(data):
                     raise TypeError
 
                 binarydata = base64.b64decode(base64data)
-
-                # wait some random time which acts as slightly as collision detection
-                helpers.wait(randrange(0, 20, 5) / 10.0)
 
                 DATA_QUEUE_TRANSMIT.put(
                     ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]

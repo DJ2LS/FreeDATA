@@ -237,6 +237,25 @@ class DATA:
         while True:
             data = self.data_queue_transmit.get()
 
+            # if we are already in ARQ_STATE lets wait with processing data
+            # this should avoid weird toggle states where both stations
+            # stuck in IRS
+            #
+            # send transmission queued information once
+            if static.ARQ_STATE:
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    arq="transmission",
+                    status="queued",
+                    uuid=str(data[4], 'UTF-8'),
+                    mycallsign=str(data[5], 'UTF-8'),
+                    dxcallsign=str(data[6], 'UTF-8'),
+                )
+            # now stay in while loop until state released
+            while static.ARQ_STATE:
+                threading.Event().wait(0.01)
+                self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
+
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
                 self.log.debug(f"[TNC] TX {self.command_dispatcher[data[0]][1]}...")
@@ -475,12 +494,12 @@ class DATA:
         while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
             threading.Event().wait(0.01)
 
-
         # Transmit frame
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
 
@@ -548,6 +567,7 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
