@@ -1526,6 +1526,8 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     
 });
 
+var slowRollTable=4;
+
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
@@ -1900,6 +1902,15 @@ var speedChartOptions = {
     document.getElementById("total_bytes").textContent = total_bytes;
 
 
+    //Ensure heard station table is last so we can return if we don't want to update it
+    //Only update heard stations every 5 iterations
+    //Allows for single click event to work more reliabily to populate dxcall textbox
+    //Should also save some CPU
+    slowRollTable++;
+    if (slowRollTable!=5)
+        return;
+    slowRollTable=0;
+    
     // UPDATE HEARD STATIONS
     var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = '';
