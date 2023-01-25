@@ -2455,7 +2455,7 @@ class DATA:
                 uuid=str(uuid.uuid4()),
                 timestamp=int(time.time()),
                 dxgrid=str(static.DXGRID, "UTF-8"),
-                dxcallsign = str(self.dxcallsign, "UTF-8"),
+                dxcallsign = str(static.DXCALLSIGN, "UTF-8"),
                 mycallsign=str(mycallsign, "UTF-8"),
                 snr=str(static.SNR),
                 dxsnr=str(dxsnr)
