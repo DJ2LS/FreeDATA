@@ -662,6 +662,7 @@ class DATA:
 
         self.log.debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
 
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1332,8 +1333,9 @@ class DATA:
         """
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
+                self.dxcallsign,
                 static.DXGRID,
                 "DATA-CHANNEL",
                 static.SNR,
@@ -1382,6 +1384,7 @@ class DATA:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1416,6 +1419,7 @@ class DATA:
                          dxcallsign=str(self.dxcallsign, 'UTF-8'),
                          )
 
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1449,6 +1453,7 @@ class DATA:
         """
         # Only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE and static.TNC_STATE == "BUSY":
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1688,7 +1693,7 @@ class DATA:
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5])
         self.mycallsign = mycallsign
-
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1765,6 +1770,7 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if (_valid_crc or _valid_session) and static.ARQ_SESSION_STATE not in ["disconnected"]:
             static.ARQ_SESSION_STATE = "disconnected"
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1829,6 +1835,7 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session and static.ARQ_SESSION_STATE in ["connected", "connecting"]:
             self.log.debug("[TNC] Received session heartbeat")
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
                 static.DXGRID,
@@ -2162,7 +2169,7 @@ class DATA:
 
         # Update modes we are listening to
         self.set_listening_modes(True, True, self.mode_list[self.speed_level])
-
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -2275,7 +2282,7 @@ class DATA:
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             self.log.debug("[TNC] speed level selected for given SNR", speed_level=self.speed_level)
             # self.speed_level = len(self.mode_list) - 1
-
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -2389,7 +2396,6 @@ class DATA:
         )
 
         static.DXGRID = b'------'
-
         helpers.add_to_heard_stations(
             dxcallsign,
             static.DXGRID,
@@ -2414,7 +2420,7 @@ class DATA:
             ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
             ping_frame[1:4] = static.DXCALLSIGN_CRC
             ping_frame[4:7] = static.MYCALLSIGN_CRC
-            ping_frame[7:13] = static.MYGRID
+            ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
             ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
 
             if static.ENABLE_FSK:
@@ -2435,8 +2441,7 @@ class DATA:
         _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if _valid:
 
-            # static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-            static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
+            static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
             dxsnr = helpers.snr_from_bytes(data_in[13:14])
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
@@ -2563,7 +2568,7 @@ class DATA:
                         beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                        beacon_frame[7:13] = static.MYGRID
+                        beacon_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
                         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
@@ -2595,15 +2600,14 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[7:13]).rstrip(b"\x00")
-
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             dxcallsign=str(beacon_callsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8"),
+            dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
         )
 
@@ -2611,13 +2615,13 @@ class DATA:
             "[TNC] BEACON RCVD ["
             + str(beacon_callsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
             beacon_callsign,
-            dxgrid,
+            static.DXGRID,
             "BEACON",
             static.SNR,
             static.FREQ_OFFSET,
@@ -2665,7 +2669,8 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
-        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="received",
@@ -2677,13 +2682,13 @@ class DATA:
             "[TNC] CQ RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            dxgrid,
+            static.DXGRID,
             "CQ CQ CQ",
             static.SNR,
             static.FREQ_OFFSET,
@@ -2735,7 +2740,7 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         dxsnr = helpers.snr_from_bytes(data_in[11:12])
 
         combined_snr = f"{static.SNR}/{dxsnr}"
@@ -2744,7 +2749,7 @@ class DATA:
             freedata="tnc-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8"),
+            dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
             dxsnr=str(dxsnr)
         )
@@ -2753,14 +2758,14 @@ class DATA:
             "[TNC] QRV RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
             dxsnr=dxsnr
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            dxgrid,
+            static.DXGRID,
             "QRV",
             combined_snr,
             static.FREQ_OFFSET,
