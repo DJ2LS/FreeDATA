@@ -14,7 +14,7 @@ import threading
 import time
 import uuid
 import lzma
-from random import randrange# , randbytes
+from random import randrange
 
 import codec2
 import helpers

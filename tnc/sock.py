@@ -25,7 +25,7 @@ import sys
 import threading
 import time
 import wave
-
+from random import randrange
 import helpers
 import static
 import structlog
@@ -527,7 +527,7 @@ def process_tnc_commands(data):
 
                 binarydata = base64.b64decode(base64data)
 
-                # wait some random time which acts as collision detection
+                # wait some random time which acts as slightly as collision detection
                 helpers.wait(randrange(0, 20, 5) / 10.0)
 
                 DATA_QUEUE_TRANSMIT.put(
