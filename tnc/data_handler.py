@@ -243,6 +243,8 @@ class DATA:
             #
             # send transmission queued information once
             if static.ARQ_STATE:
+                self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
+
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -254,7 +256,6 @@ class DATA:
             # now stay in while loop until state released
             while static.ARQ_STATE:
                 threading.Event().wait(0.01)
-                self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
