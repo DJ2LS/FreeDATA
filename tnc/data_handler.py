@@ -247,7 +247,7 @@ class DATA:
                     freedata="tnc-message",
                     arq="transmission",
                     status="queued",
-                    uuid=str(data[4], 'UTF-8'),
+                    uuid=data[4],
                     mycallsign=str(data[5], 'UTF-8'),
                     dxcallsign=str(data[6], 'UTF-8'),
                 )
