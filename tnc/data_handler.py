@@ -14,7 +14,7 @@ import threading
 import time
 import uuid
 import lzma
-from random import randrange# , randbytes
+from random import randrange
 
 import codec2
 import helpers
@@ -236,6 +236,23 @@ class DATA:
         """Dispatch incoming UI instructions for transmitting operations"""
         while True:
             data = self.data_queue_transmit.get()
+
+            # if we are already in ARQ_STATE lets wait with processing data
+            # this should avoid weird toggle states where both stations
+            # stuck in IRS
+            #
+            # send transmission queued information once
+            if static.ARQ_STATE:
+                self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
+
+                self.send_data_to_socket_queue(
+                    freedata="tnc-message",
+                    command=data[0],
+                    status="queued",
+                )
+            # now stay in while loop until state released
+            while static.ARQ_STATE:
+                threading.Event().wait(0.01)
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
@@ -466,8 +483,6 @@ class DATA:
 
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
-        # ack_frame[1:4] = static.DXCALLSIGN_CRC
-        # ack_frame[4:7] = static.MYCALLSIGN_CRC
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
@@ -477,12 +492,12 @@ class DATA:
         while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
             threading.Event().wait(0.01)
 
-
         # Transmit frame
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
 
@@ -490,10 +505,6 @@ class DATA:
         ack_frame[:1] = bytes([FR_TYPE.FR_ACK.value])
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
-        # ack_frame[1:4] = static.DXCALLSIGN_CRC
-        # ack_frame[4:7] = static.MYCALLSIGN_CRC
-        # ack_frame[7:8] = bytes([int(snr)])
-        # ack_frame[8:9] = bytes([int(self.speed_level)])
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
@@ -528,9 +539,6 @@ class DATA:
         rpt_frame = bytearray(self.length_sig1_frame)
         rpt_frame[:1] = bytes([FR_TYPE.FR_REPEAT.value])
         rpt_frame[1:2] = self.session_id
-        # rpt_frame[1:4] = static.DXCALLSIGN_CRC
-        # rpt_frame[4:7] = static.MYCALLSIGN_CRC
-        # rpt_frame[7:13] = missing_frames
 
         self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
@@ -542,8 +550,6 @@ class DATA:
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.FR_NACK.value])
         nack_frame[1:2] = self.session_id
-        # nack_frame[1:4] = static.DXCALLSIGN_CRC
-        # nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
@@ -559,6 +565,7 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
     def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
@@ -570,8 +577,6 @@ class DATA:
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
-        # nack_frame[1:4] = static.DXCALLSIGN_CRC
-        # nack_frame[4:7] = static.MYCALLSIGN_CRC
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
 
@@ -662,6 +667,7 @@ class DATA:
 
         self.log.debug("[TNC] static.RX_BURST_BUFFER", buffer=static.RX_BURST_BUFFER)
 
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -795,6 +801,7 @@ class DATA:
                     uuid=self.transmission_uuid,
                     percent=static.ARQ_TRANSMISSION_PERCENT,
                     bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    compression=static.ARQ_COMPRESSION_FACTOR,
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
@@ -1014,6 +1021,7 @@ class DATA:
                     nacks=self.frame_nack_counter,
                     duration=duration,
                     bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                    compression=static.ARQ_COMPRESSION_FACTOR,
                     data=data_frame,
 
                 )
@@ -1065,7 +1073,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-            compression_factor=static.ARQ_COMPRESSION_FACTOR,
+            compression=static.ARQ_COMPRESSION_FACTOR,
             finished=static.ARQ_SECONDS_UNTIL_FINISH,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1149,8 +1157,6 @@ class DATA:
                 arqheader[:1] = bytes([FR_TYPE.BURST_01.value])
                 arqheader[1:2] = bytes([n_frames_per_burst])
                 arqheader[2:3] = self.session_id
-                # arqheader[2:5] = static.DXCALLSIGN_CRC
-                # arqheader[5:8] = static.MYCALLSIGN_CRC
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
@@ -1255,7 +1261,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression_factor=static.ARQ_COMPRESSION_FACTOR,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 irs_snr=self.burst_ack_snr,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1282,7 +1288,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression_factor=static.ARQ_COMPRESSION_FACTOR,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
@@ -1305,6 +1311,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
@@ -1335,8 +1342,9 @@ class DATA:
         """
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
+                self.dxcallsign,
                 static.DXGRID,
                 "DATA-CHANNEL",
                 static.SNR,
@@ -1385,6 +1393,7 @@ class DATA:
         """Received an ACK for a transmitted frame"""
         # Process data only if we are in ARQ and BUSY state
         if static.ARQ_STATE:
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1419,6 +1428,7 @@ class DATA:
                          dxcallsign=str(self.dxcallsign, 'UTF-8'),
                          )
 
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1434,6 +1444,7 @@ class DATA:
             uuid=self.transmission_uuid,
             percent=static.ARQ_TRANSMISSION_PERCENT,
             bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
@@ -1452,6 +1463,7 @@ class DATA:
         """
         # Only process data if we are in ARQ and BUSY state
         if static.ARQ_STATE and static.TNC_STATE == "BUSY":
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1591,7 +1603,6 @@ class DATA:
         static.ARQ_SESSION_STATE = "connecting"
 
         # create a random session id
-        # self.session_id = randbytes(1)
         self.session_id = np.random.bytes(1)
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -1691,7 +1702,7 @@ class DATA:
         # check if callsign ssid override
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[2:5])
         self.mycallsign = mycallsign
-
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -1768,6 +1779,7 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if (_valid_crc or _valid_session) and static.ARQ_SESSION_STATE not in ["disconnected"]:
             static.ARQ_SESSION_STATE = "disconnected"
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -1806,8 +1818,6 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_HB.value])
         connection_frame[1:2] = self.session_id
-        # connection_frame[1:4] = static.DXCALLSIGN_CRC
-        # connection_frame[4:7] = static.MYCALLSIGN_CRC
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -1832,6 +1842,7 @@ class DATA:
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session and static.ARQ_SESSION_STATE in ["connected", "connecting"]:
             self.log.debug("[TNC] Received session heartbeat")
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
                 static.DXGRID,
@@ -2039,6 +2050,7 @@ class DATA:
                 uuid=self.transmission_uuid,
                 percent=static.ARQ_TRANSMISSION_PERCENT,
                 bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
@@ -2165,7 +2177,7 @@ class DATA:
 
         # Update modes we are listening to
         self.set_listening_modes(True, True, self.mode_list[self.speed_level])
-
+        static.DXGRID = b'------'
         helpers.add_to_heard_stations(
             static.DXCALLSIGN,
             static.DXGRID,
@@ -2211,8 +2223,6 @@ class DATA:
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
         connection_frame[1:2] = self.session_id
-        # connection_frame[1:4] = static.DXCALLSIGN_CRC
-        # connection_frame[4:7] = static.MYCALLSIGN_CRC
         connection_frame[8:9] = bytes([self.speed_level])
 
         # For checking protocol version on the receiving side
@@ -2278,7 +2288,7 @@ class DATA:
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
             self.log.debug("[TNC] speed level selected for given SNR", speed_level=self.speed_level)
             # self.speed_level = len(self.mode_list) - 1
-
+            static.DXGRID = b'------'
             helpers.add_to_heard_stations(
                 static.DXCALLSIGN,
                 static.DXGRID,
@@ -2392,7 +2402,6 @@ class DATA:
         )
 
         static.DXGRID = b'------'
-
         helpers.add_to_heard_stations(
             dxcallsign,
             static.DXGRID,
@@ -2417,7 +2426,7 @@ class DATA:
             ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
             ping_frame[1:4] = static.DXCALLSIGN_CRC
             ping_frame[4:7] = static.MYCALLSIGN_CRC
-            ping_frame[7:13] = static.MYGRID
+            ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
             ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
 
             if static.ENABLE_FSK:
@@ -2438,8 +2447,7 @@ class DATA:
         _valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if _valid:
 
-            # static.DXCALLSIGN_CRC = bytes(data_in[4:7])
-            static.DXGRID = bytes(data_in[7:13]).rstrip(b"\x00")
+            static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
             dxsnr = helpers.snr_from_bytes(data_in[13:14])
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
@@ -2447,7 +2455,7 @@ class DATA:
                 uuid=str(uuid.uuid4()),
                 timestamp=int(time.time()),
                 dxgrid=str(static.DXGRID, "UTF-8"),
-                dxcallsign = str(self.dxcallsign, "UTF-8"),
+                dxcallsign = str(static.DXCALLSIGN, "UTF-8"),
                 mycallsign=str(mycallsign, "UTF-8"),
                 snr=str(static.SNR),
                 dxsnr=str(dxsnr)
@@ -2566,7 +2574,7 @@ class DATA:
                         beacon_frame = bytearray(self.length_sig0_frame)
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
-                        beacon_frame[7:13] = static.MYGRID
+                        beacon_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
                         self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
@@ -2598,15 +2606,14 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(data_in[7:13]).rstrip(b"\x00")
-
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
             dxcallsign=str(beacon_callsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8"),
+            dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
         )
 
@@ -2614,13 +2621,13 @@ class DATA:
             "[TNC] BEACON RCVD ["
             + str(beacon_callsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
             beacon_callsign,
-            dxgrid,
+            static.DXGRID,
             "BEACON",
             static.SNR,
             static.FREQ_OFFSET,
@@ -2668,7 +2675,8 @@ class DATA:
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
-        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             cq="received",
@@ -2680,13 +2688,13 @@ class DATA:
             "[TNC] CQ RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            dxgrid,
+            static.DXGRID,
             "CQ CQ CQ",
             static.SNR,
             static.FREQ_OFFSET,
@@ -2738,7 +2746,7 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
+        static.DXGRID = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         dxsnr = helpers.snr_from_bytes(data_in[11:12])
 
         combined_snr = f"{static.SNR}/{dxsnr}"
@@ -2747,7 +2755,7 @@ class DATA:
             freedata="tnc-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
-            dxgrid=str(dxgrid, "UTF-8"),
+            dxgrid=str(static.DXGRID, "UTF-8"),
             snr=str(static.SNR),
             dxsnr=str(dxsnr)
         )
@@ -2756,14 +2764,14 @@ class DATA:
             "[TNC] QRV RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
-            + str(dxgrid, "UTF-8")
+            + str(static.DXGRID, "UTF-8")
             + "] ",
             snr=static.SNR,
             dxsnr=dxsnr
         )
         helpers.add_to_heard_stations(
             dxcallsign,
-            dxgrid,
+            static.DXGRID,
             "QRV",
             combined_snr,
             static.FREQ_OFFSET,
