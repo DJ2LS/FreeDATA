@@ -25,7 +25,6 @@ import sys
 import threading
 import time
 import wave
-
 import helpers
 import static
 import structlog
@@ -470,10 +469,20 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
 
+            # we need to warn if already in arq state
+            if static.ARQ_STATE:
+                command_response("send_raw", False)
+                log.warning(
+                    "[SCK] Send raw command execution warning",
+                    e="already in arq state",
+                    i="command queued",
+                    command=received_json,
+                )
+
             try:
                 if not static.ARQ_SESSION:
                     dxcallsign = received_json["parameter"][0]["dxcallsign"]
-                    # additional step for beeing sure our callsign is correctly
+                    # additional step for being sure our callsign is correctly
                     # in case we are not getting a station ssid
                     # then we are forcing a station ssid = 0
                     dxcallsign = helpers.callsign_to_bytes(dxcallsign)
@@ -504,7 +513,7 @@ def process_tnc_commands(data):
 
                 except Exception:
                     # 15 == self.session_connect_max_retries
-                    attempts = 15
+                    attempts = 10
 
                 # check if transmission uuid provided else set no-uuid
                 try:
