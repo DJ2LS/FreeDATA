@@ -78,3 +78,14 @@ https://stackoverflow.com/questions/13176746/css-keyframe-animation-cpu-usage-is
     -ms-transform: translateZ(0);
     will-change: transform;
 }
+
+/* force disable transition effects
+https://stackoverflow.com/a/9622873
+*/
+.disable-effects {
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
+}
