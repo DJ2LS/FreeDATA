@@ -2766,7 +2766,10 @@ function checkRigctld(){
                 ip: rigctld_ip,
                 port: rigctld_port
             };
-    ipcRenderer.send('request-check-rigctld', Data);
+
+    //Prevents an error on startup if hamlib settings aren't populated yet
+    if (!isNaN(rigctld_port))
+        ipcRenderer.send('request-check-rigctld', Data);
 }
 
 ipcRenderer.on('action-check-rigctld', (event, data) => {
