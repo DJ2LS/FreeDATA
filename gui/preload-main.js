@@ -1549,13 +1549,9 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     if (typeof(arg.fft) !== 'undefined') {
         var array = JSON.parse("[" + arg.fft + "]");
         spectrum.addData(array[0]);
-
     }
 
     if (typeof(arg.mycallsign) !== 'undefined') {
-        // split document title by looking for Call then split and update it
-        //var documentTitle = document.title.split('Call:')
-        //document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
         updateTitle(arg.mycallsign);
     }
 
@@ -1756,6 +1752,7 @@ var speedChartOptions = {
     // END OF SPEED CHART
 
     // PTT STATE
+    /*
     if (arg.ptt_state == 'True') {
         document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
     } else if (arg.ptt_state == 'False') {
@@ -1763,7 +1760,19 @@ var speedChartOptions = {
     } else {
         document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
     }
+    */
+    switch (arg.ptt_state){
+        case 'True':
+            document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
+            break;
+        case 'False':
+            document.getElementById("ptt_state").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
+            break;
 
+    }
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
@@ -1776,11 +1785,8 @@ var speedChartOptions = {
         document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
-
-
-
-
     // CHANNEL BUSY STATE
+    /*
     if (arg.channel_busy == 'True') {
         document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
 
@@ -1791,24 +1797,49 @@ var speedChartOptions = {
         document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
 
     }
+    */
+    switch (arg.channel_busy){
+        case 'True':
+            document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
+            break;
+        case 'False':
+            document.getElementById("channel_busy").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
+            break;
+    }
 
     // BUSY STATE
+    /*
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-        
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
-
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-sm btn-success";
-
     } else {
         document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
     }
+    */
+    switch(arg.busy_state){
+        case 'BUSY':
+            document.getElementById("busy_state").className = "btn btn-sm btn-danger";
+            document.getElementById("startTransmission").disabled = true;
+            break;
+        case 'IDLE':
+            document.getElementById("busy_state").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = true;
+            break;
+    }
 
     // ARQ STATE
+    /*
     if (arg.arq_state == 'True') {
         document.getElementById("arq_state").className = "btn btn-sm btn-warning";
         //document.getElementById("startTransmission").disabled = true;
@@ -1824,8 +1855,23 @@ var speedChartOptions = {
         document.getElementById("startTransmission").disabled = false;
         //document.getElementById("stopTransmission").disabled = false;
     }
-
+    */
+    switch (arg.arq_state){
+        case 'True':
+            document.getElementById("arq_state").className = "btn btn-sm btn-warning";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+        case 'False':
+            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+        default:
+            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+    }
     // ARQ SESSION
+    /*
     if (arg.arq_session == 'True') {
         document.getElementById("arq_session").className = "btn btn-sm btn-warning";
 
@@ -1836,11 +1882,22 @@ var speedChartOptions = {
         document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
 
     }
+    */
+    switch (arg.arq_session){
+        case 'True':
+            document.getElementById("arq_session").className = "btn btn-sm btn-warning";
+            break;
+        case 'False':
+            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+            break;
+        default:
+            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+            break;
+    }
 
     // HAMLIB STATUS
     if (arg.hamlib_status == 'connected') {
         document.getElementById("rigctld_state").className = "btn btn-success btn-sm";
-
     } else {
         document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
     }
@@ -1848,6 +1905,7 @@ var speedChartOptions = {
 
 
     // BEACON STATE
+    /*
     if (arg.beacon_state == 'True') {
         document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
         document.getElementById("startBeacon").disabled = true;
@@ -1863,6 +1921,27 @@ var speedChartOptions = {
         document.getElementById("startBeacon").disabled = false;
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
+    }
+    */
+    switch (arg.beacon_state){
+        case 'True':
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
+            document.getElementById("startBeacon").disabled = true;
+            document.getElementById("beaconInterval").disabled = true;
+            document.getElementById("stopBeacon").disabled = false;
+            break;
+        case 'False':
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
+            document.getElementById("startBeacon").disabled = false;
+            document.getElementById("beaconInterval").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
+            break;
+        default:
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
+            document.getElementById("startBeacon").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
+            document.getElementById("beaconInterval").disabled = false;
+            break;
     }
     // dbfs
     // https://www.moellerstudios.org/converting-amplitude-representations/
@@ -1889,7 +1968,7 @@ var speedChartOptions = {
     document.getElementById("bandwidth").textContent = arg.bandwidth;
 
     // SET SPEED LEVEL
-
+    /*
     if(arg.speed_level >= 0) {
         document.getElementById("speed_level").className = "bi bi-reception-1";
     }
@@ -1905,7 +1984,21 @@ var speedChartOptions = {
     if(arg.speed_level >= 4) {
         document.getElementById("speed_level").className = "bi bi-reception-4";
     }
-
+    */
+    switch (arg.speed_level){
+        case '0':
+            document.getElementById("speed_level").className = "bi bi-reception-1";
+            break;
+        case '1':
+            document.getElementById("speed_level").className = "bi bi-reception-2";
+            break;
+        case '2':
+            document.getElementById("speed_level").className = "bi bi-reception-3";
+            break;
+        default:
+            document.getElementById("speed_level").className = "bi bi-reception-4";
+            break;
+    }
     
     
     
@@ -2005,7 +2098,7 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-
+        /*
         if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
             dataTypeText.innerText = 'DATA-C';
             dataType.appendChild(dataTypeText);
@@ -2015,8 +2108,18 @@ var speedChartOptions = {
             dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
             dataType.appendChild(dataTypeText);
         }
-
-
+        */
+        switch (arg.stations[i]['datatype']){
+            case 'DATA-CHANNEL':
+                dataTypeText.innerText = 'DATA-C';
+                dataType.appendChild(dataTypeText);
+                break;
+            case 'SESSION-HB':
+                dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
+                dataType.appendChild(dataTypeText);
+                break;
+        }
+        /*
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
         }
@@ -2037,7 +2140,25 @@ var speedChartOptions = {
         if (dataTypeText.innerText == 'PING-ACK') {
             row.classList.add("table-primary");
         }
-
+        */
+        switch (dataTypeText.innerText){
+            case 'CQ CQ CQ':
+                row.classList.add("table-success");
+                break;
+            case 'DATA-C':
+                dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
+                row.classList.add("table-warning");
+                break;
+            case 'BEACON':
+                row.classList.add("table-light");
+                break;
+            case 'PING':
+                row.classList.add("table-info");
+                break;
+            case 'PING-ACK':
+                row.classList.add("table-primary");
+                break;
+        }
         var snr = document.createElement("td");
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['snr'];
