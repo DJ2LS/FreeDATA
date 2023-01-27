@@ -1534,9 +1534,9 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     
     // SET BYTES PER MINUTE COMPRESSED
     var compress = data.compression;
-    if (isNaN(compress))
-            compress = 1;
-        
+    if (isNaN(compress)) {
+        compress = 1;
+    }
     var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
     document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
     
@@ -2016,8 +2016,10 @@ var speedChartOptions = {
     //Allows for single click event to work more reliabily to populate dxcall textbox
     //Should also save some CPU
     slowRollTable++;
-    if (slowRollTable!=5)
+    if (slowRollTable!=5) {
         return;
+    }
+        
     slowRollTable=0;
     
     // UPDATE HEARD STATIONS
@@ -2889,8 +2891,9 @@ function checkRigctld(){
             };
 
     //Prevents an error on startup if hamlib settings aren't populated yet
-    if (rigctld_port.length > 0 && rigctld_ip.length > 0)
+    if (rigctld_port.length > 0 && rigctld_ip.length > 0) {
         ipcRenderer.send('request-check-rigctld', Data);
+    }
 }
 
 ipcRenderer.on('action-check-rigctld', (event, data) => {
@@ -2904,28 +2907,31 @@ ipcRenderer.on('action-set-app-version', (event, data) => {
 function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = config.tnc_port, appender = ""){
     //Multiple consecutive  spaces get converted to a single space
     var title ="FreeDATA " + appVer + " - Call: " + mycall + " - TNC: " + tnc +  ":" + tncport + appender;
-    if (title != document.title)
+    if (title != document.title) {
         document.title=title;
+    }
 }
 
 //Set force to true to ensure a class is present on a control, other set to false to ensure it isn't present
 function toggleClass(control,classToToggle,force) {
     var cntrl = document.getElementById(control);
-    if (cntrl == undefined)
-    {
+    if (cntrl == undefined) {
         //console.log("toggle class:  unknown control", control);
         return;
     }
     var activeClasses = cntrl.getAttribute('class');
     //var oldactive = activeClasses;
-    if (force == true && activeClasses.indexOf(classToToggle) >= 0)
+    if (force == true && activeClasses.indexOf(classToToggle) >= 0) {
         return;
-    if (force == false && activeClasses.indexOf(classToToggle) == -1)
+    }
+    if (force == false && activeClasses.indexOf(classToToggle) == -1) {
         return;
-    if (force == true)
+    }
+    if (force == true) {
         activeClasses += " " + classToToggle;
-    else
+    } else {
         activeClasses = activeClasses.replace(classToToggle,"");
+    }
     activeClasses = activeClasses.replace("  "," ").trim();
     cntrl.setAttribute("class",activeClasses);
     //console.log(control," toggleClass; force:  ", force, "class: " ,classToToggle, " in: '" ,oldactive, "' out: '",activeClasses,"'");

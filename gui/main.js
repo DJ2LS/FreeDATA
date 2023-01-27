@@ -764,8 +764,9 @@ function close_sub_processes(){
 
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
-        if (daemonProcess != null) 
+        if (daemonProcess != null) {
             daemonProcess.kill();
+        }
     } catch (e) {   
         mainLog.error(e)
     }
