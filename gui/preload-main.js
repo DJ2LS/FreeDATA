@@ -2889,7 +2889,7 @@ function checkRigctld(){
             };
 
     //Prevents an error on startup if hamlib settings aren't populated yet
-    if (!isNaN(rigctld_port))
+    if (rigctld_port.length > 0 && rigctld_ip.length > 0)
         ipcRenderer.send('request-check-rigctld', Data);
 }
 
