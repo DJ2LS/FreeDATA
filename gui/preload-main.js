@@ -240,7 +240,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     } else {
         document.getElementById("500HzModeSwitch").checked = false;
     }  
-          
+       
+    if(config.high_graphics == 'True'){
+        document.getElementById("GraphicsSwitch").checked = true;
+    } else {
+        document.getElementById("GraphicsSwitch").checked = false;
+    }  
+
     if(config.enable_fsk == 'True'){
         document.getElementById("fskModeSwitch").checked = true;
     } else {
@@ -1085,6 +1091,15 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    document.getElementById("GraphicsSwitch").addEventListener("click", () => {
+        if(document.getElementById("GraphicsSwitch").checked == true){
+            config.high_graphics = "True";
+        } else {
+            config.high_graphics = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        set_CPU_mode();
+    });
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -1317,7 +1332,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
 
         daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
-        
+
         
     })
 
@@ -2228,7 +2243,11 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.show();     
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
-        collapseFourthRow.show();         
+        collapseFourthRow.show();
+
+        //Set tuning for fancy graphics mode (high/low CPU)
+        set_CPU_mode();
+
     } else {
         /*
         document.getElementById('hamlib_deviceid').disabled = false;
@@ -2765,6 +2784,46 @@ function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = c
         document.title=title;
 }
 
+//Set force to true to ensure a class is present on a control, other set to false to ensure it isn't present
+function toggleClass(control,classToToggle,force) {
+    var cntrl = document.getElementById(control);
+    if (cntrl == undefined)
+    {
+        //console.log("toggle class:  unknown control", control);
+        return;
+    }
+    var activeClasses = cntrl.getAttribute('class');
+    //var oldactive = activeClasses;
+    if (force == true && activeClasses.indexOf(classToToggle) >= 0)
+        return;
+    if (force == false && activeClasses.indexOf(classToToggle) == -1)
+        return;
+    if (force == true)
+        activeClasses += " " + classToToggle;
+    else
+        activeClasses = activeClasses.replace(classToToggle,"");
+    activeClasses = activeClasses.replace("  "," ").trim();
+    cntrl.setAttribute("class",activeClasses);
+    //console.log(control," toggleClass; force:  ", force, "class: " ,classToToggle, " in: '" ,oldactive, "' out: '",activeClasses,"'");
+}
+function set_CPU_mode() {
+    if (config.high_graphics.toUpperCase()=="FALSE")
+    {
+        toggleClass("dbfs_level","disable-effects",true);
+        toggleClass("dbfs_level","progress-bar-striped",false);
+        toggleClass("waterfall","disable-effects",true);
+        toggleClass("transmission_progress","disable-effects",true);
+        toggleClass("transmission_progress","progress-bar-striped",false);
+    } 
+    else
+    {
+        toggleClass("dbfs_level","disable-effects",false);
+        toggleClass("dbfs_level","progress-bar-striped",true);
+        toggleClass("waterfall","disable-effects",false);
+        toggleClass("transmission_progress","disable-effects",false);
+        toggleClass("transmission_progress","progress-bar-striped",true);
+    }
+}
 //Teomporarily disable a button with timeout
 function pauseButton(btn, timems) {
     btn.disabled = true;
