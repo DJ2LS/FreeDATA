@@ -16,8 +16,10 @@ const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
 const mime = require('mime');
 const net = require('net');
+//Useful for debugging event emitter memory leaks
+//require('events').EventEmitter.defaultMaxListeners = 10;
+//process.traceProcessWarnings=true;
 
-  
 const sysInfo = log.scope('system information');
 sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
 sysInfo.info("APP VERSION : " + app.getVersion());
@@ -875,6 +877,8 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 // create new socket so we are not reopening every time a new one
 var rigctld_connection = new net.Socket();
 var rigctld_connection_state = false;
+var rigctld_events_wired = false;
+
 ipcMain.on('request-check-rigctld',(event, data)=>{
 
     try{
@@ -885,41 +889,44 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
 
         if(!rigctld_connection_state){
             rigctld_connection = new net.Socket();
+            rigctld_events_wired = false;
             rigctld_connection.connect(data.port, data.ip)
         }
 
-        // check if we have created a new socket object
-        if (typeof(rigctld_connection) != 'undefined') {
-
-        rigctld_connection.on('connect', function() {
-            rigctld_connection_state = true;
-            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== '' && typeof(win) != 'undefined'){
-                // try catch for being sure we have a clean app close
-                try{
-                    win.webContents.send('action-check-rigctld', Data);
-                } catch(e){
-                    console.log(e)
+        // Check if we have created a new socket object and attach listeners if not already created
+        if (typeof(rigctld_connection) != 'undefined' && !rigctld_events_wired) {
+           
+            rigctld_connection.on('connect', function() {
+                rigctld_events_wired=true;
+                mainLog.info("Starting rigctld event listeners");
+                rigctld_connection_state = true;
+                Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
+                if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                    // try catch for being sure we have a clean app close
+                    try{
+                        win.webContents.send('action-check-rigctld', Data);
+                    } catch(e){
+                        console.log(e)
+                    }
                 }
-            }
-        })
-
-        rigctld_connection.on('error', function() {
-            rigctld_connection_state = false;
-            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== '' && typeof(win) != 'undefined'){
-                // try catch for being sure we have a clean app close
-                try{
-                    win.webContents.send('action-check-rigctld', Data);
-                } catch(e){
-                    console.log(e)
+            })
+    
+            rigctld_connection.on('error', function() {
+                rigctld_connection_state = false;
+                Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+                if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                    // try catch for being sure we have a clean app close
+                    try{
+                        win.webContents.send('action-check-rigctld', Data);
+                    } catch(e){
+                        console.log(e)
+                    }
                 }
-            }
-        })
-
-        rigctld_connection.on('end', function() {
-            rigctld_connection_state = false;
-        })
+            })
+    
+            rigctld_connection.on('end', function() {
+                rigctld_connection_state = false;
+            })
 
         }
 
