@@ -16,8 +16,10 @@ const mainLog = log.scope('main');
 const daemonProcessLog = log.scope('freedata-daemon');
 const mime = require('mime');
 const net = require('net');
+//Useful for debugging event emitter memory leaks
+//require('events').EventEmitter.defaultMaxListeners = 10;
+//process.traceProcessWarnings=true;
 
-  
 const sysInfo = log.scope('system information');
 sysInfo.info("SYSTEM INFORMATION  -----------------------------  ");
 sysInfo.info("APP VERSION : " + app.getVersion());
@@ -93,7 +95,8 @@ const configDefaultSettings = '{\
                   "respond_to_cq" : "True",\
                   "rx_buffer_size" : "16", \
                   "enable_explorer" : "False", \
-                  "wftheme": 2 \
+                  "wftheme": 2, \
+                  "high_graphics" : "True"\
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -206,7 +209,7 @@ function createWindow() {
     })
     // hide menu bar
     win.setMenuBarVisibility(false)
-
+    
     //open dev tools
     /*win.webContents.openDevTools({
         mode: 'undocked',
@@ -316,104 +319,73 @@ app.whenReady().then(() => {
         win.show();
     }, 3000);
 
-    // start daemon by checking os
-    mainLog.info('Starting freedata-daemon binary');
-
-    if(os.platform()=='darwin'){
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
-            });                
-    }    
-    
-    /*
-    process.resourcesPath -->
-    /tmp/.mount_FreeDAUQYfKb/resources
-    
-    __dirname -->
-    /tmp/.mount_FreeDAUQYfKb/resources/app.asar
-    */
-
-    if(os.platform()=='linux'){
-
-    /*
-    var folder = path.join(process.resourcesPath, 'tnc');
-    //var folder = path.join(__dirname, 'extraResources', 'tnc');
-    console.log(folder);
-    fs.readdir(folder, (err, files) => {
-        console.log(files);
-    });
-    */
-
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
-            });        
+    //Generate daemon binary path
+    var daemonPath = "";
+    switch (os.platform().toLowerCase()){
+        case "darwin":
+        case "linux":
+            daemonPath = path.join(process.resourcesPath, 'tnc', 'freedata-daemon')
+            
+            break;
+        case "win32":
+        case "win64":
+            daemonPath = path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe')
+            break;
+        default:
+            console.log("Unhandled OS Platform: ", os.platform());
+            break;
     }
 
-    
-    if(os.platform()=='win32' || os.platform()=='win64'){
-        // for windows the relative path via path.join(__dirname) is not needed for some reason 
-        //daemonProcess = exec('\\tnc\\daemon.exe', [])
-        
-        daemonProcess = spawn(path.join(process.resourcesPath, 'tnc', 'freedata-daemon.exe'), [],
-            {   
-                cwd: path.join(process.resourcesPath, 'tnc'),              
+    //Start daemon binary if it exists
+    if (fs.existsSync(daemonPath)){
+        mainLog.info('Starting freedata-daemon binary');
+        daemonProcess = spawn(daemonPath,[],
+            {
+                cwd: path.join(daemonPath,".."),
             });
-                
-    }
-
-    // return process messages
-    
-    daemonProcess.on('error', (err) => {
-      daemonProcessLog.error(`error when starting daemon: ${err}`);
-    });
-        
-    daemonProcess.on('message', (data) => {
-      daemonProcessLog.info(`${data}`);      
-    });
-    
-    daemonProcess.stdout.on('data', (data) => {
-      daemonProcessLog.info(`${data}`);  
-    });
-
-
-
-
-
-    daemonProcess.stderr.on('data', (data) => {
-      daemonProcessLog.info(`${data}`);
-
+        // return process messages
+        daemonProcess.on('error', (err) => {
+            daemonProcessLog.error(`error when starting daemon: ${err}`);
+        });
+        daemonProcess.on('message', (data) => {
+            daemonProcessLog.info(`${data}`);      
+        });
+        daemonProcess.stdout.on('data', (data) => {
+            daemonProcessLog.info(`${data}`);  
+        });
+        daemonProcess.stderr.on('data', (data) => {
+            daemonProcessLog.info(`${data}`);
             let arg = {
-        entry: `${data}`
-      };
-        // send info to log only if log screen available
-        // it seems an error occurs when updating
-        if (logViewer !== null && logViewer !== ''){
-            try{
-                logViewer.webContents.send('action-update-log', arg);
-            } catch (e) {
-                // empty for keeping error stuff silent
-                // this is important to avoid error messages if we are going to close the app while
-                // an logging information will be pushed to the logger
+                entry: `${data}`
+            };
+            // send info to log only if log screen available
+            // it seems an error occurs when updating
+            if (logViewer !== null && logViewer !== ''){
+                try{
+                    logViewer.webContents.send('action-update-log', arg);
+                } catch (e) {
+                    // empty for keeping error stuff silent
+                    // this is important to avoid error messages if we are going to close the app while
+                    // an logging information will be pushed to the logger
+                }
             }
-        }
-      
-    });
+        });
+        daemonProcess.on('close', (code) => {
+            daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
+        });
+    } else {
+        daemonProcess=null;
+        daemonPath=null;
+        mainLog.info("Daemon binary doesn't exist--normal for dev environments.")
+    }
+    win.send("action-set-app-version",app.getVersion());
+});
 
-    daemonProcess.on('close', (code) => {
-      daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
-    });
-
-
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            createWindow();
-        }
-    })
+app.on('activate', () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+        createWindow();
+    }
 })
-
 
 app.on('window-all-closed', () => {
     close_all();
@@ -421,6 +393,10 @@ app.on('window-all-closed', () => {
 })
 
 // IPC HANDLER
+//Show/update task bar/button progressbar
+ipcMain.on('request-show-electron-progressbar',(event,data)=>{
+        win.setProgressBar(data/100);
+});
 
 ipcMain.on('request-show-chat-window', () => {
     chat.show();
@@ -488,6 +464,7 @@ ipcMain.on('request-new-msg-received', (event, arg) => {
 });
 ipcMain.on('request-update-transmission-status', (event, arg) => {
     chat.webContents.send('action-update-transmission-status', arg);
+    win.webContents.send('action-update-transmission-status',arg);
 });
 
 ipcMain.on('request-open-tnc-log', () => {
@@ -655,6 +632,11 @@ ipcMain.on('request-show-arq-toast-transmission-failed',(event,data)=>{
     win.webContents.send('action-show-arq-toast-transmission-failed', data);
 });
 
+// ARQ TRANSMISSION FAILED
+ipcMain.on('request-show-arq-toast-transmission-failed-ver',(event,data)=>{
+    win.webContents.send('action-show-arq-toast-transmission-failed-ver', data);
+});
+
 // ARQ TRANSMISSION RECEIVING
 ipcMain.on('request-show-arq-toast-transmission-receiving',(event,data)=>{
     win.webContents.send('action-show-arq-toast-transmission-receiving', data);
@@ -782,7 +764,9 @@ function close_sub_processes(){
 
     // closing the tnc binary if not closed when closing application and also our daemon which has been started by the gui
     try {
-        daemonProcess.kill();
+        if (daemonProcess != null) {
+            daemonProcess.kill();
+        }
     } catch (e) {   
         mainLog.error(e)
     }
@@ -894,6 +878,8 @@ ipcMain.on('request-stop-rigctld',(event,data)=>{
 // create new socket so we are not reopening every time a new one
 var rigctld_connection = new net.Socket();
 var rigctld_connection_state = false;
+var rigctld_events_wired = false;
+
 ipcMain.on('request-check-rigctld',(event, data)=>{
 
     try{
@@ -904,41 +890,44 @@ ipcMain.on('request-check-rigctld',(event, data)=>{
 
         if(!rigctld_connection_state){
             rigctld_connection = new net.Socket();
+            rigctld_events_wired = false;
             rigctld_connection.connect(data.port, data.ip)
         }
 
-        // check if we have created a new socket object
-        if (typeof(rigctld_connection) != 'undefined') {
-
-        rigctld_connection.on('connect', function() {
-            rigctld_connection_state = true;
-            Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== '' && typeof(win) != 'undefined'){
-                // try catch for being sure we have a clean app close
-                try{
-                    win.webContents.send('action-check-rigctld', Data);
-                } catch(e){
-                    console.log(e)
+        // Check if we have created a new socket object and attach listeners if not already created
+        if (typeof(rigctld_connection) != 'undefined' && !rigctld_events_wired) {
+           
+            rigctld_connection.on('connect', function() {
+                rigctld_events_wired=true;
+                mainLog.info("Starting rigctld event listeners");
+                rigctld_connection_state = true;
+                Data["state"] = "connection possible - (" + data.ip + ":" + data.port + ")";
+                if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                    // try catch for being sure we have a clean app close
+                    try{
+                        win.webContents.send('action-check-rigctld', Data);
+                    } catch(e){
+                        console.log(e)
+                    }
                 }
-            }
-        })
-
-        rigctld_connection.on('error', function() {
-            rigctld_connection_state = false;
-            Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
-            if (win !== null && win !== '' && typeof(win) != 'undefined'){
-                // try catch for being sure we have a clean app close
-                try{
-                    win.webContents.send('action-check-rigctld', Data);
-                } catch(e){
-                    console.log(e)
+            })
+    
+            rigctld_connection.on('error', function() {
+                rigctld_connection_state = false;
+                Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+                if (win !== null && win !== '' && typeof(win) != 'undefined'){
+                    // try catch for being sure we have a clean app close
+                    try{
+                        win.webContents.send('action-check-rigctld', Data);
+                    } catch(e){
+                        console.log(e)
+                    }
                 }
-            }
-        })
-
-        rigctld_connection.on('end', function() {
-            rigctld_connection_state = false;
-        })
+            })
+    
+            rigctld_connection.on('end', function() {
+                rigctld_connection_state = false;
+            })
 
         }
 

@@ -1060,6 +1060,12 @@ class DATA:
         static.TOTAL_BYTES = len(data_out)
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
 
+        # Compress data frame
+        data_frame_compressed = lzma.compress(data_out)
+        compression_factor = len(data_out) / len(data_frame_compressed)
+        static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
+        compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             arq="transmission",
@@ -1077,12 +1083,6 @@ class DATA:
             "[TNC] | TX | DATACHANNEL",
             Bytes=static.TOTAL_BYTES,
         )
-
-        # Compress data frame
-        data_frame_compressed = lzma.compress(data_out)
-        compression_factor = len(data_out) / len(data_frame_compressed)
-        static.ARQ_COMPRESSION_FACTOR = np.clip(compression_factor, 0, 255)
-        compression_factor = bytes([int(static.ARQ_COMPRESSION_FACTOR * 10)])
 
         data_out = data_frame_compressed
 

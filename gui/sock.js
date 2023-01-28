@@ -156,8 +156,8 @@ client.on('data', function(socketdata) {
 
         // split data into chunks if we received multiple commands
         socketchunk = socketchunk.split("\n"); 
-        data = JSON.parse(socketchunk[0])    
-             
+        //don't think this is needed anymore
+        //data = JSON.parse(socketchunk[0])    
 
         // search for empty entries in socketchunk and remove them
         for (i = 0; i < socketchunk.length; i++) {
@@ -349,7 +349,11 @@ client.on('data', function(socketdata) {
 
                     // ARQ TRANSMISSION FAILED
                     } else if (data['status'] == 'failed') {
-                        ipcRenderer.send('request-show-arq-toast-transmission-failed', {data: [data]});
+                        if (data['reason'] == 'protocol version missmatch') {
+                            ipcRenderer.send('request-show-arq-toast-transmission-failed-ver', {data: [data]});
+                        } else {
+                            ipcRenderer.send('request-show-arq-toast-transmission-failed', {data: [data]});
+                        }
                         ipcRenderer.send('request-update-transmission-status', {data: [data]});
 
 

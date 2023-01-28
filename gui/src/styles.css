@@ -3,6 +3,7 @@ body {
     padding-right: 0px !important;
     overflow-y: hidden !important;
     overflow-x: hidden !important;
+
 }
 
 /*Progress bars with centered text*/
@@ -65,4 +66,26 @@ th     {
 .picker {
     border-radius: 10px:
 
+}
+
+/* force gpu usage
+https://stackoverflow.com/questions/13176746/css-keyframe-animation-cpu-usage-is-high-should-it-be-this-way/13293044#13293044
+*/
+
+.force-gpu {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    will-change: transform;
+}
+
+/* force disable transition effects
+https://stackoverflow.com/a/9622873
+*/
+.disable-effects {
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
 }

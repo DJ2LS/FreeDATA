@@ -28,7 +28,8 @@ const config = require(configPath);
 // we are going to check if we have unequal values before we start calculating again
 var dbfs_level_raw = 0
 
-
+//Global version variable
+var appVer = null;
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
@@ -169,7 +170,8 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     ssid = callsign_and_ssid[1];
     
     document.getElementById("myCall").value = callsign;
-    document.title = document.title + ' - Call: ' + config.mycall;
+    //document.title = document.title + ' - Call: ' + config.mycall;
+    updateTitle();
     
     document.getElementById("myCallSSID").value = ssid;
     document.getElementById("myGrid").value = config.mygrid;
@@ -238,7 +240,13 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     } else {
         document.getElementById("500HzModeSwitch").checked = false;
     }  
-          
+       
+    if(config.high_graphics == 'True'){
+        document.getElementById("GraphicsSwitch").checked = true;
+    } else {
+        document.getElementById("GraphicsSwitch").checked = false;
+    }  
+
     if(config.enable_fsk == 'True'){
         document.getElementById("fskModeSwitch").checked = true;
     } else {
@@ -963,9 +971,9 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         callsign_ssid = callsign.toUpperCase() + '-' + ssid;
         config.mycall = callsign_ssid;
         // split document title by looking for Call then split and update it
-        var documentTitle = document.title.split('Call:')
-        document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
-
+        //var documentTitle = document.title.split('Call:')
+        //document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
+        updateTitle(callsign_ssid);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         daemon.saveMyCall(callsign_ssid);
     });
@@ -982,8 +990,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // startPing button clicked
     document.getElementById("sendPing").addEventListener("click", () => {
-        var dxcallsign = document.getElementById("dxCall").value;
-        dxcallsign = dxcallsign.toUpperCase();
+        var dxcallsign = document.getElementById("dxCall").value.toUpperCase();
+        if (dxcallsign == "" || dxcallsign == null || dxcallsign == undefined)
+            return;
+        pauseButton(document.getElementById("sendPing"),2000);
         sock.sendPing(dxcallsign);
     });
 
@@ -1018,6 +1028,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // sendCQ button clicked
     document.getElementById("sendCQ").addEventListener("click", () => {
+        pauseButton(document.getElementById("sendCQ"),2000);
         sock.sendCQ();
     });
 
@@ -1080,6 +1091,15 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    document.getElementById("GraphicsSwitch").addEventListener("click", () => {
+        if(document.getElementById("GraphicsSwitch").checked == true){
+            config.high_graphics = "True";
+        } else {
+            config.high_graphics = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        set_CPU_mode();
+    });
 
     // enable fsk Switch clicked
     document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -1133,11 +1153,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     
-        // Update channel selector clicked
-    document.getElementById("update_channel_selector").addEventListener("click", () => {
+        // Update channel selector changed
+    document.getElementById("update_channel_selector").addEventListener("change", () => {
         config.update_channel = document.getElementById("update_channel_selector").value;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
+        console.log("Autoupdate channel changed to ", config.update_channel);
     });    
 
     // rx buffer size selector clicked
@@ -1312,7 +1332,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
 
         daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
-        
+
         
     })
 
@@ -1474,21 +1494,65 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
   
 })
 
-  
+//Listen for events caused by tnc 'tnc-message's
+ipcRenderer.on('action-update-transmission-status', (event, arg) => {
+    var data =arg["data"][0];
+    var txprog = document.getElementById("transmission_progress")
+    ipcRenderer.send('request-show-electron-progressbar',data.percent);
+    txprog.setAttribute("aria-valuenow", data.percent);
+    txprog.setAttribute("style", "width:" + data.percent + "%;");
 
+     // SET TIME LEFT UNTIL FINIHED
+     if (typeof(data.finished) == 'undefined') {
+        var time_left = 0;
+    } else {
+        var arq_seconds_until_finish = data.finished
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+    }
+    document.getElementById("transmission_timeleft").textContent = time_left;
+
+    // SET BYTES PER MINUTE
+    if (typeof(data.bytesperminute) == 'undefined') {
+        var arq_bytes_per_minute = 0;
+    } else {
+        var arq_bytes_per_minute = data.bytesperminute;
+    }
+    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
+    
+    // SET BYTES PER MINUTE COMPRESSED
+    var compress = data.compression;
+    if (isNaN(compress)) {
+        compress = 1;
+    }
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
+    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
+    
+});
+
+var slowRollTable=4;
 
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
         var array = JSON.parse("[" + arg.fft + "]");
         spectrum.addData(array[0]);
-
     }
 
     if (typeof(arg.mycallsign) !== 'undefined') {
-        // split document title by looking for Call then split and update it
-        var documentTitle = document.title.split('Call:')
-        document.title = documentTitle[0] + 'Call: ' + arg.mycallsign;
+        updateTitle(arg.mycallsign);
     }
 
     // update mygrid information with data from tnc
@@ -1572,7 +1636,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         var scatterSize = arg.scatter.length;
     }
 
-     if (global.scatterData != newScatterData && scatterSize > 0) {
+     if (scatterSize > 0 && global.scatterData != newScatterData) {
      global.scatterData = newScatterData;
 
         if (typeof(global.scatterChart) == 'undefined') {
@@ -1688,6 +1752,7 @@ var speedChartOptions = {
     // END OF SPEED CHART
 
     // PTT STATE
+    /*
     if (arg.ptt_state == 'True') {
         document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
     } else if (arg.ptt_state == 'False') {
@@ -1695,24 +1760,33 @@ var speedChartOptions = {
     } else {
         document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
     }
+    */
+    switch (arg.ptt_state){
+        case 'True':
+            document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
+            break;
+        case 'False':
+            document.getElementById("ptt_state").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
+            break;
 
+    }
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Stop Rec"
+        document.getElementById("startStopRecording").textContent = "Stop Rec"
     } else if (arg.ptt_state == 'False') {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     } else {
         document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").innerHTML = "Start Rec"
+        document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
-
-
-
-
     // CHANNEL BUSY STATE
+    /*
     if (arg.channel_busy == 'True') {
         document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
 
@@ -1723,24 +1797,49 @@ var speedChartOptions = {
         document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
 
     }
+    */
+    switch (arg.channel_busy){
+        case 'True':
+            document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
+            break;
+        case 'False':
+            document.getElementById("channel_busy").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
+            break;
+    }
 
     // BUSY STATE
+    /*
     if (arg.busy_state == 'BUSY') {
         document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-        
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
-
     } else if (arg.busy_state == 'IDLE') {
         document.getElementById("busy_state").className = "btn btn-sm btn-success";
-
     } else {
         document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
         document.getElementById("startTransmission").disabled = true;
         //document.getElementById("stopTransmission").disabled = false;
     }
+    */
+    switch(arg.busy_state){
+        case 'BUSY':
+            document.getElementById("busy_state").className = "btn btn-sm btn-danger";
+            document.getElementById("startTransmission").disabled = true;
+            break;
+        case 'IDLE':
+            document.getElementById("busy_state").className = "btn btn-sm btn-success";
+            break;
+        default:
+            document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = true;
+            break;
+    }
 
     // ARQ STATE
+    /*
     if (arg.arq_state == 'True') {
         document.getElementById("arq_state").className = "btn btn-sm btn-warning";
         //document.getElementById("startTransmission").disabled = true;
@@ -1756,8 +1855,23 @@ var speedChartOptions = {
         document.getElementById("startTransmission").disabled = false;
         //document.getElementById("stopTransmission").disabled = false;
     }
-
+    */
+    switch (arg.arq_state){
+        case 'True':
+            document.getElementById("arq_state").className = "btn btn-sm btn-warning";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+        case 'False':
+            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+        default:
+            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
+            document.getElementById("startTransmission").disabled = false;
+            break;
+    }
     // ARQ SESSION
+    /*
     if (arg.arq_session == 'True') {
         document.getElementById("arq_session").className = "btn btn-sm btn-warning";
 
@@ -1768,11 +1882,22 @@ var speedChartOptions = {
         document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
 
     }
+    */
+    switch (arg.arq_session){
+        case 'True':
+            document.getElementById("arq_session").className = "btn btn-sm btn-warning";
+            break;
+        case 'False':
+            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+            break;
+        default:
+            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+            break;
+    }
 
     // HAMLIB STATUS
     if (arg.hamlib_status == 'connected') {
         document.getElementById("rigctld_state").className = "btn btn-success btn-sm";
-
     } else {
         document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
     }
@@ -1780,6 +1905,7 @@ var speedChartOptions = {
 
 
     // BEACON STATE
+    /*
     if (arg.beacon_state == 'True') {
         document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
         document.getElementById("startBeacon").disabled = true;
@@ -1796,71 +1922,53 @@ var speedChartOptions = {
         document.getElementById("stopBeacon").disabled = true;
         document.getElementById("beaconInterval").disabled = false;
     }
+    */
+    switch (arg.beacon_state){
+        case 'True':
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
+            document.getElementById("startBeacon").disabled = true;
+            document.getElementById("beaconInterval").disabled = true;
+            document.getElementById("stopBeacon").disabled = false;
+            break;
+        case 'False':
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
+            document.getElementById("startBeacon").disabled = false;
+            document.getElementById("beaconInterval").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
+            break;
+        default:
+            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
+            document.getElementById("startBeacon").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
+            document.getElementById("beaconInterval").disabled = false;
+            break;
+    }
     // dbfs
     // https://www.moellerstudios.org/converting-amplitude-representations/
     if (dbfs_level_raw != arg.dbfs_level){
         dbfs_level_raw = arg.dbfs_level
         dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100
 
-        document.getElementById("dbfs_level_value").innerHTML = Math.round(arg.dbfs_level) + ' dBFS'
-        document.getElementById("dbfs_level").setAttribute("aria-valuenow", dbfs_level);
-        document.getElementById("dbfs_level").setAttribute("style", "width:" + dbfs_level + "%;");
+        document.getElementById("dbfs_level_value").textContent = Math.round(arg.dbfs_level) + ' dBFS'
+        var dbfscntrl = document.getElementById("dbfs_level");
+        dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
+        dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
     }
 
     // SET FREQUENCY
     // https://stackoverflow.com/a/2901298
     var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    document.getElementById("frequency").innerHTML = freq;
+    document.getElementById("frequency").textContent = freq;
     //document.getElementById("newFrequency").value = arg.frequency;
 
     // SET MODE
-    document.getElementById("mode").innerHTML = arg.mode;
+    document.getElementById("mode").textContent = arg.mode;
 
     // SET bandwidth
-    document.getElementById("bandwidth").innerHTML = arg.bandwidth;
+    document.getElementById("bandwidth").textContent = arg.bandwidth;
 
-    // SET BYTES PER MINUTE
-    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
-        var arq_bytes_per_minute = 0;
-    } else {
-        var arq_bytes_per_minute = arg.arq_bytes_per_minute;
-    }
-    document.getElementById("bytes_per_min").innerHTML = arq_bytes_per_minute;
-
-    // SET BYTES PER MINUTE COMPRESSED
-    if (typeof(arg.arq_bytes_per_minute) == 'undefined') {
-        var arq_bytes_per_minute_compressed = 0;
-    } else {
-        var arq_bytes_per_minute_compressed = Math.round(arg.arq_bytes_per_minute * arg.arq_compression_factor);
-    }
-    document.getElementById("bytes_per_min_compressed").innerHTML = arq_bytes_per_minute_compressed;
-
-    // SET TIME LEFT UNTIL FINIHED
-    if (typeof(arg.arq_seconds_until_finish) == 'undefined') {
-        var time_left = 0;
-    } else {
-        var arq_seconds_until_finish = arg.arq_seconds_until_finish
-        var hours = Math.floor(arq_seconds_until_finish / 3600);
-        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
-        var seconds = arq_seconds_until_finish % 60;
-
-        if(hours < 0) {
-            hours = 0;
-        }
-        if(minutes < 0) {
-            minutes = 0;
-        }
-        if(seconds < 0) {
-            seconds = 0;
-        }
-        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
-    }
-    document.getElementById("transmission_timeleft").innerHTML = time_left;
-
-
-    
     // SET SPEED LEVEL
-
+    /*
     if(arg.speed_level >= 0) {
         document.getElementById("speed_level").className = "bi bi-reception-1";
     }
@@ -1876,7 +1984,21 @@ var speedChartOptions = {
     if(arg.speed_level >= 4) {
         document.getElementById("speed_level").className = "bi bi-reception-4";
     }
-
+    */
+    switch (arg.speed_level){
+        case '0':
+            document.getElementById("speed_level").className = "bi bi-reception-1";
+            break;
+        case '1':
+            document.getElementById("speed_level").className = "bi bi-reception-2";
+            break;
+        case '2':
+            document.getElementById("speed_level").className = "bi bi-reception-3";
+            break;
+        default:
+            document.getElementById("speed_level").className = "bi bi-reception-4";
+            break;
+    }
     
     
     
@@ -1886,10 +2008,20 @@ var speedChartOptions = {
     } else {
         var total_bytes = arg.total_bytes;
     }
-    document.getElementById("total_bytes").innerHTML = total_bytes;
-    document.getElementById("transmission_progress").setAttribute("aria-valuenow", arg.arq_transmission_percent);
-    document.getElementById("transmission_progress").setAttribute("style", "width:" + arg.arq_transmission_percent + "%;");
+    document.getElementById("total_bytes").textContent = total_bytes;
 
+
+    //Ensure heard station table is last so we can return if we don't want to update it
+    //Only update heard stations every 5 iterations
+    //Allows for single click event to work more reliabily to populate dxcall textbox
+    //Should also save some CPU
+    slowRollTable++;
+    if (slowRollTable!=5) {
+        return;
+    }
+        
+    slowRollTable=0;
+    
     // UPDATE HEARD STATIONS
     var tbl = document.getElementById("heardstations");
     document.getElementById("heardstations").innerHTML = '';
@@ -1903,19 +2035,19 @@ var speedChartOptions = {
     for (i = 0; i < heardStationsLength; i++) {
 
         // first we update the PING window
-        if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value) {
+        if (arg.stations[i]['dxcallsign'] == document.getElementById("dxCall").value.toUpperCase()) {
             var dxGrid = arg.stations[i]['dxgrid'];
             var myGrid = document.getElementById("myGrid").value;
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-                document.getElementById("pingDistance").innerHTML = dist;
-                document.getElementById("dataModalPingDistance").innerHTML = dist;
+                //document.getElementById("pingDistance").innerHTML = dist;
+                document.getElementById("dataModalPingDistance").textContent = dist;
             } catch {
-                document.getElementById("pingDistance").innerHTML = '---';
-                document.getElementById("dataModalPingDistance").innerHTML = '---';
+                //document.getElementById("pingDistance").innerHTML = '---';
+                document.getElementById("dataModalPingDistance").textContent = '---';
             }
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
-            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
+            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
+            document.getElementById("dataModalPingDB").textContent = arg.stations[i]['snr'];
         }
 
         // now we update the heard stations list
@@ -1940,10 +2072,13 @@ var speedChartOptions = {
         frequencyText.innerText = arg.stations[i]['frequency'];
         frequency.appendChild(frequencyText);
         
-        
         var dxCall = document.createElement("td");
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['dxcallsign'];
+        let dxCallTextCall = dxCallText.innerText;
+        row.addEventListener("click", function() {
+            document.getElementById("dxCall").value = dxCallTextCall;
+          });
         dxCall.appendChild(dxCallText);
 
         var dxGrid = document.createElement("td");
@@ -1965,7 +2100,7 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-
+        /*
         if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
             dataTypeText.innerText = 'DATA-C';
             dataType.appendChild(dataTypeText);
@@ -1975,11 +2110,20 @@ var speedChartOptions = {
             dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
             dataType.appendChild(dataTypeText);
         }
-
-
+        */
+        switch (arg.stations[i]['datatype']){
+            case 'DATA-CHANNEL':
+                dataTypeText.innerText = 'DATA-C';
+                dataType.appendChild(dataTypeText);
+                break;
+            case 'SESSION-HB':
+                dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
+                dataType.appendChild(dataTypeText);
+                break;
+        }
+        /*
         if (dataTypeText.innerText == 'CQ CQ CQ') {
             row.classList.add("table-success");
-
         }
 
         if (dataTypeText.innerText == 'DATA-C') {
@@ -1998,7 +2142,25 @@ var speedChartOptions = {
         if (dataTypeText.innerText == 'PING-ACK') {
             row.classList.add("table-primary");
         }
-
+        */
+        switch (dataTypeText.innerText){
+            case 'CQ CQ CQ':
+                row.classList.add("table-success");
+                break;
+            case 'DATA-C':
+                dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
+                row.classList.add("table-warning");
+                break;
+            case 'BEACON':
+                row.classList.add("table-light");
+                break;
+            case 'PING':
+                row.classList.add("table-info");
+                break;
+            case 'PING-ACK':
+                row.classList.add("table-primary");
+                break;
+        }
         var snr = document.createElement("td");
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['snr'];
@@ -2204,7 +2366,11 @@ ipcRenderer.on('action-update-tnc-connection', (event, arg) => {
         var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
         collapseThirdRow.show();     
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
-        collapseFourthRow.show();         
+        collapseFourthRow.show();
+
+        //Set tuning for fancy graphics mode (high/low CPU)
+        set_CPU_mode();
+
     } else {
         /*
         document.getElementById('hamlib_deviceid').disabled = false;
@@ -2249,15 +2415,15 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
     for (i = 0; i < arg.data.length; i++) {
 
         // first we update the PING window
-        if (arg.data[i]['dxcallsign'] == document.getElementById("dxCall").value) {
+        if (arg.data[i]['dxcallsign'] == document.getElementById("dxCall").value.toUpperCase()) {
             /*
             // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
             if(arg.data[i]['DXGRID'] != ''){
                 document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
             }
             */
-            document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
-
+            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
+            document.getElementById("dataModalPingDB").innerHTML = arg.stations[i]['snr'];
         }
 
 
@@ -2413,13 +2579,10 @@ ipcRenderer.on('action-updater', (event, arg) => {
         }   
 
         if (arg.status == "checking-for-update"){
-
-            document.title = document.title + ' - v' + arg.version;
+            
+            //document.title = document.title + ' - v' + arg.version;
+            updateTitle(config.myCall,config.tnc_host,config.tnc_port, " -v " + arg.version);
             document.getElementById("updater_status").innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
-            
-             
-            
-            
             
             document.getElementById("updater_status").className = "btn btn-secondary btn-sm";
             document.getElementById("update_and_install").style.display = 'none';
@@ -2562,6 +2725,13 @@ ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
     toast.show();
 });
 
+// ARQ TRANSMISSION FAILED (Version mismatch)
+ipcRenderer.on('action-show-arq-toast-transmission-failed-ver', (event, data) => {
+    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
+    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailedver); // Returns a Bootstrap toast instance
+    toast.show();
+});
+
 // ARQ TRANSMISSION STOPPED
 // TODO: RENAME ID -- WRONG
 ipcRenderer.on('action-show-arq-toast-transmission-stopped', (event, data) => {
@@ -2691,11 +2861,6 @@ ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
 });
 
 
-
-
-
-
-
 // enable or disable a setting by given switch and element
 function enable_setting(enable_switch, enable_object){
         if(document.getElementById(enable_switch).checked){
@@ -2724,9 +2889,77 @@ function checkRigctld(){
                 ip: rigctld_ip,
                 port: rigctld_port
             };
-    ipcRenderer.send('request-check-rigctld', Data);
+
+    //Prevents an error on startup if hamlib settings aren't populated yet
+    if (rigctld_port.length > 0 && rigctld_ip.length > 0) {
+        ipcRenderer.send('request-check-rigctld', Data);
+    }
 }
 
 ipcRenderer.on('action-check-rigctld', (event, data) => {
         document.getElementById("hamlib_rigctld_status").value = data["state"];
 });
+
+ipcRenderer.on('action-set-app-version', (event, data) => {
+    appVer = data;
+});
+
+function updateTitle(mycall = config.mycall , tnc = config.tnc_host, tncport = config.tnc_port, appender = ""){
+    //Multiple consecutive  spaces get converted to a single space
+    var title ="FreeDATA " + appVer + " - Call: " + mycall + " - TNC: " + tnc +  ":" + tncport + appender;
+    if (title != document.title) {
+        document.title=title;
+    }
+}
+
+//Set force to true to ensure a class is present on a control, other set to false to ensure it isn't present
+function toggleClass(control,classToToggle,force) {
+    var cntrl = document.getElementById(control);
+    if (cntrl == undefined) {
+        //console.log("toggle class:  unknown control", control);
+        return;
+    }
+    var activeClasses = cntrl.getAttribute('class');
+    //var oldactive = activeClasses;
+    if (force == true && activeClasses.indexOf(classToToggle) >= 0) {
+        return;
+    }
+    if (force == false && activeClasses.indexOf(classToToggle) == -1) {
+        return;
+    }
+    if (force == true) {
+        activeClasses += " " + classToToggle;
+    } else {
+        activeClasses = activeClasses.replace(classToToggle,"");
+    }
+    activeClasses = activeClasses.replace("  "," ").trim();
+    cntrl.setAttribute("class",activeClasses);
+    //console.log(control," toggleClass; force:  ", force, "class: " ,classToToggle, " in: '" ,oldactive, "' out: '",activeClasses,"'");
+}
+function set_CPU_mode() {
+    if (config.high_graphics.toUpperCase()=="FALSE")
+    {
+        toggleClass("dbfs_level","disable-effects",true);
+        toggleClass("dbfs_level","progress-bar-striped",false);
+        toggleClass("waterfall","disable-effects",true);
+        toggleClass("transmission_progress","disable-effects",true);
+        toggleClass("transmission_progress","progress-bar-striped",false);
+    } 
+    else
+    {
+        toggleClass("dbfs_level","disable-effects",false);
+        toggleClass("dbfs_level","progress-bar-striped",true);
+        toggleClass("waterfall","disable-effects",false);
+        toggleClass("transmission_progress","disable-effects",false);
+        toggleClass("transmission_progress","progress-bar-striped",true);
+    }
+}
+//Teomporarily disable a button with timeout
+function pauseButton(btn, timems) {
+    btn.disabled = true;
+    var curText = btn.innerHTML;
+    btn.innerHTML = "<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\">";
+  setTimeout(()=>{
+    btn.innerHTML=curText;
+    btn.disabled = false;}, timems)
+}
