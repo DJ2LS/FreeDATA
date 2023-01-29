@@ -134,7 +134,7 @@ INFO: list = []
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN: float = -50.0
 TUNING_RANGE_FMAX: float = 50.0
-
+IS_CODEC2_SIG_TRAFFIC: bool = False # true if we have codec2 signalling mode traffic on channel
 
 class FRAME_TYPE(Enum):
     """Lookup for frame types"""
