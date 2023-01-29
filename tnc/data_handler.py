@@ -2205,7 +2205,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time())
+        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
 
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
@@ -2255,7 +2255,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps once again for avoiding running into timeout
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time())
+        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
         """
