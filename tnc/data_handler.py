@@ -2912,7 +2912,8 @@ class DATA:
             return
 
         self.log.debug("[TNC] arq_cleanup")
-
+        # wait a second for smoother arq behaviour
+        helpers.wait(1.0)
 
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False

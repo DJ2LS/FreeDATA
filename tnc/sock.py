@@ -471,7 +471,7 @@ def process_tnc_commands(data):
             static.BEACON_PAUSE = True
 
             # wait some random time
-            helpers.wait(randrange(0, 20, 5) / 10.0)
+            helpers.wait(randrange(5, 25, 5) / 10.0)
 
             # we need to warn if already in arq state
             if static.ARQ_STATE:
