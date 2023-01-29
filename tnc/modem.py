@@ -656,6 +656,8 @@ class RF:
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
+                    else:
+                        static.IS_CODEC2_TRAFFIC = False
 
                     if rx_status == 10:
                         state_buffer.append(rx_status)
