@@ -243,7 +243,7 @@ class DATA:
             # stuck in IRS
             #
             # send transmission queued information once
-            if static.ARQ_STATE or static.IS_CODEC2_SIG_TRAFFIC:
+            if static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
                 self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
 
                 self.send_data_to_socket_queue(
@@ -252,7 +252,7 @@ class DATA:
                     status="queued",
                 )
             # now stay in while loop until state released
-            while static.ARQ_STATE or static.IS_CODEC2_SIG_TRAFFIC:
+            while static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
                 threading.Event().wait(0.01)
 
             # Dispatch commands known to command_dispatcher
