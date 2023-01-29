@@ -2090,7 +2090,6 @@ class DATA:
             return False
 
         self.arq_file_transfer = True
-        self.is_IRS = True
 
         # check if callsign ssid override
         _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
@@ -2102,6 +2101,8 @@ class DATA:
         # we are only ignoring packets in case we are ISS
         if static.ARQ_STATE and not self.is_IRS:
             return False
+
+        self.is_IRS = True
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
