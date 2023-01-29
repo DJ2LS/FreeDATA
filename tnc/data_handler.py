@@ -237,12 +237,13 @@ class DATA:
         while True:
             data = self.data_queue_transmit.get()
 
-            # if we are already in ARQ_STATE lets wait with processing data
+            # if we are already in ARQ_STATE, or we're receiving codec2 traffic
+            # let's wait with processing data
             # this should avoid weird toggle states where both stations
             # stuck in IRS
             #
             # send transmission queued information once
-            if static.ARQ_STATE:
+            if static.ARQ_STATE or static.IS_CODEC2_SIG_TRAFFIC:
                 self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
 
                 self.send_data_to_socket_queue(
@@ -251,7 +252,7 @@ class DATA:
                     status="queued",
                 )
             # now stay in while loop until state released
-            while static.ARQ_STATE:
+            while static.ARQ_STATE or static.IS_CODEC2_SIG_TRAFFIC:
                 threading.Event().wait(0.01)
 
             # Dispatch commands known to command_dispatcher
