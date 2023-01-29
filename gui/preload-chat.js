@@ -752,7 +752,7 @@ update_chat = function(obj) {
                         </p>
                         
                        <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
-                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
 							 </div>
 							 
 
