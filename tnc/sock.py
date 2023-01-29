@@ -28,6 +28,7 @@ import wave
 import helpers
 import static
 import structlog
+from random import randrange
 import ujson as json
 from exceptions import NoCallsign
 from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
@@ -469,6 +470,9 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
 
+            # wait some random time
+            helpers.wait(randrange(0, 20, 5) / 10.0)
+
             # we need to warn if already in arq state
             if static.ARQ_STATE:
                 command_response("send_raw", False)
@@ -512,7 +516,6 @@ def process_tnc_commands(data):
                     attempts = int(received_json["parameter"][0]["attempts"])
 
                 except Exception:
-                    # 15 == self.session_connect_max_retries
                     attempts = 10
 
                 # check if transmission uuid provided else set no-uuid
