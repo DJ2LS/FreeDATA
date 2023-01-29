@@ -162,8 +162,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {
-        document.getElementById('chatModuleMessage').setRangeText(event.detail.emoji.unicode)
+        var msg = document.getElementById('chatModuleMessage');
+        var picker =  document.getElementById("emojipickercontainer");
+        msg.setRangeText(event.detail.emoji.unicode)
         console.log(event.detail);
+        picker.style.display="none";
+        msg.focus();
     })
     document.getElementById("emojipickerbutton").addEventListener("click", () => {
         var element = document.getElementById("emojipickercontainer")
