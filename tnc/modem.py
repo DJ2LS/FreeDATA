@@ -649,7 +649,9 @@ class RF:
                     rx_status = codec2.api.freedv_get_rx_status(freedv)
 
                     if rx_status != 0:
-                        static.IS_CODEC2_TRAFFIC = True
+                        # we need to disable this if in testmode as its causing problems with FIFO it seems
+                        if not TESTMODE:
+                            static.IS_CODEC2_TRAFFIC = True
 
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
