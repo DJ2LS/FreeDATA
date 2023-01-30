@@ -39,11 +39,12 @@ class explorer():
         version = str(static.VERSION)
         bandwidth = str(static.LOW_BANDWIDTH_MODE)
         beacon = str(static.BEACON_STATE)
+        strength = str(static.HAMLIB_STRENGTH)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
         for i in static.HEARD_STATIONS:
             try:
