@@ -350,7 +350,7 @@ jobs:
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          if(Test-Path -Path "dist/_sounddevice_data"){
+          if(Test-Path -Path "dist/tnc/_sounddevice_data"){
           echo "sounddevice folder already exists"
           } else {
           git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
