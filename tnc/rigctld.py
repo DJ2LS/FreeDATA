@@ -34,6 +34,9 @@ class radio:
         self.bandwidth = ''
         self.frequency = ''
         self.mode = ''
+        self.alc = ''
+        self.swr = ''
+        self.rf = ''
 
     def open_rig(
         self,
@@ -198,6 +201,52 @@ class radio:
     def get_status(self):
         """ """
         return "connected" if self.data_connected and self.ptt_connected else "unknown/disconnected"
+
+    def get_level(self):
+        try:
+            data = self.send_data_command(b"l RF", True)
+            data = data.split(b"\n")
+            rf = data[0].decode("utf-8")
+            if 'RPRT' not in rf:
+                try:
+                    rf = int(rf)
+                except ValueError:
+                    self.rf = str(rf)
+
+            return self.rf
+        except Exception:
+            return self.rf
+
+    def get_swr(self):
+        try:
+            data = self.send_data_command(b"l SWR", True)
+            data = data.split(b"\n")
+            swr = data[0].decode("utf-8")
+            if 'RPRT' not in swr:
+                try:
+                    swr = int(swr)
+                except ValueError:
+                    self.swr = str(swr)
+
+            return self.swr
+        except Exception:
+            return self.swr
+
+    def get_alc(self):
+        try:
+            data = self.send_data_command(b"l ALC", True)
+            data = data.split(b"\n")
+            print(data)
+            alc = data[0].decode("utf-8")
+            if 'RPRT' not in alc:
+                try:
+                    alc = int(alc)
+                except ValueError:
+                    self.alc = str(alc)
+
+            return self.alc
+        except Exception:
+            return self.alc
 
     def get_mode(self):
         """ """

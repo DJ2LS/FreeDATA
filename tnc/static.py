@@ -64,6 +64,9 @@ HAMLIB_STATUS: str = "unknown/disconnected"
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0
+HAMLIB_RF: int = 0
+HAMLIB_ALC: int = 0
+HAMLIB_SWR: int = 0
 # -------------------------
 # FreeDV Defaults
 

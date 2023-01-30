@@ -26,6 +26,18 @@ class radio:
         """ """
         return None
 
+    def get_level(self):
+        """ """
+        return None
+
+    def get_alc(self):
+        """ """
+        return None
+
+    def get_swr(self):
+        """ """
+        return None
+
     def get_bandwidth(self):
         """ """
         return None
