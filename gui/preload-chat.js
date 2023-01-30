@@ -727,7 +727,13 @@ update_chat = function(obj) {
             } else {
                 var progressbar_bg = 'bg-primary';
             }
-
+           
+            //Sneak in low graphics mode if so enabled for progress bars
+            if (config.high_graphics.toString().toUpperCase() !="TRUE")
+            {
+                progressbar_bg += " disable-effects";
+                //console.log("Low graphics enabled for chat module");
+            }
             var new_message = `
 
             <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
