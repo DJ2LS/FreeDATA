@@ -35,7 +35,7 @@ class radio:
         self.frequency = ''
         self.mode = ''
         self.alc = ''
-        self.swr = ''
+        self.meter = ''
         self.rf = ''
 
     def open_rig(
@@ -209,7 +209,7 @@ class radio:
             rf = data[0].decode("utf-8")
             if 'RPRT' not in rf:
                 try:
-                    rf = int(rf)
+                    self.rf = int(rf)
                 except ValueError:
                     self.rf = str(rf)
 
@@ -217,30 +217,29 @@ class radio:
         except Exception:
             return self.rf
 
-    def get_swr(self):
+    def get_meter(self):
         try:
-            data = self.send_data_command(b"l SWR", True)
+            data = self.send_data_command(b"l METER", True)
             data = data.split(b"\n")
-            swr = data[0].decode("utf-8")
-            if 'RPRT' not in swr:
+            meter = data[0].decode("utf-8")
+            if 'RPRT' not in meter:
                 try:
-                    swr = int(swr)
+                    self.meter = str(meter)
                 except ValueError:
-                    self.swr = str(swr)
+                    self.meter = str(meter)
 
-            return self.swr
+            return self.meter
         except Exception:
-            return self.swr
+            return self.meter
 
     def get_alc(self):
         try:
             data = self.send_data_command(b"l ALC", True)
             data = data.split(b"\n")
-            print(data)
             alc = data[0].decode("utf-8")
             if 'RPRT' not in alc:
                 try:
-                    alc = int(alc)
+                    self.alc = int(alc)
                 except ValueError:
                     self.alc = str(alc)
 

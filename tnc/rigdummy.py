@@ -34,7 +34,7 @@ class radio:
         """ """
         return None
 
-    def get_swr(self):
+    def get_meter(self):
         """ """
         return None
 
