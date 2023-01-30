@@ -66,7 +66,7 @@ HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0
 HAMLIB_RF: int = 0
 HAMLIB_ALC: int = 0
-HAMLIB_METER: int = 0
+HAMLIB_STRENGTH: int = 0
 # -------------------------
 # FreeDV Defaults
 

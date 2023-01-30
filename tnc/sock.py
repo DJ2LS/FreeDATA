@@ -654,7 +654,7 @@ def send_tnc_state():
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
         "rf_level": str(static.HAMLIB_RF),
-        "meter": str(static.HAMLIB_METER),
+        "strength": str(static.HAMLIB_STRENGTH),
         "alc": str(static.HAMLIB_ALC),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),

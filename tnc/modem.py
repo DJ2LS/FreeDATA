@@ -970,8 +970,8 @@ class RF:
             static.HAMLIB_STATUS = self.hamlib.get_status()
             static.HAMLIB_ALC = self.hamlib.get_alc()
             static.HAMLIB_RF = self.hamlib.get_level()
-            static.HAMLIB_METER = self.hamlib.get_meter()
-            print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, SWR: {static.HAMLIB_METER}")
+            static.HAMLIB_STRENGTH = self.hamlib.get_strength()
+            print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
