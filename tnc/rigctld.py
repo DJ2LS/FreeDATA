@@ -39,17 +39,17 @@ class radio:
         self.rf = ''
 
     def open_rig(
-        self,
-        devicename,
-        deviceport,
-        hamlib_ptt_type,
-        serialspeed,
-        pttport,
-        data_bits,
-        stop_bits,
-        handshake,
-        rigctld_ip,
-        rigctld_port,
+            self,
+            devicename,
+            deviceport,
+            hamlib_ptt_type,
+            serialspeed,
+            pttport,
+            data_bits,
+            stop_bits,
+            handshake,
+            rigctld_ip,
+            rigctld_port,
     ):
         """
 
@@ -71,8 +71,8 @@ class radio:
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
 
-        #_ptt_connect = self.ptt_connect()
-        #_data_connect = self.data_connect()
+        # _ptt_connect = self.ptt_connect()
+        # _data_connect = self.data_connect()
 
         ptt_thread = threading.Thread(target=self.ptt_connect, args=[], daemon=True)
         ptt_thread.start()
@@ -173,8 +173,12 @@ class radio:
 
         """
         if self.data_connected:
+            self.data_connection.setblocking(False)
+            self.data_connection.settimeout(0.05)
             try:
                 self.data_connection.sendall(command + b"\n")
+
+
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] Command not executed!",
@@ -187,7 +191,20 @@ class radio:
             try:
                 # recv seems to be blocking so in case of ptt we don't need the response
                 # maybe this speeds things up and avoids blocking states
-                return self.data_connection.recv(64) if expect_answer else True
+                recv = True
+                data = b''
+
+                while recv:
+                    try:
+
+                        data = self.data_connection.recv(64)
+
+                    except socket.timeout:
+                        recv = False
+
+                return data
+
+                # return self.data_connection.recv(64) if expect_answer else True
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
@@ -209,7 +226,7 @@ class radio:
             rf = data[0].decode("utf-8")
             if 'RPRT' not in rf:
                 try:
-                    self.rf = int(rf)
+                    self.rf = str(rf)
                 except ValueError:
                     self.rf = str(rf)
 
@@ -239,7 +256,7 @@ class radio:
             alc = data[0].decode("utf-8")
             if 'RPRT' not in alc:
                 try:
-                    self.alc = int(alc)
+                    self.alc = float(alc)
                 except ValueError:
                     self.alc = str(alc)
 
