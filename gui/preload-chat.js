@@ -162,8 +162,12 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {
-        document.getElementById('chatModuleMessage').setRangeText(event.detail.emoji.unicode)
+        var msg = document.getElementById('chatModuleMessage');
+        var picker =  document.getElementById("emojipickercontainer");
+        msg.setRangeText(event.detail.emoji.unicode)
         console.log(event.detail);
+        picker.style.display="none";
+        msg.focus();
     })
     document.getElementById("emojipickerbutton").addEventListener("click", () => {
         var element = document.getElementById("emojipickercontainer")
@@ -723,7 +727,13 @@ update_chat = function(obj) {
             } else {
                 var progressbar_bg = 'bg-primary';
             }
-
+           
+            //Sneak in low graphics mode if so enabled for progress bars
+            if (config.high_graphics.toString().toUpperCase() !="TRUE")
+            {
+                progressbar_bg += " disable-effects";
+                //console.log("Low graphics enabled for chat module");
+            }
             var new_message = `
 
             <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
@@ -748,7 +758,7 @@ update_chat = function(obj) {
                         </p>
                         
                        <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
-                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
 							 </div>
 							 
 
