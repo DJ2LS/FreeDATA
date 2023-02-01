@@ -547,10 +547,10 @@ class RF:
             if 0.001 > static.HAMLIB_ALC <= 0.8:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
                 self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
-            elif 0.99 > static.TX_AUDIO_LEVEL > 0.8:
+            elif 0.99 > static.HAMLIB_ALC > 0.8:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
                 self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
-            elif static.TX_AUDIO_LEVEL > 1.0:
+            elif static.HAMLIB_ALC > 1.0:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 2
                 self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
             else:
