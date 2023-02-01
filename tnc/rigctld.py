@@ -258,7 +258,7 @@ class radio:
                 try:
                     alc = float(alc)
                     if alc != 0.0:
-                        self.alc = float(alc)
+                        self.alc = alc
 
                 except ValueError:
                     self.alc = str(alc)
