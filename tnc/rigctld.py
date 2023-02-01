@@ -259,9 +259,10 @@ class radio:
                     alc = float(alc)
                     if alc != 0.0:
                         self.alc = alc
-
+                    else:
+                        self.alc = 0.0
                 except ValueError:
-                    self.alc = str(alc)
+                    self.alc = 0.0
 
             return self.alc
         except Exception:
