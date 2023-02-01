@@ -256,7 +256,10 @@ class radio:
             alc = data[0].decode("utf-8")
             if 'RPRT' not in alc:
                 try:
-                    self.alc = float(alc)
+                    alc = float(alc)
+                    if alc != 0.0:
+                        self.alc = float(alc)
+
                 except ValueError:
                     self.alc = str(alc)
 
