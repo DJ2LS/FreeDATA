@@ -57,7 +57,8 @@ class CONFIG:
         self.config['AUDIO'] = {'#Audio settings': None,
                                 'rx': data[3],
                                 'tx': data[4],
-                                'txaudiolevel': data[22]
+                                'txaudiolevel': data[22],
+                                'auto_tune': data[27]
 
                                 }
         self.config['RADIO'] = {'#Radio settings': None,

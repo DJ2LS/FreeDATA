@@ -656,6 +656,8 @@ def send_tnc_state():
         "rf_level": str(static.HAMLIB_RF),
         "strength": str(static.HAMLIB_STRENGTH),
         "alc": str(static.HAMLIB_ALC),
+        "audio_level": str(static.TX_AUDIO_LEVEL),
+        "audio_auto_tune": str(static.AUDIO_AUTO_TUNE),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),
         "bandwidth": str(static.HAMLIB_BANDWIDTH),
@@ -789,6 +791,7 @@ def process_daemon_commands(data):
             respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
             rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
             enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
+            enable_auto_tune = str(received_json["parameter"][0]["enable_auto_tune"])
 
             try:
                 # convert ssid list to python list
@@ -836,6 +839,7 @@ def process_daemon_commands(data):
                     rx_buffer_size,
                     enable_explorer,
                     ssid_list,
+                    enable_auto_tune,
                 ]
             )
             command_response("start_tnc", True)

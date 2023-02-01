@@ -158,6 +158,7 @@ class DAEMON:
                 # data[24] rx_buffer_size
                 # data[25] explorer
                 # data[26] ssid_list
+                # data[26] auto_tune
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -259,6 +260,8 @@ class DAEMON:
                     options.append("--ssid")
                     options.append(ssid_list)
 
+                    if data[27] == "True":
+                        options.append("--tune")
 
                     # safe data to config file
                     config.write_entire_config(data)
