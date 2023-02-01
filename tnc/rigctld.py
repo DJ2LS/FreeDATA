@@ -9,6 +9,7 @@ import socket
 import time
 import structlog
 import threading
+import static
 
 # set global hamlib version
 hamlib_version = 0
@@ -260,7 +261,7 @@ class radio:
                     if alc != 0.0:
                         self.alc = alc
                     else:
-                        self.alc = 0.0
+                        self.alc = static.HAMLIB_ALC
                 except ValueError:
                     self.alc = 0.0
 

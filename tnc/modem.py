@@ -544,21 +544,21 @@ class RF:
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
         if static.AUDIO_AUTO_TUNE:
-            if static.HAMLIB_ALC == 0.0 and static.TX_AUDIO_LEVEL <= 10:
-                static.TX_AUDIO_LEVEL = 30
+            if static.HAMLIB_ALC == 0.0:
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 30
             elif 0.0 < static.HAMLIB_ALC <= 0.8:
                 print("0.001 > static.HAMLIB_ALC <= 0.8")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
-                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
             elif 0.8 < static.HAMLIB_ALC < 0.99:
                 print("0.8 > static.HAMLIB_ALC <= 0.99")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
-                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
             elif 1.0 < static.HAMLIB_ALC:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 2
-                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
             else:
-                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
 
         txbuffer_48k = self.resampler.resample8_to_48(x)
