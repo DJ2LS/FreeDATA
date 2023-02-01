@@ -88,6 +88,7 @@ AUDIO_OUTPUT_DEVICE: int = -2
 AUDIO_RECORD: bool = False
 AUDIO_RECORD_FILE = ''
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
+AUDIO_AUTO_TUNE: bool = False
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]

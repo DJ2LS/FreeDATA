@@ -277,6 +277,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable sending tnc data to https://explorer.freedata.app",
     )
+
+    PARSER.add_argument(
+        "--tune",
+        dest="enable_audio_auto_tune",
+        action="store_true",
+        help="Enable auto tuning of audio level with ALC information form hamlib",
+    )
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -333,6 +340,8 @@ if __name__ == "__main__":
             static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
             static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
             static.ENABLE_EXPLORER = ARGS.enable_explorer
+            static.AUDIO_AUTO_TUNE = ARGS.enable_audio_auto_tune
+
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
 
@@ -382,10 +391,11 @@ if __name__ == "__main__":
             static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband'] in ["True", "true", True]
             static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
             static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
-            static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
+            static.TX_AUDIO_LEVEL = int(config['AUDIO']['txaudiolevel'])
             static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
             static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
             static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
+            static.AUDIO_AUTO_TUNE = config['AUDIO']['auto_tune'] in ["True", "true", True]
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
