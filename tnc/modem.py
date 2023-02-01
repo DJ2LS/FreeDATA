@@ -544,17 +544,17 @@ class RF:
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
         if static.AUDIO_AUTO_TUNE:
-            if 0.001 > static.HAMLIB_ALC <= 0.9:
+            if 0.001 > static.HAMLIB_ALC <= 0.8:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
-                self.log.debug("[MDM] AUDIO TUNE", level=static.TX_AUDIO_LEVEL, alc=static.HAMLIB_ALC)
-            elif 0.99 > static.TX_AUDIO_LEVEL > 0.9:
+                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
+            elif 0.99 > static.TX_AUDIO_LEVEL > 0.8:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
-                self.log.debug("[MDM] AUDIO TUNE", level=static.TX_AUDIO_LEVEL, alc=static.HAMLIB_ALC)
+                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
             elif static.TX_AUDIO_LEVEL > 1.0:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 2
-                self.log.debug("[MDM] AUDIO TUNE", level=static.TX_AUDIO_LEVEL, alc=static.HAMLIB_ALC)
+                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
             else:
-                self.log.debug("[MDM] AUDIO TUNE", level=static.TX_AUDIO_LEVEL, alc=static.HAMLIB_ALC)
+                self.log.debug("[MDM] AUDIO TUNE", level=str(static.TX_AUDIO_LEVEL), alc=str(static.HAMLIB_ALC))
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
 
         txbuffer_48k = self.resampler.resample8_to_48(x)
@@ -979,10 +979,11 @@ class RF:
             threading.Event().wait(0.1)
             static.HAMLIB_STATUS = self.hamlib.get_status()
             threading.Event().wait(0.1)
-            static.HAMLIB_ALC = self.hamlib.get_alc()
-            threading.Event().wait(0.1)
-            static.HAMLIB_RF = self.hamlib.get_level()
-            threading.Event().wait(0.1)
+            if static.TRANSMITTING:
+                static.HAMLIB_ALC = self.hamlib.get_alc()
+                threading.Event().wait(0.1)
+            #static.HAMLIB_RF = self.hamlib.get_level()
+            #threading.Event().wait(0.1)
             static.HAMLIB_STRENGTH = self.hamlib.get_strength()
 
             print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
