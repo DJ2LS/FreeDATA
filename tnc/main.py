@@ -319,14 +319,14 @@ if __name__ == "__main__":
                 static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
 
             static.PORT = ARGS.socket_port
-            static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
-            static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
-            static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-            static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
-            static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
-            static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
-            static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
-            static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
+            # static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
+            # static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
+            # static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
+            # static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
+            # static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
+            # static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
+            # static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
+            # static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
             static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
             static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
             static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
