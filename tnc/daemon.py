@@ -135,14 +135,14 @@ class DAEMON:
                 # data[2] mygrid
                 # data[3] rx_audio
                 # data[4] tx_audio
-                # data[5] devicename
-                # data[6] deviceport
-                # data[7] serialspeed
-                # data[8] pttprotocol
-                # data[9] pttport
-                # data[10] data_bits
-                # data[11] stop_bits
-                # data[12] handshake
+                # REMOVED - data[5] devicename
+                # REMOVED - data[6] deviceport
+                # REMOVED - data[7] serialspeed
+                # REMOVED - data[8] pttprotocol
+                # REMOVED - data[9] pttport
+                # REMOVED - data[10] data_bits
+                # REMOVED - data[11] stop_bits
+                # REMOVED - data[12] handshake
                 # data[13] radiocontrol
                 # data[14] rigctld_ip
                 # data[15] rigctld_port
@@ -188,29 +188,6 @@ class DAEMON:
                     # disabled mode
 
                     if data[13] != "disabled":
-                        options.append("--devicename")
-                        options.append(data[5])
-
-                        options.append("--deviceport")
-                        options.append(data[6])
-
-                        options.append("--serialspeed")
-                        options.append(data[7])
-
-                        options.append("--pttprotocol")
-                        options.append(data[8])
-
-                        options.append("--pttport")
-                        options.append(data[9])
-
-                        options.append("--data_bits")
-                        options.append(data[10])
-
-                        options.append("--stop_bits")
-                        options.append(data[11])
-
-                        options.append("--handshake")
-                        options.append(data[12])
 
                         options.append("--radiocontrol")
                         options.append(data[13])

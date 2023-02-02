@@ -770,17 +770,9 @@ def process_daemon_commands(data):
             mygrid = str(helpers.return_key_from_object("JN12ab", startparam,"mygrid"))
             rx_audio = str(helpers.return_key_from_object("0", startparam,"rx_audio"))
             tx_audio = str(helpers.return_key_from_object("0", startparam,"tx_audio"))
-            devicename = str(received_json["parameter"][0]["devicename"])
-            deviceport = str(received_json["parameter"][0]["deviceport"])
-            serialspeed = str(received_json["parameter"][0]["serialspeed"])
-            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-            pttport = str(received_json["parameter"][0]["pttport"])
-            data_bits = str(received_json["parameter"][0]["data_bits"])
-            stop_bits = str(received_json["parameter"][0]["stop_bits"])
-            handshake = str(received_json["parameter"][0]["handshake"])
-            radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
-            rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
-            rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
+            radiocontrol = str(helpers.return_key_from_object("disabled", startparam,"radiocontrol"))
+            rigctld_ip = str(helpers.return_key_from_object("127.0.0.1", startparam,"rigctld_ip"))
+            rigctld_port = str(helpers.return_key_from_object("4532", startparam,"rigctld_port"))
             enable_scatter = str(helpers.return_key_from_object("True", startparam,"enable_scatter"))
             enable_fft = str(helpers.return_key_from_object("True", startparam,"enable_fft"))
             enable_fsk = str(helpers.return_key_from_object("False", startparam,"enable_fsk"))
@@ -817,14 +809,6 @@ def process_daemon_commands(data):
                     mygrid,
                     rx_audio,
                     tx_audio,
-                    devicename,
-                    deviceport,
-                    serialspeed,
-                    pttprotocol,
-                    pttport,
-                    data_bits,
-                    stop_bits,
-                    handshake,
                     radiocontrol,
                     rigctld_ip,
                     rigctld_port,
@@ -851,14 +835,6 @@ def process_daemon_commands(data):
 
     if received_json["type"] == "get" and received_json["command"] == "test_hamlib":
         try:
-            devicename = str(received_json["parameter"][0]["devicename"])
-            deviceport = str(received_json["parameter"][0]["deviceport"])
-            serialspeed = str(received_json["parameter"][0]["serialspeed"])
-            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-            pttport = str(received_json["parameter"][0]["pttport"])
-            data_bits = str(received_json["parameter"][0]["data_bits"])
-            stop_bits = str(received_json["parameter"][0]["stop_bits"])
-            handshake = str(received_json["parameter"][0]["handshake"])
             radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
@@ -866,14 +842,6 @@ def process_daemon_commands(data):
             DAEMON_QUEUE.put(
                 [
                     "TEST_HAMLIB",
-                    devicename,
-                    deviceport,
-                    serialspeed,
-                    pttprotocol,
-                    pttport,
-                    data_bits,
-                    stop_bits,
-                    handshake,
                     radiocontrol,
                     rigctld_ip,
                     rigctld_port,
