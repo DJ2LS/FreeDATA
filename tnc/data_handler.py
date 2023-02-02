@@ -1307,6 +1307,8 @@ class DATA:
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
 
             )
+            # finally do an arq cleanup
+            self.arq_cleanup()
 
         else:
             self.send_data_to_socket_queue(
@@ -1327,8 +1329,6 @@ class DATA:
             )
             self.stop_transmission()
 
-        # Last but not least do a state cleanup
-        self.arq_cleanup()
         if TESTMODE:
             # Quit after transmission
             self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
