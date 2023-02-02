@@ -251,9 +251,13 @@ class DATA:
                     command=data[0],
                     status="queued",
                 )
-            # now stay in while loop until state released
-            while static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
-                threading.Event().wait(0.01)
+
+                # now stay in while loop until state released
+                while static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
+                    threading.Event().wait(0.01)
+
+                # and finally sleep some time
+                threading.Event().wait(1.0)
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
