@@ -284,6 +284,13 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable auto tuning of audio level with ALC information form hamlib",
     )
+
+    PARSER.add_argument(
+        "--stats",
+        dest="enable_stats",
+        action="store_true",
+        help="Enable publishing stats to https://freedata.app",
+    )
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -341,6 +348,7 @@ if __name__ == "__main__":
             static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
             static.ENABLE_EXPLORER = ARGS.enable_explorer
             static.AUDIO_AUTO_TUNE = ARGS.enable_audio_auto_tune
+            static.ENABLE_STATS = ARGS.enable_stats
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -396,6 +404,7 @@ if __name__ == "__main__":
             static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
             static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
             static.AUDIO_AUTO_TUNE = config['AUDIO']['auto_tune'] in ["True", "true", True]
+            static.ENABLE_STATS = config['TNC']['stats'] in ["True", "true", True]
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))

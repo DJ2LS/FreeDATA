@@ -23,6 +23,7 @@ import numpy as np
 import sock
 import static
 import structlog
+import stats
 import ujson as json
 from codec2 import FREEDV_MODE
 from exceptions import NoCallsign
@@ -36,6 +37,7 @@ class DATA:
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("DATA")
+    stats = stats.stats()
 
     def __init__(self) -> None:
         # Initial call sign. Will be overwritten later
@@ -1307,6 +1309,8 @@ class DATA:
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
 
             )
+            if static.ENABLE_STATS:
+                stats.push()
             # finally do an arq cleanup
             self.arq_cleanup()
 
@@ -1327,6 +1331,10 @@ class DATA:
                 "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
             )
+
+            if static.ENABLE_STATS:
+                stats.push()
+
             self.stop_transmission()
 
         if TESTMODE:

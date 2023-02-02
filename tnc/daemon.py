@@ -158,7 +158,8 @@ class DAEMON:
                 # data[24] rx_buffer_size
                 # data[25] explorer
                 # data[26] ssid_list
-                # data[26] auto_tune
+                # data[27] auto_tune
+                # data[28] stats
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -253,7 +254,7 @@ class DAEMON:
                     if data[25] == "True":
                         options.append("--explorer")
 
-                    # wen want our ssid like this: --ssid 1 2 3 4
+                    # we want our ssid like this: --ssid 1 2 3 4
                     ssid_list = ""
                     for i in data[26]:
                         ssid_list += str(i) + " "
@@ -262,6 +263,9 @@ class DAEMON:
 
                     if data[27] == "True":
                         options.append("--tune")
+
+                    if data[28] == "True":
+                        options.append("--stats")
 
                     # safe data to config file
                     config.write_entire_config(data)

@@ -14,6 +14,7 @@ from enum import Enum
 VERSION = "0.7.2-alpha.1-exp"
 
 ENABLE_EXPLORER = False
+ENABLE_STATS = False
 
 
 # DAEMON
@@ -133,6 +134,7 @@ RX_BUFFER_SIZE: int = 16
 HEARD_STATIONS: list = []
 
 # ------- INFO MESSAGE BUFFER
+# TODO: This can be removed?
 INFO: list = []
 
 # ------- CODEC2 SETTINGS
