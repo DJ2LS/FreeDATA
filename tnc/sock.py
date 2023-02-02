@@ -787,19 +787,19 @@ def process_daemon_commands(data):
             enable_stats = str(helpers.return_key_from_object("False", startparam,"enable_stats"))
             try:
                 # convert ssid list to python list
-                ssid_list = str(received_json["parameter"][0]["ssid_list"])
+                ssid_list = str(helpers.return_key_from_object("0, 1, 2, 3, 4, 5, 6, 7, 8, 9", startparam, "ssid_list"))
                 ssid_list = ssid_list.replace(" ", "")
                 ssid_list = ssid_list.split(",")
                 # convert str to int
                 ssid_list = list(map(int, ssid_list))
             except KeyError:
-                ssid_list = [0]
+                ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
             # print some debugging parameters
-            for item in received_json["parameter"][0]:
+            for item in startparam:
                 log.debug(
                     f"[SCK] TNC Startup Config : {item}",
-                    value=received_json["parameter"][0][item],
+                    value=startparam[item],
                 )
 
             DAEMON_QUEUE.put(

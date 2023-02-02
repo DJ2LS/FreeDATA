@@ -222,14 +222,6 @@ class RF:
 
         self.hamlib = rig.radio()
         self.hamlib.open_rig(
-            devicename=static.HAMLIB_DEVICE_NAME,
-            deviceport=static.HAMLIB_DEVICE_PORT,
-            hamlib_ptt_type=static.HAMLIB_PTT_TYPE,
-            serialspeed=static.HAMLIB_SERIAL_SPEED,
-            pttport=static.HAMLIB_PTT_PORT,
-            data_bits=static.HAMLIB_DATA_BITS,
-            stop_bits=static.HAMLIB_STOP_BITS,
-            handshake=static.HAMLIB_HANDSHAKE,
             rigctld_ip=static.HAMLIB_RIGCTLD_IP,
             rigctld_port=static.HAMLIB_RIGCTLD_PORT,
         )

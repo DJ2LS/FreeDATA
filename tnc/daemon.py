@@ -130,7 +130,7 @@ class DAEMON:
                 # increase length of list for storing additional
                 # parameters starting at entry 64
                 data = data[:64] + [None] * (64 - len(data))
-
+                print(data)
                 # data[1] mycall
                 # data[2] mygrid
                 # data[3] rx_audio
@@ -161,14 +161,6 @@ class DAEMON:
                 # data[28] stats
                 # TODO: We need to remove 5-12 and adjust the list number for other paramters
                 # This is only a dirty fix
-                data[5] = False
-                data[6] = False
-                data[7] = False
-                data[8] = False
-                data[9] = False
-                data[10] = False
-                data[11] = False
-                data[12] = False
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -197,60 +189,57 @@ class DAEMON:
                     # this should hopefully avoid a ton of problems if we are just running in
                     # disabled mode
 
-                    if data[13] != "disabled":
+                    if data[5] != "disabled":
 
                         options.append("--radiocontrol")
-                        options.append(data[13])
+                        options.append(data[5])
 
-                        if data[13] == "rigctld":
+                        if data[5] == "rigctld":
                             options.append("--rigctld_ip")
-                            options.append(data[14])
+                            options.append(data[6])
 
                             options.append("--rigctld_port")
-                            options.append(data[15])
+                            options.append(data[7])
 
-                    if data[16] == "True":
+                    if data[8] == "True":
                         options.append("--scatter")
 
-                    if data[17] == "True":
+                    if data[9] == "True":
                         options.append("--fft")
 
-                    if data[18] == "True":
+                    if data[10] == "True":
                         options.append("--500hz")
 
                     options.append("--tuning_range_fmin")
-                    options.append(data[19])
+                    options.append(data[11])
 
                     options.append("--tuning_range_fmax")
-                    options.append(data[20])
+                    options.append(data[12])
 
                     # overriding FSK mode
-                    # if data[21] == "True":
+                    # if data[13] == "True":
                     #    options.append("--fsk")
 
                     options.append("--tx-audio-level")
-                    options.append(data[22])
+                    options.append(data[14])
 
-                    if data[23] == "True":
+                    if data[15] == "True":
                         options.append("--qrv")
 
                     options.append("--rx-buffer-size")
-                    options.append(data[24])
+                    options.append(data[16])
 
-                    if data[25] == "True":
+                    if data[17] == "True":
                         options.append("--explorer")
 
-                    # we want our ssid like this: --ssid 1 2 3 4
-                    ssid_list = ""
-                    for i in data[26]:
-                        ssid_list += str(i) + " "
                     options.append("--ssid")
-                    options.append(ssid_list)
+                    for i in data[18]:
+                        options.append(str(i))
 
-                    if data[27] == "True":
+                    if data[19] == "True":
                         options.append("--tune")
 
-                    if data[28] == "True":
+                    if data[20] == "True":
                         options.append("--stats")
 
                     # safe data to config file

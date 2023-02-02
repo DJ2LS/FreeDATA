@@ -478,6 +478,7 @@ def safe_execute(default, exception, function, *args):
 
 
 def return_key_from_object(default, obj, key):
+
     try:
         return obj[key]
     except KeyError:
