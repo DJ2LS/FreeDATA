@@ -159,6 +159,16 @@ class DAEMON:
                 # data[26] ssid_list
                 # data[27] auto_tune
                 # data[28] stats
+                # TODO: We need to remove 5-12 and adjust the list number for other paramters
+                # This is only a dirty fix
+                data[5] = False
+                data[6] = False
+                data[7] = False
+                data[8] = False
+                data[9] = False
+                data[10] = False
+                data[11] = False
+                data[12] = False
 
                 if data[0] == "STARTTNC":
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -301,26 +311,12 @@ class DAEMON:
                         #os.kill(static.TNCPROCESS, signal.SIGKILL)
                         static.TNCSTARTED = False
                 """
-                # data[1] devicename
-                # data[2] deviceport
-                # data[3] serialspeed
-                # data[4] pttprotocol
-                # data[5] pttport
-                # data[6] data_bits
-                # data[7] stop_bits
-                # data[8] handshake
+
                 # data[9] radiocontrol
                 # data[10] rigctld_ip
                 # data[11] rigctld_port
                 if data[0] == "TEST_HAMLIB":
-                    devicename = data[1]
-                    deviceport = data[2]
-                    serialspeed = data[3]
-                    pttprotocol = data[4]
-                    pttport = data[5]
-                    data_bits = data[6]
-                    stop_bits = data[7]
-                    handshake = data[8]
+
                     radiocontrol = data[9]
                     rigctld_ip = data[10]
                     rigctld_port = data[11]

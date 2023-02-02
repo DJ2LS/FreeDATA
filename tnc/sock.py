@@ -879,7 +879,6 @@ def send_daemon_state():
             "command": "daemon_state",
             "daemon_state": [],
             "python_version": str(python_version),
-            "hamlib_version": static.HAMLIB_VERSION,
             "input_devices": static.AUDIO_INPUT_DEVICES,
             "output_devices": static.AUDIO_OUTPUT_DEVICES,
             "serial_devices": static.SERIAL_DEVICES,
