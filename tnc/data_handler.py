@@ -2073,7 +2073,6 @@ class DATA:
             # open_session frame and can still hear us.
             self.close_session()
 
-            self.arq_cleanup()
             return False
 
         # Shouldn't get here...
