@@ -32,7 +32,6 @@ import ujson as json
 import config
 
 
-
 # signal handler for closing application
 def signal_handler(sig, frame):
     """
@@ -269,8 +268,6 @@ class DAEMON:
 
                     # safe data to config file
                     config.write_entire_config(data)
-                    import os, sys
-                    import sys
 
 
 

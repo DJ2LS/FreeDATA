@@ -462,3 +462,23 @@ def snr_from_bytes(snr):
     snr = int.from_bytes(snr, byteorder='big', signed=True)
     snr = snr / 10
     return snr
+
+
+def safe_execute(default, exception, function, *args):
+    """
+    https://stackoverflow.com/a/36671208
+    from json import loads
+    safe_execute("Oh no, explosions occurred!", TypeError, loads, None)
+
+    """
+    try:
+        return function(*args)
+    except exception:
+        return default
+
+
+def return_key_from_object(default, obj, key):
+    try:
+        return obj[key]
+    except KeyError:
+        return default

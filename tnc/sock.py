@@ -764,10 +764,12 @@ def process_daemon_commands(data):
         and not static.TNCSTARTED
     ):
         try:
-            mycall = str(received_json["parameter"][0]["mycall"])
-            mygrid = str(received_json["parameter"][0]["mygrid"])
-            rx_audio = str(received_json["parameter"][0]["rx_audio"])
-            tx_audio = str(received_json["parameter"][0]["tx_audio"])
+            startparam = received_json["parameter"][0]
+
+            mycall = str(helpers.return_key_from_object("AA0AA", startparam,"mycall"))
+            mygrid = str(helpers.return_key_from_object("JN12ab", startparam,"mygrid"))
+            rx_audio = str(helpers.return_key_from_object("0", startparam,"rx_audio"))
+            tx_audio = str(helpers.return_key_from_object("0", startparam,"tx_audio"))
             devicename = str(received_json["parameter"][0]["devicename"])
             deviceport = str(received_json["parameter"][0]["deviceport"])
             serialspeed = str(received_json["parameter"][0]["serialspeed"])
@@ -779,20 +781,18 @@ def process_daemon_commands(data):
             radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
-            enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
-            enable_fft = str(received_json["parameter"][0]["enable_fft"])
-            enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
-            low_bandwidth_mode = str(
-                received_json["parameter"][0]["low_bandwidth_mode"]
-            )
-            tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
-            tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
-            tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
-            respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
-            rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
-            enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
-            enable_auto_tune = str(received_json["parameter"][0]["enable_auto_tune"])
-
+            enable_scatter = str(helpers.return_key_from_object("True", startparam,"enable_scatter"))
+            enable_fft = str(helpers.return_key_from_object("True", startparam,"enable_fft"))
+            enable_fsk = str(helpers.return_key_from_object("False", startparam,"enable_fsk"))
+            low_bandwidth_mode = str(helpers.return_key_from_object("False", startparam,"low_bandwidth_mode"))
+            tuning_range_fmin = str(helpers.return_key_from_object("-50", startparam,"tuning_range_fmin"))
+            tuning_range_fmax = str(helpers.return_key_from_object("50", startparam,"tuning_range_fmax"))
+            tx_audio_level = str(helpers.return_key_from_object("100", startparam,"tx_audio_level"))
+            respond_to_cq = str(helpers.return_key_from_object("False", startparam,"respond_to_cq"))
+            rx_buffer_size = str(helpers.return_key_from_object("16", startparam,"rx_buffer_size"))
+            enable_explorer = str(helpers.return_key_from_object("False", startparam,"enable_explorer"))
+            enable_auto_tune = str(helpers.return_key_from_object("False", startparam,"enable_auto_tune"))
+            enable_stats = str(helpers.return_key_from_object("False", startparam,"enable_stats"))
             try:
                 # convert ssid list to python list
                 ssid_list = str(received_json["parameter"][0]["ssid_list"])
@@ -840,6 +840,7 @@ def process_daemon_commands(data):
                     enable_explorer,
                     ssid_list,
                     enable_auto_tune,
+                    enable_stats
                 ]
             )
             command_response("start_tnc", True)
@@ -936,3 +937,9 @@ def command_response(command, status):
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
 
+
+def try_except(string):
+    try:
+        return string
+    except Exception:
+        return False
