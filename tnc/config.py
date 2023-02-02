@@ -51,7 +51,7 @@ class CONFIG:
         self.config['STATION'] = {'#Station settings': None,
                                   'mycall': data[1],
                                   'mygrid': data[2],
-                                  'ssid_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[26])
+                                  'ssid_list': list(data[18])# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[18])
                                   }
 
         self.config['AUDIO'] = {'#Audio settings': None,
@@ -75,7 +75,7 @@ class CONFIG:
                               'qrv': data[15],
                               'rxbuffersize': data[16],
                               'explorer': data[17],
-                              'stats': data[18]
+                              'stats': data[19]
                               }
         try:
             with open(self.config_name, 'w') as configfile:
