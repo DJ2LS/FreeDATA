@@ -42,6 +42,10 @@ class radio:
         """ """
         return None
 
+    def get_strength(self):
+        """ """
+        return None
+
     def set_bandwidth(self):
         """ """
         return None
