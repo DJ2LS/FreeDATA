@@ -42,7 +42,7 @@ class radio:
     def open_rig(
             self,
             rigctld_ip,
-            rigctld_port,
+            rigctld_port
     ):
         """
 
