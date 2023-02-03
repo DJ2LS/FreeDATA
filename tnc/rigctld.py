@@ -242,10 +242,7 @@ class radio:
             if 'RPRT' not in alc:
                 try:
                     alc = float(alc)
-                    if alc != 0.0:
-                        self.alc = alc
-                    else:
-                        self.alc = static.HAMLIB_ALC
+                    self.alc = alc if alc != 0.0 else static.HAMLIB_ALC
                 except ValueError:
                     self.alc = 0.0
 

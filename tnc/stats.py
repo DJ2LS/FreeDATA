@@ -20,6 +20,7 @@ log = structlog.get_logger("stats")
 class stats():
     def __init__(self):
         self.explorer_url = "https://api.freedata.app/stats.php"
+
     def push(self):
         """
         $callsign = $json["callsign"];
@@ -40,24 +41,25 @@ class stats():
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': str(static.MYCALLSIGN, "utf-8"),
-            'dxcallsign': str(static.DXCALLSIGN, "utf-8"),
+            #'callsign': str(static.MYCALLSIGN, "utf-8"),
+            #'dxcallsign': str(static.DXCALLSIGN, "utf-8"),
             'gridsquare': str(static.MYGRID, "utf-8"),
             'dxgridsquare': str(static.DXGRID, "utf-8"),
             'frequency': 0 if static.HAMLIB_FREQUENCY is None else static.HAMLIB_FREQUENCY,
             'avgstrength': 0,
             'avgsnr': 0,
-            'bytesperminute': str(static.ARQ_BYTES_PER_MINUTE, "utf-8"),
-            'filesize': str(static.TOTAL_BYTES, "utf-8"),
-            'compressionfactor': str(static.ARQ_COMPRESSION_FACTOR, "utf-8"),
+            'bytesperminute': static.ARQ_BYTES_PER_MINUTE,
+            'filesize': static.TOTAL_BYTES,
+            'compressionfactor': static.ARQ_COMPRESSION_FACTOR,
             'nacks': 0,
             'crcerror': 0,
             'duration': 0,
             'percentage': 0,
-            'version': str(static.VERSION, "utf-8")
+            'version': static.VERSION
         }
 
         station_data = json.dumps(station_data)
+        print(station_data)
         try:
             response = requests.post(self.explorer_url, json=station_data, headers=headers)
             log.info("[STATS] push", code=response.status_code)
