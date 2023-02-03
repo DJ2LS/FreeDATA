@@ -975,6 +975,7 @@ class DATA:
                             dxgrid=static.DXGRID,
                             data=base64_data
                         )
+
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -986,6 +987,10 @@ class DATA:
                     dxgrid=str(static.DXGRID, "UTF-8"),
                     data=base64_data,
                 )
+
+                if static.ENABLE_STATS:
+                    duration = time.time() - self.rx_start_of_transmission
+                    stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
 
                 self.log.info(
                     "[TNC] ARQ | RX | SENDING DATA FRAME ACK",
@@ -1032,6 +1037,8 @@ class DATA:
                     data=data_frame,
 
                 )
+                if static.ENABLE_STATS:
+                    stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
                 self.log.info("[TNC] ARQ | RX | Sending NACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_nack_frame(snr)
@@ -1309,8 +1316,7 @@ class DATA:
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
 
             )
-            if static.ENABLE_STATS:
-                stats.push()
+
             # finally do an arq cleanup
             self.arq_cleanup()
 
@@ -1332,8 +1338,6 @@ class DATA:
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
             )
 
-            if static.ENABLE_STATS:
-                stats.push()
 
             self.stop_transmission()
 
