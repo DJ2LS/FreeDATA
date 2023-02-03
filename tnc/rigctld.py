@@ -41,28 +41,12 @@ class radio:
 
     def open_rig(
             self,
-            devicename,
-            deviceport,
-            hamlib_ptt_type,
-            serialspeed,
-            pttport,
-            data_bits,
-            stop_bits,
-            handshake,
             rigctld_ip,
             rigctld_port,
     ):
         """
 
         Args:
-          devicename:
-          deviceport:
-          hamlib_ptt_type:
-          serialspeed:
-          pttport:
-          data_bits:
-          stop_bits:
-          handshake:
           rigctld_ip:
           rigctld_port:
 
