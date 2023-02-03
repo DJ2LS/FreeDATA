@@ -1902,45 +1902,27 @@ var speedChartOptions = {
         document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
     }
 
+   let bcn = document.getElementById("startBeacon");
 
-
-    // BEACON STATE
-    /*
-    if (arg.beacon_state == 'True') {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
-        document.getElementById("startBeacon").disabled = true;
-        document.getElementById("beaconInterval").disabled = true;
-        document.getElementById("stopBeacon").disabled = false;
-    } else if (arg.beacon_state == 'False') {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-        document.getElementById("startBeacon").disabled = false;
-        document.getElementById("beaconInterval").disabled = false;
-        document.getElementById("stopBeacon").disabled = true;
-    } else {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-        document.getElementById("startBeacon").disabled = false;
-        document.getElementById("stopBeacon").disabled = true;
-        document.getElementById("beaconInterval").disabled = false;
-    }
-    */
     switch (arg.beacon_state){
         case 'True':
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
-            document.getElementById("startBeacon").disabled = true;
+            if (config.high_graphics.toUpperCase() == "TRUE") {
+               bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
+                document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
+            } else {
+                bcn.className = "btn btn-sm btn-success";
+                document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1 text-success text-uppercase");
+            }
+            bcn.disabled = true;
             document.getElementById("beaconInterval").disabled = true;
             document.getElementById("stopBeacon").disabled = false;
             break;
-        case 'False':
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-            document.getElementById("startBeacon").disabled = false;
-            document.getElementById("beaconInterval").disabled = false;
-            document.getElementById("stopBeacon").disabled = true;
-            break;
         default:
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-            document.getElementById("startBeacon").disabled = false;
-            document.getElementById("stopBeacon").disabled = true;
+            document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
+            bcn.className = "btn btn-sm btn-success";
+            bcn.disabled = false;
             document.getElementById("beaconInterval").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
             break;
     }
     // dbfs
@@ -2954,11 +2936,13 @@ function set_CPU_mode() {
         toggleClass("transmission_progress","progress-bar-striped",true);
     }
 }
-//Teomporarily disable a button with timeout
+//Temporarily disable a button with timeout
 function pauseButton(btn, timems) {
     btn.disabled = true;
     var curText = btn.innerHTML;
-    btn.innerHTML = "<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\">";
+    if (config.high_graphics.toUpperCase() == "TRUE") {
+        btn.innerHTML = "<span class=\"spinner-grow spinner-grow-sm force-gpu\" role=\"status\" aria-hidden=\"true\">";
+    }
   setTimeout(()=>{
     btn.innerHTML=curText;
     btn.disabled = false;}, timems)
