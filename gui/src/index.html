@@ -814,7 +814,7 @@
 								<div class="col-md-auto">
 									<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Start or stop the Beacon mode. You can also set the interval. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses.">
 										<button type="button" id="startBeacon" class="btn btn-sm btn-success"> <i class="bi bi-arrow-clockwise" style="font-size: 0.8rem; color: white;"></i> </button>
-										<div class="input-group-text p-1">Beacon</div>
+										<div id="txtBeacon" class="input-group-text p-1">Beacon</div>
 										<select class="form-select form-select-sm" aria-label=".form-select-sm" id="beaconInterval" style="width:6rem">
 											<option value="5">5s</option>
 											<option selected value="10">10s</option>
@@ -1214,6 +1214,15 @@
 							<option value="6">Binary</option>
 						</select>
 					</div>
+					<div class="input-group  input-group-sm mb-1">
+						<label class="input-group-text w-50">Enable Fancy GUI</label>
+						<label class="input-group-text bg-white w-50">
+							<div class="form-check form-switch form-check-inline">
+								<input class="form-check-input" type="checkbox" id="GraphicsSwitch">
+								<label class="form-check-label" for="GraphicsSwitch">Higher CPU Usage</label>
+							</div>
+						</label>
+					</div>
 					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50" id="basic-addon1">Update channel</span>
 						<select class="form-select form-select-sm w-50" id="update_channel_selector">
 							<option value="latest">stable</option>
@@ -1313,15 +1322,6 @@
 								<option value="512">512</option>
 								<option value="1024">1024</option>
 							</select>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Fancy GUI</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="GraphicsSwitch">
-								<label class="form-check-label" for="GraphicsSwitch">Higher CPU Usage</label>
-							</div>
 						</label>
 					</div>
 				</div>
