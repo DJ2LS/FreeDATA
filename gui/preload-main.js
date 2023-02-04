@@ -1484,14 +1484,6 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             };
             ipcRenderer.send('request-show-chat-window', Data);    
     })
-
-
-    
-    
-    
-    
-
-  
 })
 
 //Listen for events caused by tnc 'tnc-message's
@@ -1563,9 +1555,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // DATA STATE
     global.rxBufferLengthTnc = arg.rx_buffer_length
 
-
     // START OF SCATTER CHART
-
     const scatterConfig = {
                 plugins: {
                     legend: {
@@ -1574,7 +1564,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     tooltip: {
                         enabled: false
                     },
-                    
                     annotation: {
                         annotations: {
                             line1: {
@@ -1593,9 +1582,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                             }
                          }   
                      },   
-        
-        
-        
                 },
                 animations: false,
                 scales: {
@@ -1610,7 +1596,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                         }            
                     },
                     y: {
-                    
                         display: true,
                         min: -80,
                         max: 80,
@@ -1654,7 +1639,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // END OF SCATTER CHART
 
     // START OF SPEED CHART
-
     var speedDataTime = []
 
     if (typeof(arg.speed_list) == 'undefined') {
@@ -1683,7 +1667,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         speedDataSnr.push(arg.speed_list[i].snr)
     }
 
-
     var speedChartConfig = {
       type: 'line',
     };
@@ -1710,7 +1693,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 yAxisID: 'SPEED',
             }
         ],
-
     };
 
 var speedChartOptions = {
@@ -1748,19 +1730,9 @@ var speedChartOptions = {
             global.speedChart.update();
         }
     }
-
     // END OF SPEED CHART
 
     // PTT STATE
-    /*
-    if (arg.ptt_state == 'True') {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
-    } else if (arg.ptt_state == 'False') {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-success";
-    } else {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
-    }
-    */
     switch (arg.ptt_state){
         case 'True':
             document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
@@ -1771,33 +1743,16 @@ var speedChartOptions = {
         default:
             document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
             break;
-
     }
+
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
         document.getElementById("startStopRecording").textContent = "Stop Rec"
-    } else if (arg.ptt_state == 'False') {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").textContent = "Start Rec"
     } else {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
         document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
     // CHANNEL BUSY STATE
-    /*
-    if (arg.channel_busy == 'True') {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
-
-    } else if (arg.channel_busy == 'False') {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-success";
-
-    } else {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
-
-    }
-    */
     switch (arg.channel_busy){
         case 'True':
             document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
@@ -1811,19 +1766,6 @@ var speedChartOptions = {
     }
 
     // BUSY STATE
-    /*
-    if (arg.busy_state == 'BUSY') {
-        document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-        document.getElementById("startTransmission").disabled = true;
-        //document.getElementById("stopTransmission").disabled = false;
-    } else if (arg.busy_state == 'IDLE') {
-        document.getElementById("busy_state").className = "btn btn-sm btn-success";
-    } else {
-        document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
-        document.getElementById("startTransmission").disabled = true;
-        //document.getElementById("stopTransmission").disabled = false;
-    }
-    */
     switch(arg.busy_state){
         case 'BUSY':
             document.getElementById("busy_state").className = "btn btn-sm btn-danger";
@@ -1839,30 +1781,9 @@ var speedChartOptions = {
     }
 
     // ARQ STATE
-    /*
-    if (arg.arq_state == 'True') {
-        document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-        //document.getElementById("startTransmission").disabled = true;
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = false;
-    } else if (arg.arq_state == 'False') {
-        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = true;
-    } else {
-        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-        //document.getElementById("startTransmission").disabled = true;
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = false;
-    }
-    */
     switch (arg.arq_state){
         case 'True':
             document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-            document.getElementById("startTransmission").disabled = false;
-            break;
-        case 'False':
-            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
             document.getElementById("startTransmission").disabled = false;
             break;
         default:
@@ -1870,25 +1791,11 @@ var speedChartOptions = {
             document.getElementById("startTransmission").disabled = false;
             break;
     }
-    // ARQ SESSION
-    /*
-    if (arg.arq_session == 'True') {
-        document.getElementById("arq_session").className = "btn btn-sm btn-warning";
 
-    } else if (arg.arq_session == 'False') {
-        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-
-    } else {
-        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-
-    }
-    */
+ // ARQ SESSION
     switch (arg.arq_session){
         case 'True':
             document.getElementById("arq_session").className = "btn btn-sm btn-warning";
-            break;
-        case 'False':
-            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
             break;
         default:
             document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
@@ -1902,12 +1809,13 @@ var speedChartOptions = {
         document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
     }
 
-   let bcn = document.getElementById("startBeacon");
+    // BEACON
+    let bcn = document.getElementById("startBeacon");
 
     switch (arg.beacon_state){
         case 'True':
             if (config.high_graphics.toUpperCase() == "TRUE") {
-               bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
+                bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
             } else {
                 bcn.className = "btn btn-sm btn-success";
@@ -1950,23 +1858,6 @@ var speedChartOptions = {
     document.getElementById("bandwidth").textContent = arg.bandwidth;
 
     // SET SPEED LEVEL
-    /*
-    if(arg.speed_level >= 0) {
-        document.getElementById("speed_level").className = "bi bi-reception-1";
-    }
-    if(arg.speed_level >= 1) {
-        document.getElementById("speed_level").className = "bi bi-reception-2";
-    }
-    if(arg.speed_level >= 2) {
-        document.getElementById("speed_level").className = "bi bi-reception-3";
-    }
-    if(arg.speed_level >= 3) {
-        document.getElementById("speed_level").className = "bi bi-reception-4";
-    }
-    if(arg.speed_level >= 4) {
-        document.getElementById("speed_level").className = "bi bi-reception-4";
-    }
-    */
     switch (arg.speed_level){
         case '0':
             document.getElementById("speed_level").className = "bi bi-reception-1";
@@ -1981,8 +1872,6 @@ var speedChartOptions = {
             document.getElementById("speed_level").className = "bi bi-reception-4";
             break;
     }
-    
-    
     
     // SET TOTAL BYTES
     if (typeof(arg.total_bytes) == 'undefined') {
@@ -2022,13 +1911,10 @@ var speedChartOptions = {
             var myGrid = document.getElementById("myGrid").value;
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-                //document.getElementById("pingDistance").innerHTML = dist;
                 document.getElementById("dataModalPingDistance").textContent = dist;
             } catch {
-                //document.getElementById("pingDistance").innerHTML = '---';
                 document.getElementById("dataModalPingDistance").textContent = '---';
             }
-            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
             document.getElementById("dataModalPingDB").textContent = arg.stations[i]['snr'];
         }
 
@@ -2082,17 +1968,7 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-        /*
-        if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
-            dataTypeText.innerText = 'DATA-C';
-            dataType.appendChild(dataTypeText);
-        }
-        
-        if(arg.stations[i]['datatype'] == 'SESSION-HB'){
-            dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
-            dataType.appendChild(dataTypeText);
-        }
-        */
+
         switch (arg.stations[i]['datatype']){
             case 'DATA-CHANNEL':
                 dataTypeText.innerText = 'DATA-C';
@@ -2103,28 +1979,7 @@ var speedChartOptions = {
                 dataType.appendChild(dataTypeText);
                 break;
         }
-        /*
-        if (dataTypeText.innerText == 'CQ CQ CQ') {
-            row.classList.add("table-success");
-        }
 
-        if (dataTypeText.innerText == 'DATA-C') {
-            dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
-            row.classList.add("table-warning");
-        }
-
-        if (dataTypeText.innerText == 'BEACON') {
-            row.classList.add("table-light");
-        }
-
-        if (dataTypeText.innerText == 'PING') {
-            row.classList.add("table-info");
-        }
-
-        if (dataTypeText.innerText == 'PING-ACK') {
-            row.classList.add("table-primary");
-        }
-        */
         switch (dataTypeText.innerText){
             case 'CQ CQ CQ':
                 row.classList.add("table-success");
