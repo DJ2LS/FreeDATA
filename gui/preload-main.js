@@ -1486,6 +1486,33 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     })
 })
 
+//Listen for events caused by tnc 'tnc-message' receiving
+ipcRenderer.on('action-update-reception-status', (event, arg) => {
+    var data =arg["data"][0];
+    //var txprog = document.getElementById("transmission_progress")
+   
+    ipcRenderer.send('request-show-electron-progressbar',data.percent);
+    // SET BYTES PER MINUTE
+    if (typeof(data.bytesperminute) == 'undefined') {
+        var arq_bytes_per_minute = 0;
+    } else {
+        var arq_bytes_per_minute = data.bytesperminute;
+    }
+    document.getElementById("bytes_per_min_rx").textContent = arq_bytes_per_minute;
+    
+    // SET BYTES PER MINUTE COMPRESSED
+    var compress = data.compression;
+    if (isNaN(compress)) {
+        compress = 1;
+    }
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
+    document.getElementById("bytes_per_min_rx").setAttribute('data-bs-original-title',"raw data rate modem in bytes per minute (" + arq_bytes_per_minute_compressed + " compressed)");
+    if (!(typeof(data.dxcallsign) == 'undefined')) {
+        //console.log("Received dxcallsign(rx-status):  ", data.dxcallsign);
+        document.getElementById("txtConnectedWith").textContent=data.dxcallsign;
+    }
+});
+
 //Listen for events caused by tnc 'tnc-message's
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     var data =arg["data"][0];
@@ -1530,7 +1557,11 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
         compress = 1;
     }
     var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
-    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
+    document.getElementById("bytes_per_min").setAttribute('data-bs-original-title',"raw data rate modem in bytes per minute (" + arq_bytes_per_minute_compressed + " compressed)");
+    if (!(typeof(data.dxcallsign) == 'undefined')) {
+        //console.log("Received dxcallsign(tx-status):  ", data.dxcallsign);
+        document.getElementById("txtConnectedWith").textContent=data.dxcallsign;
+    }
     
 });
 
@@ -1792,15 +1823,25 @@ var speedChartOptions = {
             break;
     }
 
- // ARQ SESSION
-    switch (arg.arq_session){
-        case 'True':
-            document.getElementById("arq_session").className = "btn btn-sm btn-warning";
-            break;
-        default:
-            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-            break;
-    }
+     // ARQ SESSION
+     switch (arg.arq_session){
+         case 'True':
+             document.getElementById("arq_session").className = "btn btn-sm btn-warning";
+             break;
+         default:
+             document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+             break;
+     }
+
+     if (arg.arq_state == 'True' || arg.arq_session == 'True') {
+        toggleClass("spnConnectedWith","text-success",true);
+        if (!(typeof(arg.dxcallsign) == 'undefined')) {
+            //console.log("Received dxcallsign:  " + arg.dxcallsign);
+            document.getElementById("txtConnectedWith").textContent=arg.dxcallsign;
+        }
+     } else {
+        toggleClass("spnConnectedWith","text-success",false);
+     }
 
     // HAMLIB STATUS
     if (arg.hamlib_status == 'connected') {
@@ -1814,6 +1855,7 @@ var speedChartOptions = {
 
     switch (arg.beacon_state){
         case 'True':
+            bcn.disabled = true;    
             if (config.high_graphics.toUpperCase() == "TRUE") {
                 bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
@@ -1821,16 +1863,15 @@ var speedChartOptions = {
                 bcn.className = "btn btn-sm btn-success";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1 text-success text-uppercase");
             }
-            bcn.disabled = true;
             document.getElementById("beaconInterval").disabled = true;
             document.getElementById("stopBeacon").disabled = false;
             break;
         default:
             document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
             bcn.className = "btn btn-sm btn-success";
-            bcn.disabled = false;
             document.getElementById("beaconInterval").disabled = false;
             document.getElementById("stopBeacon").disabled = true;
+            bcn.disabled = false;
             break;
     }
     // dbfs
