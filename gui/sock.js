@@ -370,7 +370,8 @@ client.on('data', function(socketdata) {
 
                         socketLog.info(data)
                         // we need to encode here to do a deep check for checking if file or message
-                        var encoded_data = atob(data['data'])
+                        //var encoded_data = atob(data['data'])
+                        var encoded_data = Buffer.from(data['data'],'base64').toString('utf-8');
                         var splitted_data = encoded_data.split(split_char)
 
                         if(splitted_data[0] == 'f'){
@@ -423,7 +424,8 @@ client.on('data', function(socketdata) {
                 for (i = 0; i < data['data-array'].length; i++) {
                     try{
                         // we need to encode here to do a deep check for checking if file or message
-                        var encoded_data = atob(data['data-array'][i]['data'])
+                        //var encoded_data = atob(data['data-array'][i]['data'])
+                        var encoded_data = Buffer.from(data['data-array'][i]['data'],'base64').toString('utf-8');
                         var splitted_data = encoded_data.split(split_char)
 
 
@@ -519,8 +521,11 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
     data = datatype + split_char + filename + split_char + filetype + split_char + checksum + split_char + data
     socketLog.info(data)
-    socketLog.info(btoa(data))
-    data = btoa(data)
+    //socketLog.info(btoa(data))
+    //Btoa / atob will not work with charsets > 8 bits (i.e. the emojis); should probably move away from using it
+    //TODO:  Will need to update anyother occurences and throughly test
+    //data = btoa(data)
+    data = Buffer.from(data,'utf-8').toString("base64");
 
     command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     writeTncCommand(command)
@@ -544,8 +549,8 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, c
 
     console.log("CHECKSUM" + checksum)
     //socketLog.info(btoa(data))
-    data = btoa(data)
-
+    //data = btoa(data)
+    data = Buffer.from(data,'utf-8').toString("base64");
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
     command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
