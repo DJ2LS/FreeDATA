@@ -467,6 +467,10 @@ ipcMain.on('request-update-transmission-status', (event, arg) => {
     win.webContents.send('action-update-transmission-status',arg);
 });
 
+ipcMain.on('request-update-reception-status', (event, arg) => {
+    win.webContents.send('action-update-reception-status',arg);
+});
+
 ipcMain.on('request-open-tnc-log', () => {
     logViewer.show();
 });
