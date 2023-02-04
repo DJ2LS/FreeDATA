@@ -1999,7 +1999,11 @@ var speedChartOptions = {
         var gridDistanceText = document.createElement('span');
 
         try {
-            gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['dxgrid'])) + ' km';
+            if (arg.stations[i]['dxgrid'].toString() != "------") {
+                gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['dxgrid'])) + ' km';
+            } else {
+                gridDistanceText.innerText = '---';    
+            }
         } catch {
             gridDistanceText.innerText = '---';
         }
