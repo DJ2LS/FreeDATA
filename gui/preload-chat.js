@@ -163,10 +163,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     document.querySelector('emoji-picker').addEventListener("emoji-click", (event) => {
         var msg = document.getElementById('chatModuleMessage');
-        var picker =  document.getElementById("emojipickercontainer");
-        msg.setRangeText(event.detail.emoji.unicode)
-        console.log(event.detail);
-        picker.style.display="none";
+        //Convert to utf-8--so we can just use utf-8 everywhere
+        msg.setRangeText(event.detail.emoji.unicode.toString('utf-8'));
+        //console.log(event.detail);
         msg.focus();
     })
     document.getElementById("emojipickerbutton").addEventListener("click", () => {
@@ -357,7 +356,8 @@ db.post({
             _attachments: {
                 [filename]: {
                     content_type: filetype,
-                    data: btoa(file)
+                    data: Buffer.from(file,"utf-8").toString("base64")
+                    //data: btoa(file)
                 }
             }
         }).then(function(response) {
@@ -367,7 +367,6 @@ db.post({
         }).catch(function(err) {
             console.log(err);
         });
-
         update_chat_obj_by_uuid(uuid);
 
         // clear input
@@ -475,7 +474,8 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
 
         // handle ARQ transmission
         } else if (item.arq == 'transmission' && item.status == 'received') {
-            var encoded_data = atob(item.data);
+            //var encoded_data = atob(item.data);
+            var encoded_data = Buffer.from(item.data,'base64').toString('utf-8');
             var splitted_data = encoded_data.split(split_char);
 
             console.log(splitted_data)
@@ -493,7 +493,8 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.type = 'received';
             obj.filename = utf8.decode(splitted_data[6]);
             obj.filetype = utf8.decode(splitted_data[7]);
-            obj.file = btoa(splitted_data[8]);
+            //obj.file = btoa(splitted_data[8]);
+            obj.file = Buffer.from(splitted_data[8],'utf-8').toString("base64");
 
             add_obj_to_database(obj);
             update_chat_obj_by_uuid(obj.uuid);
@@ -535,7 +536,8 @@ update_chat = function(obj) {
                 // get filesize of new submitted data
                 // not that nice....
                 // we really should avoid converting back from base64 for performance reasons...
-                var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
+                //var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
+                var filesize = Math.ceil(Buffer.from(obj._attachments[filename]["data"],'base64').toString('utf-8').length);
             }
 
             // check if image, then display it
@@ -853,7 +855,7 @@ update_chat = function(obj) {
 
                 var filename = Object.keys(obj._attachments)[0]
                 var filetype = filename.content_type
- 
+
                 console.log(filename)
                 console.log(filetype)
                 var file = obj._attachments[filename].data
@@ -863,6 +865,24 @@ update_chat = function(obj) {
                 //var file = atob(obj._attachments[filename]["data"])
                 db.getAttachment(obj._id, filename).then(function(data) {
                     console.log(data)
+                    //Rewrote this part to use buffers to ensure encoding is coorect -- n1qm
+                    var binaryString = Buffer.from(data,"base64").toString('utf-8');
+                    
+                    console.log(binaryString);
+                    var data_with_attachment = doc.timestamp + split_char + doc.msg + split_char + filename + split_char + filetype + split_char + binaryString;
+                    let Data = {
+                        command: "send_message",
+                        dxcallsign: doc.dxcallsign,
+                        mode: 255,
+                        frames: 1,
+                        data: data_with_attachment,
+                        checksum: doc.checksum,
+                        uuid: doc.uuid
+                    };
+                    console.log(Data)
+                    ipcRenderer.send('run-tnc-command', Data);
+                });
+                /*
                     // convert blob data to binary string
                     blobUtil.blobToBinaryString(data).then(function (binaryString) {
                         console.log(binaryString)
@@ -891,6 +911,7 @@ update_chat = function(obj) {
 
                     });
                 });
+                */
             }).catch(function(err) {
                 console.log(err);
             });
