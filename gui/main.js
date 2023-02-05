@@ -507,7 +507,8 @@ console.log(filepath.filePaths[0])
 
   try {
   //fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
-  fs.readFile(filepath.filePaths[0], 'binary', function (err, data) {
+    //Has to be binary
+  fs.readFile(filepath.filePaths[0],'binary', function (err, data) {
   
   console.log(data.length)
 
@@ -541,15 +542,10 @@ ipcMain.on('save-file-to-folder',(event,data)=>{
         console.log(data.file)        
 
               try {
-
-                let buffer = Buffer.from(data.file);
-                let arraybuffer = Uint8Array.from(buffer);
+                let arraybuffer = Buffer.from(data.file,"base64").toString('utf-8');
                 console.log(arraybuffer)
-               fs.writeFile(filepath.filePath, data.file, 'binary', function (err, data) {
-                //fs.writeFile(filepath.filePath, arraybuffer,  function (err, data) {
-              //fs.writeFile(filepath.filePath, arraybuffer, 'binary', function(err) {
-              //fs.writeFile(filepath.filePath, new Uint8Array(Buffer.from(data.file)),  function (err, data) {
-              //fs.writeFile(filepath.filePath, Buffer.from(data.file),  function (err, data) {
+                //Has to be binary
+               fs.writeFile(filepath.filePath, arraybuffer, 'binary', function (err, data) {
                 })
               } catch (err) {
                 console.log(err);
