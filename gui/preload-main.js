@@ -261,13 +261,27 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     if(config.enable_explorer == 'True'){
         document.getElementById("ExplorerSwitch").checked = true;
+        document.getElementById("ExplorerStatsSwitch").disabled=false;
+        if (config.explorer_stats.toLowerCase() == 'true') {
+            document.getElementById("ExplorerStatsSwitch").checked=true;
+        } else {
+            document.getElementById("ExplorerStatsSwitch").checked=false;
+        }
+
+        
     } else {
         document.getElementById("ExplorerSwitch").checked = false;
+        document.getElementById("ExplorerStatsSwitch").disabled=true;
+        document.getElementById("ExplorerStatsSwitch").checked=false;
+    }
+    if(config.auto_tune == 'True'){
+        document.getElementById("autoTuneSwitch").checked = true;
+    } else {
+        document.getElementById("autoTuneSwitch").checked = false;
     }
     // theme selector
 
     if(config.theme != 'default'){
-
         var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
         document.getElementById("theme_selector").value = config.theme;
         document.getElementById("bootstrap_theme").href = escape(theme_path);
@@ -1086,8 +1100,31 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("ExplorerSwitch").addEventListener("click", () => {
         if(document.getElementById("ExplorerSwitch").checked == true){
             config.enable_explorer = "True";
+            document.getElementById("ExplorerStatsSwitch").disabled=false;
         } else {
             config.enable_explorer = "False";
+            config.explorer_stats = "False";
+            document.getElementById("ExplorerStatsSwitch").disabled=true;
+            document.getElementById("ExplorerStatsSwitch").checked=false;
+            document.getElementById("ExplorerSwitch").checked = false;
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+        // enable explorer stats Switch clicked
+    document.getElementById("ExplorerStatsSwitch").addEventListener("click", () => {
+        if(document.getElementById("ExplorerStatsSwitch").checked == true){
+            config.explorer_stats = "True";
+        } else {
+            config.explorer_stats = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+    // enable explorer stats Switch clicked
+    document.getElementById("autoTuneSwitch").addEventListener("click", () => {
+        if(document.getElementById("autoTuneSwitch").checked == true){
+            config.auto_tune = "True";
+        } else {
+            config.auto_tune = "False";
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -1253,7 +1290,16 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         } else {
             var enable_explorer = "False";
         }
-       
+        if (document.getElementById("ExplorerStatsSwitch").checked == true){
+            var explorer_stats = "True";
+        } else {
+            var explorer_stats = "False";
+        }
+        if (document.getElementById("autoTuneSwitch").checked == true){
+            var auto_tune = "True";
+        } else {
+            var auto_tune = "False";
+        }
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
             device = document.getElementById("audio_input_selectbox")[i];
@@ -1313,6 +1359,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.respond_to_cq = respond_to_cq;
         config.rx_buffer_size = rx_buffer_size;
         config.enable_explorer = enable_explorer;
+        config.explorer_stats = explorer_stats;
+        config.auto_tune = auto_tune;
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -1331,7 +1379,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer,explorer_stats,auto_tune);
 
         
     })
@@ -1599,18 +1647,7 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     document.getElementById("transmission_timeleft").innerHTML = time_left;
 });
 
-//https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
-function formatBytes(bytes, decimals = 1) {
-    if (!+bytes) return '0 Bytes'
 
-    const k = 1024
-    const dm = decimals < 0 ? 0 : decimals
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
-}
 
 var slowRollTable=4;
 
@@ -2892,4 +2929,16 @@ function pauseButton(btn, timems) {
   setTimeout(()=>{
     btn.innerHTML=curText;
     btn.disabled = false;}, timems)
+}
+//https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+function formatBytes(bytes, decimals = 1) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }

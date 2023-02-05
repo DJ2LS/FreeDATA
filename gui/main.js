@@ -96,7 +96,9 @@ const configDefaultSettings = '{\
                   "rx_buffer_size" : "16", \
                   "enable_explorer" : "False", \
                   "wftheme": 2, \
-                  "high_graphics" : "True"\
+                  "high_graphics" : "True",\
+                  "explorer_stats" : "False", \
+                  "auto_tune" : "False" \
                   }';
 
 if (!fs.existsSync(configPath)) {
