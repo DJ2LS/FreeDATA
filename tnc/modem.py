@@ -47,7 +47,6 @@ DAT0_DATAC1_STATE = []
 DAT0_DATAC3_STATE = []
 
 
-
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
 
@@ -68,7 +67,6 @@ class RF:
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
-
 
         # Locking state for mod out so buffer will be filled before we can use it
         # https://github.com/DJ2LS/FreeDATA/issues/127
@@ -111,7 +109,6 @@ class RF:
             self.sig1_datac0_buffer, \
             self.sig1_datac0_nin = \
             self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
-
 
         # DATAC1
         self.dat0_datac1_freedv, \
@@ -225,14 +222,6 @@ class RF:
 
         self.hamlib = rig.radio()
         self.hamlib.open_rig(
-            devicename=static.HAMLIB_DEVICE_NAME,
-            deviceport=static.HAMLIB_DEVICE_PORT,
-            hamlib_ptt_type=static.HAMLIB_PTT_TYPE,
-            serialspeed=static.HAMLIB_SERIAL_SPEED,
-            pttport=static.HAMLIB_PTT_PORT,
-            data_bits=static.HAMLIB_DATA_BITS,
-            stop_bits=static.HAMLIB_STOP_BITS,
-            handshake=static.HAMLIB_HANDSHAKE,
             rigctld_ip=static.HAMLIB_RIGCTLD_IP,
             rigctld_port=static.HAMLIB_RIGCTLD_PORT,
         )
@@ -285,8 +274,6 @@ class RF:
         )
         hamlib_set_thread.start()
 
-
-
         # self.log.debug("[MDM] Starting worker_receive")
         worker_received = threading.Thread(
             target=self.worker_received, name="WORKER_THREAD", daemon=True
@@ -328,8 +315,8 @@ class RF:
                             # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
                         ]:
                             if (
-                                not (data_buffer.nbuffer + length_x) > data_buffer.size
-                                and receive
+                                    not (data_buffer.nbuffer + length_x) > data_buffer.size
+                                    and receive
                             ):
                                 data_buffer.push(x)
 
@@ -367,7 +354,7 @@ class RF:
 
         # audio recording for debugging purposes
         if static.AUDIO_RECORD:
-            #static.AUDIO_RECORD_FILE.write(x)
+            # static.AUDIO_RECORD_FILE.write(x)
             static.AUDIO_RECORD_FILE.writeframes(x)
 
         # Avoid decoding when transmitting to reduce CPU
@@ -415,7 +402,7 @@ class RF:
 
     # --------------------------------------------------------------------
     def transmit(
-        self, mode, repeats: int, repeat_delay: int, frames: bytearray
+            self, mode, repeats: int, repeat_delay: int, frames: bytearray
     ) -> None:
         """
 
@@ -447,6 +434,9 @@ class RF:
             return False
 
         static.TRANSMITTING = True
+        # if we're transmitting FreeDATA signals, reset channel busy state
+        static.CHANNEL_BUSY = False
+
         start_of_transmission = time.time()
         # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
@@ -481,10 +471,10 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        #data_delay_mseconds = 0  # milliseconds
-        #data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
-        #mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        #txbuffer = bytes(mod_out_silence)
+        # data_delay_mseconds = 0  # milliseconds
+        # data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
+        # mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+        # txbuffer = bytes(mod_out_silence)
         # TODO: Disabled this one for testing
         txbuffer = bytes()
         self.log.debug(
@@ -545,6 +535,22 @@ class RF:
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
+        if static.AUDIO_AUTO_TUNE:
+            if static.HAMLIB_ALC == 0.0:
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 30
+            elif 0.0 < static.HAMLIB_ALC <= 0.8:
+                print("0.001 > static.HAMLIB_ALC <= 0.8")
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+            elif 0.8 < static.HAMLIB_ALC < 0.99:
+                print("0.8 > static.HAMLIB_ALC <= 0.99")
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+            elif 1.0 <= static.HAMLIB_ALC:
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 2
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+            else:
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
 
         txbuffer_48k = self.resampler.resample8_to_48(x)
@@ -558,7 +564,7 @@ class RF:
         # -------------------------------
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
         chunk = [
-            txbuffer_48k[i : i + chunk_length]
+            txbuffer_48k[i: i + chunk_length]
             for i in range(0, len(txbuffer_48k), chunk_length)
         ]
         for c in chunk:
@@ -576,6 +582,8 @@ class RF:
 
         while self.modoutqueue:
             threading.Event().wait(0.01)
+            # if we're transmitting FreeDATA signals, reset channel busy state
+            static.CHANNEL_BUSY = False
 
         static.PTT_STATE = self.hamlib.set_ptt(False)
 
@@ -596,14 +604,14 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def demodulate_audio(
-        self,
-        audiobuffer: codec2.audio_buffer,
-        nin: int,
-        freedv: ctypes.c_void_p,
-        bytes_out,
-        bytes_per_frame,
-        state_buffer,
-        mode_name,
+            self,
+            audiobuffer: codec2.audio_buffer,
+            nin: int,
+            freedv: ctypes.c_void_p,
+            bytes_out,
+            bytes_per_frame,
+            state_buffer,
+            mode_name,
     ) -> int:
         """
         De-modulate supplied audio stream with supplied codec2 instance.
@@ -644,17 +652,19 @@ class RF:
                     rx_status = codec2.api.freedv_get_rx_status(freedv)
 
                     if rx_status != 0:
-                        # if we're receiving FreeDATA signals, reset channel busy state
-                        static.CHANNEL_BUSY = False
+                        # we need to disable this if in testmode as its causing problems with FIFO it seems
+                        if not TESTMODE:
+                            static.IS_CODEC2_TRAFFIC = True
 
                         self.log.debug(
-                            "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status, sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
+                            "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
+                            sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
+                    else:
+                        static.IS_CODEC2_TRAFFIC = False
 
                     if rx_status == 10:
                         state_buffer.append(rx_status)
-
-
 
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
@@ -877,7 +887,7 @@ class RF:
 
         scatterdata = []
         # original function before itertool
-        #for i in range(codec2.MODEM_STATS_NC_MAX):
+        # for i in range(codec2.MODEM_STATS_NC_MAX):
         #    for j in range(1, codec2.MODEM_STATS_NR_MAX, 2):
         #        # print(f"{modemStats.rx_symbols[i][j]} - {modemStats.rx_symbols[i][j]}")
         #        xsymbols = round(modemStats.rx_symbols[i][j - 1] // 1000)
@@ -923,9 +933,9 @@ class RF:
             snr = round(modem_stats_snr, 1)
             self.log.info("[MDM] calculate_snr: ", snr=snr)
             static.SNR = snr
-            #static.SNR = np.clip(
+            # static.SNR = np.clip(
             #    snr, -127, 127
-            #)  # limit to max value of -128/128 as a possible fix of #188
+            # )  # limit to max value of -128/128 as a possible fix of #188
             return static.SNR
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
@@ -955,11 +965,24 @@ class RF:
           - static.HAMLIB_BANDWIDTH
         """
         while True:
+            # this looks weird, but is necessary for avoiding rigctld packet colission sock
             threading.Event().wait(0.25)
             static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
+            threading.Event().wait(0.1)
             static.HAMLIB_MODE = self.hamlib.get_mode()
+            threading.Event().wait(0.1)
             static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
+            threading.Event().wait(0.1)
             static.HAMLIB_STATUS = self.hamlib.get_status()
+            threading.Event().wait(0.1)
+            if static.TRANSMITTING:
+                static.HAMLIB_ALC = self.hamlib.get_alc()
+                threading.Event().wait(0.1)
+            #static.HAMLIB_RF = self.hamlib.get_level()
+            #threading.Event().wait(0.1)
+            static.HAMLIB_STRENGTH = self.hamlib.get_strength()
+
+            print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
 
     def calculate_fft(self) -> None:
         """

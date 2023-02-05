@@ -9,6 +9,7 @@ import socket
 import time
 import structlog
 import threading
+import static
 
 # set global hamlib version
 hamlib_version = 0
@@ -34,31 +35,18 @@ class radio:
         self.bandwidth = ''
         self.frequency = ''
         self.mode = ''
+        self.alc = ''
+        self.strength = ''
+        self.rf = ''
 
     def open_rig(
-        self,
-        devicename,
-        deviceport,
-        hamlib_ptt_type,
-        serialspeed,
-        pttport,
-        data_bits,
-        stop_bits,
-        handshake,
-        rigctld_ip,
-        rigctld_port,
+            self,
+            rigctld_ip,
+            rigctld_port
     ):
         """
 
         Args:
-          devicename:
-          deviceport:
-          hamlib_ptt_type:
-          serialspeed:
-          pttport:
-          data_bits:
-          stop_bits:
-          handshake:
           rigctld_ip:
           rigctld_port:
 
@@ -68,8 +56,8 @@ class radio:
         self.hostname = rigctld_ip
         self.port = int(rigctld_port)
 
-        #_ptt_connect = self.ptt_connect()
-        #_data_connect = self.data_connect()
+        # _ptt_connect = self.ptt_connect()
+        # _data_connect = self.data_connect()
 
         ptt_thread = threading.Thread(target=self.ptt_connect, args=[], daemon=True)
         ptt_thread.start()
@@ -170,8 +158,12 @@ class radio:
 
         """
         if self.data_connected:
+            self.data_connection.setblocking(False)
+            self.data_connection.settimeout(0.05)
             try:
                 self.data_connection.sendall(command + b"\n")
+
+
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] Command not executed!",
@@ -184,7 +176,20 @@ class radio:
             try:
                 # recv seems to be blocking so in case of ptt we don't need the response
                 # maybe this speeds things up and avoids blocking states
-                return self.data_connection.recv(64) if expect_answer else True
+                recv = True
+                data = b''
+
+                while recv:
+                    try:
+
+                        data = self.data_connection.recv(64)
+
+                    except socket.timeout:
+                        recv = False
+
+                return data
+
+                # return self.data_connection.recv(64) if expect_answer else True
             except Exception:
                 self.log.warning(
                     "[RIGCTLD] No command response!",
@@ -198,6 +203,52 @@ class radio:
     def get_status(self):
         """ """
         return "connected" if self.data_connected and self.ptt_connected else "unknown/disconnected"
+
+    def get_level(self):
+        try:
+            data = self.send_data_command(b"l RF", True)
+            data = data.split(b"\n")
+            rf = data[0].decode("utf-8")
+            if 'RPRT' not in rf:
+                try:
+                    self.rf = str(rf)
+                except ValueError:
+                    self.rf = str(rf)
+
+            return self.rf
+        except Exception:
+            return self.rf
+
+    def get_strength(self):
+        try:
+            data = self.send_data_command(b"l STRENGTH", True)
+            data = data.split(b"\n")
+            strength = data[0].decode("utf-8")
+            if 'RPRT' not in strength:
+                try:
+                    self.strength = str(strength)
+                except ValueError:
+                    self.strength = str(strength)
+
+            return self.strength
+        except Exception:
+            return self.strength
+
+    def get_alc(self):
+        try:
+            data = self.send_data_command(b"l ALC", True)
+            data = data.split(b"\n")
+            alc = data[0].decode("utf-8")
+            if 'RPRT' not in alc:
+                try:
+                    alc = float(alc)
+                    self.alc = alc if alc != 0.0 else static.HAMLIB_ALC
+                except ValueError:
+                    self.alc = 0.0
+
+            return self.alc
+        except Exception:
+            return self.alc
 
     def get_mode(self):
         """ """

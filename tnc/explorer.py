@@ -19,7 +19,7 @@ log = structlog.get_logger("explorer")
 
 class explorer():
     def __init__(self):
-        self.explorer_url = "https://explorer.freedata.app/api.php"
+        self.explorer_url = "https://api.freedata.app/explorer.php"
         self.publish_interval = 120
 
         self.interval_thread = threading.Thread(target=self.interval, name="interval", daemon=True)
@@ -39,11 +39,12 @@ class explorer():
         version = str(static.VERSION)
         bandwidth = str(static.LOW_BANDWIDTH_MODE)
         beacon = str(static.BEACON_STATE)
+        strength = str(static.HAMLIB_STRENGTH)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
-        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
+        station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
         for i in static.HEARD_STATIONS:
             try:

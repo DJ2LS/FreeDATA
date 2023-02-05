@@ -289,7 +289,7 @@ def test_foreign_disconnect(mycall: str, dxcall: str):
     # print("Starting threads.")
     proc.start()
 
-    time.sleep(0.05)
+    time.sleep(5.05)
 
     # print("Terminating threads.")
     proc.terminate()
@@ -307,7 +307,7 @@ def test_valid_disconnect(mycall: str, dxcall: str):
     # print("Starting threads.")
     proc.start()
 
-    time.sleep(0.05)
+    time.sleep(5.05)
 
     # print("Terminating threads.")
     proc.terminate()

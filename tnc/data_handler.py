@@ -23,6 +23,7 @@ import numpy as np
 import sock
 import static
 import structlog
+import stats
 import ujson as json
 from codec2 import FREEDV_MODE
 from exceptions import NoCallsign
@@ -36,6 +37,7 @@ class DATA:
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("DATA")
+    stats = stats.stats()
 
     def __init__(self) -> None:
         # Initial call sign. Will be overwritten later
@@ -237,12 +239,13 @@ class DATA:
         while True:
             data = self.data_queue_transmit.get()
 
-            # if we are already in ARQ_STATE lets wait with processing data
+            # if we are already in ARQ_STATE, or we're receiving codec2 traffic
+            # let's wait with processing data
             # this should avoid weird toggle states where both stations
             # stuck in IRS
             #
             # send transmission queued information once
-            if static.ARQ_STATE:
+            if static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
                 self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
 
                 self.send_data_to_socket_queue(
@@ -250,9 +253,13 @@ class DATA:
                     command=data[0],
                     status="queued",
                 )
-            # now stay in while loop until state released
-            while static.ARQ_STATE:
-                threading.Event().wait(0.01)
+
+                # now stay in while loop until state released
+                while static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
+                    threading.Event().wait(0.01)
+
+                # and finally sleep some time
+                threading.Event().wait(1.0)
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
@@ -968,6 +975,7 @@ class DATA:
                             dxgrid=static.DXGRID,
                             data=base64_data
                         )
+
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
                     arq="transmission",
@@ -979,6 +987,10 @@ class DATA:
                     dxgrid=str(static.DXGRID, "UTF-8"),
                     data=base64_data,
                 )
+
+                if static.ENABLE_STATS:
+                    duration = time.time() - self.rx_start_of_transmission
+                    stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
 
                 self.log.info(
                     "[TNC] ARQ | RX | SENDING DATA FRAME ACK",
@@ -1025,6 +1037,8 @@ class DATA:
                     data=data_frame,
 
                 )
+                if static.ENABLE_STATS:
+                    stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
                 self.log.info("[TNC] ARQ | RX | Sending NACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_nack_frame(snr)
@@ -1303,6 +1317,9 @@ class DATA:
 
             )
 
+            # finally do an arq cleanup
+            self.arq_cleanup()
+
         else:
             self.send_data_to_socket_queue(
                 freedata="tnc-message",
@@ -1320,10 +1337,10 @@ class DATA:
                 "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
             )
+
+
             self.stop_transmission()
 
-        # Last but not least do a state cleanup
-        self.arq_cleanup()
         if TESTMODE:
             # Quit after transmission
             self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
@@ -2068,7 +2085,6 @@ class DATA:
             # open_session frame and can still hear us.
             self.close_session()
 
-            self.arq_cleanup()
             return False
 
         # Shouldn't get here...
@@ -2090,7 +2106,6 @@ class DATA:
             return False
 
         self.arq_file_transfer = True
-        self.is_IRS = True
 
         # check if callsign ssid override
         _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
@@ -2102,6 +2117,8 @@ class DATA:
         # we are only ignoring packets in case we are ISS
         if static.ARQ_STATE and not self.is_IRS:
             return False
+
+        self.is_IRS = True
 
         static.DXCALLSIGN_CRC = bytes(data_in[4:7])
         self.dxcallsign = helpers.bytes_to_callsign(bytes(data_in[7:13]))
@@ -2203,7 +2220,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time())
+        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
 
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
@@ -2253,7 +2270,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps once again for avoiding running into timeout
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time())
+        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
         """
@@ -2910,7 +2927,8 @@ class DATA:
             return
 
         self.log.debug("[TNC] arq_cleanup")
-
+        # wait a second for smoother arq behaviour
+        helpers.wait(1.0)
 
         self.rx_frame_bof_received = False
         self.rx_frame_eof_received = False

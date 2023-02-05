@@ -11,9 +11,10 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.7.1-alpha.1"
+VERSION = "0.7.2-alpha.1-exp"
 
 ENABLE_EXPLORER = False
+ENABLE_STATS = False
 
 
 # DAEMON
@@ -47,16 +48,7 @@ LISTEN: bool = True
 PTT_STATE: bool = False
 TRANSMITTING: bool = False
 
-HAMLIB_VERSION: str = "0"
-HAMLIB_PTT_TYPE: str = "RTS"
-HAMLIB_DEVICE_NAME: str = "RIG_MODEL_DUMMY_NOVFO"
-HAMLIB_DEVICE_PORT: str = "/dev/ttyUSB0"
-HAMLIB_SERIAL_SPEED: str = "9600"
-HAMLIB_PTT_PORT: str = "/dev/ttyUSB0"
-HAMLIB_STOP_BITS: str = "1"
-HAMLIB_DATA_BITS: str = "8"
-HAMLIB_HANDSHAKE: str = "None"
-HAMLIB_RADIOCONTROL: str = "direct"
+HAMLIB_RADIOCONTROL: str = "disabled"
 HAMLIB_RIGCTLD_IP: str = "127.0.0.1"
 HAMLIB_RIGCTLD_PORT: str = "4532"
 
@@ -64,6 +56,9 @@ HAMLIB_STATUS: str = "unknown/disconnected"
 HAMLIB_FREQUENCY: int = 0
 HAMLIB_MODE: str = ""
 HAMLIB_BANDWIDTH: int = 0
+HAMLIB_RF: int = 0
+HAMLIB_ALC: int = 0
+HAMLIB_STRENGTH: int = 0
 # -------------------------
 # FreeDV Defaults
 
@@ -85,6 +80,7 @@ AUDIO_OUTPUT_DEVICE: int = -2
 AUDIO_RECORD: bool = False
 AUDIO_RECORD_FILE = ''
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
+AUDIO_AUTO_TUNE: bool = False
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]
@@ -129,12 +125,13 @@ RX_BUFFER_SIZE: int = 16
 HEARD_STATIONS: list = []
 
 # ------- INFO MESSAGE BUFFER
+# TODO: This can be removed?
 INFO: list = []
 
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN: float = -50.0
 TUNING_RANGE_FMAX: float = 50.0
-
+IS_CODEC2_TRAFFIC: bool = False # true if we have codec2 signalling mode traffic on channel
 
 class FRAME_TYPE(Enum):
     """Lookup for frame types"""

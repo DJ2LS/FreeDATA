@@ -28,6 +28,7 @@ import wave
 import helpers
 import static
 import structlog
+from random import randrange
 import ujson as json
 from exceptions import NoCallsign
 from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
@@ -469,6 +470,9 @@ def process_tnc_commands(data):
         if received_json["type"] == "arq" and received_json["command"] == "send_raw":
             static.BEACON_PAUSE = True
 
+            # wait some random time
+            helpers.wait(randrange(5, 25, 5) / 10.0)
+
             # we need to warn if already in arq state
             if static.ARQ_STATE:
                 command_response("send_raw", False)
@@ -512,7 +516,6 @@ def process_tnc_commands(data):
                     attempts = int(received_json["parameter"][0]["attempts"])
 
                 except Exception:
-                    # 15 == self.session_connect_max_retries
                     attempts = 10
 
                 # check if transmission uuid provided else set no-uuid
@@ -650,6 +653,11 @@ def send_tnc_state():
         "audio_dbfs": str(static.AUDIO_DBFS),
         "snr": str(static.SNR),
         "frequency": str(static.HAMLIB_FREQUENCY),
+        "rf_level": str(static.HAMLIB_RF),
+        "strength": str(static.HAMLIB_STRENGTH),
+        "alc": str(static.HAMLIB_ALC),
+        "audio_level": str(static.TX_AUDIO_LEVEL),
+        "audio_auto_tune": str(static.AUDIO_AUTO_TUNE),
         "speed_level": str(static.ARQ_SPEED_LEVEL),
         "mode": str(static.HAMLIB_MODE),
         "bandwidth": str(static.HAMLIB_BANDWIDTH),
@@ -756,49 +764,42 @@ def process_daemon_commands(data):
         and not static.TNCSTARTED
     ):
         try:
-            mycall = str(received_json["parameter"][0]["mycall"])
-            mygrid = str(received_json["parameter"][0]["mygrid"])
-            rx_audio = str(received_json["parameter"][0]["rx_audio"])
-            tx_audio = str(received_json["parameter"][0]["tx_audio"])
-            devicename = str(received_json["parameter"][0]["devicename"])
-            deviceport = str(received_json["parameter"][0]["deviceport"])
-            serialspeed = str(received_json["parameter"][0]["serialspeed"])
-            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-            pttport = str(received_json["parameter"][0]["pttport"])
-            data_bits = str(received_json["parameter"][0]["data_bits"])
-            stop_bits = str(received_json["parameter"][0]["stop_bits"])
-            handshake = str(received_json["parameter"][0]["handshake"])
-            radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
-            rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
-            rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
-            enable_scatter = str(received_json["parameter"][0]["enable_scatter"])
-            enable_fft = str(received_json["parameter"][0]["enable_fft"])
-            enable_fsk = str(received_json["parameter"][0]["enable_fsk"])
-            low_bandwidth_mode = str(
-                received_json["parameter"][0]["low_bandwidth_mode"]
-            )
-            tuning_range_fmin = str(received_json["parameter"][0]["tuning_range_fmin"])
-            tuning_range_fmax = str(received_json["parameter"][0]["tuning_range_fmax"])
-            tx_audio_level = str(received_json["parameter"][0]["tx_audio_level"])
-            respond_to_cq = str(received_json["parameter"][0]["respond_to_cq"])
-            rx_buffer_size = str(received_json["parameter"][0]["rx_buffer_size"])
-            enable_explorer = str(received_json["parameter"][0]["enable_explorer"])
+            startparam = received_json["parameter"][0]
 
+            mycall = str(helpers.return_key_from_object("AA0AA", startparam,"mycall"))
+            mygrid = str(helpers.return_key_from_object("JN12ab", startparam,"mygrid"))
+            rx_audio = str(helpers.return_key_from_object("0", startparam,"rx_audio"))
+            tx_audio = str(helpers.return_key_from_object("0", startparam,"tx_audio"))
+            radiocontrol = str(helpers.return_key_from_object("disabled", startparam,"radiocontrol"))
+            rigctld_ip = str(helpers.return_key_from_object("127.0.0.1", startparam,"rigctld_ip"))
+            rigctld_port = str(helpers.return_key_from_object("4532", startparam,"rigctld_port"))
+            enable_scatter = str(helpers.return_key_from_object("True", startparam,"enable_scatter"))
+            enable_fft = str(helpers.return_key_from_object("True", startparam,"enable_fft"))
+            enable_fsk = str(helpers.return_key_from_object("False", startparam,"enable_fsk"))
+            low_bandwidth_mode = str(helpers.return_key_from_object("False", startparam,"low_bandwidth_mode"))
+            tuning_range_fmin = str(helpers.return_key_from_object("-50", startparam,"tuning_range_fmin"))
+            tuning_range_fmax = str(helpers.return_key_from_object("50", startparam,"tuning_range_fmax"))
+            tx_audio_level = str(helpers.return_key_from_object("100", startparam,"tx_audio_level"))
+            respond_to_cq = str(helpers.return_key_from_object("False", startparam,"respond_to_cq"))
+            rx_buffer_size = str(helpers.return_key_from_object("16", startparam,"rx_buffer_size"))
+            enable_explorer = str(helpers.return_key_from_object("False", startparam,"enable_explorer"))
+            enable_auto_tune = str(helpers.return_key_from_object("False", startparam,"enable_auto_tune"))
+            enable_stats = str(helpers.return_key_from_object("False", startparam,"enable_stats"))
             try:
                 # convert ssid list to python list
-                ssid_list = str(received_json["parameter"][0]["ssid_list"])
+                ssid_list = str(helpers.return_key_from_object("0, 1, 2, 3, 4, 5, 6, 7, 8, 9", startparam, "ssid_list"))
                 ssid_list = ssid_list.replace(" ", "")
                 ssid_list = ssid_list.split(",")
                 # convert str to int
                 ssid_list = list(map(int, ssid_list))
             except KeyError:
-                ssid_list = [0]
+                ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
             # print some debugging parameters
-            for item in received_json["parameter"][0]:
+            for item in startparam:
                 log.debug(
                     f"[SCK] TNC Startup Config : {item}",
-                    value=received_json["parameter"][0][item],
+                    value=startparam[item],
                 )
 
             DAEMON_QUEUE.put(
@@ -808,14 +809,6 @@ def process_daemon_commands(data):
                     mygrid,
                     rx_audio,
                     tx_audio,
-                    devicename,
-                    deviceport,
-                    serialspeed,
-                    pttprotocol,
-                    pttport,
-                    data_bits,
-                    stop_bits,
-                    handshake,
                     radiocontrol,
                     rigctld_ip,
                     rigctld_port,
@@ -830,6 +823,8 @@ def process_daemon_commands(data):
                     rx_buffer_size,
                     enable_explorer,
                     ssid_list,
+                    enable_auto_tune,
+                    enable_stats
                 ]
             )
             command_response("start_tnc", True)
@@ -840,14 +835,6 @@ def process_daemon_commands(data):
 
     if received_json["type"] == "get" and received_json["command"] == "test_hamlib":
         try:
-            devicename = str(received_json["parameter"][0]["devicename"])
-            deviceport = str(received_json["parameter"][0]["deviceport"])
-            serialspeed = str(received_json["parameter"][0]["serialspeed"])
-            pttprotocol = str(received_json["parameter"][0]["pttprotocol"])
-            pttport = str(received_json["parameter"][0]["pttport"])
-            data_bits = str(received_json["parameter"][0]["data_bits"])
-            stop_bits = str(received_json["parameter"][0]["stop_bits"])
-            handshake = str(received_json["parameter"][0]["handshake"])
             radiocontrol = str(received_json["parameter"][0]["radiocontrol"])
             rigctld_ip = str(received_json["parameter"][0]["rigctld_ip"])
             rigctld_port = str(received_json["parameter"][0]["rigctld_port"])
@@ -855,14 +842,6 @@ def process_daemon_commands(data):
             DAEMON_QUEUE.put(
                 [
                     "TEST_HAMLIB",
-                    devicename,
-                    deviceport,
-                    serialspeed,
-                    pttprotocol,
-                    pttport,
-                    data_bits,
-                    stop_bits,
-                    handshake,
                     radiocontrol,
                     rigctld_ip,
                     rigctld_port,
@@ -900,7 +879,6 @@ def send_daemon_state():
             "command": "daemon_state",
             "daemon_state": [],
             "python_version": str(python_version),
-            "hamlib_version": static.HAMLIB_VERSION,
             "input_devices": static.AUDIO_INPUT_DEVICES,
             "output_devices": static.AUDIO_OUTPUT_DEVICES,
             "serial_devices": static.SERIAL_DEVICES,
@@ -926,3 +904,9 @@ def command_response(command, status):
     data_out = json.dumps(jsondata)
     SOCKET_QUEUE.put(data_out)
 
+
+def try_except(string):
+    try:
+        return string
+    except Exception:
+        return False

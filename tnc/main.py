@@ -124,77 +124,6 @@ if __name__ == "__main__":
         type=int,
     )
     PARSER.add_argument(
-        "--deviceport",
-        dest="hamlib_device_port",
-        default="/dev/ttyUSB0",
-        help="Hamlib device port",
-        type=str,
-    )
-    PARSER.add_argument(
-        "--devicename",
-        dest="hamlib_device_name",
-        default="2028",
-        help="Hamlib device name",
-        type=str,
-    )
-    PARSER.add_argument(
-        "--serialspeed",
-        dest="hamlib_serialspeed",
-        choices=[1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200],
-        default=9600,
-        help="Serialspeed",
-        type=int,
-    )
-    PARSER.add_argument(
-        "--pttprotocol",
-        dest="hamlib_ptt_type",
-        choices=[
-            "USB",
-            "RIG",
-            "RTS",
-            "DTR",
-            "CM108",
-            "MICDATA",
-            "PARALLEL",
-            "DTR-H",
-            "DTR-L",
-            "NONE",
-        ],
-        default="USB",
-        help="PTT Type",
-        type=str,
-    )
-    PARSER.add_argument(
-        "--pttport",
-        dest="hamlib_ptt_port",
-        default="/dev/ttyUSB0",
-        help="PTT Port",
-        type=str,
-    )
-    PARSER.add_argument(
-        "--data_bits",
-        dest="hamlib_data_bits",
-        choices=[7, 8],
-        default=8,
-        help="Hamlib data bits",
-        type=int,
-    )
-    PARSER.add_argument(
-        "--stop_bits",
-        dest="hamlib_stop_bits",
-        choices=[1, 2],
-        default=1,
-        help="Hamlib stop bits",
-        type=int,
-    )
-    PARSER.add_argument(
-        "--handshake",
-        dest="hamlib_handshake",
-        default="None",
-        help="Hamlib handshake",
-        type=str,
-    )
-    PARSER.add_argument(
         "--radiocontrol",
         dest="hamlib_radiocontrol",
         choices=["disabled", "direct", "rigctl", "rigctld"],
@@ -277,6 +206,20 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable sending tnc data to https://explorer.freedata.app",
     )
+
+    PARSER.add_argument(
+        "--tune",
+        dest="enable_audio_auto_tune",
+        action="store_true",
+        help="Enable auto tuning of audio level with ALC information form hamlib",
+    )
+
+    PARSER.add_argument(
+        "--stats",
+        dest="enable_stats",
+        action="store_true",
+        help="Enable publishing stats to https://freedata.app",
+    )
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -312,14 +255,6 @@ if __name__ == "__main__":
                 static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
 
             static.PORT = ARGS.socket_port
-            static.HAMLIB_DEVICE_NAME = ARGS.hamlib_device_name
-            static.HAMLIB_DEVICE_PORT = ARGS.hamlib_device_port
-            static.HAMLIB_PTT_TYPE = ARGS.hamlib_ptt_type
-            static.HAMLIB_PTT_PORT = ARGS.hamlib_ptt_port
-            static.HAMLIB_SERIAL_SPEED = str(ARGS.hamlib_serialspeed)
-            static.HAMLIB_DATA_BITS = str(ARGS.hamlib_data_bits)
-            static.HAMLIB_STOP_BITS = str(ARGS.hamlib_stop_bits)
-            static.HAMLIB_HANDSHAKE = ARGS.hamlib_handshake
             static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
             static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
             static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
@@ -333,6 +268,9 @@ if __name__ == "__main__":
             static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
             static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
             static.ENABLE_EXPLORER = ARGS.enable_explorer
+            static.AUDIO_AUTO_TUNE = ARGS.enable_audio_auto_tune
+            static.ENABLE_STATS = ARGS.enable_stats
+
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
 
@@ -364,15 +302,6 @@ if __name__ == "__main__":
                 static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
 
             static.PORT = int(config['NETWORK']['tncport'])
-            # TODO: disabled because we don't need these settings anymore.
-            #static.HAMLIB_DEVICE_NAME = config['RADIO']['devicename']
-            #static.HAMLIB_DEVICE_PORT = config['RADIO']['deviceport']
-            #static.HAMLIB_PTT_TYPE = config['RADIO']['pttprotocol']
-            #static.HAMLIB_PTT_PORT = config['RADIO']['pttport']
-            #static.HAMLIB_SERIAL_SPEED = str(config['RADIO']['serialspeed'])
-            #static.HAMLIB_DATA_BITS = str(config['RADIO']['data_bits'])
-            #static.HAMLIB_STOP_BITS = str(config['RADIO']['stop_bits'])
-            #static.HAMLIB_HANDSHAKE = config['RADIO']['handshake']
             static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
             static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
             static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
@@ -382,10 +311,12 @@ if __name__ == "__main__":
             static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband'] in ["True", "true", True]
             static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
             static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
-            static.TX_AUDIO_LEVEL = config['AUDIO']['txaudiolevel']
+            static.TX_AUDIO_LEVEL = int(config['AUDIO']['txaudiolevel'])
             static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
             static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
             static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
+            static.AUDIO_AUTO_TUNE = config['AUDIO']['auto_tune'] in ["True", "true", True]
+            static.ENABLE_STATS = config['TNC']['stats'] in ["True", "true", True]
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
