@@ -1338,7 +1338,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-sm-2">
+			<div class="col-sm-3">
 				<div class="input-group input-group-sm">
 					<div class="btn-group dropup me-1">
 						<button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown"
@@ -1395,48 +1395,27 @@
 					</div>
 				</div>
 			</div>
-			<div class="col-sm-4">
+			<div class="col-sm-3">
 				<div class="input-group input-group-sm">
 					<span class="input-group-text" id="basic-addon1">
-						<i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i>TX
+						<i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i>
 					</span>
 					<span class="input-group-text" data-bs-placement="bottom" data-bs-toggle="tooltip"
 						data-bs-html="false" title="actual speed level">
 						<i id="speed_level" class="bi bi-reception-0" style="font-size: 1rem; color: black;"></i>
 					</span>
-					<span class="input-group-text" id="bytes_per_min" data-bs-placement="bottom"
-						data-bs-toggle="tooltip" data-bs-html="false"
-						title="raw data rate modem in bytes per minute">---</span>
-						<!--
-					<span class="input-group-text" id="bytes_per_min_compressed" data-bs-placement="bottom"
-						data-bs-toggle="tooltip" data-bs-html="false"
-						title="data rate including file compression in bytes per minute">---</span>
-						-->
-					<span class="input-group-text" id="basic-addon1">
-						<i class="bi bi-speedometer2" style="font-size: 1rem; color: black;"></i>RX
-					</span>
-					<span class="input-group-text" id="bytes_per_min_rx" data-bs-placement="bottom"
-						data-bs-toggle="tooltip" data-bs-html="false"
-						title="raw data rate modem in bytes per minute">---</span>
-						<!--
-					<span class="input-group-text" id="bytes_per_min_compressed_rx" data-bs-placement="bottom"
-						data-bs-toggle="tooltip" data-bs-html="false"
-						title="data rate including file compression in bytes per minute">---</span>
-						-->
 					<span class="input-group-text" id="basic-addon1">
 						<i class="bi bi-file-earmark-binary" style="font-size: 1rem; color: black;"></i>
 					</span>
 					<span class="input-group-text" id="total_bytes" data-bs-placement="bottom" data-bs-toggle="tooltip"
 						data-bs-html="false" title="total bytes processed">---</span>
-						<span class="input-group-text" id="basic-addon1"
-					data-bs-toggle="tooltip" title="Connected with"><span class="bi bi-chat-fill"
-						id="spnConnectedWith"></span></span><span class="input-group-text"
-					id="txtConnectedWith">------</span>
+						<span class="input-group-text" id="basic-addon1" data-bs-toggle="tooltip" title="Indicates if a session is active"><span class="bi bi-chat-fill" id="spnConnectedWith"></span></span>
+						<span class="input-group-text" id="txtConnectedWith" data-bs-toggle="tooltip" title="Connected with">------</span>
 				</div>
 			</div>
 			<div class="col-lg-4">
 				<div style="margin-right: 2px;">
-					<div class="progress w-100" style="height: 30px;min-width: 200px;">
+					<div class="progress w-100" style="height: 30px;min-width: 300px;">
 						<div class="progress-bar progress-bar-striped bg-primary force-gpu" id="transmission_progress"
 							role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
 						</div>

@@ -1489,47 +1489,19 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 //Listen for events caused by tnc 'tnc-message' receiving
 ipcRenderer.on('action-update-reception-status', (event, arg) => {
     var data =arg["data"][0];
-    //var txprog = document.getElementById("transmission_progress")
-   
-    ipcRenderer.send('request-show-electron-progressbar',data.percent);
-    // SET BYTES PER MINUTE
-    if (typeof(data.bytesperminute) == 'undefined') {
-        var arq_bytes_per_minute = 0;
-    } else {
-        var arq_bytes_per_minute = data.bytesperminute;
-    }
-    document.getElementById("bytes_per_min_rx").textContent = arq_bytes_per_minute;
-    
-    // SET BYTES PER MINUTE COMPRESSED
-    var compress = data.compression;
-    if (isNaN(compress)) {
-        compress = 1;
-    }
-    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
-    document.getElementById("bytes_per_min_rx").setAttribute('data-bs-original-title',"raw data rate modem in bytes per minute (" + arq_bytes_per_minute_compressed + " compressed)");
-    if (!(typeof(data.dxcallsign) == 'undefined')) {
-        //console.log("Received dxcallsign(rx-status):  ", data.dxcallsign);
-        document.getElementById("txtConnectedWith").textContent=data.dxcallsign;
-    }
-});
-
-//Listen for events caused by tnc 'tnc-message's
-ipcRenderer.on('action-update-transmission-status', (event, arg) => {
-    var data =arg["data"][0];
     var txprog = document.getElementById("transmission_progress")
     ipcRenderer.send('request-show-electron-progressbar',data.percent);
     txprog.setAttribute("aria-valuenow", data.percent);
     txprog.setAttribute("style", "width:" + data.percent + "%;");
-
-     // SET TIME LEFT UNTIL FINIHED
-     if (typeof(data.finished) == 'undefined') {
-        var time_left = 0;
+     
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(data.finished) == 'undefined') {
+        var time_left = "time left: estimating";
     } else {
         var arq_seconds_until_finish = data.finished
         var hours = Math.floor(arq_seconds_until_finish / 3600);
         var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
         var seconds = arq_seconds_until_finish % 60;
-
         if(hours < 0) {
             hours = 0;
         }
@@ -1539,9 +1511,14 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
         if(seconds < 0) {
             seconds = 0;
         }
-        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+        if (hours > 0)
+        {
+            time_left = "time left: ~"+ hours.toString().padStart(2,'0') + ":" + minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        } else {
+            time_left = "time left: ~"+ minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        }
     }
-    document.getElementById("transmission_timeleft").textContent = time_left;
+    var time_left = "<strong>" + time_left +" || Speed/min: ";
 
     // SET BYTES PER MINUTE
     if (typeof(data.bytesperminute) == 'undefined') {
@@ -1549,7 +1526,6 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     } else {
         var arq_bytes_per_minute = data.bytesperminute;
     }
-    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
     
     // SET BYTES PER MINUTE COMPRESSED
     var compress = data.compression;
@@ -1557,13 +1533,84 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
         compress = 1;
     }
     var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
-    document.getElementById("bytes_per_min").setAttribute('data-bs-original-title',"raw data rate modem in bytes per minute (" + arq_bytes_per_minute_compressed + " compressed)");
+    
+    time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
+    
     if (!(typeof(data.dxcallsign) == 'undefined')) {
-        //console.log("Received dxcallsign(tx-status):  ", data.dxcallsign);
-        document.getElementById("txtConnectedWith").textContent=data.dxcallsign;
+        document.getElementById("txtConnectedWith").textContent='de ' + data.dxcallsign;
+    }
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
+
+});
+
+//Listen for events caused by tnc 'tnc-message's
+ipcRenderer.on('action-update-transmission-status', (event, arg) => {
+    var data =arg["data"][0];
+    var txprog = document.getElementById("transmission_progress")
+    ipcRenderer.send('request-show-electron-progressbar',data.percent);
+    txprog.setAttribute("aria-valuenow", data.percent);
+    txprog.setAttribute("style", "width:" + data.percent + "%;");
+     
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(data.finished) == 'undefined') {
+        var time_left = "time left: estimating";
+    } else {
+        var arq_seconds_until_finish = data.finished
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        if (hours > 0)
+        {
+            time_left = "time left: ~"+ hours.toString().padStart(2,'0') + ":" + minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        } else {
+            time_left = "time left: ~"+ minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        }
+    }
+    var time_left = "<strong>" + time_left +" || Speed/min: ";
+
+    // SET BYTES PER MINUTE
+    if (typeof(data.bytesperminute) == 'undefined') {
+        var arq_bytes_per_minute = 0;
+    } else {
+        var arq_bytes_per_minute = data.bytesperminute;
     }
     
+    // SET BYTES PER MINUTE COMPRESSED
+    var compress = data.compression;
+    if (isNaN(compress)) {
+        compress = 1;
+    }
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
+    
+    time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
+    
+    if (!(typeof(data.dxcallsign) == 'undefined')) {
+        document.getElementById("txtConnectedWith").textContent='to ' + data.dxcallsign;
+    }
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
 });
+
+//https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+function formatBytes(bytes, decimals = 1) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
 
 var slowRollTable=4;
 
@@ -2394,7 +2441,6 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
             console.log(err);
         });
     }
-
 });
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
