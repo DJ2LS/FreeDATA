@@ -812,6 +812,7 @@ class DATA:
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
+                    irs=str(self.is_IRS, 'UTF-8'),
                 )
 
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
@@ -986,6 +987,7 @@ class DATA:
                     dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                     dxgrid=str(static.DXGRID, "UTF-8"),
                     data=base64_data,
+                    irs=str(self.is_IRS, 'UTF-8'),
                 )
 
                 if static.ENABLE_STATS:
@@ -1021,6 +1023,7 @@ class DATA:
                     uuid=self.transmission_uuid,
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                    irs=str(self.is_IRS, 'UTF-8'),
                 )
 
                 duration = time.time() - self.rx_start_of_transmission
@@ -1091,6 +1094,7 @@ class DATA:
             finished=static.ARQ_SECONDS_UNTIL_FINISH,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=str(self.is_IRS, 'UTF-8'),
         )
 
         self.log.info(
@@ -1280,6 +1284,7 @@ class DATA:
                 irs_snr=self.burst_ack_snr,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
 
             # Stay in the while loop until we receive a data_frame_ack. Otherwise,
@@ -1306,6 +1311,7 @@ class DATA:
                 finished=static.ARQ_SECONDS_UNTIL_FINISH,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
 
             self.log.info(
@@ -1331,6 +1337,7 @@ class DATA:
                 compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
 
             self.log.info(
@@ -1443,6 +1450,7 @@ class DATA:
                          bytesperminute=static.ARQ_BYTES_PER_MINUTE,
                          mycallsign=str(self.mycallsign, 'UTF-8'),
                          dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                         irs=str(self.is_IRS, 'UTF-8'),
                          )
 
         static.DXGRID = b'------'
@@ -1464,6 +1472,7 @@ class DATA:
             compression=static.ARQ_COMPRESSION_FACTOR,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=str(self.is_IRS, 'UTF-8'),
         )
         # Update data_channel timestamp
         self.arq_session_last_received = int(time.time())
@@ -2015,6 +2024,7 @@ class DATA:
                     status="opening",
                     mycallsign=str(mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign,'UTF-8'),
+                    irs=str(self.is_IRS, 'UTF-8'),
                 )
 
                 self.log.info(
@@ -2035,6 +2045,7 @@ class DATA:
                         status="waiting",
                         mycallsign=str(self.mycallsign, 'UTF-8'),
                         dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                        irs=str(self.is_IRS, 'UTF-8'),
                     )
 
                     # wait while timeout not reached and our busy state is busy
@@ -2070,6 +2081,7 @@ class DATA:
                 compression=static.ARQ_COMPRESSION_FACTOR,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
 
             self.log.warning(
@@ -2130,6 +2142,7 @@ class DATA:
             status="opening",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=str(self.is_IRS, 'UTF-8'),
         )
 
         # n_frames_per_burst is currently unused
@@ -2253,6 +2266,7 @@ class DATA:
             status="opened",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=str(self.is_IRS, 'UTF-8'),
         )
 
         self.log.info(
@@ -2287,6 +2301,7 @@ class DATA:
                 status="opened",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
 
@@ -2338,6 +2353,7 @@ class DATA:
                 reason="protocol version missmatch",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                irs=str(self.is_IRS, 'UTF-8'),
             )
             # TODO: We should display a message to this effect on the UI.
             self.log.warning(
@@ -2522,6 +2538,7 @@ class DATA:
             status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=str(self.is_IRS, 'UTF-8'),
         )
 
         stop_frame = bytearray(self.length_sig0_frame)
@@ -2552,6 +2569,7 @@ class DATA:
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
             uuid=self.transmission_uuid,
+            irs=str(self.is_IRS, 'UTF-8'),
         )
         self.arq_cleanup()
 
@@ -3148,6 +3166,7 @@ class DATA:
                     uuid=self.transmission_uuid,
                     mycallsign=str(self.mycallsign, 'UTF-8'),
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
+                    irs=str(self.is_IRS, 'UTF-8'),
                 )
                 self.arq_cleanup()
 
