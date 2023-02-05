@@ -5,8 +5,6 @@ const {
 const {
     v4: uuidv4
 } = require('uuid');
-const utf8 = require('utf8');
-const blobUtil = require('blob-util')
 // https://stackoverflow.com/a/26227660
 var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Application Support' : process.env.HOME + "/.config")
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -309,7 +307,8 @@ db.post({
         var dxcallsign = selected_callsign.toUpperCase();
         var textarea = document.getElementById('chatModuleMessage')
         var chatmessage = textarea.value;
-
+        //Remove non-printable chars from begining and end of string--should save us a byte here and there
+        chatmessage = chatmessage.toString().trim();
         // reset textarea size
         var message_container_height_offset = 150;
         var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
@@ -356,8 +355,8 @@ db.post({
             _attachments: {
                 [filename]: {
                     content_type: filetype,
-                    data: Buffer.from(file,"utf-8").toString("base64")
                     //data: btoa(file)
+                    data: btoa_FD(file)
                 }
             }
         }).then(function(response) {
@@ -475,7 +474,8 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
         // handle ARQ transmission
         } else if (item.arq == 'transmission' && item.status == 'received') {
             //var encoded_data = atob(item.data);
-            var encoded_data = Buffer.from(item.data,'base64').toString('utf-8');
+            //var encoded_data = Buffer.from(item.data,'base64').toString('utf-8');
+            var encoded_data = atob_FD(item.data);
             var splitted_data = encoded_data.split(split_char);
 
             console.log(splitted_data)
@@ -486,15 +486,16 @@ ipcRenderer.on('action-new-msg-received', (event, arg) => {
             obj.command = splitted_data[1];
             obj.checksum = splitted_data[2];
             // convert message to unicode from utf8 because of emojis
-            obj.uuid = utf8.decode(splitted_data[3]);
-            obj.msg = utf8.decode(splitted_data[5]);
+            //No, don't convert; we're already UTF-8!!!!!
+            obj.uuid = splitted_data[3];
+            obj.msg = splitted_data[5];
             obj.status = 'null';
             obj.snr = 'null';
             obj.type = 'received';
-            obj.filename = utf8.decode(splitted_data[6]);
-            obj.filetype = utf8.decode(splitted_data[7]);
+            obj.filename = splitted_data[6];
+            obj.filetype = splitted_data[7];
             //obj.file = btoa(splitted_data[8]);
-            obj.file = Buffer.from(splitted_data[8],'utf-8').toString("base64");
+            obj.file = btoa_FD(splitted_data[8]);
 
             add_obj_to_database(obj);
             update_chat_obj_by_uuid(obj.uuid);
@@ -537,7 +538,7 @@ update_chat = function(obj) {
                 // not that nice....
                 // we really should avoid converting back from base64 for performance reasons...
                 //var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
-                var filesize = Math.ceil(Buffer.from(obj._attachments[filename]["data"],'base64').toString('utf-8').length);
+                var filesize = Math.ceil(atob_FD(obj._attachments[filename]["data"]).length) + " Bytes";
             }
 
             // check if image, then display it
@@ -1060,3 +1061,21 @@ var crc32 = function(str) {
 
     return (crc ^ (-1)) >>> 0;
 };
+/**
+ * Binary to ASCII replacement
+ * @param {string} data in normal/usual utf-8 format
+ * @returns base64 encoded string
+ */
+function btoa_FD(data)
+{
+    return Buffer.from(data,'utf-8').toString('base64');
+}
+/**
+ * ASCII to Binary replacement
+ * @param {string} data in base64 encoding
+ * @returns utf-8 normal/usual string
+ */
+function atob_FD(data)
+{
+    return Buffer.from(data,'base64').toString('utf-8');
+}
