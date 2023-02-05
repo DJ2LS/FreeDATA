@@ -866,8 +866,8 @@ update_chat = function(obj) {
                 //var file = atob(obj._attachments[filename]["data"])
                 db.getAttachment(obj._id, filename).then(function(data) {
                     console.log(data)
-                    //Rewrote this part to use buffers to ensure encoding is coorect -- n1qm
-                    var binaryString = Buffer.from(data,"base64").toString('utf-8');
+                    //Rewrote this part to use buffers to ensure encoding is corect -- n1qm
+                    var binaryString = atob_FD(data);
                     
                     console.log(binaryString);
                     var data_with_attachment = doc.timestamp + split_char + doc.msg + split_char + filename + split_char + filetype + split_char + binaryString;
