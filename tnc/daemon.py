@@ -306,9 +306,9 @@ class DAEMON:
                 # data[11] rigctld_port
                 if data[0] == "TEST_HAMLIB":
 
-                    radiocontrol = data[9]
-                    rigctld_ip = data[10]
-                    rigctld_port = data[11]
+                    radiocontrol = data[1]
+                    rigctld_ip = data[2]
+                    rigctld_port = data[3]
 
                     # check how we want to control the radio
                     if radiocontrol == "direct":
