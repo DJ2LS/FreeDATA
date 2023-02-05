@@ -236,6 +236,8 @@ client.on('data', function(socketdata) {
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
+                //continue to next for loop iteration, nothing else needs to be done here
+                continue;
             }
 
 
