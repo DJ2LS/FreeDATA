@@ -164,7 +164,7 @@ window.addEventListener('DOMContentLoaded', () => {
         //Convert to utf-8--so we can just use utf-8 everywhere
         msg.setRangeText(event.detail.emoji.unicode.toString('utf-8'));
         //console.log(event.detail);
-        msg.focus();
+        //msg.focus();
     })
     document.getElementById("emojipickerbutton").addEventListener("click", () => {
         var element = document.getElementById("emojipickercontainer")
