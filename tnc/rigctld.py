@@ -298,7 +298,7 @@ class radio:
     def get_ptt(self):
         """ """
         try:
-            return self.send_command(b"t", True)
+            return self.send_data_command(b"t", True)
         except Exception:
             return False
 

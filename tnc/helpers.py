@@ -483,3 +483,7 @@ def return_key_from_object(default, obj, key):
         return obj[key]
     except KeyError:
         return default
+
+
+def bool_to_string(state):
+    return "True" if state else "False"
