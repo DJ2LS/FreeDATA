@@ -2537,8 +2537,7 @@ class DATA:
             arq="transmission",
             status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
-            dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            irs=str(self.is_IRS, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8')
         )
 
         stop_frame = bytearray(self.length_sig0_frame)
@@ -2568,8 +2567,7 @@ class DATA:
             status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            uuid=self.transmission_uuid,
-            irs=str(self.is_IRS, 'UTF-8'),
+            uuid=self.transmission_uuid
         )
         self.arq_cleanup()
 
