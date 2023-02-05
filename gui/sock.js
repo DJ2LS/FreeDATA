@@ -650,7 +650,7 @@ ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
 * @returns base64 encoded string
 */
 function btoa_FD(data) {
-    return  Buffer.from(this.data,'utf-8').toString('base64');
+    return  Buffer.from(data,'utf-8').toString('base64');
 }
 /**
 * base64 to string
