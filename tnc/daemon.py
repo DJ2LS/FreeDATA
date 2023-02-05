@@ -324,14 +324,6 @@ class DAEMON:
 
                     hamlib = rig.radio()
                     hamlib.open_rig(
-                        devicename=devicename,
-                        deviceport=deviceport,
-                        hamlib_ptt_type=pttprotocol,
-                        serialspeed=serialspeed,
-                        pttport=pttport,
-                        data_bits=data_bits,
-                        stop_bits=stop_bits,
-                        handshake=handshake,
                         rigctld_ip=rigctld_ip,
                         rigctld_port=rigctld_port,
                     )
