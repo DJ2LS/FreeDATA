@@ -1943,10 +1943,6 @@ var speedChartOptions = {
 
      if (arg.arq_state == 'True' || arg.arq_session == 'True') {
         toggleClass("spnConnectedWith","text-success",true);
-        if (!(typeof(arg.dxcallsign) == 'undefined')) {
-            //console.log("Received dxcallsign:  " + arg.dxcallsign);
-            document.getElementById("txtConnectedWith").textContent=arg.dxcallsign;
-        }
      } else {
         toggleClass("spnConnectedWith","text-success",false);
      }
