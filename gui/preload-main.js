@@ -1534,7 +1534,35 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     })
 })
 
-//Listen for events caused by tnc 'tnc-message' receiving
+function connectedStation(data)
+{
+    if ((typeof(data.dxcallsign) == 'undefined')) {
+        return;
+    }
+    if (!(typeof(data.arq) == 'undefined') && data.arq.toLowerCase() == 'session') {
+        var prefix = "w/ ";
+    } else {
+        switch (data.irs){
+            case 'True':
+                //We are receiving station
+                var prefix = "de ";
+                break;
+            case 'False':
+                //We are sending station
+                var prefix = "to ";
+                break;
+            default:
+                //Shouldn't happen
+                console.trace('No data.irs data in tnc-message');
+                var prefix = "";
+                break;
+        }
+    
+    }
+    document.getElementById("txtConnectedWith").textContent=prefix + data.dxcallsign;
+}
+
+//Listen for events caused by tnc 'tnc-message' rx
 ipcRenderer.on('action-update-reception-status', (event, arg) => {
     var data =arg["data"][0];
     var txprog = document.getElementById("transmission_progress")
@@ -1584,14 +1612,12 @@ ipcRenderer.on('action-update-reception-status', (event, arg) => {
     
     time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
     
-    if (!(typeof(data.dxcallsign) == 'undefined')) {
-        document.getElementById("txtConnectedWith").textContent='de ' + data.dxcallsign;
-    }
-    document.getElementById("transmission_timeleft").innerHTML = time_left;
 
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
+    connectedStation(data);
 });
 
-//Listen for events caused by tnc 'tnc-message's
+//Listen for events caused by tnc 'tnc-message's tx
 ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     var data =arg["data"][0];
     var txprog = document.getElementById("transmission_progress")
@@ -1641,10 +1667,8 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     
     time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
     
-    if (!(typeof(data.dxcallsign) == 'undefined')) {
-        document.getElementById("txtConnectedWith").textContent='to ' + data.dxcallsign;
-    }
-    document.getElementById("transmission_timeleft").innerHTML = time_left;
+    connectedStation(data);
+
 });
 
 
