@@ -236,6 +236,8 @@ client.on('data', function(socketdata) {
                 };
 
                 ipcRenderer.send('request-update-tnc-state', Data);
+                //continue to next for loop iteration, nothing else needs to be done here
+                continue;
             }
 
 
@@ -346,6 +348,9 @@ client.on('data', function(socketdata) {
                     } else if (data['status'] == 'waiting') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-waiting', {data: [data]});
 
+                     // ARQ RECEIVING
+                    } else if (data['status'] == 'receiving') {
+                        ipcRenderer.send('request-update-reception-status', {data: [data]});
 
                     // ARQ TRANSMISSION FAILED
                     } else if (data['status'] == 'failed') {
@@ -367,7 +372,8 @@ client.on('data', function(socketdata) {
 
                         socketLog.info(data)
                         // we need to encode here to do a deep check for checking if file or message
-                        var encoded_data = atob(data['data'])
+                        //var encoded_data = atob(data['data'])
+                        var encoded_data = atob_FD(data['data']);
                         var splitted_data = encoded_data.split(split_char)
 
                         if(splitted_data[0] == 'f'){
@@ -420,7 +426,8 @@ client.on('data', function(socketdata) {
                 for (i = 0; i < data['data-array'].length; i++) {
                     try{
                         // we need to encode here to do a deep check for checking if file or message
-                        var encoded_data = atob(data['data-array'][i]['data'])
+                        //var encoded_data = atob(data['data-array'][i]['data'])
+                        var encoded_data = atob_FD(data['data-array'][i]['data']);
                         var splitted_data = encoded_data.split(split_char)
 
 
@@ -516,8 +523,11 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
     data = datatype + split_char + filename + split_char + filetype + split_char + checksum + split_char + data
     socketLog.info(data)
-    socketLog.info(btoa(data))
-    data = btoa(data)
+    //socketLog.info(btoa(data))
+    //Btoa / atob will not work with charsets > 8 bits (i.e. the emojis); should probably move away from using it
+    //TODO:  Will need to update anyother occurences and throughly test
+    //data = btoa(data)
+    data = btoa_FD(data);
 
     command = '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '"}]}'
     writeTncCommand(command)
@@ -541,8 +551,8 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, c
 
     console.log("CHECKSUM" + checksum)
     //socketLog.info(btoa(data))
-    data = btoa(data)
-
+    //data = btoa(data)
+    data = btoa_FD(data);
 
     //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
     command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
@@ -636,7 +646,23 @@ ipcRenderer.on('action-update-tnc-ip', (event, arg) => {
 
 });
 
-
+/**
+* String to base64
+* @param {string} data in normal/usual utf-8 format
+* @returns base64 encoded string
+*/
+function btoa_FD(data) {
+    return  Buffer.from(data,'utf-8').toString('base64');
+}
+/**
+* base64 to string
+* @param {string} data in base64 encoding
+* @returns utf-8 normal/usual string
+*/
+function atob_FD(data)
+{
+    return Buffer.from(data,'base64').toString('utf-8');
+}
 
 // https://stackoverflow.com/a/50579690
 // crc32 calculation

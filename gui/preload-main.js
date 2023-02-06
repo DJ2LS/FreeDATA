@@ -261,13 +261,27 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     if(config.enable_explorer == 'True'){
         document.getElementById("ExplorerSwitch").checked = true;
+        document.getElementById("ExplorerStatsSwitch").disabled=false;
+        if (config.explorer_stats.toLowerCase() == 'true') {
+            document.getElementById("ExplorerStatsSwitch").checked=true;
+        } else {
+            document.getElementById("ExplorerStatsSwitch").checked=false;
+        }
+
+        
     } else {
         document.getElementById("ExplorerSwitch").checked = false;
+        document.getElementById("ExplorerStatsSwitch").disabled=true;
+        document.getElementById("ExplorerStatsSwitch").checked=false;
+    }
+    if(config.auto_tune == 'True'){
+        document.getElementById("autoTuneSwitch").checked = true;
+    } else {
+        document.getElementById("autoTuneSwitch").checked = false;
     }
     // theme selector
 
     if(config.theme != 'default'){
-
         var theme_path = "../node_modules/bootswatch/dist/"+ config.theme +"/bootstrap.min.css";
         document.getElementById("theme_selector").value = config.theme;
         document.getElementById("bootstrap_theme").href = escape(theme_path);
@@ -1086,8 +1100,31 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("ExplorerSwitch").addEventListener("click", () => {
         if(document.getElementById("ExplorerSwitch").checked == true){
             config.enable_explorer = "True";
+            document.getElementById("ExplorerStatsSwitch").disabled=false;
         } else {
             config.enable_explorer = "False";
+            config.explorer_stats = "False";
+            document.getElementById("ExplorerStatsSwitch").disabled=true;
+            document.getElementById("ExplorerStatsSwitch").checked=false;
+            document.getElementById("ExplorerSwitch").checked = false;
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+        // enable explorer stats Switch clicked
+    document.getElementById("ExplorerStatsSwitch").addEventListener("click", () => {
+        if(document.getElementById("ExplorerStatsSwitch").checked == true){
+            config.explorer_stats = "True";
+        } else {
+            config.explorer_stats = "False";
+        }
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    });
+    // enable explorer stats Switch clicked
+    document.getElementById("autoTuneSwitch").addEventListener("click", () => {
+        if(document.getElementById("autoTuneSwitch").checked == true){
+            config.auto_tune = "True";
+        } else {
+            config.auto_tune = "False";
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -1253,7 +1290,16 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         } else {
             var enable_explorer = "False";
         }
-       
+        if (document.getElementById("ExplorerStatsSwitch").checked == true){
+            var explorer_stats = "True";
+        } else {
+            var explorer_stats = "False";
+        }
+        if (document.getElementById("autoTuneSwitch").checked == true){
+            var auto_tune = "True";
+        } else {
+            var auto_tune = "False";
+        }
         // loop through audio device list and select
         for(i = 0; i < document.getElementById("audio_input_selectbox").length; i++) {
             device = document.getElementById("audio_input_selectbox")[i];
@@ -1313,6 +1359,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         config.respond_to_cq = respond_to_cq;
         config.rx_buffer_size = rx_buffer_size;
         config.enable_explorer = enable_explorer;
+        config.explorer_stats = explorer_stats;
+        config.auto_tune = auto_tune;
 
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 
@@ -1331,7 +1379,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         */
 
 
-        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer);
+        daemon.startTNC(callsign_ssid, mygrid, rx_audio, tx_audio, radiocontrol, deviceid, deviceport, pttprotocol, pttport, serialspeed, data_bits, stop_bits, handshake, rigctld_ip, rigctld_port, enable_fft, enable_scatter, low_bandwidth_mode, tuning_range_fmin, tuning_range_fmax, enable_fsk, tx_audio_level, respond_to_cq, rx_buffer_size, enable_explorer,explorer_stats,auto_tune);
 
         
     })
@@ -1484,33 +1532,52 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
             };
             ipcRenderer.send('request-show-chat-window', Data);    
     })
-
-
-    
-    
-    
-    
-
-  
 })
 
-//Listen for events caused by tnc 'tnc-message's
-ipcRenderer.on('action-update-transmission-status', (event, arg) => {
+function connectedStation(data)
+{
+    if ((typeof(data.dxcallsign) == 'undefined')) {
+        return;
+    }
+    if (!(typeof(data.arq) == 'undefined') && data.arq.toLowerCase() == 'session') {
+        var prefix = "w/ ";
+    } else {
+        switch (data.irs){
+            case 'True':
+                //We are receiving station
+                var prefix = "de ";
+                break;
+            case 'False':
+                //We are sending station
+                var prefix = "to ";
+                break;
+            default:
+                //Shouldn't happen
+                console.trace('No data.irs data in tnc-message');
+                var prefix = "";
+                break;
+        }
+    
+    }
+    document.getElementById("txtConnectedWith").textContent=prefix + data.dxcallsign;
+}
+
+//Listen for events caused by tnc 'tnc-message' rx
+ipcRenderer.on('action-update-reception-status', (event, arg) => {
     var data =arg["data"][0];
     var txprog = document.getElementById("transmission_progress")
     ipcRenderer.send('request-show-electron-progressbar',data.percent);
     txprog.setAttribute("aria-valuenow", data.percent);
     txprog.setAttribute("style", "width:" + data.percent + "%;");
-
-     // SET TIME LEFT UNTIL FINIHED
-     if (typeof(data.finished) == 'undefined') {
-        var time_left = 0;
+     
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(data.finished) == 'undefined') {
+        var time_left = "time left: estimating";
     } else {
         var arq_seconds_until_finish = data.finished
         var hours = Math.floor(arq_seconds_until_finish / 3600);
         var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
         var seconds = arq_seconds_until_finish % 60;
-
         if(hours < 0) {
             hours = 0;
         }
@@ -1520,9 +1587,14 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
         if(seconds < 0) {
             seconds = 0;
         }
-        var time_left = "time left: ~ "+ minutes + "min" + " " + seconds + "s";
+        if (hours > 0)
+        {
+            time_left = "time left: ~"+ hours.toString().padStart(2,'0') + ":" + minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        } else {
+            time_left = "time left: ~"+ minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        }
     }
-    document.getElementById("transmission_timeleft").textContent = time_left;
+    var time_left = "<strong>" + time_left +" || Speed/min: ";
 
     // SET BYTES PER MINUTE
     if (typeof(data.bytesperminute) == 'undefined') {
@@ -1530,7 +1602,6 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
     } else {
         var arq_bytes_per_minute = data.bytesperminute;
     }
-    document.getElementById("bytes_per_min").textContent = arq_bytes_per_minute;
     
     // SET BYTES PER MINUTE COMPRESSED
     var compress = data.compression;
@@ -1538,9 +1609,69 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
         compress = 1;
     }
     var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
-    document.getElementById("bytes_per_min_compressed").textContent = arq_bytes_per_minute_compressed;
     
+    time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
+    
+
+    document.getElementById("transmission_timeleft").innerHTML = time_left;
+    connectedStation(data);
 });
+
+//Listen for events caused by tnc 'tnc-message's tx
+ipcRenderer.on('action-update-transmission-status', (event, arg) => {
+    var data =arg["data"][0];
+    var txprog = document.getElementById("transmission_progress")
+    ipcRenderer.send('request-show-electron-progressbar',data.percent);
+    txprog.setAttribute("aria-valuenow", data.percent);
+    txprog.setAttribute("style", "width:" + data.percent + "%;");
+     
+    // SET TIME LEFT UNTIL FINIHED
+    if (typeof(data.finished) == 'undefined') {
+        var time_left = "time left: estimating";
+    } else {
+        var arq_seconds_until_finish = data.finished
+        var hours = Math.floor(arq_seconds_until_finish / 3600);
+        var minutes = Math.floor((arq_seconds_until_finish % 3600) / 60 );
+        var seconds = arq_seconds_until_finish % 60;
+        if(hours < 0) {
+            hours = 0;
+        }
+        if(minutes < 0) {
+            minutes = 0;
+        }
+        if(seconds < 0) {
+            seconds = 0;
+        }
+        if (hours > 0)
+        {
+            time_left = "time left: ~"+ hours.toString().padStart(2,'0') + ":" + minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        } else {
+            time_left = "time left: ~"+ minutes.toString().padStart(2,'0') + "."  + seconds.toString().padStart(2,'0');
+        }
+    }
+    var time_left = "<strong>" + time_left +" || Speed/min: ";
+
+    // SET BYTES PER MINUTE
+    if (typeof(data.bytesperminute) == 'undefined') {
+        var arq_bytes_per_minute = 0;
+    } else {
+        var arq_bytes_per_minute = data.bytesperminute;
+    }
+    
+    // SET BYTES PER MINUTE COMPRESSED
+    var compress = data.compression;
+    if (isNaN(compress)) {
+        compress = 1;
+    }
+    var arq_bytes_per_minute_compressed = Math.round(arq_bytes_per_minute * compress);
+    
+    time_left += formatBytes(arq_bytes_per_minute,1) + " (comp: " + formatBytes(arq_bytes_per_minute_compressed,1) + ")</strong>";
+    
+    connectedStation(data);
+
+});
+
+
 
 var slowRollTable=4;
 
@@ -1563,9 +1694,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // DATA STATE
     global.rxBufferLengthTnc = arg.rx_buffer_length
 
-
     // START OF SCATTER CHART
-
     const scatterConfig = {
                 plugins: {
                     legend: {
@@ -1574,7 +1703,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                     tooltip: {
                         enabled: false
                     },
-                    
                     annotation: {
                         annotations: {
                             line1: {
@@ -1593,9 +1721,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                             }
                          }   
                      },   
-        
-        
-        
                 },
                 animations: false,
                 scales: {
@@ -1610,7 +1735,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                         }            
                     },
                     y: {
-                    
                         display: true,
                         min: -80,
                         max: 80,
@@ -1654,7 +1778,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // END OF SCATTER CHART
 
     // START OF SPEED CHART
-
     var speedDataTime = []
 
     if (typeof(arg.speed_list) == 'undefined') {
@@ -1683,7 +1806,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
         speedDataSnr.push(arg.speed_list[i].snr)
     }
 
-
     var speedChartConfig = {
       type: 'line',
     };
@@ -1710,7 +1832,6 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 yAxisID: 'SPEED',
             }
         ],
-
     };
 
 var speedChartOptions = {
@@ -1748,19 +1869,9 @@ var speedChartOptions = {
             global.speedChart.update();
         }
     }
-
     // END OF SPEED CHART
 
     // PTT STATE
-    /*
-    if (arg.ptt_state == 'True') {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
-    } else if (arg.ptt_state == 'False') {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-success";
-    } else {
-        document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
-    }
-    */
     switch (arg.ptt_state){
         case 'True':
             document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
@@ -1771,33 +1882,16 @@ var speedChartOptions = {
         default:
             document.getElementById("ptt_state").className = "btn btn-sm btn-secondary";
             break;
-
     }
+
     // AUDIO RECORDING
     if (arg.audio_recording == 'True') {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
         document.getElementById("startStopRecording").textContent = "Stop Rec"
-    } else if (arg.ptt_state == 'False') {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
-        document.getElementById("startStopRecording").textContent = "Start Rec"
     } else {
-        document.getElementById("startStopRecording").className = "btn btn-sm btn-danger";
         document.getElementById("startStopRecording").textContent = "Start Rec"
     }
 
     // CHANNEL BUSY STATE
-    /*
-    if (arg.channel_busy == 'True') {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
-
-    } else if (arg.channel_busy == 'False') {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-success";
-
-    } else {
-        document.getElementById("channel_busy").className = "btn btn-sm btn-secondary";
-
-    }
-    */
     switch (arg.channel_busy){
         case 'True':
             document.getElementById("channel_busy").className = "btn btn-sm btn-danger";
@@ -1811,19 +1905,6 @@ var speedChartOptions = {
     }
 
     // BUSY STATE
-    /*
-    if (arg.busy_state == 'BUSY') {
-        document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-        document.getElementById("startTransmission").disabled = true;
-        //document.getElementById("stopTransmission").disabled = false;
-    } else if (arg.busy_state == 'IDLE') {
-        document.getElementById("busy_state").className = "btn btn-sm btn-success";
-    } else {
-        document.getElementById("busy_state").className = "btn btn-sm btn-secondary";
-        document.getElementById("startTransmission").disabled = true;
-        //document.getElementById("stopTransmission").disabled = false;
-    }
-    */
     switch(arg.busy_state){
         case 'BUSY':
             document.getElementById("busy_state").className = "btn btn-sm btn-danger";
@@ -1839,61 +1920,32 @@ var speedChartOptions = {
     }
 
     // ARQ STATE
-    /*
-    if (arg.arq_state == 'True') {
-        document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-        //document.getElementById("startTransmission").disabled = true;
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = false;
-    } else if (arg.arq_state == 'False') {
-        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = true;
-    } else {
-        document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-        //document.getElementById("startTransmission").disabled = true;
-        document.getElementById("startTransmission").disabled = false;
-        //document.getElementById("stopTransmission").disabled = false;
-    }
-    */
     switch (arg.arq_state){
         case 'True':
             document.getElementById("arq_state").className = "btn btn-sm btn-warning";
             document.getElementById("startTransmission").disabled = false;
             break;
-        case 'False':
-            document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
-            document.getElementById("startTransmission").disabled = false;
-            break;
         default:
             document.getElementById("arq_state").className = "btn btn-sm btn-secondary";
             document.getElementById("startTransmission").disabled = false;
             break;
     }
-    // ARQ SESSION
-    /*
-    if (arg.arq_session == 'True') {
-        document.getElementById("arq_session").className = "btn btn-sm btn-warning";
 
-    } else if (arg.arq_session == 'False') {
-        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+     // ARQ SESSION
+     switch (arg.arq_session){
+         case 'True':
+             document.getElementById("arq_session").className = "btn btn-sm btn-warning";
+             break;
+         default:
+             document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
+             break;
+     }
 
-    } else {
-        document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-
-    }
-    */
-    switch (arg.arq_session){
-        case 'True':
-            document.getElementById("arq_session").className = "btn btn-sm btn-warning";
-            break;
-        case 'False':
-            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-            break;
-        default:
-            document.getElementById("arq_session").className = "btn btn-sm btn-secondary";
-            break;
-    }
+     if (arg.arq_state == 'True' || arg.arq_session == 'True') {
+        toggleClass("spnConnectedWith","text-success",true);
+     } else {
+        toggleClass("spnConnectedWith","text-success",false);
+     }
 
     // HAMLIB STATUS
     if (arg.hamlib_status == 'connected') {
@@ -1902,45 +1954,28 @@ var speedChartOptions = {
         document.getElementById("rigctld_state").className = "btn btn-secondary btn-sm";
     }
 
+    // BEACON
+    let bcn = document.getElementById("startBeacon");
 
-
-    // BEACON STATE
-    /*
-    if (arg.beacon_state == 'True') {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
-        document.getElementById("startBeacon").disabled = true;
-        document.getElementById("beaconInterval").disabled = true;
-        document.getElementById("stopBeacon").disabled = false;
-    } else if (arg.beacon_state == 'False') {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-        document.getElementById("startBeacon").disabled = false;
-        document.getElementById("beaconInterval").disabled = false;
-        document.getElementById("stopBeacon").disabled = true;
-    } else {
-        document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-        document.getElementById("startBeacon").disabled = false;
-        document.getElementById("stopBeacon").disabled = true;
-        document.getElementById("beaconInterval").disabled = false;
-    }
-    */
     switch (arg.beacon_state){
         case 'True':
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success spinner-grow";
-            document.getElementById("startBeacon").disabled = true;
+            bcn.disabled = true;    
+            if (config.high_graphics.toUpperCase() == "TRUE") {
+                bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
+                document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
+            } else {
+                bcn.className = "btn btn-sm btn-success";
+                document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1 text-success text-uppercase");
+            }
             document.getElementById("beaconInterval").disabled = true;
             document.getElementById("stopBeacon").disabled = false;
             break;
-        case 'False':
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-            document.getElementById("startBeacon").disabled = false;
-            document.getElementById("beaconInterval").disabled = false;
-            document.getElementById("stopBeacon").disabled = true;
-            break;
         default:
-            document.getElementById("startBeacon").className = "btn btn-sm btn-success";
-            document.getElementById("startBeacon").disabled = false;
-            document.getElementById("stopBeacon").disabled = true;
+            document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
+            bcn.className = "btn btn-sm btn-success";
             document.getElementById("beaconInterval").disabled = false;
+            document.getElementById("stopBeacon").disabled = true;
+            bcn.disabled = false;
             break;
     }
     // dbfs
@@ -1968,23 +2003,6 @@ var speedChartOptions = {
     document.getElementById("bandwidth").textContent = arg.bandwidth;
 
     // SET SPEED LEVEL
-    /*
-    if(arg.speed_level >= 0) {
-        document.getElementById("speed_level").className = "bi bi-reception-1";
-    }
-    if(arg.speed_level >= 1) {
-        document.getElementById("speed_level").className = "bi bi-reception-2";
-    }
-    if(arg.speed_level >= 2) {
-        document.getElementById("speed_level").className = "bi bi-reception-3";
-    }
-    if(arg.speed_level >= 3) {
-        document.getElementById("speed_level").className = "bi bi-reception-4";
-    }
-    if(arg.speed_level >= 4) {
-        document.getElementById("speed_level").className = "bi bi-reception-4";
-    }
-    */
     switch (arg.speed_level){
         case '0':
             document.getElementById("speed_level").className = "bi bi-reception-1";
@@ -1999,8 +2017,6 @@ var speedChartOptions = {
             document.getElementById("speed_level").className = "bi bi-reception-4";
             break;
     }
-    
-    
     
     // SET TOTAL BYTES
     if (typeof(arg.total_bytes) == 'undefined') {
@@ -2040,13 +2056,10 @@ var speedChartOptions = {
             var myGrid = document.getElementById("myGrid").value;
             try {
                 var dist = parseInt(distance(myGrid, dxGrid)) + ' km';
-                //document.getElementById("pingDistance").innerHTML = dist;
                 document.getElementById("dataModalPingDistance").textContent = dist;
             } catch {
-                //document.getElementById("pingDistance").innerHTML = '---';
                 document.getElementById("dataModalPingDistance").textContent = '---';
             }
-            //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
             document.getElementById("dataModalPingDB").textContent = arg.stations[i]['snr'];
         }
 
@@ -2090,7 +2103,11 @@ var speedChartOptions = {
         var gridDistanceText = document.createElement('span');
 
         try {
-            gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['dxgrid'])) + ' km';
+            if (arg.stations[i]['dxgrid'].toString() != "------") {
+                gridDistanceText.innerText = parseInt(distance(document.getElementById("myGrid").value, arg.stations[i]['dxgrid'])) + ' km';
+            } else {
+                gridDistanceText.innerText = '---';    
+            }
         } catch {
             gridDistanceText.innerText = '---';
         }
@@ -2100,17 +2117,7 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-        /*
-        if(arg.stations[i]['datatype'] == 'DATA-CHANNEL'){
-            dataTypeText.innerText = 'DATA-C';
-            dataType.appendChild(dataTypeText);
-        }
-        
-        if(arg.stations[i]['datatype'] == 'SESSION-HB'){
-            dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
-            dataType.appendChild(dataTypeText);
-        }
-        */
+
         switch (arg.stations[i]['datatype']){
             case 'DATA-CHANNEL':
                 dataTypeText.innerText = 'DATA-C';
@@ -2121,28 +2128,7 @@ var speedChartOptions = {
                 dataType.appendChild(dataTypeText);
                 break;
         }
-        /*
-        if (dataTypeText.innerText == 'CQ CQ CQ') {
-            row.classList.add("table-success");
-        }
 
-        if (dataTypeText.innerText == 'DATA-C') {
-            dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
-            row.classList.add("table-warning");
-        }
-
-        if (dataTypeText.innerText == 'BEACON') {
-            row.classList.add("table-light");
-        }
-
-        if (dataTypeText.innerText == 'PING') {
-            row.classList.add("table-info");
-        }
-
-        if (dataTypeText.innerText == 'PING-ACK') {
-            row.classList.add("table-primary");
-        }
-        */
         switch (dataTypeText.innerText){
             case 'CQ CQ CQ':
                 row.classList.add("table-success");
@@ -2512,7 +2498,6 @@ ipcRenderer.on('action-update-rx-buffer', (event, arg) => {
             console.log(err);
         });
     }
-
 });
 
 ipcRenderer.on('run-tnc-command', (event, arg) => {
@@ -2954,12 +2939,26 @@ function set_CPU_mode() {
         toggleClass("transmission_progress","progress-bar-striped",true);
     }
 }
-//Teomporarily disable a button with timeout
+//Temporarily disable a button with timeout
 function pauseButton(btn, timems) {
     btn.disabled = true;
     var curText = btn.innerHTML;
-    btn.innerHTML = "<span class=\"spinner-border spinner-border-sm\" role=\"status\" aria-hidden=\"true\">";
+    if (config.high_graphics.toUpperCase() == "TRUE") {
+        btn.innerHTML = "<span class=\"spinner-grow spinner-grow-sm force-gpu\" role=\"status\" aria-hidden=\"true\">";
+    }
   setTimeout(()=>{
     btn.innerHTML=curText;
     btn.disabled = false;}, timems)
+}
+//https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
+function formatBytes(bytes, decimals = 1) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
 }
