@@ -37,9 +37,12 @@ class DATA:
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("DATA")
-    stats = stats.stats()
+
 
     def __init__(self) -> None:
+
+        self.stats = stats.stats()
+
         # Initial call sign. Will be overwritten later
         self.mycallsign = static.MYCALLSIGN
         self.dxcallsign = static.DXCALLSIGN
@@ -992,7 +995,7 @@ class DATA:
 
                 if static.ENABLE_STATS:
                     duration = time.time() - self.rx_start_of_transmission
-                    stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
+                    self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
 
                 self.log.info(
                     "[TNC] ARQ | RX | SENDING DATA FRAME ACK",
@@ -1041,7 +1044,7 @@ class DATA:
 
                 )
                 if static.ENABLE_STATS:
-                    stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
+                    self.stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
                 self.log.info("[TNC] ARQ | RX | Sending NACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_nack_frame(snr)
