@@ -52,6 +52,7 @@ class stats():
             'crcerror': crcerror,
             'duration': duration,
             'percentage': static.ARQ_TRANSMISSION_PERCENT,
+            'status': status,
             'version': static.VERSION
         }
 
