@@ -2117,6 +2117,7 @@ var speedChartOptions = {
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['dxcallsign'];
         let dxCallTextCall = dxCallText.innerText;
+        let dxCallTextShort = dxCallTextCall.split("-",1)[0];
         row.addEventListener("click", function() {
             document.getElementById("dxCall").value = dxCallTextCall;
           });
@@ -2152,20 +2153,22 @@ var speedChartOptions = {
                 dataType.appendChild(dataTypeText);
                 break;
             case 'SESSION-HB':
-                dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
+                dataTypeText.innerHTML = '<i title=\"Heartbeat\" class="bi bi-heart-pulse-fill"></i>';
                 dataType.appendChild(dataTypeText);
                 break;
         }
 
         switch (dataTypeText.innerText){
             case 'CQ CQ CQ':
+                dataTypeText.textContent="CQ CQ";    
                 row.classList.add("table-success");
                 break;
             case 'DATA-C':
-                dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
+                dataTypeText.innerHTML = '<i title=\"DATA-C\" class="bi bi-file-earmark-binary-fill"></i>';
                 row.classList.add("table-warning");
                 break;
             case 'BEACON':
+                dataTypeText.textContent="BCN";
                 row.classList.add("table-light");
                 break;
             case 'PING':
@@ -2179,20 +2182,28 @@ var speedChartOptions = {
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['snr'];
         snr.appendChild(snrText);
-
+        
         var offset = document.createElement("td");
-        var offsetText = document.createElement('span');
-        offsetText.innerText = arg.stations[i]['offset'];
-        offset.appendChild(offsetText);
+        var offsetText = "&nbsp;";
+        if (contrib.indexOf(dxCallTextShort) >=0) {
+            var offsetText ='<i title="Yeah baby, yeah!!!!" class="bi bi-award-fill text-primary"></i>';
+        }
+        else {
+            if (dxCallTextShort == "DJ2LS") {
+                var offsetText ='<i title="Yeah FreeDATA, yeah!!!!" class="bi bi-emoji-wink-fill text-warning"></i>';
+            }
+        }
+        offset.innerHTML=offsetText;
 
         row.appendChild(timestamp);
         row.appendChild(frequency);
+        row.appendChild(offset);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
         row.appendChild(gridDistance);
         row.appendChild(dataType);
         row.appendChild(snr);
-        row.appendChild(offset);
+        //row.appendChild(offset);
 
         tbl.appendChild(row);
     }
