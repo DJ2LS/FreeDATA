@@ -542,7 +542,14 @@ exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, c
     //data = utf8.encode(data)
 
     //socketLog.info(data)
-
+    //shorten uuid
+    let uuidlast = uuid.lastIndexOf('-');
+    uuidlast +=1;
+    if (uuidlast > 0)
+    {
+        uuid = uuid.substr(uuidlast);
+        //console.log("UUID shortened to:  ",uuid);
+    }
     
     var datatype = "m"
     data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data
