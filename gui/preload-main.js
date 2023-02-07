@@ -458,7 +458,7 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         });
         list+="</ul>";
         divContrib.innerHTML=list;
-        console.log(shuffled)
+        //console.log(shuffled)
     });
 
     // on click radio control toggle view
