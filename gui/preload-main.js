@@ -21,7 +21,7 @@ var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? proce
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
-const contrib = ["DK5SM","DL4IAZ","DB1UJ","EI3HIB","VK5DGR","EI7IG","N2KIQ?","KT4WO","DF7MH","G0HWW","N1QM"]
+const contrib = ["DK5SM","DL4IAZ","DB1UJ","EI3HIB","VK5DGR","EI7IG","N2KIQ","KT4WO","DF7MH","G0HWW","N1QM"]
 
 // SET dbfs LEVEL GLOBAL
 // this is an attempt of reducing CPU LOAD
