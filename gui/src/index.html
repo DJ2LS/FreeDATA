@@ -18,8 +18,10 @@
 
 <body>
 	<!-- SECONDARY NAVBAR -->
-	<nav class="navbar bg-light fixed-top mt-0 mb-1 pb-1 pt-1 shadow-sm">
-		<div class="container-fluid mt-0">
+	
+		
+	<nav class="navbar fixed-top bg-light shadow-sm  mt-0 mb-1 pb-1 pt-1">
+		<div style="margin-left: 5px;">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
 				<div class="btn-group btn-group-sm me-2" role="group"
 					aria-label="local-remote-switch toggle button group" data-bs-placement="bottom"
@@ -45,58 +47,79 @@
 					<button class="btn btn-sm btn-danger" id="daemon_connection_state" type="button" disabled> <i
 							class="bi bi-diagram-3" style="font-size: 1rem; color: white;"></i> </button>
 				</div>
-				<div class="input-group input-group-sm" data-bs-placement="bottom" data-bs-toggle="tooltip"
-					data-bs-html="true"
-					title="Start or stop the TNC process. Please set your audio and radio settings first!">
-					<button type="button" id="startTNC" class="btn btn-sm btn-success"> <i class="bi bi-play-fill"
-							style="font-size: 1rem; color: white;"></i> </button>
-					<!-- TNC LOG BUTTON -->
-					<button class="btn btn-sm btn-secondary" id="tncLog" type="button"> <i class="bi bi-activity"
-							style="font-size: 1rem; color: white;"></i> </button>
-					<!--     <span class="input-group-text" id="tnc_running_state" style="width: 5rem">---</span>-->
-					<button type="button" data-bs-toggle="collapse" data-bs-target=".multi-collapse" id="stopTNC"
-						class="btn btn-sm btn-danger"> <i class="bi bi-x-octagon-fill"
-							style="font-size: 1rem; color: white;"></i> </button>
-				</div>
-			</div>
-			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-danger" id="stop_transmission_connection" type="button"> <i
-						class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i> STOP </button>
-			</div>
-			<div class="btn-toolbar" role="toolbar">
-				<button class="btn btn-sm btn-primary me-4  position-relative" id="openExplorer" type="button"
-					data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View explorer map">
-					<strong>Explorer</strong> <i class="bi bi-pin-map-fill"
-						style="font-size: 1rem; color: white;"></i></button>
-				<button class="btn btn-sm btn-primary me-4  position-relative" id="openRFChat" type="button"
-					data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
-					title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF
-						Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
-					<span
-						class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">.</span>
-				</button> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
-					title="View the received files. This is currently under development!">
-					<!--
 
-               <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
-               <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-               <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
-               </button>
-               </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
-               <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
-               <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-               </button>
-               -->
-				</span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true"
-					title="Settings and Info">
-					<button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal"
-						class="btn btn-sm btn-secondary"><strong>Settings </strong>
-						<i class="bi bi-sliders" style="font-size: 1rem; color: white;"></i>
-					</button>
-				</span>
 			</div>
 		</div>
-	</nav>
+		<div>
+			
+				<button class="btn btn-sm btn-danger" id="stop_transmission_connection" type="button" data-bs-toggle="tooltip" data-bs-html="false" title="Abort session and stop transmissions"> <i
+						class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i> STOP <i
+						class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i></button>
+			
+		</div>
+		<div style="margin-right: 10px;">
+			<button type="button" id="startTNC" class="btn btn-sm btn-success" data-bs-toggle="tooltip" data-bs-html="false" title="Start the TNC. Please set your audio and radio settings first!"> <i class="bi bi-play-fill"
+				style="font-size: 1rem; color: white;"></i></button>
+						<!-- Split Button -->
+	<div class="btn-group" >
+
+		<button class="btn btn-sm btn-primary" id="openRFChat" type="button"
+		data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
+		title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF
+			Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
+		<span
+			class="position-absolute top-0 start-55 translate-middle badge rounded-pill bg-danger">.</span>
+	</button>
+		<button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split dropdown-menu-start" data-bs-toggle="dropdown" aria-expanded="false">
+		<span class="visually-hidden">Toggle Dropdown</span>
+		</button>
+		<ul class="dropdown-menu">
+		<li><button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="dropdown-item">Settings</button>
+	</li>
+		<li><button class="dropdown-item" id="openExplorer" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View explorer map">Explorer</button></li>
+		
+		<li><hr class="dropdown-divider"></li>
+						<!-- TNC STUFF -->
+		<li><h6 class="dropdown-header">TNC</h6></li>
+		<li>
+	<button type="button" id="stopTNC" class="dropdown-item">Stop</button></li>
+		<button class="dropdown-item" id="tncLog" type="button">Logs</button>
+		<li><hr class="dropdown-divider"></li>
+		<li>
+			<!-- Button trigger About modal -->
+			<button type="button" id="btnAbout" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#aboutModal">About</button>
+		</li>
+		</ul>
+	</div>
+		</div>
+
+
+	<!--
+	<div class="btn-toolbar" role="toolbar">
+		
+<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
+			title="View the received files. This is currently under development!">
+			
+
+	   <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
+	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
+	   <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
+	   </button>
+	   </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
+	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
+	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
+	   </button>
+	  
+		</span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true"
+			title="Settings and Info">
+
+		</span>
+	</div>
+	 -->
+	</nav>	
+		
+		
+
 	<div id="blurdiv" style="-webkit-Filter: blur(0px)">
 		<!--beginn of blur div -->
 		<!-------------------------------- MAIN AREA ---------------->
@@ -355,7 +378,7 @@
 			</div>
 		</div>
 		<!------------------------------------------------------------------------------------------>
-		<div class="container mt-5 p-0">
+		<div class="container p-0" style="margin-top:55px">
 			<div class="row collapse multi-collapse show" id="collapseFirstRow">
 				<div class="col">
 					<div class="card text-dark mb-0">
@@ -1668,6 +1691,45 @@
 			</div>
 		</div>
 	</div>
+		<!-- info modal -->
+  <!-- Modal -->
+  <div class="modal fade" id="aboutModal" tabindex="-1" aria-labelledby="aboutModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h1 class="modal-title fs-5" id="aboutModalLabel">FreeDATA</h1>-<div class="small" id="aboutVersion">v123</div>
+		  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		</div>
+		<div class="modal-body">
+		  <div class="container-fluid">
+			<div class="row">
+				<div class="col-6" id="divContrib">
+						<h6>Special thanks to</h6>
+						<hr \>
+						<ul>
+							<li>DJ2LS</li>
+						</ul>
+					</div>
+					<div class="col-6">
+
+					<h6>Resources</h6>
+					<hr \>
+					<ul>
+						<li><a id="ghUrl" href="#">Github</a></li>
+						<li><a id="wikiUrl"href="#">Wiki</a></li>
+					</ul>
+				</div>
+
+			</div>
+		  </div>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+		</div>
+	  </div>
+	</div>
+  </div>
+
 </body>
 
 </html>

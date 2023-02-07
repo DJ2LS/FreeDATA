@@ -21,7 +21,7 @@ var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? proce
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
-
+const contrib = ["DK5SM","DL4IAZ","DB1UJ","EI3HIB","VK5DGR","EI7IG","N2KIQ?","KT4WO","DF7MH","G0HWW","N1QM"]
 
 // SET dbfs LEVEL GLOBAL
 // this is an attempt of reducing CPU LOAD
@@ -426,10 +426,12 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         document.getElementById("local-remote-switch1").checked = false;
         document.getElementById("local-remote-switch2").checked = true;
         document.getElementById("remote-tnc-field").style.visibility = 'visible';
+        toggleClass("remote-tnc-field",'d-none',false);
     } else {
         document.getElementById("local-remote-switch1").checked = true;
         document.getElementById("local-remote-switch2").checked = false;
         document.getElementById("remote-tnc-field").style.visibility = 'hidden';
+        toggleClass("remote-tnc-field",'d-none',true);
     }
 
     // Create spectrum object on canvas with ID "waterfall"
@@ -442,6 +444,22 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     //Set waterfalltheme
     document.getElementById("wftheme_selector").value = config.wftheme;
     spectrum.setColorMap(config.wftheme);
+
+    document.getElementById("btnAbout").addEventListener("click", () => {
+        document.getElementById('aboutVersion').innerText=appVer;
+        let shuffled = contrib
+            .map(value => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+        let list ="<h6>Special thanks to</h6><hr \><ul><li>DJ2LS</li>";
+        
+        shuffled.forEach(element => {
+            list +="<li>" +element+"</li>"
+        });
+        list+="</ul>";
+        divContrib.innerHTML=list;
+        console.log(shuffled)
+    });
 
     // on click radio control toggle view
     // disabled
@@ -894,6 +912,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         document.getElementById("local-remote-switch2").checked = false;
         document.getElementById("remote-tnc-field").style.visibility = 'hidden';
         config.tnclocation = 'localhost';
+        toggleClass("remote-tnc-field",'d-none',true);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     document.getElementById("local-remote-switch2").addEventListener("click", () => {
@@ -901,6 +920,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         document.getElementById("local-remote-switch2").checked = true;
         document.getElementById("remote-tnc-field").style.visibility = 'visible';
         config.tnclocation = 'remote';
+        toggleClass("remote-tnc-field",'d-none',false);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
@@ -1224,6 +1244,14 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         shell.openExternal('https://explorer.freedata.app/?myCall=' + document.getElementById("myCall").value);
     });
 
+    // GH Link clicked
+    document.getElementById("ghUrl").addEventListener("click", () => {
+        shell.openExternal('https://github.com/DJ2LS/FreeDATA');
+    });
+    // Wiki Link clicked
+    document.getElementById("wikiUrl").addEventListener("click", () => {
+        shell.openExternal('https://wiki.freedata.app');
+    });
     // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
 
