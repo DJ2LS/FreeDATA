@@ -17,9 +17,7 @@
 </head>
 
 <body>
-	<!-- SECONDARY NAVBAR -->
-	
-		
+	<!-- SECONDARY NAVBAR -->	
 	<nav class="navbar fixed-top bg-light shadow-sm  mt-0 mb-1 pb-1 pt-1">
 		<div style="margin-left: 5px;">
 			<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
@@ -47,49 +45,45 @@
 					<button class="btn btn-sm btn-danger" id="daemon_connection_state" type="button" disabled> <i
 							class="bi bi-diagram-3" style="font-size: 1rem; color: white;"></i> </button>
 				</div>
-
 			</div>
 		</div>
 		<div>
-			
 				<button class="btn btn-sm btn-danger" id="stop_transmission_connection" type="button" data-bs-toggle="tooltip" data-bs-html="false" title="Abort session and stop transmissions"> <i
 						class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i> STOP <i
 						class="bi bi-x-octagon-fill" style="font-size: 1rem; color: white;"></i></button>
-			
 		</div>
-		<div style="margin-right: 10px;">
+		<div class="me-2">
+			<div class="btn-group" role="group">
 			<button type="button" id="startTNC" class="btn btn-sm btn-success" data-bs-toggle="tooltip" data-bs-html="false" title="Start the TNC. Please set your audio and radio settings first!"> <i class="bi bi-play-fill"
 				style="font-size: 1rem; color: white;"></i></button>
-						<!-- Split Button -->
-	<div class="btn-group" >
+				<button type="button" id="stopTNC" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-html="false" title="Stop the TNC."> <i class="bi bi-stop-fill"
+					style="font-size: 1rem; color: white;"></i></button>
+				</div>
+	<!-- Split Button -->
+	<div class="btn-group dropstart" role="group" >
 
-		<button class="btn btn-sm btn-primary" id="openRFChat" type="button"
-		data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
-		title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF
-			Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
-		<span
-			class="position-absolute top-0 start-55 translate-middle badge rounded-pill bg-danger">.</span>
-	</button>
 		<button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split dropdown-menu-start" data-bs-toggle="dropdown" aria-expanded="false">
 		<span class="visually-hidden">Toggle Dropdown</span>
 		</button>
 		<ul class="dropdown-menu">
 		<li><button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="dropdown-item">Settings</button>
 	</li>
-		<li><button class="dropdown-item" id="openExplorer" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="View explorer map">Explorer</button></li>
-		
-		<li><hr class="dropdown-divider"></li>
-						<!-- TNC STUFF -->
-		<li><h6 class="dropdown-header">TNC</h6></li>
+	<button class="dropdown-item" id="tncLog" type="button">TNC Live Logs</button>
+	<li><button class="dropdown-item" id="openExplorer" type="button" data-bs-placement="bottom">Explorer map <i class="bi bi-window-plus"></i> </button></li>
 		<li>
-	<button type="button" id="stopTNC" class="dropdown-item">Stop</button></li>
-		<button class="dropdown-item" id="tncLog" type="button">Logs</button>
 		<li><hr class="dropdown-divider"></li>
 		<li>
 			<!-- Button trigger About modal -->
 			<button type="button" id="btnAbout" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#aboutModal">About</button>
 		</li>
 		</ul>
+		<button class="btn btn-sm btn-primary" id="openRFChat" type="button"
+		data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
+		title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF
+			Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
+		<span
+			class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">.</span>
+	</button>
 	</div>
 		</div>
 
@@ -1706,33 +1700,31 @@
 		<div class="modal-body">
 		  <div class="container-fluid">
 			<div class="row">
-				<div class="col-6" id="divContrib">
-						<h6>Special thanks to</h6>
-						<hr \>
-						<ul>
-							<li>DJ2LS</li>
-						</ul>
-					</div>
-					<div class="col-6">
-
-					<h6>Resources</h6>
-					<hr \>
-					<ul>
-						<li><a id="ghUrl" href="#">Github</a></li>
-						<li><a id="wikiUrl"href="#">Wiki</a></li>
-					</ul>
-				</div>
-
+			<div class="btn-toolbar mx-auto" role="toolbar" aria-label="Toolbar with button groups">
+				<div class="btn-group"><i style="font-size:1.5rem;" class="btn bi bi-github" id="ghUrl" data-bs-toggle="tooltip" title="Github" role="button"></i></div>
+				<div class="btn-group"><i style="font-size:1.5rem;" class="btn bi bi-wikipedia" id="wikiUrl" data-bs-toggle="tooltip" title="Wiki" role="button"></i></div>
+				<div class="btn-group"><i style="font-size:1.5rem;" class="btn bi bi-envelope-at" id="groupsioUrl" data-bs-toggle="tooltip" title="Groups.io" role="button"></i></div>
+				<div class="btn-group"><i style="font-size:1.5rem;" class="btn bi bi-discord" id="discordUrl" data-bs-toggle="tooltip" title="Discord" role="button"></i></div>
 			</div>
-		  </div>
 		</div>
+		<div class="row">
+			<h6>Special thanks to</h6>
+			<hr \>
+		</div>
+			<div class="row">
+				<div class="col-4" id="divContrib">
+				</div>
+				<div class="col-4" id="divContrib2">
+				</div>
+				<div class="col-4" id="divContrib3">
+				</div>
+	  </div>
+	</div>
 		<div class="modal-footer">
 		  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
 		</div>
 	  </div>
 	</div>
   </div>
-
 </body>
-
 </html>

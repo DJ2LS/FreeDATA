@@ -447,17 +447,36 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     document.getElementById("btnAbout").addEventListener("click", () => {
         document.getElementById('aboutVersion').innerText=appVer;
+        let maxcol=3;
+        let col =2;
         let shuffled = contrib
             .map(value => ({ value, sort: Math.random() }))
             .sort((a, b) => a.sort - b.sort)
             .map(({ value }) => value)
-        let list ="<h6>Special thanks to</h6><hr \><ul><li>DJ2LS</li>";
-        
+        let list ="<li>DJ2LS</li>";
+        let list2="";
+        let list3="";
         shuffled.forEach(element => {
-            list +="<li>" +element+"</li>"
+            switch (col) {
+                case 1:
+                    list +="<li>" +element + "</li>" 
+                break;
+                case 2:
+                    list2 +="<li>" +element + "</li>"
+                    break;
+                case 3:
+                    list3 +="<li>" +element + "</li>"
+                    break;
+            }
+            col=col + 1;
+            if (col > maxcol ) {
+                col=1;
+            }
         });
-        list+="</ul>";
-        divContrib.innerHTML=list;
+        //list+="</ul>";
+        divContrib.innerHTML="<ul>" + list + "</ul>";
+        divContrib2.innerHTML="<ul>" + list2 + "</ul>";
+        divContrib3.innerHTML="<ul>" + list3 + "</ul>";
         //console.log(shuffled)
     });
 
@@ -1252,6 +1271,14 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("wikiUrl").addEventListener("click", () => {
         shell.openExternal('https://wiki.freedata.app');
     });
+        // Groups.io Link clicked
+        document.getElementById("groupsioUrl").addEventListener("click", () => {
+            shell.openExternal('https://groups.io/g/freedata');
+        });
+        // Discord Link clicked
+        document.getElementById("discordUrl").addEventListener("click", () => {
+            shell.openExternal('https://discord.gg/jnADeDtxUF');
+        });
     // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
 
