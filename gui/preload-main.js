@@ -261,19 +261,17 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     if(config.enable_explorer == 'True'){
         document.getElementById("ExplorerSwitch").checked = true;
-        document.getElementById("ExplorerStatsSwitch").disabled=false;
-        if (config.explorer_stats.toLowerCase() == 'true') {
-            document.getElementById("ExplorerStatsSwitch").checked=true;
-        } else {
-            document.getElementById("ExplorerStatsSwitch").checked=false;
-        }
-
-        
     } else {
         document.getElementById("ExplorerSwitch").checked = false;
-        document.getElementById("ExplorerStatsSwitch").disabled=true;
+    }
+
+    if (config.explorer_stats.toLowerCase() == 'true') {
+        document.getElementById("ExplorerStatsSwitch").checked=true;
+    } else {
         document.getElementById("ExplorerStatsSwitch").checked=false;
     }
+
+
     if(config.auto_tune == 'True'){
         document.getElementById("autoTuneSwitch").checked = true;
     } else {
@@ -1139,13 +1137,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("ExplorerSwitch").addEventListener("click", () => {
         if(document.getElementById("ExplorerSwitch").checked == true){
             config.enable_explorer = "True";
-            document.getElementById("ExplorerStatsSwitch").disabled=false;
         } else {
             config.enable_explorer = "False";
-            config.explorer_stats = "False";
-            document.getElementById("ExplorerStatsSwitch").disabled=true;
-            document.getElementById("ExplorerStatsSwitch").checked=false;
-            document.getElementById("ExplorerSwitch").checked = false;
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -1158,7 +1151,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-    // enable explorer stats Switch clicked
+    // enable autotune Switch clicked
     document.getElementById("autoTuneSwitch").addEventListener("click", () => {
         if(document.getElementById("autoTuneSwitch").checked == true){
             config.auto_tune = "True";
@@ -1345,11 +1338,13 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         } else {
             var enable_explorer = "False";
         }
+
         if (document.getElementById("ExplorerStatsSwitch").checked == true){
             var explorer_stats = "True";
         } else {
             var explorer_stats = "False";
         }
+
         if (document.getElementById("autoTuneSwitch").checked == true){
             var auto_tune = "True";
         } else {
