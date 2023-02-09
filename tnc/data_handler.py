@@ -249,7 +249,10 @@ class DATA:
             #
             # send transmission queued information once
             if static.ARQ_STATE or static.IS_CODEC2_TRAFFIC:
-                self.log.debug(f"[TNC] TX DISPATCHER - waiting with processing command ", arq_state=static.ARQ_STATE)
+                self.log.debug(
+                    "[TNC] TX DISPATCHER - waiting with processing command ",
+                    arq_state=static.ARQ_STATE,
+                )
 
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",

@@ -166,23 +166,15 @@ class DAEMON:
                     self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
                     # list of parameters, necessary for running subprocess command as a list
-                    options = []
+                    options = ["--port", str(static.DAEMONPORT - 1)]
 
-                    options.append("--port")
-                    options.append(str(static.DAEMONPORT - 1))
                     # create an additional list entry for parameters not covered by gui
                     data[50] = int(static.DAEMONPORT - 1)
 
                     options.append("--mycall")
-                    options.append(data[1])
-
-                    options.append("--mygrid")
-                    options.append(data[2])
-
-                    options.append("--rx")
-                    options.append(data[3])
-
-                    options.append("--tx")
+                    options.extend((data[1], "--mygrid"))
+                    options.extend((data[2], "--rx"))
+                    options.extend((data[3], "--tx"))
                     options.append(data[4])
 
                     # if radiocontrol != disabled
@@ -196,9 +188,7 @@ class DAEMON:
 
                         if data[5] == "rigctld":
                             options.append("--rigctld_ip")
-                            options.append(data[6])
-
-                            options.append("--rigctld_port")
+                            options.extend((data[6], "--rigctld_port"))
                             options.append(data[7])
 
                     if data[8] == "True":
@@ -211,16 +201,8 @@ class DAEMON:
                         options.append("--500hz")
 
                     options.append("--tuning_range_fmin")
-                    options.append(data[11])
-
-                    options.append("--tuning_range_fmax")
-                    options.append(data[12])
-
-                    # overriding FSK mode
-                    # if data[13] == "True":
-                    #    options.append("--fsk")
-
-                    options.append("--tx-audio-level")
+                    options.extend((data[11], "--tuning_range_fmax"))
+                    options.extend((data[12], "--tx-audio-level"))
                     options.append(data[14])
 
                     if data[15] == "True":
@@ -233,9 +215,7 @@ class DAEMON:
                         options.append("--explorer")
 
                     options.append("--ssid")
-                    for i in data[18]:
-                        options.append(str(i))
-
+                    options.extend(str(i) for i in data[18])
                     if data[19] == "True":
                         options.append("--tune")
 
@@ -258,14 +238,12 @@ class DAEMON:
                             # extends the sys module by a flag frozen=True and sets the app
                             # path into variable _MEIPASS'.
                             application_path = sys._MEIPASS
-                            command.append(application_path + '/freedata-tnc')
+                            command.append(f'{application_path}/freedata-tnc')
 
-                        else:
-
-                            if sys.platform in ["linux", "darwin"]:
-                                command.append("./freedata-tnc")
-                            elif sys.platform in ["win32", "win64"]:
-                                command.append("freedata-tnc.exe")
+                        elif sys.platform in ["linux", "darwin"]:
+                            command.append("./freedata-tnc")
+                        elif sys.platform in ["win32", "win64"]:
+                            command.append("freedata-tnc.exe")
 
                         command += options
                         proc = subprocess.Popen(command)
@@ -331,9 +309,7 @@ class DAEMON:
                     # hamlib_version = rig.hamlib_version
 
                     hamlib.set_ptt(True)
-                    pttstate = hamlib.get_ptt()
-
-                    if pttstate:
+                    if pttstate := hamlib.get_ptt():
                         self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
                         response = {"command": "test_hamlib", "result": "SUCCESS"}
                     else:
