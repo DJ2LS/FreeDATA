@@ -763,28 +763,11 @@ class DATA:
                     and data_in.find(self.data_frame_eof) < 0
             ):
 
-                self.frame_received_counter += 1
-                # try increasing speed level only if we had two successful decodes
-                if self.frame_received_counter >= 2:
-                    self.frame_received_counter = 0
-
-                    # make sure new speed level isn't higher than available modes
-                    new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
-                    # check if actual snr is higher than minimum snr for next mode
-                    if static.SNR >= self.snr_list[new_speed_level]:
-                        self.speed_level = new_speed_level
-                    else:
-                        self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
-                                      given_snr=static.SNR,
-                                      needed_snr=self.snr_list[new_speed_level]
-                                      )
-                    static.ARQ_SPEED_LEVEL = self.speed_level
-
-                # Update modes we are listening to
-                self.set_listening_modes(False, True, self.mode_list[self.speed_level])
+                self.arq_calculate_speed_level(snr)
 
                 # Create and send ACK frame
-                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
+                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH,
+                              bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_ack_frame(snr)
 
                 # Reset n retries per burst counter
@@ -809,7 +792,7 @@ class DATA:
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
                     irs=helpers.bool_to_string(self.is_IRS)
                 )
-
+                
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
             # We have "Nones" in our rx buffer,
             # Check if we received last frame of burst - this is an indicator for missed frames.
@@ -826,7 +809,6 @@ class DATA:
                 self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
             )
 
-        # Should never reach this point
         else:
             self.log.error(
                 "[TNC] data_handler: Should not reach this point...",
@@ -843,19 +825,7 @@ class DATA:
         # get total bytes per transmission information as soon we received a frame with a BOF
 
         if bof_position >= 0:
-            payload = static.RX_FRAME_BUFFER[
-                      bof_position + len(self.data_frame_bof): eof_position
-                      ]
-            frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
-            static.TOTAL_BYTES = frame_length
-            compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
-            # limit to max value of 255
-            compression_factor = np.clip(compression_factor, 0, 255)
-            static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
-            self.calculate_transfer_rate_rx(
-                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-            )
-
+            self.arq_extract_statistics_from_data_frame(bof_position, eof_position)
         if (
                 bof_position >= 0
                 and eof_position > 0
@@ -922,6 +892,43 @@ class DATA:
 
             # Finally cleanup our buffers and states,
             self.arq_cleanup()
+
+    def arq_extract_statistics_from_data_frame(self, bof_position, eof_position):
+        payload = static.RX_FRAME_BUFFER[
+                  bof_position + len(self.data_frame_bof): eof_position
+                  ]
+        frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
+        static.TOTAL_BYTES = frame_length
+        compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
+        # limit to max value of 255
+        compression_factor = np.clip(compression_factor, 0, 255)
+        static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
+        self.calculate_transfer_rate_rx(
+            self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+        )
+
+    def arq_calculate_speed_level(self, snr):
+        self.frame_received_counter += 1
+        # try increasing speed level only if we had two successful decodes
+        if self.frame_received_counter >= 2:
+            self.frame_received_counter = 0
+
+            # make sure new speed level isn't higher than available modes
+            new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
+            # check if actual snr is higher than minimum snr for next mode
+            if static.SNR >= self.snr_list[new_speed_level]:
+                self.speed_level = new_speed_level
+            else:
+                self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
+                              given_snr=static.SNR,
+                              needed_snr=self.snr_list[new_speed_level]
+                              )
+            static.ARQ_SPEED_LEVEL = self.speed_level
+
+        # Update modes we are listening to
+        self.set_listening_modes(False, True, self.mode_list[self.speed_level])
+
+
 
     def arq_process_received_data_frame(self, data_frame, snr):
             """
