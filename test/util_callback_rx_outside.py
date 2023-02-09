@@ -81,10 +81,12 @@ class Test:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
             if self.AUDIO_INPUT_DEVICE == -2:
-                loopback_list = []
-                for dev in range(self.p.get_device_count()):
-                    if "Loopback: PCM" in self.p.get_device_info_by_index(dev)["name"]:
-                        loopback_list.append(dev)
+                loopback_list = [
+                    dev
+                    for dev in range(self.p.get_device_count())
+                    if "Loopback: PCM"
+                    in self.p.get_device_info_by_index(dev)["name"]
+                ]
                 if len(loopback_list) >= 2:
                     self.AUDIO_INPUT_DEVICE = loopback_list[0]  # 0  = RX   1 = TX
                     print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
@@ -147,7 +149,7 @@ class Test:
 
     def run_audio(self):
         try:
-            print(f"starting pyaudio callback", file=sys.stderr)
+            print("starting pyaudio callback", file=sys.stderr)
             self.stream_rx.start_stream()
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr)

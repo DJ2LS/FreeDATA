@@ -561,12 +561,12 @@ def process_tnc_commands(data):
 
         if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
             try:
-                output = {
-                    "command": "rx_buffer",
-                    "data-array": [],
-                }
-
                 if not RX_BUFFER.empty():
+                    output = {
+                        "command": "rx_buffer",
+                        "data-array": [],
+                    }
+
                     for _buffer_length in range(RX_BUFFER.qsize()):
                         base64_data = RX_BUFFER.queue[_buffer_length][4]
                         output["data-array"].append(
@@ -632,7 +632,6 @@ def process_tnc_commands(data):
                     command=received_json,
                 )
 
-    # exception, if JSON cant be decoded
     except Exception as err:
         log.error("[SCK] JSON decoding error", e=err)
 
