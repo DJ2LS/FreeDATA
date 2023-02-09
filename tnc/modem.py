@@ -550,6 +550,10 @@ class RF:
                 print("0.2 < static.HAMLIB_ALC < 0.99")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 20
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+            elif 1.0 >=static.HAMLIB_ALC:
+                print("1.0 >= static.HAMLIB_ALC")
+                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 40
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
             else:
                 self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
