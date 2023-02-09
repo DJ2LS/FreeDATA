@@ -124,17 +124,17 @@ def t_arq_iss(*args):
 
     time.sleep(0.5)
 
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     time.sleep(1.5)
 
     data = {"type": "arq", "command": "stop_transmission"}
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     time.sleep(0.5)
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     # Set timeout
     timeout = time.time() + 15
