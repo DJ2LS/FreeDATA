@@ -638,15 +638,6 @@ class DATA:
         # is intended for this station.
         data_in = bytes(data_in)
 
-        # TODO: this seems not to work anymore
-        # get received crc for different mycall ssids
-        # check if callsign ssid override
-        # _, mycallsign = helpers.check_callsign(
-        #    self.mycallsign, data_in[2:5]
-        # )
-        # attempt fixing this
-        mycallsign = self.mycallsign
-
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE not in ["BUSY"]:
             self.log.warning("[TNC] wrong tnc state - dropping data", arq_state=static.ARQ_STATE, tnc_state=static.TNC_STATE)
@@ -704,10 +695,10 @@ class DATA:
             # catch possible modem error which leads into false byteorder
             # modem possibly decodes too late - data then is pushed to buffer
             # which leads into wrong byteorder
-            # Lets put this in try/except so we are not crashing tnc as its hihgly experimental
+            # Lets put this in try/except so we are not crashing tnc as its highly experimental
             # This might only work for datac1 and datac3
             try:
-                #area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
+                # area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
                 if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer[:246]) and len(temp_burst_buffer) >= 246:
                     self.log.warning(
                         "[TNC] ARQ | RX | wrong byteorder received - dropping data"
@@ -718,7 +709,6 @@ class DATA:
                 self.log.warning(
                     "[TNC] ARQ | RX | wrong byteorder check failed", e=e
                 )
-
 
             # if frame buffer ends not with the current frame, we are going to append new data
             # if data already exists, we received the frame correctly,
@@ -737,10 +727,9 @@ class DATA:
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
 
-
-                #data_mode = self.mode_list[self.speed_level]
-                #payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
-                #search_area = payload_per_frame - 3  # (3 bytes arq frame header)
+                # data_mode = self.mode_list[self.speed_level]
+                # payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
+                # search_area = payload_per_frame - 3  # (3 bytes arq frame header)
                 search_area = 510 - 3  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
@@ -786,9 +775,9 @@ class DATA:
                         self.speed_level = new_speed_level
                     else:
                         self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
-                                         given_snr=static.SNR,
-                                         needed_snr=self.snr_list[new_speed_level]
-                                         )
+                                      given_snr=static.SNR,
+                                      needed_snr=self.snr_list[new_speed_level]
+                                      )
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
                 # Update modes we are listening to
@@ -896,131 +885,7 @@ class DATA:
 
             # Check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
-
-                # transmittion duration
-                duration = time.time() - self.rx_start_of_transmission
-                self.calculate_transfer_rate_rx(
-                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-                )
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
-
-                # Decompress the data frame
-                data_frame_decompressed = lzma.decompress(data_frame)
-                static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(
-                    data_frame
-                )
-                data_frame = data_frame_decompressed
-
-                self.transmission_uuid = str(uuid.uuid4())
-                timestamp = int(time.time())
-
-                # Re-code data_frame in base64, UTF-8 for JSON UI communication.
-                base64_data = base64.b64encode(data_frame).decode("UTF-8")
-
-                # check if RX_BUFFER isn't full
-                if not RX_BUFFER.full():
-                    # make sure we have always the correct buffer size
-                    RX_BUFFER.maxsize = int(static.RX_BUFFER_SIZE)
-                else:
-                    # if full, free space by getting an item
-                    self.log.info(
-                        "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
-                        buffer_size=RX_BUFFER.qsize(),
-                        maxsize=int(static.RX_BUFFER_SIZE)
-                    )
-                    RX_BUFFER.get()
-
-                # add item to RX_BUFFER
-                self.log.info(
-                    "[TNC] ARQ | RX | saving data to rx buffer",
-                    buffer_size=RX_BUFFER.qsize() + 1,
-                    maxsize=RX_BUFFER.maxsize
-                )
-                try:
-                    RX_BUFFER.put(
-                        [
-                            self.transmission_uuid,
-                            timestamp,
-                            static.DXCALLSIGN,
-                            static.DXGRID,
-                            base64_data,
-                        ]
-                    )
-                except Exception as e:
-                    # File "/usr/lib/python3.7/queue.py", line 133, in put
-                    #    if self.maxsize > 0
-                    # TypeError: '>' not supported between instances of 'str' and 'int'
-                    #
-                    # Occurs on Raspberry Pi and Python 3.7
-                    self.log.error(
-                        "[TNC] ARQ | RX | error occurred when saving data!",
-                        e=e,
-                        uuid=self.transmission_uuid,
-                        timestamp=timestamp,
-                        dxcall=static.DXCALLSIGN,
-                        dxgrid=static.DXGRID,
-                        data=base64_data
-                    )
-
-                if static.ARQ_SAVE_TO_FOLDER:
-                    try:
-                        self.save_data_to_folder(
-                            self.transmission_uuid,
-                            timestamp,
-                            mycallsign,
-                            static.DXCALLSIGN,
-                            static.DXGRID,
-                            data_frame
-                        )
-                    except Exception as e:
-                        self.log.error(
-                            "[TNC] ARQ | RX | can't save file to folder",
-                            e=e,
-                            uuid=self.transmission_uuid,
-                            timestamp=timestamp,
-                            dxcall=static.DXCALLSIGN,
-                            dxgrid=static.DXGRID,
-                            data=base64_data
-                        )
-
-                self.send_data_to_socket_queue(
-                    freedata="tnc-message",
-                    arq="transmission",
-                    status="received",
-                    uuid=self.transmission_uuid,
-                    timestamp=timestamp,
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
-                    data=base64_data,
-                    irs=helpers.bool_to_string(self.is_IRS)
-                )
-
-                if static.ENABLE_STATS:
-                    duration = time.time() - self.rx_start_of_transmission
-                    self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
-
-                self.log.info(
-                    "[TNC] ARQ | RX | SENDING DATA FRAME ACK",
-                    snr=snr,
-                    crc=data_frame_crc.hex(),
-                )
-
-                self.send_data_ack_frame(snr)
-                # Update statistics AFTER the frame ACK is sent
-                self.calculate_transfer_rate_rx(
-                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-                )
-
-                self.log.info(
-                    "[TNC] | RX | DATACHANNEL ["
-                    + str(self.mycallsign, "UTF-8")
-                    + "]<< >>["
-                    + str(static.DXCALLSIGN, "UTF-8")
-                    + "]",
-                    snr=snr,
-                )
-
+                self.arq_process_received_data_frame(data_frame, snr)
             else:
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -1058,6 +923,132 @@ class DATA:
             # Finally cleanup our buffers and states,
             self.arq_cleanup()
 
+    def arq_process_received_data_frame(self, data_frame, snr):
+            """
+
+
+            """
+            # transmittion duration
+            duration = time.time() - self.rx_start_of_transmission
+            self.calculate_transfer_rate_rx(
+                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+            )
+            self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
+                          bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
+
+            # Decompress the data frame
+            data_frame_decompressed = lzma.decompress(data_frame)
+            static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(
+                data_frame
+            )
+            data_frame = data_frame_decompressed
+
+            self.transmission_uuid = str(uuid.uuid4())
+            timestamp = int(time.time())
+
+            # Re-code data_frame in base64, UTF-8 for JSON UI communication.
+            base64_data = base64.b64encode(data_frame).decode("UTF-8")
+
+            # check if RX_BUFFER isn't full
+            if not RX_BUFFER.full():
+                # make sure we have always the correct buffer size
+                RX_BUFFER.maxsize = int(static.RX_BUFFER_SIZE)
+            else:
+                # if full, free space by getting an item
+                self.log.info(
+                    "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
+                    buffer_size=RX_BUFFER.qsize(),
+                    maxsize=int(static.RX_BUFFER_SIZE)
+                )
+                RX_BUFFER.get()
+
+            # add item to RX_BUFFER
+            self.log.info(
+                "[TNC] ARQ | RX | saving data to rx buffer",
+                buffer_size=RX_BUFFER.qsize() + 1,
+                maxsize=RX_BUFFER.maxsize
+            )
+            try:
+                RX_BUFFER.put(
+                    [
+                        self.transmission_uuid,
+                        timestamp,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        base64_data,
+                    ]
+                )
+            except Exception as e:
+                # File "/usr/lib/python3.7/queue.py", line 133, in put
+                #    if self.maxsize > 0
+                # TypeError: '>' not supported between instances of 'str' and 'int'
+                #
+                # Occurs on Raspberry Pi and Python 3.7
+                self.log.error(
+                    "[TNC] ARQ | RX | error occurred when saving data!",
+                    e=e,
+                    uuid=self.transmission_uuid,
+                    timestamp=timestamp,
+                    dxcall=static.DXCALLSIGN,
+                    dxgrid=static.DXGRID,
+                    data=base64_data
+                )
+
+            if static.ARQ_SAVE_TO_FOLDER:
+                try:
+                    self.save_data_to_folder(
+                        self.transmission_uuid,
+                        timestamp,
+                        self.mycallsign,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        data_frame
+                    )
+                except Exception as e:
+                    self.log.error(
+                        "[TNC] ARQ | RX | can't save file to folder",
+                        e=e,
+                        uuid=self.transmission_uuid,
+                        timestamp=timestamp,
+                        dxcall=static.DXCALLSIGN,
+                        dxgrid=static.DXGRID,
+                        data=base64_data
+                    )
+
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="transmission",
+                status="received",
+                uuid=self.transmission_uuid,
+                timestamp=timestamp,
+                mycallsign=str(self.mycallsign, "UTF-8"),
+                dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+                dxgrid=str(static.DXGRID, "UTF-8"),
+                data=base64_data,
+                irs=helpers.bool_to_string(self.is_IRS)
+            )
+
+            if static.ENABLE_STATS:
+                duration = time.time() - self.rx_start_of_transmission
+                self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
+
+            self.log.info(
+                "[TNC] ARQ | RX | SENDING DATA FRAME ACK")
+
+            self.send_data_ack_frame(snr)
+            # Update statistics AFTER the frame ACK is sent
+            self.calculate_transfer_rate_rx(
+                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+            )
+
+            self.log.info(
+                "[TNC] | RX | DATACHANNEL ["
+                + str(self.mycallsign, "UTF-8")
+                + "]<< >>["
+                + str(static.DXCALLSIGN, "UTF-8")
+                + "]",
+                snr=snr,
+            )
     def arq_transmit(self, data_out: bytes, mode: int, n_frames_per_burst: int):
         """
         Transmit ARQ frame
