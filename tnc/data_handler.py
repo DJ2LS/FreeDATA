@@ -1066,8 +1066,6 @@ class DATA:
           n_frames_per_burst:int:
 
         """
-        self.arq_file_transfer = True
-
         # set signalling modes we want to listen to
         # we are in an ongoing arq transmission, so we don't need sig0 actually
         modem.RECEIVE_SIG0 = False
@@ -1079,6 +1077,7 @@ class DATA:
         # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
         # static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
         static.TOTAL_BYTES = len(data_out)
+        self.arq_file_transfer = True
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
 
         # Compress data frame
@@ -1167,9 +1166,6 @@ class DATA:
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
-                # Tempbuffer list for storing our data frames
-                tempbuffer = []
-
                 # Append data frames with n_frames_per_burst to tempbuffer
                 # TODO: this part needs a complete rewrite!
                 # n_frames_per_burst = 1 is working
@@ -1195,9 +1191,7 @@ class DATA:
                     )
                     frame = arqheader + extended_data_out
 
-                # Append frame to tempbuffer for transmission
-                tempbuffer.append(frame)
-
+                tempbuffer = [frame]
                 self.log.debug("[TNC] tempbuffer:", tempbuffer=tempbuffer)
                 self.log.info(
                     "[TNC] ARQ | TX | FRAMES",
@@ -1217,11 +1211,12 @@ class DATA:
                 #     threading.Event().wait(0.01)
 
                 # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
-                while static.ARQ_STATE and not (
-                        self.burst_ack
-                        or self.burst_nack
-                        or self.rpt_request_received
-                        or self.data_frame_ack_received
+                while (
+                    static.ARQ_STATE
+                    and not self.burst_ack
+                    and not self.burst_nack
+                    and not self.rpt_request_received
+                    and not self.data_frame_ack_received
                 ):
                     threading.Event().wait(0.01)
 
@@ -1236,10 +1231,6 @@ class DATA:
 
                 if self.burst_nack:
                     self.burst_nack = False  # reset nack state
-
-                # not yet implemented
-                if self.rpt_request_received:
-                    pass
 
                 if self.data_frame_ack_received:
                     self.log.debug(
@@ -1266,7 +1257,7 @@ class DATA:
                     maxretries=self.tx_n_max_retries_per_burst,
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                 )
-                # End of FOR loop
+                        # End of FOR loop
 
             # update buffer position
             bufferposition = bufferposition_end
@@ -1297,7 +1288,7 @@ class DATA:
             if self.data_frame_ack_received and bufferposition > len(data_out):
                 self.log.debug("[TNC] arq_tx: Last fragment sent and acknowledged.")
                 break
-            # GOING TO NEXT ITERATION
+                # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
             # we need to wait until sending "transmitted" state
