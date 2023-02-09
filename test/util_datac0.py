@@ -76,9 +76,6 @@ def t_setup(
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger(f"station{station}_RF")
 
-    # Create socket
-    sock.ThreadedTCPServer(('localhost', 3000), sock.ThreadedTCPRequestHandler)
-
     return tnc, orig_rx_func, orig_tx_func
 
 
@@ -150,9 +147,9 @@ def t_datac0_1(
         log.debug("t_datac0_1: STOP test, setting TNC state")
         static.TNC_STATE = "BUSY"
         static.ARQ_STATE = True
-    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
-    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
@@ -170,7 +167,7 @@ def t_datac0_1(
     # override ARQ SESSION STATE for allowing disconnect command
     static.ARQ_SESSION_STATE = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
-    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
 
     # Allow enough time for this side to process the disconnect frame.
@@ -263,8 +260,8 @@ def t_datac0_2(
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}
-        sock.process_tnc_commands(json.dumps(t_data, indent=None))
-        sock.process_tnc_commands(json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_tnc_commands(json.dumps(t_data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
