@@ -1056,6 +1056,7 @@ class DATA:
                 + "]",
                 snr=snr,
             )
+
     def arq_transmit(self, data_out: bytes, mode: int, n_frames_per_burst: int):
         """
         Transmit ARQ frame
@@ -1211,14 +1212,13 @@ class DATA:
 
                 if self.data_frame_ack_received:
                     self.log.debug(
-                        "[TNC] arq_transmit: Received FRAME ACK. Sending next chunk."
+                        "[TNC] arq_transmit: Received FRAME ACK. Braking retry loop."
                     )
                     break  # break retry loop
 
                 # We need this part for leaving the repeat loop
                 # static.ARQ_STATE == "DATA" --> when stopping transmission manually
                 if not static.ARQ_STATE:
-                    # print("not ready for data...leaving loop....")
                     self.log.debug(
                         "[TNC] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
                     )
@@ -1267,61 +1267,73 @@ class DATA:
                 # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
-            # we need to wait until sending "transmitted" state
-            # gui database is too slow for handling this within 0.001 seconds
-            # so let's sleep a little
-            threading.Event().wait(0.2)
-            self.send_data_to_socket_queue(
-                freedata="tnc-message",
-                arq="transmission",
-                status="transmitted",
-                uuid=self.transmission_uuid,
-                percent=static.ARQ_TRANSMISSION_PERCENT,
-                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression=static.ARQ_COMPRESSION_FACTOR,
-                finished=static.ARQ_SECONDS_UNTIL_FINISH,
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                irs=helpers.bool_to_string(self.is_IRS)
-            )
-
-            self.log.info(
-                "[TNC] ARQ | TX | DATA TRANSMITTED!",
-                BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
-                total_bytes=static.TOTAL_BYTES,
-                BitsPerSecond=static.ARQ_BITS_PER_SECOND,
-                overflows=static.BUFFER_OVERFLOW_COUNTER,
-
-            )
-
-            # finally do an arq cleanup
-            self.arq_cleanup()
-
+            self.arq_transmit_success()
         else:
-            self.send_data_to_socket_queue(
-                freedata="tnc-message",
-                arq="transmission",
-                status="failed",
-                uuid=self.transmission_uuid,
-                percent=static.ARQ_TRANSMISSION_PERCENT,
-                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression=static.ARQ_COMPRESSION_FACTOR,
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                irs=helpers.bool_to_string(self.is_IRS)
-            )
-
-            self.log.info(
-                "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
-                overflows=static.BUFFER_OVERFLOW_COUNTER,
-            )
-
-            self.stop_transmission()
+            self.arq_transmit_failed()
 
         if TESTMODE:
             # Quit after transmission
             self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
             sys.exit(0)
+
+    def arq_transmit_success(self):
+        """
+        will be called if we successfully transmitted all of queued data
+
+        """
+        # we need to wait until sending "transmitted" state
+        # gui database is too slow for handling this within 0.001 seconds
+        # so let's sleep a little
+        threading.Event().wait(0.2)
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="transmitted",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
+            finished=static.ARQ_SECONDS_UNTIL_FINISH,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=helpers.bool_to_string(self.is_IRS)
+        )
+
+        self.log.info(
+            "[TNC] ARQ | TX | DATA TRANSMITTED!",
+            BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
+            total_bytes=static.TOTAL_BYTES,
+            BitsPerSecond=static.ARQ_BITS_PER_SECOND,
+            overflows=static.BUFFER_OVERFLOW_COUNTER,
+
+        )
+
+        # finally do an arq cleanup
+        self.arq_cleanup()
+
+    def arq_transmit_failed(self):
+        """
+        will be called if we not successfully transmitted all of queued data
+        """
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="failed",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=helpers.bool_to_string(self.is_IRS)
+        )
+
+        self.log.info(
+            "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
+            overflows=static.BUFFER_OVERFLOW_COUNTER,
+        )
+
+        self.stop_transmission()
 
     def burst_ack_nack_received(self, data_in: bytes) -> None:
         """
@@ -3061,20 +3073,14 @@ class DATA:
             print(time.time() - (self.burst_last_received + self.time_list[self.speed_level]))
 
             print("-----------------------")
-            if modem_error_state:
-                self.log.warning(
-                    "[TNC] Decoding Error",
-                    attempt=self.n_retries_per_burst,
-                    max_attempts=self.rx_n_max_retries_per_burst,
-                    speed_level=self.speed_level,
-                )
-            else:
-                self.log.warning(
-                    "[TNC] Burst timeout",
-                    attempt=self.n_retries_per_burst,
-                    max_attempts=self.rx_n_max_retries_per_burst,
-                    speed_level=self.speed_level,
-                )
+
+            self.log.warning(
+                "[TNC] Burst decoding error or timeout",
+                attempt=self.n_retries_per_burst,
+                max_attempts=self.rx_n_max_retries_per_burst,
+                speed_level=self.speed_level,
+                modem_error_state=modem_error_state
+            )
 
             # reset self.burst_last_received
             self.burst_last_received = time.time() + self.time_list[self.speed_level]
