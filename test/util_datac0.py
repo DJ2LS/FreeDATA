@@ -76,6 +76,9 @@ def t_setup(
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger(f"station{station}_RF")
 
+    # Create socket
+    sock.ThreadedTCPServer(('localhost', 3000), sock.ThreadedTCPRequestHandler)
+
     return tnc, orig_rx_func, orig_tx_func
 
 
