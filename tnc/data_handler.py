@@ -1074,8 +1074,7 @@ class DATA:
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost
 
-        # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
-        # static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
+        # save len of data_out to TOTAL_BYTES for our statistics
         static.TOTAL_BYTES = len(data_out)
         self.arq_file_transfer = True
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
@@ -1132,21 +1131,6 @@ class DATA:
         while not self.data_frame_ack_received and static.ARQ_STATE:
             # we have self.tx_n_max_retries_per_burst attempts for sending a burst
             for self.tx_n_retry_of_burst in range(self.tx_n_max_retries_per_burst):
-                # data_mode = mode
-                # self.log.debug("[TNC] FIXED MODE:", mode=FREEDV_MODE(data_mode).name)
-
-                # we are doing a modulo check of transmission retries of the actual burst
-                # every 2nd retry which fails, decreases speedlevel by 1.
-                # as soon as we received an ACK for the current burst, speed_level will increase
-                # by 1.
-                # The intent is to optimize speed by adapting to the current RF conditions.
-                # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
-                #    self.speed_level = max(self.speed_level - 1, 0)
-
-                # if self.tx_n_retry_of_burst <= 1:
-                #    self.speed_level += 1
-                # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
-
                 # Bound speed level to:
                 # - minimum of either the speed or the length of mode list - 1
                 # - maximum of either the speed or zero
@@ -1204,13 +1188,6 @@ class DATA:
                     self.enqueue_frame_for_tx([t_buf_item], c2_mode=data_mode)
 
                 # After transmission finished, wait for an ACK or RPT frame
-                # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
-                # while (not self.burst_ack and not self.burst_nack and
-                #         not self.rpt_request_received and not self.data_frame_ack_received and
-                #         time.time() < burstacktimeout and static.ARQ_STATE):
-                #     threading.Event().wait(0.01)
-
-                # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
                 while (
                     static.ARQ_STATE
                     and not self.burst_ack
@@ -1257,7 +1234,6 @@ class DATA:
                     maxretries=self.tx_n_max_retries_per_burst,
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                 )
-                        # End of FOR loop
 
             # update buffer position
             bufferposition = bufferposition_end
@@ -1339,7 +1315,6 @@ class DATA:
                 "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
                 overflows=static.BUFFER_OVERFLOW_COUNTER,
             )
-
 
             self.stop_transmission()
 
@@ -2187,7 +2162,7 @@ class DATA:
             self.snr_list = self.snr_list_low_bw
 
         # get mode which fits to given SNR
-        # initially set speed_level 0 in case of really bad SNR and no matching mode
+        # initially set speed_level 0 in case of bad SNR and no matching mode
         self.speed_level = 0
         for i in range(len(self.mode_list)):
             if static.SNR >= self.snr_list[i]:
@@ -2228,7 +2203,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
+        self.burst_last_received = int(time.time() + 6)  # we might need some more time so lets increase this
 
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
@@ -2249,8 +2224,6 @@ class DATA:
         connection_frame[:1] = frametype
         connection_frame[1:2] = self.session_id
         connection_frame[8:9] = bytes([self.speed_level])
-
-        # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2279,7 +2252,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps once again for avoiding running into timeout
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
+        self.burst_last_received = int(time.time() + 6)  # we might need some more time so lets increase this
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
         """
