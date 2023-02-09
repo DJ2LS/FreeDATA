@@ -1492,28 +1492,28 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if static.ARQ_STATE and static.TNC_STATE == "BUSY":
-            static.DXGRID = b'------'
-            helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
-                static.DXGRID,
-                "DATA-CHANNEL",
-                static.SNR,
-                static.FREQ_OFFSET,
-                static.HAMLIB_FREQUENCY,
-            )
+        if not static.ARQ_STATE or static.TNC_STATE != "BUSY":
+            return
+        static.DXGRID = b'------'
+        helpers.add_to_heard_stations(
+            static.DXCALLSIGN,
+            static.DXGRID,
+            "DATA-CHANNEL",
+            static.SNR,
+            static.FREQ_OFFSET,
+            static.HAMLIB_FREQUENCY,
+        )
 
-            self.rpt_request_received = True
-            # Update data_channel timestamp
-            self.data_channel_last_received = int(time.time())
-            self.rpt_request_buffer = []
+        self.rpt_request_received = True
+        # Update data_channel timestamp
+        self.data_channel_last_received = int(time.time())
+        self.rpt_request_buffer = []
 
-            missing_area = bytes(data_in[3:12])  # 1:9
+        missing_area = bytes(data_in[3:12])  # 1:9
 
-            for i in range(0, 6, 2):
-                if not missing_area[i: i + 2].endswith(b"\x00\x00"):
-                    missing = missing_area[i: i + 2]
-                    self.rpt_request_buffer.insert(0, missing)
+        for i in range(0, 6, 2):
+            if not missing_area[i: i + 2].endswith(b"\x00\x00"):
+                self.rpt_request_buffer.insert(0, missing_area[i: i + 2])
 
     ############################################################################################################
     # ARQ SESSION HANDLER
@@ -2167,7 +2167,7 @@ class DATA:
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
             self.snr_list = self.snr_list_high_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value and static.LOW_BANDWIDTH_MODE:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value:
             # ISS(w) <-> IRS(n)
             constellation = "ISS(w) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = False
@@ -2181,7 +2181,7 @@ class DATA:
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
             self.snr_list = self.snr_list_low_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and static.LOW_BANDWIDTH_MODE:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value:
             # ISS(n) <-> IRS(n)
             constellation = "ISS(n) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = True
@@ -2459,17 +2459,25 @@ class DATA:
             snr=str(static.SNR),
         )
         if static.RESPOND_TO_CALL:
-            ping_frame = bytearray(self.length_sig0_frame)
-            ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
-            ping_frame[1:4] = static.DXCALLSIGN_CRC
-            ping_frame[4:7] = static.MYCALLSIGN_CRC
-            ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
-            ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
+            self.transmit_ping_ack()
 
-            if static.ENABLE_FSK:
-                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-            else:
-                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
+    def transmit_ping_ack(self):
+        """
+
+        transmit a ping ack frame
+        called by def received_ping
+        """
+        ping_frame = bytearray(self.length_sig0_frame)
+        ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
+        ping_frame[1:4] = static.DXCALLSIGN_CRC
+        ping_frame[4:7] = static.MYCALLSIGN_CRC
+        ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
+        ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
+
+        if static.ENABLE_FSK:
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+        else:
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -3013,6 +3021,7 @@ class DATA:
         self.data_frame_ack_received = state
 
     def set_listening_modes(self, enable_sig0: bool, enable_sig1: bool, mode: int) -> None:
+        # sourcery skip: extract-duplicate-method
         """
         Function for setting the data modes we are listening to for saving cpu power
 
