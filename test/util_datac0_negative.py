@@ -33,6 +33,10 @@ def t_setup(
 ):
     # Disable data_handler testmode - This is required to test a conversation.
     data_handler.TESTMODE = False
+
+    # Enable socket testmode for overriding socket class
+    sock.TESTMODE = True
+
     modem.RXCHANNEL = tmp_path / rx_channel
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / tx_channel
