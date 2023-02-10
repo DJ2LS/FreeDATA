@@ -253,7 +253,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             # CQ CQ CQ
             if received_json["command"] == "cqcqcq":
-                self.tnc_cqcqcq(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_cqcqcq(None, received_json)
+                else:
+                    self.tnc_cqcqcq(received_json)
+
             # START_BEACON
             if received_json["command"] == "start_beacon":
                 if TESTMODE:
