@@ -2372,8 +2372,8 @@ class DATA:
         ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
@@ -2589,9 +2589,9 @@ class DATA:
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
-                        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
+                            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
                             self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
@@ -2669,10 +2669,10 @@ class DATA:
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         self.log.debug("[TNC] CQ Frame:", data=[cq_frame])
 
         if static.ENABLE_FSK:
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2743,7 +2743,6 @@ class DATA:
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
         qrv_frame[11:12] = helpers.snr_to_bytes(static.SNR)
-
 
         if static.ENABLE_FSK:
             self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
