@@ -928,8 +928,6 @@ class DATA:
         # Update modes we are listening to
         self.set_listening_modes(False, True, self.mode_list[self.speed_level])
 
-
-
     def arq_process_received_data_frame(self, data_frame, snr):
             """
 
@@ -1369,6 +1367,8 @@ class DATA:
                 self.burst_nack_counter = 0
                 # Reset n retries per burst counter
                 self.n_retries_per_burst = 0
+
+                self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
             else:
                 # Decrease speed level if we received a burst nack
                 # self.speed_level = max(self.speed_level - 1, 0)
@@ -1376,7 +1376,7 @@ class DATA:
                 self.burst_nack = True
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
-                desc = "nack"
+                self.burst_ack_snr = 'NaN'
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -1386,12 +1386,6 @@ class DATA:
 
             self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
-
-            #self.log.debug(
-            #    f"[TNC] burst_{desc}_received:",
-            #    speed_level=self.speed_level,
-            #    c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
-            #)
 
     def frame_ack_received(
             self, data_in: bytes  # pylint: disable=unused-argument
