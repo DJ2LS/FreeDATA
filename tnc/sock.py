@@ -39,6 +39,8 @@ DAEMON_QUEUE = queue.Queue()
 CONNECTED_CLIENTS = set()
 CLOSE_SIGNAL = False
 
+TESTMODE = False
+
 log = structlog.get_logger("sock")
 
 
@@ -211,69 +213,127 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             # ENABLE TNC LISTENING STATE
             if received_json["type"] == "set" and received_json["command"] == "listen":
-                self.tnc_set_listen(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_listen(None, received_json)
+                else:
+                    self.tnc_set_listen(received_json)
 
             # START STOP AUDIO RECORDING
             if received_json["type"] == "set" and received_json["command"] == "record_audio":
-                self.tnc_set_record_audio(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_record_audio(None, received_json)
+                else:
+                    self.tnc_set_record_audio(received_json)
 
             # SET ENABLE/DISABLE RESPOND TO CALL
             if received_json["type"] == "set" and received_json["command"] == "respond_to_call":
-                self.tnc_set_respond_to_call(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_respond_to_call(None, received_json)
+                else:
+                    self.tnc_set_respond_to_call(received_json)
 
             # SET ENABLE RESPOND TO CQ
             if received_json["type"] == "set" and received_json["command"] == "respond_to_cq":
-                self.tnc_set_record_audio(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_record_audio(None, received_json)
+                else:
+                    self.tnc_set_record_audio(received_json)
             # SET TX AUDIO LEVEL
             if received_json["type"] == "set" and received_json["command"] == "tx_audio_level":
-                self.tnc_set_tx_audio_level(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_tx_audio_level(None, received_json)
+                else:
+                    self.tnc_set_tx_audio_level(received_json)
             # TRANSMIT TEST FRAME
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
-                self.tnc_set_send_test_frame(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_send_test_frame(None, received_json)
+                else:
+                    self.tnc_set_send_test_frame(received_json)
 
             # CQ CQ CQ
             if received_json["command"] == "cqcqcq":
                 self.tnc_cqcqcq(received_json)
             # START_BEACON
             if received_json["command"] == "start_beacon":
-                self.tnc_start_beacon(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_start_beacon(None, received_json)
+                else:
+                    self.tnc_start_beacon(received_json)
 
             # STOP_BEACON
             if received_json["command"] == "stop_beacon":
-                self.tnc_stop_beacon(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_stop_beacon(None, received_json)
+                else:
+                    self.tnc_stop_beacon(received_json)
 
             # PING
             if received_json["type"] == "ping" and received_json["command"] == "ping":
-                self.tnc_ping_ping(received_json)
+
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_ping_ping(None, received_json)
+                else:
+                    self.tnc_ping_ping(received_json)
+
             # CONNECT
             if received_json["type"] == "arq" and received_json["command"] == "connect":
-                self.tnc_arq_connect(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_arq_connect(None, received_json)
+                else:
+                    self.tnc_arq_connect(received_json)
+
             # DISCONNECT
             if received_json["type"] == "arq" and received_json["command"] == "disconnect":
-                self.tnc_arq_disconnect(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_arq_disconnect(None, received_json)
+                else:
+                    self.tnc_arq_disconnect(received_json)
+
             # TRANSMIT RAW DATA
             if received_json["type"] == "arq" and received_json["command"] == "send_raw":
-                self.tnc_arq_send_raw(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_arq_send_raw(None, received_json)
+                else:
+                    self.tnc_arq_send_raw(received_json)
+
             # STOP TRANSMISSION
             if received_json["type"] == "arq" and received_json["command"] == "stop_transmission":
-                self.tnc_arq_stop_transmission(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_arq_stop_transmission(None, received_json)
+                else:
+                    self.tnc_arq_stop_transmission(None, received_json)
+
             # GET RX BUFFER
             if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
-                self.tnc_get_rx_buffer(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_get_rx_buffer(None, received_json)
+                else:
+                    self.tnc_get_rx_buffer(received_json)
 
             # DELETE RX BUFFER
             if received_json["type"] == "set" and received_json["command"] == "del_rx_buffer":
-                self.tnc_set_del_rx_buffer(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_del_rx_buffer(None, received_json)
+                else:
+                    self.tnc_set_del_rx_buffer(received_json)
             # SET FREQUENCY
             if received_json["type"] == "set" and received_json["command"] == "frequency":
-                self.tnc_set_frequency(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_frequency(None, received_json)
+                else:
+                    self.tnc_set_frequency(received_json)
 
             # SET MODE
             if received_json["type"] == "set" and received_json["command"] == "mode":
-                self.tnc_set_mode(received_json)
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_set_mode(None, received_json)
+                else:
+                    self.tnc_set_mode(received_json)
 
         except Exception as err:
             log.error("[SCK] JSON decoding error", e=err)
+
     def tnc_set_listen(self, received_json):
         try:
             static.LISTEN = received_json["state"] in ['true', 'True', True, "ON", "on"]
