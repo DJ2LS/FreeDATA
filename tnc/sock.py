@@ -52,11 +52,9 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
 
 
+# noinspection PyTypeChecker
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     """ """
-
-    connection_alive = False
-
     connection_alive = False
     log = structlog.get_logger("ThreadedTCPRequestHandler")
 
@@ -93,7 +91,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                             client.send(sock_data)
                         except Exception as err:
                             self.log.info("[SCK] Connection lost", e=err)
-                            # TODO: Check if we really should set connection alive to false. This might disconnect all other clients as well...
+                            # TODO: Check if we really should set connection alive to false.
+                            # This might disconnect all other clients as well...
                             self.connection_alive = False
                 except Exception as err:
                     self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
@@ -136,7 +135,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         # wait some time between processing multiple commands
                         # this is only a first test to avoid doubled transmission
                         # we might improve this by only processing one command or
-                        # doing some kind of selection to determin which commands need to be dropped
+                        # doing some kind of selection to determine which commands need to be dropped
                         # and which one can be processed during a running transmission
                         threading.Event().wait(0.5)
 
@@ -186,10 +185,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         )
         try:
             CONNECTED_CLIENTS.remove(self.request)
-        except Exception:
+        except Exception as e:
             self.log.warning(
                 "[SCK] client connection already removed from client list",
                 client=self.request,
+                e=e,
             )
 
     # ------------------------ TNC COMMANDS
@@ -306,7 +306,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_stop_transmission(None, received_json)
                 else:
-                    self.tnc_arq_stop_transmission(None, received_json)
+                    self.tnc_arq_stop_transmission(received_json)
 
             # GET RX BUFFER
             if received_json["type"] == "get" and received_json["command"] == "rx_buffer":
@@ -355,6 +355,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             log.warning(
                 "[SCK] CQ command execution error", e=err, command=received_json
             )
+
     def tnc_set_record_audio(self, received_json):
         try:
             if not static.AUDIO_RECORD:
@@ -421,6 +422,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 e=err,
                 command=received_json,
             )
+
     def tnc_cqcqcq(self, received_json):
         try:
             DATA_QUEUE_TRANSMIT.put(["CQ"])
@@ -445,6 +447,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 e=err,
                 command=received_json,
             )
+
     def tnc_stop_beacon(self, received_json):
         try:
             log.warning("[SCK] Stopping beacon!")
@@ -458,6 +461,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 e=err,
                 command=received_json,
             )
+
     def tnc_ping_ping(self, received_json):
         # send ping frame and wait for ACK
         try:
@@ -661,36 +665,36 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             )
 
     def tnc_get_rx_buffer(self, received_json):
-            try:
-                if not RX_BUFFER.empty():
-                    output = {
-                        "command": "rx_buffer",
-                        "data-array": [],
-                    }
+        try:
+            if not RX_BUFFER.empty():
+                output = {
+                    "command": "rx_buffer",
+                    "data-array": [],
+                }
 
-                    for _buffer_length in range(RX_BUFFER.qsize()):
-                        base64_data = RX_BUFFER.queue[_buffer_length][4]
-                        output["data-array"].append(
-                            {
-                                "uuid": RX_BUFFER.queue[_buffer_length][0],
-                                "timestamp": RX_BUFFER.queue[_buffer_length][1],
-                                "dxcallsign": str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
-                                "dxgrid": str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
-                                "data": base64_data,
-                            }
-                        )
-                    jsondata = json.dumps(output)
-                    # self.request.sendall(bytes(jsondata, encoding))
-                    SOCKET_QUEUE.put(jsondata)
-                    command_response("rx_buffer", True)
+                for _buffer_length in range(RX_BUFFER.qsize()):
+                    base64_data = RX_BUFFER.queue[_buffer_length][4]
+                    output["data-array"].append(
+                        {
+                            "uuid": RX_BUFFER.queue[_buffer_length][0],
+                            "timestamp": RX_BUFFER.queue[_buffer_length][1],
+                            "dxcallsign": str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
+                            "dxgrid": str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
+                            "data": base64_data,
+                        }
+                    )
+                jsondata = json.dumps(output)
+                # self.request.sendall(bytes(jsondata, encoding))
+                SOCKET_QUEUE.put(jsondata)
+                command_response("rx_buffer", True)
 
-            except Exception as err:
-                command_response("rx_buffer", False)
-                log.warning(
-                    "[SCK] Send RX buffer command execution error",
-                    e=err,
-                    command=received_json,
-                )
+        except Exception as err:
+            command_response("rx_buffer", False)
+            log.warning(
+                "[SCK] Send RX buffer command execution error",
+                e=err,
+                command=received_json,
+            )
 
     def tnc_set_del_rx_buffer(self, received_json):
         try:
@@ -728,11 +732,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command=received_json,
             )
 
-
-
-
-
-
     # ------------------------ DAEMON COMMANDS
     def process_daemon_commands(self, data):
         """
@@ -757,9 +756,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             self.daemon_set_mygrid(received_json)
 
         if (
-            received_json["type"] == "set"
-            and received_json["command"] == "start_tnc"
-            and not static.TNCSTARTED
+                received_json["type"] == "set"
+                and received_json["command"] == "start_tnc"
+                and not static.TNCSTARTED
         ):
             self.daemon_start_tnc(received_json)
 
@@ -929,8 +928,8 @@ def send_daemon_state():
             "input_devices": static.AUDIO_INPUT_DEVICES,
             "output_devices": static.AUDIO_OUTPUT_DEVICES,
             "serial_devices": static.SERIAL_DEVICES,
-            #'cpu': str(psutil.cpu_percent()),
-            #'ram': str(psutil.virtual_memory().percent),
+            # 'cpu': str(psutil.cpu_percent()),
+            # 'ram': str(psutil.virtual_memory().percent),
             "version": "0.1",
         }
 
@@ -943,6 +942,7 @@ def send_daemon_state():
     except Exception as err:
         log.warning("[SCK] error", e=err)
         return None
+
 
 def send_tnc_state():
     """
