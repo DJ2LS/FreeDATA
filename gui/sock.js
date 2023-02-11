@@ -535,26 +535,7 @@ exports.sendFile = function(dxcallsign, mode, frames, filename, filetype, data, 
 
 // Send Message
 exports.sendMessage = function(dxcallsign, mode, frames, data, checksum, uuid, command) {
-    //socketLog.info(data)
-
-    // Disabled this here
-    // convert message to plain utf8 because of unicode emojis
-    //data = utf8.encode(data)
-
-    //socketLog.info(data)
-    //shorten uuid
-       
-    var datatype = "m"
-    data = datatype + split_char + command + split_char + checksum + split_char + uuid + split_char + data
-    //socketLog.info(data)
-    console.log(data)
-
-    console.log("CHECKSUM" + checksum)
-    //socketLog.info(btoa(data))
-    //data = btoa(data)
-    data = btoa_FD(data);
-
-    //command = '{"type" : "arq", "command" : "send_message", "parameter" : [{ "dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" :  "' + data + '" , "checksum" : "' + checksum + '"}]}'
+    data = btoa_FD("m" + split_char + command + split_char + checksum + split_char + uuid + split_char + data);
     command = '{"type" : "arq", "command" : "send_raw",  "uuid" : "'+ uuid +'", "parameter" : [{"dxcallsign" : "' + dxcallsign + '", "mode" : "' + mode + '", "n_frames" : "' + frames + '", "data" : "' + data + '", "attempts": "15"}]}'
     socketLog.info(command)
     socketLog.info("-------------------------------------")
