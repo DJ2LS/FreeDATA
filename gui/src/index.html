@@ -63,8 +63,9 @@
 	<div class="btn-group me-2" role="group" >
 		<button class="btn btn-sm btn-secondary " id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
 		title="Open the HF chat module. This is currently just a test and not finished, yet!"> 
+			<i class="bi bi-chat-left-text-fill me-2" ></i>
 			<strong>RF Chat</strong>
-			<i class="bi bi-chat-left-text-fill" ></i>
+
 		</button>
 		<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle-split rounded-end" data-bs-toggle="dropdown" aria-expanded="false">
 			<span class="navbar-toggler-icon">
@@ -997,8 +998,8 @@
 						<div class="card-header p-1"><i class="bi bi-volume-up"
 								style="font-size: 1rem; color: black;"></i> <strong>AUDIO LEVEL</strong>
 							<button type="button" id="audioModalButton" data-bs-toggle="modal"
-								data-bs-target="#audioModal" class="btn btn-sm btn-secondary">Tune</button>
-							<button type="button" id="startStopRecording" class="btn btn-sm btn-danger">Rec</button>
+								data-bs-target="#audioModal" class="btn btn-sm btn-outline-secondary">Tune</button>
+							<button type="button" id="startStopRecording" class="btn btn-sm btn-outline-danger">Record audio</button>
 
 						</div>
 						<div class="card-body p-2">
@@ -1033,33 +1034,33 @@
 											style="max-width: 6rem; text-transform:uppercase" placeholder="DXcall"
 											pattern="[A-Z]*" id="dxCall" maxlength="11" aria-label="Input group"
 											aria-describedby="btnGroupAddon">
-										<button class="btn btn-sm btn-primary" id="sendPing" type="button"
+										<button class="btn btn-sm btn-outline-secondary ms-1" id="sendPing" type="button"
 											data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
 											title="Send a ping request to a remote station"> Ping </button>
-										<button class="btn btn-sm btn-success" id="openARQSession" type="button"
+										<button class="btn btn-sm btn-outline-success ms-1" id="openARQSession" type="button"
 											data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
 											title="connect to a remote station"> <i class="bi bi-arrows-angle-contract"
-												style="font-size: 0.8rem; color: white;"></i> </button>
-										<button class="btn btn-sm btn-danger" id="closeARQSession" type="button"
+												style="font-size: 0.8rem;"></i> </button>
+										<button class="btn btn-sm btn-outline-danger" id="closeARQSession" type="button"
 											data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
 											title="disconnect from a remote station"> <i
 												class="bi bi-arrows-angle-expand"
-												style="font-size: 0.8rem; color: white;"></i> </button>
+												style="font-size: 0.8rem;"></i> </button>
 									</div>
 								</div>
 								<div class="col-md-auto">
 									<div class="input-group input-group-sm mb-0" data-bs-placement="bottom"
 										data-bs-toggle="tooltip" data-bs-html="false" title="Send a CQ to the world">
-										<button class="btn btn-sm btn-success" id="sendCQ" type="button">CQ CQ</button>
+										<button class="btn btn-sm btn-outline-secondary" id="sendCQ" type="button">CQ</button>
 									</div>
 								</div>
 								<div class="col-md-auto">
 									<div class="input-group input-group-sm" data-bs-placement="bottom"
 										data-bs-toggle="tooltip" data-bs-html="false"
 										title="Start or stop the Beacon mode. You can also set the interval. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses.">
-										<button type="button" id="startBeacon" class="btn btn-sm btn-success"> <i
+										<button type="button" id="startBeacon" class="btn btn-sm btn-outline-success"> <i
 												class="bi bi-arrow-clockwise"
-												style="font-size: 0.8rem; color: white;"></i> </button>
+												style="font-size: 0.8rem;"></i> </button>
 										<div id="txtBeacon" class="input-group-text p-1">Beacon</div>
 										<select class="form-select form-select-sm" aria-label=".form-select-sm"
 											id="beaconInterval" style="width:6rem">
@@ -1077,9 +1078,9 @@
 											<option value="1800">30min</option>
 											<option value="3600">60min</option>
 										</select>
-										<button type="button" id="stopBeacon" class="btn btn-sm btn-danger"> <i
+										<button type="button" id="stopBeacon" class="btn btn-sm btn-outline-danger"> <i
 												class="bi bi-x-octagon-fill"
-												style="font-size: 0.8rem; color: white;"></i> </button>
+												style="font-size: 0.8rem;"></i> </button>
 									</div>
 								</div>
 							</div>

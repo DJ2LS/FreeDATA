@@ -2013,7 +2013,7 @@ var speedChartOptions = {
                 bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
             } else {
-                bcn.className = "btn btn-sm btn-success";
+                bcn.className = "btn btn-sm btn-outline-success";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1 text-success text-uppercase");
             }
             document.getElementById("beaconInterval").disabled = true;
@@ -2021,7 +2021,7 @@ var speedChartOptions = {
             break;
         default:
             document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
-            bcn.className = "btn btn-sm btn-success";
+            bcn.className = "btn btn-sm btn-outline-success";
             document.getElementById("beaconInterval").disabled = false;
             document.getElementById("stopBeacon").disabled = true;
             bcn.disabled = false;
