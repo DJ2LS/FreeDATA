@@ -1,83 +1,180 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';" />
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      id="bootstrap_theme"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap-icons/font/bootstrap-icons.css"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <title>FreeDATA - CHAT</title>
+  </head>
 
-<head>
-	<!-- Required meta tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="Content-Security-Policy" content="script-src 'self';">
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" id="bootstrap_theme" href="../node_modules/bootstrap/dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="../node_modules/bootstrap-icons/font/bootstrap-icons.css">
-	<!-- Custom CSS -->
-	<link rel="stylesheet" type="text/css" href="styles.css" />
-	<title>FreeDATA - CHAT</title>
-</head>
+  <body>
+    <!-- bootstrap -->
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- chart.js -->
+    <script src="../node_modules/chart.js/dist/chart.umd.js"></script>
+    <!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
+    <!--<script type="module" src="../node_modules/emoji-picker-element/index.js"></script>-->
+    <script
+      type="module"
+      src="../node_modules/emoji-picker-element/picker.js"
+    ></script>
+    <script
+      type="module"
+      src="../node_modules/emoji-picker-element/database.js"
+    ></script>
+    <div
+      class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5"
+      style="z-index: 100; display: none"
+      id="emojipickercontainer"
+    >
+      <emoji-picker
+        locale="en"
+        class="position-absolute bottom-0 end-0 p-1 mb-2"
+        data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
+      ></emoji-picker>
+    </div>
+    <div class="container-fluid">
+      <div class="row h-100">
+        <div class="col-4 p-2 bg-light">
+          <! ------Chats area ---------------------------------------------------------------------->
+          <div class="container-fluid m-0 p-0">
+            <div class="input-group bottom-0 m-0 w-100">
+              <input
+                class="form-control w-50"
+                maxlength="9"
+                style="text-transform: uppercase"
+                id="chatModuleNewDxCall"
+                placeholder="DX CALL"
+              />
+              <button
+                class="btn btn-sm btn-success w-50"
+                id="createNewChatButton"
+                type="button"
+              >
+                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+              </button>
+            </div>
+          </div>
+          <hr class="m-2" />
+          <div class="overflow-auto vh-100">
+            <div
+              class="list-group overflow-auto"
+              id="list-tab"
+              role="tablist"
+              style="height: calc(100vh - 70px)"
+            ></div>
+          </div>
+        </div>
+        <div class="col-8 border vh-100 p-0">
+          <! ------ chat navbar ---------------------------------------------------------------------->
+          <div class="container-fluid m-2 p-0">
+            <div class="input-group bottom-0">
+              <button
+                class="btn btn-sm btn-secondary me-2"
+                id="ping"
+                type="button"
+              >
+                Ping
+              </button>
+              <button
+                id="chatSettingsDropDown"
+                type="button"
+                class="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
+                <li>
+                  <a
+                    class="dropdown-item bg-danger text-white"
+                    id="delete_selected_chat"
+                    href="#"
+                    >Delete chat</a
+                  >
+                </li>
+              </ul>
+            </div>
+          </div>
+          <hr class="m-0" />
+          <! ------messages area ---------------------------------------------------------------------->
+          <div
+            class="container overflow-auto"
+            id="message-container"
+            style="height: calc(100% - 150px)"
+          >
+            <div class="tab-content" id="nav-tabContent"></div>
+            <!--<div class="container position-absolute bottom-0">-->
+          </div>
+          <!-- </div>-->
+          <div class="container-fluid mt-2 p-0">
+            <input
+              type="checkbox"
+              id="expand_textarea"
+              class="btn-check"
+              autocomplete="off"
+            />
+            <label
+              class="btn d-flex justify-content-center"
+              id="expand_textarea_label"
+              for="expand_textarea"
+              ><i
+                id="expand_textarea_button"
+                class="bi bi-chevron-compact-up"
+              ></i
+            ></label>
 
-<body>
-	<!-- bootstrap -->
-	<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-	<!-- chart.js -->
-	<script src="../node_modules/chart.js/dist/chart.umd.js"></script>
-	<!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
-	<!--<script type="module" src="../node_modules/emoji-picker-element/index.js"></script>-->
-	<script type="module" src="../node_modules/emoji-picker-element/picker.js"></script>
-	<script type="module" src="../node_modules/emoji-picker-element/database.js"></script>
-	<div class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5" style="z-index:100; display: none" id="emojipickercontainer">
-		<emoji-picker locale="en" class="position-absolute bottom-0 end-0 p-1 mb-2" data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"></emoji-picker>
-	</div>
-	<div class="container-fluid">
-		<div class="row h-100">
-			<div class="col-4 p-2 bg-light">
-				<! ------Chats area ---------------------------------------------------------------------->
-				<div class="container-fluid m-0 p-0">
-					<div class="input-group bottom-0 m-0 w-100">
-						<input class="form-control w-50" maxlength="9" style="text-transform:uppercase;" id="chatModuleNewDxCall" placeholder="DX CALL">
-						<button class="btn btn-sm btn-success w-50" id="createNewChatButton" type="button"><i class="bi bi-pencil-square" style="font-size: 1.2rem;"></i></button>
-					</div>
-				</div>
-				<hr class="m-2">
-				<div class="overflow-auto vh-100">
-					<div class="list-group overflow-auto" id="list-tab" role="tablist" style="height: calc(100vh - 70px)"> </div>
-				</div>
-			</div>
-			<div class="col-8 border vh-100 p-0">
-				<! ------ chat navbar ---------------------------------------------------------------------->
-				<div class="container-fluid m-2 p-0">
-					<div class="input-group bottom-0">
-						<button class="btn btn-sm btn-secondary me-2" id="ping" type="button">Ping</button>
-						<button id="chatSettingsDropDown" type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"> <i class="bi bi-three-dots-vertical"></i> </button>
-						<ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
-							<li><a class="dropdown-item bg-danger text-white" id="delete_selected_chat" href="#">Delete chat</a></li>
-						</ul>
-					</div>
-				</div>
-				<hr class="m-0">
-				<! ------messages area ---------------------------------------------------------------------->
-				<div class="container overflow-auto" id="message-container" style="height: calc(100% - 150px);">
-					<div class="tab-content" id="nav-tabContent"> </div>
-					<!--<div class="container position-absolute bottom-0">--></div>
-				<!-- </div>-->
-				<div class="container-fluid mt-2 p-0">
+            <div class="input-group bottom-0 w-100">
+              <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
+              <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">--><i
+                id="emojipickerbutton"
+                class="bi bi-emoji-smile m-1"
+                style="font-size: 1.5rem; color: grey"
+              ></i
+              ><!--</button>-->
+              <!--<input class="form-control rounded-pill m-1 p-1" id="chatModuleMessage" placeholder="Message - Send with [Enter]"></input>-->
 
-					<input type="checkbox" id="expand_textarea" class="btn-check" autocomplete="off">
-					<label class="btn d-flex justify-content-center" id="expand_textarea_label" for="expand_textarea"><i id="expand_textarea_button" class="bi bi-chevron-compact-up"></i></label>
+              <textarea
+                class="form-control m-1 p-1"
+                rows="1"
+                id="chatModuleMessage"
+                placeholder="Message - Send with [Enter]"
+              ></textarea>
 
-					<div class="input-group bottom-0 w-100">
-						<!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
-						<!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">--><i id="emojipickerbutton" class="bi bi-emoji-smile m-1" style="font-size: 1.5rem; color: grey;"></i><!--</button>-->
-						<!--<input class="form-control rounded-pill m-1 p-1" id="chatModuleMessage" placeholder="Message - Send with [Enter]"></input>-->
-						
-						<textarea class="form-control m-1 p-1" rows="1" id="chatModuleMessage" placeholder="Message - Send with [Enter]"></textarea>
-
-						
-						<!--<button class="btn btn-sm btn-primary me-2" style="width: 3rem" id="selectFilesButton" type="button"><i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i></button>--><i class="bi bi-paperclip m-1" style="font-size: 1.5rem; color: grey;" id="selectFilesButton"></i>
-						<button class="btn btn-sm btn-secondary me-2" style="width: 5rem;  display: none" id="sendMessage" type="button"><i class="bi bi-send" style="font-size: 1.2rem; color: white;"></i></button>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-</body>
-
+              <!--<button class="btn btn-sm btn-primary me-2" style="width: 3rem" id="selectFilesButton" type="button"><i class="bi bi-paperclip" style="font-size: 1.2rem; color: white;"></i></button>--><i
+                class="bi bi-paperclip m-1"
+                style="font-size: 1.5rem; color: grey"
+                id="selectFilesButton"
+              ></i>
+              <button
+                class="btn btn-sm btn-secondary me-2"
+                style="width: 5rem; display: none"
+                id="sendMessage"
+                type="button"
+              >
+                <i
+                  class="bi bi-send"
+                  style="font-size: 1.2rem; color: white"
+                ></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>
