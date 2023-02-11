@@ -10,6 +10,11 @@ const {
     bearingDistance,
     latLngToLocator
 } = require('qth-locator');
+
+const {
+    v4: uuidv4
+} = require('uuid');
+
 const os = require('os');
 
 // split character used for appending additional data to files
@@ -21,7 +26,7 @@ var appDataFolder = process.env.APPDATA || (process.platform == 'darwin' ? proce
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, 'config.json');
 const config = require(configPath);
-
+const contrib = ["DK5SM","DL4IAZ","DB1UJ","EI3HIB","VK5DGR","EI7IG","N2KIQ","KT4WO","DF7MH","G0HWW","N1QM"]
 
 // SET dbfs LEVEL GLOBAL
 // this is an attempt of reducing CPU LOAD
@@ -261,19 +266,17 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
 
     if(config.enable_explorer == 'True'){
         document.getElementById("ExplorerSwitch").checked = true;
-        document.getElementById("ExplorerStatsSwitch").disabled=false;
-        if (config.explorer_stats.toLowerCase() == 'true') {
-            document.getElementById("ExplorerStatsSwitch").checked=true;
-        } else {
-            document.getElementById("ExplorerStatsSwitch").checked=false;
-        }
-
-        
     } else {
         document.getElementById("ExplorerSwitch").checked = false;
-        document.getElementById("ExplorerStatsSwitch").disabled=true;
+    }
+
+    if (config.explorer_stats.toLowerCase() == 'true') {
+        document.getElementById("ExplorerStatsSwitch").checked=true;
+    } else {
         document.getElementById("ExplorerStatsSwitch").checked=false;
     }
+
+
     if(config.auto_tune == 'True'){
         document.getElementById("autoTuneSwitch").checked = true;
     } else {
@@ -426,10 +429,12 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
         document.getElementById("local-remote-switch1").checked = false;
         document.getElementById("local-remote-switch2").checked = true;
         document.getElementById("remote-tnc-field").style.visibility = 'visible';
+        toggleClass("remote-tnc-field",'d-none',false);
     } else {
         document.getElementById("local-remote-switch1").checked = true;
         document.getElementById("local-remote-switch2").checked = false;
         document.getElementById("remote-tnc-field").style.visibility = 'hidden';
+        toggleClass("remote-tnc-field",'d-none',true);
     }
 
     // Create spectrum object on canvas with ID "waterfall"
@@ -442,6 +447,41 @@ document.getElementById('openReceivedFilesFolder').addEventListener('click', () 
     //Set waterfalltheme
     document.getElementById("wftheme_selector").value = config.wftheme;
     spectrum.setColorMap(config.wftheme);
+
+    document.getElementById("btnAbout").addEventListener("click", () => {
+        document.getElementById('aboutVersion').innerText=appVer;
+        let maxcol=3;
+        let col =2;
+        let shuffled = contrib
+            .map(value => ({ value, sort: Math.random() }))
+            .sort((a, b) => a.sort - b.sort)
+            .map(({ value }) => value)
+        let list ="<li>DJ2LS</li>";
+        let list2="";
+        let list3="";
+        shuffled.forEach(element => {
+            switch (col) {
+                case 1:
+                    list +="<li>" +element + "</li>" 
+                break;
+                case 2:
+                    list2 +="<li>" +element + "</li>"
+                    break;
+                case 3:
+                    list3 +="<li>" +element + "</li>"
+                    break;
+            }
+            col=col + 1;
+            if (col > maxcol ) {
+                col=1;
+            }
+        });
+        //list+="</ul>";
+        divContrib.innerHTML="<ul>" + list + "</ul>";
+        divContrib2.innerHTML="<ul>" + list2 + "</ul>";
+        divContrib3.innerHTML="<ul>" + list3 + "</ul>";
+        //console.log(shuffled)
+    });
 
     // on click radio control toggle view
     // disabled
@@ -894,6 +934,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         document.getElementById("local-remote-switch2").checked = false;
         document.getElementById("remote-tnc-field").style.visibility = 'hidden';
         config.tnclocation = 'localhost';
+        toggleClass("remote-tnc-field",'d-none',true);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
     document.getElementById("local-remote-switch2").addEventListener("click", () => {
@@ -901,6 +942,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         document.getElementById("local-remote-switch2").checked = true;
         document.getElementById("remote-tnc-field").style.visibility = 'visible';
         config.tnclocation = 'remote';
+        toggleClass("remote-tnc-field",'d-none',false);
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
@@ -1100,13 +1142,8 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
     document.getElementById("ExplorerSwitch").addEventListener("click", () => {
         if(document.getElementById("ExplorerSwitch").checked == true){
             config.enable_explorer = "True";
-            document.getElementById("ExplorerStatsSwitch").disabled=false;
         } else {
             config.enable_explorer = "False";
-            config.explorer_stats = "False";
-            document.getElementById("ExplorerStatsSwitch").disabled=true;
-            document.getElementById("ExplorerStatsSwitch").checked=false;
-            document.getElementById("ExplorerSwitch").checked = false;
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
@@ -1119,7 +1156,7 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         }
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-    // enable explorer stats Switch clicked
+    // enable autotune Switch clicked
     document.getElementById("autoTuneSwitch").addEventListener("click", () => {
         if(document.getElementById("autoTuneSwitch").checked == true){
             config.auto_tune = "True";
@@ -1224,6 +1261,27 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         shell.openExternal('https://explorer.freedata.app/?myCall=' + document.getElementById("myCall").value);
     });
 
+    // Stats button clicked
+    document.getElementById("btnStats").addEventListener("click", () => {
+        shell.openExternal('https://statistics.freedata.app');
+    });
+
+    // GH Link clicked
+    document.getElementById("ghUrl").addEventListener("click", () => {
+        shell.openExternal('https://github.com/DJ2LS/FreeDATA');
+    });
+    // Wiki Link clicked
+    document.getElementById("wikiUrl").addEventListener("click", () => {
+        shell.openExternal('https://wiki.freedata.app');
+    });
+        // Groups.io Link clicked
+        document.getElementById("groupsioUrl").addEventListener("click", () => {
+            shell.openExternal('https://groups.io/g/freedata');
+        });
+        // Discord Link clicked
+        document.getElementById("discordUrl").addEventListener("click", () => {
+            shell.openExternal('https://discord.gg/jnADeDtxUF');
+        });
     // startTNC button clicked
     document.getElementById("startTNC").addEventListener("click", () => {
 
@@ -1290,11 +1348,13 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         } else {
             var enable_explorer = "False";
         }
+
         if (document.getElementById("ExplorerStatsSwitch").checked == true){
             var explorer_stats = "True";
         } else {
             var explorer_stats = "False";
         }
+
         if (document.getElementById("autoTuneSwitch").checked == true){
             var auto_tune = "True";
         } else {
@@ -1395,10 +1455,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
+        if (!confirm("Stop the TNC?")) return;
         
         daemon.stopTNC();
-        
-                
+ 
         // collapse settings screen
         // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
         /*
@@ -1412,9 +1472,6 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.hide() 
         */
-
-        
-  
     })
     
     
@@ -1671,10 +1728,7 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
 
 });
 
-
-
-var slowRollTable=4;
-
+var lastHeard="";
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
@@ -1810,6 +1864,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
       type: 'line',
     };
 
+    // https://www.chartjs.org/docs/latest/samples/line/segments.html
+    const skipped = (speedCtx, value) => speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
+    const down = (speedCtx, value) => speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
+
     var newSpeedData = {
         labels: speedDataTime,
         datasets: [
@@ -1817,8 +1875,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 type: 'line',
                 label: 'SNR[dB]',
                 data: speedDataSnr,
-                borderColor: 'rgb(255, 99, 132, 1.0)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(75, 192, 192, 1.0)',
+                segment: {
+                    borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)') || down(ctx, 'rgb(192,75,75)'),
+                    borderDash: ctx => skipped(ctx, [6, 6]),
+                },
+                spanGaps: true,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 order: 1,
                 yAxisID: 'SNR',
             },
@@ -1858,6 +1921,7 @@ var speedChartOptions = {
         }
 
     if (typeof(global.speedChart) == 'undefined') {
+
         var speedCtx = document.getElementById('chart').getContext('2d');
         global.speedChart = new Chart(speedCtx, {
             data: newSpeedData,
@@ -1964,7 +2028,7 @@ var speedChartOptions = {
                 bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
             } else {
-                bcn.className = "btn btn-sm btn-success";
+                bcn.className = "btn btn-sm btn-outline-success";
                 document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1 text-success text-uppercase");
             }
             document.getElementById("beaconInterval").disabled = true;
@@ -1972,7 +2036,7 @@ var speedChartOptions = {
             break;
         default:
             document.getElementById("txtBeacon").setAttribute("class","input-group-text p-1");
-            bcn.className = "btn btn-sm btn-success";
+            bcn.className = "btn btn-sm btn-outline-success";
             document.getElementById("beaconInterval").disabled = false;
             document.getElementById("stopBeacon").disabled = true;
             bcn.disabled = false;
@@ -2025,22 +2089,22 @@ var speedChartOptions = {
         var total_bytes = arg.total_bytes;
     }
     document.getElementById("total_bytes").textContent = total_bytes;
-
-
-    //Ensure heard station table is last so we can return if we don't want to update it
-    //Only update heard stations every 5 iterations
-    //Allows for single click event to work more reliabily to populate dxcall textbox
-    //Should also save some CPU
-    slowRollTable++;
-    if (slowRollTable!=5) {
-        return;
-    }
-        
-    slowRollTable=0;
     
+    //Check if heard station list has changed
+    if (typeof(arg.stations) != 'undefined' && arg.stations.length>0 && JSON.stringify(arg.stations) != lastHeard) {
+        //console.log("Updating last heard stations");
+        lastHeard = JSON.stringify(arg.stations);
+        updateHeardStations(arg);
+    }
+    
+
+});
+
+function updateHeardStations(arg) {
     // UPDATE HEARD STATIONS
+   
     var tbl = document.getElementById("heardstations");
-    document.getElementById("heardstations").innerHTML = '';
+    tbl.innerHTML="";
 
     if (typeof(arg.stations) == 'undefined') {
         var heardStationsLength = 0;
@@ -2089,6 +2153,7 @@ var speedChartOptions = {
         var dxCallText = document.createElement('span');
         dxCallText.innerText = arg.stations[i]['dxcallsign'];
         let dxCallTextCall = dxCallText.innerText;
+        let dxCallTextShort = dxCallTextCall.split("-",1)[0];
         row.addEventListener("click", function() {
             document.getElementById("dxCall").value = dxCallTextCall;
           });
@@ -2117,27 +2182,18 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-
-        switch (arg.stations[i]['datatype']){
-            case 'DATA-CHANNEL':
-                dataTypeText.innerText = 'DATA-C';
-                dataType.appendChild(dataTypeText);
-                break;
-            case 'SESSION-HB':
-                dataTypeText.innerHTML = '<i class="bi bi-heart-pulse-fill"></i>';
-                dataType.appendChild(dataTypeText);
-                break;
-        }
-
+        
         switch (dataTypeText.innerText){
             case 'CQ CQ CQ':
+                dataTypeText.textContent="CQ CQ";    
                 row.classList.add("table-success");
                 break;
-            case 'DATA-C':
-                dataTypeText.innerHTML = '<i class="bi bi-file-earmark-binary-fill"></i>';
+            case 'DATA-CHANNEL':
+                dataTypeText.innerHTML = '<i title=\"Data Channel\" class="bi bi-file-earmark-binary-fill"></i>';
                 row.classList.add("table-warning");
                 break;
             case 'BEACON':
+                dataTypeText.textContent="BCN";
                 row.classList.add("table-light");
                 break;
             case 'PING':
@@ -2146,30 +2202,40 @@ var speedChartOptions = {
             case 'PING-ACK':
                 row.classList.add("table-primary");
                 break;
+            case 'SESSION-HB':
+                dataTypeText.innerHTML = '<i title=\"Heartbeat\" class="bi bi-heart-pulse-fill"></i>';
+                //dataType.appendChild(dataTypeText);
+                break;
         }
         var snr = document.createElement("td");
         var snrText = document.createElement('span');
         snrText.innerText = arg.stations[i]['snr'];
         snr.appendChild(snrText);
-
+        
         var offset = document.createElement("td");
-        var offsetText = document.createElement('span');
-        offsetText.innerText = arg.stations[i]['offset'];
-        offset.appendChild(offsetText);
+        var offsetText = "&nbsp;";
+        if (contrib.indexOf(dxCallTextShort) >=0) {
+            var offsetText ='<i title="Yeah baby, yeah!!!!" class="bi bi-award-fill text-primary"></i>';
+        }
+        else {
+            if (dxCallTextShort == "DJ2LS") {
+                var offsetText ='<i title="Yeah FreeDATA, yeah!!!!" class="bi bi-emoji-wink-fill text-warning"></i>';
+            }
+        }
+        offset.innerHTML=offsetText;
 
         row.appendChild(timestamp);
         row.appendChild(frequency);
+        row.appendChild(offset);
         row.appendChild(dxCall);
         row.appendChild(dxGrid);
         row.appendChild(gridDistance);
         row.appendChild(dataType);
         row.appendChild(snr);
-        row.appendChild(offset);
-
-        tbl.appendChild(row);
+        
+            tbl.appendChild(row);
     }
-
-});
+}
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     /*
@@ -2615,234 +2681,181 @@ ipcRenderer.on('action-updater', (event, arg) => {
 
 // CQ TRANSMITTING
 ipcRenderer.on('action-show-cq-toast-transmitting', (event, data) => {
-    var toastCQsending = document.getElementById('toastCQsending');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastCQsending); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='success', icon='bi-broadcast', content='transmitting cq', duration=5000);
 });
 
 // CQ RECEIVED
 ipcRenderer.on('action-show-cq-toast-received', (event, data) => {
-    var toastCQreceiving = document.getElementById('toastCQreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastCQreceiving); // Returns a Bootstrap toast instance
-    toast.show();
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `cq from <strong>${dxcallsign}</strong> (${dxgrid})`
+
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // QRV TRANSMITTING
 ipcRenderer.on('action-show-qrv-toast-transmitting', (event, data) => {
-    var toastQRVtransmitting = document.getElementById('toastQRVtransmitting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastQRVtransmitting); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='success', icon='bi-broadcast', content='transmitting qrv', duration=5000);
 });
 
 // QRV RECEIVED
 ipcRenderer.on('action-show-qrv-toast-received', (event, data) => {
-    var toastQRVreceiving = document.getElementById('toastQRVreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastQRVreceiving); // Returns a Bootstrap toast instance
-    toast.show();
+
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `received qrv from <strong>${dxcallsign}</strong> (${dxgrid})`
+
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // BEACON TRANSMITTING
 ipcRenderer.on('action-show-beacon-toast-transmitting', (event, data) => {
+    displayToast(type='info', icon='bi-broadcast', content='transmitting beacon', duration=5000);
 });
 
 // BEACON RECEIVED
 ipcRenderer.on('action-show-beacon-toast-received', (event, data) => {
-    var toastBEACONreceiving = document.getElementById('toastBEACONreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastBEACONreceiving); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `beacon from <strong>${dxcallsign}</strong> (${dxgrid})`
+    displayToast(type='info', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // PING TRANSMITTING
 ipcRenderer.on('action-show-ping-toast-transmitting', (event, data) => {
-    var toastPINGsending = document.getElementById('toastPINGsending');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastPINGsending); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='success', icon='bi-broadcast', content='transmitting ping', duration=5000);
 });
 
 // PING RECEIVED
 ipcRenderer.on('action-show-ping-toast-received', (event, data) => {
-    var toastPINGreceiving = document.getElementById('toastPINGreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastPINGreceiving); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `ping from <strong>${dxcallsign}</strong>`
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // PING RECEIVED ACK
 ipcRenderer.on('action-show-ping-toast-received-ack', (event, data) => {
-    var toastPINGreceivedACK = document.getElementById('toastPINGreceivedACK');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastPINGreceivedACK); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `ping ACK from <strong>${dxcallsign}</strong> (${dxgrid})`
+    displayToast(type='success', icon='bi-check', content=content, duration=5000);
 });
 
 // DATA CHANNEL OPENING TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
-    var toastDATACHANNELopening = document.getElementById('toastDATACHANNELopening');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELopening); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `opening datachannel with <strong>${dxcallsign}</strong>`
+    displayToast(type='secondary', icon='bi-arrow-left-right', content=content, duration=5000);
 });
 
 // DATA CHANNEL WAITING TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-waiting', (event, data) => {
-    var toastDATACHANNELwaiting = document.getElementById('toastDATACHANNELwaiting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELwaiting); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='warning', icon='bi-smartwatch', content='channel busy - waiting...', duration=5000);
 });
 
 
 // DATA CHANNEL OPEN TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
-    var toastDATACHANNELopen = document.getElementById('toastDATACHANNELopen');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELopen); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='success', icon='bi-arrow-left-right', content='datachannel open', duration=5000);
 });
 
 // DATA CHANNEL RECEIVED OPENER TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-received-opener', (event, data) => {
-    var toastDATACHANNELreceivedopener = document.getElementById('toastDATACHANNELreceivedopener');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `datachannel requested by <strong>${dxcallsign}</strong>`
+    displayToast(type='success', icon='bi-arrow-left-right', content=content, duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED
 // TODO: use for both - transmitting and receiving --> we need to change the IDs
 ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailed); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='danger', icon='bi-arrow-left-right', content='transmission failed', duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED (Version mismatch)
 ipcRenderer.on('action-show-arq-toast-transmission-failed-ver', (event, data) => {
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingfailedver); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='danger', icon='bi-broadcast', content='protocoll version missmatch', duration=5000);
 });
 
 // ARQ TRANSMISSION STOPPED
 // TODO: RENAME ID -- WRONG
 ipcRenderer.on('action-show-arq-toast-transmission-stopped', (event, data) => {
-    var toastDATACHANNELreceivedopener = document.getElementById('toastTRANSMISSIONstopped');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastDATACHANNELreceivedopener); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='success', icon='bi-arrow-left-right', content='transmission stopped', duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED
 // TODO: USE FOR TX AND RX
 ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-danger";
-
-    var toastARQreceivingfailed = document.getElementById('toastARQreceivingfailed');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingfailed); // Returns a Bootstrap toast instance
-    toast.show();
+    displayToast(type='danger', icon='bi-broadcast', content='arq transmission failed', duration=5000);
 });
 
 // ARQ TRANSMISSION TRANSMITTED
 ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) => {
-
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-success";
-    var toastARQtransmittingsuccess = document.getElementById('toastARQtransmittingsuccess');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingsuccess); // Returns a Bootstrap toast instance
-    toast.show();
+    console.log(data["data"][0])
+    let content = `received cq from <strong>${dxcallsign}</strong> (${dxgrid})`
+    displayToast(type='success', icon='bi-broadcast', content='data transmitted', duration=5000);
 });
 
 // ARQ TRANSMISSION TRANSMITTING
 ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) => {
 
-    //document.getElementById("toastARQtransmittingSNR").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQtransmittingSNR = document.getElementById('toastARQtransmittingSNR');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmittingSNR); // Returns a Bootstrap toast instance
-
     var irs_snr = data["data"][0].irs_snr;
 
     if(irs_snr <= 0){
-        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-danger border-0";
-        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " low " + irs_snr;
-        toast.show();
-
+        displayToast(type='warning', icon='bi-broadcast', content='low link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr > 0 && irs_snr <= 5){
-        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-warning border-0";
-        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " okay " + irs_snr;
-        toast.show();
-
+        displayToast(type='warning', icon='bi-broadcast', content='medium link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr > 5  && irs_snr < 12.7){
-        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
-        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " good " + irs_snr;
-        toast.show();
-
+        displayToast(type='success', icon='bi-broadcast', content='high link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr >= 12.7){
-        document.getElementById("toastARQtransmittingSNR").className = "toast align-items-center text-white bg-success border-0";
-        document.getElementById('toastARQtransmittingSNRValue').innerHTML = " really good 12.7+";
-        toast.show();
-
+        displayToast(type='success', icon='bi-broadcast', content='very high link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else {
-        console.log("no snr info available")
-        document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-        var toastARQtransmitting = document.getElementById('toastARQtransmitting');
-        var toast = bootstrap.Toast.getOrCreateInstance(toastARQtransmitting); // Returns a Bootstrap toast instance
-        toast.show();
-
+        //displayToast(type='info', icon='bi-broadcast', content='no snr information', duration=5000);
     }
-
-
 
 });
 
 // ARQ TRANSMISSION RECEIVED
 ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
-
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped bg-success";
-    var toastARQreceivingsuccess = document.getElementById('toastARQreceivingsuccess');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQreceivingsuccess); // Returns a Bootstrap toast instance
-    toast.show();
+        console.log(data["data"][0])
+        displayToast(type='success', icon='bi-check-circle', content='all data received', duration=5000);
 });
 
 // ARQ TRANSMISSION RECEIVING
 ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => {
-
-    document.getElementById("transmission_progress").className = "progress-bar progress-bar-striped progress-bar-animated bg-primary";
-    var toastARQsessionreceiving = document.getElementById('toastARQreceiving');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionreceiving); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='primary', icon='bi-arrow-left-right', content='session receiving', duration=5000);
 });
 
 // ARQ SESSION CONNECTING
 ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
-
-    var toastARQsessionconnecting = document.getElementById('toastARQsessionconnecting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnecting); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='primary', icon='bi-arrow-left-right', content='connecting...', duration=5000);
 });
 
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
-
-    var toastARQsessionconnected = document.getElementById('toastARQsessionconnected');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionconnected); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='success', icon='bi-arrow-left-right', content='session connected', duration=5000);
 });
 
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-waiting', (event, data) => {
-
-    var toastARQsessionwaiting = document.getElementById('toastARQsessionwaiting');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionwaiting); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='warning', icon='bi-smartwatch', content='session waiting...', duration=5000);
 });
 
 
 // ARQ SESSION CLOSE
 ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
-
-    var toastARQsessionclose = document.getElementById('toastARQsessionclose');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionclose); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='warning', icon='bi-arrow-left-right', content='session close', duration=5000);
 });
 
 // ARQ SESSION FAILED
 ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
-
-    var toastARQsessionfailed = document.getElementById('toastARQsessionfailed');
-    var toast = bootstrap.Toast.getOrCreateInstance(toastARQsessionfailed); // Returns a Bootstrap toast instance
-    toast.show();
+        displayToast(type='danger', icon='bi-arrow-left-right', content='session failed', duration=5000);
 });
 
 
@@ -2961,4 +2974,49 @@ function formatBytes(bytes, decimals = 1) {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
 
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
+
+
+// display toast
+function displayToast(type='primary', icon='bi-info', content='default', duration=5000){
+    mainToastContainer = document.getElementById("mainToastContainer");
+
+   let randomID = uuidv4()
+    let toastCode = `
+        <div class="toast align-items-center bg-outline-${type} border-1" id="${randomID}" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body p-0 m-0 bg-white rounded-2 w-100">
+                      <div class="row p-1 m-0">
+                        <div class="col-auto bg-${type} rounded-start rounded-2 d-flex align-items-center">
+                            <i class="bi ${icon}" style="font-size: 1rem; color: white"></i>
+                        </div>
+                        <div class="col p-2">
+                          ${content}
+                        </div>
+                      </div>
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    // insert toast to toast container
+    mainToastContainer.insertAdjacentHTML("beforeend", toastCode);
+
+    // register toast
+    let toastHTMLElement = document.getElementById(randomID);
+    let toast = bootstrap.Toast.getOrCreateInstance(toastHTMLElement); // Returns a Bootstrap toast instance
+    toast._config.delay = duration;
+
+    // show toast
+    toast.show()
+
+    //register event listener if toast is hidden
+    toastHTMLElement.addEventListener('hidden.bs.toast', () => {
+        // remove eventListener
+        toastHTMLElement.removeEventListener('hidden.bs.toast', this);
+        // remove toast
+        toastHTMLElement.remove();
+    })
+
 }

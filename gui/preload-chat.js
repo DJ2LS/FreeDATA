@@ -331,6 +331,12 @@ db.post({
 
         document.getElementById('selectFilesButton').innerHTML = ``;
         var uuid = uuidv4();
+        let uuidlast = uuid.lastIndexOf('-');
+        uuidlast +=1;
+        if (uuidlast > 0)
+        {
+            uuid = uuid.substring(uuidlast);
+        }
         console.log(data_with_attachment)
         let Data = {
             command: "send_message",
