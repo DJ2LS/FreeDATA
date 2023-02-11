@@ -54,36 +54,53 @@
 		</div>
 		<div class="me-2">
 			<div class="btn-group" role="group">
-			<button type="button" id="startTNC" class="btn btn-sm btn-success" data-bs-toggle="tooltip" data-bs-html="false" title="Start the TNC. Please set your audio and radio settings first!"> <i class="bi bi-play-fill"
-				style="font-size: 1rem; color: white;"></i></button>
-				<button type="button" id="stopTNC" class="btn btn-sm btn-danger" data-bs-toggle="tooltip" data-bs-html="false" title="Stop the TNC."> <i class="bi bi-stop-fill"
-					style="font-size: 1rem; color: white;"></i></button>
+			<button type="button" id="startTNC" class="btn btn-sm btn-outline-success" data-bs-toggle="tooltip" data-bs-html="false" title="Start the TNC. Please set your audio and radio settings first!"> <i class="bi bi-play-fill"></i>
+				</button>
+				<button type="button" id="stopTNC" class="btn btn-sm btn-outline-danger" data-bs-toggle="tooltip" data-bs-html="false" title="Stop the TNC."> <i class="bi bi-stop-fill"
+					></i></button>
 				</div>
 	<!-- Split Button -->
-	<div class="btn-group dropstart" role="group" >
-
-		<button type="button" class="btn btn-sm btn-secondary dropdown-toggle dropdown-toggle-split dropdown-menu-start" data-bs-toggle="dropdown" aria-expanded="false">
-		<span class="visually-hidden">Toggle Dropdown</span>
+	<div class="btn-group ms-4" role="group" >
+		<button class="btn btn-sm btn-secondary " id="openRFChat" type="button" data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
+		title="Open the HF chat module. This is currently just a test and not finished, yet!"> 
+			<strong>RF Chat</strong>
+			<i class="bi bi-chat-left-text-fill" style="font-size: 1rem;"></i>
 		</button>
-		<ul class="dropdown-menu">
-		<li><button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="dropdown-item">Settings</button>
-	</li>
-	<button class="dropdown-item" id="tncLog" type="button">TNC Live Logs</button>
-	<li><button class="dropdown-item" id="openExplorer" type="button" data-bs-placement="bottom">Explorer map <i class="bi bi-window-plus"></i> </button></li>
-		<li>
-		<li><hr class="dropdown-divider"></li>
-		<li>
-			<!-- Button trigger About modal -->
-			<button type="button" id="btnAbout" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#aboutModal">About</button>
-		</li>
+		<button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle-split rounded-end" data-bs-toggle="dropdown" aria-expanded="false">
+			<span class="navbar-toggler-icon">
+		</button>
+		<ul class="dropdown-menu dropdown-menu-end">
+			<li>
+				<button type="button" id="infoModalButton" data-bs-toggle="modal" data-bs-target="#infoModal" class="dropdown-item">
+					<i class="bi bi-gear me-2"></i>
+					Settings
+				</button>
+			</li>
+			<button class="dropdown-item" id="tncLog" type="button">
+				<i class="bi bi-card-text me-2"></i>
+				TNC Live Logs
+			</button>
+			<li>
+				<button class="dropdown-item" id="openExplorer" type="button" data-bs-placement="bottom">
+					<i class="bi bi-geo-alt me-2"></i>
+					Explorer map
+				</button>
+			</li>
+			<li>
+				<button class="dropdown-item" id="btnStats" type="button" data-bs-placement="bottom">
+					<i class="bi bi-graph-up me-2"></i>
+					Statistics
+				</button>
+			</li>
+			<li><hr class="dropdown-divider"></li>
+			<li>
+				<!-- Button trigger About modal -->
+				<button type="button" id="btnAbout" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#aboutModal">
+					<i class="bi bi-info-circle me-2"></i>
+					About
+				</button>
+			</li>
 		</ul>
-		<button class="btn btn-sm btn-primary" id="openRFChat" type="button"
-		data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
-		title="Open the HF chat module. This is currently just a test and not finished, yet!"> <strong>RF
-			Chat</strong> <i class="bi bi-chat-left-text-fill" style="font-size: 1rem; color: white;"></i>
-		<span
-			class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">.</span>
-	</button>
 	</div>
 		</div>
 

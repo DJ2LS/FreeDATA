@@ -1256,6 +1256,11 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         shell.openExternal('https://explorer.freedata.app/?myCall=' + document.getElementById("myCall").value);
     });
 
+    // Stats button clicked
+    document.getElementById("btnStats").addEventListener("click", () => {
+        shell.openExternal('https://statistics.freedata.app');
+    });
+
     // GH Link clicked
     document.getElementById("ghUrl").addEventListener("click", () => {
         shell.openExternal('https://github.com/DJ2LS/FreeDATA');
