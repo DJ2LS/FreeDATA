@@ -1875,7 +1875,7 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 type: 'line',
                 label: 'SNR[dB]',
                 data: speedDataSnr,
-                borderColor: 'rgb(75, 192, 192)',
+                borderColor: 'rgb(75, 192, 192, 1.0)',
                 segment: {
                     borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)') || down(ctx, 'rgb(192,75,75)'),
                     borderDash: ctx => skipped(ctx, [6, 6]),
