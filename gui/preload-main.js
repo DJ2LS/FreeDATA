@@ -1450,10 +1450,10 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
 
     // stopTNC button clicked
     document.getElementById("stopTNC").addEventListener("click", () => {
+        if (!confirm("Stop the TNC?")) return;
         
         daemon.stopTNC();
-        
-                
+ 
         // collapse settings screen
         // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
         /*
@@ -1467,9 +1467,6 @@ document.getElementById('hamlib_rigctld_stop').addEventListener('click', () => {
         var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
         collapseFourthRow.hide() 
         */
-
-        
-  
     })
     
     
