@@ -2740,18 +2740,18 @@ ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
     console.log(data["data"][0])
     let dxcallsign = data["data"][0]["dxcallsign"]
     let content = `opening datachannel with <strong>${dxcallsign}</strong>`
-    displayToast(type='secondary', icon='bi-broadcast', content=content, duration=5000);
+    displayToast(type='secondary', icon='bi-arrow-left-right', content=content, duration=5000);
 });
 
 // DATA CHANNEL WAITING TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-waiting', (event, data) => {
-    displayToast(type='warning', icon='bi-broadcast', content='waiting...', duration=5000);
+    displayToast(type='warning', icon='bi-smartwatch', content='channel busy - waiting...', duration=5000);
 });
 
 
 // DATA CHANNEL OPEN TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='datachannel open', duration=5000);
+    displayToast(type='success', icon='bi-arrow-left-right', content='datachannel open', duration=5000);
 });
 
 // DATA CHANNEL RECEIVED OPENER TOAST
@@ -2759,13 +2759,13 @@ ipcRenderer.on('action-show-arq-toast-datachannel-received-opener', (event, data
     console.log(data["data"][0])
     let dxcallsign = data["data"][0]["dxcallsign"]
     let content = `datachannel requested by <strong>${dxcallsign}</strong>`
-    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
+    displayToast(type='success', icon='bi-arrow-left-right', content=content, duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED
 // TODO: use for both - transmitting and receiving --> we need to change the IDs
 ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
-    displayToast(type='danger', icon='bi-broadcast', content='transmission failed', duration=5000);
+    displayToast(type='danger', icon='bi-arrow-left-right', content='transmission failed', duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED (Version mismatch)
@@ -2776,7 +2776,7 @@ ipcRenderer.on('action-show-arq-toast-transmission-failed-ver', (event, data) =>
 // ARQ TRANSMISSION STOPPED
 // TODO: RENAME ID -- WRONG
 ipcRenderer.on('action-show-arq-toast-transmission-stopped', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='transmission stopped', duration=5000);
+    displayToast(type='success', icon='bi-arrow-left-right', content='transmission stopped', duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED
@@ -2813,38 +2813,39 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) 
 
 // ARQ TRANSMISSION RECEIVED
 ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
-        displayToast(type='warning', icon='bi-broadcast', content='received', duration=5000);
+        console.log(data["data"][0])
+        displayToast(type='warning', icon='bi-arrow-left-right', content='received', duration=5000);
 });
 
 // ARQ TRANSMISSION RECEIVING
 ipcRenderer.on('action-show-arq-toast-transmission-receiving', (event, data) => {
-        displayToast(type='primary', icon='bi-broadcast', content='session receiving', duration=5000);
+        displayToast(type='primary', icon='bi-arrow-left-right', content='session receiving', duration=5000);
 });
 
 // ARQ SESSION CONNECTING
 ipcRenderer.on('action-show-arq-toast-session-connecting', (event, data) => {
-        displayToast(type='primary', icon='bi-broadcast', content='connecting...', duration=5000);
+        displayToast(type='primary', icon='bi-arrow-left-right', content='connecting...', duration=5000);
 });
 
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-connected', (event, data) => {
-        displayToast(type='success', icon='bi-broadcast', content='session connected', duration=5000);
+        displayToast(type='success', icon='bi-arrow-left-right', content='session connected', duration=5000);
 });
 
 // ARQ SESSION CONNECTED
 ipcRenderer.on('action-show-arq-toast-session-waiting', (event, data) => {
-        displayToast(type='warning', icon='bi-broadcast', content='session waiting...', duration=5000);
+        displayToast(type='warning', icon='bi-smartwatch', content='session waiting...', duration=5000);
 });
 
 
 // ARQ SESSION CLOSE
 ipcRenderer.on('action-show-arq-toast-session-close', (event, data) => {
-        displayToast(type='warning', icon='bi-broadcast', content='session close', duration=5000);
+        displayToast(type='warning', icon='bi-arrow-left-right', content='session close', duration=5000);
 });
 
 // ARQ SESSION FAILED
 ipcRenderer.on('action-show-arq-toast-session-failed', (event, data) => {
-        displayToast(type='danger', icon='bi-broadcast', content='session failed', duration=5000);
+        displayToast(type='danger', icon='bi-arrow-left-right', content='session failed', duration=5000);
 });
 
 
