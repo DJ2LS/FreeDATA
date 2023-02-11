@@ -1864,6 +1864,10 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
       type: 'line',
     };
 
+    // https://www.chartjs.org/docs/latest/samples/line/segments.html
+    const skipped = (speedCtx, value) => speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
+    const down = (speedCtx, value) => speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
+
     var newSpeedData = {
         labels: speedDataTime,
         datasets: [
@@ -1871,8 +1875,13 @@ ipcRenderer.on('action-update-tnc-state', (event, arg) => {
                 type: 'line',
                 label: 'SNR[dB]',
                 data: speedDataSnr,
-                borderColor: 'rgb(255, 99, 132, 1.0)',
-                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgb(75, 192, 192)',
+                segment: {
+                    borderColor: ctx => skipped(ctx, 'rgb(0,0,0,0.2)') || down(ctx, 'rgb(192,75,75)'),
+                    borderDash: ctx => skipped(ctx, [6, 6]),
+                },
+                spanGaps: true,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 order: 1,
                 yAxisID: 'SNR',
             },
@@ -1912,6 +1921,7 @@ var speedChartOptions = {
         }
 
     if (typeof(global.speedChart) == 'undefined') {
+
         var speedCtx = document.getElementById('chart').getContext('2d');
         global.speedChart = new Chart(speedCtx, {
             data: newSpeedData,
