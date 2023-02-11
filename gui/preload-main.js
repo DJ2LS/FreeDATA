@@ -2814,7 +2814,7 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) 
 // ARQ TRANSMISSION RECEIVED
 ipcRenderer.on('action-show-arq-toast-transmission-received', (event, data) => {
         console.log(data["data"][0])
-        displayToast(type='warning', icon='bi-arrow-left-right', content='received', duration=5000);
+        displayToast(type='success', icon='bi-check-circle', content='all data received', duration=5000);
 });
 
 // ARQ TRANSMISSION RECEIVING
