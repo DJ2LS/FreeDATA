@@ -1723,10 +1723,7 @@ ipcRenderer.on('action-update-transmission-status', (event, arg) => {
 
 });
 
-
-
-var slowRollTable=4;
-
+var lastHeard="";
 ipcRenderer.on('action-update-tnc-state', (event, arg) => {
     // update FFT
     if (typeof(arg.fft) !== 'undefined') {
@@ -2077,22 +2074,22 @@ var speedChartOptions = {
         var total_bytes = arg.total_bytes;
     }
     document.getElementById("total_bytes").textContent = total_bytes;
-
-
-    //Ensure heard station table is last so we can return if we don't want to update it
-    //Only update heard stations every 5 iterations
-    //Allows for single click event to work more reliabily to populate dxcall textbox
-    //Should also save some CPU
-    slowRollTable++;
-    if (slowRollTable!=5) {
-        return;
-    }
-        
-    slowRollTable=0;
     
+    //Check if heard station list has changed
+    if (typeof(arg.stations) != 'undefined' && arg.stations.length>0 && JSON.stringify(arg.stations) != lastHeard) {
+        //console.log("Updating last heard stations");
+        lastHeard = JSON.stringify(arg.stations);
+        updateHeardStations(arg);
+    }
+    
+
+});
+
+function updateHeardStations(arg) {
     // UPDATE HEARD STATIONS
+   
     var tbl = document.getElementById("heardstations");
-    document.getElementById("heardstations").innerHTML = '';
+    tbl.innerHTML="";
 
     if (typeof(arg.stations) == 'undefined') {
         var heardStationsLength = 0;
@@ -2170,25 +2167,14 @@ var speedChartOptions = {
         var dataTypeText = document.createElement('span');
         dataTypeText.innerText = arg.stations[i]['datatype'];
         dataType.appendChild(dataTypeText);
-
-        switch (arg.stations[i]['datatype']){
-            case 'DATA-CHANNEL':
-                dataTypeText.innerText = 'DATA-C';
-                dataType.appendChild(dataTypeText);
-                break;
-            case 'SESSION-HB':
-                dataTypeText.innerHTML = '<i title=\"Heartbeat\" class="bi bi-heart-pulse-fill"></i>';
-                dataType.appendChild(dataTypeText);
-                break;
-        }
-
+        
         switch (dataTypeText.innerText){
             case 'CQ CQ CQ':
                 dataTypeText.textContent="CQ CQ";    
                 row.classList.add("table-success");
                 break;
-            case 'DATA-C':
-                dataTypeText.innerHTML = '<i title=\"DATA-C\" class="bi bi-file-earmark-binary-fill"></i>';
+            case 'DATA-CHANNEL':
+                dataTypeText.innerHTML = '<i title=\"Data Channel\" class="bi bi-file-earmark-binary-fill"></i>';
                 row.classList.add("table-warning");
                 break;
             case 'BEACON':
@@ -2200,6 +2186,10 @@ var speedChartOptions = {
                 break;
             case 'PING-ACK':
                 row.classList.add("table-primary");
+                break;
+            case 'SESSION-HB':
+                dataTypeText.innerHTML = '<i title=\"Heartbeat\" class="bi bi-heart-pulse-fill"></i>';
+                //dataType.appendChild(dataTypeText);
                 break;
         }
         var snr = document.createElement("td");
@@ -2227,12 +2217,10 @@ var speedChartOptions = {
         row.appendChild(gridDistance);
         row.appendChild(dataType);
         row.appendChild(snr);
-        //row.appendChild(offset);
-
-        tbl.appendChild(row);
+        
+            tbl.appendChild(row);
     }
-
-});
+}
 
 ipcRenderer.on('action-update-daemon-state', (event, arg) => {
     /*
