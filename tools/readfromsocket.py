@@ -6,6 +6,7 @@ Created on Fri Dec 11 21:53:35 2020
 @author: parallels
 """
 
+
 import socket
 import sys
 import argparse
@@ -13,7 +14,7 @@ import time
 
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description='Simons TEST TNC')
-parser.add_argument('--port', dest="socket_port", default=3000, help="Set the port, the socket is listening on.", type=int) 
+parser.add_argument('--port', dest="socket_port", default=3000, help="Set the port, the socket is listening on.", type=int)
 parser.add_argument('--data', dest="data", default=False, help="data", type=str)
 
 args = parser.parse_args()
@@ -29,6 +30,6 @@ while True:
         sock.connect((ip, port))
         sock.sendall(bytes(message, 'utf-8') + b'\n')
         response = str(sock.recv(1024), 'utf-8')
-        print("CMD: {}".format(response))
+        print(f"CMD: {response}")
         False
         break

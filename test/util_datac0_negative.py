@@ -33,6 +33,10 @@ def t_setup(
 ):
     # Disable data_handler testmode - This is required to test a conversation.
     data_handler.TESTMODE = False
+
+    # Enable socket testmode for overriding socket class
+    sock.TESTMODE = True
+
     modem.RXCHANNEL = tmp_path / rx_channel
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / tx_channel
@@ -148,8 +152,8 @@ def t_datac0_1(
         static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
         static.TNC_STATE = "BUSY"
         static.ARQ_STATE = True
-    sock.process_tnc_commands(json.dumps(data, indent=None))
-    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
@@ -173,7 +177,7 @@ def t_datac0_1(
     # override ARQ SESSION STATE for allowing disconnect command
     static.ARQ_SESSION_STATE = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
-    sock.process_tnc_commands(json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     time.sleep(0.5)
 
     # Allow enough time for this side to process the disconnect frame.
@@ -266,8 +270,8 @@ def t_datac0_2(
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}
-        sock.process_tnc_commands(json.dumps(t_data, indent=None))
-        sock.process_tnc_commands(json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration

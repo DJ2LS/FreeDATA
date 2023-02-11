@@ -135,221 +135,179 @@ class DAEMON:
                 # data[2] mygrid
                 # data[3] rx_audio
                 # data[4] tx_audio
-                # REMOVED - data[5] devicename
-                # REMOVED - data[6] deviceport
-                # REMOVED - data[7] serialspeed
-                # REMOVED - data[8] pttprotocol
-                # REMOVED - data[9] pttport
-                # REMOVED - data[10] data_bits
-                # REMOVED - data[11] stop_bits
-                # REMOVED - data[12] handshake
-                # data[13] radiocontrol
-                # data[14] rigctld_ip
-                # data[15] rigctld_port
-                # data[16] send_scatter
-                # data[17] send_fft
-                # data[18] low_bandwidth_mode
-                # data[19] tuning_range_fmin
-                # data[20] tuning_range_fmax
-                # data[21] enable FSK
-                # data[22] tx-audio-level
-                # data[23] respond_to_cq
-                # data[24] rx_buffer_size
-                # data[25] explorer
-                # data[26] ssid_list
-                # data[27] auto_tune
-                # data[28] stats
-                # TODO: We need to remove 5-12 and adjust the list number for other paramters
-                # This is only a dirty fix
+                # data[5] radiocontrol
+                # data[6] rigctld_ip
+                # data[7] rigctld_port
+                # data[8] send_scatter
+                # data[9] send_fft
+                # data[10] low_bandwidth_mode
+                # data[11] tuning_range_fmin
+                # data[12] tuning_range_fmax
+                # data[13] enable FSK
+                # data[14] tx-audio-level
+                # data[15] respond_to_cq
+                # data[16] rx_buffer_size
+                # data[17] explorer
+                # data[18] ssid_list
+                # data[19] auto_tune
+                # data[20] stats
 
                 if data[0] == "STARTTNC":
-                    self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+                    self.start_tnc(data)
 
-                    # list of parameters, necessary for running subprocess command as a list
-                    options = []
-
-                    options.append("--port")
-                    options.append(str(static.DAEMONPORT - 1))
-                    # create an additional list entry for parameters not covered by gui
-                    data[50] = int(static.DAEMONPORT - 1)
-
-                    options.append("--mycall")
-                    options.append(data[1])
-
-                    options.append("--mygrid")
-                    options.append(data[2])
-
-                    options.append("--rx")
-                    options.append(data[3])
-
-                    options.append("--tx")
-                    options.append(data[4])
-
-                    # if radiocontrol != disabled
-                    # this should hopefully avoid a ton of problems if we are just running in
-                    # disabled mode
-
-                    if data[5] != "disabled":
-
-                        options.append("--radiocontrol")
-                        options.append(data[5])
-
-                        if data[5] == "rigctld":
-                            options.append("--rigctld_ip")
-                            options.append(data[6])
-
-                            options.append("--rigctld_port")
-                            options.append(data[7])
-
-                    if data[8] == "True":
-                        options.append("--scatter")
-
-                    if data[9] == "True":
-                        options.append("--fft")
-
-                    if data[10] == "True":
-                        options.append("--500hz")
-
-                    options.append("--tuning_range_fmin")
-                    options.append(data[11])
-
-                    options.append("--tuning_range_fmax")
-                    options.append(data[12])
-
-                    # overriding FSK mode
-                    # if data[13] == "True":
-                    #    options.append("--fsk")
-
-                    options.append("--tx-audio-level")
-                    options.append(data[14])
-
-                    if data[15] == "True":
-                        options.append("--qrv")
-
-                    options.append("--rx-buffer-size")
-                    options.append(data[16])
-
-                    if data[17] == "True":
-                        options.append("--explorer")
-
-                    options.append("--ssid")
-                    for i in data[18]:
-                        options.append(str(i))
-
-                    if data[19] == "True":
-                        options.append("--tune")
-
-                    if data[20] == "True":
-                        options.append("--stats")
-
-                    # safe data to config file
-                    config.write_entire_config(data)
-
-
-
-
-                    # Try running tnc from binary, else run from source
-                    # This helps running the tnc in a developer environment
-                    try:
-                        command = []
-
-                        if (getattr(sys, 'frozen', False) or hasattr(sys, "_MEIPASS")) and sys.platform in ["darwin"]:
-                            # If the application is run as a bundle, the PyInstaller bootloader
-                            # extends the sys module by a flag frozen=True and sets the app
-                            # path into variable _MEIPASS'.
-                            application_path = sys._MEIPASS
-                            command.append(application_path + '/freedata-tnc')
-
-                        else:
-
-                            if sys.platform in ["linux", "darwin"]:
-                                command.append("./freedata-tnc")
-                            elif sys.platform in ["win32", "win64"]:
-                                command.append("freedata-tnc.exe")
-
-                        command += options
-                        proc = subprocess.Popen(command)
-
-                        atexit.register(proc.kill)
-
-                        self.log.info("[DMN] TNC started", path="binary")
-                    except FileNotFoundError as err1:
-                        self.log.info("[DMN] worker: ", e=err1)
-                        command = []
-
-                        if sys.platform in ["linux", "darwin"]:
-                            command.append("python3")
-                        elif sys.platform in ["win32", "win64"]:
-                            command.append("python")
-
-                        command.append("main.py")
-                        command += options
-                        print(command)
-                        proc = subprocess.Popen(command)
-                        atexit.register(proc.kill)
-
-                        self.log.info("[DMN] TNC started", path="source")
-
-                    static.TNCPROCESS = proc
-                    static.TNCSTARTED = True
-                """
-                # WE HAVE THIS PART in SOCKET
-                if data[0] == "STOPTNC":
-                        static.TNCPROCESS.kill()
-                        self.log.warning("[DMN] Stopping TNC")
-                        #os.kill(static.TNCPROCESS, signal.SIGKILL)
-                        static.TNCSTARTED = False
-                """
-
-                # data[9] radiocontrol
-                # data[10] rigctld_ip
-                # data[11] rigctld_port
                 if data[0] == "TEST_HAMLIB":
-
-                    radiocontrol = data[1]
-                    rigctld_ip = data[2]
-                    rigctld_port = data[3]
-
-                    # check how we want to control the radio
-                    if radiocontrol == "direct":
-                        print("direct hamlib support deprecated - not usable anymore")
-                        sys.exit(1)
-                    elif radiocontrol == "rigctl":
-                        print("rigctl support deprecated - not usable anymore")
-                        sys.exit(1)
-                    elif radiocontrol == "rigctld":
-                        import rigctld as rig
-                    else:
-                        import rigdummy as rig
-
-                    hamlib = rig.radio()
-                    hamlib.open_rig(
-                        rigctld_ip=rigctld_ip,
-                        rigctld_port=rigctld_port,
-                    )
-
-                    # hamlib_version = rig.hamlib_version
-
-                    hamlib.set_ptt(True)
-                    pttstate = hamlib.get_ptt()
-
-                    if pttstate:
-                        self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
-                        response = {"command": "test_hamlib", "result": "SUCCESS"}
-                    else:
-                        self.log.warning("[DMN] Hamlib PTT", status="NO SUCCESS")
-                        response = {"command": "test_hamlib", "result": "NOSUCCESS"}
-
-                    hamlib.set_ptt(False)
-                    hamlib.close_rig()
-
-                    jsondata = json.dumps(response)
-                    sock.SOCKET_QUEUE.put(jsondata)
+                    # data[9] radiocontrol
+                    # data[10] rigctld_ip
+                    # data[11] rigctld_port
+                    self.test_hamlib_ptt(data)
 
             except Exception as err1:
                 self.log.error("[DMN] worker: Exception: ", e=err1)
 
+    def test_hamlib_ptt(self, data):
+        radiocontrol = data[1]
+        rigctld_ip = data[2]
+        rigctld_port = data[3]
 
+        # check how we want to control the radio
+        if radiocontrol == "direct":
+            print("direct hamlib support deprecated - not usable anymore")
+            sys.exit(1)
+        elif radiocontrol == "rigctl":
+            print("rigctl support deprecated - not usable anymore")
+            sys.exit(1)
+        elif radiocontrol == "rigctld":
+            import rigctld as rig
+        else:
+            import rigdummy as rig
+
+        hamlib = rig.radio()
+        hamlib.open_rig(
+            rigctld_ip=rigctld_ip,
+            rigctld_port=rigctld_port,
+        )
+
+        # hamlib_version = rig.hamlib_version
+
+        hamlib.set_ptt(True)
+        if hamlib.get_ptt():
+            self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
+            response = {"command": "test_hamlib", "result": "SUCCESS"}
+        else:
+            self.log.warning("[DMN] Hamlib PTT", status="NO SUCCESS")
+            response = {"command": "test_hamlib", "result": "NOSUCCESS"}
+
+        hamlib.set_ptt(False)
+        hamlib.close_rig()
+
+        jsondata = json.dumps(response)
+        sock.SOCKET_QUEUE.put(jsondata)
+
+    def start_tnc(self, data):
+        self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+
+        # list of parameters, necessary for running subprocess command as a list
+        options = ["--port", str(static.DAEMONPORT - 1)]
+
+        # create an additional list entry for parameters not covered by gui
+        data[50] = int(static.DAEMONPORT - 1)
+
+        options.append("--mycall")
+        options.extend((data[1], "--mygrid"))
+        options.extend((data[2], "--rx"))
+        options.extend((data[3], "--tx"))
+        options.append(data[4])
+
+        # if radiocontrol != disabled
+        # this should hopefully avoid a ton of problems if we are just running in
+        # disabled mode
+
+        if data[5] != "disabled":
+
+            options.append("--radiocontrol")
+            options.append(data[5])
+
+            if data[5] == "rigctld":
+                options.append("--rigctld_ip")
+                options.extend((data[6], "--rigctld_port"))
+                options.append(data[7])
+
+        if data[8] == "True":
+            options.append("--scatter")
+
+        if data[9] == "True":
+            options.append("--fft")
+
+        if data[10] == "True":
+            options.append("--500hz")
+
+        options.append("--tuning_range_fmin")
+        options.extend((data[11], "--tuning_range_fmax"))
+        options.extend((data[12], "--tx-audio-level"))
+        options.append(data[14])
+
+        if data[15] == "True":
+            options.append("--qrv")
+
+        options.append("--rx-buffer-size")
+        options.append(data[16])
+
+        if data[17] == "True":
+            options.append("--explorer")
+
+        options.append("--ssid")
+        options.extend(str(i) for i in data[18])
+        if data[19] == "True":
+            options.append("--tune")
+
+        if data[20] == "True":
+            options.append("--stats")
+
+        # safe data to config file
+        config.write_entire_config(data)
+
+        # Try running tnc from binary, else run from source
+        # This helps running the tnc in a developer environment
+        try:
+            command = []
+
+            if (getattr(sys, 'frozen', False) or hasattr(sys, "_MEIPASS")) and sys.platform in ["darwin"]:
+                # If the application is run as a bundle, the PyInstaller bootloader
+                # extends the sys module by a flag frozen=True and sets the app
+                # path into variable _MEIPASS'.
+                application_path = sys._MEIPASS
+                command.append(f'{application_path}/freedata-tnc')
+
+            elif sys.platform in ["linux", "darwin"]:
+                command.append("./freedata-tnc")
+            elif sys.platform in ["win32", "win64"]:
+                command.append("freedata-tnc.exe")
+
+            command += options
+            proc = subprocess.Popen(command)
+
+            atexit.register(proc.kill)
+
+            self.log.info("[DMN] TNC started", path="binary")
+        except FileNotFoundError as err1:
+            self.log.info("[DMN] worker: ", e=err1)
+            command = []
+
+            if sys.platform in ["linux", "darwin"]:
+                command.append("python3")
+            elif sys.platform in ["win32", "win64"]:
+                command.append("python")
+
+            command.append("main.py")
+            command += options
+            print(command)
+            proc = subprocess.Popen(command)
+            atexit.register(proc.kill)
+
+            self.log.info("[DMN] TNC started", path="source")
+
+        static.TNCPROCESS = proc
+        static.TNCSTARTED = True
 if __name__ == "__main__":
     mainlog = structlog.get_logger(__file__)
     # we need to run this on Windows for multiprocessing support

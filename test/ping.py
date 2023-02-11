@@ -85,11 +85,11 @@ def receive():
     bytes_out = ctypes.c_ubyte * bytes_per_frame  # bytes_per_frame
     bytes_out = bytes_out()  # get pointer from bytes_out
 
-    total_n_bytes = 0
     rx_total_frames = 0
     rx_frames = 0
     rx_bursts = 0
     receive = True
+    total_n_bytes = 0
     while receive:
         time.sleep(0.01)
 
@@ -97,7 +97,7 @@ def receive():
         nin_converted = int(nin * (AUDIO_SAMPLE_RATE_RX / MODEM_SAMPLE_RATE))
         if DEBUGGING_MODE:
             print("-----------------------------")
-            print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
+            print(f"NIN:  {str(nin)} [ {nin_converted} ]")
 
         data_in = stream_rx.read(nin_converted, exception_on_overflow=False)
         data_in = data_in.rstrip(b"\x00")
@@ -110,7 +110,7 @@ def receive():
         nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
         total_n_bytes = total_n_bytes + nbytes
         if DEBUGGING_MODE:
-            print("SYNC: " + str(c_lib.freedv_get_rx_status(freedv)))
+            print(f"SYNC: {str(c_lib.freedv_get_rx_status(freedv))}")
 
         if nbytes == bytes_per_frame:
             rx_total_frames = rx_total_frames + 1
@@ -127,15 +127,7 @@ def receive():
             n_total_frame = bytes_out[3]
 
             print(
-                "RX | PONG | BURST ["
-                + str(burst)
-                + "/"
-                + str(n_total_burst)
-                + "] FRAME ["
-                + str(frame)
-                + "/"
-                + str(n_total_frame)
-                + "]"
+                f"RX | PONG | BURST [{str(burst)}/{str(n_total_burst)}] FRAME [{str(frame)}/{str(n_total_frame)}]"
             )
             print("-----------------------------------------------------------------")
             c_lib.freedv_set_sync(freedv, 0)
@@ -151,7 +143,6 @@ RECEIVE.start()
 c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
 freedv = c_lib.freedv_open(FREEDV_TX_MODE)
 bytes_per_frame = int(c_lib.freedv_get_bits_per_modem_frame(freedv) / 8)
-payload_per_frame = bytes_per_frame - 2
 n_nom_modem_samples = c_lib.freedv_get_n_nom_modem_samples(freedv)
 n_tx_modem_samples = c_lib.freedv_get_n_tx_modem_samples(
     freedv
@@ -165,9 +156,10 @@ mod_out_preamble = ctypes.c_short * (
 mod_out_preamble = mod_out_preamble()
 
 
-print("BURSTS: " + str(N_BURSTS) + " FRAMES: " + str(N_FRAMES_PER_BURST))
+print(f"BURSTS: {str(N_BURSTS)} FRAMES: {str(N_FRAMES_PER_BURST)}")
 print("-----------------------------------------------------------------")
 
+payload_per_frame = bytes_per_frame - 2
 for i in range(N_BURSTS):
 
     c_lib.freedv_rawdatapreambletx(freedv, mod_out_preamble)
@@ -204,15 +196,7 @@ for i in range(N_BURSTS):
         txbuffer += bytes(mod_out)
 
     print(
-        "TX | PING | BURST ["
-        + str(i + 1)
-        + "/"
-        + str(N_BURSTS)
-        + "] FRAME ["
-        + str(n + 1)
-        + "/"
-        + str(N_FRAMES_PER_BURST)
-        + "]"
+        f"TX | PING | BURST [{str(i + 1)}/{str(N_BURSTS)}] FRAME [{str(n + 1)}/{str(N_FRAMES_PER_BURST)}]"
     )
     stream_tx.write(bytes(txbuffer))
     ACK_TIMEOUT = time.time() + 3
