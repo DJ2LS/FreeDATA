@@ -2798,15 +2798,15 @@ ipcRenderer.on('action-show-arq-toast-transmission-transmitting', (event, data) 
     var irs_snr = data["data"][0].irs_snr;
 
     if(irs_snr <= 0){
-        displayToast(type='warning', icon='bi-broadcast', content='low link margin -' + irs_snr, duration=5000);
+        displayToast(type='warning', icon='bi-broadcast', content='low link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr > 0 && irs_snr <= 5){
-        displayToast(type='warning', icon='bi-broadcast', content='medium link margin -' + irs_snr, duration=5000);
+        displayToast(type='warning', icon='bi-broadcast', content='medium link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr > 5  && irs_snr < 12.7){
-        displayToast(type='success', icon='bi-broadcast', content='high link margin -' + irs_snr, duration=5000);
+        displayToast(type='success', icon='bi-broadcast', content='high link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else if(irs_snr >= 12.7){
-        displayToast(type='success', icon='bi-broadcast', content='very high link margin -' + irs_snr, duration=5000);
+        displayToast(type='success', icon='bi-broadcast', content='very high link margin: <strong>' + irs_snr + ' dB</strong>', duration=5000);
     } else {
-        displayToast(type='info', icon='bi-broadcast', content='no snr information', duration=5000);
+        //displayToast(type='info', icon='bi-broadcast', content='no snr information', duration=5000);
     }
 
 });
