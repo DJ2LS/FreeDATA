@@ -2676,7 +2676,11 @@ ipcRenderer.on('action-show-cq-toast-transmitting', (event, data) => {
 
 // CQ RECEIVED
 ipcRenderer.on('action-show-cq-toast-received', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='received cq', duration=5000);
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `cq from <strong>${dxcallsign}</strong> (${dxgrid})`
+
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // QRV TRANSMITTING
@@ -2686,7 +2690,13 @@ ipcRenderer.on('action-show-qrv-toast-transmitting', (event, data) => {
 
 // QRV RECEIVED
 ipcRenderer.on('action-show-qrv-toast-received', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='received qrv', duration=5000);
+
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `received qrv from <strong>${dxcallsign}</strong> (${dxgrid})`
+
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // BEACON TRANSMITTING
@@ -2696,7 +2706,11 @@ ipcRenderer.on('action-show-beacon-toast-transmitting', (event, data) => {
 
 // BEACON RECEIVED
 ipcRenderer.on('action-show-beacon-toast-received', (event, data) => {
-    displayToast(type='info', icon='bi-broadcast', content='received beacon', duration=5000);
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `beacon from <strong>${dxcallsign}</strong> (${dxgrid})`
+    displayToast(type='info', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // PING TRANSMITTING
@@ -2706,17 +2720,27 @@ ipcRenderer.on('action-show-ping-toast-transmitting', (event, data) => {
 
 // PING RECEIVED
 ipcRenderer.on('action-show-ping-toast-received', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='received ping', duration=5000);
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `ping from <strong>${dxcallsign}</strong>`
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // PING RECEIVED ACK
 ipcRenderer.on('action-show-ping-toast-received-ack', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='received ping ack', duration=5000);
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let dxgrid = data["data"][0]["dxgrid"]
+    let content = `ping ACK from <strong>${dxcallsign}</strong> (${dxgrid})`
+    displayToast(type='success', icon='bi-check', content=content, duration=5000);
 });
 
 // DATA CHANNEL OPENING TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-opening', (event, data) => {
-    displayToast(type='secondary', icon='bi-broadcast', content='opening datachannel', duration=5000);
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `opening datachannel with <strong>${dxcallsign}</strong>`
+    displayToast(type='secondary', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // DATA CHANNEL WAITING TOAST
@@ -2732,7 +2756,10 @@ ipcRenderer.on('action-show-arq-toast-datachannel-open', (event, data) => {
 
 // DATA CHANNEL RECEIVED OPENER TOAST
 ipcRenderer.on('action-show-arq-toast-datachannel-received-opener', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='received datachannel opener', duration=5000);
+    console.log(data["data"][0])
+    let dxcallsign = data["data"][0]["dxcallsign"]
+    let content = `datachannel requested by <strong>${dxcallsign}</strong>`
+    displayToast(type='success', icon='bi-broadcast', content=content, duration=5000);
 });
 
 // ARQ TRANSMISSION FAILED
@@ -2755,11 +2782,13 @@ ipcRenderer.on('action-show-arq-toast-transmission-stopped', (event, data) => {
 // ARQ TRANSMISSION FAILED
 // TODO: USE FOR TX AND RX
 ipcRenderer.on('action-show-arq-toast-transmission-failed', (event, data) => {
-    displayToast(type='success', icon='bi-broadcast', content='arq transmission failed', duration=5000);
+    displayToast(type='danger', icon='bi-broadcast', content='arq transmission failed', duration=5000);
 });
 
 // ARQ TRANSMISSION TRANSMITTED
 ipcRenderer.on('action-show-arq-toast-transmission-transmitted', (event, data) => {
+    console.log(data["data"][0])
+    let content = `received cq from <strong>${dxcallsign}</strong> (${dxgrid})`
     displayToast(type='success', icon='bi-broadcast', content='data transmitted', duration=5000);
 });
 

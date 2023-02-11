@@ -243,7 +243,6 @@ client.on('data', function(socketdata) {
 
             // ----------- catch tnc messages START -----------
             if (data['freedata'] == 'tnc-message'){
-                socketLog.info(data)
 
                 // update transmission status
                 /*
@@ -340,9 +339,13 @@ client.on('data', function(socketdata) {
                     if (data['status'] == 'opened') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opened', {data: [data]});
 
-                    // ARQ OPENING
-                    } else if (data['status'] == 'opening') {
+                    // ARQ OPENING ISS
+                    } else if (data['status'] == 'opening' && data['irs'] == 'False') {
                         ipcRenderer.send('request-show-arq-toast-datachannel-opening', {data: [data]});
+
+                    // ARQ OPENING IRS
+                    } else if (data['status'] == 'opening' && data['irs'] == 'True') {
+                        ipcRenderer.send('request-show-arq-toast-datachannel-received-opener', {data: [data]});
 
                     // ARQ WAITING
                     } else if (data['status'] == 'waiting') {
