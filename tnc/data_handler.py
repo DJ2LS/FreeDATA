@@ -638,15 +638,6 @@ class DATA:
         # is intended for this station.
         data_in = bytes(data_in)
 
-        # TODO: this seems not to work anymore
-        # get received crc for different mycall ssids
-        # check if callsign ssid override
-        # _, mycallsign = helpers.check_callsign(
-        #    self.mycallsign, data_in[2:5]
-        # )
-        # attempt fixing this
-        mycallsign = self.mycallsign
-
         # only process data if we are in ARQ and BUSY state else return to quit
         if not static.ARQ_STATE and static.TNC_STATE not in ["BUSY"]:
             self.log.warning("[TNC] wrong tnc state - dropping data", arq_state=static.ARQ_STATE, tnc_state=static.TNC_STATE)
@@ -704,10 +695,10 @@ class DATA:
             # catch possible modem error which leads into false byteorder
             # modem possibly decodes too late - data then is pushed to buffer
             # which leads into wrong byteorder
-            # Lets put this in try/except so we are not crashing tnc as its hihgly experimental
+            # Lets put this in try/except so we are not crashing tnc as its highly experimental
             # This might only work for datac1 and datac3
             try:
-                #area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
+                # area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
                 if static.RX_FRAME_BUFFER.endswith(temp_burst_buffer[:246]) and len(temp_burst_buffer) >= 246:
                     self.log.warning(
                         "[TNC] ARQ | RX | wrong byteorder received - dropping data"
@@ -718,7 +709,6 @@ class DATA:
                 self.log.warning(
                     "[TNC] ARQ | RX | wrong byteorder check failed", e=e
                 )
-
 
             # if frame buffer ends not with the current frame, we are going to append new data
             # if data already exists, we received the frame correctly,
@@ -737,10 +727,9 @@ class DATA:
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
 
-
-                #data_mode = self.mode_list[self.speed_level]
-                #payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
-                #search_area = payload_per_frame - 3  # (3 bytes arq frame header)
+                # data_mode = self.mode_list[self.speed_level]
+                # payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
+                # search_area = payload_per_frame - 3  # (3 bytes arq frame header)
                 search_area = 510 - 3  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
@@ -774,28 +763,11 @@ class DATA:
                     and data_in.find(self.data_frame_eof) < 0
             ):
 
-                self.frame_received_counter += 1
-                # try increasing speed level only if we had two successful decodes
-                if self.frame_received_counter >= 2:
-                    self.frame_received_counter = 0
-
-                    # make sure new speed level isn't higher than available modes
-                    new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
-                    # check if actual snr is higher than minimum snr for next mode
-                    if static.SNR >= self.snr_list[new_speed_level]:
-                        self.speed_level = new_speed_level
-                    else:
-                        self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
-                                         given_snr=static.SNR,
-                                         needed_snr=self.snr_list[new_speed_level]
-                                         )
-                    static.ARQ_SPEED_LEVEL = self.speed_level
-
-                # Update modes we are listening to
-                self.set_listening_modes(False, True, self.mode_list[self.speed_level])
+                self.arq_calculate_speed_level(snr)
 
                 # Create and send ACK frame
-                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH, bytesperminute=static.ARQ_BYTES_PER_MINUTE)
+                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH,
+                              bytesperminute=static.ARQ_BYTES_PER_MINUTE)
                 self.send_burst_ack_frame(snr)
 
                 # Reset n retries per burst counter
@@ -820,7 +792,7 @@ class DATA:
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
                     irs=helpers.bool_to_string(self.is_IRS)
                 )
-
+                
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
             # We have "Nones" in our rx buffer,
             # Check if we received last frame of burst - this is an indicator for missed frames.
@@ -837,7 +809,6 @@ class DATA:
                 self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
             )
 
-        # Should never reach this point
         else:
             self.log.error(
                 "[TNC] data_handler: Should not reach this point...",
@@ -854,19 +825,7 @@ class DATA:
         # get total bytes per transmission information as soon we received a frame with a BOF
 
         if bof_position >= 0:
-            payload = static.RX_FRAME_BUFFER[
-                      bof_position + len(self.data_frame_bof): eof_position
-                      ]
-            frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
-            static.TOTAL_BYTES = frame_length
-            compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
-            # limit to max value of 255
-            compression_factor = np.clip(compression_factor, 0, 255)
-            static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
-            self.calculate_transfer_rate_rx(
-                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-            )
-
+            self.arq_extract_statistics_from_data_frame(bof_position, eof_position)
         if (
                 bof_position >= 0
                 and eof_position > 0
@@ -896,131 +855,7 @@ class DATA:
 
             # Check if data_frame_crc is equal with received crc
             if data_frame_crc == data_frame_crc_received:
-
-                # transmittion duration
-                duration = time.time() - self.rx_start_of_transmission
-                self.calculate_transfer_rate_rx(
-                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-                )
-                self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
-
-                # Decompress the data frame
-                data_frame_decompressed = lzma.decompress(data_frame)
-                static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(
-                    data_frame
-                )
-                data_frame = data_frame_decompressed
-
-                self.transmission_uuid = str(uuid.uuid4())
-                timestamp = int(time.time())
-
-                # Re-code data_frame in base64, UTF-8 for JSON UI communication.
-                base64_data = base64.b64encode(data_frame).decode("UTF-8")
-
-                # check if RX_BUFFER isn't full
-                if not RX_BUFFER.full():
-                    # make sure we have always the correct buffer size
-                    RX_BUFFER.maxsize = int(static.RX_BUFFER_SIZE)
-                else:
-                    # if full, free space by getting an item
-                    self.log.info(
-                        "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
-                        buffer_size=RX_BUFFER.qsize(),
-                        maxsize=int(static.RX_BUFFER_SIZE)
-                    )
-                    RX_BUFFER.get()
-
-                # add item to RX_BUFFER
-                self.log.info(
-                    "[TNC] ARQ | RX | saving data to rx buffer",
-                    buffer_size=RX_BUFFER.qsize() + 1,
-                    maxsize=RX_BUFFER.maxsize
-                )
-                try:
-                    RX_BUFFER.put(
-                        [
-                            self.transmission_uuid,
-                            timestamp,
-                            static.DXCALLSIGN,
-                            static.DXGRID,
-                            base64_data,
-                        ]
-                    )
-                except Exception as e:
-                    # File "/usr/lib/python3.7/queue.py", line 133, in put
-                    #    if self.maxsize > 0
-                    # TypeError: '>' not supported between instances of 'str' and 'int'
-                    #
-                    # Occurs on Raspberry Pi and Python 3.7
-                    self.log.error(
-                        "[TNC] ARQ | RX | error occurred when saving data!",
-                        e=e,
-                        uuid=self.transmission_uuid,
-                        timestamp=timestamp,
-                        dxcall=static.DXCALLSIGN,
-                        dxgrid=static.DXGRID,
-                        data=base64_data
-                    )
-
-                if static.ARQ_SAVE_TO_FOLDER:
-                    try:
-                        self.save_data_to_folder(
-                            self.transmission_uuid,
-                            timestamp,
-                            mycallsign,
-                            static.DXCALLSIGN,
-                            static.DXGRID,
-                            data_frame
-                        )
-                    except Exception as e:
-                        self.log.error(
-                            "[TNC] ARQ | RX | can't save file to folder",
-                            e=e,
-                            uuid=self.transmission_uuid,
-                            timestamp=timestamp,
-                            dxcall=static.DXCALLSIGN,
-                            dxgrid=static.DXGRID,
-                            data=base64_data
-                        )
-
-                self.send_data_to_socket_queue(
-                    freedata="tnc-message",
-                    arq="transmission",
-                    status="received",
-                    uuid=self.transmission_uuid,
-                    timestamp=timestamp,
-                    mycallsign=str(mycallsign, "UTF-8"),
-                    dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
-                    dxgrid=str(static.DXGRID, "UTF-8"),
-                    data=base64_data,
-                    irs=helpers.bool_to_string(self.is_IRS)
-                )
-
-                if static.ENABLE_STATS:
-                    duration = time.time() - self.rx_start_of_transmission
-                    self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
-
-                self.log.info(
-                    "[TNC] ARQ | RX | SENDING DATA FRAME ACK",
-                    snr=snr,
-                    crc=data_frame_crc.hex(),
-                )
-
-                self.send_data_ack_frame(snr)
-                # Update statistics AFTER the frame ACK is sent
-                self.calculate_transfer_rate_rx(
-                    self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
-                )
-
-                self.log.info(
-                    "[TNC] | RX | DATACHANNEL ["
-                    + str(self.mycallsign, "UTF-8")
-                    + "]<< >>["
-                    + str(static.DXCALLSIGN, "UTF-8")
-                    + "]",
-                    snr=snr,
-                )
-
+                self.arq_process_received_data_frame(data_frame, snr)
             else:
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -1058,6 +893,168 @@ class DATA:
             # Finally cleanup our buffers and states,
             self.arq_cleanup()
 
+    def arq_extract_statistics_from_data_frame(self, bof_position, eof_position):
+        payload = static.RX_FRAME_BUFFER[
+                  bof_position + len(self.data_frame_bof): eof_position
+                  ]
+        frame_length = int.from_bytes(payload[4:8], "big")  # 4:8 4bytes
+        static.TOTAL_BYTES = frame_length
+        compression_factor = int.from_bytes(payload[8:9], "big")  # 4:8 4bytes
+        # limit to max value of 255
+        compression_factor = np.clip(compression_factor, 0, 255)
+        static.ARQ_COMPRESSION_FACTOR = compression_factor / 10
+        self.calculate_transfer_rate_rx(
+            self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+        )
+
+    def arq_calculate_speed_level(self, snr):
+        self.frame_received_counter += 1
+        # try increasing speed level only if we had two successful decodes
+        if self.frame_received_counter >= 2:
+            self.frame_received_counter = 0
+
+            # make sure new speed level isn't higher than available modes
+            new_speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
+            # check if actual snr is higher than minimum snr for next mode
+            if static.SNR >= self.snr_list[new_speed_level]:
+                self.speed_level = new_speed_level
+            else:
+                self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
+                              given_snr=static.SNR,
+                              needed_snr=self.snr_list[new_speed_level]
+                              )
+            static.ARQ_SPEED_LEVEL = self.speed_level
+
+        # Update modes we are listening to
+        self.set_listening_modes(False, True, self.mode_list[self.speed_level])
+
+    def arq_process_received_data_frame(self, data_frame, snr):
+            """
+
+
+            """
+            # transmittion duration
+            duration = time.time() - self.rx_start_of_transmission
+            self.calculate_transfer_rate_rx(
+                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+            )
+            self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
+                          bytesperminute=static.ARQ_BYTES_PER_MINUTE, total_bytes=static.TOTAL_BYTES, duration=duration)
+
+            # Decompress the data frame
+            data_frame_decompressed = lzma.decompress(data_frame)
+            static.ARQ_COMPRESSION_FACTOR = len(data_frame_decompressed) / len(
+                data_frame
+            )
+            data_frame = data_frame_decompressed
+
+            self.transmission_uuid = str(uuid.uuid4())
+            timestamp = int(time.time())
+
+            # Re-code data_frame in base64, UTF-8 for JSON UI communication.
+            base64_data = base64.b64encode(data_frame).decode("UTF-8")
+
+            # check if RX_BUFFER isn't full
+            if not RX_BUFFER.full():
+                # make sure we have always the correct buffer size
+                RX_BUFFER.maxsize = int(static.RX_BUFFER_SIZE)
+            else:
+                # if full, free space by getting an item
+                self.log.info(
+                    "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
+                    buffer_size=RX_BUFFER.qsize(),
+                    maxsize=int(static.RX_BUFFER_SIZE)
+                )
+                RX_BUFFER.get()
+
+            # add item to RX_BUFFER
+            self.log.info(
+                "[TNC] ARQ | RX | saving data to rx buffer",
+                buffer_size=RX_BUFFER.qsize() + 1,
+                maxsize=RX_BUFFER.maxsize
+            )
+            try:
+                RX_BUFFER.put(
+                    [
+                        self.transmission_uuid,
+                        timestamp,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        base64_data,
+                    ]
+                )
+            except Exception as e:
+                # File "/usr/lib/python3.7/queue.py", line 133, in put
+                #    if self.maxsize > 0
+                # TypeError: '>' not supported between instances of 'str' and 'int'
+                #
+                # Occurs on Raspberry Pi and Python 3.7
+                self.log.error(
+                    "[TNC] ARQ | RX | error occurred when saving data!",
+                    e=e,
+                    uuid=self.transmission_uuid,
+                    timestamp=timestamp,
+                    dxcall=static.DXCALLSIGN,
+                    dxgrid=static.DXGRID,
+                    data=base64_data
+                )
+
+            if static.ARQ_SAVE_TO_FOLDER:
+                try:
+                    self.save_data_to_folder(
+                        self.transmission_uuid,
+                        timestamp,
+                        self.mycallsign,
+                        static.DXCALLSIGN,
+                        static.DXGRID,
+                        data_frame
+                    )
+                except Exception as e:
+                    self.log.error(
+                        "[TNC] ARQ | RX | can't save file to folder",
+                        e=e,
+                        uuid=self.transmission_uuid,
+                        timestamp=timestamp,
+                        dxcall=static.DXCALLSIGN,
+                        dxgrid=static.DXGRID,
+                        data=base64_data
+                    )
+
+            self.send_data_to_socket_queue(
+                freedata="tnc-message",
+                arq="transmission",
+                status="received",
+                uuid=self.transmission_uuid,
+                timestamp=timestamp,
+                mycallsign=str(self.mycallsign, "UTF-8"),
+                dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
+                dxgrid=str(static.DXGRID, "UTF-8"),
+                data=base64_data,
+                irs=helpers.bool_to_string(self.is_IRS)
+            )
+
+            if static.ENABLE_STATS:
+                duration = time.time() - self.rx_start_of_transmission
+                self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
+
+            self.log.info(
+                "[TNC] ARQ | RX | SENDING DATA FRAME ACK")
+
+            self.send_data_ack_frame(snr)
+            # Update statistics AFTER the frame ACK is sent
+            self.calculate_transfer_rate_rx(
+                self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
+            )
+
+            self.log.info(
+                "[TNC] | RX | DATACHANNEL ["
+                + str(self.mycallsign, "UTF-8")
+                + "]<< >>["
+                + str(static.DXCALLSIGN, "UTF-8")
+                + "]",
+                snr=snr,
+            )
+
     def arq_transmit(self, data_out: bytes, mode: int, n_frames_per_burst: int):
         """
         Transmit ARQ frame
@@ -1068,8 +1065,6 @@ class DATA:
           n_frames_per_burst:int:
 
         """
-        self.arq_file_transfer = True
-
         # set signalling modes we want to listen to
         # we are in an ongoing arq transmission, so we don't need sig0 actually
         modem.RECEIVE_SIG0 = False
@@ -1078,9 +1073,9 @@ class DATA:
         self.tx_n_retry_of_burst = 0  # retries we already sent data
         # Maximum number of retries to send before declaring a frame is lost
 
-        # save len of data_out to TOTAL_BYTES for our statistics --> kBytes
-        # static.TOTAL_BYTES = round(len(data_out) / 1024, 2)
+        # save len of data_out to TOTAL_BYTES for our statistics
         static.TOTAL_BYTES = len(data_out)
+        self.arq_file_transfer = True
         frame_total_size = len(data_out).to_bytes(4, byteorder="big")
 
         # Compress data frame
@@ -1135,21 +1130,6 @@ class DATA:
         while not self.data_frame_ack_received and static.ARQ_STATE:
             # we have self.tx_n_max_retries_per_burst attempts for sending a burst
             for self.tx_n_retry_of_burst in range(self.tx_n_max_retries_per_burst):
-                # data_mode = mode
-                # self.log.debug("[TNC] FIXED MODE:", mode=FREEDV_MODE(data_mode).name)
-
-                # we are doing a modulo check of transmission retries of the actual burst
-                # every 2nd retry which fails, decreases speedlevel by 1.
-                # as soon as we received an ACK for the current burst, speed_level will increase
-                # by 1.
-                # The intent is to optimize speed by adapting to the current RF conditions.
-                # if not self.tx_n_retry_of_burst % 2 and self.tx_n_retry_of_burst > 0:
-                #    self.speed_level = max(self.speed_level - 1, 0)
-
-                # if self.tx_n_retry_of_burst <= 1:
-                #    self.speed_level += 1
-                # self.speed_level = max(self.speed_level + 1, len(self.mode_list) - 1)
-
                 # Bound speed level to:
                 # - minimum of either the speed or the length of mode list - 1
                 # - maximum of either the speed or zero
@@ -1168,9 +1148,6 @@ class DATA:
 
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
-
-                # Tempbuffer list for storing our data frames
-                tempbuffer = []
 
                 # Append data frames with n_frames_per_burst to tempbuffer
                 # TODO: this part needs a complete rewrite!
@@ -1197,9 +1174,7 @@ class DATA:
                     )
                     frame = arqheader + extended_data_out
 
-                # Append frame to tempbuffer for transmission
-                tempbuffer.append(frame)
-
+                tempbuffer = [frame]
                 self.log.debug("[TNC] tempbuffer:", tempbuffer=tempbuffer)
                 self.log.info(
                     "[TNC] ARQ | TX | FRAMES",
@@ -1212,18 +1187,12 @@ class DATA:
                     self.enqueue_frame_for_tx([t_buf_item], c2_mode=data_mode)
 
                 # After transmission finished, wait for an ACK or RPT frame
-                # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
-                # while (not self.burst_ack and not self.burst_nack and
-                #         not self.rpt_request_received and not self.data_frame_ack_received and
-                #         time.time() < burstacktimeout and static.ARQ_STATE):
-                #     threading.Event().wait(0.01)
-
-                # burstacktimeout = time.time() + self.burst_ack_timeout_seconds + 100
-                while static.ARQ_STATE and not (
-                        self.burst_ack
-                        or self.burst_nack
-                        or self.rpt_request_received
-                        or self.data_frame_ack_received
+                while (
+                    static.ARQ_STATE
+                    and not self.burst_ack
+                    and not self.burst_nack
+                    and not self.rpt_request_received
+                    and not self.data_frame_ack_received
                 ):
                     threading.Event().wait(0.01)
 
@@ -1239,20 +1208,15 @@ class DATA:
                 if self.burst_nack:
                     self.burst_nack = False  # reset nack state
 
-                # not yet implemented
-                if self.rpt_request_received:
-                    pass
-
                 if self.data_frame_ack_received:
                     self.log.debug(
-                        "[TNC] arq_transmit: Received FRAME ACK. Sending next chunk."
+                        "[TNC] arq_transmit: Received FRAME ACK. Braking retry loop."
                     )
                     break  # break retry loop
 
                 # We need this part for leaving the repeat loop
                 # static.ARQ_STATE == "DATA" --> when stopping transmission manually
                 if not static.ARQ_STATE:
-                    # print("not ready for data...leaving loop....")
                     self.log.debug(
                         "[TNC] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
                     )
@@ -1268,7 +1232,6 @@ class DATA:
                     maxretries=self.tx_n_max_retries_per_burst,
                     overflows=static.BUFFER_OVERFLOW_COUNTER,
                 )
-                # End of FOR loop
 
             # update buffer position
             bufferposition = bufferposition_end
@@ -1299,65 +1262,76 @@ class DATA:
             if self.data_frame_ack_received and bufferposition > len(data_out):
                 self.log.debug("[TNC] arq_tx: Last fragment sent and acknowledged.")
                 break
-            # GOING TO NEXT ITERATION
+                # GOING TO NEXT ITERATION
 
         if self.data_frame_ack_received:
-            # we need to wait until sending "transmitted" state
-            # gui database is too slow for handling this within 0.001 seconds
-            # so let's sleep a little
-            threading.Event().wait(0.2)
-            self.send_data_to_socket_queue(
-                freedata="tnc-message",
-                arq="transmission",
-                status="transmitted",
-                uuid=self.transmission_uuid,
-                percent=static.ARQ_TRANSMISSION_PERCENT,
-                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression=static.ARQ_COMPRESSION_FACTOR,
-                finished=static.ARQ_SECONDS_UNTIL_FINISH,
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                irs=helpers.bool_to_string(self.is_IRS)
-            )
-
-            self.log.info(
-                "[TNC] ARQ | TX | DATA TRANSMITTED!",
-                BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
-                total_bytes=static.TOTAL_BYTES,
-                BitsPerSecond=static.ARQ_BITS_PER_SECOND,
-                overflows=static.BUFFER_OVERFLOW_COUNTER,
-
-            )
-
-            # finally do an arq cleanup
-            self.arq_cleanup()
-
+            self.arq_transmit_success()
         else:
-            self.send_data_to_socket_queue(
-                freedata="tnc-message",
-                arq="transmission",
-                status="failed",
-                uuid=self.transmission_uuid,
-                percent=static.ARQ_TRANSMISSION_PERCENT,
-                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
-                compression=static.ARQ_COMPRESSION_FACTOR,
-                mycallsign=str(self.mycallsign, 'UTF-8'),
-                dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                irs=helpers.bool_to_string(self.is_IRS)
-            )
-
-            self.log.info(
-                "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
-                overflows=static.BUFFER_OVERFLOW_COUNTER,
-            )
-
-
-            self.stop_transmission()
+            self.arq_transmit_failed()
 
         if TESTMODE:
             # Quit after transmission
             self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
             sys.exit(0)
+
+    def arq_transmit_success(self):
+        """
+        will be called if we successfully transmitted all of queued data
+
+        """
+        # we need to wait until sending "transmitted" state
+        # gui database is too slow for handling this within 0.001 seconds
+        # so let's sleep a little
+        threading.Event().wait(0.2)
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="transmitted",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
+            finished=static.ARQ_SECONDS_UNTIL_FINISH,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=helpers.bool_to_string(self.is_IRS)
+        )
+
+        self.log.info(
+            "[TNC] ARQ | TX | DATA TRANSMITTED!",
+            BytesPerMinute=static.ARQ_BYTES_PER_MINUTE,
+            total_bytes=static.TOTAL_BYTES,
+            BitsPerSecond=static.ARQ_BITS_PER_SECOND,
+            overflows=static.BUFFER_OVERFLOW_COUNTER,
+
+        )
+
+        # finally do an arq cleanup
+        self.arq_cleanup()
+
+    def arq_transmit_failed(self):
+        """
+        will be called if we not successfully transmitted all of queued data
+        """
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            arq="transmission",
+            status="failed",
+            uuid=self.transmission_uuid,
+            percent=static.ARQ_TRANSMISSION_PERCENT,
+            bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+            compression=static.ARQ_COMPRESSION_FACTOR,
+            mycallsign=str(self.mycallsign, 'UTF-8'),
+            dxcallsign=str(self.dxcallsign, 'UTF-8'),
+            irs=helpers.bool_to_string(self.is_IRS)
+        )
+
+        self.log.info(
+            "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
+            overflows=static.BUFFER_OVERFLOW_COUNTER,
+        )
+
+        self.stop_transmission()
 
     def burst_ack_nack_received(self, data_in: bytes) -> None:
         """
@@ -1393,6 +1367,8 @@ class DATA:
                 self.burst_nack_counter = 0
                 # Reset n retries per burst counter
                 self.n_retries_per_burst = 0
+
+                self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
             else:
                 # Decrease speed level if we received a burst nack
                 # self.speed_level = max(self.speed_level - 1, 0)
@@ -1400,7 +1376,7 @@ class DATA:
                 self.burst_nack = True
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
-                desc = "nack"
+                self.burst_ack_snr = 'NaN'
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -1410,12 +1386,6 @@ class DATA:
 
             self.speed_level = int.from_bytes(bytes(data_in[3:4]), "big")
             static.ARQ_SPEED_LEVEL = self.speed_level
-
-            #self.log.debug(
-            #    f"[TNC] burst_{desc}_received:",
-            #    speed_level=self.speed_level,
-            #    c2_mode=FREEDV_MODE(self.mode_list[self.speed_level]).name,
-            #)
 
     def frame_ack_received(
             self, data_in: bytes  # pylint: disable=unused-argument
@@ -1494,28 +1464,28 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if static.ARQ_STATE and static.TNC_STATE == "BUSY":
-            static.DXGRID = b'------'
-            helpers.add_to_heard_stations(
-                static.DXCALLSIGN,
-                static.DXGRID,
-                "DATA-CHANNEL",
-                static.SNR,
-                static.FREQ_OFFSET,
-                static.HAMLIB_FREQUENCY,
-            )
+        if not static.ARQ_STATE or static.TNC_STATE != "BUSY":
+            return
+        static.DXGRID = b'------'
+        helpers.add_to_heard_stations(
+            static.DXCALLSIGN,
+            static.DXGRID,
+            "DATA-CHANNEL",
+            static.SNR,
+            static.FREQ_OFFSET,
+            static.HAMLIB_FREQUENCY,
+        )
 
-            self.rpt_request_received = True
-            # Update data_channel timestamp
-            self.data_channel_last_received = int(time.time())
-            self.rpt_request_buffer = []
+        self.rpt_request_received = True
+        # Update data_channel timestamp
+        self.data_channel_last_received = int(time.time())
+        self.rpt_request_buffer = []
 
-            missing_area = bytes(data_in[3:12])  # 1:9
+        missing_area = bytes(data_in[3:12])  # 1:9
 
-            for i in range(0, 6, 2):
-                if not missing_area[i: i + 2].endswith(b"\x00\x00"):
-                    missing = missing_area[i: i + 2]
-                    self.rpt_request_buffer.insert(0, missing)
+        for i in range(0, 6, 2):
+            if not missing_area[i: i + 2].endswith(b"\x00\x00"):
+                self.rpt_request_buffer.insert(0, missing_area[i: i + 2])
 
     ############################################################################################################
     # ARQ SESSION HANDLER
@@ -1803,7 +1773,6 @@ class DATA:
           data_in:bytes:
 
         """
-        print(static.ARQ_SESSION_STATE)
         # We've arrived here from process_data which already checked that the frame
         # is intended for this station.
         # Close the session if the CRC matches the remote station in static.
@@ -2169,7 +2138,7 @@ class DATA:
             self.mode_list = self.mode_list_high_bw
             self.time_list = self.time_list_high_bw
             self.snr_list = self.snr_list_high_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value and static.LOW_BANDWIDTH_MODE:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_W.value:
             # ISS(w) <-> IRS(n)
             constellation = "ISS(w) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = False
@@ -2183,7 +2152,7 @@ class DATA:
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
             self.snr_list = self.snr_list_low_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and static.LOW_BANDWIDTH_MODE:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value:
             # ISS(n) <-> IRS(n)
             constellation = "ISS(n) <-> IRS(n)"
             self.received_LOW_BANDWIDTH_MODE = True
@@ -2198,7 +2167,7 @@ class DATA:
             self.snr_list = self.snr_list_low_bw
 
         # get mode which fits to given SNR
-        # initially set speed_level 0 in case of really bad SNR and no matching mode
+        # initially set speed_level 0 in case of bad SNR and no matching mode
         self.speed_level = 0
         for i in range(len(self.mode_list)):
             if static.SNR >= self.snr_list[i]:
@@ -2239,7 +2208,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
+        self.burst_last_received = int(time.time() + 6)  # we might need some more time so lets increase this
 
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
@@ -2260,8 +2229,6 @@ class DATA:
         connection_frame[:1] = frametype
         connection_frame[1:2] = self.session_id
         connection_frame[8:9] = bytes([self.speed_level])
-
-        # For checking protocol version on the receiving side
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2290,7 +2257,7 @@ class DATA:
 
         # Reset data_channel/burst timestamps once again for avoiding running into timeout
         self.data_channel_last_received = int(time.time())
-        self.burst_last_received = int(time.time() + 6) # we might need some more time so lets increase this
+        self.burst_last_received = int(time.time() + 6)  # we might need some more time so lets increase this
 
     def arq_received_channel_is_open(self, data_in: bytes) -> None:
         """
@@ -2405,8 +2372,8 @@ class DATA:
         ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         if static.ENABLE_FSK:
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
@@ -2461,17 +2428,25 @@ class DATA:
             snr=str(static.SNR),
         )
         if static.RESPOND_TO_CALL:
-            ping_frame = bytearray(self.length_sig0_frame)
-            ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
-            ping_frame[1:4] = static.DXCALLSIGN_CRC
-            ping_frame[4:7] = static.MYCALLSIGN_CRC
-            ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
-            ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
+            self.transmit_ping_ack()
 
-            if static.ENABLE_FSK:
-                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
-            else:
-                self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
+    def transmit_ping_ack(self):
+        """
+
+        transmit a ping ack frame
+        called by def received_ping
+        """
+        ping_frame = bytearray(self.length_sig0_frame)
+        ping_frame[:1] = bytes([FR_TYPE.PING_ACK.value])
+        ping_frame[1:4] = static.DXCALLSIGN_CRC
+        ping_frame[4:7] = static.MYCALLSIGN_CRC
+        ping_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
+        ping_frame[13:14] = helpers.snr_to_bytes(static.SNR)
+
+        if static.ENABLE_FSK:
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
+        else:
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -2614,9 +2589,9 @@ class DATA:
                         beacon_frame[:1] = bytes([FR_TYPE.BEACON.value])
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
-                        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
 
                         if static.ENABLE_FSK:
+                            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
                             self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
@@ -2694,10 +2669,10 @@ class DATA:
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
 
-        self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
         self.log.debug("[TNC] CQ Frame:", data=[cq_frame])
 
         if static.ENABLE_FSK:
+            self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
@@ -2768,7 +2743,6 @@ class DATA:
         qrv_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         qrv_frame[7:11] = helpers.encode_grid(static.MYGRID.decode("UTF-8"))
         qrv_frame[11:12] = helpers.snr_to_bytes(static.SNR)
-
 
         if static.ENABLE_FSK:
             self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
@@ -3015,6 +2989,7 @@ class DATA:
         self.data_frame_ack_received = state
 
     def set_listening_modes(self, enable_sig0: bool, enable_sig1: bool, mode: int) -> None:
+        # sourcery skip: extract-duplicate-method
         """
         Function for setting the data modes we are listening to for saving cpu power
 
@@ -3090,20 +3065,14 @@ class DATA:
             print(time.time() - (self.burst_last_received + self.time_list[self.speed_level]))
 
             print("-----------------------")
-            if modem_error_state:
-                self.log.warning(
-                    "[TNC] Decoding Error",
-                    attempt=self.n_retries_per_burst,
-                    max_attempts=self.rx_n_max_retries_per_burst,
-                    speed_level=self.speed_level,
-                )
-            else:
-                self.log.warning(
-                    "[TNC] Burst timeout",
-                    attempt=self.n_retries_per_burst,
-                    max_attempts=self.rx_n_max_retries_per_burst,
-                    speed_level=self.speed_level,
-                )
+
+            self.log.warning(
+                "[TNC] Burst decoding error or timeout",
+                attempt=self.n_retries_per_burst,
+                max_attempts=self.rx_n_max_retries_per_burst,
+                speed_level=self.speed_level,
+                modem_error_state=modem_error_state
+            )
 
             # reset self.burst_last_received
             self.burst_last_received = time.time() + self.time_list[self.speed_level]
