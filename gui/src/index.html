@@ -1247,194 +1247,236 @@
 			</div>
 		</div>
 	</div>
-	<!-- INFO MODAL -->
+	<!-- SETTINGS MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="infoModal">
 		<div class="modal-dialog modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Settings</h5>
+					<h5 class="modal-title">Settings</h5><br \>
+					<div class="badge text-bg-warning ms-3">
+						<i class="bi bi-exclamation-triangle-fill"></i> Most setting changes require a TNC restart!
+					</div>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
 
-					<div class="alert alert-warning" role="alert">
-						Most settings need a tnc restart to take effect!
-					</div>
 
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
-							id="basic-addon1">Theme</span>
-						<select class="form-select form-select-sm w-50" id="theme_selector">
-							<option value="default">Default</option>
-							<option value="cerulean">Cerulean</option>
-							<option value="cosmo">Cosmo</option>
-							<option value="cyborg">Cyborg</option>
-							<option value="darkly">Darkly</option>
-							<option value="flatly">Flatly</option>
-							<option value="journal">Journal</option>
-							<option value="litera">Litera</option>
-							<option value="lumen">Lumen</option>
-							<option value="lux">Lux</option>
-							<option value="materia">Materia</option>
-							<option value="minty">Minty</option>
-							<option value="morph">Morhp</option>
-							<option value="pulse">Pulse</option>
-							<option value="quartz">Quartz</option>
-							<option value="sandstone">Sandstone</option>
-							<option value="simplex">Simplex</option>
-							<option value="sketchy">Sketchy</option>
-							<option value="slate">Slate</option>
-							<option value="solar">Solar</option>
-							<option value="spacelab">Spacelab</option>
-							<option value="superhero">Superhero</option>
-							<option value="united">United</option>
-							<option value="vapor">Vapor</option>
-							<option value="yeti">Yeti</option>
-							<option value="zephyr">Zephyr</option>
-						</select>
-					</div>
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
-							id="basic-addon1">Waterfall Theme</span>
-						<select class="form-select form-select-sm w-50" id="wftheme_selector">
-							<option value="2">Default</option>
-							<option value="0">Turbo</option>
-							<option value="1">Fosphor</option>
-							<option value="3">Inferno</option>
-							<option value="4">Magma</option>
-							<option value="5">Jet</option>
-							<option value="6">Binary</option>
-						</select>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Fancy GUI</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="GraphicsSwitch">
-								<label class="form-check-label" for="GraphicsSwitch">Higher CPU Usage</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
-							id="basic-addon1">Update channel</span>
-						<select class="form-select form-select-sm w-50" id="update_channel_selector">
-							<option value="latest">stable</option>
-							<option value="beta">beta</option>
-							<option value="alpha">alpha</option>
-						</select>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50" for="inputGroupFile02">Received files folder</label>
-						<input type="text" class="form-control w-50" id="received_files_folder">
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-25">Tuning range</label>
-						<label class="input-group-text">fmin</label>
-						<select class="form-select form-select-sm" id="tuning_range_fmin">
-							<option value="-50.0">-50.0</option>
-							<option value="-100.0">-100.0</option>
-							<option value="-150.0">-150.0</option>
-							<option value="-200.0">-200.0</option>
-							<option value="-250.0">-250.0</option>
-						</select>
-						<label class="input-group-text">fmax</label>
-						<select class="form-select form-select-sm" id="tuning_range_fmax">
-							<option value="50.0">50.0</option>
-							<option value="100.0">100.0</option>
-							<option value="150.0">150.0</option>
-							<option value="200.0">200.0</option>
-							<option value="250.0">250.0</option>
-						</select>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Autotune <br>(Highly Experimental)</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline ms-2">
-								<input class="form-check-input" type="checkbox" id="autoTuneSwitch">
-								<label class="form-check-label" for="autoTuneSwitch">adjust ALC on TX</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable FSK mode</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline ms-2">
-								<input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
-								<label class="form-check-label" for="fskModeSwitch">not available, yet</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Waterfall data</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="fftSwitch">
-								<label class="form-check-label" for="fftSwitch">Waterfall</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Scatter diagram data</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="scatterSwitch">
-								<label class="form-check-label" for="scatterSwitch">Scatter</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable 563Hz only mode</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
-								<label class="form-check-label" for="500HzModeSwitch">563Hz</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Explorer Publishing <br>
-							(https://explorer.freedata.app) </label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="ExplorerSwitch">
-								<label class="form-check-label" for="ExplorerSwitch">Publish</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Enable Explorer Stats Publishing</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="ExplorerStatsSwitch">
-								<label class="form-check-label" for="ExplorerStatsSwitch">Publish stats</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">Respond to CQ</label>
-						<label class="input-group-text bg-white w-50">
-							<div class="form-check form-switch form-check-inline">
-								<input class="form-check-input" type="checkbox" id="respondCQSwitch">
-								<label class="form-check-label" for="respondCQSwitch">QRV</label>
-							</div>
-						</label>
-					</div>
-					<div class="input-group  input-group-sm mb-1">
-						<label class="input-group-text w-50">rx buffer size</label>
-						<label class="input-group-text bg-white w-50">
-							<select class="form-select form-select-sm" id="rx_buffer_size">
-								<option value="1">1</option>
-								<option value="2">2</option>
-								<option value="4">4</option>
-								<option value="8">8</option>
-								<option value="16">16</option>
-								<option value="32">32</option>
-								<option value="64">64</option>
-								<option value="128">128</option>
-								<option value="256">256</option>
-								<option value="512">512</option>
-								<option value="1024">1024</option>
-							</select>
-						</label>
-					</div>
+<!-- SETTINGS Nav tabs -->
+<ul class="nav nav-tabs" id="myTab" role="tablist">
+	<li class="nav-item" role="presentation">
+	  <button class="nav-link active" id="gui-tab" data-bs-toggle="tab" data-bs-target="#gui" type="button" role="tab" aria-controls="home" aria-selected="true">GUI</button>
+	</li>
+	<li class="nav-item" role="presentation">
+	  <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">TNC</button>
+	</li>
+	<li class="nav-item" role="presentation">
+	  <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab" aria-controls="messages" aria-selected="false">Stats</button>
+	</li>
+	<li class="nav-item" role="presentation">
+	  <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Experimental</button>
+	</li>
+  </ul>
+  
+  <!-- Tab panes -->
+  <div class="tab-content">
+	<!-- GUI TAB-->
+	<div class="tab-pane active" id="gui" role="tabpanel" aria-labelledby="gui-tab" tabindex="0">
+		<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
+			id="basic-addon1">Theme</span>
+		<select class="form-select form-select-sm w-50" id="theme_selector">
+			<option value="default">Default</option>
+			<option value="cerulean">Cerulean</option>
+			<option value="cosmo">Cosmo</option>
+			<option value="cyborg">Cyborg</option>
+			<option value="darkly">Darkly</option>
+			<option value="flatly">Flatly</option>
+			<option value="journal">Journal</option>
+			<option value="litera">Litera</option>
+			<option value="lumen">Lumen</option>
+			<option value="lux">Lux</option>
+			<option value="materia">Materia</option>
+			<option value="minty">Minty</option>
+			<option value="morph">Morhp</option>
+			<option value="pulse">Pulse</option>
+			<option value="quartz">Quartz</option>
+			<option value="sandstone">Sandstone</option>
+			<option value="simplex">Simplex</option>
+			<option value="sketchy">Sketchy</option>
+			<option value="slate">Slate</option>
+			<option value="solar">Solar</option>
+			<option value="spacelab">Spacelab</option>
+			<option value="superhero">Superhero</option>
+			<option value="united">United</option>
+			<option value="vapor">Vapor</option>
+			<option value="yeti">Yeti</option>
+			<option value="zephyr">Zephyr</option>
+		</select>
+	</div>
+	<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
+			id="basic-addon1">Waterfall Theme</span>
+		<select class="form-select form-select-sm w-50" id="wftheme_selector">
+			<option value="2">Default</option>
+			<option value="0">Turbo</option>
+			<option value="1">Fosphor</option>
+			<option value="3">Inferno</option>
+			<option value="4">Magma</option>
+			<option value="5">Jet</option>
+			<option value="6">Binary</option>
+		</select>
+	</div>
+	<div class="input-group  input-group-sm mb-1">
+		<label class="input-group-text w-50">Enable Fancy GUI</label>
+		<label class="input-group-text bg-white w-50">
+			<div class="form-check form-switch form-check-inline">
+				<input class="form-check-input" type="checkbox" id="GraphicsSwitch">
+				<label class="form-check-label" for="GraphicsSwitch">Higher CPU Usage</label>
+			</div>
+		</label>
+	</div>
+	<div class="input-group  input-group-sm mb-1">
+		<label class="input-group-text w-50" for="inputGroupFile02">Received files folder</label>
+		<input type="text" class="form-control w-50" id="received_files_folder">
+	</div>
+	<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
+		id="basic-addon1">Update channel</span>
+		<select class="form-select form-select-sm w-50" id="update_channel_selector">
+		<option value="latest">stable</option>
+		<option value="beta">beta</option>
+		<option value="alpha">alpha</option>
+	</select>
+	</div>
+	</div>
+	<!-- TNC Tab-->
+	<div class="tab-pane" id="profile" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-25">Tuning range</label>
+			<label class="input-group-text">fmin</label>
+			<select class="form-select form-select-sm" id="tuning_range_fmin">
+				<option value="-50.0">-50.0</option>
+				<option value="-100.0">-100.0</option>
+				<option value="-150.0">-150.0</option>
+				<option value="-200.0">-200.0</option>
+				<option value="-250.0">-250.0</option>
+			</select>
+			<label class="input-group-text">fmax</label>
+			<select class="form-select form-select-sm" id="tuning_range_fmax">
+				<option value="50.0">50.0</option>
+				<option value="100.0">100.0</option>
+				<option value="150.0">150.0</option>
+				<option value="200.0">200.0</option>
+				<option value="250.0">250.0</option>
+			</select>
+		</div>
+
+
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable Waterfall data</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="fftSwitch">
+					<label class="form-check-label" for="fftSwitch">Waterfall</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable Scatter diagram data</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="scatterSwitch">
+					<label class="form-check-label" for="scatterSwitch">Scatter</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable 563Hz only mode</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="500HzModeSwitch">
+					<label class="form-check-label" for="500HzModeSwitch">563Hz</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Respond to CQ</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="respondCQSwitch">
+					<label class="form-check-label" for="respondCQSwitch">QRV</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">rx buffer size</label>
+			<label class="input-group-text bg-white w-50">
+				<select class="form-select form-select-sm" id="rx_buffer_size">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="4">4</option>
+					<option value="8">8</option>
+					<option value="16">16</option>
+					<option value="32">32</option>
+					<option value="64">64</option>
+					<option value="128">128</option>
+					<option value="256">256</option>
+					<option value="512">512</option>
+					<option value="1024">1024</option>
+				</select>
+			</label>
+		</div>
+
+	</div>
+	<!-- Stats Tab-->
+	<div class="tab-pane" id="messages" role="tabpanel" aria-labelledby="messages-tab" tabindex="0">
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable Explorer Publishing <br>
+				(https://explorer.freedata.app) </label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="ExplorerSwitch">
+					<label class="form-check-label" for="ExplorerSwitch">Publish</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable Explorer Stats Publishing</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline">
+					<input class="form-check-input" type="checkbox" id="ExplorerStatsSwitch">
+					<label class="form-check-label" for="ExplorerStatsSwitch">Publish stats</label>
+				</div>
+			</label>
+		</div>
+
+	</div>
+	<!-- Experimental-->
+	<div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="settings-tab" tabindex="0">
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable Autotune <br>(Highly Experimental)</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline ms-2">
+					<input class="form-check-input" type="checkbox" id="autoTuneSwitch">
+					<label class="form-check-label" for="autoTuneSwitch">adjust ALC on TX</label>
+				</div>
+			</label>
+		</div>
+		<div class="input-group  input-group-sm mb-1">
+			<label class="input-group-text w-50">Enable FSK mode</label>
+			<label class="input-group-text bg-white w-50">
+				<div class="form-check form-switch form-check-inline ms-2">
+					<input class="form-check-input" type="checkbox" id="fskModeSwitch" disabled>
+					<label class="form-check-label" for="fskModeSwitch">not available, yet</label>
+				</div>
+			</label>
+		</div>
+	</div>
+  </div>
+					
+
+
+					
+					
+
+
 				</div>
 			</div>
 		</div>
