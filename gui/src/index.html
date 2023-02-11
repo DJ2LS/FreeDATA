@@ -1252,37 +1252,34 @@
 		<div class="modal-dialog modal-dialog-scrollable">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title">Settings</h5><br \>
+					<h5 class="modal-title">Settings</h5>
 					<div class="badge text-bg-warning ms-3">
-						<i class="bi bi-exclamation-triangle-fill"></i> Most setting changes require a TNC restart!
+						<i class="bi bi-exclamation-triangle"></i> Most setting changes require a TNC restart!
 					</div>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-
-
 <!-- SETTINGS Nav tabs -->
 <ul class="nav nav-tabs" id="myTab" role="tablist">
 	<li class="nav-item" role="presentation">
 	  <button class="nav-link active" id="gui-tab" data-bs-toggle="tab" data-bs-target="#gui" type="button" role="tab" aria-controls="home" aria-selected="true">GUI</button>
 	</li>
 	<li class="nav-item" role="presentation">
-	  <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">TNC</button>
+	  <button class="nav-link" id="tnc-tab" data-bs-toggle="tab" data-bs-target="#tnc" type="button" role="tab" aria-controls="profile" aria-selected="false">TNC</button>
 	</li>
 	<li class="nav-item" role="presentation">
-	  <button class="nav-link" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages" type="button" role="tab" aria-controls="messages" aria-selected="false">Stats</button>
+	  <button class="nav-link" id="stats-tab" data-bs-toggle="tab" data-bs-target="#stats" type="button" role="tab" aria-controls="messages" aria-selected="false">Stats</button>
 	</li>
 	<li class="nav-item" role="presentation">
-	  <button class="nav-link" id="settings-tab" data-bs-toggle="tab" data-bs-target="#settings" type="button" role="tab" aria-controls="settings" aria-selected="false">Experimental</button>
+	  <button class="nav-link" id="experiments-tab" data-bs-toggle="tab" data-bs-target="#experiments" type="button" role="tab" aria-controls="settings" aria-selected="false">Experimental</button>
 	</li>
   </ul>
-  
-  <!-- Tab panes -->
+  <!-- SETTINGS Nav Tab panes -->
   <div class="tab-content">
-	<!-- GUI TAB-->
+	<!-- GUI tab contents-->
 	<div class="tab-pane active" id="gui" role="tabpanel" aria-labelledby="gui-tab" tabindex="0">
 		<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
-			id="basic-addon1">Theme</span>
+			id="basic-addon1">GUI theme</span>
 		<select class="form-select form-select-sm w-50" id="theme_selector">
 			<option value="default">Default</option>
 			<option value="cerulean">Cerulean</option>
@@ -1313,7 +1310,7 @@
 		</select>
 	</div>
 	<div class="input-group input-group-sm mb-1"> <span class="input-group-text w-50"
-			id="basic-addon1">Waterfall Theme</span>
+			id="basic-addon1">Waterfall theme</span>
 		<select class="form-select form-select-sm w-50" id="wftheme_selector">
 			<option value="2">Default</option>
 			<option value="0">Turbo</option>
@@ -1325,7 +1322,7 @@
 		</select>
 	</div>
 	<div class="input-group  input-group-sm mb-1">
-		<label class="input-group-text w-50">Enable Fancy GUI</label>
+		<label class="input-group-text w-50">Enable fancy GUI</label>
 		<label class="input-group-text bg-white w-50">
 			<div class="form-check form-switch form-check-inline">
 				<input class="form-check-input" type="checkbox" id="GraphicsSwitch">
@@ -1346,8 +1343,8 @@
 	</select>
 	</div>
 	</div>
-	<!-- TNC Tab-->
-	<div class="tab-pane" id="profile" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+	<!-- TNC Tab contents-->
+	<div class="tab-pane" id="tnc" role="tabpanel" aria-labelledby="tnc-tab" tabindex="0">
 		<div class="input-group  input-group-sm mb-1">
 			<label class="input-group-text w-25">Tuning range</label>
 			<label class="input-group-text">fmin</label>
@@ -1367,10 +1364,8 @@
 				<option value="250.0">250.0</option>
 			</select>
 		</div>
-
-
 		<div class="input-group  input-group-sm mb-1">
-			<label class="input-group-text w-50">Enable Waterfall data</label>
+			<label class="input-group-text w-50">Enable waterfall data</label>
 			<label class="input-group-text bg-white w-50">
 				<div class="form-check form-switch form-check-inline">
 					<input class="form-check-input" type="checkbox" id="fftSwitch">
@@ -1379,7 +1374,7 @@
 			</label>
 		</div>
 		<div class="input-group input-group-sm mb-1">
-			<label class="input-group-text w-50">Enable Scatter diagram data</label>
+			<label class="input-group-text w-50">Enable scatter diagram data</label>
 			<label class="input-group-text bg-white w-50">
 				<div class="form-check form-switch form-check-inline">
 					<input class="form-check-input" type="checkbox" id="scatterSwitch">
@@ -1406,7 +1401,7 @@
 			</label>
 		</div>
 		<div class="input-group  input-group-sm mb-1">
-			<label class="input-group-text w-50">rx buffer size</label>
+			<label class="input-group-text w-50">RX buffer size</label>
 			<label class="input-group-text bg-white w-50">
 				<select class="form-select form-select-sm" id="rx_buffer_size">
 					<option value="1">1</option>
@@ -1423,13 +1418,11 @@
 				</select>
 			</label>
 		</div>
-
 	</div>
-	<!-- Stats Tab-->
-	<div class="tab-pane" id="messages" role="tabpanel" aria-labelledby="messages-tab" tabindex="0">
+	<!-- Stats Tab content-->
+	<div class="tab-pane" id="stats" role="tabpanel" aria-labelledby="stats-tab" tabindex="0">
 		<div class="input-group  input-group-sm mb-1">
-			<label class="input-group-text w-50">Enable Explorer Publishing <br>
-				(https://explorer.freedata.app) </label>
+			<label class="input-group-text w-50">Explorer publishing</label>
 			<label class="input-group-text bg-white w-50">
 				<div class="form-check form-switch form-check-inline">
 					<input class="form-check-input" type="checkbox" id="ExplorerSwitch">
@@ -1438,7 +1431,7 @@
 			</label>
 		</div>
 		<div class="input-group  input-group-sm mb-1">
-			<label class="input-group-text w-50">Enable Explorer Stats Publishing</label>
+			<label class="input-group-text w-50">Explorer stats publishing</label>
 			<label class="input-group-text bg-white w-50">
 				<div class="form-check form-switch form-check-inline">
 					<input class="form-check-input" type="checkbox" id="ExplorerStatsSwitch">
@@ -1448,10 +1441,10 @@
 		</div>
 
 	</div>
-	<!-- Experimental-->
-	<div class="tab-pane" id="settings" role="tabpanel" aria-labelledby="settings-tab" tabindex="0">
+	<!-- Experimental Tab contents-->
+	<div class="tab-pane" id="experiments" role="tabpanel" aria-labelledby="experiments-tab" tabindex="0">
 		<div class="input-group  input-group-sm mb-1">
-			<label class="input-group-text w-50">Enable Autotune <br>(Highly Experimental)</label>
+			<label class="input-group-text w-50">Enable autotune</label>
 			<label class="input-group-text bg-white w-50">
 				<div class="form-check form-switch form-check-inline ms-2">
 					<input class="form-check-input" type="checkbox" id="autoTuneSwitch">
@@ -1468,19 +1461,17 @@
 				</div>
 			</label>
 		</div>
-	</div>
-  </div>
-					
-
-
-					
-					
-
-
-				</div>
+		<div class="center">
+			<div class="badge text-bg-danger">
+				<i class="bi bi-shield-exclamation"></i> These options may not work and are for experienced users only!
 			</div>
 		</div>
 	</div>
+  </div>
+</div>
+</div>
+</div>
+</div>
 	<!-- HAMLIB ADVANCED SETTINGS MODAL -->
 	<div class="modal fade" data-bs-backdrop="static" tabindex="-1" id="advancedHamlibSettingsModal">
 		<div class="modal-dialog">
