@@ -200,6 +200,8 @@ class DATA:
             FR_TYPE.PING_ACK.value: (self.received_ping_ack, "PING ACK"),
             FR_TYPE.PING.value: (self.received_ping, "PING"),
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
+            FR_TYPE.IS_WRITING.value: (self.received_is_writing, "IS_WRITING"),
+
         }
         self.command_dispatcher = {
             #"CONNECT": (self.arq_session_handler, "CONNECT"),
@@ -303,6 +305,15 @@ class DATA:
                 # [7] attempts
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
 
+            elif data[0] == "FEC":
+                # [1] DATA_OUT bytes
+                # [2] MODE str datac0/1/3...
+                self.send_fec_frame(data[1], data[2])
+
+            elif data[0] == "FEC_IS_WRITING":
+                # [1] DATA_OUT bytes
+                # [2] MODE str datac0/1/3...
+                self.send_fec_is_writing(data[1])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -361,6 +372,7 @@ class DATA:
                         FR_TYPE.QRV.value,
                         FR_TYPE.PING.value,
                         FR_TYPE.BEACON.value,
+                        FR_TYPE.IS_WRITING.value,
                 ]
         ):
 
@@ -2790,6 +2802,27 @@ class DATA:
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
         )
+    def received_is_writing(self, data_in: bytes) -> None:
+        """
+        Called when we receive a IS WRITING frame
+        Args:
+          data_in:bytes:
+
+        """
+        # here we add the received station to the heard stations buffer
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            fec="is_writing",
+            dxcallsign=str(dxcallsign, "UTF-8")
+        )
+
+        self.log.info(
+            "[TNC] IS_WRITING RCVD ["
+            + str(dxcallsign, "UTF-8")
+            + "] ",
+        )
 
     # ------------ CALCULATE TRANSFER RATES
     def calculate_transfer_rate_rx(
@@ -3200,6 +3233,35 @@ class DATA:
             frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac3.value
         )
 
+    def send_fec_frame(self, payload, mode) -> None:
+        """Send an empty test frame"""
+
+        mode_int = codec2.freedv_get_mode_value_by_name(mode)
+        payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
+        fec_payload_length = payload_per_frame - 1
+
+        fec_frame = bytearray(payload_per_frame)
+        fec_frame[:1] = bytes([FR_TYPE.FEC.value])
+        fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
+        self.enqueue_frame_for_tx(
+            frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE[mode].value
+        )
+
+    def send_fec_is_writing(self, mycallsign) -> None:
+        """Send an empty test frame"""
+
+        fec_frame = bytearray(14)
+        fec_frame[:1] = bytes([FR_TYPE.IS_WRITING.value])
+        fec_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
+
+        # send burst only if channel not busy - but without waiting
+        # otherwise burst will be dropped
+        if not static.CHANNEL_BUSY:
+            self.enqueue_frame_for_tx(
+                frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
+            )
+        else:
+            return False
     def save_data_to_folder(self,
                             transmission_uuid,
                             timestamp,

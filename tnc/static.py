@@ -148,6 +148,7 @@ class FRAME_TYPE(Enum):
     QRV = 201
     PING = 210
     PING_ACK = 211
+    IS_WRITING = 215
     ARQ_SESSION_OPEN = 221
     ARQ_SESSION_HB = 222
     ARQ_SESSION_CLOSE = 223
@@ -157,5 +158,6 @@ class FRAME_TYPE(Enum):
     ARQ_DC_OPEN_ACK_N = 228
     ARQ_STOP = 249
     BEACON = 250
+    FEC = 251
     IDENT = 254
     TEST_FRAME = 255
