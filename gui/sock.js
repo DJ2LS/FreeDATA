@@ -681,7 +681,7 @@ exports.sendTestFrame = function () {
 // SEND FEC
 exports.sendFEC = function (mode, payload) {
   command =
-    '{"type" : "fec", "command" : "send_fec", "mode" : "' +
+    '{"type" : "fec", "command" : "transmit", "mode" : "' +
     mode +
     '", "payload" : "' +
     payload +
