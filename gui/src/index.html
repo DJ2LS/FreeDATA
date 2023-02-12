@@ -356,7 +356,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-rigctld-info"
                   >
-                    radio-control-switch-rigctld-info
+                    Run locally
                   </label>
                 </div>
                 <div
@@ -375,7 +375,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-network"
                   >
-                    radio-control-switch-network
+                    Network
                   </label>
                 </div>
                 <div class="btn-group" role="group">
@@ -1711,9 +1711,8 @@
                 aria-labelledby="hamlib-tab"
                 tabindex="0"
               >
-                Hamlib...
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" id="basic-addon1">Cmd</span>
+                    <span class="input-group-text" id="basic-addon1">Rigctld command</span>
                     <input
                       type="text"
                       class="form-control"
@@ -1727,9 +1726,9 @@
                 <div class="input-group input-group-sm mb-1">
                     <span class="input-group-text" id="basic-addon1">
                       <i
-                        class="bi bi-projector-fill"
+                        class="bi bi-projector-fill me-2"
                         style="font-size: 0.8rem; color: black"
-                      ></i>
+                      ></i> Radio model
                     </span>
                     <input
                       class="form-control"
@@ -2018,7 +2017,7 @@
                       <i
                         class="bi bi-usb-symbol"
                         style="font-size: 1rem; color: black"
-                      ></i>
+                      ></i> Device Port
                     </span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
@@ -2036,12 +2035,16 @@
                       <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                     <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
                     </select>
+
+                    </div>
+                    <div class="input-group input-group-sm mb-1">
+
                     <span class="input-group-text" id="basic-addon1"
                       ><i
                         class="bi bi-speedometer"
                         style="font-size: 1rem; color: black"
                       ></i
-                    ></span>
+                    > Serial Speed</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2067,7 +2070,7 @@
                     </select>
                   </div>
                   <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text" id="basic-addon1">Data</span>
+                    <span class="input-group-text" id="basic-addon1">Data bits</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2083,7 +2086,9 @@
                       <option value="7">7</option>
                       <option value="8">8</option>
                     </select>
-                    <span class="input-group-text" id="basic-addon1">Stop</span>
+                    </div>
+                    <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" id="basic-addon1">Stop Bits</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2099,7 +2104,9 @@
                       <option value="1">1</option>
                       <option value="2">2</option>
                     </select>
-                    <span class="input-group-text" id="basic-addon1">HS</span>
+                      </div>
+                    <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" id="basic-addon1">Serial Handshake</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2122,7 +2129,7 @@
                         class="bi bi-usb-symbol"
                         style="font-size: 1rem; color: black"
                       ></i
-                    ></span>
+                    >PTT Device Port</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2137,7 +2144,9 @@
                     >
                       <!--<option value="None">None</option>-->
                     </select>
-                    <span class="input-group-text" id="basic-addon1">Type</span>
+                    </div>
+                    <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text" id="basic-addon1">PTT Type</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
                         class="form-check-sm form-check-input"
@@ -2182,7 +2191,8 @@
                       <option value="CD">CD</option>
                       <option value="PARALLEL">PARALLEL</option>
                     </select>
-
+</div>
+                    <div class="input-group input-group-sm mb-1">
                     <span class="input-group-text" id="basic-addon1">DTR</span>
                     <span class="input-group-text" id="basic-addon1">
                       <input
