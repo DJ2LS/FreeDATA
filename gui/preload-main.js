@@ -2168,7 +2168,8 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
         document.getElementById("hamlib_deviceport").add(option);
       }
       // set device from config if available
-      document.getElementById("hamlib_deviceport").value = config.hamlib_deviceport;
+      document.getElementById("hamlib_deviceport").value =
+        config.hamlib_deviceport;
     }
   }
 
@@ -2185,10 +2186,10 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
       for (i = 0; i < arg.serial_devices.length; i++) {
         var option = document.createElement("option");
         option.text =
-        arg.serial_devices[i]["port"] +
-        " -- " +
-        arg.serial_devices[i]["description"];
-      option.value = arg.serial_devices[i]["port"];
+          arg.serial_devices[i]["port"] +
+          " -- " +
+          arg.serial_devices[i]["description"];
+        option.value = arg.serial_devices[i]["port"];
         document.getElementById("hamlib_ptt_port").add(option);
       }
       // set device from config if available
