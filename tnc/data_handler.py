@@ -313,7 +313,7 @@ class DATA:
             elif data[0] == "FEC_IS_WRITING":
                 # [1] DATA_OUT bytes
                 # [2] MODE str datac0/1/3...
-                self.send_fec_frame(data[1])
+                self.send_fec_is_writing(data[1])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
