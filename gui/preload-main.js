@@ -647,7 +647,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "hamlib_rigctld_server_port"
       ).value;
       paramList = paramList.concat("-t", hamlib_rigctld_server_port);
-      
+
       //Custom rigctld arguments to pass to rigctld
       var hamlib_rigctld_custom_args = document.getElementById(
         "hamlib_rigctld_custom_args"
