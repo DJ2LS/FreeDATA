@@ -43,7 +43,8 @@ if (!fs.existsSync(configFolder)) {
 }
 
 // create config file if not exists with defaults
-const configDefaultSettings = '{\
+const configDefaultSettings =
+  '{\
                   "tnc_host": "127.0.0.1",\
                   "tnc_port": "3000",\
                   "daemon_host": "127.0.0.1",\

@@ -42,24 +42,22 @@ const contrib = [
 ];
 
 //let elements = document.querySelectorAll('[id^="hamlib_"]'); // get all elements starting with...
-    const hamlib_elements = ["hamlib_deviceid",
-    "hamlib_deviceport",
-    "hamlib_stop_bits",
-    "hamlib_data_bits",
-    "hamlib_handshake",
-    "hamlib_serialspeed",
-    "hamlib_dtrstate",
-    "hamlib_pttprotocol",
-    "hamlib_ptt_port",
-    "hamlib_dcd",
-    "hamlib_rigctld_port",
-    "hamlib_rigctld_ip",
-    "hamlib_rigctld_path",
-    "hamlib_rigctld_server_port"
-    ]
-
-
-
+const hamlib_elements = [
+  "hamlib_deviceid",
+  "hamlib_deviceport",
+  "hamlib_stop_bits",
+  "hamlib_data_bits",
+  "hamlib_handshake",
+  "hamlib_serialspeed",
+  "hamlib_dtrstate",
+  "hamlib_pttprotocol",
+  "hamlib_ptt_port",
+  "hamlib_dcd",
+  "hamlib_rigctld_port",
+  "hamlib_rigctld_ip",
+  "hamlib_rigctld_path",
+  "hamlib_rigctld_server_port",
+];
 
 // SET dbfs LEVEL GLOBAL
 // this is an attempt of reducing CPU LOAD
@@ -203,8 +201,6 @@ window.addEventListener("DOMContentLoaded", () => {
   // load settings by function
   loadSettings(hamlib_elements);
 
-
-
   document.getElementById("tnc_adress").value = config.tnc_host;
   document.getElementById("tnc_port").value = config.tnc_port;
 
@@ -218,10 +214,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("myCallSSID").value = ssid;
   document.getElementById("myGrid").value = config.mygrid;
-
-
-
-
 
   // hamlib settings
   document.getElementById("hamlib_deviceid").value = config.hamlib_deviceid;
@@ -386,32 +378,27 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-switch-rigctld").checked = true;
     document.getElementById("radio-control-switch-help").checked = false;
 
-
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
 
-    document.getElementById("radio-control-help").style.visibility =
-      "hidden";
+    document.getElementById("radio-control-help").style.visibility = "hidden";
     document.getElementById("radio-control-help").style.display = "none";
 
     document.getElementById("radio-control-rigctld").style.visibility =
       "visible";
-    document.getElementById("radio-control-rigctld").style.display =
-      "block";
+    document.getElementById("radio-control-rigctld").style.display = "block";
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
     document.getElementById("radio-control-switch-help").checked = false;
-        document.getElementById("radio-control-switch-rigctld").checked = false;
+    document.getElementById("radio-control-switch-rigctld").checked = false;
 
     document.getElementById("radio-control-help").style.display = "none";
-    document.getElementById("radio-control-help").style.visibility =
-      "hidden";
+    document.getElementById("radio-control-help").style.visibility = "hidden";
 
     document.getElementById("radio-control-rigctld").style.visibility =
       "hidden";
-    document.getElementById("radio-control-rigctld").style.display =
-      "none";
+    document.getElementById("radio-control-rigctld").style.display = "none";
   }
 
   // remote tnc
@@ -485,13 +472,11 @@ window.addEventListener("DOMContentLoaded", () => {
         "visible";
 
       document.getElementById("radio-control-help").style.display = "none";
-      document.getElementById("radio-control-help").style.visibility =
-        "hidden";
+      document.getElementById("radio-control-help").style.visibility = "hidden";
 
       document.getElementById("radio-control-rigctld").style.visibility =
         "hidden";
-      document.getElementById("radio-control-rigctld").style.display =
-        "none";
+      document.getElementById("radio-control-rigctld").style.display = "none";
 
       config.radiocontrol = "disabled";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -514,8 +499,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       document.getElementById("radio-control-rigctld").style.visibility =
         "hidden";
-      document.getElementById("radio-control-rigctld").style.display =
-        "none";
+      document.getElementById("radio-control-rigctld").style.display = "none";
 
       config.radiocontrol = "rigctld";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
@@ -533,18 +517,15 @@ window.addEventListener("DOMContentLoaded", () => {
         "hidden";
 
       document.getElementById("radio-control-help").style.display = "none";
-      document.getElementById("radio-control-help").style.visibility =
-        "hidden";
+      document.getElementById("radio-control-help").style.visibility = "hidden";
 
       document.getElementById("radio-control-rigctld").style.visibility =
         "visible";
-      document.getElementById("radio-control-rigctld").style.display =
-        "block";
+      document.getElementById("radio-control-rigctld").style.display = "block";
 
       config.radiocontrol = "rigctld";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-
 
   document
     .getElementById("hamlib_rigctld_path")
@@ -571,25 +552,19 @@ window.addEventListener("DOMContentLoaded", () => {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-
-    // hamlib event listener for saving settings
-    hamlib_elements.forEach(function(elem) {
-    try{
-        document.getElementById(elem).addEventListener("change", function() {
-            config.elem = document.getElementById(elem).value;
-            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-            console.log(config.elem)
-        });
-        } catch(e){
-        console.log(e)
-        console.log(elem)
-
-        }
-
-
-
-    });
-
+  // hamlib event listener for saving settings
+  hamlib_elements.forEach(function (elem) {
+    try {
+      document.getElementById(elem).addEventListener("change", function () {
+        config.elem = document.getElementById(elem).value;
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        console.log(config.elem);
+      });
+    } catch (e) {
+      console.log(e);
+      console.log(elem);
+    }
+  });
 
   document
     .getElementById("hamlib_rigctld_start")
@@ -602,33 +577,39 @@ window.addEventListener("DOMContentLoaded", () => {
       paramList = paramList.concat("-m", hamlib_deviceid);
 
       // hamlib deviceport setting
-      if (document.getElementById("hamlib_deviceport").value !== 'ignore') {
+      if (document.getElementById("hamlib_deviceport").value !== "ignore") {
         var hamlib_deviceport =
           document.getElementById("hamlib_deviceport").value;
         paramList = paramList.concat("-r", hamlib_deviceport);
       }
 
       // hamlib serialspeed setting
-      if (document.getElementById("hamlib_serialspeed").value !== 'ignore') {
+      if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
         var hamlib_serialspeed =
           document.getElementById("hamlib_serialspeed").value;
         paramList = paramList.concat("-s", hamlib_serialspeed);
       }
 
       // hamlib databits setting
-      if (document.getElementById("hamlib_data_bits").value !== 'ignore') {
-        var hamlib_data_bits = document.getElementById("hamlib_data_bits").value;
-        paramList = paramList.concat("--set-conf=data_bits=" + hamlib_data_bits);
+      if (document.getElementById("hamlib_data_bits").value !== "ignore") {
+        var hamlib_data_bits =
+          document.getElementById("hamlib_data_bits").value;
+        paramList = paramList.concat(
+          "--set-conf=data_bits=" + hamlib_data_bits
+        );
       }
 
       // hamlib stopbits setting
-      if (document.getElementById("hamlib_stop_bits").value !== 'ignore') {
-        var hamlib_stop_bits = document.getElementById("hamlib_stop_bits").value;
-        paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stop_bits);
+      if (document.getElementById("hamlib_stop_bits").value !== "ignore") {
+        var hamlib_stop_bits =
+          document.getElementById("hamlib_stop_bits").value;
+        paramList = paramList.concat(
+          "--set-conf=stop_bits=" + hamlib_stop_bits
+        );
       }
 
       // hamlib handshake setting
-      if (document.getElementById("hamlib_handshake").value !== 'ignore') {
+      if (document.getElementById("hamlib_handshake").value !== "ignore") {
         var hamlib_handshake =
           document.getElementById("hamlib_handshake").value;
         paramList = paramList.concat(
@@ -637,26 +618,26 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       // hamlib dcd setting
-      if (document.getElementById("hamlib_dcd").value !== 'ignore') {
+      if (document.getElementById("hamlib_dcd").value !== "ignore") {
         var hamlib_dcd = document.getElementById("hamlib_dcd").value;
         paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
       }
 
       // hamlib ptt port
-      if (document.getElementById("hamlib_ptt_port").value !== 'ignore') {
+      if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
         var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
         paramList = paramList.concat("-p", hamlib_ptt_port);
       }
 
       // hamlib ptt type
-      if (document.getElementById("hamlib_pttprotocol").value !== 'ignore') {
+      if (document.getElementById("hamlib_pttprotocol").value !== "ignore") {
         var hamlib_ptt_type =
           document.getElementById("hamlib_pttprotocol").value;
         paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
       }
 
       // hamlib dtr state
-      if (document.getElementById("hamlib_dtrstate").value !== 'ignore') {
+      if (document.getElementById("hamlib_dtrstate").value !== "ignore") {
         var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
         paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
       }
@@ -1289,7 +1270,6 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!confirm("Stop the TNC?")) return;
 
     daemon.stopTNC();
-
   });
 
   // TEST HAMLIB
@@ -1330,7 +1310,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // START TRANSMISSION
   document.getElementById("startTransmission").addEventListener("click", () => {
-
     var fileList = document.getElementById("dataModalFile").files;
     console.log(fileList);
     var reader = new FileReader();
@@ -3083,35 +3062,30 @@ function displayToast(
   });
 }
 
+function loadSettings(elements) {
+  elements.forEach(function (id) {
+    let element = document.getElementById(id);
 
-function loadSettings(elements){
-    elements.forEach(function(id) {
-        let element = document.getElementById(id);
+    if (element.tagName === "SELECT") {
+      element.value = config.elem;
 
-        if(element.tagName === 'SELECT') {
-            element.value = config.elem;
-
-            // add selected value
-            for(var i = 0, j = element.options.length; i < j; ++i) {
-                if(element.options[i].innerHTML === config.elem) {
-                   element.selectedIndex = i;
-                   break;
-                }
-            }
-
-        } else if (element.tagName === 'INPUT' && element.type === 'text') {
-            element.value = config.elem;
-
-        } else if (element.tagName === 'INPUT' && element.type === 'radio') {
-            element.value = config.elem;
-
-            if(config.elem === "True"){
-                element.checked = true;
-            } else {
-                element.checked = false;
-            }
+      // add selected value
+      for (var i = 0, j = element.options.length; i < j; ++i) {
+        if (element.options[i].innerHTML === config.elem) {
+          element.selectedIndex = i;
+          break;
         }
+      }
+    } else if (element.tagName === "INPUT" && element.type === "text") {
+      element.value = config.elem;
+    } else if (element.tagName === "INPUT" && element.type === "radio") {
+      element.value = config.elem;
 
-
-        });
+      if (config.elem === "True") {
+        element.checked = true;
+      } else {
+        element.checked = false;
+      }
+    }
+  });
 }

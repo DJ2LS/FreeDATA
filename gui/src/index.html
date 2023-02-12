@@ -338,40 +338,39 @@
                     disabled
                   </label>
 
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="radio-control-switch-rigctld"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="radio-control-switch"
-                    id="radio-control-switch-rigctld"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-rigctld"
+                  <div
+                    class="btn-group btn-group-sm"
+                    role="group"
+                    aria-label="radio-control-switch-rigctld"
                   >
-                    Hamlib
-                  </label>
-                </div>
-                <div class="btn-group" role="group">
-                  <button
-                    type="button"
-                    id="testHamlib"
-                    class="btn btn-sm btn-outline-secondary"
-                    data-bs-placement="bottom"
-                    data-bs-toggle="tooltip"
-                    data-bs-html="true"
-                    title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-                  >
-                    PTT Test
-                  </button>
-
-                </div>
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="radio-control-switch"
+                      id="radio-control-switch-rigctld"
+                      autocomplete="off"
+                    />
+                    <label
+                      class="btn btn-sm btn-outline-secondary"
+                      for="radio-control-switch-rigctld"
+                    >
+                      Hamlib
+                    </label>
                   </div>
+                  <div class="btn-group" role="group">
+                    <button
+                      type="button"
+                      id="testHamlib"
+                      class="btn btn-sm btn-outline-secondary"
+                      data-bs-placement="bottom"
+                      data-bs-toggle="tooltip"
+                      data-bs-html="true"
+                      title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                    >
+                      PTT Test
+                    </button>
+                  </div>
+                </div>
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -391,7 +390,6 @@
                     <i class="bi bi-question-circle"></i>
                   </label>
                 </div>
-
               </div>
               <div class="card-body p-2">
                 <!-- RADIO CONTROL DISABLED -->
@@ -402,30 +400,31 @@
                 <!-- RADIO CONTROL RIGCTLD INFO-->
                 <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
-
                     <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text">Rigctld Network settings</span>
+                      <span class="input-group-text"
+                        >Rigctld Network settings</span
+                      >
                       <span class="input-group-text">IP</span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="rigctld IP"
-                      id="hamlib_rigctld_ip"
-                      aria-label="Device IP"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text">Port</span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="rigctld port"
-                      id="hamlib_rigctld_port"
-                      aria-label="Device Port"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="rigctld IP"
+                        id="hamlib_rigctld_ip"
+                        aria-label="Device IP"
+                        aria-describedby="basic-addon1"
+                      />
+                      <span class="input-group-text">Port</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="rigctld port"
+                        id="hamlib_rigctld_port"
+                        aria-label="Device Port"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
 
-<span class="input-group-text">Rigctld application</span>
+                    <span class="input-group-text">Rigctld application</span>
                     <button
                       class="btn btn-outline-success"
                       type="button"
@@ -449,22 +448,18 @@
                       Stop
                     </button>
                   </div>
-
-
-
-
                 </div>
 
-                                <!-- RADIO CONTROL HELP -->
+                <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
                   <strong>VOX:</strong> disable rigctld usage
-                  <br>
-                  <strong>HAMLIB locally:</strong> configure in settings, then start/stop service.
-                  <br>
-                  <strong>HAMLIB remotely:</strong> Enter IP/Port, connection happens automatically.
-
+                  <br />
+                  <strong>HAMLIB locally:</strong> configure in settings, then
+                  start/stop service.
+                  <br />
+                  <strong>HAMLIB remotely:</strong> Enter IP/Port, connection
+                  happens automatically.
                 </div>
-
               </div>
               <div class="card-footer text-muted small" id="hamlib_info_field">
                 Select your radio and PTT settings. Start/Stop Hamlib Rigctld
@@ -2090,7 +2085,9 @@
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text" style="width: 180px">Data bits</span>
+                  <span class="input-group-text" style="width: 180px"
+                    >Data bits</span
+                  >
 
                   <select
                     class="form-select form-select-sm"
@@ -2112,7 +2109,7 @@
                     aria-label=".form-select-sm"
                     id="hamlib_stop_bits"
                   >
-                     <option selected value="ignore">-- ignore --</option>
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                   </select>
@@ -2127,7 +2124,7 @@
                     aria-label=".form-select-sm"
                     id="hamlib_handshake"
                   >
-                     <option selected value="ignore">-- ignore --</option>
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="None">None (Default)</option>
                   </select>
                 </div>
@@ -2141,12 +2138,12 @@
                     >PTT Device Port</span
                   >
 
-
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_ptt_port"
-                  > <option selected value="ignore">-- ignore --</option>
+                  >
+                    <option selected value="ignore">-- ignore --</option>
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
@@ -2160,7 +2157,7 @@
                     id="hamlib_pttprotocol"
                     style="width: 0.5rem"
                   >
-                     <option selected value="ignore">-- ignore --</option>
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="NONE">NONE</option>
                     <option value="RIG">RIG</option>
                     <option value="USB">USB</option>
@@ -2179,7 +2176,7 @@
                     id="hamlib_dcd"
                     style="width: 0.5rem"
                   >
-                     <option selected value="ignore">-- ignore --</option>
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="NONE">NONE</option>
                     <option value="RIG">RIG/CAT</option>
                     <option value="DSR">DSR</option>
@@ -2197,7 +2194,7 @@
                     id="hamlib_dtrstate"
                     style="width: 0.5rem"
                   >
-                     <option selected value="ignore">-- ignore --</option>
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="OFF">OFF</option>
                     <option value="ON">ON</option>
                   </select>
@@ -2219,7 +2216,6 @@
                     class="form-select form-select-sm"
                     id="tuning_range_fmin"
                   >
-                    
                     <option value="-50.0">-50.0</option>
                     <option value="-100.0">-100.0</option>
                     <option value="-150.0">-150.0</option>
