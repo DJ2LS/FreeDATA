@@ -680,10 +680,14 @@ exports.sendTestFrame = function () {
 
 // SEND FEC
 exports.sendFEC = function (mode, payload) {
-  command = '{"type" : "fec", "command" : "send_fec", "mode" : "' + mode + '", "payload" : "' + payload + '"}';
+  command =
+    '{"type" : "fec", "command" : "send_fec", "mode" : "' +
+    mode +
+    '", "payload" : "' +
+    payload +
+    '"}';
   writeTncCommand(command);
 };
-
 
 // RECORD AUDIO
 exports.record_audio = function () {
