@@ -2290,11 +2290,11 @@ ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
       document.getElementById("dxCall").value.toUpperCase()
     ) {
       /*
-            // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
-            if(arg.data[i]['DXGRID'] != ''){
-                document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
-            }
-            */
+        // if we are sending data without doing a ping before, we don't have a grid locator available. This could be a future feature for the TNC!
+        if(arg.data[i]['DXGRID'] != ''){
+            document.getElementById("pingDistance").innerHTML = arg.stations[i]['DXGRID']
+        }
+        */
       //document.getElementById("pingDB").innerHTML = arg.stations[i]['snr'];
       document.getElementById("dataModalPingDB").innerHTML =
         arg.stations[i]["snr"];
@@ -2324,11 +2324,11 @@ ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
     dxCall.appendChild(dxCallText);
 
     /*
-                var dxGrid = document.createElement("td");
-                var dxGridText = document.createElement('span');
-                dxGridText.innerText = arg.data[i]['DXGRID']
-                dxGrid.appendChild(dxGridText);
-        */
+    var dxGrid = document.createElement("td");
+    var dxGridText = document.createElement('span');
+    dxGridText.innerText = arg.data[i]['DXGRID']
+    dxGrid.appendChild(dxGridText);
+    */
 
     console.log(arg.data);
 
@@ -2694,7 +2694,7 @@ ipcRenderer.on(
     displayToast(
       (type = "danger"),
       (icon = "bi-broadcast"),
-      (content = "protocoll version missmatch"),
+      (content = "protocol version missmatch"),
       (duration = 5000)
     );
   }
@@ -2853,6 +2853,7 @@ ipcRenderer.on("action-show-arq-toast-session-failed", (event, data) => {
 });
 
 // enable or disable a setting by given switch and element
+// not used at this time
 function enable_setting(enable_switch, enable_object) {
   if (document.getElementById(enable_switch).checked) {
     config[enable_switch] = true;
@@ -2867,6 +2868,7 @@ function enable_setting(enable_switch, enable_object) {
 }
 
 // enable or disable a setting switch
+// not used at this time
 function set_setting_switch(setting_switch, enable_object, state) {
   document.getElementById(setting_switch).checked = state;
   enable_setting(setting_switch, enable_object);
