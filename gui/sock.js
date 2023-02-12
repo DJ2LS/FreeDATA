@@ -171,6 +171,8 @@ client.on("data", function (socketdata) {
           socketLog.info(e); // "SyntaxError
           socketLog.info(socketchunk[i]);
           socketchunk = "";
+          //If we're here, I don't think we want to process any data that may be in data variable
+          continue;
         }
       }
 
