@@ -557,15 +557,14 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       document.getElementById(elem).addEventListener("change", function () {
         config[elem] = document.getElementById(elem).value;
-          fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-          console.log(config);
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        console.log(config);
       });
     } catch (e) {
       console.log(e);
       console.log(elem);
     }
   });
-
 
   document
     .getElementById("hamlib_rigctld_start")
@@ -3077,8 +3076,6 @@ function loadSettings(elements) {
           break;
         }
       }
-
-
     } else if (element.tagName === "INPUT" && element.type === "text") {
       element.value = config[id];
     } else if (element.tagName === "INPUT" && element.type === "radio") {
@@ -3090,7 +3087,7 @@ function loadSettings(elements) {
         element.checked = false;
       }
     } else {
-        console.log("nothing matched....")
+      console.log("nothing matched....");
     }
   });
 }
