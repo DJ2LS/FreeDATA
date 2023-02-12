@@ -58,7 +58,6 @@ daemon.on("error", function (err) {
     daemonLog.error("daemon connection error");
     daemonLog.info("Make sure the daemon is started.");
     daemonLog.info('Run "python daemon.py" in the tnc directory.');
-    daemonLog.debug(err);
 
     daemonShowConnectStateError = 0;
   }

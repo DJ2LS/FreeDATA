@@ -76,10 +76,6 @@ client.on("connect", function (data) {
 client.on("error", function (data) {
   if (tncShowConnectStateError == 1) {
     socketLog.error("TNC connection error");
-    socketLog.info("TNC is started by the GUI process.");
-    socketLog.debug(data);
-    // setTimeout( function() { exports.connectTNC(tnc_host, tnc_port); }, 2000 );
-
     tncShowConnectStateError = 0;
   }
   setTimeout(connectTNC, 500);
