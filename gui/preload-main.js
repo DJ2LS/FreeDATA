@@ -1404,7 +1404,10 @@ var fileList = document.getElementById("dataModalFile").files;
   document.getElementById("btnStats").addEventListener("click", () => {
     shell.openExternal("https://statistics.freedata.app");
   });
-
+  // GH Link clicked
+  document.getElementById("fdWww").addEventListener("click", () => {
+    shell.openExternal("https://freedata.app");
+  });
   // GH Link clicked
   document.getElementById("ghUrl").addEventListener("click", () => {
     shell.openExternal("https://github.com/DJ2LS/FreeDATA");
