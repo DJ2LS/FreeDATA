@@ -411,6 +411,10 @@ ipcMain.on("run-tnc-command", (event, arg) => {
   win.webContents.send("run-tnc-command", arg);
 });
 
+ipcMain.on("tnc-fec-iswriting", (event, arg) => {
+  win.webContents.send("run-tnc-command-fec-iswriting");
+});
+
 ipcMain.on("request-update-rx-buffer", (event, arg) => {
   win.webContents.send("action-update-rx-buffer", arg);
 });

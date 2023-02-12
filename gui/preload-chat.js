@@ -40,6 +40,7 @@ var file = "";
 var filename = "";
 var callsign_counter = 0;
 var selected_callsign = "";
+var lastIsWritingBroadcast = new Date().getTime();
 // -----------------------------------
 
 var chatDB = path.join(configFolder, "chatDB");
@@ -269,6 +270,12 @@ window.addEventListener("DOMContentLoaded", () => {
     textarea.rows = lines;
 
     console.log(textarea.value);
+    if (lastIsWritingBroadcast < new Date().getTime() - (5*1000))
+    {
+      //console.log("Sending FECIsWriting");
+      ipcRenderer.send("tnc-fec-iswriting");
+      lastIsWritingBroadcast = new Date().getTime();
+    }
   });
 
   document.getElementById("expand_textarea").addEventListener("click", () => {

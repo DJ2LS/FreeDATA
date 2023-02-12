@@ -2431,6 +2431,10 @@ ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
     });
   }
 });
+ipcRenderer.on('run-tnc-command-fec-iswriting',(event) => {
+  //console.log("Sending sendFecIsWriting");
+  sock.sendFecIsWriting(config.mycall);
+});
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "save_my_call") {
