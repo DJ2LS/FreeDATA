@@ -270,8 +270,7 @@ window.addEventListener("DOMContentLoaded", () => {
     textarea.rows = lines;
 
     console.log(textarea.value);
-    if (lastIsWritingBroadcast < new Date().getTime() - (5*1000))
-    {
+    if (lastIsWritingBroadcast < new Date().getTime() - 5 * 1000) {
       //console.log("Sending FECIsWriting");
       ipcRenderer.send("tnc-fec-iswriting");
       lastIsWritingBroadcast = new Date().getTime();
