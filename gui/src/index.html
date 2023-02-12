@@ -337,7 +337,7 @@
                   >
                     disabled
                   </label>
-                </div>
+
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -354,7 +354,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-rigctld"
                   >
-                    Run locally
+                    Hamlib
                   </label>
                 </div>
                 <div class="btn-group" role="group">
@@ -369,7 +369,9 @@
                   >
                     PTT Test
                   </button>
+
                 </div>
+                  </div>
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -386,7 +388,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-help"
                   >
-                    Help
+                    <i class="bi bi-question-circle"></i>
                   </label>
                 </div>
 
@@ -402,7 +404,8 @@
                   <div class="input-group input-group-sm mb-1">
 
                     <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text">Rigctld IP</span>
+                    <span class="input-group-text">Rigctld Network settings</span>
+                      <span class="input-group-text">IP</span>
                     <input
                       type="text"
                       class="form-control"
@@ -411,7 +414,7 @@
                       aria-label="Device IP"
                       aria-describedby="basic-addon1"
                     />
-                    <span class="input-group-text">:</span>
+                    <span class="input-group-text">Port</span>
                     <input
                       type="text"
                       class="form-control"
@@ -422,7 +425,7 @@
                     />
                   </div>
 
-
+<span class="input-group-text">Rigctld application</span>
                     <button
                       class="btn btn-outline-success"
                       type="button"
@@ -454,7 +457,12 @@
 
                                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
-                  ...
+                  <strong>VOX:</strong> disable rigctld usage
+                  <br>
+                  <strong>HAMLIB locally:</strong> configure in settings, then start/stop service.
+                  <br>
+                  <strong>HAMLIB remotely:</strong> Enter IP/Port, connection happens automatically.
+
                 </div>
 
               </div>
@@ -2063,7 +2071,6 @@
                     Serial Speed</span
                   >
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2083,9 +2090,7 @@
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text" style="width: 180px"
-                    >Data bits</span
-                  >
+                  <span class="input-group-text" style="width: 180px">Data bits</span>
 
                   </span>
                   <select
@@ -2103,7 +2108,6 @@
                     >Stop Bits</span
                   >
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2119,7 +2123,6 @@
                     >Serial Handshake</span
                   >
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2139,8 +2142,7 @@
                     >PTT Device Port</span
                   >
 
-                  </span>
-                  
+
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2153,7 +2155,6 @@
                     >PTT Type</span
                   >
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2173,7 +2174,6 @@
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px">DCD</span>
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
@@ -2192,7 +2192,6 @@
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px">DTR</span>
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
