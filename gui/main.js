@@ -53,21 +53,13 @@ const configDefaultSettings =
                   "mygrid": "JN40aa",\
                   "radiocontrol" : "disabled",\
                   "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
-                  "enable_hamlib_deviceport" : "False",\
                   "hamlib_deviceport": "/dev/ttyACM1",\
-                  "enable_hamlib_stop_bits" : "False",\
                   "hamlib_stop_bits" : "1",\
-                  "enable_hamlib_data_bits" : "False",\
                   "hamlib_data_bits" : "8",\
-                  "enable_hamlib_handshake" : "False",\
                   "hamlib_handshake" : "None",\
-                  "enable_hamlib_serialspeed" : "False",\
                   "hamlib_serialspeed" : "9600",\
-                  "enable_hamlib_pttprotocol" : "False",\
                   "hamlib_dtrstate" : "OFF",\
-                  "enable_hamlib_dtrstate" : "False",\
                   "hamlib_pttprotocol" : "USB",\
-                  "enable_hamlib_pttport" : "False",\
                   "hamlib_pttport": "/dev/ttyACM1",\
                   "hamlib_dcd": "None",\
                   "hamlbib_serialspeed_ptt": "9600",\

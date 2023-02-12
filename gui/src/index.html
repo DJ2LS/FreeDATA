@@ -2031,12 +2031,7 @@
                     ></i>
                     Device Port
                   </span>
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_deviceport"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -2056,22 +2051,18 @@
                     ></i>
                     Serial Speed</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_serialspeed"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_serialspeed"
                   >
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="1200">1200</option>
                     <option value="2400">2400</option>
                     <option value="4800">4800</option>
-                    <option selected value="9600">9600</option>
+                    <option value="9600">9600</option>
                     <option value="14400">14400</option>
                     <option value="19200">19200</option>
                     <option value="28800">28800</option>
@@ -2084,18 +2075,14 @@
                   <span class="input-group-text" style="width: 180px"
                     >Data bits</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_databits"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_databits"
                   >
+                    <option selected value="ignore">-- ignore --</option>
                     <option value="7">7</option>
                     <option value="8">8</option>
                   </select>
@@ -2104,18 +2091,14 @@
                   <span class="input-group-text" style="width: 180px"
                     >Stop Bits</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_stopbits"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_stopbits"
                   >
+                     <option selected value="ignore">-- ignore --</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                   </select>
@@ -2124,18 +2107,14 @@
                   <span class="input-group-text" style="width: 180px"
                     >Serial Handshake</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_handshake"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_handshake"
                   >
+                     <option selected value="ignore">-- ignore --</option>
                     <option value="None">None (Default)</option>
                   </select>
                 </div>
@@ -2148,31 +2127,21 @@
                     ></i
                     >PTT Device Port</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_ptt_port"
-                    />
+
                   </span>
+                  
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                     id="hamlib_ptt_port"
-                  >
-                    <!--<option value="None">None</option>-->
+                  > <option selected value="ignore">-- ignore --</option>
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px"
                     >PTT Type</span
                   >
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_pttprotocol"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -2180,6 +2149,7 @@
                     id="hamlib_pttprotocol"
                     style="width: 0.5rem"
                   >
+                     <option selected value="ignore">-- ignore --</option>
                     <option value="NONE">NONE</option>
                     <option value="RIG">RIG</option>
                     <option value="USB">USB</option>
@@ -2191,12 +2161,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px">DCD</span>
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_dcd"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -2204,6 +2169,7 @@
                     id="hamlib_dcd"
                     style="width: 0.5rem"
                   >
+                     <option selected value="ignore">-- ignore --</option>
                     <option value="NONE">NONE</option>
                     <option value="RIG">RIG/CAT</option>
                     <option value="DSR">DSR</option>
@@ -2214,12 +2180,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px">DTR</span>
-                  <span class="input-group-text">
-                    <input
-                      class="form-check-sm form-check-input"
-                      type="checkbox"
-                      id="enable_hamlib_dtrstate"
-                    />
+
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -2227,6 +2188,7 @@
                     id="hamlib_dtrstate"
                     style="width: 0.5rem"
                   >
+                     <option selected value="ignore">-- ignore --</option>
                     <option value="OFF">OFF</option>
                     <option value="ON">ON</option>
                   </select>
@@ -2248,6 +2210,7 @@
                     class="form-select form-select-sm"
                     id="tuning_range_fmin"
                   >
+                    
                     <option value="-50.0">-50.0</option>
                     <option value="-100.0">-100.0</option>
                     <option value="-150.0">-150.0</option>

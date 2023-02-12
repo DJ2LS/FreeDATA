@@ -196,68 +196,6 @@ window.addEventListener("DOMContentLoaded", () => {
   // hamlib settings
   document.getElementById("hamlib_deviceid").value = config.hamlib_deviceid;
 
-  set_setting_switch(
-    "enable_hamlib_deviceport",
-    "hamlib_deviceport",
-    config.enable_hamlib_deviceport
-  );
-  set_setting_switch(
-    "enable_hamlib_ptt_port",
-    "hamlib_ptt_port",
-    config.enable_hamlib_ptt_port
-  );
-
-  document.getElementById("hamlib_serialspeed").value =
-    config.hamlib_serialspeed;
-  set_setting_switch(
-    "enable_hamlib_serialspeed",
-    "hamlib_serialspeed",
-    config.enable_hamlib_serialspeed
-  );
-
-  document.getElementById("hamlib_pttprotocol").value =
-    config.hamlib_pttprotocol;
-  set_setting_switch(
-    "enable_hamlib_pttprotocol",
-    "hamlib_pttprotocol",
-    config.enable_hamlib_pttprotocol
-  );
-
-  document.getElementById("hamlib_databits").value = config.hamlib_data_bits;
-  set_setting_switch(
-    "enable_hamlib_databits",
-    "hamlib_databits",
-    config.enable_hamlib_databits
-  );
-
-  document.getElementById("hamlib_stopbits").value = config.hamlib_stop_bits;
-  set_setting_switch(
-    "enable_hamlib_stopbits",
-    "hamlib_stopbits",
-    config.enable_hamlib_stopbits
-  );
-
-  document.getElementById("hamlib_handshake").value = config.hamlib_handshake;
-  set_setting_switch(
-    "enable_hamlib_handshake",
-    "hamlib_handshake",
-    config.enable_hamlib_handshake
-  );
-
-  document.getElementById("hamlib_dcd").value = config.hamlib_dcd;
-  set_setting_switch(
-    "enable_hamlib_dcd",
-    "hamlib_dcd",
-    config.enable_hamlib_dcd
-  );
-
-  document.getElementById("hamlib_dtrstate").value = config.hamlib_dtrstate;
-  set_setting_switch(
-    "enable_hamlib_dtrstate",
-    "hamlib_dtrstate",
-    config.enable_hamlib_dtrstate
-  );
-
   document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
   document.getElementById("hamlib_rigctld_port").value =
     config.hamlib_rigctld_port;
@@ -577,75 +515,6 @@ window.addEventListener("DOMContentLoaded", () => {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-  // radio settings 'enable hamlib deviceport' event listener
-  document
-    .getElementById("enable_hamlib_deviceport")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_deviceport", "hamlib_deviceport");
-    });
-
-  // radio settings 'enable hamlib serialspeed' event listener
-  document
-    .getElementById("enable_hamlib_serialspeed")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_serialspeed", "hamlib_serialspeed");
-    });
-
-  // radio settings 'enable hamlib data bits' event listener
-  document
-    .getElementById("enable_hamlib_databits")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_databits", "hamlib_databits");
-    });
-
-  // radio settings 'enable hamlib stop bits' event listener
-  document
-    .getElementById("enable_hamlib_stopbits")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_stopbits", "hamlib_stopbits");
-    });
-
-  // radio settings 'enable hamlib handshake' event listener
-  document
-    .getElementById("enable_hamlib_handshake")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_handshake", "hamlib_handshake");
-    });
-
-  // radio settings 'enable hamlib ptt port' event listener
-  document
-    .getElementById("enable_hamlib_ptt_port")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_ptt_port", "hamlib_ptt_port");
-    });
-
-  // radio settings 'enable hamlib ptt protocol' event listener
-  document
-    .getElementById("enable_hamlib_pttprotocol")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_pttprotocol", "hamlib_pttprotocol");
-    });
-  // radio settings 'enable hamlib dcd' event listener
-  document
-    .getElementById("enable_hamlib_dcd")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_dcd", "hamlib_dcd");
-    });
-
-  // radio settings 'enable hamlib dtr state' event listener
-  document
-    .getElementById("enable_hamlib_dtrstate")
-    .addEventListener("change", () => {
-      enable_setting("enable_hamlib_dtrstate", "hamlib_dtrstate");
-    });
-
-  /*
-document.getElementById('hamlib_rigctld_path').addEventListener('change', () => {
-var fileList = document.getElementById("dataModalFile").files;
-        console.log(fileList)
-
-})
-*/
 
   document
     .getElementById("hamlib_rigctld_path")
@@ -683,33 +552,33 @@ var fileList = document.getElementById("dataModalFile").files;
       paramList = paramList.concat("-m", hamlib_deviceid);
 
       // hamlib deviceport setting
-      if (document.getElementById("enable_hamlib_deviceport").checked) {
+      if (document.getElementById("hamlib_deviceport").value !== 'ignore') {
         var hamlib_deviceport =
           document.getElementById("hamlib_deviceport").value;
         paramList = paramList.concat("-r", hamlib_deviceport);
       }
 
       // hamlib serialspeed setting
-      if (document.getElementById("enable_hamlib_serialspeed").checked) {
+      if (document.getElementById("hamlib_serialspeed").value !== 'ignore') {
         var hamlib_serialspeed =
           document.getElementById("hamlib_serialspeed").value;
         paramList = paramList.concat("-s", hamlib_serialspeed);
       }
 
       // hamlib databits setting
-      if (document.getElementById("enable_hamlib_databits").checked) {
+      if (document.getElementById("hamlib_databits").value !== 'ignore') {
         var hamlib_databits = document.getElementById("hamlib_databits").value;
         paramList = paramList.concat("--set-conf=data_bits=" + hamlib_databits);
       }
 
       // hamlib stopbits setting
-      if (document.getElementById("enable_hamlib_stopbits").checked) {
+      if (document.getElementById("hamlib_stopbits").value !== 'ignore') {
         var hamlib_stopbits = document.getElementById("hamlib_stopbits").value;
         paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stopbits);
       }
 
       // hamlib handshake setting
-      if (document.getElementById("enable_hamlib_handshake").checked) {
+      if (document.getElementById("hamlib_handshake").value !== 'ignore') {
         var hamlib_handshake =
           document.getElementById("hamlib_handshake").value;
         paramList = paramList.concat(
@@ -718,26 +587,26 @@ var fileList = document.getElementById("dataModalFile").files;
       }
 
       // hamlib dcd setting
-      if (document.getElementById("enable_hamlib_dcd").checked) {
+      if (document.getElementById("hamlib_dcd").value !== 'ignore') {
         var hamlib_dcd = document.getElementById("hamlib_dcd").value;
         paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
       }
 
       // hamlib ptt port
-      if (document.getElementById("enable_hamlib_ptt_port").checked) {
+      if (document.getElementById("hamlib_ptt_port").value !== 'ignore') {
         var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
         paramList = paramList.concat("-p", hamlib_ptt_port);
       }
 
       // hamlib ptt type
-      if (document.getElementById("enable_hamlib_pttprotocol").checked) {
+      if (document.getElementById("hamlib_pttprotocol").value !== 'ignore') {
         var hamlib_ptt_type =
           document.getElementById("hamlib_pttprotocol").value;
         paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
       }
 
       // hamlib dtr state
-      if (document.getElementById("enable_hamlib_dtrstate").checked) {
+      if (document.getElementById("hamlib_dtrstate").value !== 'ignore') {
         var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
         paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
       }
