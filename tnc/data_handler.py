@@ -3254,9 +3254,14 @@ class DATA:
         fec_frame[:1] = bytes([FR_TYPE.IS_WRITING.value])
         fec_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
 
-        self.enqueue_frame_for_tx(
-            frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
-        )
+        # send burst only if channel not busy - but without waiting
+        # otherwise burst will be dropped
+        if not static.CHANNEL_BUSY:
+            self.enqueue_frame_for_tx(
+                frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
+            )
+        else:
+            return False
     def save_data_to_folder(self,
                             transmission_uuid,
                             timestamp,
