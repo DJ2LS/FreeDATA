@@ -465,8 +465,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("radio-control-switch-disabled")
     .addEventListener("click", () => {
-      document.getElementById("hamlib_info_field").innerHTML =
-        "Set hamlib related settings.";
+      //document.getElementById("hamlib_info_field").innerHTML =
+      //  "Disables TNC rig control";
 
       document.getElementById("radio-control-disabled").style.display = "block";
       document.getElementById("radio-control-disabled").style.visibility =
@@ -487,8 +487,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("radio-control-switch-help")
     .addEventListener("click", () => {
-      document.getElementById("hamlib_info_field").innerHTML =
-        "Set the ip and port of a rigctld session";
+      //document.getElementById("hamlib_info_field").innerHTML =
+      //  "Set the ip and port of a rigctld session";
 
       document.getElementById("radio-control-disabled").style.display = "none";
       document.getElementById("radio-control-disabled").style.visibility =
@@ -510,8 +510,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document
     .getElementById("radio-control-switch-rigctld")
     .addEventListener("click", () => {
-      document.getElementById("hamlib_info_field").innerHTML =
-        "Start and stop rigctld .";
+      //document.getElementById("hamlib_info_field").innerHTML =
+      //  "Edit your rigctld settings and start and stop rigctld .";
 
       document.getElementById("radio-control-disabled").style.display = "none";
       document.getElementById("radio-control-disabled").style.visibility =

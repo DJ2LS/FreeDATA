@@ -310,6 +310,7 @@
                 Please select audio device for RX and TX
               </div>
             </div>
+            <!--Start of TNC rig control pane-->
           </div>
           <div class="col">
             <div class="card text-dark mb-0">
@@ -317,7 +318,7 @@
                 <i
                   class="bi bi-projector"
                   style="font-size: 1rem; color: black"
-                ></i>
+                ></i><STRONG> TNC RIG CONTROL</STRONG>
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -329,13 +330,12 @@
                     name="radio-control-switch"
                     id="radio-control-switch-disabled"
                     autocomplete="off"
-                    checked
                   />
                   <label
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-disabled"
                   >
-                    disabled
+                    None
                   </label>
 
                   <div
@@ -356,19 +356,6 @@
                     >
                       Hamlib
                     </label>
-                  </div>
-                  <div class="btn-group" role="group">
-                    <button
-                      type="button"
-                      id="testHamlib"
-                      class="btn btn-sm btn-outline-secondary"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-html="true"
-                      title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-                    >
-                      PTT Test
-                    </button>
                   </div>
                 </div>
                 <div
@@ -394,7 +381,8 @@
               <div class="card-body p-2">
                 <!-- RADIO CONTROL DISABLED -->
                 <div id="radio-control-disabled">
-                  hamlib/rigctld connection disabled
+                  <p class="small">TNC will not utilize rig control and features will be limited.
+                  While functional; it is recommended to configure hamlib.</p>
                 </div>
 
                 <!-- RADIO CONTROL RIGCTLD INFO-->
@@ -447,12 +435,24 @@
                     >
                       Stop
                     </button>
+                      <button
+                        type="button"
+                        id="testHamlib"
+                        class="btn btn-sm btn-outline-secondary"
+                        
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-html="true"
+                        title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                      >
+                        PTT Test
+                      </button>
                   </div>
                 </div>
 
                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
-                  <strong>VOX:</strong> disable rigctld usage
+                  <strong>VOX:</strong> Use rig control mode 'none'
                   <br />
                   <strong>HAMLIB locally:</strong> configure in settings, then
                   start/stop service.
@@ -462,7 +462,7 @@
                 </div>
               </div>
               <div class="card-footer text-muted small" id="hamlib_info_field">
-                Select your radio and PTT settings. Start/Stop Hamlib Rigctld
+                Define TNC rig control mode (none/hamlib)
               </div>
             </div>
           </div>
