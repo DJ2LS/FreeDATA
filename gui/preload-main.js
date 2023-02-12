@@ -1183,13 +1183,9 @@ window.addEventListener("DOMContentLoaded", () => {
     config.hamlib_stop_bits = stop_bits;
     config.hamlib_handshake = handshake;
     config.hamlib_dcd = hamlib_dcd;
-    //config.deviceid_rigctl = deviceid_rigctl;
-    //config.serialspeed_rigctl = serialspeed_rigctl;
-    //config.pttprotocol_rigctl = pttprotocol_rigctl;
     config.hamlib_rigctld_port = rigctld_port;
     config.hamlib_rigctld_ip = rigctld_ip;
     config.hamlib_rigctld_server_port = hamlib_rigctld_server_port;
-    //config.deviceport_rigctl = deviceport_rigctl;
     config.enable_scatter = enable_scatter;
     config.enable_fft = enable_fft;
     config.enable_fsk = enable_fsk;
@@ -1202,19 +1198,6 @@ window.addEventListener("DOMContentLoaded", () => {
     config.auto_tune = auto_tune;
 
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
-    // collapse settings screen
-    // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
-    /*
-        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
-        collapseFirstRow.hide()
-        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.hide()
-        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
-        collapseThirdRow.show() 
-        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
-        collapseFourthRow.show() 
-        */
 
     daemon.startTNC(
       callsign_ssid,
@@ -1257,36 +1240,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     daemon.stopTNC();
 
-    // collapse settings screen
-    // deactivated this part so start / stop is a little bit more smooth. We are getting problems because of network delay
-    /*
-        var collapseFirstRow = new bootstrap.Collapse(document.getElementById('collapseFirstRow'), {toggle: false})
-        collapseFirstRow.show()
-        var collapseSecondRow = new bootstrap.Collapse(document.getElementById('collapseSecondRow'), {toggle: false})
-        collapseSecondRow.show() 
-        
-        var collapseThirdRow = new bootstrap.Collapse(document.getElementById('collapseThirdRow'), {toggle: false})
-        collapseThirdRow.hide()
-        var collapseFourthRow = new bootstrap.Collapse(document.getElementById('collapseFourthRow'), {toggle: false})
-        collapseFourthRow.hide() 
-        */
   });
-
-  // openDataModule button clicked
-  // not necessesary at this time beacuse bootstrap handles this
-  // document.getElementById("openDataModule").addEventListener("click", () => {
-  //   var transmitFileSidebar = document.getElementById('transmitFileSidebar')
-  //   var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
-  //   bstransmitFileSidebar.show()
-  //})
-
-  // openReceivedFiles button clicked
-  // not necessesary at this time beacuse bootstrap handles this
-  //document.getElementById("openReceivedFiles").addEventListener("click", () => {
-  //   var transmitFileSidebar = document.getElementById('transmitFileSidebar')
-  //   var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
-  //   bstransmitFileSidebar.show()
-  //})
 
   // TEST HAMLIB
   document.getElementById("testHamlib").addEventListener("click", () => {
@@ -1326,12 +1280,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // START TRANSMISSION
   document.getElementById("startTransmission").addEventListener("click", () => {
-    //document.getElementById("transmitFileSidebar").style.width = "0px";
-    /* not neccessary at this time because handled by bootstap inside html
-            var transmitFileSidebar = document.getElementById('transmitFileSidebar')
-            var bstransmitFileSidebar = new bootstrap.Offcanvas(transmitFileSidebar)
-            bstransmitFileSidebar.show()   
-        */
 
     var fileList = document.getElementById("dataModalFile").files;
     console.log(fileList);
