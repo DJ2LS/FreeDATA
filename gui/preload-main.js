@@ -383,34 +383,34 @@ window.addEventListener("DOMContentLoaded", () => {
   // radio control element
   if (config.radiocontrol == "rigctld") {
     document.getElementById("radio-control-switch-disabled").checked = false;
-    document.getElementById("radio-control-switch-network").checked = false;
+    document.getElementById("radio-control-switch-rigctld").checked = true;
+    document.getElementById("radio-control-switch-help").checked = false;
+
 
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
 
-    document.getElementById("radio-control-network").style.visibility =
+    document.getElementById("radio-control-help").style.visibility =
       "hidden";
-    document.getElementById("radio-control-network").style.display = "none";
+    document.getElementById("radio-control-help").style.display = "none";
 
-    document.getElementById("radio-control-rigctld-info").style.visibility =
-      "hidden";
-    document.getElementById("radio-control-rigctld-info").style.display =
-      "none";
+    document.getElementById("radio-control-rigctld").style.visibility =
+      "visible";
+    document.getElementById("radio-control-rigctld").style.display =
+      "block";
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
-    document.getElementById("radio-control-switch-network").checked = false;
-    document.getElementById(
-      "radio-control-switch-rigctld-info"
-    ).checked = false;
+    document.getElementById("radio-control-switch-help").checked = false;
+        document.getElementById("radio-control-switch-rigctld").checked = false;
 
-    document.getElementById("radio-control-network").style.display = "none";
-    document.getElementById("radio-control-network").style.visibility =
+    document.getElementById("radio-control-help").style.display = "none";
+    document.getElementById("radio-control-help").style.visibility =
       "hidden";
 
-    document.getElementById("radio-control-rigctld-info").style.visibility =
+    document.getElementById("radio-control-rigctld").style.visibility =
       "hidden";
-    document.getElementById("radio-control-rigctld-info").style.display =
+    document.getElementById("radio-control-rigctld").style.display =
       "none";
   }
 
@@ -484,13 +484,13 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.visibility =
         "visible";
 
-      document.getElementById("radio-control-network").style.display = "none";
-      document.getElementById("radio-control-network").style.visibility =
+      document.getElementById("radio-control-help").style.display = "none";
+      document.getElementById("radio-control-help").style.visibility =
         "hidden";
 
-      document.getElementById("radio-control-rigctld-info").style.visibility =
+      document.getElementById("radio-control-rigctld").style.visibility =
         "hidden";
-      document.getElementById("radio-control-rigctld-info").style.display =
+      document.getElementById("radio-control-rigctld").style.display =
         "none";
 
       config.radiocontrol = "disabled";
@@ -499,7 +499,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // // radio settings 'network' event listener
   document
-    .getElementById("radio-control-switch-network")
+    .getElementById("radio-control-switch-help")
     .addEventListener("click", () => {
       document.getElementById("hamlib_info_field").innerHTML =
         "Set the ip and port of a rigctld session";
@@ -508,13 +508,13 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.visibility =
         "hidden";
 
-      document.getElementById("radio-control-network").style.display = "block";
-      document.getElementById("radio-control-network").style.visibility =
+      document.getElementById("radio-control-help").style.display = "block";
+      document.getElementById("radio-control-help").style.visibility =
         "visible";
 
-      document.getElementById("radio-control-rigctld-info").style.visibility =
+      document.getElementById("radio-control-rigctld").style.visibility =
         "hidden";
-      document.getElementById("radio-control-rigctld-info").style.display =
+      document.getElementById("radio-control-rigctld").style.display =
         "none";
 
       config.radiocontrol = "rigctld";
@@ -523,7 +523,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // // radio settings 'rigctld' event listener
   document
-    .getElementById("radio-control-switch-rigctld-info")
+    .getElementById("radio-control-switch-rigctld")
     .addEventListener("click", () => {
       document.getElementById("hamlib_info_field").innerHTML =
         "Start and stop rigctld .";
@@ -532,13 +532,13 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.visibility =
         "hidden";
 
-      document.getElementById("radio-control-network").style.display = "none";
-      document.getElementById("radio-control-network").style.visibility =
+      document.getElementById("radio-control-help").style.display = "none";
+      document.getElementById("radio-control-help").style.visibility =
         "hidden";
 
-      document.getElementById("radio-control-rigctld-info").style.visibility =
+      document.getElementById("radio-control-rigctld").style.visibility =
         "visible";
-      document.getElementById("radio-control-rigctld-info").style.display =
+      document.getElementById("radio-control-rigctld").style.display =
         "block";
 
       config.radiocontrol = "rigctld";

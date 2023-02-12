@@ -347,33 +347,14 @@
                     type="radio"
                     class="btn-check"
                     name="radio-control-switch"
-                    id="radio-control-switch-rigctld-info"
+                    id="radio-control-switch-rigctld"
                     autocomplete="off"
                   />
                   <label
                     class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-rigctld-info"
+                    for="radio-control-switch-rigctld"
                   >
                     Run locally
-                  </label>
-                </div>
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="radio-control-switch-rigctld"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="radio-control-switch"
-                    id="radio-control-switch-network"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-network"
-                  >
-                    Network
                   </label>
                 </div>
                 <div class="btn-group" role="group">
@@ -389,15 +370,38 @@
                     PTT Test
                   </button>
                 </div>
+                <div
+                  class="btn-group btn-group-sm"
+                  role="group"
+                  aria-label="radio-control-switch-rigctld"
+                >
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="radio-control-switch"
+                    id="radio-control-switch-help"
+                    autocomplete="off"
+                  />
+                  <label
+                    class="btn btn-sm btn-outline-secondary"
+                    for="radio-control-switch-help"
+                  >
+                    Help
+                  </label>
+                </div>
+
               </div>
               <div class="card-body p-2">
                 <!-- RADIO CONTROL DISABLED -->
                 <div id="radio-control-disabled">
                   hamlib/rigctld connection disabled
                 </div>
-                <!-- RADIO CONTROL NETWORK -->
-                <div id="radio-control-network">
+
+                <!-- RADIO CONTROL RIGCTLD INFO-->
+                <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
+
+                    <div class="input-group input-group-sm mb-1">
                     <span class="input-group-text">Rigctld IP</span>
                     <input
                       type="text"
@@ -417,10 +421,8 @@
                       aria-describedby="basic-addon1"
                     />
                   </div>
-                </div>
-                <!-- RADIO CONTROL RIGCTLD INFO-->
-                <div id="radio-control-rigctld-info">
-                  <div class="input-group input-group-sm mb-1">
+
+
                     <button
                       class="btn btn-outline-success"
                       type="button"
@@ -444,7 +446,17 @@
                       Stop
                     </button>
                   </div>
+
+
+
+
                 </div>
+
+                                <!-- RADIO CONTROL HELP -->
+                <div id="radio-control-help">
+                  ...
+                </div>
+
               </div>
               <div class="card-footer text-muted small" id="hamlib_info_field">
                 Select your radio and PTT settings. Start/Stop Hamlib Rigctld
@@ -2032,7 +2044,6 @@
                     Device Port
                   </span>
 
-                  </span>
                   <select
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
