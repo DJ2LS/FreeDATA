@@ -200,6 +200,8 @@ class DATA:
             FR_TYPE.PING_ACK.value: (self.received_ping_ack, "PING ACK"),
             FR_TYPE.PING.value: (self.received_ping, "PING"),
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
+            FR_TYPE.IS_WRITING.value: (self.received_is_writing, "IS_WRITING"),
+
         }
         self.command_dispatcher = {
             #"CONNECT": (self.arq_session_handler, "CONNECT"),
@@ -370,6 +372,7 @@ class DATA:
                         FR_TYPE.QRV.value,
                         FR_TYPE.PING.value,
                         FR_TYPE.BEACON.value,
+                        FR_TYPE.IS_WRITING.value,
                 ]
         ):
 
@@ -2798,6 +2801,27 @@ class DATA:
             combined_snr,
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
+        )
+    def received_is_writing(self, data_in: bytes) -> None:
+        """
+        Called when we receive a IS WRITING frame
+        Args:
+          data_in:bytes:
+
+        """
+        # here we add the received station to the heard stations buffer
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            fec="is_writing",
+            dxcallsign=str(dxcallsign, "UTF-8")
+        )
+
+        self.log.info(
+            "[TNC] IS_WRITING RCVD ["
+            + str(dxcallsign, "UTF-8")
+            + "] ",
         )
 
     # ------------ CALCULATE TRANSFER RATES
