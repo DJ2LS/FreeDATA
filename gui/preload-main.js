@@ -1229,10 +1229,10 @@ var fileList = document.getElementById("dataModalFile").files;
   // Start beacon button clicked
   document.getElementById("startBeacon").addEventListener("click", () => {
     let bcn = document.getElementById("startBeacon");
-    bcn.disabled=true;
+    bcn.disabled = true;
     interval = document.getElementById("beaconInterval").value;
     //Use class list to determine state of beacon, secondary == off
-    if (bcn.className.toLowerCase().indexOf('secondary') > 0) {
+    if (bcn.className.toLowerCase().indexOf("secondary") > 0) {
       //Stopped; let us start it
       sock.startBeacon(interval);
     } else {
@@ -1240,7 +1240,7 @@ var fileList = document.getElementById("dataModalFile").files;
     }
     config.beacon_interval = interval;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    bcn.disabled=false;
+    bcn.disabled = false;
   });
 
   // sendscatter Switch clicked
@@ -2241,16 +2241,16 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BEACON
   switch (arg.beacon_state) {
     case "True":
-      toggleClass("startBeacon","btn-outline-secondary",false);
-      toggleClass("startBeacon","btn-success",true);
-      if (document.getElementById("beaconInterval").disabled  == false) {
+      toggleClass("startBeacon", "btn-outline-secondary", false);
+      toggleClass("startBeacon", "btn-success", true);
+      if (document.getElementById("beaconInterval").disabled == false) {
         document.getElementById("beaconInterval").disabled = true;
       }
       break;
     default:
-      toggleClass("startBeacon","btn-outline-secondary",true);
-      toggleClass("startBeacon","btn-success",false);
-      
+      toggleClass("startBeacon", "btn-outline-secondary", true);
+      toggleClass("startBeacon", "btn-success", false);
+
       if (document.getElementById("beaconInterval").disabled == true) {
         document.getElementById("beaconInterval").disabled = false;
       }
