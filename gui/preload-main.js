@@ -552,19 +552,20 @@ window.addEventListener("DOMContentLoaded", () => {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
-  // hamlib event listener for saving settings
+  // hamlib bulk event listener for saving settings
   hamlib_elements.forEach(function (elem) {
     try {
       document.getElementById(elem).addEventListener("change", function () {
-        config.elem = document.getElementById(elem).value;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        console.log(config.elem);
+        config[elem] = document.getElementById(elem).value;
+          fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+          console.log(config);
       });
     } catch (e) {
       console.log(e);
       console.log(elem);
     }
   });
+
 
   document
     .getElementById("hamlib_rigctld_start")
@@ -3067,25 +3068,29 @@ function loadSettings(elements) {
     let element = document.getElementById(id);
 
     if (element.tagName === "SELECT") {
-      element.value = config.elem;
+      element.value = config[id];
 
       // add selected value
       for (var i = 0, j = element.options.length; i < j; ++i) {
-        if (element.options[i].innerHTML === config.elem) {
+        if (element.options[i].innerHTML === config[id]) {
           element.selectedIndex = i;
           break;
         }
       }
-    } else if (element.tagName === "INPUT" && element.type === "text") {
-      element.value = config.elem;
-    } else if (element.tagName === "INPUT" && element.type === "radio") {
-      element.value = config.elem;
 
-      if (config.elem === "True") {
+
+    } else if (element.tagName === "INPUT" && element.type === "text") {
+      element.value = config[id];
+    } else if (element.tagName === "INPUT" && element.type === "radio") {
+      element.value = config[id];
+
+      if (config[id] === "True") {
         element.checked = true;
       } else {
         element.checked = false;
       }
+    } else {
+        console.log("nothing matched....")
     }
   });
 }
