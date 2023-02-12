@@ -251,12 +251,19 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 else:
                     self.tnc_set_send_test_frame(received_json)
 
-            # TRANSMIT TEST FRAME
+            # TRANSMIT FEC FRAME
             if received_json["type"] == "fec" and received_json["command"] == "transmit":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_fec_transmit(None, received_json)
                 else:
                     self.tnc_fec_transmit(received_json)
+
+            # TRANSMIT IS WRITING FRAME
+            if received_json["type"] == "fec" and received_json["command"] == "transmit_is_writing":
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.tnc_fec_is_writing(None, received_json)
+                else:
+                    self.tnc_fec_is_writing(received_json)
 
             # CQ CQ CQ
             if received_json["command"] == "cqcqcq":
@@ -442,6 +449,19 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             command_response("fec_transmit", True)
         except Exception as err:
             command_response("fec_transmit", False)
+            log.warning(
+                "[SCK] Send fec frame command execution error",
+                e=err,
+                command=received_json,
+            )
+
+    def tnc_fec_is_writing(self, received_json):
+        try:
+            mycallsign = received_json["mycallsign"]
+            DATA_QUEUE_TRANSMIT.put(["FEC_IS_WRITING", mycallsign])
+            command_response("fec_is_writing", True)
+        except Exception as err:
+            command_response("fec_is_writing", False)
             log.warning(
                 "[SCK] Send fec frame command execution error",
                 e=err,

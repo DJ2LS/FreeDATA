@@ -307,6 +307,11 @@ class DATA:
                 # [1] DATA_OUT bytes
                 # [2] MODE str datac0/1/3...
                 self.send_fec_frame(data[1], data[2])
+
+            elif data[0] == "FEC_IS_WRITING":
+                # [1] DATA_OUT bytes
+                # [2] MODE str datac0/1/3...
+                self.send_fec_frame(data[1])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -3216,6 +3221,17 @@ class DATA:
         fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
         self.enqueue_frame_for_tx(
             frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE[mode].value
+        )
+
+    def send_fec_is_writing(self, mycallsign) -> None:
+        """Send an empty test frame"""
+
+        fec_frame = bytearray(14)
+        fec_frame[:1] = bytes([FR_TYPE.IS_WRITING.value])
+        fec_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
+
+        self.enqueue_frame_for_tx(
+            frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
         )
     def save_data_to_folder(self,
                             transmission_uuid,
