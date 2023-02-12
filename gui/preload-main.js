@@ -41,6 +41,26 @@ const contrib = [
   "N1QM",
 ];
 
+//let elements = document.querySelectorAll('[id^="hamlib_"]'); // get all elements starting with...
+    const hamlib_elements = ["hamlib_deviceid",
+    "hamlib_deviceport",
+    "hamlib_stop_bits",
+    "hamlib_data_bits",
+    "hamlib_handshake",
+    "hamlib_serialspeed",
+    "hamlib_dtrstate",
+    "hamlib_pttprotocol",
+    "hamlib_ptt_port",
+    "hamlib_dcd",
+    "hamlib_rigctld_port",
+    "hamlib_rigctld_ip",
+    "hamlib_rigctld_path",
+    "hamlib_rigctld_server_port"
+    ]
+
+
+
+
 // SET dbfs LEVEL GLOBAL
 // this is an attempt of reducing CPU LOAD
 // we are going to check if we have unequal values before we start calculating again
@@ -179,6 +199,12 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // LOAD SETTINGS
+
+  // load settings by function
+  loadSettings(hamlib_elements);
+
+
+
   document.getElementById("tnc_adress").value = config.tnc_host;
   document.getElementById("tnc_port").value = config.tnc_port;
 
@@ -192,6 +218,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("myCallSSID").value = ssid;
   document.getElementById("myGrid").value = config.mygrid;
+
+
+
+
 
   // hamlib settings
   document.getElementById("hamlib_deviceid").value = config.hamlib_deviceid;
@@ -541,6 +571,26 @@ window.addEventListener("DOMContentLoaded", () => {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
 
+
+    // hamlib event listener for saving settings
+    hamlib_elements.forEach(function(elem) {
+    try{
+        document.getElementById(elem).addEventListener("change", function() {
+            config.elem = document.getElementById(elem).value;
+            fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+            console.log(config.elem)
+        });
+        } catch(e){
+        console.log(e)
+        console.log(elem)
+
+        }
+
+
+
+    });
+
+
   document
     .getElementById("hamlib_rigctld_start")
     .addEventListener("click", () => {
@@ -566,15 +616,15 @@ window.addEventListener("DOMContentLoaded", () => {
       }
 
       // hamlib databits setting
-      if (document.getElementById("hamlib_databits").value !== 'ignore') {
-        var hamlib_databits = document.getElementById("hamlib_databits").value;
-        paramList = paramList.concat("--set-conf=data_bits=" + hamlib_databits);
+      if (document.getElementById("hamlib_data_bits").value !== 'ignore') {
+        var hamlib_data_bits = document.getElementById("hamlib_data_bits").value;
+        paramList = paramList.concat("--set-conf=data_bits=" + hamlib_data_bits);
       }
 
       // hamlib stopbits setting
-      if (document.getElementById("hamlib_stopbits").value !== 'ignore') {
-        var hamlib_stopbits = document.getElementById("hamlib_stopbits").value;
-        paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stopbits);
+      if (document.getElementById("hamlib_stop_bits").value !== 'ignore') {
+        var hamlib_stop_bits = document.getElementById("hamlib_stop_bits").value;
+        paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stop_bits);
       }
 
       // hamlib handshake setting
@@ -1083,8 +1133,8 @@ window.addEventListener("DOMContentLoaded", () => {
     var tx_audio = document.getElementById("audio_output_selectbox").value;
 
     var pttport = document.getElementById("hamlib_ptt_port").value;
-    var data_bits = document.getElementById("hamlib_databits").value;
-    var stop_bits = document.getElementById("hamlib_stopbits").value;
+    var data_bits = document.getElementById("hamlib_data_bits").value;
+    var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
 
     if (document.getElementById("scatterSwitch").checked == true) {
@@ -1178,7 +1228,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.hamlib_deviceport = deviceport;
     config.hamlib_serialspeed = serialspeed;
     config.hamlib_pttprotocol = pttprotocol;
-    config.hamlib_pttport = pttport;
+    config.hamlib_ptt_port = pttport;
     config.hamlib_data_bits = data_bits;
     config.hamlib_stop_bits = stop_bits;
     config.hamlib_handshake = handshake;
@@ -1244,8 +1294,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // TEST HAMLIB
   document.getElementById("testHamlib").addEventListener("click", () => {
-    var data_bits = document.getElementById("hamlib_databits").value;
-    var stop_bits = document.getElementById("hamlib_stopbits").value;
+    var data_bits = document.getElementById("hamlib_data_bits").value;
+    var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
     var pttport = document.getElementById("hamlib_ptt_port").value;
 
@@ -2152,7 +2202,7 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
         option.text = arg.serial_devices[i]["description"];
         option.value = arg.serial_devices[i]["port"];
         // set device from config if available
-        if (config.hamlib_pttport == option.value) {
+        if (config.hamlib_ptt_port == option.value) {
           option.setAttribute("selected", true);
         }
         document.getElementById("hamlib_ptt_port").add(option);
@@ -3031,4 +3081,37 @@ function displayToast(
     // remove toast
     toastHTMLElement.remove();
   });
+}
+
+
+function loadSettings(elements){
+    elements.forEach(function(id) {
+        let element = document.getElementById(id);
+
+        if(element.tagName === 'SELECT') {
+            element.value = config.elem;
+
+            // add selected value
+            for(var i = 0, j = element.options.length; i < j; ++i) {
+                if(element.options[i].innerHTML === config.elem) {
+                   element.selectedIndex = i;
+                   break;
+                }
+            }
+
+        } else if (element.tagName === 'INPUT' && element.type === 'text') {
+            element.value = config.elem;
+
+        } else if (element.tagName === 'INPUT' && element.type === 'radio') {
+            element.value = config.elem;
+
+            if(config.elem === "True"){
+                element.checked = true;
+            } else {
+                element.checked = false;
+            }
+        }
+
+
+        });
 }

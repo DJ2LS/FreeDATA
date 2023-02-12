@@ -43,8 +43,7 @@ if (!fs.existsSync(configFolder)) {
 }
 
 // create config file if not exists with defaults
-const configDefaultSettings =
-  '{\
+const configDefaultSettings = '{\
                   "tnc_host": "127.0.0.1",\
                   "tnc_port": "3000",\
                   "daemon_host": "127.0.0.1",\
@@ -53,15 +52,19 @@ const configDefaultSettings =
                   "mygrid": "JN40aa",\
                   "radiocontrol" : "disabled",\
                   "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
-                  "hamlib_deviceport": "/dev/ttyACM1",\
-                  "hamlib_stop_bits" : "1",\
-                  "hamlib_data_bits" : "8",\
-                  "hamlib_handshake" : "None",\
-                  "hamlib_serialspeed" : "9600",\
-                  "hamlib_dtrstate" : "OFF",\
-                  "hamlib_pttprotocol" : "USB",\
-                  "hamlib_pttport": "/dev/ttyACM1",\
-                  "hamlib_dcd": "None",\
+                  "hamlib_deviceport": "ignore",\
+                  "hamlib_stop_bits": "ignore",\
+                  "hamlib_data_bits": "ignore",\
+                  "hamlib_handshake": "ignore",\
+                  "hamlib_serialspeed": "ignore",\
+                  "hamlib_dtrstate": "ignore",\
+                  "hamlib_pttprotocol": "ignore",\
+                  "hamlib_ptt_port": "ignore",\
+                  "hamlib_dcd": "ignore",\
+                  "hamlib_rigctld_port": "ignore",\
+                  "hamlib_rigctld_ip": "ignore",\
+                  "hamlib_rigctld_path": "ignore",\
+                  "hamlib_rigctld_server_port": "ignore",\
                   "hamlbib_serialspeed_ptt": "9600",\
                   "hamlib_rigctld_port" : "4532",\
                   "hamlib_rigctld_ip" : "127.0.0.1",\
