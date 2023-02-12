@@ -62,15 +62,12 @@ const configDefaultSettings =
                   "hamlib_pttprotocol": "ignore",\
                   "hamlib_ptt_port": "ignore",\
                   "hamlib_dcd": "ignore",\
-                  "hamlib_rigctld_port": "ignore",\
-                  "hamlib_rigctld_ip": "ignore",\
-                  "hamlib_rigctld_path": "ignore",\
-                  "hamlib_rigctld_server_port": "ignore",\
                   "hamlbib_serialspeed_ptt": "9600",\
                   "hamlib_rigctld_port" : "4532",\
                   "hamlib_rigctld_ip" : "127.0.0.1",\
                   "hamlib_rigctld_path" : "",\
                   "hamlib_rigctld_server_port" : "4532",\
+                  "hamlib_rigctld_custom_args": "",\
                   "spectrum": "waterfall",\
                   "tnclocation": "localhost",\
                   "enable_scatter" : "False",\
