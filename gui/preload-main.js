@@ -2154,6 +2154,10 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
       arg.serial_devices.length
     ) {
       document.getElementById("hamlib_deviceport").innerHTML = "";
+      var ignore = document.createElement("option");
+      ignore.text = "-- ignore --";
+      ignore.value = "ignore";
+      document.getElementById("hamlib_deviceport").add(ignore);
       for (i = 0; i < arg.serial_devices.length; i++) {
         var option = document.createElement("option");
         option.text =
@@ -2161,12 +2165,10 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
           " -- " +
           arg.serial_devices[i]["description"];
         option.value = arg.serial_devices[i]["port"];
-        // set device from config if available
-        if (config.hamlib_deviceport == option.value) {
-          option.setAttribute("selected", true);
-        }
         document.getElementById("hamlib_deviceport").add(option);
       }
+      // set device from config if available
+      document.getElementById("hamlib_deviceport").value = config.hamlib_deviceport;
     }
   }
 
@@ -2176,16 +2178,21 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
       arg.serial_devices.length
     ) {
       document.getElementById("hamlib_ptt_port").innerHTML = "";
+      var ignore = document.createElement("option");
+      ignore.text = "-- ignore --";
+      ignore.value = "ignore";
+      document.getElementById("hamlib_ptt_port").add(ignore);
       for (i = 0; i < arg.serial_devices.length; i++) {
         var option = document.createElement("option");
-        option.text = arg.serial_devices[i]["description"];
-        option.value = arg.serial_devices[i]["port"];
-        // set device from config if available
-        if (config.hamlib_ptt_port == option.value) {
-          option.setAttribute("selected", true);
-        }
+        option.text =
+        arg.serial_devices[i]["port"] +
+        " -- " +
+        arg.serial_devices[i]["description"];
+      option.value = arg.serial_devices[i]["port"];
         document.getElementById("hamlib_ptt_port").add(option);
       }
+      // set device from config if available
+      document.getElementById("hamlib_ptt_port").value = config.hamlib_ptt_port;
     }
   }
 });
