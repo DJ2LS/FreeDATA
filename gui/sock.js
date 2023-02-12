@@ -689,6 +689,15 @@ exports.sendFEC = function (mode, payload) {
   writeTncCommand(command);
 };
 
+// SEND FEC IS WRITING
+exports.sendFecIsWriting = function (mycallsign) {
+  command =
+    '{"type" : "fec", "command" : "transmit_is_writing", "mycallsign" : "' +
+    mycallsign +
+    '"}';
+  writeTncCommand(command);
+};
+
 // RECORD AUDIO
 exports.record_audio = function () {
   command = '{"type" : "set", "command" : "record_audio"}';
