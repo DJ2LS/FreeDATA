@@ -3204,7 +3204,7 @@ class DATA:
             frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac3.value
         )
 
-    def send_fec_frame(self, mode, payload) -> None:
+    def send_fec_frame(self, payload, mode) -> None:
         """Send an empty test frame"""
 
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
