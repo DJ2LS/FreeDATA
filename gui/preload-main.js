@@ -1228,10 +1228,19 @@ var fileList = document.getElementById("dataModalFile").files;
 
   // Start beacon button clicked
   document.getElementById("startBeacon").addEventListener("click", () => {
+    let bcn = document.getElementById("startBeacon");
+    bcn.disabled=true;
     interval = document.getElementById("beaconInterval").value;
+    //Use class list to determine state of beacon, secondary == off
+    if (bcn.className.toLowerCase().indexOf('secondary') > 0) {
+      //Stopped; let us start it
+      sock.startBeacon(interval);
+    } else {
+      sock.stopBeacon();
+    }
     config.beacon_interval = interval;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    sock.startBeacon(interval);
+    bcn.disabled=false;
   });
 
   // sendscatter Switch clicked
@@ -1385,11 +1394,6 @@ var fileList = document.getElementById("dataModalFile").files;
     config.screen_height = window.innerHeight;
     config.screen_width = window.innerWidth;
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  });
-
-  // Stop beacon button clicked
-  document.getElementById("stopBeacon").addEventListener("click", () => {
-    sock.stopBeacon();
   });
 
   // Explorer button clicked
@@ -2235,36 +2239,21 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
 
   // BEACON
-  let bcn = document.getElementById("startBeacon");
-
   switch (arg.beacon_state) {
     case "True":
-      bcn.disabled = true;
-      if (config.high_graphics.toUpperCase() == "TRUE") {
-        bcn.className = "btn btn-sm btn-success spinner-grow force-gpu";
-        document
-          .getElementById("txtBeacon")
-          .setAttribute("class", "input-group-text p-1");
-      } else {
-        bcn.className = "btn btn-sm btn-outline-success";
-        document
-          .getElementById("txtBeacon")
-          .setAttribute(
-            "class",
-            "input-group-text p-1 text-success text-uppercase"
-          );
+      toggleClass("startBeacon","btn-outline-secondary",false);
+      toggleClass("startBeacon","btn-success",true);
+      if (document.getElementById("beaconInterval").disabled  == false) {
+        document.getElementById("beaconInterval").disabled = true;
       }
-      document.getElementById("beaconInterval").disabled = true;
-      document.getElementById("stopBeacon").disabled = false;
       break;
     default:
-      document
-        .getElementById("txtBeacon")
-        .setAttribute("class", "input-group-text p-1");
-      bcn.className = "btn btn-sm btn-outline-success";
-      document.getElementById("beaconInterval").disabled = false;
-      document.getElementById("stopBeacon").disabled = true;
-      bcn.disabled = false;
+      toggleClass("startBeacon","btn-outline-secondary",true);
+      toggleClass("startBeacon","btn-success",false);
+      
+      if (document.getElementById("beaconInterval").disabled == true) {
+        document.getElementById("beaconInterval").disabled = false;
+      }
       break;
   }
   // dbfs

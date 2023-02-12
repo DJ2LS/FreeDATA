@@ -1370,49 +1370,16 @@
                       data-bs-placement="bottom"
                       data-bs-toggle="tooltip"
                       data-bs-html="false"
-                      title="Start or stop the Beacon mode. You can also set the interval. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+                      title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
                     >
                       <button
                         type="button"
                         id="startBeacon"
-                        class="btn btn-sm btn-outline-success"
+                        class="btn btn-sm btn-outline-secondary"
                       >
                         <i
-                          class="bi bi-arrow-clockwise"
-                          style="font-size: 0.8rem"
-                        ></i>
-                      </button>
-                      <div id="txtBeacon" class="input-group-text p-1">
-                        Beacon
-                      </div>
-                      <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        id="beaconInterval"
-                        style="width: 6rem"
-                      >
-                        <option value="5">5s</option>
-                        <option selected value="10">10s</option>
-                        <option value="15">15s</option>
-                        <option value="30">30s</option>
-                        <option value="45">45s</option>
-                        <option value="60">60s</option>
-                        <option value="90">90s</option>
-                        <option value="120">2min</option>
-                        <option value="300">5min</option>
-                        <option value="600">10min</option>
-                        <option value="900">15min</option>
-                        <option value="1800">30min</option>
-                        <option value="3600">60min</option>
-                      </select>
-                      <button
-                        type="button"
-                        id="stopBeacon"
-                        class="btn btn-sm btn-outline-danger"
-                      >
-                        <i
-                          class="bi bi-x-octagon-fill"
-                          style="font-size: 0.8rem"
+                          class="bi bi-soundwave"
+                          
                         ></i>
                       </button>
                     </div>
@@ -2356,6 +2323,31 @@
                     <option value="200.0">200.0</option>
                     <option value="250.0">250.0</option>
                   </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50" id="basic-addon1"
+                    >Beacon interval</span
+                  >
+                  <select
+                  class="form-select form-select-sm"
+                  aria-label=".form-select-sm"
+                  id="beaconInterval"
+                  style="width: 6rem"
+                >
+                  <option value="5">5 secs</option>
+                  <option selected value="10">10 secs</option>
+                  <option value="15">15 secs</option>
+                  <option value="30">30 secs</option>
+                  <option value="45">45 secs</option>
+                  <option value="60">60 secs</option>
+                  <option value="90">90 secs</option>
+                  <option value="120">2 mins</option>
+                  <option value="300">5 mins</option>
+                  <option value="600">10 mins</option>
+                  <option value="900">15 mins</option>
+                  <option value="1800">30 mins</option>
+                  <option value="3600">60 mins</option>
+                </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50"
