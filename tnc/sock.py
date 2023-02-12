@@ -433,7 +433,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_fec_transmit(self, received_json):
         try:
             mode = received_json["mode"]
-            payload = received_json["payload"]
+            base64data = received_json["payload"]
+            if len(base64data) % 4:
+                raise TypeError
+            payload = base64.b64decode(base64data)
 
             DATA_QUEUE_TRANSMIT.put(["FEC", payload, mode])
             command_response("fec_transmit", True)
