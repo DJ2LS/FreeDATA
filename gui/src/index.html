@@ -2146,6 +2146,20 @@
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link"
+                  id="hamlib-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#hamlib"
+                  type="button"
+                  role="tab"
+                  aria-controls="profile"
+                  aria-selected="false"
+                >
+                  HAMLIB
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
                   id="tnc-tab"
                   data-bs-toggle="tab"
                   data-bs-target="#tnc"
@@ -2162,7 +2176,7 @@
                   class="nav-link"
                   id="web-tab"
                   data-bs-toggle="tab"
-                  data-bs-target="#stats"
+                  data-bs-target="#web"
                   type="button"
                   role="tab"
                   aria-controls="messages"
@@ -2288,6 +2302,17 @@
                   </select>
                 </div>
               </div>
+
+              <div
+                class="tab-pane"
+                id="hamlib"
+                role="tabpanel"
+                aria-labelledby="hamlib-tab"
+                tabindex="0"
+              >
+                Hamlib...
+              </div>
+
               <!-- TNC Tab contents-->
               <div
                 class="tab-pane"
@@ -2437,7 +2462,7 @@
               <!-- Stats Tab content-->
               <div
                 class="tab-pane"
-                id="stats"
+                id="web"
                 role="tabpanel"
                 aria-labelledby="web-tab"
                 tabindex="0"
@@ -2528,44 +2553,7 @@
         </div>
       </div>
     </div>
-    <!-- HAMLIB ADVANCED SETTINGS MODAL -->
-    <div
-      class="modal fade"
-      data-bs-backdrop="static"
-      tabindex="-1"
-      id="advancedHamlibSettingsModal"
-    >
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Hamlib advanced settings</h5>
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body"></div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              id="testHamlibAdvanced"
-              class="btn btn-sm btn-outline-secondary"
-            >
-              Test settings
-            </button>
-            <button
-              type="button"
-              class="btn btn-sm btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <!-- info modal -->
     <!-- Modal -->
     <div
