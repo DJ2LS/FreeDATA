@@ -421,7 +421,6 @@ window.addEventListener("DOMContentLoaded", () => {
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
 
-
     document.getElementById("radio-control-network").style.visibility =
       "hidden";
     document.getElementById("radio-control-network").style.display = "none";
@@ -436,8 +435,6 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById(
       "radio-control-switch-rigctld-info"
     ).checked = false;
-
-
 
     document.getElementById("radio-control-network").style.display = "none";
     document.getElementById("radio-control-network").style.visibility =
@@ -519,12 +516,9 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.visibility =
         "visible";
 
-
-
       document.getElementById("radio-control-network").style.display = "none";
       document.getElementById("radio-control-network").style.visibility =
         "hidden";
-
 
       document.getElementById("radio-control-rigctld-info").style.visibility =
         "hidden";
@@ -534,8 +528,6 @@ window.addEventListener("DOMContentLoaded", () => {
       config.radiocontrol = "disabled";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-
-
 
   // // radio settings 'network' event listener
   document
