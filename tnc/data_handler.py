@@ -303,6 +303,10 @@ class DATA:
                 # [7] attempts
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
 
+            elif data[0] == "FEC":
+                # [1] DATA_OUT bytes
+                # [2] MODE str datac0/1/3...
+                self.send_fec_frame(data[1], data[2])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -3200,6 +3204,19 @@ class DATA:
             frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac3.value
         )
 
+    def send_fec_frame(self, mode, payload) -> None:
+        """Send an empty test frame"""
+
+        mode_int = codec2.freedv_get_mode_value_by_name(mode)
+        payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
+        fec_payload_length = payload_per_frame - 1
+
+        fec_frame = bytearray(payload_per_frame)
+        fec_frame[:1] = bytes([FR_TYPE.FEC.value])
+        fec_frame[1:payload_per_frame] = bytes(payload[:fec_payload_length])
+        self.enqueue_frame_for_tx(
+            frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE[mode].value
+        )
     def save_data_to_folder(self,
                             transmission_uuid,
                             timestamp,
