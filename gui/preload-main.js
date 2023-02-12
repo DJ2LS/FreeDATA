@@ -2775,7 +2775,7 @@ ipcRenderer.on(
   "action-show-arq-toast-transmission-transmitted",
   (event, data) => {
     console.log(data["data"][0]);
-    let content = `received cq from <strong>${dxcallsign}</strong> (${dxgrid})`;
+    //let content = `received cq from <strong>${dxcallsign}</strong> (${dxgrid})`;
     displayToast(
       (type = "success"),
       (icon = "bi-broadcast"),
