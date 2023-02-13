@@ -36,7 +36,8 @@
             role="group"
             aria-label="local-remote-switch toggle button group"
             data-bs-placement="bottom"
-            data-bs-toggle="tooltip"
+             data-bs-toggle="tooltip"
+             data-bs-trigger="hover"
             data-bs-html="true"
             title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
           >
@@ -114,7 +115,8 @@
           class="btn btn-sm btn-outline-danger"
           id="stop_transmission_connection"
           type="button"
-          data-bs-toggle="tooltip"
+           data-bs-toggle="tooltip"
+           data-bs-trigger="hover"
           data-bs-html="false"
           title="Abort session and stop transmissions"
         >
@@ -129,7 +131,8 @@
             type="button"
             id="startTNC"
             class="btn btn-sm btn-outline-success"
-            data-bs-toggle="tooltip"
+             data-bs-toggle="tooltip"
+             data-bs-trigger="hover"
             data-bs-html="false"
             title="Start the TNC. Please set your audio and radio settings first!"
           >
@@ -139,7 +142,8 @@
             type="button"
             id="stopTNC"
             class="btn btn-sm btn-outline-danger"
-            data-bs-toggle="tooltip"
+             data-bs-toggle="tooltip"
+             data-bs-trigger="hover"
             data-bs-html="false"
             title="Stop the TNC."
           >
@@ -153,7 +157,8 @@
             id="openRFChat"
             type="button"
             data-bs-placement="bottom"
-            data-bs-toggle="tooltip"
+             data-bs-toggle="tooltip"
+             data-bs-trigger="hover"
             data-bs-html="false"
             title="Open the HF chat module. This is currently just a test and not finished, yet!"
           >
@@ -228,7 +233,7 @@
       <!--
 	<div class="btn-toolbar" role="toolbar">
 		
-<span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false"
+<span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false"
 			title="View the received files. This is currently under development!">
 			
 
@@ -236,12 +241,12 @@
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
 	   <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
 	   </button>
-	   </span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="false" title="Send files through HF. This is currently under development!">
+	   </span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false" title="Send files through HF. This is currently under development!">
 	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
 	   </button>
 	  
-		</span> <span data-bs-placement="bottom" data-bs-toggle="tooltip" data-bs-html="true"
+		</span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="true"
 			title="Settings and Info">
 
 		</span>
@@ -444,7 +449,8 @@
                       id="testHamlib"
                       class="btn btn-sm btn-outline-secondary"
                       data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       data-bs-html="true"
                       title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
                     >
@@ -483,7 +489,8 @@
                     <div
                       class="input-group input-group-sm mb-0"
                       data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       data-bs-html="false"
                       title="Enter your callsign and save it"
                     >
@@ -532,7 +539,8 @@
                     <div
                       class="input-group input-group-sm mb-0"
                       data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       data-bs-html="false"
                       title="Enter your gridsquare and save it"
                     >
@@ -726,7 +734,8 @@
                         id="sendPing"
                         type="button"
                         data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
+                         data-bs-toggle="tooltip"
+                         data-bs-trigger="hover"
                         data-bs-html="false"
                         title="Send a ping request to a remote station"
                       >
@@ -737,7 +746,8 @@
                         id="openARQSession"
                         type="button"
                         data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
+                         data-bs-toggle="tooltip"
+                         data-bs-trigger="hover"
                         data-bs-html="false"
                         title="connect to a remote station"
                       >
@@ -751,7 +761,8 @@
                         id="closeARQSession"
                         type="button"
                         data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
+                         data-bs-toggle="tooltip"
+                         data-bs-trigger="hover"
                         data-bs-html="false"
                         title="disconnect from a remote station"
                       >
@@ -766,7 +777,8 @@
                     <div
                       class="input-group input-group-sm mb-0"
                       data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       data-bs-html="false"
                       title="Send a CQ to the world"
                     >
@@ -783,7 +795,8 @@
                     <div
                       class="input-group input-group-sm"
                       data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
                       data-bs-html="false"
                       title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
                     >
@@ -854,7 +867,8 @@
                   id="channel_busy"
                   type="button"
                   data-bs-placement="top"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="true"
                   title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
                 >
@@ -1178,7 +1192,8 @@
                 id="ptt_state"
                 type="button"
                 data-bs-placement="top"
-                data-bs-toggle="tooltip"
+                 data-bs-toggle="tooltip"
+                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"
               >
@@ -1194,7 +1209,8 @@
                 id="busy_state"
                 type="button"
                 data-bs-placement="top"
-                data-bs-toggle="tooltip"
+                 data-bs-toggle="tooltip"
+                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
               >
@@ -1210,7 +1226,8 @@
                 id="arq_session"
                 type="button"
                 data-bs-placement="top"
-                data-bs-toggle="tooltip"
+                 data-bs-toggle="tooltip"
+                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
               >
@@ -1226,7 +1243,8 @@
                 id="arq_state"
                 type="button"
                 data-bs-placement="top"
-                data-bs-toggle="tooltip"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover" 
                 data-bs-html="true"
                 title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"
               >
@@ -1242,7 +1260,8 @@
                 id="rigctld_state"
                 type="button"
                 data-bs-placement="top"
-                data-bs-toggle="tooltip"
+                 data-bs-toggle="tooltip"
+                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="rigctld state: <strong class='text-success'>CONNECTED</strong> / <strong class='text-secondary'>UNKNOWN</strong>"
               >
@@ -1285,7 +1304,8 @@
                     id="saveFrequency"
                     type="button"
                     data-bs-placement="bottom"
-                    data-bs-toggle="tooltip"
+                     data-bs-toggle="tooltip"
+                     data-bs-trigger="hover"
                     data-bs-html="false"
                     title="save frequency"
                   >
@@ -1312,7 +1332,8 @@
                   type="button"
                   class="btn btn-sm btn-secondary"
                   data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set FM"
                   id="saveModeFM"
@@ -1323,7 +1344,8 @@
                   type="button"
                   class="btn btn-sm btn-secondary"
                   data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set AM"
                   type="button"
@@ -1335,7 +1357,8 @@
                   type="button"
                   class="btn btn-sm btn-secondary"
                   data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set LSB"
                   type="button"
@@ -1348,7 +1371,8 @@
                   type="button"
                   class="btn btn-sm btn-secondary"
                   data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set USB"
                   type="button"
@@ -1360,7 +1384,8 @@
                   type="button"
                   class="btn btn-sm btn-secondary"
                   data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
+                   data-bs-toggle="tooltip"
+                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set PKTUSB"
                   type="button"
@@ -1398,7 +1423,8 @@
             <span
               class="input-group-text"
               data-bs-placement="bottom"
-              data-bs-toggle="tooltip"
+               data-bs-toggle="tooltip"
+               data-bs-trigger="hover"
               data-bs-html="false"
               title="actual speed level"
             >
@@ -1418,21 +1444,24 @@
               class="input-group-text"
               id="total_bytes"
               data-bs-placement="bottom"
-              data-bs-toggle="tooltip"
+               data-bs-toggle="tooltip"
+               data-bs-trigger="hover"
               data-bs-html="false"
               title="total bytes processed"
               >---</span
             >
             <span
               class="input-group-text"
-              data-bs-toggle="tooltip"
+               data-bs-toggle="tooltip"
+               data-bs-trigger="hover"
               title="Indicates if a session is active"
               ><span class="bi bi-chat-fill" id="spnConnectedWith"></span
             ></span>
             <span
               class="input-group-text"
               id="txtConnectedWith"
-              data-bs-toggle="tooltip"
+               data-bs-toggle="tooltip"
+               data-bs-trigger="hover"
               title="Connected with"
               >------</span
             >
@@ -2474,7 +2503,8 @@
                       style="font-size: 1.5rem"
                       class="btn bi bi-bookmarks"
                       id="fdWww"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       title="FreeDATA website"
                       role="button"
                     ></i>
@@ -2484,7 +2514,8 @@
                       style="font-size: 1.5rem"
                       class="btn bi bi-github"
                       id="ghUrl"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       title="Github"
                       role="button"
                     ></i>
@@ -2494,7 +2525,8 @@
                       style="font-size: 1.5rem"
                       class="btn bi bi-wikipedia"
                       id="wikiUrl"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       title="Wiki"
                       role="button"
                     ></i>
@@ -2504,7 +2536,8 @@
                       style="font-size: 1.5rem"
                       class="btn bi bi-envelope-at"
                       id="groupsioUrl"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       title="Groups.io"
                       role="button"
                     ></i>
@@ -2514,7 +2547,8 @@
                       style="font-size: 1.5rem"
                       class="btn bi bi-discord"
                       id="discordUrl"
-                      data-bs-toggle="tooltip"
+                       data-bs-toggle="tooltip"
+                       data-bs-trigger="hover"
                       title="Discord"
                       role="button"
                     ></i>
