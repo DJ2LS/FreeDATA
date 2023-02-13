@@ -534,6 +534,11 @@ ipcMain.on("save-file-to-folder", (event, data) => {
 
 //tnc messages START --------------------------------------
 
+// FEC iswriting received
+ipcMain.on("request-show-fec-toast-iswriting", (event, data) => {
+  win.webContents.send("action-show-fec-toast-iswriting", data);
+});
+
 // CQ TRANSMITTING
 ipcMain.on("request-show-cq-toast-transmitting", (event, data) => {
   win.webContents.send("action-show-cq-toast-transmitting", data);

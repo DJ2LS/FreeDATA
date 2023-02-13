@@ -2574,7 +2574,17 @@ ipcRenderer.on("action-show-cq-toast-transmitting", (event, data) => {
     (duration = 5000)
   );
 });
-
+// fec iswriting received
+ipcRenderer.on("action-show-fec-toast-iswriting", (event, data) => {
+  let dxcallsign = data["data"][0]["dxcallsign"];
+  let content = `${dxcallsign}</strong> is typing`;
+  displayToast(
+    (type = "success"),
+    (icon = "bi-pencil-fill"),
+    (content = content),
+    (duration = 5000)
+  );
+});
 // CQ RECEIVED
 ipcRenderer.on("action-show-cq-toast-received", (event, data) => {
   let dxcallsign = data["data"][0]["dxcallsign"];
