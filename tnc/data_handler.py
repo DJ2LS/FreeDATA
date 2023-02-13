@@ -1175,13 +1175,15 @@ class DATA:
                 arqheader[1:2] = bytes([n_frames_per_burst])
                 arqheader[2:3] = self.session_id
 
-                bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
-
                 # only check for buffer position if at least one NACK received
                 print(self.irs_buffer_position)
                 if self.frame_nack_counter > 0:
                     if self.irs_buffer_position != bufferposition:
                         self.log.warning("[TNC] data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+                        bufferposition = self.irs_buffer_position
+
+                bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
+
 
                 # Normal condition
                 if bufferposition_end <= len(data_out):
