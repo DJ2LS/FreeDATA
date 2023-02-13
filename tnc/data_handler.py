@@ -2820,6 +2820,7 @@ class DATA:
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
         )
+
     def received_is_writing(self, data_in: bytes) -> None:
         """
         Called when we receive a IS WRITING frame
@@ -3274,7 +3275,7 @@ class DATA:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not static.CHANNEL_BUSY:
+        if not static.CHANNEL_BUSY and not static.TRANSMITTING:
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
             )
