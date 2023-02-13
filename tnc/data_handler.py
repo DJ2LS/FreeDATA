@@ -63,6 +63,7 @@ class DATA:
         self.arq_session_last_received = 0
         self.arq_session_timeout = 30
         self.session_connect_max_retries = 15
+        self.irs_buffer_position = 0
 
         # actual n retries of burst
         self.tx_n_retry_of_burst = 0
@@ -577,6 +578,9 @@ class DATA:
         nack_frame[1:2] = self.session_id
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
+        nack_frame[4:8] = len(static.RX_FRAME_BUFFER).to_bytes(4, byteorder="big")
+
+
 
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
@@ -1173,6 +1177,12 @@ class DATA:
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
+                # only check for buffer position if at least one NACK received
+                print(self.irs_buffer_position)
+                if self.frame_nack_counter > 0:
+                    if self.irs_buffer_position != bufferposition:
+                        self.log.warning("[TNC] data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+
                 # Normal condition
                 if bufferposition_end <= len(data_out):
                     frame = data_out[bufferposition:bufferposition_end]
@@ -1389,6 +1399,7 @@ class DATA:
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
                 self.burst_ack_snr = 'NaN'
+                self.irs_buffer_position = int.from_bytes(bytes(data_in[4:8]), "big")
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -2102,6 +2113,11 @@ class DATA:
 
         # stop processing if we don't want to respond to a call when not in a arq session
         if not static.RESPOND_TO_CALL and not static.ARQ_SESSION:
+            return False
+
+        # stop processing if not in arq session, but tnc state is busy and we have a different session id
+        # use-case we get a connection request while connecting to another station
+        if not static.ARQ_SESSION and static.TNC_STATE in ["BUSY"] and data_in[13:14] != self.session_id:
             return False
 
         self.arq_file_transfer = True
