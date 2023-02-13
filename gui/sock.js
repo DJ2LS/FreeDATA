@@ -235,7 +235,7 @@ client.on("data", function (socketdata) {
       if (data["freedata"] == "tnc-message") {
         switch (data["fec"]) {
           case "is_writing":
-            // CQ TRANSMITTING
+            // RX'd FECiswriting
             ipcRenderer.send("request-show-fec-toast-iswriting", {
               data: [data],
             });
