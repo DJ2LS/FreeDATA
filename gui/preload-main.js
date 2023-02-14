@@ -1900,7 +1900,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   // noise / strength
   // https://www.moellerstudios.org/converting-amplitude-representations/
-  if (noise_level_raw != arg.strength) {
+  
+  if (arg.strength != "" && noise_level_raw != arg.strength) {
+    //console.log(arg.strength);
     noise_level_raw = arg.strength;
     noise_level = Math.pow(10, arg.strength / 20) * 100;
 
