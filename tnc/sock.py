@@ -1015,6 +1015,7 @@ def send_tnc_state():
         "bandwidth": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
+        "is_codec2_traffic": str(static.IS_CODEC2_TRAFFIC),
         "scatter": static.SCATTER,
         "rx_buffer_length": str(RX_BUFFER.qsize()),
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
