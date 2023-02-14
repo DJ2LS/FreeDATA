@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 /*
 function connectWebSocket(spectrum) {
 //    var ws = new WebSocket("ws://" + window.location.host + "/websocket");
@@ -34,32 +34,29 @@ function connectWebSocket(spectrum) {
 */
 
 function main() {
-    // Create spectrum object on canvas with ID "waterfall"
-    var spectrum = new Spectrum(
-        "waterfall", {
-            spectrumPercent: 20
-    });
+  // Create spectrum object on canvas with ID "waterfall"
+  var spectrum = new Spectrum("waterfall", {
+    spectrumPercent: 20,
+  });
 
-    // Connect to websocket
-    //connectWebSocket(spectrum);
-   
-   
-//spectrum.setCenterHz("2000");
-//spectrum.setSpanHz("1");
+  // Connect to websocket
+  //connectWebSocket(spectrum);
 
-/*    
+  //spectrum.setCenterHz("2000");
+  //spectrum.setSpanHz("1");
+
+  /*    
 for (var i = 0; i < 1000; i++) {
     var randomstring = Math.floor(Math.random())
     spectrum.addData(randomstring.toString());
    // more statements
 }
 */
-  
 
-    // Bind keypress handler
-    window.addEventListener("keydown", function (e) {
-        spectrum.onKeypress(e);
-    });
+  // Bind keypress handler
+  window.addEventListener("keydown", function (e) {
+    spectrum.onKeypress(e);
+  });
 }
 
 window.onload = main;

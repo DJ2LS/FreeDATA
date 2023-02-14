@@ -190,6 +190,8 @@ class DAEMON:
         # hamlib_version = rig.hamlib_version
 
         hamlib.set_ptt(True)
+        #Allow a little time for network based rig to register PTT is active
+        time.sleep(.250);
         if hamlib.get_ptt():
             self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
             response = {"command": "test_hamlib", "result": "SUCCESS"}

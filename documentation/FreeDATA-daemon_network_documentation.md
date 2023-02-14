@@ -1,21 +1,25 @@
-# FreeDATA - DAEMON network documentation 
-
+# FreeDATA - DAEMON network documentation
 
 ## GET DAEMON STATE
+
 #### Description:
+
 Get the current daemon state
 
 #### Parameters
-- Type: GET 
+
+- Type: GET
 - Command: DAEMON_STATE
 - Parameter: --- (str)
 
-#### Example 
+#### Example
+
 ```
 {"type" : "GET", "command" : "DAEMON_STATE"}
 ```
 
 #### Returns
+
 ```
 {
 	"COMMAND": "DAEMON_STATE",
@@ -24,67 +28,74 @@ Get the current daemon state
 	"HAMLIB_VERSION": str(hamlib_version),
 	"INPUT_DEVICES": [],
 	"OUTPUT_DEVICES": [],
-	"SERIAL_DEVICES": [], 
-	"CPU": "", 
-	"RAM": "", 
+	"SERIAL_DEVICES": [],
+	"CPU": "",
+	"RAM": "",
 	"VERSION": "0.1-prototype"
 }
 ```
 
-
 ## SET CALLSIGN
+
 #### Description:
+
 Save your callsign to the daemon
 
 #### Parameters
-- Type: SET 
+
+- Type: SET
 - Command: MYCALLSIGN
 - Parameter: callsign (str)
 - timestamp: unix timestamp (str)
 
-#### Example 
+#### Example
+
 ```
 {"type" : "SET", "command": "MYCALLSIGN" , "parameter": "<callsign>", "timestamp" : "123456789"}
 ```
 
-
-
 ## SET GRIDSQUARE
+
 #### Description:
+
 Save your gridsquare/maidenhead-locator to the daemon
 
 #### Parameters
-- Type: SET 
+
+- Type: SET
 - Command: MYGRID
 - Parameter: gridsquare (str)
 - timestamp: unix timestamp (str)
 
-#### Example 
+#### Example
+
 ```
 {"type" : "SET", "command": "MYGRID" , "parameter": "<gridsquare>", "timestamp" : "123456789"}
 ```
 
-
-
 ## TEST HAMLIB
+
 #### Description:
+
 Test your hamlib settings
 
 #### Parameters
-- Type: GET 
+
+- Type: GET
 - Command: TEST_HAMLIB
 - Parameter: obj
-	- devicename
-	- deviceport
-	- pttprotocol
-	- pttport
-	- serialspeed
-	- data_bits
-	- stop_bits
-	- handshake
+  - devicename
+  - deviceport
+  - pttprotocol
+  - pttport
+  - serialspeed
+  - data_bits
+  - stop_bits
+  - handshake
 - timestamp: unix timestamp (str)
 
-#### Example 
+#### Example
+
 ```
 {
         "type": "GET",
@@ -102,29 +113,32 @@ Test your hamlib settings
     }
 ```
 
-
 ## START TNC
+
 #### Description:
+
 Start the tnc process
 
 #### Parameters
-- Type: GET 
+
+- Type: GET
 - Command: TEST_HAMLIB
 - Parameter: obj
-	- mycall
-	- mygrid
-	- rx_audio
-	- tx_audio
-	- devicename
-	- deviceport
-	- pttprotocol
-	- pttport
-	- serialspeed
-	- data_bits
-	- stop_bits
-	- handshake
+  - mycall
+  - mygrid
+  - rx_audio
+  - tx_audio
+  - devicename
+  - deviceport
+  - pttprotocol
+  - pttport
+  - serialspeed
+  - data_bits
+  - stop_bits
+  - handshake
 
-#### Example 
+#### Example
+
 ```
 {
         type: 'SET',
@@ -148,23 +162,19 @@ Start the tnc process
 ```
 
 ## STOP TNC
+
 #### Description:
+
 Stop the tnc process
 
 #### Parameters
-- Type: SET 
+
+- Type: SET
 - Command: STOPTNC
 - Parameter: ---
 
-#### Example 
+#### Example
+
 ```
 {"type" : "SET", "command": "STOPTNC" , "parameter": "---" }
 ```
-
-
-
-
-    
-    
-    
-    
