@@ -472,7 +472,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
 });
 
 //Render is typing message in correct chat window
-ipcRenderer.on("action-show-feciswriting",(event,arg) => {
+ipcRenderer.on("action-show-feciswriting", (event, arg) => {
   //console.log("In action-show-feciswriting");
   //console.log(arg);
   let uuid = uuidv4.toString();
@@ -494,19 +494,19 @@ ipcRenderer.on("action-show-feciswriting",(event,arg) => {
   let animIcon = document.getElementById("msg-" + uuid + "-icon");
   //Remove notification after about 4.5 seconds hopefully enough time before a second notification can come in
   setTimeout(function () {
-    animIcon.classList="m-1 bi bi-wifi-2";
+    animIcon.classList = "m-1 bi bi-wifi-2";
   }, 1000);
   setTimeout(function () {
-    animIcon.classList="m-1 bi bi-wifi";
+    animIcon.classList = "m-1 bi bi-wifi";
   }, 2000);
   setTimeout(function () {
-    animIcon.classList="m-1 bi bi-wifi-2";
+    animIcon.classList = "m-1 bi bi-wifi-2";
   }, 3000);
   setTimeout(function () {
-    animIcon.classList="m-1 bi bi-wifi-1";
+    animIcon.classList = "m-1 bi bi-wifi-1";
   }, 4000);
   setTimeout(() => {
-    let feciw = document.getElementById("msg-" + uuid)
+    let feciw = document.getElementById("msg-" + uuid);
     feciw.remove();
   }, 4500);
 });

@@ -537,7 +537,7 @@ ipcMain.on("save-file-to-folder", (event, data) => {
 // FEC iswriting received
 ipcMain.on("request-show-fec-toast-iswriting", (event, data) => {
   //win.webContents.send("action-show-fec-toast-iswriting", data);
-  chat.webContents.send('action-show-feciswriting',data);
+  chat.webContents.send("action-show-feciswriting", data);
 });
 
 // CQ TRANSMITTING
