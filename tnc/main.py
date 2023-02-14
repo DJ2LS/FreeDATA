@@ -220,6 +220,30 @@ if __name__ == "__main__":
         action="store_true",
         help="Enable publishing stats to https://freedata.app",
     )
+
+    PARSER.add_argument(
+        "--tci",
+        dest="audio_enable_tci",
+        action="store_true",
+        help="Enable TCI as audio source",
+    )
+
+    PARSER.add_argument(
+        "--tci-ip",
+        dest="tci_ip",
+        default='127.0.0.1',
+        type=str,
+        help="Set tci destination ip",
+    )
+
+    PARSER.add_argument(
+        "--tci-port",
+        dest="tci_port",
+        default=9000,
+        type=int,
+        help="Set tci destination port",
+    )
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -270,6 +294,9 @@ if __name__ == "__main__":
             static.ENABLE_EXPLORER = ARGS.enable_explorer
             static.AUDIO_AUTO_TUNE = ARGS.enable_audio_auto_tune
             static.ENABLE_STATS = ARGS.enable_stats
+            static.AUDIO_ENABLE_TCI = ARGS.audio_enable_tci
+            static.TCI_IP = ARGS.tci_ip
+            static.TCI_PORT = ARGS.tci_port
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -317,6 +344,9 @@ if __name__ == "__main__":
             static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
             static.AUDIO_AUTO_TUNE = config['AUDIO']['auto_tune'] in ["True", "true", True]
             static.ENABLE_STATS = config['TNC']['stats'] in ["True", "true", True]
+            static.AUDIO_ENABLE_TCI = config['AUDIO']['enable_tci'] in ["True", "true", True]
+            static.TCI_IP = str(config['AUDIO']['tci_ip'])
+            static.TCI_PORT = int(config['AUDIO']['tci_port'])
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))

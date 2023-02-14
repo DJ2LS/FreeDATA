@@ -81,6 +81,12 @@ AUDIO_RECORD: bool = False
 AUDIO_RECORD_FILE = ''
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 AUDIO_AUTO_TUNE: bool = False
+# Audio TCI Support
+AUDIO_ENABLE_TCI: bool = False
+TCI_IP: str = '127.0.0.1'
+TCI_PORT: int = '9000'
+
+
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]

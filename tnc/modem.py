@@ -153,7 +153,7 @@ class RF:
         self.freedv_datac1_tx = open_codec2_instance(10)
         self.freedv_datac3_tx = open_codec2_instance(12)
         # --------------------------------------------CREATE PYAUDIO INSTANCE
-        if not TESTMODE:
+        if not TESTMODE and not static.AUDIO_ENABLE_TCI:
             try:
                 self.stream = sd.RawStream(
                     channels=1,
@@ -175,11 +175,40 @@ class RF:
                 self.stream.start()
             except Exception as err:
                 self.log.error("[MDM] init: starting pyaudio callback failed", e=err)
+
+        elif not TESTMODE and static.AUDIO_ENABLE_TCI:
+            # placeholder area for processing audio via TCI
+            # https://github.com/maksimus1210/TCI
+            self.log.debug("[MDM] [TCI] Not yet implemented", ip=static.TCI_IP, port=static.TCI_PORT)
+            # we are trying this by simulating an audio stream Object like with mkfifo
+            class Object:
+                """An object for simulating audio stream"""
+                active = True
+
+            self.stream = Object()
+
+            # let's start the audio rx callback
+            self.log.debug("[MDM] Starting tci rx callback thread")
+            tci_rx_callback_thread = threading.Thread(
+                target=self.tci_rx_callback,
+                name="TCI RX CALLBACK THREAD",
+                daemon=True,
+            )
+            tci_rx_callback_thread.start()
+
+            # let's start the audio tx callback
+            self.log.debug("[MDM] Starting tci tx callback thread")
+            tci_tx_callback_thread = threading.Thread(
+                target=self.tci_tx_callback,
+                name="TCI TX CALLBACK THREAD",
+                daemon=True,
+            )
+            tci_tx_callback_thread.start()
+
         else:
 
             class Object:
                 """An object for simulating audio stream"""
-
                 active = True
 
             self.stream = Object()
@@ -286,6 +315,52 @@ class RF:
         worker_transmit.start()
 
     # --------------------------------------------------------------------------------------------------------
+    def tci_tx_callback(self) -> None:
+        """
+        Callback for TCI TX
+        """
+        while True:
+            threading.Event().wait(0.01)
+
+            # -----write
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
+                data_out48k = self.modoutqueue.popleft()
+
+
+    def tci_rx_callback(self) -> None:
+        """
+        Callback for TCI RX
+
+        data_in48k must be filled with 48000Hz audio raw data
+
+        """
+
+        while True:
+            threading.Event().wait(0.01)
+
+            # generate random audio data
+            data_in48k = np.random.uniform(-1, 1, 48000)
+
+            x = np.frombuffer(data_in48k, dtype=np.int16)
+            x = self.resampler.resample48_to_8(x)
+
+            self.fft_data = x
+
+            length_x = len(x)
+            for data_buffer, receive in [
+                (self.sig0_datac0_buffer, RECEIVE_SIG0),
+                (self.sig1_datac0_buffer, RECEIVE_SIG1),
+                (self.dat0_datac1_buffer, RECEIVE_DATAC1),
+                (self.dat0_datac3_buffer, RECEIVE_DATAC3),
+            ]:
+                if (
+                        not (data_buffer.nbuffer + length_x) > data_buffer.size
+                        and receive
+                ):
+                    data_buffer.push(x)
+
+
+
     def mkfifo_read_callback(self) -> None:
         """
         Support testing by reading the audio data from a pipe and
