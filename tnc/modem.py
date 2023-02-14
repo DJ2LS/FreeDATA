@@ -95,55 +95,55 @@ class RF:
         # DATAC0
         # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
         self.sig0_datac0_freedv, \
-            self.sig0_datac0_bytes_per_frame, \
-            self.sig0_datac0_bytes_out, \
-            self.sig0_datac0_buffer, \
-            self.sig0_datac0_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
+                self.sig0_datac0_bytes_per_frame, \
+                self.sig0_datac0_bytes_out, \
+                self.sig0_datac0_buffer, \
+                self.sig0_datac0_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
         # DATAC0
         # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
         self.sig1_datac0_freedv, \
-            self.sig1_datac0_bytes_per_frame, \
-            self.sig1_datac0_bytes_out, \
-            self.sig1_datac0_buffer, \
-            self.sig1_datac0_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
+                self.sig1_datac0_bytes_per_frame, \
+                self.sig1_datac0_bytes_out, \
+                self.sig1_datac0_buffer, \
+                self.sig1_datac0_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
         # DATAC1
         self.dat0_datac1_freedv, \
-            self.dat0_datac1_bytes_per_frame, \
-            self.dat0_datac1_bytes_out, \
-            self.dat0_datac1_buffer, \
-            self.dat0_datac1_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
+                self.dat0_datac1_bytes_per_frame, \
+                self.dat0_datac1_bytes_out, \
+                self.dat0_datac1_buffer, \
+                self.dat0_datac1_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
 
         # DATAC3
         self.dat0_datac3_freedv, \
-            self.dat0_datac3_bytes_per_frame, \
-            self.dat0_datac3_bytes_out, \
-            self.dat0_datac3_buffer, \
-            self.dat0_datac3_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
+                self.dat0_datac3_bytes_per_frame, \
+                self.dat0_datac3_bytes_out, \
+                self.dat0_datac3_buffer, \
+                self.dat0_datac3_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
 
         # FSK LDPC - 0
         self.fsk_ldpc_freedv_0, \
-            self.fsk_ldpc_bytes_per_frame_0, \
-            self.fsk_ldpc_bytes_out_0, \
-            self.fsk_ldpc_buffer_0, \
-            self.fsk_ldpc_nin_0 = \
-            self.init_codec2_mode(
+                self.fsk_ldpc_bytes_per_frame_0, \
+                self.fsk_ldpc_bytes_out_0, \
+                self.fsk_ldpc_buffer_0, \
+                self.fsk_ldpc_nin_0 = \
+                self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
                 codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
             )
 
         # FSK LDPC - 1
         self.fsk_ldpc_freedv_1, \
-            self.fsk_ldpc_bytes_per_frame_1, \
-            self.fsk_ldpc_bytes_out_1, \
-            self.fsk_ldpc_buffer_1, \
-            self.fsk_ldpc_nin_1 = \
-            self.init_codec2_mode(
+                self.fsk_ldpc_bytes_per_frame_1, \
+                self.fsk_ldpc_bytes_out_1, \
+                self.fsk_ldpc_buffer_1, \
+                self.fsk_ldpc_nin_1 = \
+                self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
@@ -176,7 +176,7 @@ class RF:
             except Exception as err:
                 self.log.error("[MDM] init: starting pyaudio callback failed", e=err)
 
-        elif not TESTMODE and static.AUDIO_ENABLE_TCI:
+        elif not TESTMODE:
             # placeholder area for processing audio via TCI
             # https://github.com/maksimus1210/TCI
             self.log.debug("[MDM] [TCI] Not yet implemented", ip=static.TCI_IP, port=static.TCI_PORT)
