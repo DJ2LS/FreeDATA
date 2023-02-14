@@ -64,6 +64,8 @@ const hamlib_elements = [
 // this is an attempt of reducing CPU LOAD
 // we are going to check if we have unequal values before we start calculating again
 var dbfs_level_raw = 0;
+var noise_level_raw = 0;
+
 
 //Global version variable
 var appVer = null;
@@ -1881,6 +1883,19 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
   }
 
+  // noise / strength
+  // https://www.moellerstudios.org/converting-amplitude-representations/
+  if (noise_level_raw != arg.strength) {
+    noise_level_raw = arg.strength;
+    noise_level = Math.pow(10, arg.strength / 20) * 100;
+
+    document.getElementById("noise_level_value").textContent =
+      Math.round(arg.strength) + " dB";
+    var noisecntrl = document.getElementById("noise_level");
+    noisecntrl.setAttribute("aria-valuenow", noise_level);
+    noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
+  }
+
   // SET FREQUENCY
   // https://stackoverflow.com/a/2901298
   var freq = arg.frequency.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -3006,12 +3021,16 @@ function set_CPU_mode() {
   if (config.high_graphics.toUpperCase() == "FALSE") {
     toggleClass("dbfs_level", "disable-effects", true);
     toggleClass("dbfs_level", "progress-bar-striped", false);
+    toggleClass("noise_level", "disable-effects", true);
+    toggleClass("noise_level", "progress-bar-striped", false);
     toggleClass("waterfall", "disable-effects", true);
     toggleClass("transmission_progress", "disable-effects", true);
     toggleClass("transmission_progress", "progress-bar-striped", false);
   } else {
     toggleClass("dbfs_level", "disable-effects", false);
     toggleClass("dbfs_level", "progress-bar-striped", true);
+    toggleClass("noise_level", "disable-effects", false);
+    toggleClass("noise_level", "progress-bar-striped", true);
     toggleClass("waterfall", "disable-effects", false);
     toggleClass("transmission_progress", "disable-effects", false);
     toggleClass("transmission_progress", "progress-bar-striped", true);
