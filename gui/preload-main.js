@@ -1889,7 +1889,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     noise_level = Math.pow(10, arg.strength / 20) * 100;
 
     document.getElementById("noise_level_value").textContent =
-      Math.round(arg.strength) + " dB";
+      Math.round(arg.strength) + " dB (S-Meter)";
     var noisecntrl = document.getElementById("noise_level");
     noisecntrl.setAttribute("aria-valuenow", noise_level);
     noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
