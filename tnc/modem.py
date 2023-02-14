@@ -25,6 +25,7 @@ import sounddevice as sd
 import static
 import structlog
 import ujson as json
+import tci
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
 
 TESTMODE = False
@@ -184,8 +185,13 @@ class RF:
             class Object:
                 """An object for simulating audio stream"""
                 active = True
-
             self.stream = Object()
+
+            # lets init TCI module
+            self.tci_module = tci.TCI()
+
+            # lets open TCI radio
+            self.tci_module.open_rig(static.TCI_IP, static.TCI_PORT)
 
             # let's start the audio rx callback
             self.log.debug("[MDM] Starting tci rx callback thread")
@@ -325,6 +331,7 @@ class RF:
             # -----write
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 data_out48k = self.modoutqueue.popleft()
+                self.tci_module.push_audio(data_out48k)
 
 
     def tci_rx_callback(self) -> None:
@@ -338,9 +345,7 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
-            # generate random audio data
-            data_in48k = np.random.uniform(-1, 1, 48000)
-
+            data_in48k = self.tci_module.get_audio()
             x = np.frombuffer(data_in48k, dtype=np.int16)
             x = self.resampler.resample48_to_8(x)
 

@@ -182,7 +182,7 @@ class radio:
                 while recv:
                     try:
 
-                        data = self.data_connection.recv(64)
+                        data = self.data_connection.recv(4800)
 
                     except socket.timeout:
                         recv = False
