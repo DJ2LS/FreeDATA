@@ -478,8 +478,8 @@ ipcRenderer.on("action-show-feciswriting", (event, arg) => {
   let uuid = uuidv4.toString();
   let dxcallsign = arg["data"][0]["dxcallsign"];
   var new_message = `
-            <div class="m-auto mt-1 p-0 w-25 rounded bg-info bg-gradient" id="msg-${uuid}">         
-                <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-1 bi bi-pencil"></i><i id="msg-${uuid}-icon" class="m-1 bi bi-wifi-1"></i>${dxcallsign} is typing....</p>
+            <div class="m-auto mt-1 p-0 w-25 rounded bg-secondary bg-gradient" id="msg-${uuid}">
+                <p class="text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-1 bi bi-pencil"></i><i id="msg-${uuid}-icon" class="m-1 bi bi-wifi-1"></i>${dxcallsign} is typing....</p>
                 
             </div>
         `;
