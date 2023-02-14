@@ -66,7 +66,6 @@ const hamlib_elements = [
 var dbfs_level_raw = 0;
 var noise_level_raw = 0;
 
-
 //Global version variable
 var appVer = null;
 
