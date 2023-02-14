@@ -88,7 +88,8 @@ const configDefaultSettings =
                   "wftheme": 2, \
                   "high_graphics" : "True",\
                   "explorer_stats" : "False", \
-                  "auto_tune" : "False" \
+                  "auto_tune" : "False", \
+                  "enable_is_writing" : "True" \
                   }';
 
 if (!fs.existsSync(configPath)) {

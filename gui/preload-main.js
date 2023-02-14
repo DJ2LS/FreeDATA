@@ -242,6 +242,12 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("scatterSwitch").checked = false;
   }
 
+  if (config.enable_is_writing == "True") {
+    document.getElementById("enable_is_writing").checked = true;
+  } else {
+    document.getElementById("enable_is_writing").checked = false;
+  }
+
   if (config.enable_fft == "True") {
     document.getElementById("fftSwitch").checked = true;
   } else {
@@ -996,6 +1002,16 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_fsk = "True";
     } else {
       config.enable_fsk = "False";
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  });
+
+  // enable is writing switch clicked
+  document.getElementById("enable_is_writing").addEventListener("click", () => {
+    if (document.getElementById("enable_is_writing").checked == true) {
+      config.enable_is_writing = "True";
+    } else {
+      config.enable_is_writing = "False";
     }
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   });

@@ -272,7 +272,10 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log(textarea.value);
     if (lastIsWritingBroadcast < new Date().getTime() - 5 * 1000) {
       //console.log("Sending FECIsWriting");
-      ipcRenderer.send("tnc-fec-iswriting");
+      console.log(config.enable_is_writing)
+      if(config.enable_is_writing == "True"){
+        ipcRenderer.send("tnc-fec-iswriting");
+      }
       lastIsWritingBroadcast = new Date().getTime();
     }
   });
