@@ -725,7 +725,7 @@
                           class="justify-content-center d-flex position-absolute w-100"
                           id="dbfs_level_value"
                         >
-                          dBFS
+                          dBFS (Audio Level)
                         </p>
                       </div>
                       <div class="progress mb-0" style="height: 5px">
@@ -1644,6 +1644,20 @@
               <li class="nav-item" role="presentation">
                 <button
                   class="nav-link"
+                  id="chat-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#chat"
+                  type="button"
+                  role="tab"
+                  aria-controls="home"
+                  aria-selected="true"
+                >
+                  Chat
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
                   id="hamlib-tab"
                   data-bs-toggle="tab"
                   data-bs-target="#hamlib"
@@ -1694,7 +1708,7 @@
                   aria-controls="settings"
                   aria-selected="false"
                 >
-                  Experimental
+                  Exp
                 </button>
               </li>
             </ul>
@@ -1794,6 +1808,16 @@
                   </select>
                 </div>
               </div>
+
+                            <div
+                class="tab-pane"
+                id="chat"
+                role="tabpanel"
+                aria-labelledby="chat-tab"
+                tabindex="0"
+              >
+                              ....
+                              </div>
               <!--Rigctl tab contents-->
               <div
                 class="tab-pane"

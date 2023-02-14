@@ -1876,7 +1876,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100;
 
     document.getElementById("dbfs_level_value").textContent =
-      Math.round(arg.dbfs_level) + " dBFS";
+      Math.round(arg.dbfs_level) + " dBFS (Audio Level)";
     var dbfscntrl = document.getElementById("dbfs_level");
     dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
     dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
