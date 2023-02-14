@@ -1,7 +1,7 @@
-
 # Unit Test Menu
 
 The following `CTest` tests cover some TNC functionality and the interface to codec2:
+
 1. Name: `audio_buffer`
    Tests the thread safety of the audio buffer routines.
 1. Name: `resampler`
@@ -32,6 +32,7 @@ The following `CTest` tests cover some TNC functionality and the interface to co
 The following tests can not currently be run with GitHub's pipeline as they require the ALSA dummy device
 kernel module to be installed. They also do not perform reliably. These tests are slowly being
 replaced with equivalent pipeline-compatible tests.
+
 1. Name: `highsnr_virtual1_P_P_single_alsa`
    Tests a high signal-to-noise ratio audio path using a single codec directly over an ALSA dummy device.
 1. Name: `highsnr_virtual2_P_P_single`
@@ -46,7 +47,6 @@ replaced with equivalent pipeline-compatible tests.
 1. Name: `highsnr_virtual5_P_P_multi_callback`
 1. Name: `highsnr_virtual5_P_P_multi_callback_outside`
 
-
 # Instructions
 
 1. Install:
@@ -57,6 +57,7 @@ replaced with equivalent pipeline-compatible tests.
    cmake -DCODEC2_BUILD_DIR=$HOME/codec2/build_linux ..
    ```
 2. List available tests:
+
    ```
    ctest -N
    Test project /home/david/FreeDATA/build
@@ -65,6 +66,7 @@ replaced with equivalent pipeline-compatible tests.
 
    Total Tests: 2
    ```
+
 3. Run tests:
    ```
    ctest --output-on-failure
@@ -77,7 +79,6 @@ replaced with equivalent pipeline-compatible tests.
    ```
    ctest -V
    ```
-
 
 # 001_HIGHSNR_STDIO_AUDIO TEST SUITE
 
@@ -103,18 +104,23 @@ python3 util_tx.py --mode datac1 --delay 500 --frames 2 --bursts 1 | python3 uti
 ```
 
 ## Moderate signal-to-noise ratio (SNR)
+
 Tests need to be written that test a low SNR data path so that the TNC performance when packets are lost can be evaluated.
 
 ## AUDIO test via virtual audio devices
+
 ### Important:
+
 The virtual audio devices are great for testing, but they are also a little tricky to handle. So there's a high chance, the tests will fail, if you are running them via virtual audio devices. You should run the tests several times, while keeping this in mind. Most time the ctest is working even if it is failing.
 
 1. Create virtual audio devices. Note: This command needs to be run again after every reboot
+
    ```
    sudo modprobe snd-aloop index=1,2 enable=1,1 pcm_substreams=1,1 id=CHAT1,CHAT2
    ```
 
 1. Check if devices have been created
+
    ```
     aplay -l
 
@@ -136,6 +142,7 @@ The virtual audio devices are great for testing, but they are also a little tric
    ```
 
 1. Determine the audio device number you would like to use:
+
    ```
    python3 util_rx.py --list
    <snip>
@@ -148,9 +155,11 @@ The virtual audio devices are great for testing, but they are also a little tric
    audiodev:  6 Loopback: PCM (hw:2,0)
    audiodev:  7 Loopback: PCM (hw:2,1)
    ```
+
    In this case we choose audiodev 4 for the RX and 5 for the Tx.
 
 1. Start the Rx first, then Tx in separate consoles:
    ```
    python3 util_rx.py --mode datac0 --frames 2 --bursts 1 --audiodev 4 --debug
    python3 util_tx.py --mode datac0 --frames 2 --bursts 1 --audiodev 5
+   ```
