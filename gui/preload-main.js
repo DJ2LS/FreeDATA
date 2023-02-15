@@ -1696,8 +1696,10 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     let snr = NaN;
     if (arg.speed_list[i].snr !== 0) {
       snr = arg.speed_list[i].snr;
+    } else {
+        snr = NaN;
     }
-    speedDataSnr.push(arg.speed_list[i].snr);
+    speedDataSnr.push(snr);
   }
 
   var speedChartConfig = {
