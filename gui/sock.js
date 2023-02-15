@@ -223,6 +223,7 @@ client.on("data", function (socketdata) {
           audio_recording: data["audio_recording"],
           speed_list: data["speed_list"],
           strength: data["strength"],
+          is_codec2_traffic: data["is_codec2_traffic"],
           //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
         };
 
