@@ -1723,7 +1723,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
         pointRadius: 1,
         segment: {
           borderColor: (speedCtx) =>
-            skipped(ctx, "rgb(0,0,0,0.4)") || down(speedCtx, "rgb(192,75,75)"),
+            skipped(speedCtx, "rgb(0,0,0,0.4)") || down(speedCtx, "rgb(192,75,75)"),
           borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
         },
         spanGaps: true,
