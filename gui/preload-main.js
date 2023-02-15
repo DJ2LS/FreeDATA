@@ -1722,9 +1722,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
         borderColor: "rgb(75, 192, 192, 1.0)",
         pointRadius: 1,
         segment: {
-          borderColor: (ctx) =>
-            skipped(ctx, "rgb(0,0,0,0.2)") || down(ctx, "rgb(192,75,75)"),
-          borderDash: (ctx) => skipped(ctx, [6, 6]),
+          borderColor: (speedCtx) =>
+            skipped(ctx, "rgb(0,0,0,0.4)") || down(speedCtx, "rgb(192,75,75)"),
+          borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
         },
         spanGaps: true,
         backgroundColor: "rgba(75, 192, 192, 0.2)",
