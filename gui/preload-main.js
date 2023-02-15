@@ -1693,6 +1693,10 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   var speedDataSnr = [];
   for (var i = 0; i < speed_listSize; i++) {
+    let snr = NaN;
+  	if(arg.speed_list[i].snr !== 0){
+  		snr = arg.speed_list[i].snr;
+  	}
     speedDataSnr.push(arg.speed_list[i].snr);
   }
 
