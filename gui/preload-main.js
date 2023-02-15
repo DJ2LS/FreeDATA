@@ -1,5 +1,5 @@
 const path = require("path");
-const { ipcRenderer, shell } = require("electron");
+const { ipcRenderer, shell, clipboard } = require("electron");
 const exec = require("child_process").spawn;
 const sock = require("./sock.js");
 const daemon = require("./daemon.js");
@@ -534,6 +534,20 @@ window.addEventListener("DOMContentLoaded", () => {
       config.radiocontrol = "rigctld";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
+    
+    document
+    .getElementById("btnHamlibCopyCommand")
+    .addEventListener("click", () => {
+      hamlib_params();
+      let rigctld = document.getElementById("hamlib_rigctld_path").value;
+      rigctld += " " + document.getElementById("hamlib_rigctld_command").value;
+      document.getElementById("btnHamlibCopyCommandBi").classList="bi bi-clipboard2-check-fill";
+      clipboard.writeText(rigctld);
+
+      setTimeout(function () {
+        document.getElementById("btnHamlibCopyCommandBi").classList="bi bi-clipboard";
+      }, 2000);
+    });
 
   document
     .getElementById("hamlib_rigctld_path")
@@ -547,6 +561,7 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("hamlib_rigctld_path").value = rigctldPath;
         config.hamlib_rigctld_path = rigctldPath;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        hamlib_params();
       });
     });
 
@@ -558,6 +573,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "hamlib_rigctld_server_port"
       ).value;
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      hamlib_params();
     });
 
   // hamlib bulk event listener for saving settings
@@ -567,6 +583,7 @@ window.addEventListener("DOMContentLoaded", () => {
         config[elem] = document.getElementById(elem).value;
         fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         console.log(config);
+        hamlib_params();
       });
     } catch (e) {
       console.log(e);
@@ -578,7 +595,16 @@ window.addEventListener("DOMContentLoaded", () => {
     .getElementById("hamlib_rigctld_start")
     .addEventListener("click", () => {
       var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
+      var paramList = hamlib_params();
+     
+      let Data = {
+        path: rigctldPath,
+        parameters: paramList,
+      };
+      ipcRenderer.send("request-start-rigctld", Data);
+    });
 
+    hamlib_params = function(){
       var paramList = [];
 
       var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
@@ -665,14 +691,11 @@ window.addEventListener("DOMContentLoaded", () => {
         paramList.join(" "); // join removes the commas
 
       console.log(paramList);
-      console.log(rigctldPath);
+      //console.log(rigctldPath);
+      return paramList;
 
-      let Data = {
-        path: rigctldPath,
-        parameters: paramList,
-      };
-      ipcRenderer.send("request-start-rigctld", Data);
-    });
+    }
+
   document
     .getElementById("hamlib_rigctld_stop")
     .addEventListener("click", () => {
@@ -1563,6 +1586,20 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   connectedStation(data);
 });
 
+//Just some stuff I want to experiment with - n1qm
+//https://gist.github.com/senseisimple/002cdba344de92748695a371cef0176a
+function signal_quality_perc_quad(rssi, perfect_rssi=10, worst_rssi=-150) {
+  nominal_rssi=(perfect_rssi - worst_rssi);
+  signal_quality = (100 * (perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi) - (perfect_rssi - rssi) * (15 * (perfect_rssi - worst_rssi) + 62 * (perfect_rssi - rssi))) / ((perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi));
+  
+  if (signal_quality > 100) {
+    signal_quality = 100;
+  } else if (signal_quality < 1) {
+    signal_quality = 0;
+  }
+  return Math.ceil(signal_quality);
+  }
+  
 var lastHeard = "";
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // update FFT
