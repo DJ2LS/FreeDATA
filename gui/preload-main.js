@@ -1697,7 +1697,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     if (arg.speed_list[i].snr !== 0) {
       snr = arg.speed_list[i].snr;
     } else {
-        snr = NaN;
+      snr = NaN;
     }
     speedDataSnr.push(snr);
   }
