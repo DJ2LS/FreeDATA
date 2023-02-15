@@ -1694,9 +1694,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   var speedDataSnr = [];
   for (var i = 0; i < speed_listSize; i++) {
     let snr = NaN;
-    if (arg.speed_list[i].snr !== 0) {
-      snr = arg.speed_list[i].snr;
-    }
+  	if(arg.speed_list[i].snr !== 0){
+  		snr = arg.speed_list[i].snr;
+  	}
     speedDataSnr.push(arg.speed_list[i].snr);
   }
 
@@ -1718,6 +1718,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
         label: "SNR[dB]",
         data: speedDataSnr,
         borderColor: "rgb(75, 192, 192, 1.0)",
+        pointRadius: 1,
         segment: {
           borderColor: (ctx) =>
             skipped(ctx, "rgb(0,0,0,0.2)") || down(ctx, "rgb(192,75,75)"),
@@ -1748,12 +1749,12 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     scales: {
       SNR: {
         type: "linear",
-        ticks: { beginAtZero: true, color: "rgb(255, 99, 132)" },
+        ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
         position: "right",
       },
       SPEED: {
         type: "linear",
-        ticks: { beginAtZero: true, color: "rgb(120, 100, 120)" },
+        ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
         position: "left",
         grid: {
           drawOnChartArea: false, // only want the grid lines for one axis to show up

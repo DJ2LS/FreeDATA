@@ -385,7 +385,7 @@ if __name__ == "__main__":
         log.error("[DMN] logger init error", exception=err)
 
     log.info(
-        "[TNC] Starting FreeDATA", author="DJ2LS", year="2022", version=static.VERSION
+        "[TNC] Starting FreeDATA", author="DJ2LS", version=static.VERSION
     )
 
     # start data handler
