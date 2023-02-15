@@ -450,7 +450,9 @@ ipcMain.on("get-file-path", (event, data) => {
       properties: ["openFile"],
     })
     .then((filePaths) => {
-      win.webContents.send("return-file-paths", { path: filePaths });
+      if (filePaths.canceled == false) {
+        win.webContents.send("return-file-paths", { path: filePaths });
+      }
     });
 });
 
@@ -463,7 +465,7 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-      win.webContents.send("return-folder-paths", { path: folderPaths });
+        win.webContents.send("return-folder-paths", { path: folderPaths });
     });
 });
 
