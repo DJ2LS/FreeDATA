@@ -534,18 +534,20 @@ window.addEventListener("DOMContentLoaded", () => {
       config.radiocontrol = "rigctld";
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     });
-    
-    document
+
+  document
     .getElementById("btnHamlibCopyCommand")
     .addEventListener("click", () => {
       hamlib_params();
       let rigctld = document.getElementById("hamlib_rigctld_path").value;
       rigctld += " " + document.getElementById("hamlib_rigctld_command").value;
-      document.getElementById("btnHamlibCopyCommandBi").classList="bi bi-clipboard2-check-fill";
+      document.getElementById("btnHamlibCopyCommandBi").classList =
+        "bi bi-clipboard2-check-fill";
       clipboard.writeText(rigctld);
 
       setTimeout(function () {
-        document.getElementById("btnHamlibCopyCommandBi").classList="bi bi-clipboard";
+        document.getElementById("btnHamlibCopyCommandBi").classList =
+          "bi bi-clipboard";
       }, 2000);
     });
 
@@ -596,7 +598,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
       var paramList = hamlib_params();
-     
+
       let Data = {
         path: rigctldPath,
         parameters: paramList,
@@ -604,97 +606,88 @@ window.addEventListener("DOMContentLoaded", () => {
       ipcRenderer.send("request-start-rigctld", Data);
     });
 
-    hamlib_params = function(){
-      var paramList = [];
+  hamlib_params = function () {
+    var paramList = [];
 
-      var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
-      paramList = paramList.concat("-m", hamlib_deviceid);
+    var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
+    paramList = paramList.concat("-m", hamlib_deviceid);
 
-      // hamlib deviceport setting
-      if (document.getElementById("hamlib_deviceport").value !== "ignore") {
-        var hamlib_deviceport =
-          document.getElementById("hamlib_deviceport").value;
-        paramList = paramList.concat("-r", hamlib_deviceport);
-      }
-
-      // hamlib serialspeed setting
-      if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
-        var hamlib_serialspeed =
-          document.getElementById("hamlib_serialspeed").value;
-        paramList = paramList.concat("-s", hamlib_serialspeed);
-      }
-
-      // hamlib databits setting
-      if (document.getElementById("hamlib_data_bits").value !== "ignore") {
-        var hamlib_data_bits =
-          document.getElementById("hamlib_data_bits").value;
-        paramList = paramList.concat(
-          "--set-conf=data_bits=" + hamlib_data_bits
-        );
-      }
-
-      // hamlib stopbits setting
-      if (document.getElementById("hamlib_stop_bits").value !== "ignore") {
-        var hamlib_stop_bits =
-          document.getElementById("hamlib_stop_bits").value;
-        paramList = paramList.concat(
-          "--set-conf=stop_bits=" + hamlib_stop_bits
-        );
-      }
-
-      // hamlib handshake setting
-      if (document.getElementById("hamlib_handshake").value !== "ignore") {
-        var hamlib_handshake =
-          document.getElementById("hamlib_handshake").value;
-        paramList = paramList.concat(
-          "--set-conf=serial_handshake=" + hamlib_handshake
-        );
-      }
-
-      // hamlib dcd setting
-      if (document.getElementById("hamlib_dcd").value !== "ignore") {
-        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
-        paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
-      }
-
-      // hamlib ptt port
-      if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
-        var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
-        paramList = paramList.concat("-p", hamlib_ptt_port);
-      }
-
-      // hamlib ptt type
-      if (document.getElementById("hamlib_pttprotocol").value !== "ignore") {
-        var hamlib_ptt_type =
-          document.getElementById("hamlib_pttprotocol").value;
-        paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
-      }
-
-      // hamlib dtr state
-      if (document.getElementById("hamlib_dtrstate").value !== "ignore") {
-        var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
-        paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
-      }
-
-      var hamlib_rigctld_server_port = document.getElementById(
-        "hamlib_rigctld_server_port"
-      ).value;
-      paramList = paramList.concat("-t", hamlib_rigctld_server_port);
-
-      //Custom rigctld arguments to pass to rigctld
-      var hamlib_rigctld_custom_args = document.getElementById(
-        "hamlib_rigctld_custom_args"
-      ).value;
-      paramList = paramList.concat(hamlib_rigctld_custom_args);
-
-      document.getElementById("hamlib_rigctld_command").value =
-        paramList.join(" "); // join removes the commas
-
-      console.log(paramList);
-      //console.log(rigctldPath);
-      return paramList;
-
+    // hamlib deviceport setting
+    if (document.getElementById("hamlib_deviceport").value !== "ignore") {
+      var hamlib_deviceport =
+        document.getElementById("hamlib_deviceport").value;
+      paramList = paramList.concat("-r", hamlib_deviceport);
     }
+
+    // hamlib serialspeed setting
+    if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
+      var hamlib_serialspeed =
+        document.getElementById("hamlib_serialspeed").value;
+      paramList = paramList.concat("-s", hamlib_serialspeed);
+    }
+
+    // hamlib databits setting
+    if (document.getElementById("hamlib_data_bits").value !== "ignore") {
+      var hamlib_data_bits = document.getElementById("hamlib_data_bits").value;
+      paramList = paramList.concat("--set-conf=data_bits=" + hamlib_data_bits);
+    }
+
+    // hamlib stopbits setting
+    if (document.getElementById("hamlib_stop_bits").value !== "ignore") {
+      var hamlib_stop_bits = document.getElementById("hamlib_stop_bits").value;
+      paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stop_bits);
+    }
+
+    // hamlib handshake setting
+    if (document.getElementById("hamlib_handshake").value !== "ignore") {
+      var hamlib_handshake = document.getElementById("hamlib_handshake").value;
+      paramList = paramList.concat(
+        "--set-conf=serial_handshake=" + hamlib_handshake
+      );
+    }
+
+    // hamlib dcd setting
+    if (document.getElementById("hamlib_dcd").value !== "ignore") {
+      var hamlib_dcd = document.getElementById("hamlib_dcd").value;
+      paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
+    }
+
+    // hamlib ptt port
+    if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
+      var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
+      paramList = paramList.concat("-p", hamlib_ptt_port);
+    }
+
+    // hamlib ptt type
+    if (document.getElementById("hamlib_pttprotocol").value !== "ignore") {
+      var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
+      paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
+    }
+
+    // hamlib dtr state
+    if (document.getElementById("hamlib_dtrstate").value !== "ignore") {
+      var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
+      paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
+    }
+
+    var hamlib_rigctld_server_port = document.getElementById(
+      "hamlib_rigctld_server_port"
+    ).value;
+    paramList = paramList.concat("-t", hamlib_rigctld_server_port);
+
+    //Custom rigctld arguments to pass to rigctld
+    var hamlib_rigctld_custom_args = document.getElementById(
+      "hamlib_rigctld_custom_args"
+    ).value;
+    paramList = paramList.concat(hamlib_rigctld_custom_args);
+
+    document.getElementById("hamlib_rigctld_command").value =
+      paramList.join(" "); // join removes the commas
+
+    console.log(paramList);
+    //console.log(rigctldPath);
+    return paramList;
+  };
 
   document
     .getElementById("hamlib_rigctld_stop")
@@ -1588,18 +1581,22 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
 
 //Just some stuff I want to experiment with - n1qm
 //https://gist.github.com/senseisimple/002cdba344de92748695a371cef0176a
-function signal_quality_perc_quad(rssi, perfect_rssi=10, worst_rssi=-150) {
-  nominal_rssi=(perfect_rssi - worst_rssi);
-  signal_quality = (100 * (perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi) - (perfect_rssi - rssi) * (15 * (perfect_rssi - worst_rssi) + 62 * (perfect_rssi - rssi))) / ((perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi));
-  
+function signal_quality_perc_quad(rssi, perfect_rssi = 10, worst_rssi = -150) {
+  nominal_rssi = perfect_rssi - worst_rssi;
+  signal_quality =
+    (100 * (perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi) -
+      (perfect_rssi - rssi) *
+        (15 * (perfect_rssi - worst_rssi) + 62 * (perfect_rssi - rssi))) /
+    ((perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi));
+
   if (signal_quality > 100) {
     signal_quality = 100;
   } else if (signal_quality < 1) {
     signal_quality = 0;
   }
   return Math.ceil(signal_quality);
-  }
-  
+}
+
 var lastHeard = "";
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // update FFT

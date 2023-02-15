@@ -465,7 +465,7 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-        win.webContents.send("return-folder-paths", { path: folderPaths });
+      win.webContents.send("return-folder-paths", { path: folderPaths });
     });
 });
 
