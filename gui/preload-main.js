@@ -1837,28 +1837,28 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
-    toggleClass("c2_busy","btn-success",true);
-    toggleClass("c2_busy","btn-outline-secondary",false);
+    toggleClass("c2_busy", "btn-success", true);
+    toggleClass("c2_busy", "btn-outline-secondary", false);
   } else {
-    toggleClass("c2_busy","btn-success",false);
-    toggleClass("c2_busy","btn-outline-secondary",true);
+    toggleClass("c2_busy", "btn-success", false);
+    toggleClass("c2_busy", "btn-outline-secondary", true);
   }
   // CHANNEL BUSY STATE
   switch (arg.channel_busy) {
     case "True":
-      toggleClass("channel_busy","btn-danger",true);
-      toggleClass("channel_busy","btn-success",false);
-      toggleClass("channel_busy","btn-secondary",false);
+      toggleClass("channel_busy", "btn-danger", true);
+      toggleClass("channel_busy", "btn-success", false);
+      toggleClass("channel_busy", "btn-secondary", false);
       break;
     case "False":
-      toggleClass("channel_busy","btn-danger",false);
-      toggleClass("channel_busy","btn-success",true);
-      toggleClass("channel_busy","btn-secondary",false);
+      toggleClass("channel_busy", "btn-danger", false);
+      toggleClass("channel_busy", "btn-success", true);
+      toggleClass("channel_busy", "btn-secondary", false);
       break;
     default:
-      toggleClass("channel_busy","btn-danger",false);
-      toggleClass("channel_busy","btn-success",false);
-      toggleClass("channel_busy","btn-secondary",true);
+      toggleClass("channel_busy", "btn-danger", false);
+      toggleClass("channel_busy", "btn-success", false);
+      toggleClass("channel_busy", "btn-secondary", true);
       break;
   }
 
