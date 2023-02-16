@@ -794,7 +794,9 @@ function close_all() {
 // RUN RIGCTLD
 ipcMain.on("request-start-rigctld", (event, data) => {
   try {
-    let rigctld_proc = spawn(data.path, data.parameters);
+    let rigctld_proc = spawn(data.path, data.parameters, {
+      windowsVerbatimArguments: true,
+    });
 
     rigctld_proc.on("exit", function (code) {
       console.log("rigctld process exited with code " + code);

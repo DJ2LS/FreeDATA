@@ -610,20 +610,20 @@ window.addEventListener("DOMContentLoaded", () => {
     var paramList = [];
 
     var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
-    paramList = paramList.concat("-m", hamlib_deviceid);
+    paramList = paramList.concat("--model="+ hamlib_deviceid);
 
     // hamlib deviceport setting
     if (document.getElementById("hamlib_deviceport").value !== "ignore") {
       var hamlib_deviceport =
         document.getElementById("hamlib_deviceport").value;
-      paramList = paramList.concat("-r", hamlib_deviceport);
+      paramList = paramList.concat("--rig-file="+ hamlib_deviceport);
     }
 
     // hamlib serialspeed setting
     if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
       var hamlib_serialspeed =
         document.getElementById("hamlib_serialspeed").value;
-      paramList = paramList.concat("-s", hamlib_serialspeed);
+      paramList = paramList.concat("--serial-speed="+ hamlib_serialspeed);
     }
 
     // hamlib databits setting
@@ -655,7 +655,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // hamlib ptt port
     if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
       var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
-      paramList = paramList.concat("-p", hamlib_ptt_port);
+      paramList = paramList.concat("--ptt-file="+ hamlib_ptt_port);
     }
 
     // hamlib ptt type
@@ -673,7 +673,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var hamlib_rigctld_server_port = document.getElementById(
       "hamlib_rigctld_server_port"
     ).value;
-    paramList = paramList.concat("-t", hamlib_rigctld_server_port);
+    paramList = paramList.concat("--port=" + hamlib_rigctld_server_port);
 
     //Custom rigctld arguments to pass to rigctld
     var hamlib_rigctld_custom_args = document.getElementById(
