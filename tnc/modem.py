@@ -193,6 +193,9 @@ class RF:
             # lets open TCI radio
             self.tci_module.open_rig(static.TCI_IP, static.TCI_PORT)
 
+            # lets init TCI audio
+            self.tci_module.init_audio()
+
             # let's start the audio rx callback
             self.log.debug("[MDM] Starting tci rx callback thread")
             tci_rx_callback_thread = threading.Thread(
@@ -328,6 +331,7 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
+
             # -----write
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 data_out48k = self.modoutqueue.popleft()
@@ -347,7 +351,7 @@ class RF:
 
             data_in48k = self.tci_module.get_audio()
             x = np.frombuffer(data_in48k, dtype=np.int16)
-            x = self.resampler.resample48_to_8(x)
+            # x = self.resampler.resample48_to_8(x)
 
             self.fft_data = x
 

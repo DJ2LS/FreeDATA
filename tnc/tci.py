@@ -133,7 +133,7 @@ class TCI:
         """
         if self.ptt_connected:
             try:
-                self.ptt_connection.sendall(command + b"\n")
+                self.ptt_connection.sendall(command)
             except Exception:
                 self.log.warning(
                     "[TCI] Command not executed!",
@@ -156,7 +156,7 @@ class TCI:
             self.data_connection.setblocking(False)
             self.data_connection.settimeout(0.05)
             try:
-                self.data_connection.sendall(command + b"\n")
+                self.data_connection.sendall(command)
 
 
             except Exception:
@@ -194,6 +194,17 @@ class TCI:
                 )
                 self.data_connected = False
         return b""
+
+    def init_audio(self):
+        try:
+            self.send_data_command(b"IQ_SAMPLERATE:48000;", False)
+            self.send_data_command(b"audio_samplerate:8;", False)
+            self.send_data_command(b"audio_start: 0;", False)
+
+            return True
+        except Exception:
+            return False
+
     def get_audio(self):
         """"""
         # generate random audio data
@@ -201,9 +212,8 @@ class TCI:
             return np.random.uniform(-1, 1, 48000)
 
         try:
-            return self.send_data_command(b"GET AUDIO COMMAND", True)
+            return self.data_connection.recv(4800)
         except Exception:
-            print("NOOOOO")
             return False
 
 
