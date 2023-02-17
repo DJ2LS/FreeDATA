@@ -349,7 +349,9 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
+            #print(self.tci_module.get_audio())
             data_in48k = self.tci_module.get_audio()
+            print(data_in48k)
             x = np.frombuffer(data_in48k, dtype=np.int16)
             # x = self.resampler.resample48_to_8(x)
 
