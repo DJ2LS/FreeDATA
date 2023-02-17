@@ -22,7 +22,7 @@ class stats():
         self.explorer_url = "https://api.freedata.app/stats.php"
 
     def push(self, frame_nack_counter, status, duration):
-        crcerror = status in ["crc_error"]
+        crcerror = status in ["crc_error", "wrong_crc"]
         # get avg snr
         try:
             snr_raw = [item["snr"] for item in static.SPEED_LIST]
