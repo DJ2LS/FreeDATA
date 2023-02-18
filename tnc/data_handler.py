@@ -1176,10 +1176,13 @@ class DATA:
                 arqheader[2:3] = self.session_id
 
                 # only check for buffer position if at least one NACK received
-                self.log.info("[TNC] data buffer position:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+                self.log.info("[TNC] ----- data buffer position:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
                 if self.frame_nack_counter > 0 and self.irs_buffer_position != bufferposition:
-                    self.log.warning("[TNC] data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
-                    bufferposition = self.irs_buffer_position
+                    self.log.warning("[TNC] ----- data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+                    # only adjust buffer position for experimental versions
+                    if 'exp' in static.VERSION:
+                        self.log.warning("[TNC] ----- data adjustment!")
+                        bufferposition = self.irs_buffer_position
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
