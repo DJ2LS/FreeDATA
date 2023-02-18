@@ -60,13 +60,34 @@
                 placeholder="DX CALL"
               />
               <button
-                class="btn btn-sm btn-success w-50"
+                class="btn btn-sm btn-success"
                 id="createNewChatButton"
                 type="button"
               >
                 <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
               </button>
+
+
+              <button
+                type="button"
+                id="userModalButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModal"
+                class="btn btn-sm btn-primary ms-2"
+               ><i class="bi bi-person" style="font-size: 1.2rem"></i></button>
+                                           <button
+                type="button"
+                id="sharedFolderButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModal"
+                class="btn btn-sm btn-primary"
+               ><i class="bi bi-files" style="font-size: 1.2rem"></i></button>
             </div>
+
+
+
+
+
           </div>
           <hr class="m-2" />
           <div class="overflow-auto vh-100">
@@ -89,6 +110,24 @@
               >
                 Ping
               </button>
+
+
+                             <button
+                type="button"
+                id="userModalDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModalDX"
+                class="btn btn-sm btn-secondary"
+               ><i class="bi bi-person" style="font-size: 1.2rem"></i></button>
+
+                      <button
+                type="button"
+                id="sharedFolderDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModalDX"
+                class="btn btn-sm btn-secondary me-2"
+               ><i class="bi bi-files" style="font-size: 1.2rem"></i></button>
+
               <button
                 id="chatSettingsDropDown"
                 type="button"
@@ -170,6 +209,172 @@
                   class="bi bi-send"
                   style="font-size: 1.2rem; color: white"
                 ></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- user modal -->
+  <div
+      class="modal fade"
+      id="userModal"
+      tabindex="-1"
+      aria-labelledby="userModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="userModalLabel">My station info</h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+
+
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+
+              Future feature... be patient :-)
+
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <!-- dx user modal -->
+  <div
+      class="modal fade"
+      id="userModalDX"
+      tabindex="-1"
+      aria-labelledby="userModalDXLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="userModalDXLabel">Station info</h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+
+
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+
+              Future feature... be patient :-)
+
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- user shared folder -->
+  <div
+      class="modal fade"
+      id="sharedFolderModal"
+      tabindex="-1"
+      aria-labelledby="sharedFolderModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">My Shared folder</h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+
+
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+
+              Future feature... be patient :-)
+
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- dx user shared folder -->
+  <div
+      class="modal fade"
+      id="sharedFolderModalDX"
+      tabindex="-1"
+      aria-labelledby="sharedFolderModalDXLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">Shared folder</h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+
+
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+
+              Future feature... be patient :-)
+
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal"
+              >
+                Close
               </button>
             </div>
           </div>
