@@ -328,25 +328,26 @@ if __name__ == "__main__":
             except ValueError:
                 static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
 
-            static.PORT = int(config['NETWORK']['tncport'])
-            static.HAMLIB_RADIOCONTROL = config['RADIO']['radiocontrol']
-            static.HAMLIB_RIGCTLD_IP = config['RADIO']['rigctld_ip']
-            static.HAMLIB_RIGCTLD_PORT = str(config['RADIO']['rigctld_port'])
-            static.ENABLE_SCATTER = config['TNC']['scatter'] in ["True", "true", True]
-            static.ENABLE_FFT = config['TNC']['fft'] in ["True", "true", True]
+
+            static.PORT = config.get('NETWORK', 'tncport', 3000)
+            static.HAMLIB_RADIOCONTROL = config.get('RADIO', 'radiocontrol', 'rigctld')
+            static.HAMLIB_RIGCTLD_IP = config.get('RADIO', 'rigctld_ip', '127.0.0.1')
+            static.HAMLIB_RIGCTLD_PORT = str(config.get('RADIO', 'rigctld_port', 4532))
+            static.ENABLE_SCATTER = config.get('TNC', 'scatter', True)
+            static.ENABLE_FFT = config.get('TNC', 'fft', True)
             static.ENABLE_FSK = False
-            static.LOW_BANDWIDTH_MODE = config['TNC']['narrowband'] in ["True", "true", True]
-            static.TUNING_RANGE_FMIN = float(config['TNC']['fmin'])
-            static.TUNING_RANGE_FMAX = float(config['TNC']['fmax'])
-            static.TX_AUDIO_LEVEL = int(config['AUDIO']['txaudiolevel'])
-            static.RESPOND_TO_CQ = config['TNC']['qrv'] in ["True", "true", True]
-            static.RX_BUFFER_SIZE = int(config['TNC']['rxbuffersize'])
-            static.ENABLE_EXPLORER = config['TNC']['explorer'] in ["True", "true", True]
-            static.AUDIO_AUTO_TUNE = config['AUDIO']['auto_tune'] in ["True", "true", True]
-            static.ENABLE_STATS = config['TNC']['stats'] in ["True", "true", True]
-            static.AUDIO_ENABLE_TCI = config['AUDIO']['enable_tci'] in ["True", "true", True]
-            static.TCI_IP = str(config['AUDIO']['tci_ip'])
-            static.TCI_PORT = int(config['AUDIO']['tci_port'])
+            static.LOW_BANDWIDTH_MODE = config.get('TNC', 'narrowband', False)
+            static.TUNING_RANGE_FMIN = float(config.get('TNC', 'fmin', -50.0))
+            static.TUNING_RANGE_FMAX = float(config.get('TNC', 'fmax', 50.0))
+            static.TX_AUDIO_LEVEL = int(config.get('AUDIO', 'txaudiolevel', 100))
+            static.RESPOND_TO_CQ = config.get('TNC', 'qrv', True)
+            static.RX_BUFFER_SIZE = int(config.get('TNC', 'rxbuffersize', 16))
+            static.ENABLE_EXPLORER = config.get('TNC', 'explorer', False)
+            static.AUDIO_AUTO_TUNE = config.get('AUDIO', 'auto_tune', False)
+            static.ENABLE_STATS = config.get('TNC', 'stats', False)
+            static.AUDIO_ENABLE_TCI = config.get('AUDIO', 'enable_tci', False)
+            static.TCI_IP = str(config.get('AUDIO', 'tci_port', 'localhost'))
+            static.TCI_PORT = int(config.get('AUDIO', 'tci_port', 50001))
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))

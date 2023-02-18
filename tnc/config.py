@@ -94,3 +94,15 @@ class CONFIG:
 
             return self.config
 
+    def get(self, area, key, default):
+        """
+        read from config and add if not exists
+
+        """
+        try:
+            if default in ["True", "true", True, "False", "false", False]:
+                return self.config[area][key] in ["True", "true", True]
+            else:
+                return self.config[area][key]
+        except KeyError:
+            self.config[area][key] = default
