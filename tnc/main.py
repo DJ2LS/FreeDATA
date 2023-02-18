@@ -328,7 +328,8 @@ if __name__ == "__main__":
             except ValueError:
                 static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
 
-
+            # TODO: change entire module for just using "config.get"
+            config = config.CONFIG(configfile)
             static.PORT = config.get('NETWORK', 'tncport', 3000)
             static.HAMLIB_RADIOCONTROL = config.get('RADIO', 'radiocontrol', 'rigctld')
             static.HAMLIB_RIGCTLD_IP = config.get('RADIO', 'rigctld_ip', '127.0.0.1')
