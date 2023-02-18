@@ -100,13 +100,14 @@ class CONFIG:
 
         """
 
-        try:
-            if default in ["True", "true", True, "False", "false", False]:
-                parameter = self.config[area][key] in ["True", "true", True]
-            else:
-                parameter = self.config[area][key]
-        except KeyError:
-            parameter = self.config[area][key] = str(default)
+        for i in range(0,2):
+            try:
+                if default in ["True", "true", True, "False", "false", False]:
+                    parameter = self.config[area][key] in ["True", "true", True]
+                else:
+                    parameter = self.config[area][key]
+            except KeyError:
+                self.config[area][key] = str(default)
 
         self.log.info("[CFG] reading...", parameter=parameter, key=key)
         return parameter

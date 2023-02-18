@@ -347,7 +347,6 @@ if __name__ == "__main__":
             static.AUDIO_ENABLE_TCI = conf.get('AUDIO', 'enable_tci', 'False')
             static.TCI_IP = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
             static.TCI_PORT = int(conf.get('AUDIO', 'tci_port', '50001'))
-
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:
