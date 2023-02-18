@@ -100,12 +100,13 @@ class CONFIG:
 
         """
 
-        for i in range(0,2):
+        for _ in range(2):
             try:
-                if default in ["True", "true", True, "False", "false", False]:
-                    parameter = self.config[area][key] in ["True", "true", True]
-                else:
-                    parameter = self.config[area][key]
+                parameter = (
+                    self.config[area][key] in ["True", "true", True]
+                    if default in ["True", "true", True, "False", "false", False]
+                    else self.config[area][key]
+                )
             except KeyError:
                 self.config[area][key] = str(default)
 
