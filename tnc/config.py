@@ -99,10 +99,14 @@ class CONFIG:
         read from config and add if not exists
 
         """
+
         try:
             if default in ["True", "true", True, "False", "false", False]:
-                return self.config[area][key] in ["True", "true", True]
+                parameter = self.config[area][key] in ["True", "true", True]
             else:
-                return self.config[area][key]
+                parameter = self.config[area][key]
         except KeyError:
-            self.config[area][key] = default
+            parameter = self.config[area][key] = str(default)
+
+        self.log.info("[CFG] reading...", parameter=parameter, key=key)
+        return parameter

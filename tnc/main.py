@@ -304,51 +304,49 @@ if __name__ == "__main__":
     else:
         configfile = ARGS.configfile
         # init config
-        config = config.CONFIG(configfile).read_config()
+        conf = config.CONFIG(configfile)
         try:
             # additional step for being sure our callsign is correctly
             # in case we are not getting a station ssid
             # then we are forcing a station ssid = 0
-            mycallsign = bytes(config['STATION']['mycall'], "utf-8")
+            mycallsign = bytes(conf.get('STATION', 'mycall', 'AA0AA'), "utf-8")
             mycallsign = helpers.callsign_to_bytes(mycallsign)
             static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
             static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
 
             #json.loads = for converting str list to list
-            static.SSID_LIST = json.loads(config['STATION']['ssid_list'])
+            static.SSID_LIST = json.loads(conf.get('STATION', 'ssid_list', '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'))
 
-            static.MYGRID = bytes(config['STATION']['mygrid'], "utf-8")
+            static.MYGRID = bytes(conf.get('STATION', 'mygrid', 'JN12aa'), "utf-8")
             # check if we have an int or str as device name
             try:
-                static.AUDIO_INPUT_DEVICE = int(config['AUDIO']['rx'])
+                static.AUDIO_INPUT_DEVICE = int(conf.get('AUDIO', 'rx', '0'))
             except ValueError:
-                static.AUDIO_INPUT_DEVICE = config['AUDIO']['rx']
+                static.AUDIO_INPUT_DEVICE = conf.get('AUDIO', 'rx', '0')
             try:
-                static.AUDIO_OUTPUT_DEVICE = int(config['AUDIO']['tx'])
+                static.AUDIO_OUTPUT_DEVICE = int(conf.get('AUDIO', 'tx', '0'))
             except ValueError:
-                static.AUDIO_OUTPUT_DEVICE = config['AUDIO']['tx']
+                static.AUDIO_OUTPUT_DEVICE = conf.get('AUDIO', 'tx', '0')
 
-            # TODO: change entire module for just using "config.get"
-            conf = config.CONFIG(configfile)
-            static.PORT = conf.get('NETWORK', 'tncport', 3000)
+            static.PORT = int(conf.get('NETWORK', 'tncport', '3000'))
             static.HAMLIB_RADIOCONTROL = conf.get('RADIO', 'radiocontrol', 'rigctld')
             static.HAMLIB_RIGCTLD_IP = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
-            static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', 4532))
-            static.ENABLE_SCATTER = conf.get('TNC', 'scatter', True)
-            static.ENABLE_FFT = conf.get('TNC', 'fft', True)
+            static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', '4532'))
+            static.ENABLE_SCATTER = conf.get('TNC', 'scatter', 'True')
+            static.ENABLE_FFT = conf.get('TNC', 'fft', 'True')
             static.ENABLE_FSK = False
-            static.LOW_BANDWIDTH_MODE = conf.get('TNC', 'narrowband', False)
-            static.TUNING_RANGE_FMIN = float(conf.get('TNC', 'fmin', -50.0))
-            static.TUNING_RANGE_FMAX = float(conf.get('TNC', 'fmax', 50.0))
-            static.TX_AUDIO_LEVEL = int(conf.get('AUDIO', 'txaudiolevel', 100))
-            static.RESPOND_TO_CQ = conf.get('TNC', 'qrv', True)
-            static.RX_BUFFER_SIZE = int(conf.get('TNC', 'rxbuffersize', 16))
-            static.ENABLE_EXPLORER = conf.get('TNC', 'explorer', False)
-            static.AUDIO_AUTO_TUNE = conf.get('AUDIO', 'auto_tune', False)
-            static.ENABLE_STATS = conf.get('TNC', 'stats', False)
-            static.AUDIO_ENABLE_TCI = conf.get('AUDIO', 'enable_tci', False)
-            static.TCI_IP = str(conf.get('AUDIO', 'tci_port', 'localhost'))
-            static.TCI_PORT = int(conf.get('AUDIO', 'tci_port', 50001))
+            static.LOW_BANDWIDTH_MODE = conf.get('TNC', 'narrowband', 'False')
+            static.TUNING_RANGE_FMIN = float(conf.get('TNC', 'fmin', '-50.0'))
+            static.TUNING_RANGE_FMAX = float(conf.get('TNC', 'fmax', '50.0'))
+            static.TX_AUDIO_LEVEL = int(conf.get('AUDIO', 'txaudiolevel', '100'))
+            static.RESPOND_TO_CQ = conf.get('TNC', 'qrv', 'True')
+            static.RX_BUFFER_SIZE = int(conf.get('TNC', 'rxbuffersize', '16'))
+            static.ENABLE_EXPLORER = conf.get('TNC', 'explorer', 'False')
+            static.AUDIO_AUTO_TUNE = conf.get('AUDIO', 'auto_tune', 'False')
+            static.ENABLE_STATS = conf.get('TNC', 'stats', 'False')
+            static.AUDIO_ENABLE_TCI = conf.get('AUDIO', 'enable_tci', 'False')
+            static.TCI_IP = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
+            static.TCI_PORT = int(conf.get('AUDIO', 'tci_port', '50001'))
 
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
