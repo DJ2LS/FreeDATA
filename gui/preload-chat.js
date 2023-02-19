@@ -44,7 +44,7 @@ var lastIsWritingBroadcast = new Date().getTime();
 // -----------------------------------
 
 var chatDB = path.join(configFolder, "chatDB");
-var userDB = path.join(configFolder, "chatDB");
+var userDB = path.join(configFolder, "userDB");
 // ---- MessageDB
 try {
   var PouchDB = require("pouchdb");
@@ -65,6 +65,11 @@ PouchDB.plugin(require("pouchdb-find"));
 
 var db = new PouchDB(chatDB);
 var users = new PouchDB(userDB);
+
+/* -------- CREATE DATABASE INDEXES */
+createChatIndex()
+createUserIndex()
+
 
 /*
 // REMOTE SYNC ATTEMPTS
@@ -108,65 +113,17 @@ db.sync('http://172.20.10.4:5984/jojo', {
 });
 */
 
+
+
 var dxcallsigns = new Set();
-/* -------- CREATE DATABASE INDEXES */
-db.createIndex({
-  index: {
-    fields: [
-      "timestamp",
-      "uuid",
-      "dxcallsign",
-      "dxgrid",
-      "msg",
-      "checksum",
-      "type",
-      "command",
-      "status",
-      "percent",
-      "bytesperminute",
-      "_attachments",
-    ],
-  },
-})
-  .then(function (result) {
-    // handle result
-    console.log(result);
-  })
-  .catch(function (err) {
-    console.log(err);
-  });
+
 
   var chatFilter = [{type:'newchat'}, {type:'received'},  {type:'transmit'},  {type:'ping-ack'}]
   updateAllChat(false);
 
-users
-  .createIndex({
-    index: {
-      fields: [
-        "timestamp",
-        "callsign",
-        "gridsquare",
-        "name",
-        "age",
-        "location",
-        "radio",
-        "antenna",
-        "email",
-        "website",
-        "comments",
-        "_attachments",
-      ],
-    },
-  })
-  .then(function (result) {
-    // handle result
-    console.log(result);
-  })
-  .catch(function (err) {
-    console.log(err);
-  });
 
-  
+
+
 function updateAllChat(clear)
 {
   if (clear == true)
@@ -182,6 +139,7 @@ function updateAllChat(clear)
     //document.getElementById("list-tab").childNodes.remove();
     //document.getElementById("nav-tab-content").childrenNodes.remove();
   }
+
   db.find({
     selector: {
       timestamp: {
@@ -228,6 +186,8 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   console.log(config.mycall);
+
+
   users
     .find({
       selector: {
@@ -292,14 +252,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
   //Add event listener for filter apply button
   document.getElementById("btnFilter").addEventListener("click",() => {
-    chatFilter=[{type:'newchat'}];  
+    chatFilter=[{type:'newchat'}];
     if (document.getElementById('chkMessage').checked == true) chatFilter.push({type:'received'},{type:'transmit'});
     if (document.getElementById('chkPing').checked == true) chatFilter.push({type:'ping'});
     if (document.getElementById('chkPingAck').checked == true) chatFilter.push({type:'ping-ack'});
     if (document.getElementById('chkBeacon').checked == true) chatFilter.push({type:'beacon'});
     updateAllChat(true);
   });
-  
+
   document
     .querySelector("emoji-picker")
     .addEventListener("emoji-click", (event) => {
@@ -955,7 +915,7 @@ update_chat = function (obj) {
                       </div>
                     </div>
                 </div>
-                ${controlarea_receive} 
+                ${controlarea_receive}
                 </div>
                 `;
     }
@@ -1012,8 +972,8 @@ update_chat = function (obj) {
         obj.percent
       }%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
 							 </div>
-							 
-              
+
+
 							<p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
                 obj._id
               }-progress-information">
@@ -1125,7 +1085,7 @@ if (
         .catch(function (err) {
           console.log(err);
         })
-      
+
       document.getElementById("msg-" + obj._id).remove();
       document.getElementById("msg-" + obj._id + "-control-area").remove();
       console.log("Removed message " + obj._id.toString());
@@ -1478,4 +1438,77 @@ function btoa_FD(data) {
  */
 function atob_FD(data) {
   return Buffer.from(data, "base64").toString("utf-8");
+}
+
+
+
+
+function returnObjFromDatabseByString(database, search) {
+
+}
+
+
+
+function createChatIndex(){
+db.createIndex({
+  index: {
+    fields: [
+      "timestamp",
+      "uuid",
+      "dxcallsign",
+      "dxgrid",
+      "msg",
+      "checksum",
+      "type",
+      "command",
+      "status",
+      "percent",
+      "bytesperminute",
+      "_attachments",
+    ],
+  },
+})
+  .then(function (result) {
+    // handle result
+    console.log(result);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+
+}
+
+function createUserIndex(){
+
+users
+  .createIndex({
+    index: {
+      fields: [
+        "timestamp",
+        "callsign",
+        "gridsquare",
+        "name",
+        "age",
+        "location",
+        "radio",
+        "antenna",
+        "email",
+        "website",
+        "comments",
+        "_attachments",
+      ],
+    },
+  })
+  .then(function (result) {
+    // handle result
+    console.log(result);
+    return true
+  })
+  .catch(function (err) {
+    console.log(err);
+    return false
+  });
+
+
+
 }
