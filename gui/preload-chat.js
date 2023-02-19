@@ -235,8 +235,7 @@ window.addEventListener("DOMContentLoaded", () => {
       },
     })
     .then(function (result) {
-
-    if (typeof result !== "undefined") {
+    if (typeof(result.docs[0]) !== "undefined") {
       // handle result
       document.getElementById("user_info_callsign").value =
         result.docs[0].callsign;
