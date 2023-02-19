@@ -163,35 +163,37 @@ users
     console.log(err);
   });
 
-db.find({
-  selector: {
-    timestamp: {
-      $exists: true,
+  db.find({
+    selector: {
+      timestamp: {
+        $exists: true,
+      },
+      //Future for filter
+      //$or: [{type:'ping'},{type:'beacon'}]
     },
-  },
-  sort: [
-    {
-      timestamp: "asc",
-    },
-  ],
-})
-  .then(function (result) {
-    // handle result
-    if (typeof result !== "undefined") {
-      result.docs.forEach(function (item) {
-        //console.log(item)
-        // another query with attachments
-        db.get(item._id, {
-          attachments: true,
-        }).then(function (item_with_attachments) {
-          update_chat(item_with_attachments);
-        });
-      });
-    }
+    sort: [
+      {
+        timestamp: "asc",
+      },
+    ],
   })
-  .catch(function (err) {
-    console.log(err);
-  });
+    .then(async function (result) {
+      // handle result async
+      if (typeof result !== "undefined") {
+          for (const item of result.docs)
+          {
+            //await otherwise history will not be in chronological order
+            await db.get(item._id, {
+              attachments: true,
+            }).then(function (item_with_attachments) {
+              update_chat(item_with_attachments);
+            });
+          }
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
