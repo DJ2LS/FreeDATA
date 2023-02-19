@@ -235,6 +235,8 @@ window.addEventListener("DOMContentLoaded", () => {
       },
     })
     .then(function (result) {
+
+    if (typeof result !== "undefined") {
       // handle result
       document.getElementById("user_info_callsign").value =
         result.docs[0].callsign;
@@ -252,6 +254,7 @@ window.addEventListener("DOMContentLoaded", () => {
         result.docs[0].website;
       document.getElementById("user_info_comments").value =
         result.docs[0].comments;
+        }
     })
     .catch(function (err) {
       console.log(err);
