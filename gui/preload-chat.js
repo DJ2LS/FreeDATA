@@ -116,62 +116,13 @@ db.sync('http://172.20.10.4:5984/jojo', {
 
 
 var dxcallsigns = new Set();
+var chatFilter = [{type:'newchat'}, {type:'received'},  {type:'transmit'},  {type:'ping-ack'}]
+
+updateAllChat(false);
 
 
-  var chatFilter = [{type:'newchat'}, {type:'received'},  {type:'transmit'},  {type:'ping-ack'}]
-  updateAllChat(false);
 
 
-
-
-function updateAllChat(clear)
-{
-  if (clear == true)
-  {
-    filetype = "";
-    file = "";
-    filename = "";
-    callsign_counter = 0;
-    selected_callsign = "";
-    dxcallsigns=new Set();
-    document.getElementById("list-tab").innerHTML="";
-    document.getElementById("nav-tabContent").innerHTML="";
-    //document.getElementById("list-tab").childNodes.remove();
-    //document.getElementById("nav-tab-content").childrenNodes.remove();
-  }
-
-  db.find({
-    selector: {
-      timestamp: {
-        $exists: true,
-      },
-      //Future for filter
-      $or: chatFilter
-    },
-    sort: [
-      {
-        timestamp: "asc",
-      },
-    ],
-  })
-    .then(async function (result) {
-      // handle result async
-      if (typeof result !== "undefined") {
-          for (const item of result.docs)
-          {
-            //await otherwise history will not be in chronological order
-            await db.get(item._id, {
-              attachments: true,
-            }).then(function (item_with_attachments) {
-              update_chat(item_with_attachments);
-            });
-          }
-      }
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
-}
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
@@ -185,34 +136,32 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("bootstrap_theme").href = theme_path;
   }
 
-  console.log(config.mycall);
 
+    // add initial entry for own callsign and grid
+    let obj = new Object();
+        obj.user_info_callsign = config.mycall;
+        obj.user_info_gridsquare = config.mygrid;
+    addUserToDatabaseIfNotExists(obj);
 
   users
     .find({
       selector: {
-        callsign: config.mycall,
+        user_info_callsign: config.mycall,
       },
     })
     .then(function (result) {
     if (typeof(result.docs[0]) !== "undefined") {
       // handle result
-      document.getElementById("user_info_callsign").value =
-        result.docs[0].callsign;
-      document.getElementById("user_info_gridsquare").value =
-        result.docs[0].gridsquare;
-      document.getElementById("user_info_name").value = result.docs[0].name;
-      document.getElementById("user_info_age").value = result.docs[0].age;
-      document.getElementById("user_info_location").value =
-        result.docs[0].location;
-      document.getElementById("user_info_radio").value = result.docs[0].radio;
-      document.getElementById("user_info_antenna").value =
-        result.docs[0].antenna;
-      document.getElementById("user_info_email").value = result.docs[0].email;
-      document.getElementById("user_info_website").value =
-        result.docs[0].website;
-      document.getElementById("user_info_comments").value =
-        result.docs[0].comments;
+      document.getElementById("user_info_callsign").value = result.docs[0].user_info_callsign;
+      document.getElementById("user_info_gridsquare").value = result.docs[0].user_info_gridsquare;
+      document.getElementById("user_info_name").value = result.docs[0].user_info_name;
+      document.getElementById("user_info_age").value = result.docs[0].user_info_age;
+      document.getElementById("user_info_location").value = result.docs[0].user_info_location;
+      document.getElementById("user_info_radio").value = result.docs[0].user_info_radio;
+      document.getElementById("user_info_antenna").value =result.docs[0].user_info_antenna;
+      document.getElementById("user_info_email").value = result.docs[0].user_info_email;
+      document.getElementById("user_info_website").value = result.docs[0].user_info_website;
+      document.getElementById("user_info_comments").value = result.docs[0].user_info_comments;
         }
     })
     .catch(function (err) {
@@ -326,8 +275,13 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keyup", function (event) {
+
+
     // Number 13 == Enter
-    if (event.keyCode === 13 && !event.shiftKey) {
+    if (event.keyCode === 13
+            && !event.shiftKey
+            && document.activeElement.id == 'chatModuleMessage'
+    ) {
       // Cancel the default action, if needed
       event.preventDefault();
       // Trigger the button element with a click
@@ -1330,29 +1284,26 @@ addUserToDatabaseIfNotExists = function (obj) {
   users
     .find({
       selector: {
-        callsign: obj.user_info_callsign,
+        user_info_callsign: obj.user_info_callsign,
       },
     })
     .then(function (result) {
       // handle result
-      console.log(result);
-
-      console.log(result.docs.length);
       if (result.docs.length > 0) {
         users
           .put({
             _id: result.docs[0]._id,
             _rev: result.docs[0]._rev,
-            callsign: obj.user_info_callsign,
-            gridsquare: obj.user_info_gridsquare,
-            name: obj.user_info_name,
-            age: obj.user_info_age,
-            location: obj.user_info_location,
-            radio: obj.user_info_radio,
-            antenna: obj.user_info_antenna,
-            email: obj.user_info_email,
-            website: obj.user_info_website,
-            comments: obj.user_info_comments,
+            user_info_callsign: obj.user_info_callsign,
+            user_info_gridsquare: obj.user_info_gridsquare,
+            user_info_name: obj.user_info_name,
+            user_info_age: obj.user_info_age,
+            user_info_location: obj.user_info_location,
+            user_info_radio: obj.user_info_radio,
+            user_info_antenna: obj.user_info_antenna,
+            user_info_email: obj.user_info_email,
+            user_info_website: obj.user_info_website,
+            user_info_comments: obj.user_info_comments,
           })
           .then(function (response) {
             console.log("UPDATED USER");
@@ -1363,16 +1314,16 @@ addUserToDatabaseIfNotExists = function (obj) {
       } else {
         users
           .post({
-            callsign: obj.user_info_callsign,
-            gridsquare: obj.user_info_gridsquare,
-            name: obj.user_info_name,
-            age: obj.user_info_age,
-            location: obj.user_info_location,
-            radio: obj.user_info_radio,
-            antenna: obj.user_info_antenna,
-            email: obj.user_info_email,
-            website: obj.user_info_website,
-            comments: obj.user_info_comments,
+            user_info_callsign: obj.user_info_callsign,
+            user_info_gridsquare: obj.user_info_gridsquare,
+            user_info_name: obj.user_info_name,
+            user_info_age: obj.user_info_age,
+            user_info_location: obj.user_info_location,
+            user_info_radio: obj.user_info_radio,
+            user_info_antenna: obj.user_info_antenna,
+            user_info_email: obj.user_info_email,
+            user_info_website: obj.user_info_website,
+            user_info_comments: obj.user_info_comments,
           })
           .then(function (response) {
             console.log("NEW USER ADDED");
@@ -1443,7 +1394,31 @@ function atob_FD(data) {
 
 
 
-function returnObjFromDatabseByString(database, search) {
+function returnObjFromCallsign(database, callsign) {
+
+    users
+        .find(
+            {
+            selector: {
+                user_info_callsign: callsign,
+            },
+            }
+        )
+        .then(
+
+            function (result) {
+            if (typeof(result.docs[0]) !== "undefined") {
+              return result.docs[0];
+            } else {
+                return false
+            }
+            }
+        )
+        .catch(function (err) {
+          console.log(err);
+        });
+
+
 
 }
 
@@ -1485,16 +1460,16 @@ users
     index: {
       fields: [
         "timestamp",
-        "callsign",
-        "gridsquare",
-        "name",
-        "age",
-        "location",
-        "radio",
-        "antenna",
-        "email",
-        "website",
-        "comments",
+        "user_info_callsign",
+        "user_info_gridsquare",
+        "user_info_name",
+        "user_info_age",
+        "user_info_location",
+        "user_info_radio",
+        "user_info_antenna",
+        "user_info_email",
+        "user_info_website",
+        "user_info_comments",
         "_attachments",
       ],
     },
@@ -1508,7 +1483,52 @@ users
     console.log(err);
     return false
   });
+}
 
+function updateAllChat(clear){
+  if (clear == true)
+  {
+    filetype = "";
+    file = "";
+    filename = "";
+    callsign_counter = 0;
+    selected_callsign = "";
+    dxcallsigns=new Set();
+    document.getElementById("list-tab").innerHTML="";
+    document.getElementById("nav-tabContent").innerHTML="";
+    //document.getElementById("list-tab").childNodes.remove();
+    //document.getElementById("nav-tab-content").childrenNodes.remove();
+  }
 
-
+  db.find({
+    selector: {
+      timestamp: {
+        $exists: true,
+      },
+      //Future for filter
+      $or: chatFilter
+    },
+    sort: [
+      {
+        timestamp: "asc",
+      },
+    ],
+  })
+    .then(async function (result) {
+      // handle result async
+      if (typeof result !== "undefined") {
+          for (const item of result.docs)
+          {
+            //await otherwise history will not be in chronological order
+            await db.get(item._id, {
+              attachments: true,
+            }).then(function (item_with_attachments) {
+              update_chat(item_with_attachments);
+            });
+          }
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 }
