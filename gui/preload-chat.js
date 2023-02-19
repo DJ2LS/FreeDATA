@@ -44,6 +44,7 @@ var lastIsWritingBroadcast = new Date().getTime();
 // -----------------------------------
 
 var chatDB = path.join(configFolder, "chatDB");
+var userDB = path.join(configFolder, "chatDB");
 // ---- MessageDB
 try {
   var PouchDB = require("pouchdb");
@@ -63,6 +64,7 @@ PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
 
 var db = new PouchDB(chatDB);
+var users = new PouchDB(userDB);
 
 /*
 // REMOTE SYNC ATTEMPTS
@@ -107,6 +109,7 @@ db.sync('http://172.20.10.4:5984/jojo', {
 */
 
 var dxcallsigns = new Set();
+/* -------- CREATE DATABASE INDEXES */
 db.createIndex({
   index: {
     fields: [
@@ -125,6 +128,33 @@ db.createIndex({
     ],
   },
 })
+  .then(function (result) {
+    // handle result
+    console.log(result);
+  })
+  .catch(function (err) {
+    console.log(err);
+  });
+
+users
+  .createIndex({
+    index: {
+      fields: [
+        "timestamp",
+        "callsign",
+        "gridsquare",
+        "name",
+        "age",
+        "location",
+        "radio",
+        "antenna",
+        "email",
+        "website",
+        "comments",
+        "_attachments",
+      ],
+    },
+  })
   .then(function (result) {
     // handle result
     console.log(result);
@@ -173,6 +203,67 @@ window.addEventListener("DOMContentLoaded", () => {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = theme_path;
   }
+
+  console.log(config.mycall);
+  users
+    .find({
+      selector: {
+        callsign: config.mycall,
+      },
+    })
+    .then(function (result) {
+      // handle result
+      document.getElementById("user_info_callsign").value =
+        result.docs[0].callsign;
+      document.getElementById("user_info_gridsquare").value =
+        result.docs[0].gridsquare;
+      document.getElementById("user_info_name").value = result.docs[0].name;
+      document.getElementById("user_info_age").value = result.docs[0].age;
+      document.getElementById("user_info_location").value =
+        result.docs[0].location;
+      document.getElementById("user_info_radio").value = result.docs[0].radio;
+      document.getElementById("user_info_antenna").value =
+        result.docs[0].antenna;
+      document.getElementById("user_info_email").value = result.docs[0].email;
+      document.getElementById("user_info_website").value =
+        result.docs[0].website;
+      document.getElementById("user_info_comments").value =
+        result.docs[0].comments;
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+  const userInfoFields = [
+    "user_info_callsign",
+    "user_info_gridsquare",
+    "user_info_name",
+    "user_info_age",
+    "user_info_location",
+    "user_info_radio",
+    "user_info_antenna",
+    "user_info_email",
+    "user_info_website",
+    "user_info_comments",
+  ];
+
+  // user info bulk event listener for saving settings
+  userInfoFields.forEach(function (elem) {
+    try {
+      document.getElementById(elem).addEventListener("change", function () {
+        //config[elem] = document.getElementById(elem).value;
+
+        let obj = new Object();
+        userInfoFields.forEach(function (subelem) {
+          obj[subelem] = document.getElementById(subelem).value;
+        });
+        addUserToDatabaseIfNotExists(obj);
+      });
+    } catch (e) {
+      console.log(e);
+      console.log(elem);
+    }
+  });
 
   document
     .querySelector("emoji-picker")
@@ -439,7 +530,7 @@ ipcRenderer.on("return-selected-files", (event, arg) => {
   document.getElementById("selectFilesButton").innerHTML = `
      <span class="position-absolute top-0 start-85 translate-middle p-2 bg-danger border border-light rounded-circle">
         <span class="visually-hidden">New file selected</span>
-     </span>   
+     </span>
     `;
 });
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
@@ -483,7 +574,7 @@ ipcRenderer.on("action-show-feciswriting", (event, arg) => {
   var new_message = `
             <div class="m-auto mt-1 p-0 w-25 rounded bg-secondary bg-gradient" id="msg-${uuid}">
                 <p class="text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-1 bi bi-pencil"></i><i id="msg-${uuid}-icon" class="m-1 bi bi-wifi-1"></i>${dxcallsign} is typing....</p>
-                
+
             </div>
         `;
   var id = "chat-" + dxcallsign;
@@ -669,7 +760,7 @@ update_chat = function (obj) {
         `;
 
       var controlarea_receive = `
-        
+
              <div class="me-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
@@ -708,14 +799,14 @@ update_chat = function (obj) {
 
     var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
-                      
+
                       <div class="d-flex w-100 justify-content-between">
                           <div class="rounded-circle p-0">
                             <i class="bi bi-person-circle p-1" style="font-size:2rem;"></i>
                           </div>
 
                         <h5 class="mb-1">${dxcallsign}</h5>
-                        <span class="badge bg-secondary text-white p-1 h-100" id="chat-${dxcallsign}-list-dxgrid"><small>${dxgrid}</small></span>                        
+                        <span class="badge bg-secondary text-white p-1 h-100" id="chat-${dxcallsign}-list-dxgrid"><small>${dxgrid}</small></span>
                         <span style="font-size:0.8rem;" id="chat-${dxcallsign}-list-time">${timestampHours}</span>
                         <span class="position-absolute m-2 bottom-0 end-0" style="font-size:0.8rem;" id="chat-${dxcallsign}-list-shortmsg">${shortmsg}</span>
                       </div>
@@ -727,7 +818,7 @@ update_chat = function (obj) {
       .getElementById("list-tab")
       .insertAdjacentHTML("beforeend", new_callsign);
     var message_area = `
-            <div class="tab-pane fade ${callsign_selected}" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>  
+            <div class="tab-pane fade ${callsign_selected}" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>
             `;
     document
       .getElementById("nav-tabContent")
@@ -761,15 +852,15 @@ update_chat = function (obj) {
   if (!document.getElementById("msg-" + obj._id)) {
     if (obj.type == "ping") {
       var new_message = `
-                <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">         
+                <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
-                    
+
                 </div>
             `;
     }
     if (obj.type == "beacon") {
       var new_message = `
-                <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">         
+                <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
                 </div>
             `;
@@ -777,7 +868,7 @@ update_chat = function (obj) {
 
     if (obj.type == "newchat") {
       var new_message = `
-                <div class="p-0 rounded m-auto mt-1 w-50 bg-light bg-gradient" id="msg-${obj._id}">         
+                <div class="p-0 rounded m-auto mt-1 w-50 bg-light bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-dark text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-file-earmark-plus"></i> new chat opened - ${timestamp}     </p>
                 </div>
             `;
@@ -789,17 +880,17 @@ update_chat = function (obj) {
     if (obj.type == "received") {
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
-    
-                    <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">            
+
+                    <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
                       ${fileheader}
-                                            
+
                       <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
-                            <span class="badge bg-light text-muted">${timestamp}</span>  
-                            
+                            <span class="badge bg-light text-muted">${timestamp}</span>
+
                         </p>
                       </div>
                     </div>
@@ -826,9 +917,9 @@ update_chat = function (obj) {
       var new_message = `
 
             <div class="d-flex align-items-center"> <!-- max-width: 75%;  w-75 -->
-            
+
             ${controlarea_transmit}
-               
+
             <div class="rounded-3 mt-2 mb-0" style="max-width: 75%;" > <!-- w-100 style="margin-left: auto;"-->
 
                     <!--<p class="font-monospace text-right mb-0 text-muted" style="text-align: right;">${timestamp}</p>-->
@@ -836,12 +927,12 @@ update_chat = function (obj) {
                       obj._id
                     }">
                     ${fileheader}
-                    
+
                       <div class="card-body rounded-3 p-0 text-right bg-primary">
                         <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
-                            
+
                             <span class="text-white" id="msg-${
                               obj._id
                             }-status" style="font-size:0.8rem;">${get_icon_for_state(
@@ -851,9 +942,9 @@ update_chat = function (obj) {
                             <!--<button type="button" id="retransmit-msg-${
                               obj._id
                             }" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>-->
-                            
+
                         </p>
-                        
+
                        <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
                             <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${
         obj._id
@@ -867,18 +958,18 @@ update_chat = function (obj) {
                 obj._id
               }-progress-information">
 							    ${obj.percent} % - ${obj.bytesperminute} Bpm
-							    
+
 							</p>
 
-                            
-                            
-                           
+
+
+
                             </div>
                       </div>
                     </div>
-                    
+
                 </div>
-                
+
                 </div>
 
                 `;
@@ -1069,7 +1160,7 @@ if (
                       // error
                       console.log(err);
                       binaryString = blobUtil.arrayBufferToBinaryString(data);
-                      
+
                     }).then(function(){
 
                         console.log(binaryString)
@@ -1196,6 +1287,80 @@ add_obj_to_database = function (obj) {
     .then(function (response) {
       console.log("new database entry");
       console.log(response);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+};
+
+/* users database functions */
+addUserToDatabaseIfNotExists = function (obj) {
+  /*
+    "user_info_callsign",
+    "user_info_gridsquare",
+    "user_info_name",
+    "user_info_age",
+    "user_info_location",
+    "user_info_radio",
+    "user_info_antenna",
+    "user_info_email",
+    "user_info_website",
+    "user_info_comments",
+*/
+  users
+    .find({
+      selector: {
+        callsign: obj.user_info_callsign,
+      },
+    })
+    .then(function (result) {
+      // handle result
+      console.log(result);
+
+      console.log(result.docs.length);
+      if (result.docs.length > 0) {
+        users
+          .put({
+            _id: result.docs[0]._id,
+            _rev: result.docs[0]._rev,
+            callsign: obj.user_info_callsign,
+            gridsquare: obj.user_info_gridsquare,
+            name: obj.user_info_name,
+            age: obj.user_info_age,
+            location: obj.user_info_location,
+            radio: obj.user_info_radio,
+            antenna: obj.user_info_antenna,
+            email: obj.user_info_email,
+            website: obj.user_info_website,
+            comments: obj.user_info_comments,
+          })
+          .then(function (response) {
+            console.log("UPDATED USER");
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      } else {
+        users
+          .post({
+            callsign: obj.user_info_callsign,
+            gridsquare: obj.user_info_gridsquare,
+            name: obj.user_info_name,
+            age: obj.user_info_age,
+            location: obj.user_info_location,
+            radio: obj.user_info_radio,
+            antenna: obj.user_info_antenna,
+            email: obj.user_info_email,
+            website: obj.user_info_website,
+            comments: obj.user_info_comments,
+          })
+          .then(function (response) {
+            console.log("NEW USER ADDED");
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      }
     })
     .catch(function (err) {
       console.log(err);
