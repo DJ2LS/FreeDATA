@@ -663,6 +663,7 @@ update_chat = function (obj) {
         <div class="ms-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
              </div>
 
         `;
@@ -671,6 +672,7 @@ update_chat = function (obj) {
         
              <div class="me-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
              </div>
 
         `;
@@ -681,9 +683,14 @@ update_chat = function (obj) {
       var controlarea_transmit = `
 <div class="ms-auto" id="msg-${obj._id}-control-area">
                 <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
              </div>
         `;
-      var controlarea_receive = "";
+      var controlarea_receive = `
+      <div class="float-start" id="msg-${obj._id}-control-area">
+                      <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                   </div>
+              `;
     }
   } catch (err) {
     console.log("error with database parsing...");
@@ -797,12 +804,7 @@ update_chat = function (obj) {
                       </div>
                     </div>
                 </div>
-                
-                
-                
-                  ${controlarea_receive}
-                
-                
+                ${controlarea_receive} 
                 </div>
                 `;
     }
@@ -860,7 +862,7 @@ update_chat = function (obj) {
       }%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100">
 							 </div>
 							 
-
+              
 							<p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
                 obj._id
               }-progress-information">
@@ -946,6 +948,39 @@ update_chat = function (obj) {
 
     //document.getElementById(id).className = message_class;
   }
+
+//Delete message event listener
+if (
+  document.getElementById("del-msg-" + obj._id) &&
+  !document
+    .getElementById("del-msg-" + obj._id)
+    .hasAttribute("listenerOnClick")
+) {
+  // set Attribute to determine if we already created an EventListener for this element
+  document
+    .getElementById("del-msg-" + obj._id)
+    .setAttribute("listenerOnClick", "true");
+  document
+    .getElementById("del-msg-" + obj._id)
+    .addEventListener("click", () => {
+      db.get(obj._id, {
+        attachments: true,
+      })
+        .then(function (doc) {
+          db.remove(doc._id,doc._rev,function (err) {
+            if (err) console.log("Error removing item " + err);
+          })
+        })
+        .catch(function (err) {
+          console.log(err);
+        })
+      
+      document.getElementById("msg-" + obj._id).remove();
+      document.getElementById("msg-" + obj._id + "-control-area").remove();
+      console.log("Removed message " + obj._id.toString());
+    })
+  //scrollMessagesToBottom();
+};
 
   // CREATE SAVE TO FOLDER EVENT LISTENER
   if (
