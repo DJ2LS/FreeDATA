@@ -137,36 +137,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
 
-    // add initial entry for own callsign and grid
-    let obj = new Object();
-        obj.user_info_callsign = config.mycall;
-        obj.user_info_gridsquare = config.mygrid;
-    addUserToDatabaseIfNotExists(obj);
 
-  users
-    .find({
-      selector: {
-        user_info_callsign: config.mycall,
-      },
-    })
-    .then(function (result) {
-    if (typeof(result.docs[0]) !== "undefined") {
-      // handle result
-      document.getElementById("user_info_callsign").value = result.docs[0].user_info_callsign;
-      document.getElementById("user_info_gridsquare").value = result.docs[0].user_info_gridsquare;
-      document.getElementById("user_info_name").value = result.docs[0].user_info_name;
-      document.getElementById("user_info_age").value = result.docs[0].user_info_age;
-      document.getElementById("user_info_location").value = result.docs[0].user_info_location;
-      document.getElementById("user_info_radio").value = result.docs[0].user_info_radio;
-      document.getElementById("user_info_antenna").value =result.docs[0].user_info_antenna;
-      document.getElementById("user_info_email").value = result.docs[0].user_info_email;
-      document.getElementById("user_info_website").value = result.docs[0].user_info_website;
-      document.getElementById("user_info_comments").value = result.docs[0].user_info_comments;
-        }
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
 
   const userInfoFields = [
     "user_info_callsign",
@@ -181,6 +152,36 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
+    // add initial entry for own callsign and grid
+    if(document.getElementById("user_info_callsign").value !== config.mycall){
+        let obj = new Object();
+        obj.user_info_callsign = config.mycall;
+        obj.user_info_gridsquare = config.mygrid;
+    addUserToDatabaseIfNotExists(obj);
+    }
+
+
+
+  users
+    .find({
+      selector: {
+        user_info_callsign: config.mycall,
+      },
+    })
+    .then(function (result) {
+    if (typeof(result.docs[0]) !== "undefined") {
+      // handle result
+      userInfoFields.forEach(function (elem) {
+        document.getElementById(elem).value = result.docs[0][elem];
+      });
+
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+
   // user info bulk event listener for saving settings
   userInfoFields.forEach(function (elem) {
     try {
@@ -191,6 +192,7 @@ window.addEventListener("DOMContentLoaded", () => {
         userInfoFields.forEach(function (subelem) {
           obj[subelem] = document.getElementById(subelem).value;
         });
+        console.log(obj)
         addUserToDatabaseIfNotExists(obj);
       });
     } catch (e) {
@@ -1281,6 +1283,7 @@ addUserToDatabaseIfNotExists = function (obj) {
     "user_info_website",
     "user_info_comments",
 */
+console.log(obj)
   users
     .find({
       selector: {
