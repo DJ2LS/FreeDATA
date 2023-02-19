@@ -372,12 +372,19 @@ client.on("data", function (socketdata) {
                 ipcRenderer.send("request-show-arq-toast-datachannel-opening", {
                   data: [data],
                 });
+                ipcRenderer.send("request-update-transmission-status", {
+                  data: [data],
+                });
               } else {
                 ipcRenderer.send(
                   "request-show-arq-toast-datachannel-received-opener",
                   { data: [data] }
                 );
+                ipcRenderer.send("request-update-reception-status", {
+                  data: [data],
+                });
               }
+
               break;
 
             case "waiting":
@@ -406,9 +413,17 @@ client.on("data", function (socketdata) {
                   data: [data],
                 });
               }
-              ipcRenderer.send("request-update-transmission-status", {
-                data: [data],
-              });
+              switch (data["irs"]) {
+                case "True":
+                  ipcRenderer.send("request-update-reception-status", {
+                    data: [data],
+                  });
+                  break;
+                default:
+                  ipcRenderer.send("request-update-transmission-status", {
+                    data: [data], });
+                  break;
+                  }
               break;
 
             case "received":
@@ -416,7 +431,8 @@ client.on("data", function (socketdata) {
               ipcRenderer.send("request-show-arq-toast-transmission-received", {
                 data: [data],
               });
-              ipcRenderer.send("request-update-transmission-status", {
+
+              ipcRenderer.send("request-update-reception-status", {
                 data: [data],
               });
 
