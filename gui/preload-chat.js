@@ -1502,34 +1502,49 @@ function updateAllChat(clear){
     //document.getElementById("list-tab").childNodes.remove();
     //document.getElementById("nav-tab-content").childrenNodes.remove();
   }
-
-  db.find({
-    selector: {
-      $and: [{timestamp: {$exists:true}},
-      {$or:chatFilter}],
-      //$or: chatFilter
+  //Ensure we create an index before running db.find
+  //We can't rely on the default index existing before we get here...... :'(
+  db.createIndex({
+    index: {
+      fields: [
+        {"timestamp":"asc"},
+      ],
     },
-    sort: [
-      {
-        timestamp: "asc",
-      },
-    ],
   })
-    .then(async function (result) {
-      // handle result async
-      if (typeof result !== "undefined") {
-          for (const item of result.docs)
+    .then(function (result) {
+      // handle result
+      db.find({
+        selector: {
+          $and: [{timestamp: {$exists:true}},
+          {$or:chatFilter}],
+          //$or: chatFilter
+        },
+        sort: [
           {
-            //await otherwise history will not be in chronological order
-            await db.get(item._id, {
-              attachments: true,
-            }).then(function (item_with_attachments) {
-              update_chat(item_with_attachments);
-            });
+            timestamp: "asc",
+          },
+        ],
+      })
+        .then(async function (result) {
+          // handle result async
+          if (typeof result !== "undefined") {
+              for (const item of result.docs)
+              {
+                //await otherwise history will not be in chronological order
+                await db.get(item._id, {
+                  attachments: true,
+                }).then(function (item_with_attachments) {
+                  update_chat(item_with_attachments);
+                });
+              }
           }
-      }
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
     })
     .catch(function (err) {
       console.log(err);
     });
+
 }
