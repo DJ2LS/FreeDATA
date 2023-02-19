@@ -1505,8 +1505,9 @@ function updateAllChat(clear){
 
   db.find({
     selector: {
-      $and: [{timestamp: {$exists:true}}],
-      $or: chatFilter
+      $and: [{timestamp: {$exists:true}},
+      {$or:chatFilter}],
+      //$or: chatFilter
     },
     sort: [
       {
