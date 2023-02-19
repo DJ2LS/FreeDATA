@@ -136,6 +136,9 @@ db.createIndex({
     console.log(err);
   });
 
+  var chatFilter = [{type:'newchat'}, {type:'received'},  {type:'transmit'},  {type:'ping-ack'}]
+  updateAllChat(false);
+
 users
   .createIndex({
     index: {
@@ -163,13 +166,29 @@ users
     console.log(err);
   });
 
+  
+function updateAllChat(clear)
+{
+  if (clear == true)
+  {
+    filetype = "";
+    file = "";
+    filename = "";
+    callsign_counter = 0;
+    selected_callsign = "";
+    dxcallsigns=new Set();
+    document.getElementById("list-tab").innerHTML="";
+    document.getElementById("nav-tabContent").innerHTML="";
+    //document.getElementById("list-tab").childNodes.remove();
+    //document.getElementById("nav-tab-content").childrenNodes.remove();
+  }
   db.find({
     selector: {
       timestamp: {
         $exists: true,
       },
       //Future for filter
-      //$or: [{type:'ping'},{type:'beacon'}]
+      $or: chatFilter
     },
     sort: [
       {
@@ -194,6 +213,8 @@ users
     .catch(function (err) {
       console.log(err);
     });
+}
+
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
@@ -267,6 +288,16 @@ window.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  //Add event listener for filter apply button
+  document.getElementById("btnFilter").addEventListener("click",() => {
+    chatFilter=[{type:'newchat'}];  
+    if (document.getElementById('chkMessage').checked == true) chatFilter.push({type:'received'},{type:'transmit'});
+    if (document.getElementById('chkPing').checked == true) chatFilter.push({type:'ping'});
+    if (document.getElementById('chkPingAck').checked == true) chatFilter.push({type:'ping-ack'});
+    if (document.getElementById('chkBeacon').checked == true) chatFilter.push({type:'beacon'});
+    updateAllChat(true);
+  });
+  
   document
     .querySelector("emoji-picker")
     .addEventListener("emoji-click", (event) => {
