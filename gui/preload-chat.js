@@ -635,6 +635,25 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       update_chat_obj_by_uuid(obj.uuid);
 
       // handle beacon
+    } else if (item.ping == "acknowledge") {
+      obj.timestamp = parseInt(item.timestamp);
+      obj.dxcallsign = item.dxcallsign;
+      obj.dxgrid = item.dxgrid;
+      obj.uuid = item.uuid;
+      obj.command = "ping-ack";
+      obj.checksum = "null";
+      obj.msg = "null";
+      obj.status = item.status;
+      obj.snr = item.dxsnr + "/" + item.snr;
+      obj.type = "ping-ack";
+      obj.filename = "null";
+      obj.filetype = "null";
+      obj.file = "null";
+
+      add_obj_to_database(obj);
+      update_chat_obj_by_uuid(obj.uuid);
+
+      // handle beacon
     } else if (item.beacon == "received") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
@@ -856,7 +875,13 @@ update_chat = function (obj) {
       var new_message = `
                 <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
-
+                </div>
+            `;
+    }
+    if (obj.type == "ping-ack") {
+      var new_message = `
+                <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
+                    <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-check-lg"></i>Ping ack dx/mine snr: ${obj.snr} - ${timestamp}     </p>
                 </div>
             `;
     }
