@@ -67,9 +67,8 @@ var db = new PouchDB(chatDB);
 var users = new PouchDB(userDB);
 
 /* -------- CREATE DATABASE INDEXES */
-createChatIndex()
-createUserIndex()
-
+createChatIndex();
+createUserIndex();
 
 /*
 // REMOTE SYNC ATTEMPTS
@@ -113,16 +112,15 @@ db.sync('http://172.20.10.4:5984/jojo', {
 });
 */
 
-
-
 var dxcallsigns = new Set();
-var chatFilter = [{type:'newchat'}, {type:'received'},  {type:'transmit'},  {type:'ping-ack'}]
+var chatFilter = [
+  { type: "newchat" },
+  { type: "received" },
+  { type: "transmit" },
+  { type: "ping-ack" },
+];
 
 updateAllChat(false);
-
-
-
-
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
@@ -135,9 +133,6 @@ window.addEventListener("DOMContentLoaded", () => {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = theme_path;
   }
-
-
-
 
   const userInfoFields = [
     "user_info_callsign",
@@ -152,15 +147,13 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
-    // add initial entry for own callsign and grid
-    if(document.getElementById("user_info_callsign").value !== config.mycall){
-        let obj = new Object();
-        obj.user_info_callsign = config.mycall;
-        obj.user_info_gridsquare = config.mygrid;
+  // add initial entry for own callsign and grid
+  if (document.getElementById("user_info_callsign").value !== config.mycall) {
+    let obj = new Object();
+    obj.user_info_callsign = config.mycall;
+    obj.user_info_gridsquare = config.mygrid;
     addUserToDatabaseIfNotExists(obj);
-    }
-
-
+  }
 
   users
     .find({
@@ -169,18 +162,16 @@ window.addEventListener("DOMContentLoaded", () => {
       },
     })
     .then(function (result) {
-    if (typeof(result.docs[0]) !== "undefined") {
-      // handle result
-      userInfoFields.forEach(function (elem) {
-        document.getElementById(elem).value = result.docs[0][elem];
-      });
-
+      if (typeof result.docs[0] !== "undefined") {
+        // handle result
+        userInfoFields.forEach(function (elem) {
+          document.getElementById(elem).value = result.docs[0][elem];
+        });
       }
     })
     .catch(function (err) {
       console.log(err);
     });
-
 
   // user info bulk event listener for saving settings
   userInfoFields.forEach(function (elem) {
@@ -192,7 +183,7 @@ window.addEventListener("DOMContentLoaded", () => {
         userInfoFields.forEach(function (subelem) {
           obj[subelem] = document.getElementById(subelem).value;
         });
-        console.log(obj)
+        console.log(obj);
         addUserToDatabaseIfNotExists(obj);
       });
     } catch (e) {
@@ -202,12 +193,16 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   //Add event listener for filter apply button
-  document.getElementById("btnFilter").addEventListener("click",() => {
-    chatFilter=[{type:'newchat'}];
-    if (document.getElementById('chkMessage').checked == true) chatFilter.push({type:'received'},{type:'transmit'});
-    if (document.getElementById('chkPing').checked == true) chatFilter.push({type:'ping'});
-    if (document.getElementById('chkPingAck').checked == true) chatFilter.push({type:'ping-ack'});
-    if (document.getElementById('chkBeacon').checked == true) chatFilter.push({type:'beacon'});
+  document.getElementById("btnFilter").addEventListener("click", () => {
+    chatFilter = [{ type: "newchat" }];
+    if (document.getElementById("chkMessage").checked == true)
+      chatFilter.push({ type: "received" }, { type: "transmit" });
+    if (document.getElementById("chkPing").checked == true)
+      chatFilter.push({ type: "ping" });
+    if (document.getElementById("chkPingAck").checked == true)
+      chatFilter.push({ type: "ping-ack" });
+    if (document.getElementById("chkBeacon").checked == true)
+      chatFilter.push({ type: "beacon" });
     updateAllChat(true);
   });
 
@@ -277,12 +272,11 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   document.addEventListener("keyup", function (event) {
-
-
     // Number 13 == Enter
-    if (event.keyCode === 13
-            && !event.shiftKey
-            && document.activeElement.id == 'chatModuleMessage'
+    if (
+      event.keyCode === 13 &&
+      !event.shiftKey &&
+      document.activeElement.id == "chatModuleMessage"
     ) {
       // Cancel the default action, if needed
       event.preventDefault();
@@ -1016,38 +1010,38 @@ update_chat = function (obj) {
     //document.getElementById(id).className = message_class;
   }
 
-//Delete message event listener
-if (
-  document.getElementById("del-msg-" + obj._id) &&
-  !document
-    .getElementById("del-msg-" + obj._id)
-    .hasAttribute("listenerOnClick")
-) {
-  // set Attribute to determine if we already created an EventListener for this element
-  document
-    .getElementById("del-msg-" + obj._id)
-    .setAttribute("listenerOnClick", "true");
-  document
-    .getElementById("del-msg-" + obj._id)
-    .addEventListener("click", () => {
-      db.get(obj._id, {
-        attachments: true,
-      })
-        .then(function (doc) {
-          db.remove(doc._id,doc._rev,function (err) {
-            if (err) console.log("Error removing item " + err);
+  //Delete message event listener
+  if (
+    document.getElementById("del-msg-" + obj._id) &&
+    !document
+      .getElementById("del-msg-" + obj._id)
+      .hasAttribute("listenerOnClick")
+  ) {
+    // set Attribute to determine if we already created an EventListener for this element
+    document
+      .getElementById("del-msg-" + obj._id)
+      .setAttribute("listenerOnClick", "true");
+    document
+      .getElementById("del-msg-" + obj._id)
+      .addEventListener("click", () => {
+        db.get(obj._id, {
+          attachments: true,
+        })
+          .then(function (doc) {
+            db.remove(doc._id, doc._rev, function (err) {
+              if (err) console.log("Error removing item " + err);
+            });
           })
-        })
-        .catch(function (err) {
-          console.log(err);
-        })
+          .catch(function (err) {
+            console.log(err);
+          });
 
-      document.getElementById("msg-" + obj._id).remove();
-      document.getElementById("msg-" + obj._id + "-control-area").remove();
-      console.log("Removed message " + obj._id.toString());
-    })
-  //scrollMessagesToBottom();
-};
+        document.getElementById("msg-" + obj._id).remove();
+        document.getElementById("msg-" + obj._id + "-control-area").remove();
+        console.log("Removed message " + obj._id.toString());
+      });
+    //scrollMessagesToBottom();
+  }
 
   // CREATE SAVE TO FOLDER EVENT LISTENER
   if (
@@ -1283,7 +1277,7 @@ addUserToDatabaseIfNotExists = function (obj) {
     "user_info_website",
     "user_info_comments",
 */
-console.log(obj)
+  console.log(obj);
   users
     .find({
       selector: {
@@ -1394,111 +1388,94 @@ function atob_FD(data) {
   return Buffer.from(data, "base64").toString("utf-8");
 }
 
-
-
-
 function returnObjFromCallsign(database, callsign) {
-
-    users
-        .find(
-            {
-            selector: {
-                user_info_callsign: callsign,
-            },
-            }
-        )
-        .then(
-
-            function (result) {
-            if (typeof(result.docs[0]) !== "undefined") {
-              return result.docs[0];
-            } else {
-                return false
-            }
-            }
-        )
-        .catch(function (err) {
-          console.log(err);
-        });
-
-
-
+  users
+    .find({
+      selector: {
+        user_info_callsign: callsign,
+      },
+    })
+    .then(function (result) {
+      if (typeof result.docs[0] !== "undefined") {
+        return result.docs[0];
+      } else {
+        return false;
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 }
 
-
-
-function createChatIndex(){
-db.createIndex({
-  index: {
-    fields: [
-      "timestamp",
-      "uuid",
-      "dxcallsign",
-      "dxgrid",
-      "msg",
-      "checksum",
-      "type",
-      "command",
-      "status",
-      "percent",
-      "bytesperminute",
-      "_attachments",
-    ],
-  },
-})
-  .then(function (result) {
-    // handle result
-    console.log(result);
-  })
-  .catch(function (err) {
-    console.log(err);
-  });
-
-}
-
-function createUserIndex(){
-
-users
-  .createIndex({
+function createChatIndex() {
+  db.createIndex({
     index: {
       fields: [
         "timestamp",
-        "user_info_callsign",
-        "user_info_gridsquare",
-        "user_info_name",
-        "user_info_age",
-        "user_info_location",
-        "user_info_radio",
-        "user_info_antenna",
-        "user_info_email",
-        "user_info_website",
-        "user_info_comments",
+        "uuid",
+        "dxcallsign",
+        "dxgrid",
+        "msg",
+        "checksum",
+        "type",
+        "command",
+        "status",
+        "percent",
+        "bytesperminute",
         "_attachments",
       ],
     },
   })
-  .then(function (result) {
-    // handle result
-    console.log(result);
-    return true
-  })
-  .catch(function (err) {
-    console.log(err);
-    return false
-  });
+    .then(function (result) {
+      // handle result
+      console.log(result);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 }
 
-function updateAllChat(clear){
-  if (clear == true)
-  {
+function createUserIndex() {
+  users
+    .createIndex({
+      index: {
+        fields: [
+          "timestamp",
+          "user_info_callsign",
+          "user_info_gridsquare",
+          "user_info_name",
+          "user_info_age",
+          "user_info_location",
+          "user_info_radio",
+          "user_info_antenna",
+          "user_info_email",
+          "user_info_website",
+          "user_info_comments",
+          "_attachments",
+        ],
+      },
+    })
+    .then(function (result) {
+      // handle result
+      console.log(result);
+      return true;
+    })
+    .catch(function (err) {
+      console.log(err);
+      return false;
+    });
+}
+
+function updateAllChat(clear) {
+  if (clear == true) {
     filetype = "";
     file = "";
     filename = "";
     callsign_counter = 0;
     selected_callsign = "";
-    dxcallsigns=new Set();
-    document.getElementById("list-tab").innerHTML="";
-    document.getElementById("nav-tabContent").innerHTML="";
+    dxcallsigns = new Set();
+    document.getElementById("list-tab").innerHTML = "";
+    document.getElementById("nav-tabContent").innerHTML = "";
     //document.getElementById("list-tab").childNodes.remove();
     //document.getElementById("nav-tab-content").childrenNodes.remove();
   }
@@ -1506,17 +1483,14 @@ function updateAllChat(clear){
   //We can't rely on the default index existing before we get here...... :'(
   db.createIndex({
     index: {
-      fields: [
-        {"timestamp":"asc"},
-      ],
+      fields: [{ timestamp: "asc" }],
     },
   })
     .then(function (result) {
       // handle result
       db.find({
         selector: {
-          $and: [{timestamp: {$exists:true}},
-          {$or:chatFilter}],
+          $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
           //$or: chatFilter
         },
         sort: [
@@ -1528,15 +1502,16 @@ function updateAllChat(clear){
         .then(async function (result) {
           // handle result async
           if (typeof result !== "undefined") {
-              for (const item of result.docs)
-              {
-                //await otherwise history will not be in chronological order
-                await db.get(item._id, {
+            for (const item of result.docs) {
+              //await otherwise history will not be in chronological order
+              await db
+                .get(item._id, {
                   attachments: true,
-                }).then(function (item_with_attachments) {
+                })
+                .then(function (item_with_attachments) {
                   update_chat(item_with_attachments);
                 });
-              }
+            }
           }
         })
         .catch(function (err) {
@@ -1546,5 +1521,4 @@ function updateAllChat(clear){
     .catch(function (err) {
       console.log(err);
     });
-
 }

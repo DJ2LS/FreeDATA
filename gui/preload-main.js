@@ -1575,7 +1575,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
     " (comp: " +
     formatBytes(arq_bytes_per_minute_compressed, 1) +
     ")</strong>";
-    document.getElementById("transmission_timeleft").innerHTML = time_left;
+  document.getElementById("transmission_timeleft").innerHTML = time_left;
   connectedStation(data);
 });
 

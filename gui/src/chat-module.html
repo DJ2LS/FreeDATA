@@ -67,27 +67,25 @@
                 <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
               </button>
 
-
               <button
                 type="button"
                 id="userModalButton"
                 data-bs-toggle="modal"
                 data-bs-target="#userModal"
                 class="btn btn-sm btn-primary ms-2"
-               ><i class="bi bi-person" style="font-size: 1.2rem"></i></button>
-                                           <button
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+              <button
                 type="button"
                 id="sharedFolderButton"
                 data-bs-toggle="modal"
                 data-bs-target="#sharedFolderModal"
                 class="btn btn-sm btn-primary"
-               ><i class="bi bi-files" style="font-size: 1.2rem"></i></button>
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
             </div>
-
-
-
-
-
           </div>
           <hr class="m-2" />
           <div class="overflow-auto vh-100">
@@ -111,83 +109,109 @@
                 Ping
               </button>
               <button
-              id="chatSettingsDropDown"
-              type="button"
-              class="btn btn-outline-secondary dropdown-toggle"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <i class="bi bi-three-dots-vertical"></i>
-            </button>
-            <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
-              <li>
-                <a
-                  class="dropdown-item bg-danger text-white"
-                  id="delete_selected_chat"
-                  href="#"
-                  >Delete chat</a
-                >
-              </li>
-            </ul>
+                id="chatSettingsDropDown"
+                type="button"
+                class="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
+                <li>
+                  <a
+                    class="dropdown-item bg-danger text-white"
+                    id="delete_selected_chat"
+                    href="#"
+                    >Delete chat</a
+                  >
+                </li>
+              </ul>
 
-                             <button
+              <button
                 type="button"
                 id="userModalDXButton"
                 data-bs-toggle="modal"
                 data-bs-target="#userModalDX"
                 class="btn btn-sm btn-secondary"
-               ><i class="bi bi-person" style="font-size: 1.2rem"></i></button>
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
 
-                      <button
+              <button
                 type="button"
                 id="sharedFolderDXButton"
                 data-bs-toggle="modal"
                 data-bs-target="#sharedFolderModalDX"
                 class="btn btn-sm btn-secondary"
-               ><i class="bi bi-files" style="font-size: 1.2rem"></i></button>
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
 
-               
-              
-                <button type="button" class="btn btn-small btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
-                 <i class="bi bi-funnel-fill"></i>
+              <button
+                type="button"
+                class="btn btn-small btn-primary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                data-bs-auto-close="outside"
+              >
+                <i class="bi bi-funnel-fill"></i>
+              </button>
+              <form class="dropdown-menu p-4" id="frmFilter">
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      checked="true"
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkMessage"
+                    />
+                    <label class="form-check-label" for="chkMessage">
+                      Messages
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkPing"
+                    />
+                    <label class="form-check-label" for="chkPing">
+                      Pings
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      checked="true"
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkPingAck"
+                    />
+                    <label class="form-check-label" for="chkPingAck">
+                      Ping-Acks
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkBeacon"
+                    />
+                    <label class="form-check-label" for="chkBeacon">
+                      Beacons
+                    </label>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="btnFilter">
+                  Refresh
                 </button>
-                <form class="dropdown-menu p-4" id="frmFilter">
-                  <div class="mb-1">
-                    <div class="form-check">
-                      <input checked="true" type="checkbox" class="form-check-input" id="chkMessage">
-                      <label class="form-check-label" for="chkMessage">
-                        Messages
-                      </label>
-                    </div>
-                  </div>
-                    <div class="mb-1">
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="chkPing">
-                      <label class="form-check-label" for="chkPing">
-                        Pings
-                      </label>
-                    </div>
-                  </div>
-                    <div class="mb-1">
-                    <div class="form-check">
-                      <input checked="true" type="checkbox" class="form-check-input" id="chkPingAck">
-                      <label class="form-check-label" for="chkPingAck">
-                        Ping-Acks
-                      </label>
-                    </div>
-                  </div>
-                    <div class="mb-1">
-                    <div class="form-check">
-                      <input type="checkbox" class="form-check-input" id="chkBeacon">
-                      <label class="form-check-label" for="chkBeacon">
-                        Beacons
-                      </label>
-                    </div>
-                    </div>
-                    <button type="button" class="btn btn-primary" id="btnFilter">Refresh</button>
-
-                </form>
-
+              </form>
             </div>
           </div>
           <hr class="m-0" />
@@ -256,8 +280,8 @@
         </div>
       </div>
     </div>
-  <!-- user modal -->
-  <div
+    <!-- user modal -->
+    <div
       class="modal fade"
       id="userModal"
       tabindex="-1"
@@ -267,7 +291,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="userModalLabel">My station info</h1>
+            <h1 class="modal-title fs-5" id="userModalLabel">
+              My station info
+            </h1>
 
             <button
               type="button"
@@ -275,128 +301,124 @@
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
-
-
           </div>
           <div class="modal-body">
             <div class="container-fluid">
-
-                            <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Callsign</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Callsign"
-                    id="user_info_callsign"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
-              </div>
-
-
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Name</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Name"
-                    id="user_info_name"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Callsign</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Callsign"
+                  id="user_info_callsign"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Age</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Age"
-                    id="user_info_age"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
-              </div>
-                            <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Gridsquare</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Gridsquare"
-                    id="user_info_gridsquare"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
-              </div>
-              <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Location</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Location"
-                    id="user_info_location"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Name</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Name"
+                  id="user_info_name"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Radio</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Radio"
-                    id="user_info_radio"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Age</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Age"
+                  id="user_info_age"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+              <div class="input-group input-group-sm mb-1">
+                <span class="input-group-text w-25">Gridsquare</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Gridsquare"
+                  id="user_info_gridsquare"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+              <div class="input-group input-group-sm mb-1">
+                <span class="input-group-text w-25">Location</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Location"
+                  id="user_info_location"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Antenna</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Antenna"
-                    id="user_info_antenna"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Radio</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Radio"
+                  id="user_info_radio"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Email</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Email"
-                    id="user_info_email"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Antenna</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Antenna"
+                  id="user_info_antenna"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Website</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Website"
-                    id="user_info_website"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Email</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Email"
+                  id="user_info_email"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
+              </div>
+
+              <div class="input-group input-group-sm mb-1">
+                <span class="input-group-text w-25">Website</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Website"
+                  id="user_info_website"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
               <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text w-25">Comments</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Comments"
-                    id="user_info_comments"
-                    aria-label="Name"
-                    aria-describedby="basic-addon1"
-                  />
+                <span class="input-group-text w-25">Comments</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Comments"
+                  id="user_info_comments"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
               </div>
             </div>
             <div class="modal-footer">
@@ -412,8 +434,8 @@
         </div>
       </div>
     </div>
-  <!-- dx user modal -->
-  <div
+    <!-- dx user modal -->
+    <div
       class="modal fade"
       id="userModalDX"
       tabindex="-1"
@@ -431,15 +453,9 @@
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
-
-
           </div>
           <div class="modal-body">
-            <div class="container-fluid">
-
-              Future feature... be patient :-)
-
-            </div>
+            <div class="container-fluid">Future feature... be patient :-)</div>
             <div class="modal-footer">
               <button
                 type="button"
@@ -455,7 +471,7 @@
     </div>
 
     <!-- user shared folder -->
-  <div
+    <div
       class="modal fade"
       id="sharedFolderModal"
       tabindex="-1"
@@ -465,7 +481,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">My Shared folder</h1>
+            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
+              My Shared folder
+            </h1>
 
             <button
               type="button"
@@ -473,15 +491,9 @@
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
-
-
           </div>
           <div class="modal-body">
-            <div class="container-fluid">
-
-              Future feature... be patient :-)
-
-            </div>
+            <div class="container-fluid">Future feature... be patient :-)</div>
             <div class="modal-footer">
               <button
                 type="button"
@@ -497,7 +509,7 @@
     </div>
 
     <!-- dx user shared folder -->
-  <div
+    <div
       class="modal fade"
       id="sharedFolderModalDX"
       tabindex="-1"
@@ -507,7 +519,9 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">Shared folder</h1>
+            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
+              Shared folder
+            </h1>
 
             <button
               type="button"
@@ -515,15 +529,9 @@
               data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
-
-
           </div>
           <div class="modal-body">
-            <div class="container-fluid">
-
-              Future feature... be patient :-)
-
-            </div>
+            <div class="container-fluid">Future feature... be patient :-)</div>
             <div class="modal-footer">
               <button
                 type="button"

@@ -421,9 +421,10 @@ client.on("data", function (socketdata) {
                   break;
                 default:
                   ipcRenderer.send("request-update-transmission-status", {
-                    data: [data], });
+                    data: [data],
+                  });
                   break;
-                  }
+              }
               break;
 
             case "received":
