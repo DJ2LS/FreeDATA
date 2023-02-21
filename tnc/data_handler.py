@@ -1408,7 +1408,7 @@ class DATA:
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
                 self.burst_ack_snr = 'NaN'
-                self.irs_buffer_position = int.from_bytes(bytes(data_in[4:8]), "big")
+                self.irs_buffer_position = int.from_bytes(data_in[4:8], "big")
 
                 self.log.warning(
                     "[TNC] ARQ | TX | Burst NACK received",
