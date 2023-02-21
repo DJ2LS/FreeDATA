@@ -1400,6 +1400,7 @@ class DATA:
 
                 self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
             else:
+
                 # Decrease speed level if we received a burst nack
                 # self.speed_level = max(self.speed_level - 1, 0)
                 # Set flag to retry frame again.
@@ -1408,6 +1409,12 @@ class DATA:
                 self.burst_nack_counter += 1
                 self.burst_ack_snr = 'NaN'
                 self.irs_buffer_position = int.from_bytes(bytes(data_in[4:8]), "big")
+
+                self.log.warning(
+                    "[TNC] ARQ | TX | Burst NACK received",
+                    burst_nack_counter=self.burst_nack_counter,
+                    irs_buffer_position=self.irs_buffer_position,
+                )
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
