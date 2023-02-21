@@ -25,8 +25,8 @@ class TCI:
         self.audio_received_queue = AUDIO_RECEIVED_QUEUE
         self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
 
-        self.hostname = '127.0.0.1'
-        self.port = 50001
+        self.hostname = str(hostname)
+        self.port = str(port)
 
         self.ws = ''
 
@@ -37,11 +37,11 @@ class TCI:
         )
         tci_thread.start()
 
-
-
     def connect(self):
-        print("starting..............")
-        self.ws = websocket.WebSocketApp("ws://127.0.0.1:50001",
+        self.log.info(
+            "[TCI] Starting TCI thread!", ip=self.hostname, port=self.port
+        )
+        self.ws = websocket.WebSocketApp("ws://" + self.hostname + ":" + self.port,
                                          on_open=self.on_open,
                                          on_message=self.on_message,
                                          on_error=self.on_error,
@@ -72,7 +72,6 @@ class TCI:
             channel = int.from_bytes(message[28:32], "little")
             reserved = int.from_bytes(message[32:36], "little")
             audio_data = message[36+28:]
-            print(len(audio_data))
             self.audio_received_queue.put(audio_data)
 
     def on_error(self, error):
