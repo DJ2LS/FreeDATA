@@ -36,12 +36,13 @@ class TCI:
         self.log.info(
             "[TCI] Starting TCI thread!", ip=self.hostname, port=self.port
         )
-        self.ws = websocket.WebSocketApp("ws://" + self.hostname + ":" + self.port,
-                                         on_open=self.on_open,
-                                         on_message=self.on_message,
-                                         on_error=self.on_error,
-                                         on_close=self.on_close
-                                         )
+        self.ws = websocket.WebSocketApp(
+            f"ws://{self.hostname}:{self.port}",
+            on_open=self.on_open,
+            on_message=self.on_message,
+            on_error=self.on_error,
+            on_close=self.on_close,
+        )
 
         self.ws.run_forever(reconnect=5)  # Set dispatcher to automatic reconnection, 5 second reconnect delay if con>
         #rel.signal(2, rel.abort)  # Keyboard Interrupt
@@ -55,7 +56,7 @@ class TCI:
             self.ws.send('AUDIO_STREAM_SAMPLES:1200;')
             self.ws.send('audio_start:0;')
 
-        if len(message) == 576 or len(message) == 2464 or len(message) == 4160:
+        if len(message) in {576, 2464, 4160}:
             # audio received
             receiver = message[:4]
             sample_rate = int.from_bytes(message[4:8], "little")
