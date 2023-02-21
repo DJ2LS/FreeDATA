@@ -9,218 +9,88 @@ import structlog
 import threading
 import static
 import numpy as np
+import websocket
+import _thread
+import time
+import rel
+from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
+
+
 
 class TCI:
-    """TCI (hamlib) communication class"""
+    def __init__(self, hostname='127.0.0.1', port=50001):
+        # websocket.enableTrace(True)
+        self.log = structlog.get_logger("TCI")
 
-    log = structlog.get_logger("radio (TCI)")
+        self.audio_received_queue = AUDIO_RECEIVED_QUEUE
+        self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
 
-    def __init__(self, hostname="localhost", port=9000, poll_rate=5, timeout=5):
-        """Open a connection to TCI, and test it for validity"""
-        self.ptt_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.data_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.hostname = '127.0.0.1'
+        self.port = 50001
 
-        self.ptt_connected = False
-        self.data_connected = False
-        self.hostname = hostname
-        self.port = port
-        self.connection_attempts = 5
+        self.ws = ''
 
-        # class wide variable for some parameters
-        self.bandwidth = ''
-        self.frequency = ''
-        self.mode = ''
-        self.alc = ''
-        self.strength = ''
-        self.rf = ''
-
-    def open_rig(
-            self,
-            tci_ip,
-            tci_port
-    ):
-        """
-
-        Args:
-          tci_ip:
-          tci_port:
-
-        Returns:
-
-        """
-        self.hostname = tci_ip
-        self.port = int(tci_port)
-
-        # _ptt_connect = self.ptt_connect()
-        # _data_connect = self.data_connect()
-
-        ptt_thread = threading.Thread(target=self.ptt_connect, args=[], daemon=True)
-        ptt_thread.start()
-
-        data_thread = threading.Thread(target=self.data_connect, args=[], daemon=True)
-        data_thread.start()
-
-        # wait some time
-        threading.Event().wait(0.5)
-
-        if self.ptt_connected and self.data_connected:
-            self.log.debug("Rigctl DATA/PTT initialized")
-            return True
-
-        self.log.error(
-            "[TCI] Can't connect!", ip=self.hostname, port=self.port
+        tci_thread = threading.Thread(
+            target=self.connect,
+            name="TCI THREAD",
+            daemon=True,
         )
-        return False
-
-    def ptt_connect(self):
-        """Connect to TCI instance"""
-        while True:
-
-            if not self.ptt_connected:
-                try:
-                    self.ptt_connection = socket.create_connection((self.hostname, self.port))
-                    self.ptt_connected = True
-                    self.log.info(
-                        "[TCI] Connected PTT instance to TCI!", ip=self.hostname, port=self.port
-                    )
-                except Exception as err:
-                    # ConnectionRefusedError: [Errno 111] Connection refused
-                    self.close_rig()
-                    self.log.warning(
-                        "[TCI] PTT Reconnect...",
-                        ip=self.hostname,
-                        port=self.port,
-                        e=err,
-                    )
-
-            threading.Event().wait(0.5)
-
-    def data_connect(self):
-        """Connect to TCI instance"""
-        while True:
-            if not self.data_connected:
-                try:
-                    self.data_connection = socket.create_connection((self.hostname, self.port))
-                    self.data_connected = True
-                    self.log.info(
-                        "[TCI] Connected DATA instance to TCI!", ip=self.hostname, port=self.port
-                    )
-                except Exception as err:
-                    # ConnectionRefusedError: [Errno 111] Connection refused
-                    self.close_rig()
-                    self.log.warning(
-                        "[TCI] DATA Reconnect...",
-                        ip=self.hostname,
-                        port=self.port,
-                        e=err,
-                    )
-            threading.Event().wait(0.5)
-
-    def close_rig(self):
-        """ """
-        self.ptt_sock.close()
-        self.data_sock.close()
-        self.ptt_connected = False
-        self.data_connected = False
-
-    def send_ptt_command(self, command, expect_answer) -> bytes:
-        """Send a command to the connected rotctld instance,
-            and return the return value.
-
-        Args:
-          command:
-
-        """
-        if self.ptt_connected:
-            try:
-                self.ptt_connection.sendall(command)
-            except Exception:
-                self.log.warning(
-                    "[TCI] Command not executed!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.ptt_connected = False
-        return b""
-
-    def send_data_command(self, command, expect_answer) -> bytes:
-        """Send a command to the connected tci instance,
-            and return the return value.
-
-        Args:
-          command:
-
-        """
-        if self.data_connected:
-            self.data_connection.setblocking(False)
-            self.data_connection.settimeout(0.05)
-            try:
-                self.data_connection.sendall(command)
+        tci_thread.start()
 
 
-            except Exception:
-                self.log.warning(
-                    "[TCI] Command not executed!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.data_connected = False
 
-            try:
-                # recv seems to be blocking so in case of ptt we don't need the response
-                # maybe this speeds things up and avoids blocking states
-                recv = True
-                data = b''
+    def connect(self):
+        print("starting..............")
+        self.ws = websocket.WebSocketApp("ws://127.0.0.1:50001",
+                                         on_open=self.on_open,
+                                         on_message=self.on_message,
+                                         on_error=self.on_error,
+                                         on_close=self.on_close
+                                         )
 
-                while recv:
-                    try:
+        self.ws.run_forever(reconnect=5)  # Set dispatcher to automatic reconnection, 5 second reconnect delay if con>
+        #rel.signal(2, rel.abort)  # Keyboard Interrupt
+        #rel.dispatch()
 
-                        data = self.data_connection.recv(64)
+    def on_message(self, ws, message):
+        if message == "ready;":
+            self.ws.send('audio_samplerate:8000;')
+            self.ws.send('audio_stream_channels:1;')
+            self.ws.send('AUDIO_STREAM_SAMPLE_TYPE:int16;')
+            self.ws.send('AUDIO_STREAM_SAMPLES:1200;')
+            self.ws.send('audio_start:0;')
 
-                    except socket.timeout:
-                        recv = False
+        if len(message) == 576 or len(message) == 2464 or len(message) == 4160:
+            # audio received
+            receiver = message[:4]
+            sample_rate = int.from_bytes(message[4:8], "little")
+            format = int.from_bytes(message[8:12], "little")
+            codec = message[12:16]
+            crc = message[16:20]
+            audio_length = int.from_bytes(message[20:24], "little")
+            type = int.from_bytes(message[24:28], "little")
+            channel = int.from_bytes(message[28:32], "little")
+            reserved = int.from_bytes(message[32:36], "little")
+            audio_data = message[36+28:]
+            print(len(audio_data))
+            self.audio_received_queue.put(audio_data)
 
-                return data
+    def on_error(self, error):
+        self.log.error(
+            "[TCI] Error FreeDATA to TCI rig!", ip=self.hostname, port=self.port, e=error
+        )
 
-                # return self.data_connection.recv(64) if expect_answer else True
-            except Exception:
-                self.log.warning(
-                    "[TCI] No command response!",
-                    command=command,
-                    ip=self.hostname,
-                    port=self.port,
-                )
-                self.data_connected = False
-        return b""
+    def on_close(self, ws, close_status_code, close_msg):
+        self.log.warning(
+            "[TCI] Closed FreeDATA to TCI connection!", ip=self.hostname, port=self.port, statu=close_status_code, msg=close_msg
+        )
 
-    def init_audio(self):
-        try:
-            self.send_data_command(b"IQ_SAMPLERATE:48000;", False)
-            self.send_data_command(b"audio_samplerate:8;", False)
-            self.send_data_command(b"audio_start: 0;", False)
-
-            return True
-        except Exception:
-            return False
-
-    def get_audio(self):
-        """"""
-        # generate random audio data
-        if not self.data_connected:
-            return np.random.uniform(-1, 1, 48000)
-
-        try:
-            return self.data_connection.recv(4800)
-        except Exception:
-            return False
+    def on_open(self, ws):
+        self.log.info(
+            "[TCI] Connected FreeDATA to TCI rig!", ip=self.hostname, port=self.port
+        )
 
 
-    def push_audio(self):
-        """ """
-        try:
-            return self.send_data_command(b"PUSH AUDIO COMMAND ", True)
-        except Exception:
-            return False
-
+        self.log.info(
+            "[TCI] Init...", ip=self.hostname, port=self.port
+        )

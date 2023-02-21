@@ -26,7 +26,7 @@ import static
 import structlog
 import ujson as json
 import tci
-from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -84,6 +84,10 @@ class RF:
 
         self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
         self.modem_received_queue = MODEM_RECEIVED_QUEUE
+
+        self.audio_received_queue = AUDIO_RECEIVED_QUEUE
+        self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
+
 
         # Init FIFO queue to store modulation out in
         self.modoutqueue = deque()
@@ -190,14 +194,15 @@ class RF:
             # lets init TCI module
             self.tci_module = tci.TCI()
 
+
             # lets open TCI radio
-            self.tci_module.open_rig(static.TCI_IP, static.TCI_PORT)
+            #self.tci_module.open_rig(static.TCI_IP, static.TCI_PORT)
 
             # lets init TCI audio
-            self.tci_module.init_audio()
+            #self.tci_module.init_audio()
 
             # let's start the audio rx callback
-            self.log.debug("[MDM] Starting tci rx callback thread")
+            #self.log.debug("[MDM] Starting tci rx callback thread")
             tci_rx_callback_thread = threading.Thread(
                 target=self.tci_rx_callback,
                 name="TCI RX CALLBACK THREAD",
@@ -337,7 +342,6 @@ class RF:
                 data_out48k = self.modoutqueue.popleft()
                 self.tci_module.push_audio(data_out48k)
 
-
     def tci_rx_callback(self) -> None:
         """
         Callback for TCI RX
@@ -350,10 +354,24 @@ class RF:
             threading.Event().wait(0.01)
 
             #print(self.tci_module.get_audio())
-            data_in48k = self.tci_module.get_audio()
-            print(data_in48k)
-            x = np.frombuffer(data_in48k, dtype=np.int16)
-            # x = self.resampler.resample48_to_8(x)
+            #data_in48k = self.tci_module.get_audio()
+
+            #x = np.frombuffer(self.audio_received_queue.get(), dtype=np.int16)
+            """
+            if not self.audio_received_queue.empty():
+                x = self.audio_received_queue.get()
+                x = np.frombuffer(x, dtype=np.int16)
+                print(x)
+                print(len(x))
+            else:
+                #x = bytes([0]) * 9600
+                x = np.random.uniform(-1, 1, 2400)
+                x = np.frombuffer(x, dtype=np.int16)
+                print("dummy data")
+            """
+            x = self.audio_received_queue.get()
+            x = np.frombuffer(x, dtype=np.int16)
+            #x = self.resampler.resample48_to_8(x)
 
             self.fft_data = x
 
