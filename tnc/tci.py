@@ -1,18 +1,9 @@
 #!/usr/bin/env python3
-# class taken from darksidelemm
-# rigctl - https://github.com/darksidelemm/rotctld-web-gui/blob/master/rotatorgui.py#L35
-#
-# modified and adjusted to FreeDATA needs by DJ2LS
 
-import socket
+
 import structlog
 import threading
-import static
-import numpy as np
 import websocket
-import _thread
-import time
-import rel
 from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
 
 
@@ -65,13 +56,20 @@ class TCI:
             receiver = message[:4]
             sample_rate = int.from_bytes(message[4:8], "little")
             format = int.from_bytes(message[8:12], "little")
-            codec = message[12:16]
-            crc = message[16:20]
+            codec = int.from_bytes(message[12:16], "little")
+            crc = int.from_bytes(message[16:20], "little")
             audio_length = int.from_bytes(message[20:24], "little")
             type = int.from_bytes(message[24:28], "little")
             channel = int.from_bytes(message[28:32], "little")
-            reserved = int.from_bytes(message[32:36], "little")
-            audio_data = message[36+28:]
+            reserved1 = int.from_bytes(message[32:36], "little")
+            reserved2 = int.from_bytes(message[36:40], "little")
+            reserved3 = int.from_bytes(message[40:44], "little")
+            reserved4 = int.from_bytes(message[44:48], "little")
+            reserved5 = int.from_bytes(message[48:52], "little")
+            reserved6 = int.from_bytes(message[52:56], "little")
+            reserved7 = int.from_bytes(message[56:60], "little")
+            reserved8 = int.from_bytes(message[60:64], "little")
+            audio_data = message[64:]
             self.audio_received_queue.put(audio_data)
 
     def on_error(self, error):
