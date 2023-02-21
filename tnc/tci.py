@@ -6,7 +6,11 @@ import threading
 import websocket
 from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
 
+"""
+trx:0,true;
+trx:0,false;
 
+"""
 
 class TCI:
     def __init__(self, hostname='127.0.0.1', port=50001):
