@@ -624,6 +624,9 @@ class DATA:
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
 
+        # reset frame counter for not increasing speed level
+        self.frame_received_counter = 0
+
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
         disconnection_frame = bytearray(self.length_sig1_frame)
