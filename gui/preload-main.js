@@ -897,6 +897,7 @@ window.addEventListener("DOMContentLoaded", () => {
       ipcRenderer.send("request-restart-and-install");
     });
 
+/*disabled because it's causing confusion TODO: remove entire code some day
   // open arq session
   document.getElementById("openARQSession").addEventListener("click", () => {
     var dxcallsign = document.getElementById("dataModalDxCall").value;
@@ -908,7 +909,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("closeARQSession").addEventListener("click", () => {
     sock.disconnectARQ();
   });
-
+*/
   // sendCQ button clicked
   document.getElementById("sendCQ").addEventListener("click", () => {
     pauseButton(document.getElementById("sendCQ"), 2000);
