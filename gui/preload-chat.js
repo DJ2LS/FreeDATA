@@ -147,8 +147,6 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
-
-
   users
     .find({
       selector: {
@@ -162,16 +160,17 @@ window.addEventListener("DOMContentLoaded", () => {
           document.getElementById(elem).value = result.docs[0][elem];
         });
       } else {
-            console.log(config.mycall + " not found in user db - creating new entry")
-            // add initial entry for own callsign and grid
-            let obj = new Object();
-            obj.user_info_callsign = config.mycall;
-            obj.user_info_gridsquare = config.mygrid;
-            addUserToDatabaseIfNotExists(obj);
+        console.log(
+          config.mycall + " not found in user db - creating new entry"
+        );
+        // add initial entry for own callsign and grid
+        let obj = new Object();
+        obj.user_info_callsign = config.mycall;
+        obj.user_info_gridsquare = config.mygrid;
+        addUserToDatabaseIfNotExists(obj);
 
-            document.getElementById("user_info_callsign").value = config.mycall;
-            document.getElementById("user_info_gridsquare").value = config.mygrid;
-
+        document.getElementById("user_info_callsign").value = config.mycall;
+        document.getElementById("user_info_gridsquare").value = config.mygrid;
       }
     })
     .catch(function (err) {
