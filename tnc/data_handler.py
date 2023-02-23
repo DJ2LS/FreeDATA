@@ -505,13 +505,12 @@ class DATA:
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
 
-
-
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
+        ack_frame[4:8] = len(static.RX_FRAME_BUFFER).to_bytes(4, byteorder="big")
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
@@ -1397,6 +1396,7 @@ class DATA:
                 self.burst_nack_counter = 0
                 # Reset n retries per burst counter
                 self.n_retries_per_burst = 0
+                self.irs_buffer_position = int.from_bytes(data_in[4:8], "big")
 
                 self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
             else:
