@@ -1196,8 +1196,8 @@ class DATA:
                     self.log.error("[TNC] ----- data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
                     # only adjust buffer position for experimental versions
                     if 'exp' in static.VERSION:
-                        self.log.warning("[TNC] ----- data adjustment!")
-                        bufferposition = self.irs_buffer_position
+                        self.log.warning("[TNC] ----- data adjustment disabled!")
+                        # bufferposition = self.irs_buffer_position
 
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
 
