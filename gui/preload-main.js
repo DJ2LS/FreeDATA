@@ -1047,7 +1047,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Theme selector clicked
-  document.getElementById("theme_selector").addEventListener("click", () => {
+  document.getElementById("theme_selector").addEventListener("change", () => {
     var theme = document.getElementById("theme_selector").value;
     if (theme != "default") {
       var theme_path =
