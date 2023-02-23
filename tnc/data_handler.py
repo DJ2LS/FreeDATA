@@ -144,6 +144,12 @@ class DATA:
         self.speed_level = len(self.mode_list) - 1  # speed level for selecting mode
         static.ARQ_SPEED_LEVEL = self.speed_level
 
+        # minimum payload for arq burst
+        # import for avoiding byteorder bug and buffer search area
+        self.arq_burst_header_size = 3
+        self.arq_burst_minimum_payload = 126 - self.arq_burst_header_size
+        self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
+
         self.is_IRS = False
         self.burst_nack = False
         self.burst_nack_counter = 0
@@ -745,14 +751,17 @@ class DATA:
                 # data_mode = self.mode_list[self.speed_level]
                 # payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
                 # search_area = payload_per_frame - 3  # (3 bytes arq frame header)
-                search_area = 510 - 3  # (3 bytes arq frame header)
+                search_area = self.arq_burst_maximum_payload  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
                 # find position of data. returns -1 if nothing found in area else >= 0
                 # we are beginning from the end, so if data exists twice or more,
                 # only the last one should be replaced
+                # we are going to only check position against minimum data frame payload
+                # use case: receive data, which already contains received data
+                # while the payload of data received before is shorter than actual payload
                 get_position = static.RX_FRAME_BUFFER[search_position:].rfind(
-                    temp_burst_buffer
+                    temp_burst_buffer[:self.arq_burst_minimum_payload]
                 )
                 # if we find data, replace it at this position with the new data and strip it
                 if get_position >= 0:
@@ -807,7 +816,7 @@ class DATA:
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
                     irs=helpers.bool_to_string(self.is_IRS)
                 )
-                
+
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
             # We have "Nones" in our rx buffer,
             # Check if we received last frame of burst - this is an indicator for missed frames.
