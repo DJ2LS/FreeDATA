@@ -147,13 +147,7 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
-  // add initial entry for own callsign and grid
-  if (document.getElementById("user_info_callsign").value !== config.mycall) {
-    let obj = new Object();
-    obj.user_info_callsign = config.mycall;
-    obj.user_info_gridsquare = config.mygrid;
-    addUserToDatabaseIfNotExists(obj);
-  }
+
 
   users
     .find({
@@ -167,6 +161,17 @@ window.addEventListener("DOMContentLoaded", () => {
         userInfoFields.forEach(function (elem) {
           document.getElementById(elem).value = result.docs[0][elem];
         });
+      } else {
+            console.log(config.mycall + " not found in user db - creating new entry")
+            // add initial entry for own callsign and grid
+            let obj = new Object();
+            obj.user_info_callsign = config.mycall;
+            obj.user_info_gridsquare = config.mygrid;
+            addUserToDatabaseIfNotExists(obj);
+
+            document.getElementById("user_info_callsign").value = config.mycall;
+            document.getElementById("user_info_gridsquare").value = config.mygrid;
+
       }
     })
     .catch(function (err) {
@@ -1304,6 +1309,8 @@ addUserToDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("UPDATED USER");
+            console.log(response);
+            console.log(obj);
           })
           .catch(function (err) {
             console.log(err);
