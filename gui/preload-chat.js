@@ -13,7 +13,7 @@ const config = require(configPath);
 // set date format
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   timeStyle: "long",
-  dateStyle: "full",
+  dateStyle: "short",
 });
 // set date format information
 const dateFormatShort = new Intl.DateTimeFormat("en-GB", {
