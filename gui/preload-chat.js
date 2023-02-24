@@ -656,7 +656,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 update_chat = function (obj) {
   var dxcallsign = obj.dxcallsign;
   var timestamp = dateFormat.format(obj.timestamp * 1000);
-  var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
+  //var timestampShort = dateFormatShort.format(obj.timestamp * 1000);
   var timestampHours = dateFormatHours.format(obj.timestamp * 1000);
 
   var dxgrid = obj.dxgrid;
@@ -696,7 +696,7 @@ update_chat = function (obj) {
       if (filetype == "image/png" || filetype == "png") {
         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
-        <img class="w-100 rounded-2" src="data:image/png;base64,${obj._attachments[filename]["data"]}">
+        <img class="w-100 rounded-2" src="data:image/png;base64,${atoa_FD(obj._attachments[filename]["data"])}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
@@ -1393,7 +1393,14 @@ function btoa_FD(data) {
 function atob_FD(data) {
   return Buffer.from(data, "base64").toString("utf-8");
 }
-
+/**
+ * UTF8 to ASCII btoa
+ * @param {string} data in base64 encoding
+ * @returns base64 bota compatible data
+ */
+function atoa_FD(data) {
+  return window.btoa(Buffer.from(data,"base64").toString("utf8"));
+}
 function returnObjFromCallsign(database, callsign) {
   users
     .find({
