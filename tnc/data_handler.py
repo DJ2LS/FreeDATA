@@ -771,17 +771,15 @@ class DATA:
                     static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[
                                              : search_position + get_position
                                              ]
-                    static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.warning(
                         "[TNC] ARQ | RX | replacing existing buffer data",
                         area=search_area,
                         pos=get_position,
                     )
-                # If we don't find data in this range, we really have new data and going to replace it
                 else:
-                    static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.debug("[TNC] ARQ | RX | appending data to buffer")
 
+                static.RX_FRAME_BUFFER += temp_burst_buffer
             # Check if we didn't receive a BOF and EOF yet to avoid sending
             # ack frames if we already received all data
             if (
