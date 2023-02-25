@@ -91,6 +91,6 @@ https://stackoverflow.com/a/9622873
 /* image overlay */
 
 .image-overlay:hover {
-    opacity: 0.75 !important;
-    transition: .5s;
+  opacity: 0.75 !important;
+  transition: 0.5s;
 }
