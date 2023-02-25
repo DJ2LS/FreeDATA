@@ -281,6 +281,7 @@
       </div>
     </div>
     <!-- user modal -->
+
     <div
       class="modal fade"
       id="userModal"
@@ -288,70 +289,51 @@
       aria-labelledby="userModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog" style="max-width:600px">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="userModalLabel">
-              My station info
-            </h1>
 
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="container-fluid">
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Callsign</span>
-                <input
+
+<div class="card mb-1 border-0">
+  <div class="row g-0">
+    <div class="col-md-4">
+      <img src="img/icon.png" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-md-8">
+
+      <div class="card-body">
+
+        <div class="input-group input-group-sm mb-1">
+          <span class="input-group-text"><i class="bi bi-pass"></i></span>
+        <input
                   type="text"
                   class="form-control"
                   placeholder="Callsign"
                   id="user_info_callsign"
-                  aria-label="Name"
+                  aria-label="Call"
                   aria-describedby="basic-addon1"
                 />
-              </div>
-
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Name</span>
-                <input
+          <span class="input-group-text"><i class="bi bi-person-vcard"></i></span>
+        <input
                   type="text"
                   class="form-control"
-                  placeholder="Name"
+                  placeholder="name"
                   id="user_info_name"
                   aria-label="Name"
                   aria-describedby="basic-addon1"
                 />
-              </div>
-
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Age</span>
+<span class="input-group-text"><i class="bi bi-sunrise"></i></i></span>
                 <input
                   type="text"
                   class="form-control"
-                  placeholder="Age"
+                  placeholder="age"
                   id="user_info_age"
-                  aria-label="Name"
+                  aria-label="age"
                   aria-describedby="basic-addon1"
                 />
-              </div>
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Gridsquare</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Gridsquare"
-                  id="user_info_gridsquare"
-                  aria-label="Name"
-                  aria-describedby="basic-addon1"
-                />
-              </div>
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Location</span>
+</div>
+
+                     <div class="input-group input-group-sm mb-1">
+                       <span class="input-group-text"><i class="bi bi-house"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -360,10 +342,21 @@
                   aria-label="Name"
                   aria-describedby="basic-addon1"
                 />
+                <span class="input-group-text"><i class="bi bi-pin-map"></i></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Grid"
+                  id="user_info_gridsquare"
+                  aria-label="Name"
+                  aria-describedby="basic-addon1"
+                />
+
               </div>
 
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Radio</span>
+
+        <div class="input-group input-group-sm mb-1">
+                <span class="input-group-text"><i class="bi bi-projector"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -372,10 +365,8 @@
                   aria-label="Name"
                   aria-describedby="basic-addon1"
                 />
-              </div>
 
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Antenna</span>
+                <span class="input-group-text"><i class="bi bi-broadcast-pin"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -387,7 +378,7 @@
               </div>
 
               <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Email</span>
+                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -396,10 +387,8 @@
                   aria-label="Name"
                   aria-describedby="basic-addon1"
                 />
-              </div>
 
-              <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Website</span>
+                <span class="input-group-text"><i class="bi bi-globe"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -410,7 +399,7 @@
                 />
               </div>
               <div class="input-group input-group-sm mb-1">
-                <span class="input-group-text w-25">Comments</span>
+                <span class="input-group-text"><i class="bi bi-info-circle"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -420,17 +409,20 @@
                   aria-describedby="basic-addon1"
                 />
               </div>
-            </div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+        <button
+              type="button"
+              class="btn btn-primary"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >Save & Close</button>
+
         </div>
       </div>
     </div>
