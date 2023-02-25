@@ -761,7 +761,8 @@ update_chat = function (obj) {
   if (!document.getElementById("chat-" + dxcallsign + "-list")) {
     // increment callsign counter
     callsign_counter++;
-    if (callsign_counter == 1) {
+    dxcallsigns.add(dxcallsign);
+    if ((callsign_counter == 1 && selected_callsign=="") || selected_callsign == dxcallsign ) {
       var callsign_selected = "active show";
       //document.getElementById('chatModuleDxCall').value = dxcallsign;
       selected_callsign = dxcallsign;
@@ -1481,14 +1482,14 @@ function createUserIndex() {
     });
 }
 
-function updateAllChat(clear) {
+async function updateAllChat(clear) {
   if (clear == true) {
     filetype = "";
     file = "";
     filename = "";
     callsign_counter = 0;
-    selected_callsign = "";
-    dxcallsigns = new Set();
+    //selected_callsign = "";
+    dxcallsigns.clear();
     document.getElementById("list-tab").innerHTML = "";
     document.getElementById("nav-tabContent").innerHTML = "";
     //document.getElementById("list-tab").childNodes.remove();
@@ -1496,14 +1497,14 @@ function updateAllChat(clear) {
   }
   //Ensure we create an index before running db.find
   //We can't rely on the default index existing before we get here...... :'(
-  db.createIndex({
+  await db.createIndex({
     index: {
       fields: [{ timestamp: "asc" }],
     },
   })
-    .then(function (result) {
+    .then(async function (result) {
       // handle result
-      db.find({
+      await db.find({
         selector: {
           $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
           //$or: chatFilter
@@ -1536,4 +1537,12 @@ function updateAllChat(clear) {
     .catch(function (err) {
       console.log(err);
     });
+    if (clear == true && dxcallsigns.has(selected_callsign) == false) {
+      //Selected call sign is not visible, reset to first call sign
+      let tmp = dxcallsigns.entries().next().value[0];
+      selected_callsign=tmp;
+      document.getElementById("chat-" + tmp + "-list").classList.add("active","show");
+      document.getElementById("chat-" + tmp ).classList.add("active","show");
+      scrollMessagesToBottom();
+    }
 }
