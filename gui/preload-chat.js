@@ -1,6 +1,9 @@
 const path = require("path");
 const { ipcRenderer } = require("electron");
 const { v4: uuidv4 } = require("uuid");
+const imageCompression = require("browser-image-compression");
+
+
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
   process.env.APPDATA ||
@@ -70,17 +73,20 @@ var users = new PouchDB(userDB);
 createChatIndex();
 createUserIndex();
 
-/*
+
 // REMOTE SYNC ATTEMPTS
 
 
-var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
-
+//var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
+/*
 // we need express packages for running pouchdb sync "express-pouchdb"
 var express = require('express');
 var app = express();
-//app.use('/chatDB', require('express-pouchdb')(PouchDB));
-//app.listen(5984);
+app.use('/chatDB', require('express-pouchdb')(PouchDB));
+app.listen(5984);
+
+
+
 
 app.use('/chatDB', require('pouchdb-express-router')(PouchDB));
 app.listen(5984);
@@ -371,6 +377,16 @@ window.addEventListener("DOMContentLoaded", () => {
       update_chat_obj_by_uuid(uuid);
     });
 
+// open file selector for user image
+document.getElementById("userImageSelector").addEventListener("click", () => {
+
+ipcRenderer.send("select-user-image", {
+      title: "Title",
+    });
+
+});
+
+
   // SEND MSG
   document.getElementById("sendMessage").addEventListener("click", () => {
     document.getElementById("emojipickercontainer").style.display = "none";
@@ -482,6 +498,50 @@ ipcRenderer.on("return-selected-files", (event, arg) => {
      </span>
     `;
 });
+
+ipcRenderer.on("return-select-user-image", (event, arg) => {
+  filetype = arg.mime;
+  //console.log(filetype);
+
+  file = arg.data;
+  //filename = arg.filename;
+
+  //console.log(arg.data)
+
+  //document.getElementById("userImage").src = '';
+
+
+
+  //var imageFile = arg.data;
+var imageFile = arg.data;
+console.log(imageFile)
+
+  var options = {
+    maxSizeMB: 1,
+    maxWidthOrHeight: 1920,
+    useWebWorker: true
+  }
+
+
+  imageCompression(imageFile, options)
+    .then(function (compressedFile) {
+      console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
+      console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+
+      console.log(compressedFile.size);
+    })
+    .catch(function (error) {
+      console.log(error.message);
+    });
+
+
+
+
+
+
+});
+
+
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
   console.log(data.status);

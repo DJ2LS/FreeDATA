@@ -511,6 +511,40 @@ ipcMain.on("select-file", (event, data) => {
     });
 });
 
+//select file
+ipcMain.on("select-user-image", (event, data) => {
+  dialog
+    .showOpenDialog({
+      defaultPath: path.join(__dirname, "../"),
+      buttonLabel: "Select file",
+      properties: ["openFile"],
+    })
+    .then((filepath) => {
+      console.log(filepath.filePaths[0]);
+
+      try {
+        //fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
+        //Has to be binary
+        fs.readFile(filepath.filePaths[0], "binary", function (err, data) {
+          console.log(data.length);
+
+          var filename = path.basename(filepath.filePaths[0]);
+          var mimeType = mime.getType(filename);
+          console.log(mimeType);
+          if (mimeType == "" || mimeType == null) {
+            mimeType = "plain/text";
+          }
+          chat.webContents.send("return-select-user-image", {
+            data: data,
+            mime: mimeType,
+            filename: filename,
+          });
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+});
 //save file to folder
 ipcMain.on("save-file-to-folder", (event, data) => {
   console.log(data.file);

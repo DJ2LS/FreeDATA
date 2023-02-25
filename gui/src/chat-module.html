@@ -35,6 +35,10 @@
       type="module"
       src="../node_modules/emoji-picker-element/database.js"
     ></script>
+        <script
+      type="module"
+      src="../node_modules/browser-image-compression/dist/browser-image-compression.js"
+    ></script>
     <div
       class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5"
       style="z-index: 100; display: none"
@@ -300,10 +304,12 @@
                       src="img/icon.png"
                       class="img-fluid rounded-start"
                       alt="..."
+                      id="userImage"
                     />
                   </div>
                   <div
                     class="col position-absolute image-overlay text-white justify-content-center align-items-center d-flex align-middle h-100 bg-dark opacity-0"
+                    id="userImageSelector"
                   >
                     <i class="bi bi-upload" style="font-size: 2.2rem"></i>
                   </div>
