@@ -321,7 +321,7 @@
                   aria-label="Name"
                   aria-describedby="basic-addon1"
                 />
-<span class="input-group-text"><i class="bi bi-sunrise"></i></i></span>
+<span class="input-group-text"><i class="bi bi-sunrise"></i></span>
                 <input
                   type="text"
                   class="form-control"
@@ -434,30 +434,51 @@
       aria-labelledby="userModalDXLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog" style="max-width:600px">
         <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="userModalDXLabel">Station info</h1>
 
-            <button
+
+<div class="card mb-1 border-0">
+  <div class="row g-0">
+    <div class="col-md-4">
+      <img src="img/icon.png" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-md-8">
+
+      <div class="card-body">
+<h5>Future feature...</h5>
+        <p class="card-text placeholder-glow">
+      <span class="placeholder col-7"></span>
+      <span class="placeholder col-4"></span>
+      <span class="placeholder col-4"></span>
+      <span class="placeholder col-6"></span>
+      <span class="placeholder col-8"></span>
+    </p>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+          <div class="input-group input-group-sm m-0 p-0">
+
+
+
+<button
               type="button"
-              class="btn-close"
+              class="btn btn-warning w-75"
+              aria-label="Request"
+            >Request user data</button>
+
+        <button
+              type="button"
+              class="btn btn-primary w-25"
               data-bs-dismiss="modal"
               aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="container-fluid">Future feature... be patient :-)</div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
-            </div>
-          </div>
+            >Close</button>
+</div>
+
         </div>
       </div>
     </div>
