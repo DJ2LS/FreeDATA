@@ -11,12 +11,12 @@ var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 const config = require(configPath);
 // set date format
-const dateFormat = new Intl.DateTimeFormat("en-GB", {
+const dateFormat = new Intl.DateTimeFormat(navigator.language, {
   timeStyle: "long",
   dateStyle: "short",
 });
 // set date format information
-const dateFormatShort = new Intl.DateTimeFormat("en-GB", {
+const dateFormatShort = new Intl.DateTimeFormat(navigator.language, {
   year: "numeric",
   month: "numeric",
   day: "numeric",
@@ -26,7 +26,7 @@ const dateFormatShort = new Intl.DateTimeFormat("en-GB", {
   hour12: false,
 });
 
-const dateFormatHours = new Intl.DateTimeFormat("en-GB", {
+const dateFormatHours = new Intl.DateTimeFormat(navigator.language, {
   hour: "numeric",
   minute: "numeric",
   hour12: false,
