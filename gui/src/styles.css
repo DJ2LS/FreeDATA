@@ -87,3 +87,10 @@ https://stackoverflow.com/a/9622873
   -o-transition: none;
   transition: none;
 }
+
+/* image overlay */
+
+.image-overlay:hover {
+    opacity: 0.75 !important;
+    transition: .5s;
+}
