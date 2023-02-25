@@ -762,7 +762,10 @@ update_chat = function (obj) {
     // increment callsign counter
     callsign_counter++;
     dxcallsigns.add(dxcallsign);
-    if ((callsign_counter == 1 && selected_callsign=="") || selected_callsign == dxcallsign ) {
+    if (
+      (callsign_counter == 1 && selected_callsign == "") ||
+      selected_callsign == dxcallsign
+    ) {
       var callsign_selected = "active show";
       //document.getElementById('chatModuleDxCall').value = dxcallsign;
       selected_callsign = dxcallsign;
@@ -1497,24 +1500,26 @@ async function updateAllChat(clear) {
   }
   //Ensure we create an index before running db.find
   //We can't rely on the default index existing before we get here...... :'(
-  await db.createIndex({
-    index: {
-      fields: [{ timestamp: "asc" }],
-    },
-  })
+  await db
+    .createIndex({
+      index: {
+        fields: [{ timestamp: "asc" }],
+      },
+    })
     .then(async function (result) {
       // handle result
-      await db.find({
-        selector: {
-          $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
-          //$or: chatFilter
-        },
-        sort: [
-          {
-            timestamp: "asc",
+      await db
+        .find({
+          selector: {
+            $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
+            //$or: chatFilter
           },
-        ],
-      })
+          sort: [
+            {
+              timestamp: "asc",
+            },
+          ],
+        })
         .then(async function (result) {
           // handle result async
           if (typeof result !== "undefined") {
@@ -1537,12 +1542,14 @@ async function updateAllChat(clear) {
     .catch(function (err) {
       console.log(err);
     });
-    if (clear == true && dxcallsigns.has(selected_callsign) == false) {
-      //Selected call sign is not visible, reset to first call sign
-      let tmp = dxcallsigns.entries().next().value[0];
-      selected_callsign=tmp;
-      document.getElementById("chat-" + tmp + "-list").classList.add("active","show");
-      document.getElementById("chat-" + tmp ).classList.add("active","show");
-      scrollMessagesToBottom();
-    }
+  if (clear == true && dxcallsigns.has(selected_callsign) == false) {
+    //Selected call sign is not visible, reset to first call sign
+    let tmp = dxcallsigns.entries().next().value[0];
+    selected_callsign = tmp;
+    document
+      .getElementById("chat-" + tmp + "-list")
+      .classList.add("active", "show");
+    document.getElementById("chat-" + tmp).classList.add("active", "show");
+    scrollMessagesToBottom();
+  }
 }
