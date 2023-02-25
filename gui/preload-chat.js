@@ -3,7 +3,6 @@ const { ipcRenderer } = require("electron");
 const { v4: uuidv4 } = require("uuid");
 const imageCompression = require("browser-image-compression");
 
-
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
   process.env.APPDATA ||
@@ -73,9 +72,7 @@ var users = new PouchDB(userDB);
 createChatIndex();
 createUserIndex();
 
-
 // REMOTE SYNC ATTEMPTS
-
 
 //var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
 /*
@@ -377,15 +374,12 @@ window.addEventListener("DOMContentLoaded", () => {
       update_chat_obj_by_uuid(uuid);
     });
 
-// open file selector for user image
-document.getElementById("userImageSelector").addEventListener("click", () => {
-
-ipcRenderer.send("select-user-image", {
+  // open file selector for user image
+  document.getElementById("userImageSelector").addEventListener("click", () => {
+    ipcRenderer.send("select-user-image", {
       title: "Title",
     });
-
-});
-
+  });
 
   // SEND MSG
   document.getElementById("sendMessage").addEventListener("click", () => {
@@ -510,37 +504,32 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 
   //document.getElementById("userImage").src = '';
 
-
-
   //var imageFile = arg.data;
-var imageFile = arg.data;
-console.log(imageFile)
+  var imageFile = arg.data;
+  console.log(imageFile);
 
   var options = {
     maxSizeMB: 1,
     maxWidthOrHeight: 1920,
-    useWebWorker: true
-  }
-
+    useWebWorker: true,
+  };
 
   imageCompression(imageFile, options)
     .then(function (compressedFile) {
-      console.log('compressedFile instanceof Blob', compressedFile instanceof Blob); // true
-      console.log(`compressedFile size ${compressedFile.size / 1024 / 1024} MB`); // smaller than maxSizeMB
+      console.log(
+        "compressedFile instanceof Blob",
+        compressedFile instanceof Blob
+      ); // true
+      console.log(
+        `compressedFile size ${compressedFile.size / 1024 / 1024} MB`
+      ); // smaller than maxSizeMB
 
       console.log(compressedFile.size);
     })
     .catch(function (error) {
       console.log(error.message);
     });
-
-
-
-
-
-
 });
-
 
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
