@@ -139,6 +139,7 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   const userInfoFields = [
+    "user_info_image",
     "user_info_callsign",
     "user_info_gridsquare",
     "user_info_name",
@@ -158,10 +159,18 @@ window.addEventListener("DOMContentLoaded", () => {
       },
     })
     .then(function (result) {
+    console.log(result)
       if (typeof result.docs[0] !== "undefined") {
         // handle result
         userInfoFields.forEach(function (elem) {
+        if(elem !== 'user_info_image'){
           document.getElementById(elem).value = result.docs[0][elem];
+} else {
+document.getElementById(elem).src = result.docs[0][elem];
+}
+
+
+
         });
       } else {
         console.log(
@@ -181,24 +190,20 @@ window.addEventListener("DOMContentLoaded", () => {
       console.log(err);
     });
 
-  // user info bulk event listener for saving settings
-  userInfoFields.forEach(function (elem) {
-    try {
-      document.getElementById(elem).addEventListener("change", function () {
-        //config[elem] = document.getElementById(elem).value;
-
-        let obj = new Object();
+//save user info
+  document.getElementById("userInfoSave").addEventListener("click", () => {
+    let obj = new Object();
         userInfoFields.forEach(function (subelem) {
-          obj[subelem] = document.getElementById(subelem).value;
-        });
-        console.log(obj);
+          if(subelem !== 'user_info_image'){
+            obj[subelem] = document.getElementById(subelem).value;
+          } else {
+            obj[subelem] = document.getElementById(subelem).src
+          }
+          });
         addUserToDatabaseIfNotExists(obj);
-      });
-    } catch (e) {
-      console.log(e);
-      console.log(elem);
-    }
   });
+
+
 
   //Add event listener for filter apply button
   document.getElementById("btnFilter").addEventListener("click", () => {
@@ -522,14 +527,16 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
         .blobToBase64String(compressedFile)
         .then(function (base64String) {
           // update image
-          document.getElementById("userImage").src =
+
+          document.getElementById("user_info_image").src =
             "data:" + imageFiletype + ";base64," + base64String;
 
-          //TODO: add image to user database
         })
         .catch(function (err) {
-          document.getElementById("userImage").src = "img/icon.png";
+          document.getElementById("user_info_image").src = "img/icon.png";
         });
+
+
     })
     .catch(function (error) {
       console.log(error.message);
@@ -1365,6 +1372,8 @@ addUserToDatabaseIfNotExists = function (obj) {
             user_info_email: obj.user_info_email,
             user_info_website: obj.user_info_website,
             user_info_comments: obj.user_info_comments,
+            user_info_image: obj.user_info_image,
+
           })
           .then(function (response) {
             console.log("UPDATED USER");
@@ -1524,7 +1533,7 @@ function createUserIndex() {
           "user_info_email",
           "user_info_website",
           "user_info_comments",
-          "_attachments",
+          "user_info_image",
         ],
       },
     })
