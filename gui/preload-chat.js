@@ -283,6 +283,9 @@ window.addEventListener("DOMContentLoaded", () => {
       command: "requestUserInfo",
       dxcallsign: selected_callsign,
     });
+
+    pauseButton(document.getElementById("requestUserInfo"), 10000);
+
   });
 
   document.getElementById("ping").addEventListener("click", () => {
@@ -1802,4 +1805,19 @@ function sendUserData(dxcallsign) {
     dxcallsign: selected_callsign,
     userinfo: info,
   });
+}
+
+
+//Temporarily disable a button with timeout
+function pauseButton(btn, timems) {
+  btn.disabled = true;
+  var curText = btn.innerHTML;
+  if (config.high_graphics.toUpperCase() == "TRUE") {
+    btn.innerHTML =
+      '<span class="spinner-grow spinner-grow-sm force-gpu" role="status" aria-hidden="true">';
+  }
+  setTimeout(() => {
+    btn.innerHTML = curText;
+    btn.disabled = false;
+  }, timems);
 }
