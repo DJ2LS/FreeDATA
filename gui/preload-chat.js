@@ -285,7 +285,6 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
     pauseButton(document.getElementById("requestUserInfo"), 10000);
-
   });
 
   document.getElementById("ping").addEventListener("click", () => {
@@ -1806,7 +1805,6 @@ function sendUserData(dxcallsign) {
     userinfo: info,
   });
 }
-
 
 //Temporarily disable a button with timeout
 function pauseButton(btn, timems) {
