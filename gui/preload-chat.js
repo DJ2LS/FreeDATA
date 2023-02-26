@@ -1654,6 +1654,10 @@ function getSetUserInformation(selected_callsign) {
         data.user_info_antenna;
       document.getElementById("dx_user_info_comments").innerHTML =
         data.user_info_comments;
+      document.getElementById("dx_user_info_image").src =
+        data.user_info_image;
+
+
 
       document.getElementById("dx_user_info_gridsquare").className = "";
       document.getElementById("dx_user_info_name").className = "";
