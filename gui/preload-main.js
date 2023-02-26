@@ -1619,74 +1619,74 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   global.rxBufferLengthTnc = arg.rx_buffer_length;
 
   // START OF SCATTER CHART
-  const scatterConfig = {
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: false,
-      },
-      annotation: {
-        annotations: {
-          line1: {
-            type: "line",
-            yMin: 0,
-            yMax: 0,
-            borderColor: "rgb(255, 99, 132)",
-            borderWidth: 2,
-          },
-          line2: {
-            type: "line",
-            xMin: 0,
-            xMax: 0,
-            borderColor: "rgb(255, 99, 132)",
-            borderWidth: 2,
-          },
-        },
-      },
-    },
-    animations: false,
-    scales: {
-      x: {
-        type: "linear",
-        position: "bottom",
-        display: true,
-        min: -80,
-        max: 80,
-        ticks: {
-          display: false,
-        },
-      },
-      y: {
-        display: true,
-        min: -80,
-        max: 80,
-        ticks: {
-          display: false,
-        },
-      },
-    },
-  };
-  var scatterData = arg.scatter;
-  var newScatterData = {
-    datasets: [
-      {
-        //label: 'constellation diagram',
-        data: scatterData,
-        options: scatterConfig,
-        backgroundColor: "rgb(255, 99, 132)",
-      },
-    ],
-  };
-
-  if (typeof arg.scatter == "undefined") {
+    if (typeof arg.scatter == "undefined") {
     var scatterSize = 0;
   } else {
     var scatterSize = arg.scatter.length;
   }
 
   if (scatterSize > 0 && global.scatterData != newScatterData) {
+    const scatterConfig = {
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          enabled: false,
+        },
+        annotation: {
+          annotations: {
+            line1: {
+              type: "line",
+              yMin: 0,
+              yMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+            line2: {
+              type: "line",
+              xMin: 0,
+              xMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+          },
+        },
+      },
+      animations: false,
+      scales: {
+        x: {
+          type: "linear",
+          position: "bottom",
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+        y: {
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+      },
+    };
+    var scatterData = arg.scatter;
+    var newScatterData = {
+      datasets: [
+        {
+          //label: 'constellation diagram',
+          data: scatterData,
+          options: scatterConfig,
+          backgroundColor: "rgb(255, 99, 132)",
+        },
+      ],
+    };
+
     global.scatterData = newScatterData;
 
     if (typeof global.scatterChart == "undefined") {
@@ -1838,28 +1838,20 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
-    toggleClass("c2_busy", "btn-success", true);
-    toggleClass("c2_busy", "btn-outline-secondary", false);
+    document.getElementById("c2_busy").className="btn btn-sm btn-success";
   } else {
-    toggleClass("c2_busy", "btn-success", false);
-    toggleClass("c2_busy", "btn-outline-secondary", true);
+    document.getElementById("c2_busy").className="btn btn-sm btn-outline-secondary";
   }
   // CHANNEL BUSY STATE
   switch (arg.channel_busy) {
     case "True":
-      toggleClass("channel_busy", "btn-danger", true);
-      toggleClass("channel_busy", "btn-success", false);
-      toggleClass("channel_busy", "btn-secondary", false);
+      document.getElementById("channel_busy").className="btn btn-sm btn-danger";
       break;
     case "False":
-      toggleClass("channel_busy", "btn-danger", false);
-      toggleClass("channel_busy", "btn-success", true);
-      toggleClass("channel_busy", "btn-secondary", false);
+      document.getElementById("channel_busy").className="btn btn-sm btn-success";
       break;
     default:
-      toggleClass("channel_busy", "btn-danger", false);
-      toggleClass("channel_busy", "btn-success", false);
-      toggleClass("channel_busy", "btn-secondary", true);
+      document.getElementById("channel_busy").className="btn btn-sm btn-secondary";
       break;
   }
 
@@ -1867,7 +1859,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   switch (arg.busy_state) {
     case "BUSY":
       document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-      document.getElementById("startTransmission").disabled = true;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = true;
       break;
     case "IDLE":
       document.getElementById("busy_state").className =
@@ -1876,7 +1869,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     default:
       document.getElementById("busy_state").className =
         "btn btn-sm btn-secondary";
-      document.getElementById("startTransmission").disabled = true;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = true;
       break;
   }
 
@@ -1884,12 +1878,14 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   switch (arg.arq_state) {
     case "True":
       document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-      document.getElementById("startTransmission").disabled = false;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = false;
       break;
     default:
       document.getElementById("arq_state").className =
         "btn btn-sm btn-secondary";
-      document.getElementById("startTransmission").disabled = false;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = false;
       break;
   }
 
@@ -1906,9 +1902,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
 
   if (arg.arq_state == "True" || arg.arq_session == "True") {
-    toggleClass("spnConnectedWith", "text-success", true);
+    document.getElementById("spnConnectedWith").className = "bi bi-chat-fill text-success";
   } else {
-    toggleClass("spnConnectedWith", "text-success", false);
+    document.getElementById("spnConnectedWith").className = "bi bi-chat-fill";
   }
 
   // HAMLIB STATUS
@@ -1923,16 +1919,13 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BEACON
   switch (arg.beacon_state) {
     case "True":
-      toggleClass("startBeacon", "btn-outline-secondary", false);
-      toggleClass("startBeacon", "btn-success", true);
+      document.getElementById("startBeacon").className ="btn btn-sm btn-success";
       if (document.getElementById("beaconInterval").disabled == false) {
         document.getElementById("beaconInterval").disabled = true;
       }
       break;
     default:
-      toggleClass("startBeacon", "btn-outline-secondary", true);
-      toggleClass("startBeacon", "btn-success", false);
-
+      document.getElementById("startBeacon").className ="btn btn-sm btn-outline-secondary";
       if (document.getElementById("beaconInterval").disabled == true) {
         document.getElementById("beaconInterval").disabled = false;
       }
@@ -1948,7 +1941,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       Math.round(arg.dbfs_level) + " dBFS (Audio Level)";
     var dbfscntrl = document.getElementById("dbfs_level");
     dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
-    dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
+    dbfscntrl.style = "width:" + dbfs_level + "%;"
+    //dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
   }
 
   // noise / strength
@@ -1963,7 +1957,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       Math.round(arg.strength) + " dB (S-Meter)";
     var noisecntrl = document.getElementById("noise_level");
     noisecntrl.setAttribute("aria-valuenow", noise_level);
-    noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
+    noisecntrl.style = "width:" + noise_level + "%;";
+    //noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
   }
 
   // SET FREQUENCY
@@ -3063,14 +3058,14 @@ function updateTitle(
   }
 }
 
-//Set force to true to ensure a class is present on a control, other set to false to ensure it isn't present
+//Set force to true to ensure a class is present on a control, otherwise set to false to ensure it isn't present
 function toggleClass(control, classToToggle, force) {
   var cntrl = document.getElementById(control);
   if (cntrl == undefined) {
-    //console.log("toggle class:  unknown control", control);
+    console.log("toggle class:  unknown control: ", control);
     return;
   }
-  var activeClasses = cntrl.getAttribute("class");
+  var activeClasses = cntrl.className;
   //var oldactive = activeClasses;
   if (force == true && activeClasses.indexOf(classToToggle) >= 0) {
     return;
@@ -3084,7 +3079,7 @@ function toggleClass(control, classToToggle, force) {
     activeClasses = activeClasses.replace(classToToggle, "");
   }
   activeClasses = activeClasses.replace("  ", " ").trim();
-  cntrl.setAttribute("class", activeClasses);
+  cntrl.className = activeClasses;
   //console.log(control," toggleClass; force:  ", force, "class: " ,classToToggle, " in: '" ,oldactive, "' out: '",activeClasses,"'");
 }
 function set_CPU_mode() {
