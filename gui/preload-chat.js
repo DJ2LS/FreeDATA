@@ -503,7 +503,7 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 
   var options = {
     maxSizeMB: 1,
-    maxWidthOrHeight: 200,
+    maxWidthOrHeight: 150,
     useWebWorker: false,
   };
 
