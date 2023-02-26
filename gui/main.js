@@ -525,7 +525,6 @@ ipcMain.on("select-user-image", (event, data) => {
       try {
         // read data as base64 which makes conversion to blob easier
         fs.readFile(filepath.filePaths[0], "base64", function (err, data) {
-
           var filename = path.basename(filepath.filePaths[0]);
           var mimeType = mime.getType(filename);
 
