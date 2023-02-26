@@ -2577,10 +2577,9 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
     sock.set_mode(arg.mode);
   }
 
-    if (arg.command == "requestUserInfo") {
+  if (arg.command == "requestUserInfo") {
     sock.sendRequestInfo(arg.dxcallsign);
   }
-
 });
 
 // IPC ACTION FOR AUTO UPDATER

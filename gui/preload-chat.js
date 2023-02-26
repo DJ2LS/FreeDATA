@@ -213,9 +213,9 @@ window.addEventListener("DOMContentLoaded", () => {
       chatFilter.push({ type: "ping-ack" });
     if (document.getElementById("chkBeacon").checked == true)
       chatFilter.push({ type: "beacon" });
-  if (document.getElementById("chkRequest").checked == true)
+    if (document.getElementById("chkRequest").checked == true)
       chatFilter.push({ type: "request" });
-        if (document.getElementById("chkResponse").checked == true)
+    if (document.getElementById("chkResponse").checked == true)
       chatFilter.push({ type: "response" });
     updateAllChat(true);
   });
@@ -694,55 +694,51 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
       console.log(splitted_data);
 
-      if(splitted_data[1] == 'msg'){
+      if (splitted_data[1] == "msg") {
+        obj.timestamp = parseInt(splitted_data[4]);
+        obj.dxcallsign = item.dxcallsign;
+        obj.dxgrid = item.dxgrid;
+        obj.command = splitted_data[1];
+        obj.checksum = splitted_data[2];
+        // convert message to unicode from utf8 because of emojis
+        //No, don't convert; we're already UTF-8!!!!!
+        obj.uuid = splitted_data[3];
+        obj.msg = splitted_data[5];
+        obj.status = "null";
+        obj.snr = "null";
+        obj.type = "received";
+        obj.filename = splitted_data[6];
+        obj.filetype = splitted_data[7];
+        //obj.file = btoa(splitted_data[8]);
+        obj.file = btoa_FD(splitted_data[8]);
+      } else if (splitted_data[1] == "req") {
+        obj.uuid = uuidv4().toString();
+        obj.timestamp = Math.floor(Date.now() / 1000);
+        obj.dxcallsign = item.dxcallsign;
+        obj.command = splitted_data[1];
+        obj.type = "request";
+        obj.status = "received";
+        obj.snr = "null";
+        obj.msg = splitted_data[2];
+        obj.filename = "null";
+        obj.filetype = "null";
+        obj.file = "null";
 
-          obj.timestamp = parseInt(splitted_data[4]);
-          obj.dxcallsign = item.dxcallsign;
-          obj.dxgrid = item.dxgrid;
-          obj.command = splitted_data[1];
-          obj.checksum = splitted_data[2];
-          // convert message to unicode from utf8 because of emojis
-          //No, don't convert; we're already UTF-8!!!!!
-          obj.uuid = splitted_data[3];
-          obj.msg = splitted_data[5];
-          obj.status = "null";
-          obj.snr = "null";
-          obj.type = "received";
-          obj.filename = splitted_data[6];
-          obj.filetype = splitted_data[7];
-          //obj.file = btoa(splitted_data[8]);
-          obj.file = btoa_FD(splitted_data[8]);
+        sendUserData(item.dxcallsign);
+      } else if (splitted_data[1] == "res") {
+        obj.uuid = uuidv4().toString();
+        obj.timestamp = Math.floor(Date.now() / 1000);
+        obj.dxcallsign = item.dxcallsign;
+        obj.command = splitted_data[1];
+        obj.type = "response";
+        obj.status = "received";
+        obj.snr = "null";
+        obj.msg = splitted_data[2];
+        obj.filename = "null";
+        obj.filetype = "null";
+        obj.file = "null";
 
-      } else if (splitted_data[1] == 'req') {
-          obj.uuid = uuidv4().toString();
-          obj.timestamp = Math.floor(Date.now() / 1000);
-          obj.dxcallsign = item.dxcallsign;
-          obj.command = splitted_data[1];
-          obj.type = "request";
-          obj.status = "received";
-          obj.snr = "null";
-          obj.msg = splitted_data[2];
-          obj.filename = "null";
-          obj.filetype = "null";
-          obj.file = "null";
-
-          sendUserData(item.dxcallsign)
-
-      } else if (splitted_data[1] == 'res') {
-          obj.uuid = uuidv4().toString();
-          obj.timestamp = Math.floor(Date.now() / 1000);
-          obj.dxcallsign = item.dxcallsign;
-          obj.command = splitted_data[1];
-          obj.type = "response";
-          obj.status = "received";
-          obj.snr = "null";
-          obj.msg = splitted_data[2];
-          obj.filename = "null";
-          obj.filetype = "null";
-          obj.file = "null";
-
-
-        console.log(splitted_data)
+        console.log(splitted_data);
         let userData = new Object();
         userData.user_info_image = splitted_data[2];
         userData.user_info_callsign = config.mycall;
@@ -758,7 +754,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         addUserToDatabaseIfNotExists(userData);
         getSetUserInformation(config.mycall);
-
       }
 
       add_obj_to_database(obj);
@@ -981,7 +976,6 @@ update_chat = function (obj) {
                 </div>
             `;
     }
-
 
     if (obj.type == "newchat") {
       var new_message = `
@@ -1382,7 +1376,7 @@ update_chat_obj_by_uuid = function (uuid) {
 };
 
 add_obj_to_database = function (obj) {
-console.log(obj)
+  console.log(obj);
   db.put({
     _id: obj.uuid,
     timestamp: parseInt(obj.timestamp),
@@ -1775,9 +1769,7 @@ function getSetUserInformation(selected_callsign) {
     });
 }
 
-
-
-function sendUserData(dxcallsign){
+function sendUserData(dxcallsign) {
   const userInfoFields = [
     "user_info_image",
     "user_info_callsign",
@@ -1792,26 +1784,22 @@ function sendUserData(dxcallsign){
     "user_info_comments",
   ];
 
-    let info = '';
-    userInfoFields.forEach(function (subelem) {
-      if (subelem !== "user_info_image") {
-        info += document.getElementById(subelem).value;
-        info += split_char;
-      } else {
-        info += document.getElementById(subelem).src;
-        info += split_char;
-      }
-    });
+  let info = "";
+  userInfoFields.forEach(function (subelem) {
+    if (subelem !== "user_info_image") {
+      info += document.getElementById(subelem).value;
+      info += split_char;
+    } else {
+      info += document.getElementById(subelem).src;
+      info += split_char;
+    }
+  });
 
-    console.log(info)
+  console.log(info);
 
-    ipcRenderer.send("run-tnc-command", {
-      command: "responseUserInfo",
-      dxcallsign: selected_callsign,
-      userinfo: info
-    });
-
-
-
-
+  ipcRenderer.send("run-tnc-command", {
+    command: "responseUserInfo",
+    dxcallsign: selected_callsign,
+    userinfo: info,
+  });
 }

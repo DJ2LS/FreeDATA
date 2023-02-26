@@ -716,7 +716,6 @@ exports.sendResponseInfo = function (dxcallsign, userinfo) {
   sendRequest(dxcallsign, 255, 1, userinfo, "res");
 };
 
-
 //STOP TRANSMISSION
 exports.stopTransmission = function () {
   command = '{"type" : "arq", "command": "stop_transmission"}';
