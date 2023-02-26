@@ -685,11 +685,37 @@ function sendRequest(dxcallsign, mode, frames, data, command) {
   writeTncCommand(command);
 }
 
+// Send Response message
+//It would be then „m + split + request + split + request-type“
+function sendResponse(dxcallsign, mode, frames, data, command) {
+  data = btoa_FD("m" + split_char + command + split_char + data);
+  command =
+    '{"type" : "arq", "command" : "send_raw", "parameter" : [{"dxcallsign" : "' +
+    dxcallsign +
+    '", "mode" : "' +
+    mode +
+    '", "n_frames" : "' +
+    frames +
+    '", "data" : "' +
+    data +
+    '", "attempts": "15"}]}';
+  socketLog.info(command);
+  socketLog.info("--------------RES--------------------");
+  writeTncCommand(command);
+}
+
 //Send station info request
 exports.sendRequestInfo = function (dxcallsign) {
   //Command 0 = user/station information
   sendRequest(dxcallsign, 255, 1, "0", "req");
 };
+
+//Send station info response
+exports.sendResponseInfo = function (dxcallsign, userinfo) {
+  //Command 0 = user/station information
+  sendRequest(dxcallsign, 255, 1, userinfo, "res");
+};
+
 
 //STOP TRANSMISSION
 exports.stopTransmission = function () {

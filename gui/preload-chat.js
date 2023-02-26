@@ -123,6 +123,7 @@ var chatFilter = [
   { type: "transmit" },
   { type: "ping-ack" },
   { type: "request" },
+  { type: "response" },
 ];
 
 updateAllChat(false);
@@ -214,6 +215,8 @@ window.addEventListener("DOMContentLoaded", () => {
       chatFilter.push({ type: "beacon" });
   if (document.getElementById("chkRequest").checked == true)
       chatFilter.push({ type: "request" });
+        if (document.getElementById("chkResponse").checked == true)
+      chatFilter.push({ type: "response" });
     updateAllChat(true);
   });
 
@@ -441,7 +444,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     console.log(data_with_attachment);
     let Data = {
-      command: "send_message",
+      command: "msg",
       dxcallsign: dxcallsign,
       mode: 255,
       frames: 1,
@@ -512,7 +515,7 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 
   var options = {
     maxSizeMB: 1,
-    maxWidthOrHeight: 200,
+    maxWidthOrHeight: 150,
     useWebWorker: false,
   };
 
@@ -691,7 +694,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
       console.log(splitted_data);
 
-      if(splitted_data[1] == ''){
+      if(splitted_data[1] == 'msg'){
 
           obj.timestamp = parseInt(splitted_data[4]);
           obj.dxcallsign = item.dxcallsign;
@@ -722,6 +725,40 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
           obj.filename = "null";
           obj.filetype = "null";
           obj.file = "null";
+
+          sendUserData(item.dxcallsign)
+
+      } else if (splitted_data[1] == 'res') {
+          obj.uuid = uuidv4().toString();
+          obj.timestamp = Math.floor(Date.now() / 1000);
+          obj.dxcallsign = item.dxcallsign;
+          obj.command = splitted_data[1];
+          obj.type = "response";
+          obj.status = "received";
+          obj.snr = "null";
+          obj.msg = splitted_data[2];
+          obj.filename = "null";
+          obj.filetype = "null";
+          obj.file = "null";
+
+
+        console.log(splitted_data)
+        let userData = new Object();
+        userData.user_info_image = splitted_data[2];
+        userData.user_info_callsign = config.mycall;
+        userData.user_info_gridsquare = splitted_data[4];
+        userData.user_info_name = splitted_data[5];
+        userData.user_info_age = splitted_data[6];
+        userData.user_info_location = splitted_data[7];
+        userData.user_info_radio = splitted_data[8];
+        userData.user_info_antenna = splitted_data[9];
+        userData.user_info_email = splitted_data[10];
+        userData.user_info_website = splitted_data[11];
+        userData.user_info_comments = splitted_data[12];
+
+        addUserToDatabaseIfNotExists(userData);
+        getSetUserInformation(config.mycall);
+
       }
 
       add_obj_to_database(obj);
@@ -936,6 +973,15 @@ update_chat = function (obj) {
                 </div>
             `;
     }
+
+    if (obj.type == "response") {
+      var new_message = `
+                <div class="p-0 rounded m-auto mt-1 w-50 bg-warning bg-gradient" id="msg-${obj._id}">
+                    <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-info"></i>Response - ${timestamp}     </p>
+                </div>
+            `;
+    }
+
 
     if (obj.type == "newchat") {
       var new_message = `
@@ -1212,7 +1258,7 @@ update_chat = function (obj) {
                 split_char +
                 binaryString;
               let Data = {
-                command: "send_message",
+                command: "msg",
                 dxcallsign: doc.dxcallsign,
                 mode: 255,
                 frames: 1,
@@ -1239,7 +1285,7 @@ update_chat = function (obj) {
 
                         var data_with_attachment = doc.timestamp + split_char + utf8.encode(doc.msg) + split_char + filename + split_char + filetype + split_char + binaryString;
                             let Data = {
-                                command: "send_message",
+                                command: "msg",
                                 dxcallsign: doc.dxcallsign,
                                 mode: 255,
                                 frames: 1,
@@ -1727,4 +1773,45 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className =
         "placeholder col-7";
     });
+}
+
+
+
+function sendUserData(dxcallsign){
+  const userInfoFields = [
+    "user_info_image",
+    "user_info_callsign",
+    "user_info_gridsquare",
+    "user_info_name",
+    "user_info_age",
+    "user_info_location",
+    "user_info_radio",
+    "user_info_antenna",
+    "user_info_email",
+    "user_info_website",
+    "user_info_comments",
+  ];
+
+    let info = '';
+    userInfoFields.forEach(function (subelem) {
+      if (subelem !== "user_info_image") {
+        info += document.getElementById(subelem).value;
+        info += split_char;
+      } else {
+        info += document.getElementById(subelem).src;
+        info += split_char;
+      }
+    });
+
+    console.log(info)
+
+    ipcRenderer.send("run-tnc-command", {
+      command: "responseUserInfo",
+      dxcallsign: selected_callsign,
+      userinfo: info
+    });
+
+
+
+
 }
