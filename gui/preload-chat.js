@@ -272,6 +272,13 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  document.getElementById("requestUserInfo").addEventListener("click", () => {
+    ipcRenderer.send("run-tnc-command", {
+      command: "requestUserInfo",
+      dxcallsign: selected_callsign,
+    });
+  });
+
   document.getElementById("ping").addEventListener("click", () => {
     ipcRenderer.send("run-tnc-command", {
       command: "ping",

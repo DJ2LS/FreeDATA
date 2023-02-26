@@ -686,9 +686,9 @@ function sendRequest(dxcallsign, mode, frames, data, command) {
 }
 
 //Send station info request
-exports.sendRequestInfo = function (dxcallsign, mode, frames) {
+exports.sendRequestInfo = function (dxcallsign) {
   //Command 0 = user/station information
-  sendRequest(dxcallsign, mode, frames, "0", "req");
+  sendRequest(dxcallsign, 255, 1, "0", "req");
 };
 
 //STOP TRANSMISSION
