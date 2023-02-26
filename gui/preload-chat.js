@@ -518,17 +518,18 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 
       console.log(compressedFile.size);
 
-      blobUtil.blobToBase64String(compressedFile).then(function (base64String) {
+      blobUtil
+        .blobToBase64String(compressedFile)
+        .then(function (base64String) {
           // update image
-          document.getElementById('userImage').src = 'data:' + imageFiletype + ';base64,' + base64String;
+          document.getElementById("userImage").src =
+            "data:" + imageFiletype + ";base64," + base64String;
 
           //TODO: add image to user database
-
-
-        }).catch(function (err) {
-          document.getElementById('userImage').src = "img/icon.png";
+        })
+        .catch(function (err) {
+          document.getElementById("userImage").src = "img/icon.png";
         });
-
     })
     .catch(function (error) {
       console.log(error.message);
