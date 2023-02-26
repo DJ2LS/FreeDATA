@@ -159,18 +159,15 @@ window.addEventListener("DOMContentLoaded", () => {
       },
     })
     .then(function (result) {
-    console.log(result)
+      console.log(result);
       if (typeof result.docs[0] !== "undefined") {
         // handle result
         userInfoFields.forEach(function (elem) {
-        if(elem !== 'user_info_image'){
-          document.getElementById(elem).value = result.docs[0][elem];
-} else {
-document.getElementById(elem).src = result.docs[0][elem];
-}
-
-
-
+          if (elem !== "user_info_image") {
+            document.getElementById(elem).value = result.docs[0][elem];
+          } else {
+            document.getElementById(elem).src = result.docs[0][elem];
+          }
         });
       } else {
         console.log(
@@ -190,20 +187,18 @@ document.getElementById(elem).src = result.docs[0][elem];
       console.log(err);
     });
 
-//save user info
+  //save user info
   document.getElementById("userInfoSave").addEventListener("click", () => {
     let obj = new Object();
-        userInfoFields.forEach(function (subelem) {
-          if(subelem !== 'user_info_image'){
-            obj[subelem] = document.getElementById(subelem).value;
-          } else {
-            obj[subelem] = document.getElementById(subelem).src
-          }
-          });
-        addUserToDatabaseIfNotExists(obj);
+    userInfoFields.forEach(function (subelem) {
+      if (subelem !== "user_info_image") {
+        obj[subelem] = document.getElementById(subelem).value;
+      } else {
+        obj[subelem] = document.getElementById(subelem).src;
+      }
+    });
+    addUserToDatabaseIfNotExists(obj);
   });
-
-
 
   //Add event listener for filter apply button
   document.getElementById("btnFilter").addEventListener("click", () => {
@@ -530,13 +525,10 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 
           document.getElementById("user_info_image").src =
             "data:" + imageFiletype + ";base64," + base64String;
-
         })
         .catch(function (err) {
           document.getElementById("user_info_image").src = "img/icon.png";
         });
-
-
     })
     .catch(function (error) {
       console.log(error.message);
@@ -1373,7 +1365,6 @@ addUserToDatabaseIfNotExists = function (obj) {
             user_info_website: obj.user_info_website,
             user_info_comments: obj.user_info_comments,
             user_info_image: obj.user_info_image,
-
           })
           .then(function (response) {
             console.log("UPDATED USER");
