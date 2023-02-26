@@ -1619,7 +1619,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   global.rxBufferLengthTnc = arg.rx_buffer_length;
 
   // START OF SCATTER CHART
-    if (typeof arg.scatter == "undefined") {
+  if (typeof arg.scatter == "undefined") {
     var scatterSize = 0;
   } else {
     var scatterSize = arg.scatter.length;
@@ -1838,20 +1838,24 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
-    document.getElementById("c2_busy").className="btn btn-sm btn-success";
+    document.getElementById("c2_busy").className = "btn btn-sm btn-success";
   } else {
-    document.getElementById("c2_busy").className="btn btn-sm btn-outline-secondary";
+    document.getElementById("c2_busy").className =
+      "btn btn-sm btn-outline-secondary";
   }
   // CHANNEL BUSY STATE
   switch (arg.channel_busy) {
     case "True":
-      document.getElementById("channel_busy").className="btn btn-sm btn-danger";
+      document.getElementById("channel_busy").className =
+        "btn btn-sm btn-danger";
       break;
     case "False":
-      document.getElementById("channel_busy").className="btn btn-sm btn-success";
+      document.getElementById("channel_busy").className =
+        "btn btn-sm btn-success";
       break;
     default:
-      document.getElementById("channel_busy").className="btn btn-sm btn-secondary";
+      document.getElementById("channel_busy").className =
+        "btn btn-sm btn-secondary";
       break;
   }
 
@@ -1902,7 +1906,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
 
   if (arg.arq_state == "True" || arg.arq_session == "True") {
-    document.getElementById("spnConnectedWith").className = "bi bi-chat-fill text-success";
+    document.getElementById("spnConnectedWith").className =
+      "bi bi-chat-fill text-success";
   } else {
     document.getElementById("spnConnectedWith").className = "bi bi-chat-fill";
   }
@@ -1919,13 +1924,15 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BEACON
   switch (arg.beacon_state) {
     case "True":
-      document.getElementById("startBeacon").className ="btn btn-sm btn-success";
+      document.getElementById("startBeacon").className =
+        "btn btn-sm btn-success";
       if (document.getElementById("beaconInterval").disabled == false) {
         document.getElementById("beaconInterval").disabled = true;
       }
       break;
     default:
-      document.getElementById("startBeacon").className ="btn btn-sm btn-outline-secondary";
+      document.getElementById("startBeacon").className =
+        "btn btn-sm btn-outline-secondary";
       if (document.getElementById("beaconInterval").disabled == true) {
         document.getElementById("beaconInterval").disabled = false;
       }
@@ -1941,7 +1948,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       Math.round(arg.dbfs_level) + " dBFS (Audio Level)";
     var dbfscntrl = document.getElementById("dbfs_level");
     dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
-    dbfscntrl.style = "width:" + dbfs_level + "%;"
+    dbfscntrl.style = "width:" + dbfs_level + "%;";
     //dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
   }
 
