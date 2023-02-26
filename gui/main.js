@@ -511,7 +511,7 @@ ipcMain.on("select-file", (event, data) => {
     });
 });
 
-//select file
+//select image file
 ipcMain.on("select-user-image", (event, data) => {
   dialog
     .showOpenDialog({
@@ -523,17 +523,16 @@ ipcMain.on("select-user-image", (event, data) => {
       console.log(filepath.filePaths[0]);
 
       try {
-        //fs.readFile(filepath.filePaths[0], 'utf8',  function (err, data) {
-        //Has to be binary
-        fs.readFile(filepath.filePaths[0], "binary", function (err, data) {
-          console.log(data.length);
+        // read data as base64 which makes conversion to blob easier
+        fs.readFile(filepath.filePaths[0], "base64", function (err, data) {
 
           var filename = path.basename(filepath.filePaths[0]);
           var mimeType = mime.getType(filename);
-          console.log(mimeType);
+
           if (mimeType == "" || mimeType == null) {
             mimeType = "plain/text";
           }
+
           chat.webContents.send("return-select-user-image", {
             data: data,
             mime: mimeType,

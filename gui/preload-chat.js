@@ -2,6 +2,8 @@ const path = require("path");
 const { ipcRenderer } = require("electron");
 const { v4: uuidv4 } = require("uuid");
 const imageCompression = require("browser-image-compression");
+const blobUtil = require("blob-util");
+
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
@@ -494,24 +496,15 @@ ipcRenderer.on("return-selected-files", (event, arg) => {
 });
 
 ipcRenderer.on("return-select-user-image", (event, arg) => {
-  filetype = arg.mime;
-  //console.log(filetype);
+  let imageFiletype = arg.mime;
+  let imageFile = arg.data;
 
-  file = arg.data;
-  //filename = arg.filename;
-
-  //console.log(arg.data)
-
-  //document.getElementById("userImage").src = '';
-
-  //var imageFile = arg.data;
-  var imageFile = arg.data;
-  console.log(imageFile);
+   imageFile = blobUtil.base64StringToBlob(imageFile, imageFiletype);
 
   var options = {
     maxSizeMB: 1,
-    maxWidthOrHeight: 1920,
-    useWebWorker: true,
+    maxWidthOrHeight: 200,
+    useWebWorker: false,
   };
 
   imageCompression(imageFile, options)
