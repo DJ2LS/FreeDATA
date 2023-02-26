@@ -824,7 +824,6 @@ update_chat = function (obj) {
       selected_callsign = dxcallsign;
       //get user information
       getSetUserInformation(selected_callsign);
-
     }
 
     var new_callsign = `
@@ -862,10 +861,8 @@ update_chat = function (obj) {
         selected_callsign = dxcallsign;
         setTimeout(scrollMessagesToBottom, 200);
 
-
         //get user information
         getSetUserInformation(selected_callsign);
-
       });
 
     // if callsign entry already exists - update
@@ -1470,26 +1467,22 @@ function atoa_FD(data) {
   return window.btoa(Buffer.from(data, "base64").toString("utf8"));
 }
 function returnObjFromCallsign(database, callsign) {
-
   return new Promise((resolve, reject) => {
+    users
+      .find({
+        selector: {
+          user_info_callsign: callsign,
+        },
+      })
+      .then(function (result) {
+        //return new Promise((resolve, reject) => {
+        if (typeof result.docs[0] !== "undefined") {
+          resolve(result.docs[0]);
+        } else {
+          reject("Promise rejected");
+        }
 
-  users
-    .find({
-      selector: {
-        user_info_callsign: callsign,
-      },
-    })
-    .then(function (result) {
-
-    //return new Promise((resolve, reject) => {
-    if (typeof result.docs[0] !== "undefined") {
-      resolve(result.docs[0]);
-    } else {
-      reject("Promise rejected");
-    }
-
-
-    /*
+        /*
       if (typeof result.docs[0] !== "undefined") {
         return result.docs[0];
 
@@ -1501,15 +1494,11 @@ function returnObjFromCallsign(database, callsign) {
       }
 
       */
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
-
-
-    });
-
-
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  });
 }
 
 function createChatIndex() {
@@ -1640,52 +1629,63 @@ async function updateAllChat(clear) {
   }
 }
 
+function getSetUserInformation(selected_callsign) {
+  //Get user information
+  document.getElementById("dx_user_info_callsign").innerHTML =
+    selected_callsign;
 
+  returnObjFromCallsign(users, selected_callsign)
+    .then(function (data) {
+      document.getElementById("dx_user_info_name").innerHTML =
+        data.user_info_name;
+      document.getElementById("dx_user_info_age").innerHTML =
+        data.user_info_age;
+      document.getElementById("dx_user_info_gridsquare").innerHTML =
+        data.user_info_gridsquare;
+      document.getElementById("dx_user_info_location").innerHTML =
+        data.user_info_location;
+      document.getElementById("dx_user_info_email").innerHTML =
+        data.user_info_email;
+      document.getElementById("dx_user_info_website").innerHTML =
+        data.user_info_website;
+      document.getElementById("dx_user_info_radio").innerHTML =
+        data.user_info_radio;
+      document.getElementById("dx_user_info_antenna").innerHTML =
+        data.user_info_antenna;
+      document.getElementById("dx_user_info_comments").innerHTML =
+        data.user_info_comments;
 
-function getSetUserInformation(selected_callsign){
-
-        //Get user information
-        document.getElementById("dx_user_info_callsign").innerHTML = selected_callsign;
-
-        returnObjFromCallsign(users, selected_callsign).then(function(data){
-
-        document.getElementById("dx_user_info_name").innerHTML = data.user_info_name;
-        document.getElementById("dx_user_info_age").innerHTML = data.user_info_age;
-        document.getElementById("dx_user_info_gridsquare").innerHTML = data.user_info_gridsquare;
-        document.getElementById("dx_user_info_location").innerHTML = data.user_info_location;
-        document.getElementById("dx_user_info_email").innerHTML = data.user_info_email;
-        document.getElementById("dx_user_info_website").innerHTML = data.user_info_website;
-        document.getElementById("dx_user_info_radio").innerHTML = data.user_info_radio;
-        document.getElementById("dx_user_info_antenna").innerHTML = data.user_info_antenna;
-        document.getElementById("dx_user_info_comments").innerHTML = data.user_info_comments;
-
-        document.getElementById("dx_user_info_gridsquare").className = "";
-        document.getElementById("dx_user_info_name").className = "";
-        document.getElementById("dx_user_info_age").className = "";
-        document.getElementById("dx_user_info_gridsquare").className = "";
-        document.getElementById("dx_user_info_location").className = "";
-        document.getElementById("dx_user_info_email").className = "";
-        document.getElementById("dx_user_info_website").className = "";
-        document.getElementById("dx_user_info_radio").className = "";
-        document.getElementById("dx_user_info_antenna").className = "";
-        document.getElementById("dx_user_info_comments").className = "";
-
-
-        }).catch(function(err){
-
-        document.getElementById("dx_user_info_gridsquare").className = "placeholder col-4";
-        document.getElementById("dx_user_info_name").className = "placeholder col-4";
-        document.getElementById("dx_user_info_age").className = "placeholder col-2";
-        document.getElementById("dx_user_info_gridsquare").className = "placeholder col-3";
-        document.getElementById("dx_user_info_location").className = "placeholder col-3";
-        document.getElementById("dx_user_info_email").className = "placeholder col-7";
-        document.getElementById("dx_user_info_website").className = "placeholder col-7";
-        document.getElementById("dx_user_info_radio").className = "placeholder col-4";
-        document.getElementById("dx_user_info_antenna").className = "placeholder col-4";
-        document.getElementById("dx_user_info_comments").className = "placeholder col-7";
-        });
-
-
-
-
+      document.getElementById("dx_user_info_gridsquare").className = "";
+      document.getElementById("dx_user_info_name").className = "";
+      document.getElementById("dx_user_info_age").className = "";
+      document.getElementById("dx_user_info_gridsquare").className = "";
+      document.getElementById("dx_user_info_location").className = "";
+      document.getElementById("dx_user_info_email").className = "";
+      document.getElementById("dx_user_info_website").className = "";
+      document.getElementById("dx_user_info_radio").className = "";
+      document.getElementById("dx_user_info_antenna").className = "";
+      document.getElementById("dx_user_info_comments").className = "";
+    })
+    .catch(function (err) {
+      document.getElementById("dx_user_info_gridsquare").className =
+        "placeholder col-4";
+      document.getElementById("dx_user_info_name").className =
+        "placeholder col-4";
+      document.getElementById("dx_user_info_age").className =
+        "placeholder col-2";
+      document.getElementById("dx_user_info_gridsquare").className =
+        "placeholder col-3";
+      document.getElementById("dx_user_info_location").className =
+        "placeholder col-3";
+      document.getElementById("dx_user_info_email").className =
+        "placeholder col-7";
+      document.getElementById("dx_user_info_website").className =
+        "placeholder col-7";
+      document.getElementById("dx_user_info_radio").className =
+        "placeholder col-4";
+      document.getElementById("dx_user_info_antenna").className =
+        "placeholder col-4";
+      document.getElementById("dx_user_info_comments").className =
+        "placeholder col-7";
+    });
 }
