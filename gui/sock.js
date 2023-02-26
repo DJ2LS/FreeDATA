@@ -713,7 +713,7 @@ exports.sendRequestInfo = function (dxcallsign) {
 //Send station info response
 exports.sendResponseInfo = function (dxcallsign, userinfo) {
   //Command 0 = user/station information
-  sendRequest(dxcallsign, 255, 1, userinfo, "res");
+  sendResponse(dxcallsign, 255, 1, userinfo, "res");
 };
 
 //STOP TRANSMISSION

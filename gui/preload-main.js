@@ -2580,6 +2580,11 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "requestUserInfo") {
     sock.sendRequestInfo(arg.dxcallsign);
   }
+
+    if (arg.command == "responseUserInfo") {
+    sock.sendResponseInfo(arg.dxcallsign, arg.userinfo);
+  }
+
 });
 
 // IPC ACTION FOR AUTO UPDATER
