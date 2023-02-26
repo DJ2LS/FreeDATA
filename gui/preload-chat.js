@@ -1668,6 +1668,10 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className = "";
     })
     .catch(function (err) {
+
+          document.getElementById("dx_user_info_image").src = "img/icon.png";
+
+
       document.getElementById("dx_user_info_gridsquare").className =
         "placeholder col-4";
       document.getElementById("dx_user_info_name").className =
