@@ -1664,8 +1664,10 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_image").src = data.user_info_image;
 
       document.getElementById("dx_user_info_gridsquare").className = "";
-      document.getElementById("dx_user_info_name").className = "badge bg-secondary";
-      document.getElementById("dx_user_info_age").className = "badge bg-secondary";
+      document.getElementById("dx_user_info_name").className =
+        "badge bg-secondary";
+      document.getElementById("dx_user_info_age").className =
+        "badge bg-secondary";
       document.getElementById("dx_user_info_gridsquare").className = "";
       document.getElementById("dx_user_info_location").className = "";
       document.getElementById("dx_user_info_email").className = "";
