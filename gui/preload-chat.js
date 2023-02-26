@@ -4,7 +4,6 @@ const { v4: uuidv4 } = require("uuid");
 const imageCompression = require("browser-image-compression");
 const blobUtil = require("blob-util");
 
-
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
   process.env.APPDATA ||
@@ -499,7 +498,7 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
   let imageFiletype = arg.mime;
   let imageFile = arg.data;
 
-   imageFile = blobUtil.base64StringToBlob(imageFile, imageFiletype);
+  imageFile = blobUtil.base64StringToBlob(imageFile, imageFiletype);
 
   var options = {
     maxSizeMB: 1,
