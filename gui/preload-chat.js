@@ -516,8 +516,8 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
   imageFile = blobUtil.base64StringToBlob(imageFile, imageFiletype);
 
   var options = {
-    maxSizeMB: 1,
-    maxWidthOrHeight: 150,
+    maxSizeMB: 0.010,
+    maxWidthOrHeight: 125,
     useWebWorker: false,
   };
 
