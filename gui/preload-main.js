@@ -1958,9 +1958,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   // noise / strength
   // https://www.moellerstudios.org/converting-amplitude-representations/
-
   if (
-    arg.strength.length != 0 &&
+    arg.strength != 0 &&
     !isNaN(arg.strength) &&
     noise_level_raw != arg.strength
   ) {
@@ -2553,7 +2552,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
       arg.checksum
     );
   }
-  if (arg.command == "send_message") {
+  if (arg.command == "msg") {
     sock.sendMessage(
       arg.dxcallsign,
       arg.mode,
