@@ -553,33 +553,35 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
   console.log(data.status);
-  db.get(data.uuid, {
-    attachments: true,
-  })
-    .then(function (doc) {
-      return db.put({
-        _id: doc.uuid.toString(),
-        _rev: doc._rev,
-        timestamp: doc.timestamp,
-        dxcallsign: doc.dxcallsign,
-        dxgrid: doc.dxgrid,
-        msg: doc.msg,
-        checksum: doc.checksum,
-        type: "transmit",
-        status: data.status,
-        percent: data.percent,
-        bytesperminute: data.bytesperminute,
-        uuid: doc.uuid,
-        _attachments: doc._attachments,
-      });
-    })
-    .then(function (response) {
-      update_chat_obj_by_uuid(data.uuid);
-    })
-    .catch(function (err) {
-      console.log(err);
-      console.log(data);
-    });
+  if(data.uuid !== 'no-uuid'){
+      db.get(data.uuid, {
+        attachments: true,
+      })
+        .then(function (doc) {
+          return db.put({
+            _id: doc.uuid.toString(),
+            _rev: doc._rev,
+            timestamp: doc.timestamp,
+            dxcallsign: doc.dxcallsign,
+            dxgrid: doc.dxgrid,
+            msg: doc.msg,
+            checksum: doc.checksum,
+            type: "transmit",
+            status: data.status,
+            percent: data.percent,
+            bytesperminute: data.bytesperminute,
+            uuid: doc.uuid,
+            _attachments: doc._attachments,
+          });
+        })
+        .then(function (response) {
+          update_chat_obj_by_uuid(data.uuid);
+        })
+        .catch(function (err) {
+          console.log(err);
+          console.log(data);
+        });
+    }
 });
 
 //Render is typing message in correct chat window
