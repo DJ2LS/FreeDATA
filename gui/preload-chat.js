@@ -743,7 +743,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         console.log(splitted_data);
         let userData = new Object();
         userData.user_info_image = splitted_data[2];
-        userData.user_info_callsign = config.mycall;
+        userData.user_info_callsign = splitted_data[3];
         userData.user_info_gridsquare = splitted_data[4];
         userData.user_info_name = splitted_data[5];
         userData.user_info_age = splitted_data[6];
