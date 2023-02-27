@@ -102,21 +102,34 @@
           <div class="container-fluid m-2 p-0">
             <div class="input-group bottom-0">
               <button
-                class="btn btn-sm btn-secondary me-2"
+                class="btn btn-sm btn-outline-secondary me"
                 id="ping"
                 type="button"
               >
                 Ping
               </button>
+
               <button
-                id="chatSettingsDropDown"
                 type="button"
-                class="btn btn-outline-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
+                id="userModalDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModalDX"
+                class="btn btn-sm btn-outline-secondary"
               >
-                <i class="bi bi-three-dots-vertical"></i>
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
               </button>
+
+              <button
+                type="button"
+                id="sharedFolderDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModalDX"
+                class="btn btn-sm btn-outline-secondary me-2"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+
+
               <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
                 <li>
                   <a
@@ -128,36 +141,17 @@
                 </li>
               </ul>
 
-              <button
-                type="button"
-                id="userModalDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModalDX"
-                class="btn btn-sm btn-secondary"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
 
               <button
                 type="button"
-                id="sharedFolderDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModalDX"
-                class="btn btn-sm btn-secondary"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-small btn-primary dropdown-toggle"
+                class="btn btn-small btn-outline-primary dropdown-toggle me-2"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
                 data-bs-auto-close="outside"
               >
                 <i class="bi bi-funnel-fill"></i>
               </button>
-              <form class="dropdown-menu p-4" id="frmFilter">
+              <form class="dropdown-menu p-4 " id="frmFilter">
                 <div class="mb-1">
                   <div class="form-check">
                     <input
@@ -236,6 +230,17 @@
                   Refresh
                 </button>
               </form>
+
+              <button
+                id="chatSettingsDropDown"
+                type="button"
+                class="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+
             </div>
           </div>
           <hr class="m-0" />
