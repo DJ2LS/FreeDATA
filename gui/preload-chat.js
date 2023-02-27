@@ -755,7 +755,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         userData.user_info_comments = splitted_data[12];
 
         addUserToDatabaseIfNotExists(userData);
-        getSetUserInformation(config.mycall);
+        getSetUserInformation(splitted_data[3];);
       }
 
       add_obj_to_database(obj);
