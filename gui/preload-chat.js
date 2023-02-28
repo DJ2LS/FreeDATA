@@ -44,7 +44,8 @@ var filename = "";
 var callsign_counter = 0;
 var selected_callsign = "";
 var lastIsWritingBroadcast = new Date().getTime();
-var defaultUserIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
+var defaultUserIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
 
 // -----------------------------------
 // Initially fill sharedFolderFileList
@@ -868,7 +869,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         addUserToDatabaseIfNotExists(userData);
         getSetUserInformation(selected_callsign);
-
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -882,17 +882,15 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
 
-
         console.log(splitted_data);
-
 
         let userData = new Object();
 
         userData.user_info_callsign = splitted_data[2];
         let filelist = JSON.parse(splitted_data[3]);
         console.log(filelist);
-        userData.user_shared_folder = filelist
-        addFileListToUserDatabaseIfNotExists(userData)
+        userData.user_shared_folder = filelist;
+        addFileListToUserDatabaseIfNotExists(userData);
         getSetUserInformation(selected_callsign);
       }
 
@@ -1625,7 +1623,6 @@ addUserToDatabaseIfNotExists = function (obj) {
 };
 
 addFileListToUserDatabaseIfNotExists = function (obj) {
-
   console.log(obj);
   users
     .find({
@@ -1641,7 +1638,6 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             _id: result.docs[0]._id,
             _rev: result.docs[0]._rev,
             user_shared_folder: obj.user_shared_folder,
-
           })
           .then(function (response) {
             console.log("UPDATED USER");
@@ -1668,14 +1664,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
     .catch(function (err) {
       console.log(err);
     });
-
-
 };
-
-
-
-
-
 
 // Scroll to bottom of message-container
 function scrollMessagesToBottom() {
@@ -1907,16 +1896,17 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-
       // image
-      if(typeof data.user_info_image !== 'undefined'){
-        document.getElementById("dx_user_info_image").src = data.user_info_image;
-        document.getElementById("user-image-" + selected_callsign).src = data.user_info_image;
+      if (typeof data.user_info_image !== "undefined") {
+        document.getElementById("dx_user_info_image").src =
+          data.user_info_image;
+        document.getElementById("user-image-" + selected_callsign).src =
+          data.user_info_image;
       } else {
         document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        document.getElementById("user-image-" + selected_callsign).src =defaultUserIcon;
+        document.getElementById("user-image-" + selected_callsign).src =
+          defaultUserIcon;
       }
-
 
       // Callsign list elements
       document.getElementById(
@@ -1948,10 +1938,6 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").innerHTML =
         data.user_info_comments;
 
-
-
-
-
       document.getElementById("dx_user_info_gridsquare").className = "";
       document.getElementById("dx_user_info_name").className =
         "badge bg-secondary";
@@ -1965,51 +1951,51 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_antenna").className = "";
       document.getElementById("dx_user_info_comments").className = "";
 
-      console.log(data.user_shared_folder)
+      console.log(data.user_shared_folder);
 
-      if(typeof data.user_shared_folder !== "undefined"){
-      // shared folder table
-      var tbl = document.getElementById("sharedFolderTableDX");
-      tbl.innerHTML = "";
-      let counter = 0;
-      data.user_shared_folder.forEach((file) => {
-        var row = document.createElement("tr");
+      if (typeof data.user_shared_folder !== "undefined") {
+        // shared folder table
+        var tbl = document.getElementById("sharedFolderTableDX");
+        tbl.innerHTML = "";
+        let counter = 0;
+        data.user_shared_folder.forEach((file) => {
+          var row = document.createElement("tr");
 
-        let id = document.createElement("td");
-        let idText = document.createElement("span");
-        idText.innerText = counter += 1;
-        id.appendChild(idText);
-        row.appendChild(id);
+          let id = document.createElement("td");
+          let idText = document.createElement("span");
+          idText.innerText = counter += 1;
+          id.appendChild(idText);
+          row.appendChild(id);
 
-        let filename = document.createElement("td");
-        let filenameText = document.createElement("span");
-        filenameText.innerText = file["name"];
-        filename.appendChild(filenameText);
-        row.appendChild(filename);
+          let filename = document.createElement("td");
+          let filenameText = document.createElement("span");
+          filenameText.innerText = file["name"];
+          filename.appendChild(filenameText);
+          row.appendChild(filename);
 
-        let filetype = document.createElement("td");
-        let filetypeText = document.createElement("span");
-        filetypeText.innerHTML = `<i class="bi bi-filetype-${file["extension"]}" style="font-size: 1.8rem"></i>`;
-        filetype.appendChild(filetypeText);
-        row.appendChild(filetype);
+          let filetype = document.createElement("td");
+          let filetypeText = document.createElement("span");
+          filetypeText.innerHTML = `<i class="bi bi-filetype-${file["extension"]}" style="font-size: 1.8rem"></i>`;
+          filetype.appendChild(filetypeText);
+          row.appendChild(filetype);
 
-        let filesize = document.createElement("td");
-        let filesizeText = document.createElement("span");
-        filesizeText.innerText = file["size"];
-        filesize.appendChild(filesizeText);
-        row.appendChild(filesize);
+          let filesize = document.createElement("td");
+          let filesizeText = document.createElement("span");
+          filesizeText.innerText = file["size"];
+          filesize.appendChild(filesizeText);
+          row.appendChild(filesize);
 
-        tbl.appendChild(row);
-      });
-     } else {
-        document.getElementById("sharedFolderTableDX").innerHTML = "no data"
-     }
-
+          tbl.appendChild(row);
+        });
+      } else {
+        document.getElementById("sharedFolderTableDX").innerHTML = "no data";
+      }
     })
     .catch(function (err) {
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src = defaultUserIcon;
-       document.getElementById("user-image-" + selected_callsign).className =
+      document.getElementById("user-image-" + selected_callsign).src =
+        defaultUserIcon;
+      document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
         "height:60px";
@@ -2020,7 +2006,7 @@ function getSetUserInformation(selected_callsign) {
       // DX Station tab
 
       document.getElementById("dx_user_info_image").src = defaultUserIcon;
-            document.getElementById("dx_user_info_gridsquare").className =
+      document.getElementById("dx_user_info_gridsquare").className =
         "placeholder col-4";
       document.getElementById("dx_user_info_name").className =
         "placeholder col-4";
@@ -2051,13 +2037,12 @@ function sendSharedFolderList(dxcallsign) {
   });
 
   console.log(sharedFolderFileList);
-let fileListWithCallsign = "";
-fileListWithCallsign += dxcallsign;
-fileListWithCallsign += split_char;
-fileListWithCallsign += JSON.stringify(sharedFolderFileList);
+  let fileListWithCallsign = "";
+  fileListWithCallsign += dxcallsign;
+  fileListWithCallsign += split_char;
+  fileListWithCallsign += JSON.stringify(sharedFolderFileList);
 
   console.log(fileListWithCallsign);
-
 
   ipcRenderer.send("run-tnc-command", {
     command: "responseSharedFolderList",
