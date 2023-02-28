@@ -547,38 +547,35 @@ ipcMain.on("select-user-image", (event, data) => {
     });
 });
 
-
 // read files in folder - use case "shared folder"
 ipcMain.on("read-files-in-folder", (event, data) => {
+  let fileList = [];
 
-    let fileList = []
-
-    let folder = data.folder
-    let files = fs.readdirSync(folder);
-    console.log(folder)
-console.log(files)
-    files.forEach(file => {
-    try{
-        let filePath = folder + '/' + file;
-        if(fs.lstatSync(filePath).isFile()){
-        let fileSizeInBytes = fs.statSync(filePath).size
+  let folder = data.folder;
+  let files = fs.readdirSync(folder);
+  console.log(folder);
+  console.log(files);
+  files.forEach((file) => {
+    try {
+      let filePath = folder + "/" + file;
+      if (fs.lstatSync(filePath).isFile()) {
+        let fileSizeInBytes = fs.statSync(filePath).size;
         let extension = path.extname(filePath);
-        fileList.push({ name: file, extension: extension.substring(1), size: fileSizeInBytes });
-  }
-  } catch(err){
-  console.log(err)
-  }
-
-
-    });
-
-    chat.webContents.send("return-shared-folder-files", {
-                files: fileList,
+        fileList.push({
+          name: file,
+          extension: extension.substring(1),
+          size: fileSizeInBytes,
         });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
 
+  chat.webContents.send("return-shared-folder-files", {
+    files: fileList,
+  });
 });
-
-
 
 //save file to folder
 ipcMain.on("save-file-to-folder", (event, data) => {
