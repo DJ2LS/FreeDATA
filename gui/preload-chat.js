@@ -293,7 +293,7 @@ window.addEventListener("DOMContentLoaded", () => {
       dxcallsign: selected_callsign,
     });
 
-    pauseButton(document.getElementById("requestUserInfo"), 10000);
+    pauseButton(document.getElementById("requestUserInfo"), 60000);
   });
 
   document.getElementById("ping").addEventListener("click", () => {
@@ -430,6 +430,8 @@ window.addEventListener("DOMContentLoaded", () => {
         command: "requestSharedFolderList",
         dxcallsign: selected_callsign,
       });
+
+      pauseButton(document.getElementById("requestSharedFolderList"), 60000);
     });
 
   // SEND MSG
