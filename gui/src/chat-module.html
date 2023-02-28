@@ -63,6 +63,7 @@
                 class="btn btn-sm btn-success"
                 id="createNewChatButton"
                 type="button"
+                title="Start a new chat (enter dx call sign first)"
               >
                 <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
               </button>
@@ -73,6 +74,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#userModal"
                 class="btn btn-sm btn-primary ms-2"
+                title="My station info"
               >
                 <i class="bi bi-person" style="font-size: 1.2rem"></i>
               </button>
@@ -82,6 +84,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#sharedFolderModal"
                 class="btn btn-sm btn-primary"
+                title="My shared folder"
               >
                 <i class="bi bi-files" style="font-size: 1.2rem"></i>
               </button>
@@ -105,6 +108,10 @@
                 class="btn btn-sm btn-outline-secondary me"
                 id="ping"
                 type="button"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="false"
+                title="Ping remote station"
               >
                 Ping
               </button>
@@ -115,6 +122,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#userModalDX"
                 class="btn btn-sm btn-outline-secondary"
+                title="Request remote station's information"
               >
                 <i class="bi bi-person" style="font-size: 1.2rem"></i>
               </button>
@@ -125,6 +133,7 @@
                 data-bs-toggle="modal"
                 data-bs-target="#sharedFolderModalDX"
                 class="btn btn-sm btn-outline-secondary me-2"
+                title="Request remote station's shared files"
               >
                 <i class="bi bi-files" style="font-size: 1.2rem"></i>
               </button>
@@ -135,6 +144,10 @@
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
                 data-bs-auto-close="outside"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="false"
+                title="Message filter"
               >
                 <i class="bi bi-funnel-fill"></i>
               </button>
@@ -224,6 +237,7 @@
                 class="btn btn-outline-secondary dropdown-toggle"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
+                title="More options...."
               >
                 <i class="bi bi-three-dots-vertical"></i>
               </button>
