@@ -884,7 +884,6 @@ update_chat = function (obj) {
       var callsign_selected = "active show";
       //document.getElementById('chatModuleDxCall').value = dxcallsign;
       selected_callsign = dxcallsign;
-
     }
 
     getSetUserInformation(dxcallsign);
@@ -917,11 +916,8 @@ update_chat = function (obj) {
       .getElementById("nav-tabContent")
       .insertAdjacentHTML("beforeend", message_area);
 
-
-      // finally get and set user information to first selected item
-      getSetUserInformation(selected_callsign);
-
-
+    // finally get and set user information to first selected item
+    getSetUserInformation(selected_callsign);
 
     // create eventlistener for listening on clicking on a callsign
     document
@@ -1722,13 +1718,18 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-          // Callsign list elements
-        document.getElementById("chat-" + selected_callsign + "-list-dxgrid").innerHTML = '<small>'+ data.user_info_gridsquare +'</small>';
-        document.getElementById("user-image-" + selected_callsign).src = data.user_info_image;
-        document.getElementById("user-image-" + selected_callsign).className = "p-1 rounded-circle";
-        document.getElementById("user-image-" + selected_callsign).style = "width: 60px";
+      // Callsign list elements
+      document.getElementById(
+        "chat-" + selected_callsign + "-list-dxgrid"
+      ).innerHTML = "<small>" + data.user_info_gridsquare + "</small>";
+      document.getElementById("user-image-" + selected_callsign).src =
+        data.user_info_image;
+      document.getElementById("user-image-" + selected_callsign).className =
+        "p-1 rounded-circle";
+      document.getElementById("user-image-" + selected_callsign).style =
+        "width: 60px";
 
-          // DX Station tab
+      // DX Station tab
 
       document.getElementById("dx_user_info_name").innerHTML =
         data.user_info_name;
@@ -1764,7 +1765,6 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className = "";
     })
     .catch(function (err) {
-
       // Callsign list elements
       document.getElementById("user-image-" + selected_callsign).src = src =
         "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4=";
@@ -1772,7 +1772,9 @@ function getSetUserInformation(selected_callsign) {
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
         "height:60px";
-      document.getElementById("chat-" + selected_callsign + "-list-dxgrid").innerHTML = '<small>no grid</small>';
+      document.getElementById(
+        "chat-" + selected_callsign + "-list-dxgrid"
+      ).innerHTML = "<small>no grid</small>";
 
       // DX Station tab
 
