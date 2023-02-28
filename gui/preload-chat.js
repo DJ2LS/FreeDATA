@@ -47,11 +47,10 @@ var lastIsWritingBroadcast = new Date().getTime();
 // -----------------------------------
 // Initially fill sharedFolderFileList
 //TODO: Make this automatically ever N seconds
-var sharedFolderFileList = ''
+var sharedFolderFileList = "";
 ipcRenderer.send("read-files-in-folder", {
-        folder: config.shared_folder_path,
-      });
-
+  folder: config.shared_folder_path,
+});
 
 var chatDB = path.join(configFolder, "chatDB");
 var userDB = path.join(configFolder, "userDB");
@@ -134,7 +133,6 @@ var chatFilter = [
 ];
 
 updateAllChat(false);
-
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
@@ -422,15 +420,13 @@ window.addEventListener("DOMContentLoaded", () => {
       });
     });
 
-     document
+  document
     .getElementById("requestSharedFolderList")
     .addEventListener("click", () => {
-          ipcRenderer.send("run-tnc-command", {
-      command: "requestSharedFolderList",
-      dxcallsign: selected_callsign,
-    });
-
-
+      ipcRenderer.send("run-tnc-command", {
+        command: "requestSharedFolderList",
+        dxcallsign: selected_callsign,
+      });
     });
 
   // SEND MSG
@@ -548,7 +544,7 @@ ipcRenderer.on("return-selected-files", (event, arg) => {
 
 ipcRenderer.on("return-shared-folder-files", (event, arg) => {
   console.log(arg);
-  sharedFolderFileList = arg.files
+  sharedFolderFileList = arg.files;
 
   var tbl = document.getElementById("sharedFolderTable");
   tbl.innerHTML = "";
@@ -793,7 +789,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
         obj.file = btoa_FD(splitted_data[8]);
-
       } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -810,7 +805,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
-
       } else if (splitted_data[1] == "req" && splitted_data[2] == "1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -827,7 +821,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
-
       } else if (splitted_data[1] == "req" && splitted_data[2] == "2") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -844,7 +837,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign);
         }
-
       } else if (splitted_data[1] == "res-0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -874,7 +866,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         addUserToDatabaseIfNotExists(userData);
         getSetUserInformation(selected_callsign);
-
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -888,11 +879,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
 
-        console.log(splitted_data)
+        console.log(splitted_data);
         let filelist = JSON.parse(splitted_data[2]);
-        console.log(filelist)
+        console.log(filelist);
       }
-
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -1937,24 +1927,22 @@ function getSetUserInformation(selected_callsign) {
     });
 }
 
-function sendSharedFolderList(dxcallsign){
-    ipcRenderer.send("read-files-in-folder", {
-        folder: config.shared_folder_path,
-      });
+function sendSharedFolderList(dxcallsign) {
+  ipcRenderer.send("read-files-in-folder", {
+    folder: config.shared_folder_path,
+  });
 
-    console.log(sharedFolderFileList);
+  console.log(sharedFolderFileList);
 
-      ipcRenderer.send("run-tnc-command", {
+  ipcRenderer.send("run-tnc-command", {
     command: "responseSharedFolderList",
     dxcallsign: selected_callsign,
     folderFileList: JSON.stringify(sharedFolderFileList),
   });
-
-
 }
 
-function sendSharedFolderFile(dxcallsign){
-    console.log("DUMMY")
+function sendSharedFolderFile(dxcallsign) {
+  console.log("DUMMY");
 }
 
 function sendUserData(dxcallsign) {

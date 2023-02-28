@@ -732,7 +732,6 @@ exports.sendResponseSharedFolderList = function (dxcallsign, sharedFolderList) {
   sendResponse(dxcallsign, 255, 1, sharedFolderList, "res-1");
 };
 
-
 //STOP TRANSMISSION
 exports.stopTransmission = function () {
   command = '{"type" : "arq", "command": "stop_transmission"}';

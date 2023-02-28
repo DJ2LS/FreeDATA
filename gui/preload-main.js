@@ -2656,7 +2656,6 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
     sock.sendRequestSharedFolderList(arg.dxcallsign);
   }
 
-
   // responses
   if (arg.command == "responseUserInfo") {
     sock.sendResponseInfo(arg.dxcallsign, arg.userinfo);
