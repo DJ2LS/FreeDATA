@@ -582,18 +582,28 @@
 
     <!-- user shared folder -->
     <div
-      class="modal fade"
+      class="modal fade "
       id="sharedFolderModal"
       tabindex="-1"
       aria-labelledby="sharedFolderModalLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
               My Shared folder
+<button
+              type="button"
+              class="btn btn-primary"
+              id="openSharedFilesFolder"
+            ><i class="bi bi-archive"></i></button>
+
+
             </h1>
+
+
+
 
             <button
               type="button"
@@ -603,15 +613,24 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="container-fluid">Future feature... be patient :-)</div>
-            <div class="modal-footer">
-              <button
-                type="button"
-                class="btn btn-secondary"
-                data-bs-dismiss="modal"
-              >
-                Close
-              </button>
+            <div class="container-fluid">
+
+              <div class="table-responsive">
+                  <!-- START OF TABLE FOR HEARD STATIONS -->
+                  <table class="table table-sm">
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Size</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sharedFolderTable">
+
+                    </tbody>
+                  </table>
+                </div>
             </div>
           </div>
         </div>

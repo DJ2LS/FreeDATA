@@ -162,9 +162,10 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       ipcRenderer.send("get-folder-path", {
         title: "Title",
+        action: "return-folder-paths-received_files_folder",
       });
 
-      ipcRenderer.on("return-folder-paths", (event, data) => {
+      ipcRenderer.on("return-folder-paths-received_files_folder", (event, data) => {
         document.getElementById("received_files_folder").value =
           data.path.filePaths[0];
         config.received_files_folder = data.path.filePaths[0];
@@ -173,12 +174,31 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
   document
+    .getElementById("shared_folder_path")
+    .addEventListener("click", () => {
+      ipcRenderer.send("get-folder-path", {
+        title: "Title",
+        action: "return-folder-paths-shared_folder_path",
+      });
+
+      ipcRenderer.on("return-folder-paths-shared_folder_path", (event, data) => {
+        document.getElementById("shared_folder_path").value =
+          data.path.filePaths[0];
+        config.shared_folder_path = data.path.filePaths[0];
+        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      });
+    });
+
+
+  document
     .getElementById("openReceivedFilesFolder")
     .addEventListener("click", () => {
       ipcRenderer.send("open-folder", {
         path: config.received_files_folder,
       });
     });
+
+
 
   /*
     // ENABLE BOOTSTRAP POPOVERS EVERYWHERE
@@ -241,6 +261,21 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById("scatterSwitch").checked = false;
   }
+
+  document.getElementById("shared_folder_path").value =
+    config.shared_folder_path;
+
+    if (config.enable_request_profile == "True") {
+    document.getElementById("enable_request_profile").checked = true;
+  } else {
+    document.getElementById("enable_request_profile").checked = false;
+  }
+      if (config.enable_request_shared_folder == "True") {
+    document.getElementById("enable_request_shared_folder").checked = true;
+  } else {
+    document.getElementById("enable_request_shared_folder").checked = false;
+  }
+
 
   if (config.enable_is_writing == "True") {
     document.getElementById("enable_is_writing").checked = true;
@@ -556,9 +591,10 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       ipcRenderer.send("get-file-path", {
         title: "Title",
+        action : "return-file-path-hamlib_rigctld_path"
       });
 
-      ipcRenderer.on("return-file-paths", (event, data) => {
+      ipcRenderer.on("return-file-path-hamlib_rigctld_path", (event, data) => {
         rigctldPath = data.path.filePaths[0];
         document.getElementById("hamlib_rigctld_path").value = rigctldPath;
         config.hamlib_rigctld_path = rigctldPath;
@@ -1029,6 +1065,26 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_is_writing = "True";
     } else {
       config.enable_is_writing = "False";
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  });
+
+  // enable enable_request_shared_folder switch clicked
+  document.getElementById("enable_request_shared_folder").addEventListener("click", () => {
+    if (document.getElementById("enable_request_shared_folder").checked == true) {
+      config.enable_request_shared_folder = "True";
+    } else {
+      config.enable_request_shared_folder = "False";
+    }
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  });
+
+  // enable enable_request_profile switch clicked
+  document.getElementById("enable_request_profile").addEventListener("click", () => {
+    if (document.getElementById("enable_request_profile").checked == true) {
+      config.enable_request_profile = "True";
+    } else {
+      config.enable_request_profile = "False";
     }
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   });

@@ -397,6 +397,24 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+
+  // open file selector for shared folder
+  document.getElementById("sharedFolderButton").addEventListener("click", () => {
+    ipcRenderer.send("read-files-in-folder", {
+      folder: config.shared_folder_path,
+    });
+  });
+
+
+  document
+    .getElementById("openSharedFilesFolder")
+    .addEventListener("click", () => {
+      ipcRenderer.send("open-folder", {
+        path: config.shared_folder_path,
+      });
+    });
+
+
   // SEND MSG
   document.getElementById("sendMessage").addEventListener("click", () => {
     document.getElementById("emojipickercontainer").style.display = "none";
@@ -496,6 +514,7 @@ window.addEventListener("DOMContentLoaded", () => {
   file = "";
   filename = "";
 });
+
 ipcRenderer.on("return-selected-files", (event, arg) => {
   filetype = arg.mime;
   console.log(filetype);
@@ -508,6 +527,52 @@ ipcRenderer.on("return-selected-files", (event, arg) => {
      </span>
     `;
 });
+
+ipcRenderer.on("return-shared-folder-files", (event, arg) => {
+  console.log(arg)
+
+  var tbl = document.getElementById("sharedFolderTable");
+  tbl.innerHTML = "";
+    let counter = 0
+  arg.files.forEach(file => {
+        console.log(file["name"]);
+        var row = document.createElement("tr");
+
+        let id = document.createElement("td");
+        let idText = document.createElement("span");
+            idText.innerText = counter+=1;
+        id.appendChild(idText);
+        row.appendChild(id);
+
+
+        let filename = document.createElement("td");
+        let filenameText = document.createElement("span");
+            filenameText.innerText = file["name"];
+        filename.appendChild(filenameText);
+        row.appendChild(filename);
+
+        let filetype = document.createElement("td");
+        let filetypeText = document.createElement("span");
+            filetypeText.innerHTML = `
+                <i class="bi bi-filetype-${file['extension']}" style="font-size: 1.8rem"></i>
+                `;
+        filetype.appendChild(filetypeText);
+        row.appendChild(filetype);
+
+        let filesize = document.createElement("td");
+        let filesizeText = document.createElement("span");
+            filesizeText.innerText = file["size"];
+        filesize.appendChild(filesizeText);
+        row.appendChild(filesize);
+
+
+        tbl.appendChild(row);
+
+  });
+
+
+});
+
 
 ipcRenderer.on("return-select-user-image", (event, arg) => {
   let imageFiletype = arg.mime;
@@ -728,7 +793,11 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
 
-        sendUserData(item.dxcallsign);
+        if(config.enable_request_profile == "True"){
+            sendUserData(item.dxcallsign);
+        }
+
+
       } else if (splitted_data[1] == "res") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);

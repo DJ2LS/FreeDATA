@@ -89,7 +89,10 @@ const configDefaultSettings =
                   "high_graphics" : "True",\
                   "explorer_stats" : "False", \
                   "auto_tune" : "False", \
-                  "enable_is_writing" : "True" \
+                  "enable_is_writing" : "True", \
+                  "shared_folder_path" : ".", \
+                  "enable_request_profile" : "True", \
+                  "enable_request_shared_folder" : "True" \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -446,12 +449,12 @@ ipcMain.on("get-file-path", (event, data) => {
   dialog
     .showOpenDialog({
       defaultPath: path.join(__dirname, "../"),
-      buttonLabel: "Select rigctld",
+      buttonLabel: "Select File",
       properties: ["openFile"],
     })
     .then((filePaths) => {
       if (filePaths.canceled == false) {
-        win.webContents.send("return-file-paths", { path: filePaths });
+        win.webContents.send(data.action, { path: filePaths });
       }
     });
 });
@@ -465,7 +468,7 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-      win.webContents.send("return-folder-paths", { path: folderPaths });
+      win.webContents.send(data.action, { path: folderPaths });
     });
 });
 
@@ -543,6 +546,40 @@ ipcMain.on("select-user-image", (event, data) => {
       }
     });
 });
+
+
+// read files in folder - use case "shared folder"
+ipcMain.on("read-files-in-folder", (event, data) => {
+
+    let fileList = []
+
+    let folder = data.folder
+    let files = fs.readdirSync(folder);
+    console.log(folder)
+console.log(files)
+    files.forEach(file => {
+    try{
+        let filePath = folder + '/' + file;
+        if(fs.lstatSync(filePath).isFile()){
+        let fileSizeInBytes = fs.statSync(filePath).size
+        let extension = path.extname(filePath);
+        fileList.push({ name: file, extension: extension.substring(1), size: fileSizeInBytes });
+  }
+  } catch(err){
+  console.log(err)
+  }
+
+
+    });
+
+    chat.webContents.send("return-shared-folder-files", {
+                files: fileList,
+        });
+
+});
+
+
+
 //save file to folder
 ipcMain.on("save-file-to-folder", (event, data) => {
   console.log(data.file);
