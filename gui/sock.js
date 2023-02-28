@@ -707,14 +707,31 @@ function sendResponse(dxcallsign, mode, frames, data, command) {
 //Send station info request
 exports.sendRequestInfo = function (dxcallsign) {
   //Command 0 = user/station information
+  //Command 1 = shared folder list
   sendRequest(dxcallsign, 255, 1, "0", "req");
+};
+
+//Send shared folder file list request
+exports.sendRequestSharedFolderList = function (dxcallsign) {
+  //Command 0 = user/station information
+  //Command 1 = shared folder list
+  sendRequest(dxcallsign, 255, 1, "1", "req");
 };
 
 //Send station info response
 exports.sendResponseInfo = function (dxcallsign, userinfo) {
   //Command 0 = user/station information
-  sendResponse(dxcallsign, 255, 1, userinfo, "res");
+  //Command 1 = shared folder list
+  sendResponse(dxcallsign, 255, 1, userinfo, "res-0");
 };
+
+//Send station info response
+exports.sendResponseSharedFolderList = function (dxcallsign, sharedFolderList) {
+  //Command 0 = user/station information
+  //Command 1 = shared folder list
+  sendResponse(dxcallsign, 255, 1, sharedFolderList, "res-1");
+};
+
 
 //STOP TRANSMISSION
 exports.stopTransmission = function () {
