@@ -44,6 +44,8 @@ var filename = "";
 var callsign_counter = 0;
 var selected_callsign = "";
 var lastIsWritingBroadcast = new Date().getTime();
+var defaultUserIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
+
 // -----------------------------------
 // Initially fill sharedFolderFileList
 //TODO: Make this automatically ever N seconds
@@ -866,6 +868,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         addUserToDatabaseIfNotExists(userData);
         getSetUserInformation(selected_callsign);
+
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -879,9 +882,18 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
 
+
         console.log(splitted_data);
-        let filelist = JSON.parse(splitted_data[2]);
+
+
+        let userData = new Object();
+
+        userData.user_info_callsign = splitted_data[2];
+        let filelist = JSON.parse(splitted_data[3]);
         console.log(filelist);
+        userData.user_shared_folder = filelist
+        addFileListToUserDatabaseIfNotExists(userData)
+        getSetUserInformation(selected_callsign);
       }
 
       add_obj_to_database(obj);
@@ -1612,6 +1624,59 @@ addUserToDatabaseIfNotExists = function (obj) {
     });
 };
 
+addFileListToUserDatabaseIfNotExists = function (obj) {
+
+  console.log(obj);
+  users
+    .find({
+      selector: {
+        user_info_callsign: obj.user_info_callsign,
+      },
+    })
+    .then(function (result) {
+      // handle result
+      if (result.docs.length > 0) {
+        users
+          .put({
+            _id: result.docs[0]._id,
+            _rev: result.docs[0]._rev,
+            user_shared_folder: obj.user_shared_folder,
+
+          })
+          .then(function (response) {
+            console.log("UPDATED USER");
+            console.log(response);
+            console.log(obj);
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      } else {
+        users
+          .post({
+            user_info_callsign: obj.user_info_callsign,
+            user_shared_folder: obj.user_shared_folder,
+          })
+          .then(function (response) {
+            console.log("NEW USER ADDED");
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+
+};
+
+
+
+
+
+
 // Scroll to bottom of message-container
 function scrollMessagesToBottom() {
   var messageBody = document.getElementById("message-container");
@@ -1842,12 +1907,21 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
+
+      // image
+      if(typeof data.user_info_image !== 'undefined'){
+        document.getElementById("dx_user_info_image").src = data.user_info_image;
+        document.getElementById("user-image-" + selected_callsign).src = data.user_info_image;
+      } else {
+        document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        document.getElementById("user-image-" + selected_callsign).src =defaultUserIcon;
+      }
+
+
       // Callsign list elements
       document.getElementById(
         "chat-" + selected_callsign + "-list-dxgrid"
       ).innerHTML = "<small>" + data.user_info_gridsquare + "</small>";
-      document.getElementById("user-image-" + selected_callsign).src =
-        data.user_info_image;
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle";
       document.getElementById("user-image-" + selected_callsign).style =
@@ -1873,7 +1947,10 @@ function getSetUserInformation(selected_callsign) {
         data.user_info_antenna;
       document.getElementById("dx_user_info_comments").innerHTML =
         data.user_info_comments;
-      document.getElementById("dx_user_info_image").src = data.user_info_image;
+
+
+
+
 
       document.getElementById("dx_user_info_gridsquare").className = "";
       document.getElementById("dx_user_info_name").className =
@@ -1887,12 +1964,52 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_radio").className = "";
       document.getElementById("dx_user_info_antenna").className = "";
       document.getElementById("dx_user_info_comments").className = "";
+
+      console.log(data.user_shared_folder)
+
+      if(typeof data.user_shared_folder !== "undefined"){
+      // shared folder table
+      var tbl = document.getElementById("sharedFolderTableDX");
+      tbl.innerHTML = "";
+      let counter = 0;
+      data.user_shared_folder.forEach((file) => {
+        var row = document.createElement("tr");
+
+        let id = document.createElement("td");
+        let idText = document.createElement("span");
+        idText.innerText = counter += 1;
+        id.appendChild(idText);
+        row.appendChild(id);
+
+        let filename = document.createElement("td");
+        let filenameText = document.createElement("span");
+        filenameText.innerText = file["name"];
+        filename.appendChild(filenameText);
+        row.appendChild(filename);
+
+        let filetype = document.createElement("td");
+        let filetypeText = document.createElement("span");
+        filetypeText.innerHTML = `<i class="bi bi-filetype-${file["extension"]}" style="font-size: 1.8rem"></i>`;
+        filetype.appendChild(filetypeText);
+        row.appendChild(filetype);
+
+        let filesize = document.createElement("td");
+        let filesizeText = document.createElement("span");
+        filesizeText.innerText = file["size"];
+        filesize.appendChild(filesizeText);
+        row.appendChild(filesize);
+
+        tbl.appendChild(row);
+      });
+     } else {
+        document.getElementById("sharedFolderTableDX").innerHTML = "no data"
+     }
+
     })
     .catch(function (err) {
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src = src =
-        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4=";
-      document.getElementById("user-image-" + selected_callsign).className =
+      document.getElementById("user-image-" + selected_callsign).src = defaultUserIcon;
+       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
         "height:60px";
@@ -1902,9 +2019,8 @@ function getSetUserInformation(selected_callsign) {
 
       // DX Station tab
 
-      document.getElementById("dx_user_info_image").src =
-        "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
-      document.getElementById("dx_user_info_gridsquare").className =
+      document.getElementById("dx_user_info_image").src = defaultUserIcon;
+            document.getElementById("dx_user_info_gridsquare").className =
         "placeholder col-4";
       document.getElementById("dx_user_info_name").className =
         "placeholder col-4";
@@ -1924,6 +2040,8 @@ function getSetUserInformation(selected_callsign) {
         "placeholder col-4";
       document.getElementById("dx_user_info_comments").className =
         "placeholder col-7";
+
+      document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
 }
 
@@ -1933,11 +2051,18 @@ function sendSharedFolderList(dxcallsign) {
   });
 
   console.log(sharedFolderFileList);
+let fileListWithCallsign = "";
+fileListWithCallsign += dxcallsign;
+fileListWithCallsign += split_char;
+fileListWithCallsign += JSON.stringify(sharedFolderFileList);
+
+  console.log(fileListWithCallsign);
+
 
   ipcRenderer.send("run-tnc-command", {
     command: "responseSharedFolderList",
     dxcallsign: selected_callsign,
-    folderFileList: JSON.stringify(sharedFolderFileList),
+    folderFileList: fileListWithCallsign,
   });
 }
 

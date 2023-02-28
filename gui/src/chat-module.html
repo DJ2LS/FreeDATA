@@ -639,13 +639,28 @@
       aria-labelledby="sharedFolderModalDXLabel"
       aria-hidden="true"
     >
-      <div class="modal-dialog">
+      <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header">
             <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
               Shared folder
             </h1>
-
+<button
+                  type="button"
+                  class="btn btn-primary m-2"
+                  aria-label="Request"
+                  id="requestSharedFolderList"
+                >
+                  <i class="bi bi-arrow-repeat"></i>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-warning"
+                  aria-label="Request"
+                  id="requestSharedFolderFile"
+                disabled>
+                  Request file (soon)
+                </button>
             <button
               type="button"
               class="btn-close"
@@ -654,33 +669,24 @@
             ></button>
           </div>
           <div class="modal-body">
-            <div class="container-fluid">Future feature... be patient :-)</div>
+            <div class="container-fluid"><div class="table-responsive">
+                <!-- START OF TABLE FOR HEARD STATIONS -->
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sharedFolderTableDX"></tbody>
+                </table>
+              </div></div>
             <div class="modal-footer">
+
               <div class="input-group input-group-sm m-0 p-0">
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  aria-label="Request"
-                  id="requestSharedFolderList"
-                >
-                  Request List
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-warning"
-                  aria-label="Request"
-                  id="requestSharedFolderFile"
-                >
-                  Request Selected File
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-primary"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  Close
-                </button>
+
               </div>
             </div>
           </div>
