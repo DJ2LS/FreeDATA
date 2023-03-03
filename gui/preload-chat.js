@@ -2083,6 +2083,6 @@ function pauseButton(btn, timems) {
     btn.disabled = false;
   }, timems);
 }
-ipcRenderer.on("update-config",(event,data) => {
-  config=data;
+ipcRenderer.on("update-config", (event, data) => {
+  config = data;
 });

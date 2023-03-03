@@ -364,10 +364,10 @@ app.on("window-all-closed", () => {
 
 // IPC HANDLER
 //Update configuration globally
-ipcMain.on("set-config-global", (event,data) => {
-  config=data;
-  win.webContents.send("update-config",config);
-  chat.webContents.send("update-config",config);
+ipcMain.on("set-config-global", (event, data) => {
+  config = data;
+  win.webContents.send("update-config", config);
+  chat.webContents.send("update-config", config);
   //console.log("set-config-global called");
 });
 

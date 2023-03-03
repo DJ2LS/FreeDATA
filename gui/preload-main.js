@@ -172,7 +172,7 @@ window.addEventListener("DOMContentLoaded", () => {
           document.getElementById("received_files_folder").value =
             data.path.filePaths[0];
           config.received_files_folder = data.path.filePaths[0];
-          FD.saveConfig(config,configPath);
+          FD.saveConfig(config, configPath);
 
           //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
         }
@@ -194,7 +194,7 @@ window.addEventListener("DOMContentLoaded", () => {
             data.path.filePaths[0];
           config.shared_folder_path = data.path.filePaths[0];
           //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-          FD.saveConfig(config,configPath);
+          FD.saveConfig(config, configPath);
         }
       );
     });
@@ -529,7 +529,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.radiocontrol = "disabled";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // // radio settings 'network' event listener
@@ -553,7 +553,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.radiocontrol = "rigctld";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // // radio settings 'rigctld' event listener
@@ -576,7 +576,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.radiocontrol = "rigctld";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   document
@@ -608,7 +608,7 @@ window.addEventListener("DOMContentLoaded", () => {
         document.getElementById("hamlib_rigctld_path").value = rigctldPath;
         config.hamlib_rigctld_path = rigctldPath;
         //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        FD.saveConfig(config,configPath);
+        FD.saveConfig(config, configPath);
         hamlib_params();
       });
     });
@@ -621,7 +621,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "hamlib_rigctld_server_port"
       ).value;
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
       hamlib_params();
     });
 
@@ -631,7 +631,7 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById(elem).addEventListener("change", function () {
         config[elem] = document.getElementById(elem).value;
         //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        FD.saveConfig(config,configPath);
+        FD.saveConfig(config, configPath);
         console.log(config);
         hamlib_params();
       });
@@ -765,7 +765,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.spectrum = "waterfall";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
   // scatter
   document
@@ -785,7 +785,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.spectrum = "scatter";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
   // chart
   document
@@ -805,7 +805,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
       config.spectrum = "chart";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // on click remote tnc toggle view
@@ -818,7 +818,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.tnclocation = "localhost";
       toggleClass("remote-tnc-field", "d-none", true);
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
   document
     .getElementById("local-remote-switch2")
@@ -829,7 +829,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.tnclocation = "remote";
       toggleClass("remote-tnc-field", "d-none", false);
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // on change ping callsign
@@ -849,7 +849,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.tnc_host = document.getElementById("tnc_adress").value;
     config.daemon_host = document.getElementById("tnc_adress").value;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
     let Data = {
       port: document.getElementById("tnc_port").value,
       adress: document.getElementById("tnc_adress").value,
@@ -869,7 +869,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.daemon_port =
       parseInt(document.getElementById("tnc_port").value) + 1;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
 
     let Data = {
       port: document.getElementById("tnc_port").value,
@@ -892,7 +892,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("audioLevelTXvalue").innerHTML = tx_audio_level;
     config.tx_audio_level = tx_audio_level;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
 
     let Data = {
       command: "set_tx_audio_level",
@@ -918,7 +918,7 @@ window.addEventListener("DOMContentLoaded", () => {
     //document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
     updateTitle(callsign_ssid);
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
     daemon.saveMyCall(callsign_ssid);
   });
 
@@ -927,7 +927,7 @@ window.addEventListener("DOMContentLoaded", () => {
     grid = document.getElementById("myGrid").value;
     config.mygrid = grid;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
     daemon.saveMyGrid(grid);
   });
 
@@ -987,7 +987,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     config.beacon_interval = interval;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
     bcn.disabled = false;
   });
 
@@ -1000,7 +1000,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_scatter = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // sendfft Switch clicked
@@ -1011,7 +1011,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_fft = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // enable 500z Switch clicked
@@ -1022,7 +1022,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.low_bandwidth_mode = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // enable response to cq clicked
@@ -1033,7 +1033,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.respond_to_cq = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // enable explorer Switch clicked
@@ -1044,7 +1044,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_explorer = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
   // enable explorer stats Switch clicked
   document
@@ -1056,7 +1056,7 @@ window.addEventListener("DOMContentLoaded", () => {
         config.explorer_stats = "False";
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
   // enable autotune Switch clicked
   document.getElementById("autoTuneSwitch").addEventListener("click", () => {
@@ -1066,7 +1066,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.auto_tune = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
   document.getElementById("GraphicsSwitch").addEventListener("click", () => {
     if (document.getElementById("GraphicsSwitch").checked == true) {
@@ -1075,7 +1075,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.high_graphics = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
     set_CPU_mode();
   });
 
@@ -1087,7 +1087,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_fsk = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // enable is writing switch clicked
@@ -1098,7 +1098,7 @@ window.addEventListener("DOMContentLoaded", () => {
       config.enable_is_writing = "False";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // enable enable_request_shared_folder switch clicked
@@ -1113,7 +1113,7 @@ window.addEventListener("DOMContentLoaded", () => {
         config.enable_request_shared_folder = "False";
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // enable enable_request_profile switch clicked
@@ -1126,7 +1126,7 @@ window.addEventListener("DOMContentLoaded", () => {
         config.enable_request_profile = "False";
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
     });
 
   // Tuning range clicked
@@ -1134,14 +1134,14 @@ window.addEventListener("DOMContentLoaded", () => {
     var tuning_range_fmin = document.getElementById("tuning_range_fmin").value;
     config.tuning_range_fmin = tuning_range_fmin;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   document.getElementById("tuning_range_fmax").addEventListener("click", () => {
     var tuning_range_fmax = document.getElementById("tuning_range_fmax").value;
     config.tuning_range_fmax = tuning_range_fmax;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // Theme selector clicked
@@ -1159,7 +1159,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
     config.theme = theme;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // Waterfall theme selector changed
@@ -1168,7 +1168,7 @@ window.addEventListener("DOMContentLoaded", () => {
     spectrum.setColorMap(wftheme);
     config.wftheme = wftheme;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // Update channel selector changed
@@ -1179,7 +1179,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "update_channel_selector"
       ).value;
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
       console.log("Autoupdate channel changed to ", config.update_channel);
     });
 
@@ -1188,7 +1188,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var rx_buffer_size = document.getElementById("rx_buffer_size").value;
     config.rx_buffer_size = rx_buffer_size;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   //screen size
@@ -1196,7 +1196,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.screen_height = window.innerHeight;
     config.screen_width = window.innerWidth;
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
+    FD.saveConfig(config, configPath);
   });
 
   // Explorer button clicked
@@ -1373,8 +1373,8 @@ window.addEventListener("DOMContentLoaded", () => {
     config.auto_tune = auto_tune;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config,configPath);
-    
+    FD.saveConfig(config, configPath);
+
     daemon.startTNC(
       callsign_ssid,
       mygrid,
@@ -3338,7 +3338,7 @@ function loadSettings(elements) {
       console.log("nothing matched....");
     }
   });
-  ipcRenderer.on("update-config",(event,data) => {
-    config=data;
+  ipcRenderer.on("update-config", (event, data) => {
+    config = data;
   });
 }
