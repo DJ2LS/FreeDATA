@@ -560,7 +560,13 @@ ipcMain.on("select-user-image", (event, data) => {
 // read files in folder - use case "shared folder"
 ipcMain.on("read-files-in-folder", (event, data) => {
   let fileList = [];
-
+if (config["enable_request_shared_folder"].toLowerCase() == "false") {
+  //mainLog.info("Shared file folder is disable, not populating fileList");
+  chat.webContents.send("return-shared-folder-files", {
+    files: fileList,
+  });
+  return;
+}
   let folder = data.folder;
   let files = fs.readdirSync(folder);
   console.log(folder);
