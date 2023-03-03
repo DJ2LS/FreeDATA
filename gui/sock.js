@@ -1,7 +1,7 @@
 var net = require("net");
 const path = require("path");
 const { ipcRenderer } = require("electron");
-
+const FD = require("./freedata");
 const log = require("electron-log");
 const socketLog = log.scope("tnc");
 //const utf8 = require("utf8");
@@ -443,7 +443,7 @@ client.on("data", function (socketdata) {
               socketLog.info(data);
               // we need to encode here to do a deep check for checking if file or message
               //var encoded_data = atob(data['data'])
-              var encoded_data = atob_FD(data["data"]);
+              var encoded_data = FD.atob_FD(data["data"]);
               var splitted_data = encoded_data.split(split_char);
 
               if (splitted_data[0] == "f") {
@@ -507,7 +507,7 @@ client.on("data", function (socketdata) {
           try {
             // we need to encode here to do a deep check for checking if file or message
             //var encoded_data = atob(data['data-array'][i]['data'])
-            var encoded_data = atob_FD(data["data-array"][i]["data"]);
+            var encoded_data = FD.atob_FD(data["data-array"][i]["data"]);
             var splitted_data = encoded_data.split(split_char);
 
             if (splitted_data[0] == "f") {
@@ -613,7 +613,7 @@ exports.sendFile = function (
   //Btoa / atob will not work with charsets > 8 bits (i.e. the emojis); should probably move away from using it
   //TODO:  Will need to update anyother occurences and throughly test
   //data = btoa(data)
-  data = btoa_FD(data);
+  data = FD.btoa_FD(data);
 
   command =
     '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' +
@@ -638,7 +638,7 @@ exports.sendMessage = function (
   uuid,
   command
 ) {
-  data = btoa_FD(
+  data = FD.btoa_FD(
     "m" +
       split_char +
       command +
@@ -669,7 +669,7 @@ exports.sendMessage = function (
 // Send Request message
 //It would be then „m + split + request + split + request-type“
 function sendRequest(dxcallsign, mode, frames, data, command) {
-  data = btoa_FD("m" + split_char + command + split_char + data);
+  data = FD.btoa_FD("m" + split_char + command + split_char + data);
   command =
     '{"type" : "arq", "command" : "send_raw", "parameter" : [{"dxcallsign" : "' +
     dxcallsign +
@@ -688,7 +688,7 @@ function sendRequest(dxcallsign, mode, frames, data, command) {
 // Send Response message
 //It would be then „m + split + request + split + request-type“
 function sendResponse(dxcallsign, mode, frames, data, command) {
-  data = btoa_FD("m" + split_char + command + split_char + data);
+  data = FD.btoa_FD("m" + split_char + command + split_char + data);
   command =
     '{"type" : "arq", "command" : "send_raw", "parameter" : [{"dxcallsign" : "' +
     dxcallsign +
@@ -840,23 +840,6 @@ ipcRenderer.on("action-update-tnc-ip", (event, arg) => {
   tnc_host = arg.adress;
   connectTNC();
 });
-
-/**
- * String to base64
- * @param {string} data in normal/usual utf-8 format
- * @returns base64 encoded string
- */
-function btoa_FD(data) {
-  return Buffer.from(data, "utf-8").toString("base64");
-}
-/**
- * base64 to string
- * @param {string} data in base64 encoding
- * @returns utf-8 normal/usual string
- */
-function atob_FD(data) {
-  return Buffer.from(data, "base64").toString("utf-8");
-}
 
 // https://stackoverflow.com/a/50579690
 // crc32 calculation

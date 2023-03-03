@@ -10,6 +10,8 @@ const mainLog = log.scope("main");
 const daemonProcessLog = log.scope("freedata-daemon");
 const mime = require("mime");
 const net = require("net");
+const FD = require("./freedata");
+
 //Useful for debugging event emitter memory leaks
 //require('events').EventEmitter.defaultMaxListeners = 10;
 //process.traceProcessWarnings=true;
@@ -361,6 +363,14 @@ app.on("window-all-closed", () => {
 });
 
 // IPC HANDLER
+//Update configuration globally
+ipcMain.on("set-config-global", (event,data) => {
+  config=data;
+  win.webContents.send("update-config",config);
+  chat.webContents.send("update-config",config);
+  //console.log("set-config-global called");
+});
+
 //Show/update task bar/button progressbar
 ipcMain.on("request-show-electron-progressbar", (event, data) => {
   win.setProgressBar(data / 100);

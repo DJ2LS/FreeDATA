@@ -3,6 +3,7 @@ const { ipcRenderer } = require("electron");
 const { v4: uuidv4 } = require("uuid");
 const imageCompression = require("browser-image-compression");
 const blobUtil = require("blob-util");
+const FD = require("./freedata");
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
@@ -506,7 +507,7 @@ window.addEventListener("DOMContentLoaded", () => {
         [filename]: {
           content_type: filetype,
           //data: btoa(file)
-          data: btoa_FD(file),
+          data: FD.btoa_FD(file),
         },
       },
     })
@@ -772,7 +773,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
     } else if (item.arq == "transmission" && item.status == "received") {
       //var encoded_data = atob(item.data);
       //var encoded_data = Buffer.from(item.data,'base64').toString('utf-8');
-      var encoded_data = atob_FD(item.data);
+      var encoded_data = FD.atob_FD(item.data);
       var splitted_data = encoded_data.split(split_char);
 
       console.log(splitted_data);
@@ -793,7 +794,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = splitted_data[6];
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
-        obj.file = btoa_FD(splitted_data[8]);
+        obj.file = FD.btoa_FD(splitted_data[8]);
       } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -939,7 +940,7 @@ update_chat = function (obj) {
         // we really should avoid converting back from base64 for performance reasons...
         //var filesize = Math.ceil(atob(obj._attachments[filename]["data"]).length) + "Bytes";
         var filesize =
-          Math.ceil(atob_FD(obj._attachments[filename]["data"]).length) +
+          Math.ceil(FD.atob_FD(obj._attachments[filename]["data"]).length) +
           " Bytes";
       }
 
@@ -947,7 +948,7 @@ update_chat = function (obj) {
       if (filetype == "image/png" || filetype == "png") {
         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
-        <img class="w-100 rounded-2" src="data:image/png;base64,${atoa_FD(
+        <img class="w-100 rounded-2" src="data:image/png;base64,${FD.atob(
           obj._attachments[filename]["data"]
         )}">
        <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
@@ -1382,7 +1383,7 @@ update_chat = function (obj) {
             db.getAttachment(obj._id, filename).then(function (data) {
               console.log(data);
               //Rewrote this part to use buffers to ensure encoding is corect -- n1qm
-              var binaryString = atob_FD(data);
+              var binaryString = FD.atob_FD(data);
 
               console.log(binaryString);
               var data_with_attachment =
@@ -1704,30 +1705,7 @@ var crc32 = function (str) {
 
   return (crc ^ -1) >>> 0;
 };
-/**
- * Binary to ASCII replacement
- * @param {string} data in normal/usual utf-8 format
- * @returns base64 encoded string
- */
-function btoa_FD(data) {
-  return Buffer.from(data, "utf-8").toString("base64");
-}
-/**
- * ASCII to Binary replacement
- * @param {string} data in base64 encoding
- * @returns utf-8 normal/usual string
- */
-function atob_FD(data) {
-  return Buffer.from(data, "base64").toString("utf-8");
-}
-/**
- * UTF8 to ASCII btoa
- * @param {string} data in base64 encoding
- * @returns base64 bota compatible data
- */
-function atoa_FD(data) {
-  return window.btoa(Buffer.from(data, "base64").toString("utf8"));
-}
+
 function returnObjFromCallsign(database, callsign) {
   return new Promise((resolve, reject) => {
     users
@@ -2105,3 +2083,6 @@ function pauseButton(btn, timems) {
     btn.disabled = false;
   }, timems);
 }
+ipcRenderer.on("update-config",(event,data) => {
+  config=data;
+});
