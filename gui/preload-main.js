@@ -1113,9 +1113,11 @@ window.addEventListener("DOMContentLoaded", () => {
         config.enable_request_shared_folder = "False";
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config,configPath);
+      FD.saveConfig(config, configPath);
       //Update file list after setting change
-      ipcRenderer.send("read-files-in-folder",{folder: config.shared_folder_path.toString()});
+      ipcRenderer.send("read-files-in-folder", {
+        folder: config.shared_folder_path.toString(),
+      });
     });
 
   // enable enable_request_profile switch clicked
