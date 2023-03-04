@@ -657,8 +657,16 @@ window.addEventListener("DOMContentLoaded", () => {
   hamlib_params = function () {
     var paramList = [];
 
-    var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
-    paramList = paramList.concat("--model=" + hamlib_deviceid);
+
+
+
+    // hamlib stopbits setting
+    if (document.getElementById("hamlib_deviceid").value !== "-- ignore --") {
+        var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
+        paramList = paramList.concat("--model=" + hamlib_deviceid);
+    }
+
+
 
     // hamlib deviceport setting
     if (document.getElementById("hamlib_deviceport").value !== "ignore") {
