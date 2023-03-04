@@ -334,7 +334,7 @@ if __name__ == "__main__":
             static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', '4532'))
             static.ENABLE_SCATTER = conf.get('TNC', 'scatter', 'True')
             static.ENABLE_FFT = conf.get('TNC', 'fft', 'True')
-            static.ENABLE_FSK = False
+            static.ENABLE_FSK = conf.get('TNC', 'fsk', 'False')
             static.LOW_BANDWIDTH_MODE = conf.get('TNC', 'narrowband', 'False')
             static.TUNING_RANGE_FMIN = float(conf.get('TNC', 'fmin', '-50.0'))
             static.TUNING_RANGE_FMAX = float(conf.get('TNC', 'fmax', '50.0'))

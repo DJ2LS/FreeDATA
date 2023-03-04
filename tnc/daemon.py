@@ -265,6 +265,10 @@ class DAEMON:
         if data[20] == "True":
             options.append("--stats")
 
+        if data[13] == "True":
+            options.append("--fsk")
+
+
         # safe data to config file
         config.write_entire_config(data)
 
@@ -296,7 +300,7 @@ class DAEMON:
             command = []
 
             if sys.platform in ["linux", "darwin"]:
-                command.append("python3")
+                command.append("python3.9")
             elif sys.platform in ["win32", "win64"]:
                 command.append("python")
 

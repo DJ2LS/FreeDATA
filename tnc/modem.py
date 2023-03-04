@@ -39,14 +39,15 @@ RECEIVE_SIG0 = True
 RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
-RECEIVE_FSK_LDPC_1 = False
+
 
 # state buffer
 SIG0_DATAC0_STATE = []
 SIG1_DATAC0_STATE = []
 DAT0_DATAC1_STATE = []
 DAT0_DATAC3_STATE = []
-
+FSK_LDPC0_STATE = []
+FSK_LDPC1_STATE = []
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -157,6 +158,8 @@ class RF:
         self.freedv_datac0_tx = open_codec2_instance(14)
         self.freedv_datac1_tx = open_codec2_instance(10)
         self.freedv_datac3_tx = open_codec2_instance(12)
+        self.freedv_ldpc0_tx = open_codec2_instance(200)
+        self.freedv_ldpc1_tx = open_codec2_instance(201)
         # --------------------------------------------CREATE PYAUDIO INSTANCE
         if not TESTMODE and not static.AUDIO_ENABLE_TCI:
             try:
@@ -267,25 +270,7 @@ class RF:
             )
             fft_thread.start()
 
-        audio_thread_sig0_datac0 = threading.Thread(
-            target=self.audio_sig0_datac0, name="AUDIO_THREAD DATAC0 - 0", daemon=True
-        )
-        audio_thread_sig0_datac0.start()
 
-        audio_thread_sig1_datac0 = threading.Thread(
-            target=self.audio_sig1_datac0, name="AUDIO_THREAD DATAC0 - 1", daemon=True
-        )
-        audio_thread_sig1_datac0.start()
-
-        audio_thread_dat0_datac1 = threading.Thread(
-            target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
-        )
-        audio_thread_dat0_datac1.start()
-
-        audio_thread_dat0_datac3 = threading.Thread(
-            target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
-        )
-        audio_thread_dat0_datac3.start()
 
         if static.ENABLE_FSK:
             audio_thread_fsk_ldpc0 = threading.Thread(
@@ -297,6 +282,28 @@ class RF:
                 target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
             )
             audio_thread_fsk_ldpc1.start()
+
+        else:
+            audio_thread_sig0_datac0 = threading.Thread(
+                target=self.audio_sig0_datac0, name="AUDIO_THREAD DATAC0 - 0", daemon=True
+            )
+            audio_thread_sig0_datac0.start()
+
+            audio_thread_sig1_datac0 = threading.Thread(
+                target=self.audio_sig1_datac0, name="AUDIO_THREAD DATAC0 - 1", daemon=True
+            )
+            audio_thread_sig1_datac0.start()
+
+            audio_thread_dat0_datac1 = threading.Thread(
+                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
+            )
+            audio_thread_dat0_datac1.start()
+
+            audio_thread_dat0_datac3 = threading.Thread(
+                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+            )
+            audio_thread_dat0_datac3.start()
+
 
         hamlib_thread = threading.Thread(
             target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
@@ -356,6 +363,8 @@ class RF:
                 (self.sig1_datac0_buffer, RECEIVE_SIG1),
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
+                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
+                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -389,9 +398,8 @@ class RF:
                             (self.sig1_datac0_buffer, RECEIVE_SIG1),
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
-                            # Not enabled yet.
-                            # (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
-                            # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
+                            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
+                            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -509,6 +517,10 @@ class RF:
             freedv = self.freedv_datac1_tx
         elif mode == 12:
             freedv = self.freedv_datac3_tx
+        elif mode == 200:
+            freedv = self.freedv_ldpc0_tx
+        elif mode == 201:
+            freedv = self.freedv_ldpc1_tx_tx
         else:
             return False
 
@@ -614,6 +626,8 @@ class RF:
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
+
+        # enable / disable AUDIO TUNE Feature / ALC correction
         if static.AUDIO_AUTO_TUNE:
             if static.HAMLIB_ALC == 0.0:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
@@ -897,6 +911,8 @@ class RF:
             self.fsk_ldpc_freedv_0,
             self.fsk_ldpc_bytes_out_0,
             self.fsk_ldpc_bytes_per_frame_0,
+            FSK_LDPC0_STATE,
+            "fsk_ldpc0",
         )
 
     def audio_fsk_ldpc_1(self) -> None:
@@ -907,6 +923,8 @@ class RF:
             self.fsk_ldpc_freedv_1,
             self.fsk_ldpc_bytes_out_1,
             self.fsk_ldpc_bytes_per_frame_1,
+            FSK_LDPC1_STATE,
+            "fsk_ldpc1",
         )
 
     def worker_transmit(self) -> None:

@@ -75,7 +75,8 @@ class CONFIG:
                               'qrv': data[15],
                               'rxbuffersize': data[16],
                               'explorer': data[17],
-                              'stats': data[19]
+                              'stats': data[19],
+                              'fsk': data[13]
                               }
         try:
             with open(self.config_name, 'w') as configfile:
