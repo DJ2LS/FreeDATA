@@ -581,7 +581,7 @@ ipcRenderer.on("return-shared-folder-files", (event, arg) => {
 
     let filesize = document.createElement("td");
     let filesizeText = document.createElement("span");
-    filesizeText.innerText = file["size"];
+    filesizeText.innerText = formatBytes(file["size"], 2);
     filesize.appendChild(filesizeText);
     row.appendChild(filesize);
 
@@ -1961,7 +1961,7 @@ function getSetUserInformation(selected_callsign) {
 
           let filesize = document.createElement("td");
           let filesizeText = document.createElement("span");
-          filesizeText.innerText = file["size"];
+          filesizeText.innerText = formatBytes(file["size"], 2);
           filesize.appendChild(filesizeText);
           row.appendChild(filesize);
 
@@ -2086,3 +2086,18 @@ function pauseButton(btn, timems) {
 ipcRenderer.on("update-config", (event, data) => {
   config = data;
 });
+
+
+
+// https://stackoverflow.com/a/18650828
+function formatBytes(bytes, decimals = 2) {
+    if (!+bytes) return '0 Bytes'
+
+    const k = 1024
+    const dm = decimals < 0 ? 0 : decimals
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`
+}
