@@ -446,7 +446,6 @@ class RF:
         # TODO: Overriding this for testing purposes
         # if not static.TRANSMITTING:
         length_x = len(x)
-
         # Avoid buffer overflow by filling only if buffer for
         # selected datachannel mode is not full
         for audiobuffer, receive, index in [
@@ -518,7 +517,7 @@ class RF:
         elif mode == 200:
             freedv = self.freedv_ldpc0_tx
         elif mode == 201:
-            freedv = self.freedv_ldpc1_tx_tx
+            freedv = self.freedv_ldpc1_tx
         else:
             return False
 
