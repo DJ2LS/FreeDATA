@@ -1874,6 +1874,9 @@ async function updateAllChat(clear) {
 
 function getSetUserInformation(selected_callsign) {
   //Get user information
+
+  if (selected_callsign == "" || selected_callsign == null || typeof selected_callsign == "undefined") return;
+
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
 
