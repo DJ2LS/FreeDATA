@@ -555,6 +555,7 @@ ipcRenderer.on("return-shared-folder-files", (event, arg) => {
   sharedFolderFileList = arg.files;
 
   var tbl = document.getElementById("sharedFolderTable");
+  if (tbl == undefined) return;
   tbl.innerHTML = "";
   let counter = 0;
   arg.files.forEach((file) => {
