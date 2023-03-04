@@ -270,8 +270,6 @@ class RF:
             )
             fft_thread.start()
 
-
-
         if static.ENABLE_FSK:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
