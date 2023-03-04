@@ -127,13 +127,15 @@ db.sync('http://172.20.10.4:5984/jojo', {
 */
 
 var dxcallsigns = new Set();
+
+//Set default chat filter
 var chatFilter = [
   { type: "newchat" },
   { type: "received" },
   { type: "transmit" },
   { type: "ping-ack" },
-  { type: "request" },
-  { type: "response" },
+  //{ type: "request" },
+  //{ type: "response" },
 ];
 
 updateAllChat(false);
