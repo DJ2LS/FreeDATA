@@ -892,7 +892,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         let userData = new Object();
 
-        userData.user_info_callsign = splitted_data[2];
+        userData.user_info_callsign = obj.dxcallsign;
         let filelist = JSON.parse(splitted_data[3]);
         console.log(filelist);
         userData.user_shared_folder = filelist;
@@ -1646,7 +1646,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             user_shared_folder: obj.user_shared_folder,
           })
           .then(function (response) {
-            console.log("UPDATED USER");
+            console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
           })
@@ -1660,7 +1660,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             user_shared_folder: obj.user_shared_folder,
           })
           .then(function (response) {
-            console.log("NEW USER ADDED");
+            console.log("File List:  NEW USER ADDED");
           })
           .catch(function (err) {
             console.log(err);
