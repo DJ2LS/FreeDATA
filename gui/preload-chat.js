@@ -13,7 +13,7 @@ var appDataFolder =
     : process.env.HOME + "/.config");
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
-const config = require(configPath);
+var config = require(configPath);
 // set date format
 const dateFormat = new Intl.DateTimeFormat(navigator.language, {
   timeStyle: "long",
