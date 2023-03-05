@@ -378,7 +378,7 @@ if __name__ == "__main__":
     mainlog.info(
         "[DMN] Starting FreeDATA Daemon",
         author="DJ2LS",
-        year="2022",
+        year="2023",
         version=static.VERSION,
     )
     while True:
