@@ -2037,7 +2037,7 @@ function sendSharedFolderList(dxcallsign) {
 
   ipcRenderer.send("run-tnc-command", {
     command: "responseSharedFolderList",
-    dxcallsign: selected_callsign,
+    dxcallsign: dxcallsign,
     folderFileList: fileListWithCallsign,
   });
 }
