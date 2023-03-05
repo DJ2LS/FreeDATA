@@ -1081,7 +1081,7 @@ class RF:
             #threading.Event().wait(0.1)
             static.HAMLIB_STRENGTH = self.hamlib.get_strength()
 
-            print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
+            #print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
 
     def calculate_fft(self) -> None:
         """
