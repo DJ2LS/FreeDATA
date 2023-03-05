@@ -745,8 +745,17 @@ exports.sendResponseSharedFolderList = function (dxcallsign, sharedFolderList) {
 };
 
 //Send shared file response
-exports.sendResponseSharedFile = function (dxcallsign, sharedFile, sharedFileData) {
-  console.log("In sendResponseSharedFile",dxcallsign,sharedFile,sharedFileData)
+exports.sendResponseSharedFile = function (
+  dxcallsign,
+  sharedFile,
+  sharedFileData
+) {
+  console.log(
+    "In sendResponseSharedFile",
+    dxcallsign,
+    sharedFile,
+    sharedFileData
+  );
   //Command 0 = user/station information
   //Command 1 = shared folder list
   //Command 2 = shared file transfer
