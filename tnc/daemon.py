@@ -300,7 +300,7 @@ class DAEMON:
             command = []
 
             if sys.platform in ["linux", "darwin"]:
-                command.append("python3.9")
+                command.append("python3")
             elif sys.platform in ["win32", "win64"]:
                 command.append("python")
 
