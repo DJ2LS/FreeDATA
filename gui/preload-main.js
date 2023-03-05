@@ -2715,6 +2715,9 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "responseSharedFolderList") {
     sock.sendResponseSharedFolderList(arg.dxcallsign, arg.folderFileList);
   }
+  if (arg.command == "responseSharedFile") {
+    sock.sendResponseSharedFile(arg.dxcallsign, arg.file, arg.filedata);
+  }
 });
 
 // IPC ACTION FOR AUTO UPDATER

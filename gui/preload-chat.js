@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 const imageCompression = require("browser-image-compression");
 const blobUtil = require("blob-util");
 const FD = require("./freedata");
+const fs = require('fs');
 
 // https://stackoverflow.com/a/26227660
 var appDataFolder =
@@ -806,7 +807,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.type = "request";
         obj.status = "received";
         obj.snr = "null";
-        obj.msg = splitted_data[2];
+        obj.msg = "Request for station info";
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
@@ -822,7 +823,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.type = "request";
         obj.status = "received";
         obj.snr = "null";
-        obj.msg = splitted_data[2];
+        obj.msg = "Request for shared folder list";
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
@@ -830,7 +831,9 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
-      } else if (splitted_data[1] == "req" && splitted_data[2] == "2") {
+      } else if (splitted_data[1] == "req" && splitted_data[2].substring(0,1) == "2") {
+        let name = splitted_data[2].substring(1);
+        //console.log("In handle req for shared folder file");
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
         obj.dxcallsign = item.dxcallsign;
@@ -838,13 +841,13 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.type = "request";
         obj.status = "received";
         obj.snr = "null";
-        obj.msg = splitted_data[2];
+        obj.msg = "Request for shared file " + name;
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
 
         if (config.enable_request_shared_folder == "True") {
-          sendSharedFolderFile(item.dxcallsign);
+          sendSharedFolderFile(item.dxcallsign,name);
         }
       } else if (splitted_data[1] == "res-0") {
         obj.uuid = uuidv4().toString();
@@ -854,7 +857,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.type = "response";
         obj.status = "received";
         obj.snr = "null";
-        obj.msg = splitted_data[2];
+        obj.msg = "Response for station info";
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
@@ -883,7 +886,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.type = "response";
         obj.status = "received";
         obj.snr = "null";
-        obj.msg = splitted_data[2];
+        obj.msg = "Response for shared file list";
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
@@ -898,6 +901,21 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         userData.user_shared_folder = filelist;
         addFileListToUserDatabaseIfNotExists(userData);
         getSetUserInformation(selected_callsign);
+      } else if (splitted_data[1] == "res-2") {
+        console.log("In received respons-2");
+        let sharedFileInfo = splitted_data[2].split("/",2);
+
+        obj.uuid = uuidv4().toString();
+        obj.timestamp = Math.floor(Date.now() / 1000);
+        obj.dxcallsign = item.dxcallsign;
+        obj.command = splitted_data[1];
+        obj.type = "received";
+        obj.status = "received";
+        obj.snr = "null";
+        obj.msg = "Response for shared file download";
+        obj.filename = sharedFileInfo[0];
+        obj.filetype = "application/octet-stream";
+        obj.file = FD.btoa_FD(sharedFileInfo[1]);
       }
 
       add_obj_to_database(obj);
@@ -1112,7 +1130,7 @@ update_chat = function (obj) {
     if (obj.type == "request") {
       var new_message = `
                 <div class="p-0 rounded m-auto mt-1 w-50 bg-warning bg-gradient" id="msg-${obj._id}">
-                    <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-info"></i>Request - ${timestamp}     </p>
+                    <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-info"></i>${obj.msg} - ${timestamp}     </p>
                 </div>
             `;
     }
@@ -2109,8 +2127,39 @@ function sendSharedFolderList(dxcallsign) {
   });
 }
 
-function sendSharedFolderFile(dxcallsign) {
-  console.log("DUMMY");
+function sendSharedFolderFile(dxcallsign,filename) {
+  
+  let filePath = path.join(config.shared_folder_path,filename);
+  console.log("In fuction sendSharedFolderFile ", filePath);
+  
+  //Make sure nothing sneaky is going on 
+  if (!filePath.startsWith(config.shared_folder_path)) {
+    console.error("File is outside of shared folder path!");
+    return;
+  }
+  
+  if (!fs.existsSync(filePath)) {
+   console.warn("File doesn't seem to exist");
+    return;
+  }
+
+  //Read file's data
+  let fileData = null;
+  try {
+    //Has to be binary
+    let data = fs.readFileSync(filePath)
+      fileData = data.toString("utf-8");
+  } catch (err) {
+    console.log(err);
+    return;
+  }
+  
+   ipcRenderer.send("run-tnc-command", {
+     command: "responseSharedFile",
+     dxcallsign: dxcallsign,
+     file: filename,
+     filedata: fileData
+   });
 }
 
 function sendUserData(dxcallsign) {

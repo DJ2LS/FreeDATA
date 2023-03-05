@@ -708,6 +708,7 @@ function sendResponse(dxcallsign, mode, frames, data, command) {
 exports.sendRequestInfo = function (dxcallsign) {
   //Command 0 = user/station information
   //Command 1 = shared folder list
+  //Command 2 = shared file transfer
   sendRequest(dxcallsign, 255, 1, "0", "req");
 };
 
@@ -715,6 +716,7 @@ exports.sendRequestInfo = function (dxcallsign) {
 exports.sendRequestSharedFolderList = function (dxcallsign) {
   //Command 0 = user/station information
   //Command 1 = shared folder list
+  //Command 2 = shared file transfer
   sendRequest(dxcallsign, 255, 1, "1", "req");
 };
 
@@ -722,6 +724,7 @@ exports.sendRequestSharedFolderList = function (dxcallsign) {
 exports.sendRequestSharedFile = function (dxcallsign, file) {
   //Command 0 = user/station information
   //Command 1 = shared folder list
+  //Command 2 = shared file transfer
   sendRequest(dxcallsign, 255, 1, "2" + file, "req");
 };
 
@@ -729,14 +732,25 @@ exports.sendRequestSharedFile = function (dxcallsign, file) {
 exports.sendResponseInfo = function (dxcallsign, userinfo) {
   //Command 0 = user/station information
   //Command 1 = shared folder list
+  //Command 2 = shared file transfer
   sendResponse(dxcallsign, 255, 1, userinfo, "res-0");
 };
 
-//Send station info response
+//Send shared folder response
 exports.sendResponseSharedFolderList = function (dxcallsign, sharedFolderList) {
   //Command 0 = user/station information
   //Command 1 = shared folder list
+  //Command 2 = shared file transfer
   sendResponse(dxcallsign, 255, 1, sharedFolderList, "res-1");
+};
+
+//Send shared file response
+exports.sendResponseSharedFile = function (dxcallsign, sharedFile, sharedFileData) {
+  console.log("In sendResponseSharedFile",dxcallsign,sharedFile,sharedFileData)
+  //Command 0 = user/station information
+  //Command 1 = shared folder list
+  //Command 2 = shared file transfer
+  sendResponse(dxcallsign, 255, 1, sharedFile + "/" + sharedFileData, "res-2");
 };
 
 //STOP TRANSMISSION
