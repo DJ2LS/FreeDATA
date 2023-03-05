@@ -2704,7 +2704,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
   }
 
   if (arg.command == "requestSharedFile") {
-    sock.sendRequestSharedFile(arg.dxcallsign,arg.file);
+    sock.sendRequestSharedFile(arg.dxcallsign, arg.file);
   }
 
   // responses

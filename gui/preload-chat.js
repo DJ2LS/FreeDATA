@@ -1946,27 +1946,79 @@ function getSetUserInformation(selected_callsign) {
 
       if (typeof data.user_shared_folder !== "undefined") {
         // shared folder table
-        var icons = ["aac","ai","bmp","cs","css","csv","doc","docx","exe","gif","heic","html","java","jpg","js","json","jsx","key","m4p","md","mdx","mov","mp3","mp4","otf","pdf","php","png","ppt","pptx","psd","py","raw","rb","sass","scss","sh","sql","svg","tiff","tsx","ttf","txt","wav","woff","xls","xlsx","xml","yml"];
+        var icons = [
+          "aac",
+          "ai",
+          "bmp",
+          "cs",
+          "css",
+          "csv",
+          "doc",
+          "docx",
+          "exe",
+          "gif",
+          "heic",
+          "html",
+          "java",
+          "jpg",
+          "js",
+          "json",
+          "jsx",
+          "key",
+          "m4p",
+          "md",
+          "mdx",
+          "mov",
+          "mp3",
+          "mp4",
+          "otf",
+          "pdf",
+          "php",
+          "png",
+          "ppt",
+          "pptx",
+          "psd",
+          "py",
+          "raw",
+          "rb",
+          "sass",
+          "scss",
+          "sh",
+          "sql",
+          "svg",
+          "tiff",
+          "tsx",
+          "ttf",
+          "txt",
+          "wav",
+          "woff",
+          "xls",
+          "xlsx",
+          "xml",
+          "yml",
+        ];
         var tbl = document.getElementById("sharedFolderTableDX");
         tbl.innerHTML = "";
         let counter = 0;
         data.user_shared_folder.forEach((file) => {
           var row = document.createElement("tr");
-          
+
           let dxcall = selected_callsign;
           let name = file["name"];
           let type = file["extension"];
 
-          if (icons.indexOf(type) == -1 ) {
-            type="bi-file-earmark"
+          if (icons.indexOf(type) == -1) {
+            type = "bi-file-earmark";
           } else {
-            type="bi-filetype-" + type;
+            type = "bi-filetype-" + type;
           }
 
           let id = document.createElement("td");
           let idText = document.createElement("span");
           counter += 1;
-          idText.innerHTML += "<i class=\"bi bi-file-earmark-arrow-down\" style=\"font-size: 1.8rem\"></i> " + counter;
+          idText.innerHTML +=
+            '<i class="bi bi-file-earmark-arrow-down" style="font-size: 1.8rem"></i> ' +
+            counter;
           id.appendChild(idText);
           row.appendChild(id);
 
@@ -1989,7 +2041,7 @@ function getSetUserInformation(selected_callsign) {
           row.appendChild(filesize);
           row.addEventListener("click", function () {
             //console.log(name," clicked");
-            sendFileReq(dxcall,name);
+            sendFileReq(dxcall, name);
           });
           tbl.appendChild(row);
         });
@@ -2130,5 +2182,6 @@ function sendFileReq(dxcall, file) {
   ipcRenderer.send("run-tnc-command", {
     command: "requestSharedFile",
     dxcallsign: dxcall,
-    file: file
-})};
+    file: file,
+  });
+}
