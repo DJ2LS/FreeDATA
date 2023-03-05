@@ -2017,7 +2017,7 @@ function getSetUserInformation(selected_callsign) {
           let idText = document.createElement("span");
           counter += 1;
           idText.innerHTML +=
-            '<i class="bi bi-file-earmark-arrow-down" style="font-size: 1.8rem"></i> ' +
+            '<i class="bi bi-file-earmark-arrow-down" style="font-size: 1.8rem;cursor: pointer"></i> ' +
             counter;
           id.appendChild(idText);
           row.appendChild(id);
@@ -2039,7 +2039,7 @@ function getSetUserInformation(selected_callsign) {
           filesizeText.innerText = formatBytes(file["size"], 2);
           filesize.appendChild(filesizeText);
           row.appendChild(filesize);
-          row.addEventListener("click", function () {
+          id.addEventListener("click", function () {
             //console.log(name," clicked");
             sendFileReq(dxcall, name);
           });
