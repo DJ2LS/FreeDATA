@@ -718,6 +718,13 @@ exports.sendRequestSharedFolderList = function (dxcallsign) {
   sendRequest(dxcallsign, 255, 1, "1", "req");
 };
 
+//Send shared file request
+exports.sendRequestSharedFile = function (dxcallsign,file) {
+  //Command 0 = user/station information
+  //Command 1 = shared folder list
+  sendRequest(dxcallsign, 255, 1, "2" + file, "req");
+};
+
 //Send station info response
 exports.sendResponseInfo = function (dxcallsign, userinfo) {
   //Command 0 = user/station information
