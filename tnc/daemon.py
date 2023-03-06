@@ -151,6 +151,7 @@ class DAEMON:
                 # data[18] ssid_list
                 # data[19] auto_tune
                 # data[20] stats
+                # data[21] tx_delay
 
                 if data[0] == "STARTTNC":
                     self.start_tnc(data)
@@ -267,6 +268,10 @@ class DAEMON:
 
         if data[13] == "True":
             options.append("--fsk")
+
+        options.append("--tx-delay")
+        options.append(data[21])
+
 
 
         # safe data to config file

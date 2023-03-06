@@ -69,6 +69,7 @@ ENABLE_SCATTER: bool = False
 ENABLE_FSK: bool = False
 RESPOND_TO_CQ: bool = False
 RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
+TX_DELAY: int = 0  # delay in ms before sending modulation for triggering VOX for example or slow PTT radios
 # ---------------------------------
 
 # Audio Defaults

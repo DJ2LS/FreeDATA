@@ -559,14 +559,15 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        # data_delay_mseconds = 0  # milliseconds
-        # data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
-        # mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        # txbuffer = bytes(mod_out_silence)
-        # TODO: Disabled this one for testing
-        txbuffer = bytes()
+        if static.TX_DELAY > 0:
+            data_delay = int(self.MODEM_SAMPLE_RATE * (static.TX_DELAY / 1000))  # type: ignore
+            mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+            txbuffer = bytes(mod_out_silence)
+        else:
+            txbuffer = bytes()
+
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame
+            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=static.TX_DELAY
         )
 
         for _ in range(repeats):

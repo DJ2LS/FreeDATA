@@ -244,6 +244,14 @@ if __name__ == "__main__":
         help="Set tci destination port",
     )
 
+    PARSER.add_argument(
+        "--tx-delay",
+        dest="tx_delay",
+        default=0,
+        help="delay in ms before modulation is pushed to audio device",
+        type=int,
+    )
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -297,6 +305,7 @@ if __name__ == "__main__":
             static.AUDIO_ENABLE_TCI = ARGS.audio_enable_tci
             static.TCI_IP = ARGS.tci_ip
             static.TCI_PORT = ARGS.tci_port
+            static.TX_DELAY = ARGS.tx_delay
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -347,6 +356,7 @@ if __name__ == "__main__":
             static.AUDIO_ENABLE_TCI = conf.get('AUDIO', 'enable_tci', 'False')
             static.TCI_IP = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
             static.TCI_PORT = int(conf.get('AUDIO', 'tci_port', '50001'))
+            static.TX_DELAY = int(conf.get('TNC', 'tx_delay', '0'))
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:

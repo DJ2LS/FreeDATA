@@ -360,6 +360,9 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
   document.getElementById("tuning_range_fmax").value = config.tuning_range_fmax;
 
+  //Update TX delay
+  document.getElementById("tx_delay").value = config.tx_delay;
+
   // Update TX Audio Level
   document.getElementById("audioLevelTXvalue").innerHTML = parseInt(
     config.tx_audio_level
@@ -1151,6 +1154,13 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
   });
 
+  document.getElementById("tx_delay").addEventListener("click", () => {
+    var tx_delay = document.getElementById("tx_delay").value;
+    config.tx_delay = tx_delay;
+    FD.saveConfig(config, configPath);
+  });
+
+
   // Theme selector clicked
   document.getElementById("theme_selector").addEventListener("change", () => {
     var theme = document.getElementById("theme_selector").value;
@@ -1268,6 +1278,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var data_bits = document.getElementById("hamlib_data_bits").value;
     var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
+    var tx_delay = document.getElementById("tx_delay").value;
 
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
@@ -1378,6 +1389,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.enable_explorer = enable_explorer;
     config.explorer_stats = explorer_stats;
     config.auto_tune = auto_tune;
+    config.tx_delay = tx_delay;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1409,7 +1421,8 @@ window.addEventListener("DOMContentLoaded", () => {
       rx_buffer_size,
       enable_explorer,
       explorer_stats,
-      auto_tune
+      auto_tune,
+      tx_delay
     );
   });
 

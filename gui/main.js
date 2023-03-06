@@ -94,7 +94,8 @@ const configDefaultSettings =
                   "enable_is_writing" : "True", \
                   "shared_folder_path" : ".", \
                   "enable_request_profile" : "True", \
-                  "enable_request_shared_folder" : "False" \
+                  "enable_request_shared_folder" : "False", \
+                  "tx_delay" : 0 \
                   }';
 
 if (!fs.existsSync(configPath)) {
