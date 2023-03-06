@@ -1160,7 +1160,6 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
   });
 
-
   // Theme selector clicked
   document.getElementById("theme_selector").addEventListener("change", () => {
     var theme = document.getElementById("theme_selector").value;
