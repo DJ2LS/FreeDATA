@@ -2078,7 +2078,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
-                timeout = time.time() + 3
+                timeout = time.time() + 3 + (static.TX_DELAY/1000 * 2)
                 while time.time() < timeout:
                     threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
