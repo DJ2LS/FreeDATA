@@ -1,9 +1,10 @@
 const path = require("path");
-const { ipcRenderer, shell } = require("electron");
+const { ipcRenderer, shell, clipboard } = require("electron");
 const exec = require("child_process").spawn;
 const sock = require("./sock.js");
 const daemon = require("./daemon.js");
 const fs = require("fs");
+const FD = require("./freedata");
 const {
   locatorToLatLng,
   distance,
@@ -26,7 +27,7 @@ var appDataFolder =
     : process.env.HOME + "/.config");
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
-const config = require(configPath);
+var config = require(configPath);
 const contrib = [
   "DK5SM",
   "DL4IAZ",
@@ -162,14 +163,40 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       ipcRenderer.send("get-folder-path", {
         title: "Title",
+        action: "return-folder-paths-received_files_folder",
       });
 
-      ipcRenderer.on("return-folder-paths", (event, data) => {
-        document.getElementById("received_files_folder").value =
-          data.path.filePaths[0];
-        config.received_files_folder = data.path.filePaths[0];
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      ipcRenderer.on(
+        "return-folder-paths-received_files_folder",
+        (event, data) => {
+          document.getElementById("received_files_folder").value =
+            data.path.filePaths[0];
+          config.received_files_folder = data.path.filePaths[0];
+          FD.saveConfig(config, configPath);
+
+          //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        }
+      );
+    });
+
+  document
+    .getElementById("shared_folder_path")
+    .addEventListener("click", () => {
+      ipcRenderer.send("get-folder-path", {
+        title: "Title",
+        action: "return-folder-paths-shared_folder_path",
       });
+
+      ipcRenderer.on(
+        "return-folder-paths-shared_folder_path",
+        (event, data) => {
+          document.getElementById("shared_folder_path").value =
+            data.path.filePaths[0];
+          config.shared_folder_path = data.path.filePaths[0];
+          //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+          FD.saveConfig(config, configPath);
+        }
+      );
     });
 
   document
@@ -240,6 +267,20 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("scatterSwitch").checked = true;
   } else {
     document.getElementById("scatterSwitch").checked = false;
+  }
+
+  document.getElementById("shared_folder_path").value =
+    config.shared_folder_path;
+
+  if (config.enable_request_profile == "True") {
+    document.getElementById("enable_request_profile").checked = true;
+  } else {
+    document.getElementById("enable_request_profile").checked = false;
+  }
+  if (config.enable_request_shared_folder == "True") {
+    document.getElementById("enable_request_shared_folder").checked = true;
+  } else {
+    document.getElementById("enable_request_shared_folder").checked = false;
   }
 
   if (config.enable_is_writing == "True") {
@@ -318,6 +359,9 @@ window.addEventListener("DOMContentLoaded", () => {
   // Update tuning range fmin fmax
   document.getElementById("tuning_range_fmin").value = config.tuning_range_fmin;
   document.getElementById("tuning_range_fmax").value = config.tuning_range_fmax;
+
+  //Update TX delay
+  document.getElementById("tx_delay").value = config.tx_delay;
 
   // Update TX Audio Level
   document.getElementById("audioLevelTXvalue").innerHTML = parseInt(
@@ -487,7 +531,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-rigctld").style.display = "none";
 
       config.radiocontrol = "disabled";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
 
   // // radio settings 'network' event listener
@@ -510,7 +555,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-rigctld").style.display = "none";
 
       config.radiocontrol = "rigctld";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
 
   // // radio settings 'rigctld' event listener
@@ -532,7 +578,24 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-rigctld").style.display = "block";
 
       config.radiocontrol = "rigctld";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
+
+  document
+    .getElementById("btnHamlibCopyCommand")
+    .addEventListener("click", () => {
+      hamlib_params();
+      let rigctld = document.getElementById("hamlib_rigctld_path").value;
+      rigctld += " " + document.getElementById("hamlib_rigctld_command").value;
+      document.getElementById("btnHamlibCopyCommandBi").classList =
+        "bi bi-clipboard2-check-fill";
+      clipboard.writeText(rigctld);
+
+      setTimeout(function () {
+        document.getElementById("btnHamlibCopyCommandBi").classList =
+          "bi bi-clipboard";
+      }, 2000);
     });
 
   document
@@ -540,13 +603,16 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       ipcRenderer.send("get-file-path", {
         title: "Title",
+        action: "return-file-path-hamlib_rigctld_path",
       });
 
-      ipcRenderer.on("return-file-paths", (event, data) => {
+      ipcRenderer.on("return-file-path-hamlib_rigctld_path", (event, data) => {
         rigctldPath = data.path.filePaths[0];
         document.getElementById("hamlib_rigctld_path").value = rigctldPath;
         config.hamlib_rigctld_path = rigctldPath;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        FD.saveConfig(config, configPath);
+        hamlib_params();
       });
     });
 
@@ -557,7 +623,9 @@ window.addEventListener("DOMContentLoaded", () => {
       config.hamlib_rigctld_server_port = document.getElementById(
         "hamlib_rigctld_server_port"
       ).value;
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+      hamlib_params();
     });
 
   // hamlib bulk event listener for saving settings
@@ -565,8 +633,10 @@ window.addEventListener("DOMContentLoaded", () => {
     try {
       document.getElementById(elem).addEventListener("change", function () {
         config[elem] = document.getElementById(elem).value;
-        fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+        FD.saveConfig(config, configPath);
         console.log(config);
+        hamlib_params();
       });
     } catch (e) {
       console.log(e);
@@ -578,94 +648,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .getElementById("hamlib_rigctld_start")
     .addEventListener("click", () => {
       var rigctldPath = document.getElementById("hamlib_rigctld_path").value;
-
-      var paramList = [];
-
-      var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
-      paramList = paramList.concat("-m", hamlib_deviceid);
-
-      // hamlib deviceport setting
-      if (document.getElementById("hamlib_deviceport").value !== "ignore") {
-        var hamlib_deviceport =
-          document.getElementById("hamlib_deviceport").value;
-        paramList = paramList.concat("-r", hamlib_deviceport);
-      }
-
-      // hamlib serialspeed setting
-      if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
-        var hamlib_serialspeed =
-          document.getElementById("hamlib_serialspeed").value;
-        paramList = paramList.concat("-s", hamlib_serialspeed);
-      }
-
-      // hamlib databits setting
-      if (document.getElementById("hamlib_data_bits").value !== "ignore") {
-        var hamlib_data_bits =
-          document.getElementById("hamlib_data_bits").value;
-        paramList = paramList.concat(
-          "--set-conf=data_bits=" + hamlib_data_bits
-        );
-      }
-
-      // hamlib stopbits setting
-      if (document.getElementById("hamlib_stop_bits").value !== "ignore") {
-        var hamlib_stop_bits =
-          document.getElementById("hamlib_stop_bits").value;
-        paramList = paramList.concat(
-          "--set-conf=stop_bits=" + hamlib_stop_bits
-        );
-      }
-
-      // hamlib handshake setting
-      if (document.getElementById("hamlib_handshake").value !== "ignore") {
-        var hamlib_handshake =
-          document.getElementById("hamlib_handshake").value;
-        paramList = paramList.concat(
-          "--set-conf=serial_handshake=" + hamlib_handshake
-        );
-      }
-
-      // hamlib dcd setting
-      if (document.getElementById("hamlib_dcd").value !== "ignore") {
-        var hamlib_dcd = document.getElementById("hamlib_dcd").value;
-        paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
-      }
-
-      // hamlib ptt port
-      if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
-        var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
-        paramList = paramList.concat("-p", hamlib_ptt_port);
-      }
-
-      // hamlib ptt type
-      if (document.getElementById("hamlib_pttprotocol").value !== "ignore") {
-        var hamlib_ptt_type =
-          document.getElementById("hamlib_pttprotocol").value;
-        paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
-      }
-
-      // hamlib dtr state
-      if (document.getElementById("hamlib_dtrstate").value !== "ignore") {
-        var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
-        paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
-      }
-
-      var hamlib_rigctld_server_port = document.getElementById(
-        "hamlib_rigctld_server_port"
-      ).value;
-      paramList = paramList.concat("-t", hamlib_rigctld_server_port);
-
-      //Custom rigctld arguments to pass to rigctld
-      var hamlib_rigctld_custom_args = document.getElementById(
-        "hamlib_rigctld_custom_args"
-      ).value;
-      paramList = paramList.concat(hamlib_rigctld_custom_args);
-
-      document.getElementById("hamlib_rigctld_command").value =
-        paramList.join(" "); // join removes the commas
-
-      console.log(paramList);
-      console.log(rigctldPath);
+      var paramList = hamlib_params();
 
       let Data = {
         path: rigctldPath,
@@ -673,6 +656,93 @@ window.addEventListener("DOMContentLoaded", () => {
       };
       ipcRenderer.send("request-start-rigctld", Data);
     });
+
+  hamlib_params = function () {
+    var paramList = [];
+
+    // hamlib stopbits setting
+    if (document.getElementById("hamlib_deviceid").value !== "-- ignore --") {
+      var hamlib_deviceid = document.getElementById("hamlib_deviceid").value;
+      paramList = paramList.concat("--model=" + hamlib_deviceid);
+    }
+
+    // hamlib deviceport setting
+    if (document.getElementById("hamlib_deviceport").value !== "ignore") {
+      var hamlib_deviceport =
+        document.getElementById("hamlib_deviceport").value;
+      paramList = paramList.concat("--rig-file=" + hamlib_deviceport);
+    }
+
+    // hamlib serialspeed setting
+    if (document.getElementById("hamlib_serialspeed").value !== "ignore") {
+      var hamlib_serialspeed =
+        document.getElementById("hamlib_serialspeed").value;
+      paramList = paramList.concat("--serial-speed=" + hamlib_serialspeed);
+    }
+
+    // hamlib databits setting
+    if (document.getElementById("hamlib_data_bits").value !== "ignore") {
+      var hamlib_data_bits = document.getElementById("hamlib_data_bits").value;
+      paramList = paramList.concat("--set-conf=data_bits=" + hamlib_data_bits);
+    }
+
+    // hamlib stopbits setting
+    if (document.getElementById("hamlib_stop_bits").value !== "ignore") {
+      var hamlib_stop_bits = document.getElementById("hamlib_stop_bits").value;
+      paramList = paramList.concat("--set-conf=stop_bits=" + hamlib_stop_bits);
+    }
+
+    // hamlib handshake setting
+    if (document.getElementById("hamlib_handshake").value !== "ignore") {
+      var hamlib_handshake = document.getElementById("hamlib_handshake").value;
+      paramList = paramList.concat(
+        "--set-conf=serial_handshake=" + hamlib_handshake
+      );
+    }
+
+    // hamlib dcd setting
+    if (document.getElementById("hamlib_dcd").value !== "ignore") {
+      var hamlib_dcd = document.getElementById("hamlib_dcd").value;
+      paramList = paramList.concat("--dcd-type=" + hamlib_dcd);
+    }
+
+    // hamlib ptt port
+    if (document.getElementById("hamlib_ptt_port").value !== "ignore") {
+      var hamlib_ptt_port = document.getElementById("hamlib_ptt_port").value;
+      paramList = paramList.concat("--ptt-file=" + hamlib_ptt_port);
+    }
+
+    // hamlib ptt type
+    if (document.getElementById("hamlib_pttprotocol").value !== "ignore") {
+      var hamlib_ptt_type = document.getElementById("hamlib_pttprotocol").value;
+      paramList = paramList.concat("--ptt-type=" + hamlib_ptt_type);
+    }
+
+    // hamlib dtr state
+    if (document.getElementById("hamlib_dtrstate").value !== "ignore") {
+      var hamlib_dtrstate = document.getElementById("hamlib_dtrstate").value;
+      paramList = paramList.concat("--set-conf=dtr_state=" + hamlib_dtrstate);
+    }
+
+    var hamlib_rigctld_server_port = document.getElementById(
+      "hamlib_rigctld_server_port"
+    ).value;
+    paramList = paramList.concat("--port=" + hamlib_rigctld_server_port);
+
+    //Custom rigctld arguments to pass to rigctld
+    var hamlib_rigctld_custom_args = document.getElementById(
+      "hamlib_rigctld_custom_args"
+    ).value;
+    paramList = paramList.concat(hamlib_rigctld_custom_args);
+
+    document.getElementById("hamlib_rigctld_command").value =
+      paramList.join(" "); // join removes the commas
+
+    console.log(paramList);
+    //console.log(rigctldPath);
+    return paramList;
+  };
+
   document
     .getElementById("hamlib_rigctld_stop")
     .addEventListener("click", () => {
@@ -700,7 +770,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("waterfall").style.height = "100%";
 
       config.spectrum = "waterfall";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
   // scatter
   document
@@ -719,7 +790,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("chart").style.display = "none";
 
       config.spectrum = "scatter";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
   // chart
   document
@@ -738,7 +810,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("chart").style.visibility = "visible";
 
       config.spectrum = "chart";
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
 
   // on click remote tnc toggle view
@@ -750,7 +823,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("remote-tnc-field").style.visibility = "hidden";
       config.tnclocation = "localhost";
       toggleClass("remote-tnc-field", "d-none", true);
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
   document
     .getElementById("local-remote-switch2")
@@ -760,7 +834,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("remote-tnc-field").style.visibility = "visible";
       config.tnclocation = "remote";
       toggleClass("remote-tnc-field", "d-none", false);
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
 
   // on change ping callsign
@@ -779,8 +854,8 @@ window.addEventListener("DOMContentLoaded", () => {
     console.log(document.getElementById("tnc_adress").value);
     config.tnc_host = document.getElementById("tnc_adress").value;
     config.daemon_host = document.getElementById("tnc_adress").value;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
     let Data = {
       port: document.getElementById("tnc_port").value,
       adress: document.getElementById("tnc_adress").value,
@@ -799,7 +874,8 @@ window.addEventListener("DOMContentLoaded", () => {
     config.tnc_port = document.getElementById("tnc_port").value;
     config.daemon_port =
       parseInt(document.getElementById("tnc_port").value) + 1;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
 
     let Data = {
       port: document.getElementById("tnc_port").value,
@@ -821,7 +897,8 @@ window.addEventListener("DOMContentLoaded", () => {
     );
     document.getElementById("audioLevelTXvalue").innerHTML = tx_audio_level;
     config.tx_audio_level = tx_audio_level;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
 
     let Data = {
       command: "set_tx_audio_level",
@@ -846,7 +923,8 @@ window.addEventListener("DOMContentLoaded", () => {
     //var documentTitle = document.title.split('Call:')
     //document.title = documentTitle[0] + 'Call: ' + callsign_ssid;
     updateTitle(callsign_ssid);
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
     daemon.saveMyCall(callsign_ssid);
   });
 
@@ -854,7 +932,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("myGrid").addEventListener("input", () => {
     grid = document.getElementById("myGrid").value;
     config.mygrid = grid;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
     daemon.saveMyGrid(grid);
   });
 
@@ -881,6 +960,7 @@ window.addEventListener("DOMContentLoaded", () => {
       ipcRenderer.send("request-restart-and-install");
     });
 
+  /*disabled because it's causing confusion TODO: remove entire code some day
   // open arq session
   document.getElementById("openARQSession").addEventListener("click", () => {
     var dxcallsign = document.getElementById("dataModalDxCall").value;
@@ -892,7 +972,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("closeARQSession").addEventListener("click", () => {
     sock.disconnectARQ();
   });
-
+*/
   // sendCQ button clicked
   document.getElementById("sendCQ").addEventListener("click", () => {
     pauseButton(document.getElementById("sendCQ"), 2000);
@@ -912,7 +992,8 @@ window.addEventListener("DOMContentLoaded", () => {
       sock.stopBeacon();
     }
     config.beacon_interval = interval;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
     bcn.disabled = false;
   });
 
@@ -924,7 +1005,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.enable_scatter = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // sendfft Switch clicked
@@ -934,7 +1016,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.enable_fft = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // enable 500z Switch clicked
@@ -944,7 +1027,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.low_bandwidth_mode = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // enable response to cq clicked
@@ -954,7 +1038,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.respond_to_cq = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // enable explorer Switch clicked
@@ -964,7 +1049,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.enable_explorer = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
   // enable explorer stats Switch clicked
   document
@@ -975,7 +1061,8 @@ window.addEventListener("DOMContentLoaded", () => {
       } else {
         config.explorer_stats = "False";
       }
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
     });
   // enable autotune Switch clicked
   document.getElementById("autoTuneSwitch").addEventListener("click", () => {
@@ -984,7 +1071,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.auto_tune = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
   document.getElementById("GraphicsSwitch").addEventListener("click", () => {
     if (document.getElementById("GraphicsSwitch").checked == true) {
@@ -992,7 +1080,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.high_graphics = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
     set_CPU_mode();
   });
 
@@ -1003,7 +1092,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.enable_fsk = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // enable is writing switch clicked
@@ -1013,24 +1103,65 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       config.enable_is_writing = "False";
     }
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
+
+  // enable enable_request_shared_folder switch clicked
+  document
+    .getElementById("enable_request_shared_folder")
+    .addEventListener("click", () => {
+      if (
+        document.getElementById("enable_request_shared_folder").checked == true
+      ) {
+        config.enable_request_shared_folder = "True";
+      } else {
+        config.enable_request_shared_folder = "False";
+      }
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+      //Update file list after setting change
+      ipcRenderer.send("read-files-in-folder", {
+        folder: config.shared_folder_path.toString(),
+      });
+    });
+
+  // enable enable_request_profile switch clicked
+  document
+    .getElementById("enable_request_profile")
+    .addEventListener("click", () => {
+      if (document.getElementById("enable_request_profile").checked == true) {
+        config.enable_request_profile = "True";
+      } else {
+        config.enable_request_profile = "False";
+      }
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
 
   // Tuning range clicked
   document.getElementById("tuning_range_fmin").addEventListener("click", () => {
     var tuning_range_fmin = document.getElementById("tuning_range_fmin").value;
     config.tuning_range_fmin = tuning_range_fmin;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   document.getElementById("tuning_range_fmax").addEventListener("click", () => {
     var tuning_range_fmax = document.getElementById("tuning_range_fmax").value;
     config.tuning_range_fmax = tuning_range_fmax;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
+
+  document.getElementById("tx_delay").addEventListener("click", () => {
+    var tx_delay = document.getElementById("tx_delay").value;
+    config.tx_delay = tx_delay;
+    FD.saveConfig(config, configPath);
   });
 
   // Theme selector clicked
-  document.getElementById("theme_selector").addEventListener("click", () => {
+  document.getElementById("theme_selector").addEventListener("change", () => {
     var theme = document.getElementById("theme_selector").value;
     if (theme != "default") {
       var theme_path =
@@ -1043,7 +1174,8 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("bootstrap_theme").href = escape(theme_path);
 
     config.theme = theme;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // Waterfall theme selector changed
@@ -1051,7 +1183,8 @@ window.addEventListener("DOMContentLoaded", () => {
     var wftheme = document.getElementById("wftheme_selector").value;
     spectrum.setColorMap(wftheme);
     config.wftheme = wftheme;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // Update channel selector changed
@@ -1061,7 +1194,8 @@ window.addEventListener("DOMContentLoaded", () => {
       config.update_channel = document.getElementById(
         "update_channel_selector"
       ).value;
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
       console.log("Autoupdate channel changed to ", config.update_channel);
     });
 
@@ -1069,14 +1203,16 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("rx_buffer_size").addEventListener("click", () => {
     var rx_buffer_size = document.getElementById("rx_buffer_size").value;
     config.rx_buffer_size = rx_buffer_size;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   //screen size
   window.addEventListener("resize", () => {
     config.screen_height = window.innerHeight;
     config.screen_width = window.innerWidth;
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // Explorer button clicked
@@ -1141,6 +1277,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var data_bits = document.getElementById("hamlib_data_bits").value;
     var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
+    var tx_delay = document.getElementById("tx_delay").value;
 
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
@@ -1251,8 +1388,10 @@ window.addEventListener("DOMContentLoaded", () => {
     config.enable_explorer = enable_explorer;
     config.explorer_stats = explorer_stats;
     config.auto_tune = auto_tune;
+    config.tx_delay = tx_delay;
 
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
 
     daemon.startTNC(
       callsign_ssid,
@@ -1281,7 +1420,8 @@ window.addEventListener("DOMContentLoaded", () => {
       rx_buffer_size,
       enable_explorer,
       explorer_stats,
-      auto_tune
+      auto_tune,
+      tx_delay
     );
   });
 
@@ -1559,9 +1699,27 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
     " (comp: " +
     formatBytes(arq_bytes_per_minute_compressed, 1) +
     ")</strong>";
-
+  document.getElementById("transmission_timeleft").innerHTML = time_left;
   connectedStation(data);
 });
+
+//Just some stuff I want to experiment with - n1qm
+//https://gist.github.com/senseisimple/002cdba344de92748695a371cef0176a
+function signal_quality_perc_quad(rssi, perfect_rssi = 10, worst_rssi = -150) {
+  nominal_rssi = perfect_rssi - worst_rssi;
+  signal_quality =
+    (100 * (perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi) -
+      (perfect_rssi - rssi) *
+        (15 * (perfect_rssi - worst_rssi) + 62 * (perfect_rssi - rssi))) /
+    ((perfect_rssi - worst_rssi) * (perfect_rssi - worst_rssi));
+
+  if (signal_quality > 100) {
+    signal_quality = 100;
+  } else if (signal_quality < 1) {
+    signal_quality = 0;
+  }
+  return Math.ceil(signal_quality);
+}
 
 var lastHeard = "";
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
@@ -1584,67 +1742,6 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   global.rxBufferLengthTnc = arg.rx_buffer_length;
 
   // START OF SCATTER CHART
-  const scatterConfig = {
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        enabled: false,
-      },
-      annotation: {
-        annotations: {
-          line1: {
-            type: "line",
-            yMin: 0,
-            yMax: 0,
-            borderColor: "rgb(255, 99, 132)",
-            borderWidth: 2,
-          },
-          line2: {
-            type: "line",
-            xMin: 0,
-            xMax: 0,
-            borderColor: "rgb(255, 99, 132)",
-            borderWidth: 2,
-          },
-        },
-      },
-    },
-    animations: false,
-    scales: {
-      x: {
-        type: "linear",
-        position: "bottom",
-        display: true,
-        min: -80,
-        max: 80,
-        ticks: {
-          display: false,
-        },
-      },
-      y: {
-        display: true,
-        min: -80,
-        max: 80,
-        ticks: {
-          display: false,
-        },
-      },
-    },
-  };
-  var scatterData = arg.scatter;
-  var newScatterData = {
-    datasets: [
-      {
-        //label: 'constellation diagram',
-        data: scatterData,
-        options: scatterConfig,
-        backgroundColor: "rgb(255, 99, 132)",
-      },
-    ],
-  };
-
   if (typeof arg.scatter == "undefined") {
     var scatterSize = 0;
   } else {
@@ -1652,6 +1749,67 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
 
   if (scatterSize > 0 && global.scatterData != newScatterData) {
+    const scatterConfig = {
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          enabled: false,
+        },
+        annotation: {
+          annotations: {
+            line1: {
+              type: "line",
+              yMin: 0,
+              yMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+            line2: {
+              type: "line",
+              xMin: 0,
+              xMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+          },
+        },
+      },
+      animations: false,
+      scales: {
+        x: {
+          type: "linear",
+          position: "bottom",
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+        y: {
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+      },
+    };
+    var scatterData = arg.scatter;
+    var newScatterData = {
+      datasets: [
+        {
+          //label: 'constellation diagram',
+          data: scatterData,
+          options: scatterConfig,
+          backgroundColor: "rgb(255, 99, 132)",
+        },
+      ],
+    };
+
     global.scatterData = newScatterData;
 
     if (typeof global.scatterChart == "undefined") {
@@ -1693,7 +1851,13 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   var speedDataSnr = [];
   for (var i = 0; i < speed_listSize; i++) {
-    speedDataSnr.push(arg.speed_list[i].snr);
+    let snr = NaN;
+    if (arg.speed_list[i].snr !== 0) {
+      snr = arg.speed_list[i].snr;
+    } else {
+      snr = NaN;
+    }
+    speedDataSnr.push(snr);
   }
 
   var speedChartConfig = {
@@ -1714,10 +1878,12 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
         label: "SNR[dB]",
         data: speedDataSnr,
         borderColor: "rgb(75, 192, 192, 1.0)",
+        pointRadius: 1,
         segment: {
-          borderColor: (ctx) =>
-            skipped(ctx, "rgb(0,0,0,0.2)") || down(ctx, "rgb(192,75,75)"),
-          borderDash: (ctx) => skipped(ctx, [6, 6]),
+          borderColor: (speedCtx) =>
+            skipped(speedCtx, "rgb(0,0,0,0.4)") ||
+            down(speedCtx, "rgb(192,75,75)"),
+          borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
         },
         spanGaps: true,
         backgroundColor: "rgba(75, 192, 192, 0.2)",
@@ -1744,12 +1910,12 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     scales: {
       SNR: {
         type: "linear",
-        ticks: { beginAtZero: true, color: "rgb(255, 99, 132)" },
+        ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
         position: "right",
       },
       SPEED: {
         type: "linear",
-        ticks: { beginAtZero: true, color: "rgb(120, 100, 120)" },
+        ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
         position: "left",
         grid: {
           drawOnChartArea: false, // only want the grid lines for one axis to show up
@@ -1793,7 +1959,13 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   } else {
     document.getElementById("startStopRecording").textContent = "Start Rec";
   }
-
+  //CHANNEL CODEC2 BUSY STATE
+  if (arg.is_codec2_traffic == "True") {
+    document.getElementById("c2_busy").className = "btn btn-sm btn-success";
+  } else {
+    document.getElementById("c2_busy").className =
+      "btn btn-sm btn-outline-secondary";
+  }
   // CHANNEL BUSY STATE
   switch (arg.channel_busy) {
     case "True":
@@ -1814,7 +1986,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   switch (arg.busy_state) {
     case "BUSY":
       document.getElementById("busy_state").className = "btn btn-sm btn-danger";
-      document.getElementById("startTransmission").disabled = true;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = true;
       break;
     case "IDLE":
       document.getElementById("busy_state").className =
@@ -1823,7 +1996,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     default:
       document.getElementById("busy_state").className =
         "btn btn-sm btn-secondary";
-      document.getElementById("startTransmission").disabled = true;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = true;
       break;
   }
 
@@ -1831,12 +2005,14 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   switch (arg.arq_state) {
     case "True":
       document.getElementById("arq_state").className = "btn btn-sm btn-warning";
-      document.getElementById("startTransmission").disabled = false;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = false;
       break;
     default:
       document.getElementById("arq_state").className =
         "btn btn-sm btn-secondary";
-      document.getElementById("startTransmission").disabled = false;
+      //Seems to be no longer user accessible
+      //document.getElementById("startTransmission").disabled = false;
       break;
   }
 
@@ -1853,9 +2029,10 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
 
   if (arg.arq_state == "True" || arg.arq_session == "True") {
-    toggleClass("spnConnectedWith", "text-success", true);
+    document.getElementById("spnConnectedWith").className =
+      "bi bi-chat-fill text-success";
   } else {
-    toggleClass("spnConnectedWith", "text-success", false);
+    document.getElementById("spnConnectedWith").className = "bi bi-chat-fill";
   }
 
   // HAMLIB STATUS
@@ -1870,16 +2047,15 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BEACON
   switch (arg.beacon_state) {
     case "True":
-      toggleClass("startBeacon", "btn-outline-secondary", false);
-      toggleClass("startBeacon", "btn-success", true);
+      document.getElementById("startBeacon").className =
+        "btn btn-sm btn-success";
       if (document.getElementById("beaconInterval").disabled == false) {
         document.getElementById("beaconInterval").disabled = true;
       }
       break;
     default:
-      toggleClass("startBeacon", "btn-outline-secondary", true);
-      toggleClass("startBeacon", "btn-success", false);
-
+      document.getElementById("startBeacon").className =
+        "btn btn-sm btn-outline-secondary";
       if (document.getElementById("beaconInterval").disabled == true) {
         document.getElementById("beaconInterval").disabled = false;
       }
@@ -1887,7 +2063,11 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   }
   // dbfs
   // https://www.moellerstudios.org/converting-amplitude-representations/
-  if (dbfs_level_raw != arg.dbfs_level) {
+  if (
+    arg.dbfs_level.length != 0 &&
+    !isNaN(arg.dbfs_level) &&
+    dbfs_level_raw != arg.dbfs_level
+  ) {
     dbfs_level_raw = arg.dbfs_level;
     dbfs_level = Math.pow(10, arg.dbfs_level / 20) * 100;
 
@@ -1895,13 +2075,17 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       Math.round(arg.dbfs_level) + " dBFS (Audio Level)";
     var dbfscntrl = document.getElementById("dbfs_level");
     dbfscntrl.setAttribute("aria-valuenow", dbfs_level);
-    dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
+    dbfscntrl.style = "width:" + dbfs_level + "%;";
+    //dbfscntrl.setAttribute("style", "width:" + dbfs_level + "%;");
   }
 
   // noise / strength
   // https://www.moellerstudios.org/converting-amplitude-representations/
-
-  if (arg.strength != "" && noise_level_raw != arg.strength) {
+  if (
+    arg.strength != 0 &&
+    !isNaN(arg.strength) &&
+    noise_level_raw != arg.strength
+  ) {
     //console.log(arg.strength);
     noise_level_raw = arg.strength;
     noise_level = Math.pow(10, arg.strength / 20) * 100;
@@ -1910,7 +2094,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       Math.round(arg.strength) + " dB (S-Meter)";
     var noisecntrl = document.getElementById("noise_level");
     noisecntrl.setAttribute("aria-valuenow", noise_level);
-    noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
+    noisecntrl.style = "width:" + noise_level + "%;";
+    //noisecntrl.setAttribute("style", "width:" + noise_level + "%;");
   }
 
   // SET FREQUENCY
@@ -2408,7 +2593,7 @@ ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
 
     console.log(arg.data);
 
-    var encoded_data = atob(arg.data[i]["data"]);
+    var encoded_data = FD.atob_FD(arg.data[i]["data"]);
     var splitted_data = encoded_data.split(split_char);
     console.log(splitted_data);
 
@@ -2490,7 +2675,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
       arg.checksum
     );
   }
-  if (arg.command == "send_message") {
+  if (arg.command == "msg") {
     sock.sendMessage(
       arg.dxcallsign,
       arg.mode,
@@ -2520,6 +2705,30 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
 
   if (arg.command == "mode") {
     sock.set_mode(arg.mode);
+  }
+
+  if (arg.command == "requestUserInfo") {
+    sock.sendRequestInfo(arg.dxcallsign);
+  }
+
+  if (arg.command == "requestSharedFolderList") {
+    sock.sendRequestSharedFolderList(arg.dxcallsign);
+  }
+
+  if (arg.command == "requestSharedFile") {
+    sock.sendRequestSharedFile(arg.dxcallsign, arg.file);
+  }
+
+  // responses
+  if (arg.command == "responseUserInfo") {
+    sock.sendResponseInfo(arg.dxcallsign, arg.userinfo);
+  }
+
+  if (arg.command == "responseSharedFolderList") {
+    sock.sendResponseSharedFolderList(arg.dxcallsign, arg.folderFileList);
+  }
+  if (arg.command == "responseSharedFile") {
+    sock.sendResponseSharedFile(arg.dxcallsign, arg.file, arg.filedata);
   }
 });
 
@@ -3010,14 +3219,14 @@ function updateTitle(
   }
 }
 
-//Set force to true to ensure a class is present on a control, other set to false to ensure it isn't present
+//Set force to true to ensure a class is present on a control, otherwise set to false to ensure it isn't present
 function toggleClass(control, classToToggle, force) {
   var cntrl = document.getElementById(control);
   if (cntrl == undefined) {
-    //console.log("toggle class:  unknown control", control);
+    console.log("toggle class:  unknown control: ", control);
     return;
   }
-  var activeClasses = cntrl.getAttribute("class");
+  var activeClasses = cntrl.className;
   //var oldactive = activeClasses;
   if (force == true && activeClasses.indexOf(classToToggle) >= 0) {
     return;
@@ -3031,7 +3240,7 @@ function toggleClass(control, classToToggle, force) {
     activeClasses = activeClasses.replace(classToToggle, "");
   }
   activeClasses = activeClasses.replace("  ", " ").trim();
-  cntrl.setAttribute("class", activeClasses);
+  cntrl.className = activeClasses;
   //console.log(control," toggleClass; force:  ", force, "class: " ,classToToggle, " in: '" ,oldactive, "' out: '",activeClasses,"'");
 }
 function set_CPU_mode() {
@@ -3154,5 +3363,8 @@ function loadSettings(elements) {
     } else {
       console.log("nothing matched....");
     }
+  });
+  ipcRenderer.on("update-config", (event, data) => {
+    config = data;
   });
 }

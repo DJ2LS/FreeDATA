@@ -876,6 +876,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             enable_explorer = str(helpers.return_key_from_object("False", startparam, "enable_explorer"))
             enable_auto_tune = str(helpers.return_key_from_object("False", startparam, "enable_auto_tune"))
             enable_stats = str(helpers.return_key_from_object("False", startparam, "enable_stats"))
+            tx_delay = str(helpers.return_key_from_object("0", startparam, "tx_delay"))
             try:
                 # convert ssid list to python list
                 ssid_list = str(helpers.return_key_from_object("0, 1, 2, 3, 4, 5, 6, 7, 8, 9", startparam, "ssid_list"))
@@ -915,7 +916,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     enable_explorer,
                     ssid_list,
                     enable_auto_tune,
-                    enable_stats
+                    enable_stats,
+                    tx_delay
                 ]
             )
             command_response("start_tnc", True)
@@ -1015,6 +1017,7 @@ def send_tnc_state():
         "bandwidth": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
+        "is_codec2_traffic": str(static.IS_CODEC2_TRAFFIC),
         "scatter": static.SCATTER,
         "rx_buffer_length": str(RX_BUFFER.qsize()),
         "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),

@@ -198,21 +198,21 @@ H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
 api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()  # type: ignore
 api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 500
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400  # 1150 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120  # 200
+api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1150  # 1150 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 200  # 200
 api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = "H_128_256_5".encode("utf-8")  # code word
 
 # --------------- 4 H_256_512_4, 7 bytes
 api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()  # type: ignore
 api.FREEDV_MODE_FSK_LDPC_1_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_1_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 1000
 api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250  # 1250 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1150  # 1250 4fsk, 1500 2fsk
 api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_256_512_4".encode("utf-8")  # code word
+api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_4096_8192_3d".encode("utf-8")  # code word
 
 # ------- MODEM STATS STRUCTURES
 MODEM_STATS_NC_MAX = 50 + 1 * 2

@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.7.3-alpha.2"
+VERSION = "0.7.4-alpha.3-exp"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
@@ -69,6 +69,7 @@ ENABLE_SCATTER: bool = False
 ENABLE_FSK: bool = False
 RESPOND_TO_CQ: bool = False
 RESPOND_TO_CALL: bool = True  # respond to cq, ping, connection request, file request if not in session
+TX_DELAY: int = 0  # delay in ms before sending modulation for triggering VOX for example or slow PTT radios
 # ---------------------------------
 
 # Audio Defaults
@@ -81,6 +82,12 @@ AUDIO_RECORD: bool = False
 AUDIO_RECORD_FILE = ''
 BUFFER_OVERFLOW_COUNTER: list = [0, 0, 0, 0, 0]
 AUDIO_AUTO_TUNE: bool = False
+# Audio TCI Support
+AUDIO_ENABLE_TCI: bool = False
+TCI_IP: str = '127.0.0.1'
+TCI_PORT: int = '9000'
+
+
 
 AUDIO_DBFS: int = 0
 FFT: list = [0]

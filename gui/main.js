@@ -10,6 +10,8 @@ const mainLog = log.scope("main");
 const daemonProcessLog = log.scope("freedata-daemon");
 const mime = require("mime");
 const net = require("net");
+const FD = require("./freedata");
+
 //Useful for debugging event emitter memory leaks
 //require('events').EventEmitter.defaultMaxListeners = 10;
 //process.traceProcessWarnings=true;
@@ -89,7 +91,11 @@ const configDefaultSettings =
                   "high_graphics" : "True",\
                   "explorer_stats" : "False", \
                   "auto_tune" : "False", \
-                  "enable_is_writing" : "True" \
+                  "enable_is_writing" : "True", \
+                  "shared_folder_path" : ".", \
+                  "enable_request_profile" : "True", \
+                  "enable_request_shared_folder" : "False", \
+                  "tx_delay" : 0 \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -358,6 +364,14 @@ app.on("window-all-closed", () => {
 });
 
 // IPC HANDLER
+//Update configuration globally
+ipcMain.on("set-config-global", (event, data) => {
+  config = data;
+  win.webContents.send("update-config", config);
+  chat.webContents.send("update-config", config);
+  //console.log("set-config-global called");
+});
+
 //Show/update task bar/button progressbar
 ipcMain.on("request-show-electron-progressbar", (event, data) => {
   win.setProgressBar(data / 100);
@@ -446,11 +460,13 @@ ipcMain.on("get-file-path", (event, data) => {
   dialog
     .showOpenDialog({
       defaultPath: path.join(__dirname, "../"),
-      buttonLabel: "Select rigctld",
+      buttonLabel: "Select File",
       properties: ["openFile"],
     })
     .then((filePaths) => {
-      win.webContents.send("return-file-paths", { path: filePaths });
+      if (filePaths.canceled == false) {
+        win.webContents.send(data.action, { path: filePaths });
+      }
     });
 });
 
@@ -463,7 +479,7 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-      win.webContents.send("return-folder-paths", { path: folderPaths });
+      win.webContents.send(data.action, { path: folderPaths });
     });
 });
 
@@ -507,6 +523,75 @@ ipcMain.on("select-file", (event, data) => {
         console.log(err);
       }
     });
+});
+
+//select image file
+ipcMain.on("select-user-image", (event, data) => {
+  dialog
+    .showOpenDialog({
+      defaultPath: path.join(__dirname, "../"),
+      buttonLabel: "Select file",
+      properties: ["openFile"],
+    })
+    .then((filepath) => {
+      console.log(filepath.filePaths[0]);
+
+      try {
+        // read data as base64 which makes conversion to blob easier
+        fs.readFile(filepath.filePaths[0], "base64", function (err, data) {
+          var filename = path.basename(filepath.filePaths[0]);
+          var mimeType = mime.getType(filename);
+
+          if (mimeType == "" || mimeType == null) {
+            mimeType = "plain/text";
+          }
+
+          chat.webContents.send("return-select-user-image", {
+            data: data,
+            mime: mimeType,
+            filename: filename,
+          });
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    });
+});
+
+// read files in folder - use case "shared folder"
+ipcMain.on("read-files-in-folder", (event, data) => {
+  let fileList = [];
+  if (config["enable_request_shared_folder"].toLowerCase() == "false") {
+    //mainLog.info("Shared file folder is disable, not populating fileList");
+    chat.webContents.send("return-shared-folder-files", {
+      files: fileList,
+    });
+    return;
+  }
+  let folder = data.folder;
+  let files = fs.readdirSync(folder);
+  console.log(folder);
+  console.log(files);
+  files.forEach((file) => {
+    try {
+      let filePath = folder + "/" + file;
+      if (fs.lstatSync(filePath).isFile()) {
+        let fileSizeInBytes = fs.statSync(filePath).size;
+        let extension = path.extname(filePath);
+        fileList.push({
+          name: file,
+          extension: extension.substring(1),
+          size: fileSizeInBytes,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
+  chat.webContents.send("return-shared-folder-files", {
+    files: fileList,
+  });
 });
 
 //save file to folder
@@ -792,7 +877,9 @@ function close_all() {
 // RUN RIGCTLD
 ipcMain.on("request-start-rigctld", (event, data) => {
   try {
-    let rigctld_proc = spawn(data.path, data.parameters);
+    let rigctld_proc = spawn(data.path, data.parameters, {
+      windowsVerbatimArguments: true,
+    });
 
     rigctld_proc.on("exit", function (code) {
       console.log("rigctld process exited with code " + code);

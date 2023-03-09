@@ -25,7 +25,8 @@ import sounddevice as sd
 import static
 import structlog
 import ujson as json
-from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE
+import tci
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -38,14 +39,15 @@ RECEIVE_SIG0 = True
 RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
-RECEIVE_FSK_LDPC_1 = False
+
 
 # state buffer
 SIG0_DATAC0_STATE = []
 SIG1_DATAC0_STATE = []
 DAT0_DATAC1_STATE = []
 DAT0_DATAC3_STATE = []
-
+FSK_LDPC0_STATE = []
+FSK_LDPC1_STATE = []
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -84,6 +86,10 @@ class RF:
         self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
         self.modem_received_queue = MODEM_RECEIVED_QUEUE
 
+        self.audio_received_queue = AUDIO_RECEIVED_QUEUE
+        self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
+
+
         # Init FIFO queue to store modulation out in
         self.modoutqueue = deque()
 
@@ -95,55 +101,55 @@ class RF:
         # DATAC0
         # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
         self.sig0_datac0_freedv, \
-            self.sig0_datac0_bytes_per_frame, \
-            self.sig0_datac0_bytes_out, \
-            self.sig0_datac0_buffer, \
-            self.sig0_datac0_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
+                self.sig0_datac0_bytes_per_frame, \
+                self.sig0_datac0_bytes_out, \
+                self.sig0_datac0_buffer, \
+                self.sig0_datac0_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
         # DATAC0
         # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
         self.sig1_datac0_freedv, \
-            self.sig1_datac0_bytes_per_frame, \
-            self.sig1_datac0_bytes_out, \
-            self.sig1_datac0_buffer, \
-            self.sig1_datac0_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
+                self.sig1_datac0_bytes_per_frame, \
+                self.sig1_datac0_bytes_out, \
+                self.sig1_datac0_buffer, \
+                self.sig1_datac0_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
 
         # DATAC1
         self.dat0_datac1_freedv, \
-            self.dat0_datac1_bytes_per_frame, \
-            self.dat0_datac1_bytes_out, \
-            self.dat0_datac1_buffer, \
-            self.dat0_datac1_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
+                self.dat0_datac1_bytes_per_frame, \
+                self.dat0_datac1_bytes_out, \
+                self.dat0_datac1_buffer, \
+                self.dat0_datac1_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
 
         # DATAC3
         self.dat0_datac3_freedv, \
-            self.dat0_datac3_bytes_per_frame, \
-            self.dat0_datac3_bytes_out, \
-            self.dat0_datac3_buffer, \
-            self.dat0_datac3_nin = \
-            self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
+                self.dat0_datac3_bytes_per_frame, \
+                self.dat0_datac3_bytes_out, \
+                self.dat0_datac3_buffer, \
+                self.dat0_datac3_nin = \
+                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
 
         # FSK LDPC - 0
         self.fsk_ldpc_freedv_0, \
-            self.fsk_ldpc_bytes_per_frame_0, \
-            self.fsk_ldpc_bytes_out_0, \
-            self.fsk_ldpc_buffer_0, \
-            self.fsk_ldpc_nin_0 = \
-            self.init_codec2_mode(
+                self.fsk_ldpc_bytes_per_frame_0, \
+                self.fsk_ldpc_bytes_out_0, \
+                self.fsk_ldpc_buffer_0, \
+                self.fsk_ldpc_nin_0 = \
+                self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
                 codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
             )
 
         # FSK LDPC - 1
         self.fsk_ldpc_freedv_1, \
-            self.fsk_ldpc_bytes_per_frame_1, \
-            self.fsk_ldpc_bytes_out_1, \
-            self.fsk_ldpc_buffer_1, \
-            self.fsk_ldpc_nin_1 = \
-            self.init_codec2_mode(
+                self.fsk_ldpc_bytes_per_frame_1, \
+                self.fsk_ldpc_bytes_out_1, \
+                self.fsk_ldpc_buffer_1, \
+                self.fsk_ldpc_nin_1 = \
+                self.init_codec2_mode(
                 codec2.api.FREEDV_MODE_FSK_LDPC,
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
@@ -152,8 +158,10 @@ class RF:
         self.freedv_datac0_tx = open_codec2_instance(14)
         self.freedv_datac1_tx = open_codec2_instance(10)
         self.freedv_datac3_tx = open_codec2_instance(12)
+        self.freedv_ldpc0_tx = open_codec2_instance(200)
+        self.freedv_ldpc1_tx = open_codec2_instance(201)
         # --------------------------------------------CREATE PYAUDIO INSTANCE
-        if not TESTMODE:
+        if not TESTMODE and not static.AUDIO_ENABLE_TCI:
             try:
                 self.stream = sd.RawStream(
                     channels=1,
@@ -175,11 +183,40 @@ class RF:
                 self.stream.start()
             except Exception as err:
                 self.log.error("[MDM] init: starting pyaudio callback failed", e=err)
+
+        elif not TESTMODE:
+            # placeholder area for processing audio via TCI
+            # https://github.com/maksimus1210/TCI
+            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=static.TCI_IP, port=static.TCI_PORT)
+            # we are trying this by simulating an audio stream Object like with mkfifo
+            class Object:
+                """An object for simulating audio stream"""
+                active = True
+            self.stream = Object()
+
+            # lets init TCI module
+            self.tci_module = tci.TCI()
+
+            tci_rx_callback_thread = threading.Thread(
+                target=self.tci_rx_callback,
+                name="TCI RX CALLBACK THREAD",
+                daemon=True,
+            )
+            tci_rx_callback_thread.start()
+
+            # let's start the audio tx callback
+            self.log.debug("[MDM] Starting tci tx callback thread")
+            tci_tx_callback_thread = threading.Thread(
+                target=self.tci_tx_callback,
+                name="TCI TX CALLBACK THREAD",
+                daemon=True,
+            )
+            tci_tx_callback_thread.start()
+
         else:
 
             class Object:
                 """An object for simulating audio stream"""
-
                 active = True
 
             self.stream = Object()
@@ -233,26 +270,6 @@ class RF:
             )
             fft_thread.start()
 
-        audio_thread_sig0_datac0 = threading.Thread(
-            target=self.audio_sig0_datac0, name="AUDIO_THREAD DATAC0 - 0", daemon=True
-        )
-        audio_thread_sig0_datac0.start()
-
-        audio_thread_sig1_datac0 = threading.Thread(
-            target=self.audio_sig1_datac0, name="AUDIO_THREAD DATAC0 - 1", daemon=True
-        )
-        audio_thread_sig1_datac0.start()
-
-        audio_thread_dat0_datac1 = threading.Thread(
-            target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
-        )
-        audio_thread_dat0_datac1.start()
-
-        audio_thread_dat0_datac3 = threading.Thread(
-            target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
-        )
-        audio_thread_dat0_datac3.start()
-
         if static.ENABLE_FSK:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
@@ -263,6 +280,28 @@ class RF:
                 target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
             )
             audio_thread_fsk_ldpc1.start()
+
+        else:
+            audio_thread_sig0_datac0 = threading.Thread(
+                target=self.audio_sig0_datac0, name="AUDIO_THREAD DATAC0 - 0", daemon=True
+            )
+            audio_thread_sig0_datac0.start()
+
+            audio_thread_sig1_datac0 = threading.Thread(
+                target=self.audio_sig1_datac0, name="AUDIO_THREAD DATAC0 - 1", daemon=True
+            )
+            audio_thread_sig1_datac0.start()
+
+            audio_thread_dat0_datac1 = threading.Thread(
+                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
+            )
+            audio_thread_dat0_datac1.start()
+
+            audio_thread_dat0_datac3 = threading.Thread(
+                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+            )
+            audio_thread_dat0_datac3.start()
+
 
         hamlib_thread = threading.Thread(
             target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
@@ -286,6 +325,53 @@ class RF:
         worker_transmit.start()
 
     # --------------------------------------------------------------------------------------------------------
+    def tci_tx_callback(self) -> None:
+        """
+        Callback for TCI TX
+        """
+        while True:
+            threading.Event().wait(0.01)
+
+
+            # -----write
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
+                data_out48k = self.modoutqueue.popleft()
+                self.tci_module.push_audio(data_out48k)
+
+    def tci_rx_callback(self) -> None:
+        """
+        Callback for TCI RX
+
+        data_in48k must be filled with 48000Hz audio raw data
+
+        """
+
+        while True:
+            threading.Event().wait(0.01)
+
+            x = self.audio_received_queue.get()
+            x = np.frombuffer(x, dtype=np.int16)
+            #x = self.resampler.resample48_to_8(x)
+
+            self.fft_data = x
+
+            length_x = len(x)
+            for data_buffer, receive in [
+                (self.sig0_datac0_buffer, RECEIVE_SIG0),
+                (self.sig1_datac0_buffer, RECEIVE_SIG1),
+                (self.dat0_datac1_buffer, RECEIVE_DATAC1),
+                (self.dat0_datac3_buffer, RECEIVE_DATAC3),
+                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
+                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
+            ]:
+                if (
+                        not (data_buffer.nbuffer + length_x) > data_buffer.size
+                        and receive
+                ):
+                    data_buffer.push(x)
+
+
+
     def mkfifo_read_callback(self) -> None:
         """
         Support testing by reading the audio data from a pipe and
@@ -310,9 +396,8 @@ class RF:
                             (self.sig1_datac0_buffer, RECEIVE_SIG1),
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
-                            # Not enabled yet.
-                            # (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
-                            # (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
+                            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
+                            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -361,7 +446,6 @@ class RF:
         # TODO: Overriding this for testing purposes
         # if not static.TRANSMITTING:
         length_x = len(x)
-
         # Avoid buffer overflow by filling only if buffer for
         # selected datachannel mode is not full
         for audiobuffer, receive, index in [
@@ -430,6 +514,10 @@ class RF:
             freedv = self.freedv_datac1_tx
         elif mode == 12:
             freedv = self.freedv_datac3_tx
+        elif mode == 200:
+            freedv = self.freedv_ldpc0_tx
+        elif mode == 201:
+            freedv = self.freedv_ldpc1_tx
         else:
             return False
 
@@ -471,14 +559,15 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        # data_delay_mseconds = 0  # milliseconds
-        # data_delay = int(self.MODEM_SAMPLE_RATE * (data_delay_mseconds / 1000))  # type: ignore
-        # mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
-        # txbuffer = bytes(mod_out_silence)
-        # TODO: Disabled this one for testing
-        txbuffer = bytes()
+        if static.TX_DELAY > 0:
+            data_delay = int(self.MODEM_SAMPLE_RATE * (static.TX_DELAY / 1000))  # type: ignore
+            mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
+            txbuffer = bytes(mod_out_silence)
+        else:
+            txbuffer = bytes()
+
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame
+            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=static.TX_DELAY
         )
 
         for _ in range(repeats):
@@ -535,6 +624,8 @@ class RF:
 
         # Re-sample back up to 48k (resampler works on np.int16)
         x = np.frombuffer(txbuffer, dtype=np.int16)
+
+        # enable / disable AUDIO TUNE Feature / ALC correction
         if static.AUDIO_AUTO_TUNE:
             if static.HAMLIB_ALC == 0.0:
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
@@ -818,6 +909,8 @@ class RF:
             self.fsk_ldpc_freedv_0,
             self.fsk_ldpc_bytes_out_0,
             self.fsk_ldpc_bytes_per_frame_0,
+            FSK_LDPC0_STATE,
+            "fsk_ldpc0",
         )
 
     def audio_fsk_ldpc_1(self) -> None:
@@ -828,6 +921,8 @@ class RF:
             self.fsk_ldpc_freedv_1,
             self.fsk_ldpc_bytes_out_1,
             self.fsk_ldpc_bytes_per_frame_1,
+            FSK_LDPC1_STATE,
+            "fsk_ldpc1",
         )
 
     def worker_transmit(self) -> None:
@@ -987,7 +1082,7 @@ class RF:
             #threading.Event().wait(0.1)
             static.HAMLIB_STRENGTH = self.hamlib.get_strength()
 
-            print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
+            #print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
 
     def calculate_fft(self) -> None:
         """

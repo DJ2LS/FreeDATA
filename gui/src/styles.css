@@ -30,7 +30,6 @@ html {
 
 #chatModuleMessage {
   resize: none;
-  border-radius: 15px;
 }
 
 #expand_textarea_label {
@@ -86,4 +85,11 @@ https://stackoverflow.com/a/9622873
   -ms-transition: none;
   -o-transition: none;
   transition: none;
+}
+
+/* image overlay */
+
+.image-overlay:hover {
+  opacity: 0.75 !important;
+  transition: 0.5s;
 }

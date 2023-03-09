@@ -75,7 +75,9 @@ class CONFIG:
                               'qrv': data[15],
                               'rxbuffersize': data[16],
                               'explorer': data[17],
-                              'stats': data[19]
+                              'stats': data[19],
+                              'fsk': data[13],
+                              'tx_delay': data[21]
                               }
         try:
             with open(self.config_name, 'w') as configfile:
@@ -94,3 +96,21 @@ class CONFIG:
 
             return self.config
 
+    def get(self, area, key, default):
+        """
+        read from config and add if not exists
+
+        """
+
+        for _ in range(2):
+            try:
+                parameter = (
+                    self.config[area][key] in ["True", "true", True]
+                    if default in ["True", "true", True, "False", "false", False]
+                    else self.config[area][key]
+                )
+            except KeyError:
+                self.config[area][key] = str(default)
+
+        self.log.info("[CFG] reading...", parameter=parameter, key=key)
+        return parameter

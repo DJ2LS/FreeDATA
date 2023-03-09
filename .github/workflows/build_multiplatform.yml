@@ -8,16 +8,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
         platform: [{name: "native"}, {name: "Windows", file: "dll"}]
         architecture: [i686-w64-mingw32, x86_64-w64-mingw32]
         include:
-          - os: ubuntu-18.04
-            libcodec2_name: libcodec2.so.1.0
-            libcodec2_os_name: libcodec2_ubuntu-1804
-            libcodec2_filetype: so
-            generator: Unix Makefiles
-            shell: bash
 
           - os: ubuntu-20.04
             libcodec2_name: libcodec2.so.1.0
@@ -226,10 +220,10 @@ jobs:
         with:
           repository: DJ2LS/FreeDATA
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3

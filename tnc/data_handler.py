@@ -63,6 +63,7 @@ class DATA:
         self.arq_session_last_received = 0
         self.arq_session_timeout = 30
         self.session_connect_max_retries = 15
+        self.irs_buffer_position = 0
 
         # actual n retries of burst
         self.tx_n_retry_of_burst = 0
@@ -142,6 +143,12 @@ class DATA:
 
         self.speed_level = len(self.mode_list) - 1  # speed level for selecting mode
         static.ARQ_SPEED_LEVEL = self.speed_level
+
+        # minimum payload for arq burst
+        # import for avoiding byteorder bug and buffer search area
+        self.arq_burst_header_size = 3
+        self.arq_burst_minimum_payload = 126 - self.arq_burst_header_size
+        self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
 
         self.is_IRS = False
         self.burst_nack = False
@@ -504,13 +511,12 @@ class DATA:
     def send_burst_ack_frame(self, snr) -> None:
         """Build and send ACK frame for burst DATA frame"""
 
-
-
         ack_frame = bytearray(self.length_sig1_frame)
         ack_frame[:1] = bytes([FR_TYPE.BURST_ACK.value])
         ack_frame[1:2] = self.session_id
         ack_frame[2:3] = helpers.snr_to_bytes(snr)
         ack_frame[3:4] = bytes([int(self.speed_level)])
+        ack_frame[4:8] = len(static.RX_FRAME_BUFFER).to_bytes(4, byteorder="big")
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
@@ -577,6 +583,9 @@ class DATA:
         nack_frame[1:2] = self.session_id
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
+        nack_frame[4:8] = len(static.RX_FRAME_BUFFER).to_bytes(4, byteorder="big")
+
+
 
         # TRANSMIT NACK FRAME FOR BURST
         # TODO: Do we have to send ident frame?
@@ -614,6 +623,9 @@ class DATA:
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
+
+        # reset frame counter for not increasing speed level
+        self.frame_received_counter = 0
 
     def send_disconnect_frame(self) -> None:
         """Build and send a disconnect frame"""
@@ -742,31 +754,32 @@ class DATA:
                 # data_mode = self.mode_list[self.speed_level]
                 # payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
                 # search_area = payload_per_frame - 3  # (3 bytes arq frame header)
-                search_area = 510 - 3  # (3 bytes arq frame header)
+                search_area = self.arq_burst_maximum_payload  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
                 # find position of data. returns -1 if nothing found in area else >= 0
                 # we are beginning from the end, so if data exists twice or more,
                 # only the last one should be replaced
+                # we are going to only check position against minimum data frame payload
+                # use case: receive data, which already contains received data
+                # while the payload of data received before is shorter than actual payload
                 get_position = static.RX_FRAME_BUFFER[search_position:].rfind(
-                    temp_burst_buffer
+                    temp_burst_buffer[:self.arq_burst_minimum_payload]
                 )
                 # if we find data, replace it at this position with the new data and strip it
                 if get_position >= 0:
                     static.RX_FRAME_BUFFER = static.RX_FRAME_BUFFER[
                                              : search_position + get_position
                                              ]
-                    static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.warning(
                         "[TNC] ARQ | RX | replacing existing buffer data",
                         area=search_area,
                         pos=get_position,
                     )
-                # If we don't find data in this range, we really have new data and going to replace it
                 else:
-                    static.RX_FRAME_BUFFER += temp_burst_buffer
                     self.log.debug("[TNC] ARQ | RX | appending data to buffer")
 
+                static.RX_FRAME_BUFFER += temp_burst_buffer
             # Check if we didn't receive a BOF and EOF yet to avoid sending
             # ack frames if we already received all data
             if (
@@ -804,7 +817,7 @@ class DATA:
                     finished=static.ARQ_SECONDS_UNTIL_FINISH,
                     irs=helpers.bool_to_string(self.is_IRS)
                 )
-                
+
         elif rx_n_frame_of_burst == rx_n_frames_per_burst - 1:
             # We have "Nones" in our rx buffer,
             # Check if we received last frame of burst - this is an indicator for missed frames.
@@ -1037,7 +1050,11 @@ class DATA:
                 arq="transmission",
                 status="received",
                 uuid=self.transmission_uuid,
+                percent=static.ARQ_TRANSMISSION_PERCENT,
+                bytesperminute=static.ARQ_BYTES_PER_MINUTE,
+                compression=static.ARQ_COMPRESSION_FACTOR,
                 timestamp=timestamp,
+                finished=0,
                 mycallsign=str(self.mycallsign, "UTF-8"),
                 dxcallsign=str(static.DXCALLSIGN, "UTF-8"),
                 dxgrid=str(static.DXGRID, "UTF-8"),
@@ -1171,7 +1188,17 @@ class DATA:
                 arqheader[1:2] = bytes([n_frames_per_burst])
                 arqheader[2:3] = self.session_id
 
+                # only check for buffer position if at least one NACK received
+                self.log.info("[TNC] ----- data buffer position:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+                if self.frame_nack_counter > 0 and self.irs_buffer_position != bufferposition:
+                    self.log.error("[TNC] ----- data buffer offset:", iss_buffer_pos=bufferposition, irs_bufferposition=self.irs_buffer_position)
+                    # only adjust buffer position for experimental versions
+                    if 'exp' in static.VERSION:
+                        self.log.warning("[TNC] ----- data adjustment disabled!")
+                        # bufferposition = self.irs_buffer_position
+
                 bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
+
 
                 # Normal condition
                 if bufferposition_end <= len(data_out):
@@ -1379,9 +1406,11 @@ class DATA:
                 self.burst_nack_counter = 0
                 # Reset n retries per burst counter
                 self.n_retries_per_burst = 0
+                self.irs_buffer_position = int.from_bytes(data_in[4:8], "big")
 
                 self.burst_ack_snr = helpers.snr_from_bytes(data_in[2:3])
             else:
+
                 # Decrease speed level if we received a burst nack
                 # self.speed_level = max(self.speed_level - 1, 0)
                 # Set flag to retry frame again.
@@ -1389,6 +1418,13 @@ class DATA:
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
                 self.burst_ack_snr = 'NaN'
+                self.irs_buffer_position = int.from_bytes(data_in[4:8], "big")
+
+                self.log.warning(
+                    "[TNC] ARQ | TX | Burst NACK received",
+                    burst_nack_counter=self.burst_nack_counter,
+                    irs_buffer_position=self.irs_buffer_position,
+                )
 
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -2042,7 +2078,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
-                timeout = time.time() + 3
+                timeout = time.time() + 3 + (static.TX_DELAY/1000 * 2)
                 while time.time() < timeout:
                     threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
@@ -2102,6 +2138,11 @@ class DATA:
 
         # stop processing if we don't want to respond to a call when not in a arq session
         if not static.RESPOND_TO_CALL and not static.ARQ_SESSION:
+            return False
+
+        # stop processing if not in arq session, but tnc state is busy and we have a different session id
+        # use-case we get a connection request while connecting to another station
+        if not static.ARQ_SESSION and static.TNC_STATE in ["BUSY"] and data_in[13:14] != self.session_id:
             return False
 
         self.arq_file_transfer = True
@@ -2802,6 +2843,7 @@ class DATA:
             static.FREQ_OFFSET,
             static.HAMLIB_FREQUENCY,
         )
+
     def received_is_writing(self, data_in: bytes) -> None:
         """
         Called when we receive a IS WRITING frame
@@ -3256,7 +3298,7 @@ class DATA:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not static.CHANNEL_BUSY:
+        if not static.CHANNEL_BUSY and not static.TRANSMITTING:
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
             )
