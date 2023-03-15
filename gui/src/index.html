@@ -24,7 +24,7 @@
 
   <body>
     <!-- SECONDARY NAVBAR -->
-    <nav class="navbar fixed-top bg-light shadow-sm mt-0 mb-1 pb-1 pt-1">
+    <nav class="navbar fixed-top bg-white border-bottom rounded-3 mt-0 p-2">
       <div style="margin-left: 5px">
         <div
           class="btn-toolbar"
@@ -120,8 +120,8 @@
           data-bs-html="false"
           title="Abort session and stop transmissions"
         >
-          <i class="bi bi-x-octagon-fill"></i> &nbsp;STOP &nbsp;<i
-            class="bi bi-x-octagon-fill"
+          <i class="bi bi-sign-stop-fill"></i> &nbsp;STOP TRANSMISSION&nbsp;<i
+            class="bi bi-sign-stop-fill"
           ></i>
         </button>
       </div>
@@ -273,17 +273,26 @@
       <div class="container p-0" style="margin-top: 55px">
         <div class="row collapse multi-collapse show" id="collapseFirstRow">
           <div class="col">
-            <div class="card text-dark mb-0">
-              <div class="card-header p-1">
+            <div class="card text-dark mb-0 border-5 border-start border-end">
+              <div class="card-header p-2 bg-white">
+                <div class="">
                 <i
                   class="bi bi-volume-up"
                   style="font-size: 1rem; color: black"
                 ></i
                 ><strong>AUDIO</strong>
+
+                  </div>
               </div>
-              <div class="card-body p-2 mb-1">
+
+
+
+
+
+
+              <div class="card-body p-1" style="height:100px">
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">
+                  <span class="input-group-text bg-white">
                     <i
                       class="bi bi-mic-fill"
                       style="font-size: 1rem; color: black"
@@ -298,7 +307,7 @@
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">
+                  <span class="input-group-text bg-white">
                     <i
                       class="bi bi-volume-up"
                       style="font-size: 1rem; color: black"
@@ -311,15 +320,15 @@
                   ></select>
                 </div>
               </div>
-              <div class="card-footer text-muted small">
+              <div class="card-footer text-muted small bg-white">
                 Please select audio device for RX and TX
               </div>
             </div>
             <!--Start of TNC rig control pane-->
           </div>
           <div class="col">
-            <div class="card text-dark mb-0">
-              <div class="card-header p-1">
+            <div class="card text-dark mb-0  border-5 border-start border-end">
+              <div class="card-header p-1 bg-white">
                 <i
                   class="bi bi-projector"
                   style="font-size: 1rem; color: black"
@@ -384,7 +393,7 @@
                   </label>
                 </div>
               </div>
-              <div class="card-body p-2">
+              <div class="card-body p-2" style="height:100px">
                 <!-- RADIO CONTROL DISABLED -->
                 <div id="radio-control-disabled">
                   <p class="small">
@@ -398,10 +407,10 @@
                 <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text"
+                      <span class="input-group-text bg-white"
                         >Rigctld Network settings</span
                       >
-                      <span class="input-group-text">IP</span>
+                      <span class="input-group-text bg-white">IP</span>
                       <input
                         type="text"
                         class="form-control"
@@ -410,7 +419,7 @@
                         aria-label="Device IP"
                         aria-describedby="basic-addon1"
                       />
-                      <span class="input-group-text">Port</span>
+                      <span class="input-group-text bg-white">Port</span>
                       <input
                         type="text"
                         class="form-control"
@@ -421,7 +430,8 @@
                       />
                     </div>
 
-                    <span class="input-group-text">Rigctld application</span>
+                    <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text bg-white">Rigctld application</span>
                     <button
                       class="btn btn-outline-success"
                       type="button"
@@ -447,7 +457,7 @@
                     <button
                       type="button"
                       id="testHamlib"
-                      class="btn btn-sm btn-outline-secondary"
+                      class="btn btn-sm btn-outline-secondary ms-1"
                       data-bs-placement="bottom"
                       data-bs-toggle="tooltip"
                       data-bs-trigger="hover"
@@ -458,6 +468,7 @@
                     </button>
                   </div>
                 </div>
+                  </div>
 
                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
@@ -470,7 +481,7 @@
                   happens automatically.
                 </div>
               </div>
-              <div class="card-footer text-muted small" id="hamlib_info_field">
+              <div class="card-footer text-muted small bg-white" id="hamlib_info_field">
                 Define TNC rig control mode (none/hamlib)
               </div>
             </div>
@@ -481,8 +492,8 @@
           id="collapseSecondRow"
         >
           <div class="col">
-            <div class="card text-dark mb-1">
-              <div class="card-header p-1"><strong>MY STATION</strong></div>
+            <div class="card text-dark mb-1  border-5 border-start border-end">
+              <div class="card-header bg-white p-2"><i class="bi bi-house-door"></i><strong> MY STATION</strong></div>
               <div class="card-body p-2">
                 <div class="row">
                   <div class="col-md-auto">
@@ -494,7 +505,7 @@
                       data-bs-html="false"
                       title="Enter your callsign and save it"
                     >
-                      <span class="input-group-text">
+                      <span class="input-group-text bg-white">
                         <i
                           class="bi bi-person-bounding-box"
                           style="font-size: 1rem; color: black"
@@ -544,7 +555,7 @@
                       data-bs-html="false"
                       title="Enter your gridsquare and save it"
                     >
-                      <span class="input-group-text">
+                      <span class="input-group-text bg-white">
                         <i
                           class="bi bi-house-fill"
                           style="font-size: 1rem; color: black"
@@ -568,8 +579,8 @@
             </div>
           </div>
           <div class="col">
-            <div class="card text-dark mb-0">
-              <div class="card-header p-1 d-flex">
+            <div class="card text-dark mb-0  border-5 border-start border-end">
+              <div class="card-header p-2 bg-white d-flex">
                 <i
                   class="bi bi-cloud-download ms-1 me-1"
                   style="font-size: 1rem; color: black"
@@ -630,8 +641,8 @@
       <div class="container mt-2 p-0">
         <div class="row collapse multi-collapse" id="collapseThirdRow">
           <div class="col-5">
-            <div class="card text-dark mb-1">
-              <div class="card-header p-1">
+            <div class="card text-dark mb-1  border-5 border-start border-end">
+              <div class="card-header p-1 bg-white">
                 <i
                   class="bi bi-volume-up"
                   style="font-size: 1rem; color: black"
@@ -769,8 +780,8 @@
             </div>
           </div>
           <div class="col">
-            <div class="card text-dark mb-1">
-              <div class="card-header p-1">
+            <div class="card text-dark mb-1  border-5 border-start border-end">
+              <div class="card-header p-2 bg-white">
                 <strong>PING, CQ & BEACON</strong>
               </div>
               <div class="card-body p-2">
@@ -879,8 +890,8 @@
         </div>
         <div class="row collapse multi-collapse" id="collapseFourthRow">
           <div class="col-5">
-            <div class="card text-dark mb-1">
-              <div class="card-header p-1">
+            <div class="card text-dark mb-1  border-5 border-start border-end">
+              <div class="card-header p-1 bg-white">
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -976,9 +987,9 @@
             </div>
           </div>
           <div class="col">
-            <div class="card text-dark mb-1" style="height: 240px">
+            <div class="card text-dark mb-1  border-5 border-start border-end" style="height: 240px">
               <!--325px-->
-              <div class="card-header p-1">
+              <div class="card-header p-2 bg-white">
                 <i
                   class="bi bi-list-columns-reverse"
                   style="font-size: 1rem; color: black"
@@ -1263,7 +1274,7 @@
     <!--end of blur div -->
     <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
     <div class="container-fluid">
-      <nav class="navbar fixed-bottom navbar-expand-xl navbar-light bg-light">
+      <nav class="navbar fixed-bottom navbar-expand-xl navbar-light bg-white border-top rounded-3 p-2">
         <div class="col-sm-2">
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
             <div class="btn-group btn-group-sm me-1" role="group">
