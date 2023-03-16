@@ -144,13 +144,29 @@ updateAllChat(false);
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
-  if (config.theme != "default") {
+  if (config.theme != "default" && config.theme != "default_light" && config.theme != "default_dark" && config.theme != "default_auto") {
     var theme_path =
       "../node_modules/bootswatch/dist/" + config.theme + "/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = theme_path;
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+  } else if (config.theme == "default" || config.theme == "default_light"){
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute('data-bs-theme','light')
+
+  } else if (config.theme == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.querySelector("html").setAttribute('data-bs-theme','dark')
+
+  } else if (config.theme == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
   } else {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = theme_path;
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute('data-bs-theme','light')
   }
 
   const userInfoFields = [
@@ -975,7 +991,7 @@ update_chat = function (obj) {
         <img class="w-100 rounded-2" src="data:image/png;base64,${FD.atob(
           obj._attachments[filename]["data"]
         )}">
-       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+       <p class="text-right mb-0 p-1" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
                             <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
@@ -986,7 +1002,7 @@ update_chat = function (obj) {
       } else {
         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
-       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+       <p class="text-right mb-0 p-1" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
                             <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>

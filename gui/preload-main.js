@@ -338,16 +338,44 @@ window.addEventListener("DOMContentLoaded", () => {
   }
   // theme selector
 
-  if (config.theme != "default") {
+  if (config.theme != "default" && config.theme != "default_light" && config.theme != "default_dark" && config.theme != "default_auto") {
     var theme_path =
       "../node_modules/bootswatch/dist/" + config.theme + "/bootstrap.min.css";
     document.getElementById("theme_selector").value = config.theme;
     document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+  } else if (config.theme == "default" || config.theme == "default_light"){
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_light";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute('data-bs-theme','light')
+
+  } else if (config.theme == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_dark";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.querySelector("html").setAttribute('data-bs-theme','dark')
+
+  } else if (config.theme == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_auto";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
   } else {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("theme_selector").value = "default";
+    document.getElementById("theme_selector").value = "default_light";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute('data-bs-theme','light')
   }
+
+
+
+
+
+
 
   // Update channel selector
   document.getElementById("update_channel_selector").value =
@@ -1161,7 +1189,9 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // Theme selector clicked
+
   document.getElementById("theme_selector").addEventListener("change", () => {
+/*
     var theme = document.getElementById("theme_selector").value;
     if (theme != "default") {
       var theme_path =
@@ -1169,6 +1199,37 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     }
+*/
+var theme = document.getElementById("theme_selector").value;
+if (theme != "default" && theme != "default_light" && theme != "default_dark" && theme != "default_auto") {
+     var theme_path =
+        "../node_modules/bootswatch/dist/" + theme + "/bootstrap.min.css";
+
+  } else if (theme == "default" || theme == "default_light"){
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+    document.documentElement.setAttribute('data-bs-theme','light')
+
+  } else if (theme == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+    document.querySelector("html").setAttribute('data-bs-theme','dark')
+
+  } else if (theme == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+  } else {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+
+    document.documentElement.setAttribute('data-bs-theme','light')
+  }
+
+
+
+
+
+
+
 
     //update path to css file
     document.getElementById("bootstrap_theme").href = escape(theme_path);
