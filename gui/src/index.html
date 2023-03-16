@@ -102,10 +102,7 @@
               type="button"
               disabled
             >
-              <i
-                class="bi bi-diagram-3"
-                style="font-size: 1rem;"
-              ></i>
+              <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
             </button>
           </div>
         </div>
@@ -273,30 +270,18 @@
       <div class="container p-0" style="margin-top: 55px">
         <div class="row collapse multi-collapse show" id="collapseFirstRow">
           <div class="col">
-            <div class="card mb-0 ">
-              <div class="card-header p-2 ">
+            <div class="card mb-0">
+              <div class="card-header p-2">
                 <div class="">
-                <i
-                  class="bi bi-volume-up"
-                  style="font-size: 1rem;"
-                ></i
-                ><strong>AUDIO</strong>
-
-                  </div>
+                  <i class="bi bi-volume-up" style="font-size: 1rem"></i
+                  ><strong>AUDIO</strong>
+                </div>
               </div>
 
-
-
-
-
-
-              <div class="card-body p-1" style="height:100px">
+              <div class="card-body p-1" style="height: 100px">
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text ">
-                    <i
-                      class="bi bi-mic-fill"
-                      style="font-size: 1rem;"
-                    ></i>
+                  <span class="input-group-text">
+                    <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -307,11 +292,8 @@
                   </select>
                 </div>
                 <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text ">
-                    <i
-                      class="bi bi-volume-up"
-                      style="font-size: 1rem;"
-                    ></i>
+                  <span class="input-group-text">
+                    <i class="bi bi-volume-up" style="font-size: 1rem"></i>
                   </span>
                   <select
                     class="form-select form-select-sm"
@@ -320,19 +302,16 @@
                   ></select>
                 </div>
               </div>
-              <div class="card-footer text-muted small ">
+              <div class="card-footer text-muted small">
                 Please select audio device for RX and TX
               </div>
             </div>
             <!--Start of TNC rig control pane-->
           </div>
           <div class="col">
-            <div class="card mb-0  ">
-              <div class="card-header p-1 ">
-                <i
-                  class="bi bi-projector"
-                  style="font-size: 1rem;"
-                ></i
+            <div class="card mb-0">
+              <div class="card-header p-1">
+                <i class="bi bi-projector" style="font-size: 1rem"></i
                 ><strong> TNC RIG CONTROL</strong>
                 <div
                   class="btn-group btn-group-sm"
@@ -393,7 +372,7 @@
                   </label>
                 </div>
               </div>
-              <div class="card-body p-2" style="height:100px">
+              <div class="card-body p-2" style="height: 100px">
                 <!-- RADIO CONTROL DISABLED -->
                 <div id="radio-control-disabled">
                   <p class="small">
@@ -407,10 +386,10 @@
                 <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text "
+                      <span class="input-group-text"
                         >Rigctld Network settings</span
                       >
-                      <span class="input-group-text ">IP</span>
+                      <span class="input-group-text">IP</span>
                       <input
                         type="text"
                         class="form-control"
@@ -419,7 +398,7 @@
                         aria-label="Device IP"
                         aria-describedby="basic-addon1"
                       />
-                      <span class="input-group-text ">Port</span>
+                      <span class="input-group-text">Port</span>
                       <input
                         type="text"
                         class="form-control"
@@ -431,44 +410,44 @@
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text ">Rigctld application</span>
-                    <button
-                      class="btn btn-outline-success"
-                      type="button"
-                      id="hamlib_rigctld_start"
-                    >
-                      Start
-                    </button>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Status"
-                      id="hamlib_rigctld_status"
-                      aria-label="State"
-                      aria-describedby="basic-addon1"
-                    />
-                    <button
-                      class="btn btn-outline-danger"
-                      type="button"
-                      id="hamlib_rigctld_stop"
-                    >
-                      Stop
-                    </button>
-                    <button
-                      type="button"
-                      id="testHamlib"
-                      class="btn btn-sm btn-outline-secondary ms-1"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="true"
-                      title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-                    >
-                      PTT Test
-                    </button>
+                      <span class="input-group-text">Rigctld application</span>
+                      <button
+                        class="btn btn-outline-success"
+                        type="button"
+                        id="hamlib_rigctld_start"
+                      >
+                        Start
+                      </button>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Status"
+                        id="hamlib_rigctld_status"
+                        aria-label="State"
+                        aria-describedby="basic-addon1"
+                      />
+                      <button
+                        class="btn btn-outline-danger"
+                        type="button"
+                        id="hamlib_rigctld_stop"
+                      >
+                        Stop
+                      </button>
+                      <button
+                        type="button"
+                        id="testHamlib"
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="true"
+                        title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                      >
+                        PTT Test
+                      </button>
+                    </div>
                   </div>
                 </div>
-                  </div>
 
                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
@@ -481,7 +460,7 @@
                   happens automatically.
                 </div>
               </div>
-              <div class="card-footer text-muted small " id="hamlib_info_field">
+              <div class="card-footer text-muted small" id="hamlib_info_field">
                 Define TNC rig control mode (none/hamlib)
               </div>
             </div>
@@ -492,8 +471,10 @@
           id="collapseSecondRow"
         >
           <div class="col">
-            <div class="card mb-1  ">
-              <div class="card-header  p-2"><i class="bi bi-house-door"></i><strong> MY STATION</strong></div>
+            <div class="card mb-1">
+              <div class="card-header p-2">
+                <i class="bi bi-house-door"></i><strong> MY STATION</strong>
+              </div>
               <div class="card-body p-2">
                 <div class="row">
                   <div class="col-md-auto">
@@ -505,10 +486,10 @@
                       data-bs-html="false"
                       title="Enter your callsign and save it"
                     >
-                      <span class="input-group-text ">
+                      <span class="input-group-text">
                         <i
                           class="bi bi-person-bounding-box"
-                          style="font-size: 1rem;"
+                          style="font-size: 1rem"
                         ></i>
                       </span>
                       <input
@@ -555,11 +536,8 @@
                       data-bs-html="false"
                       title="Enter your gridsquare and save it"
                     >
-                      <span class="input-group-text ">
-                        <i
-                          class="bi bi-house-fill"
-                          style="font-size: 1rem;"
-                        ></i>
+                      <span class="input-group-text">
+                        <i class="bi bi-house-fill" style="font-size: 1rem"></i>
                       </span>
                       <input
                         type="text"
@@ -579,11 +557,11 @@
             </div>
           </div>
           <div class="col">
-            <div class="card mb-0  ">
-              <div class="card-header p-2  d-flex">
+            <div class="card mb-0">
+              <div class="card-header p-2 d-flex">
                 <i
                   class="bi bi-cloud-download ms-1 me-1"
-                  style="font-size: 1rem;"
+                  style="font-size: 1rem"
                 ></i>
                 <strong>UPDATER</strong>
                 <div class="progress w-75 ms-1 m-1">
@@ -641,12 +619,9 @@
       <div class="container mt-2 p-0">
         <div class="row collapse multi-collapse" id="collapseThirdRow">
           <div class="col-5">
-            <div class="card mb-1  ">
-              <div class="card-header p-1 ">
-                <i
-                  class="bi bi-volume-up"
-                  style="font-size: 1rem;"
-                ></i>
+            <div class="card mb-1">
+              <div class="card-header p-1">
+                <i class="bi bi-volume-up" style="font-size: 1rem"></i>
                 <strong>AUDIO LEVEL</strong>
                 <button
                   type="button"
@@ -780,8 +755,8 @@
             </div>
           </div>
           <div class="col">
-            <div class="card mb-1  ">
-              <div class="card-header p-2 ">
+            <div class="card mb-1">
+              <div class="card-header p-2">
                 <strong>PING, CQ & BEACON</strong>
               </div>
               <div class="card-body p-2">
@@ -890,8 +865,8 @@
         </div>
         <div class="row collapse multi-collapse" id="collapseFourthRow">
           <div class="col-5">
-            <div class="card mb-1  ">
-              <div class="card-header p-1 ">
+            <div class="card mb-1">
+              <div class="card-header p-1">
                 <div
                   class="btn-group btn-group-sm"
                   role="group"
@@ -987,12 +962,12 @@
             </div>
           </div>
           <div class="col">
-            <div class="card mb-1  " style="height: 240px">
+            <div class="card mb-1" style="height: 240px">
               <!--325px-->
-              <div class="card-header p-2 ">
+              <div class="card-header p-2">
                 <i
                   class="bi bi-list-columns-reverse"
-                  style="font-size: 1rem;"
+                  style="font-size: 1rem"
                 ></i>
                 <strong> HEARD STATIONS</strong>
               </div>
@@ -1045,10 +1020,7 @@
           id="openReceivedFilesFolder"
           type="button"
         >
-          <i
-            class="bi bi-folder2-open"
-            style="font-size: 1rem;"
-          ></i>
+          <i class="bi bi-folder2-open" style="font-size: 1rem"></i>
         </button>
         <h5 id="receivedFilesSidebarLabel">Filetransfer</h5>
         <button
@@ -1261,7 +1233,9 @@
     <!--end of blur div -->
     <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
     <div class="container-fluid">
-      <nav class="navbar fixed-bottom navbar-expand-xl navbar-light  border-top rounded-3 p-2">
+      <nav
+        class="navbar fixed-bottom navbar-expand-xl navbar-light border-top rounded-3 p-2"
+      >
         <div class="col-sm-2">
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
             <div class="btn-group btn-group-sm me-1" role="group">
@@ -1275,10 +1249,7 @@
                 data-bs-html="true"
                 title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"
               >
-                <i
-                  class="bi bi-broadcast-pin"
-                  style="font-size: 0.8rem;"
-                ></i>
+                <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
               </button>
             </div>
             <div class="btn-group btn-group-sm me-1" role="group">
@@ -1292,10 +1263,7 @@
                 data-bs-html="true"
                 title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
               >
-                <i
-                  class="bi bi-cpu"
-                  style="font-size: 0.8rem;"
-                ></i>
+                <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
               </button>
             </div>
             <div class="btn-group btn-group-sm me-1" role="group">
@@ -1309,10 +1277,7 @@
                 data-bs-html="true"
                 title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
               >
-                <i
-                  class="bi bi-arrow-left-right"
-                  style="font-size: 0.8rem;"
-                ></i>
+                <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
               </button>
             </div>
             <div class="btn-group btn-group-sm me-1" role="group">
@@ -1328,7 +1293,7 @@
               >
                 <i
                   class="bi bi-file-earmark-binary"
-                  style="font-size: 0.8rem;"
+                  style="font-size: 0.8rem"
                 ></i>
               </button>
             </div>
@@ -1343,10 +1308,7 @@
                 data-bs-html="true"
                 title="rigctld state: <strong class='text-success'>CONNECTED</strong> / <strong class='text-secondary'>UNKNOWN</strong>"
               >
-                <i
-                  class="bi bi-usb-symbol"
-                  style="font-size: 0.8rem;"
-                ></i>
+                <i class="bi bi-usb-symbol" style="font-size: 0.8rem"></i>
               </button>
             </div>
           </div>
@@ -1387,10 +1349,7 @@
                     data-bs-html="false"
                     title="save frequency"
                   >
-                    <i
-                      class="bi bi-check-lg"
-                      style="font-size: 0.8rem;"
-                    ></i>
+                    <i class="bi bi-check-lg" style="font-size: 0.8rem"></i>
                   </button>
                 </div>
               </form>
@@ -1493,10 +1452,7 @@
         <div class="col-sm-3">
           <div class="input-group input-group-sm">
             <span class="input-group-text">
-              <i
-                class="bi bi-speedometer2"
-                style="font-size: 1rem;"
-              ></i>
+              <i class="bi bi-speedometer2" style="font-size: 1rem"></i>
             </span>
             <span
               class="input-group-text"
@@ -1509,14 +1465,11 @@
               <i
                 id="speed_level"
                 class="bi bi-reception-0"
-                style="font-size: 1rem;"
+                style="font-size: 1rem"
               ></i>
             </span>
             <span class="input-group-text">
-              <i
-                class="bi bi-file-earmark-binary"
-                style="font-size: 1rem;"
-              ></i>
+              <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
             </span>
             <span
               class="input-group-text"
@@ -1792,7 +1745,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">Enable fancy GUI</label>
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -1839,7 +1792,7 @@
                   <label class="input-group-text w-50"
                     >Enable "is typing"</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -1857,7 +1810,7 @@
                   <label class="input-group-text w-50"
                     >Allow requesting "user profile"</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -1872,7 +1825,7 @@
                   <label class="input-group-text w-50"
                     >Allow requesting "shared folder"</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2483,7 +2436,7 @@
                   <label class="input-group-text w-50"
                     >Enable waterfall data</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2500,7 +2453,7 @@
                   <label class="input-group-text w-50"
                     >Enable scatter diagram data</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2517,7 +2470,7 @@
                   <label class="input-group-text w-50"
                     >Enable 563Hz only mode</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2532,7 +2485,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">Respond to CQ</label>
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2547,7 +2500,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">RX buffer size</label>
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <select
                       class="form-select form-select-sm"
                       id="rx_buffer_size"
@@ -2579,7 +2532,7 @@
                   <label class="input-group-text w-50"
                     >Explorer publishing</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2596,7 +2549,7 @@
                   <label class="input-group-text w-50"
                     >Explorer stats publishing</label
                   >
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline">
                       <input
                         class="form-check-input"
@@ -2620,7 +2573,7 @@
               >
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">Enable autotune</label>
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline ms-2">
                       <input
                         class="form-check-input"
@@ -2635,7 +2588,7 @@
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">Enable FSK mode</label>
-                  <label class="input-group-text  w-50">
+                  <label class="input-group-text w-50">
                     <div class="form-check form-switch form-check-inline ms-2">
                       <input
                         class="form-check-input"
