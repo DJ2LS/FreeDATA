@@ -367,24 +367,27 @@ window.addEventListener("DOMContentLoaded", () => {
 
     // https://stackoverflow.com/a/57795495
     // check if dark mode or light mode used in OS
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    // dark mode
-        document.documentElement.setAttribute("data-bs-theme", "dark");
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      // dark mode
+      document.documentElement.setAttribute("data-bs-theme", "dark");
     } else {
-        document.documentElement.setAttribute("data-bs-theme", "light");
+      document.documentElement.setAttribute("data-bs-theme", "light");
     }
 
     // also register event listener for automatic change
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-    let newColorScheme = event.matches ? "dark" : "light";
-    if(newColorScheme == "dark"){
-    document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-    document.documentElement.setAttribute("data-bs-theme", "light");
-    }
-    });
-
-
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        let newColorScheme = event.matches ? "dark" : "light";
+        if (newColorScheme == "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        } else {
+          document.documentElement.setAttribute("data-bs-theme", "light");
+        }
+      });
   } else {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("theme_selector").value = "default_light";
@@ -1235,27 +1238,29 @@ window.addEventListener("DOMContentLoaded", () => {
       document.querySelector("html").setAttribute("data-bs-theme", "dark");
     } else if (theme == "default_auto") {
       var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-        // https://stackoverflow.com/a/57795495
-        // check if dark mode or light mode used in OS
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      // https://stackoverflow.com/a/57795495
+      // check if dark mode or light mode used in OS
+      if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
         // dark mode
+        document.documentElement.setAttribute("data-bs-theme", "dark");
+      } else {
+        document.documentElement.setAttribute("data-bs-theme", "light");
+      }
+
+      // also register event listener for automatic change
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (event) => {
+          let newColorScheme = event.matches ? "dark" : "light";
+          if (newColorScheme == "dark") {
             document.documentElement.setAttribute("data-bs-theme", "dark");
-        } else {
+          } else {
             document.documentElement.setAttribute("data-bs-theme", "light");
-        }
-
-        // also register event listener for automatic change
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        let newColorScheme = event.matches ? "dark" : "light";
-        if(newColorScheme == "dark"){
-    document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-    document.documentElement.setAttribute("data-bs-theme", "light");
-    }
+          }
         });
-
-
-
     } else {
       var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
 
