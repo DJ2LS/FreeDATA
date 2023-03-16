@@ -144,55 +144,7 @@ updateAllChat(false);
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
-  if (
-    config.theme != "default" &&
-    config.theme != "default_light" &&
-    config.theme != "default_dark" &&
-    config.theme != "default_auto"
-  ) {
-    var theme_path =
-      "../node_modules/bootswatch/dist/" + config.theme + "/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-  } else if (config.theme == "default" || config.theme == "default_light") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.documentElement.setAttribute("data-bs-theme", "light");
-  } else if (config.theme == "default_dark") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.querySelector("html").setAttribute("data-bs-theme", "dark");
-  } else if (config.theme == "default_auto") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-    // https://stackoverflow.com/a/57795495
-    // check if dark mode or light mode used in OS
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      // dark mode
-      document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-bs-theme", "light");
-    }
-
-    // also register event listener for automatic change
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (event) => {
-        let newColorScheme = event.matches ? "dark" : "light";
-        if (newColorScheme == "dark") {
-          document.documentElement.setAttribute("data-bs-theme", "dark");
-        } else {
-          document.documentElement.setAttribute("data-bs-theme", "light");
-        }
-      });
-  } else {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.documentElement.setAttribute("data-bs-theme", "light");
-  }
+  changeGuiDesign(config.theme)
 
   const userInfoFields = [
     "user_info_image",
@@ -2276,4 +2228,64 @@ function sendFileReq(dxcall, file) {
     dxcallsign: dxcall,
     file: file,
   });
+}
+
+
+function changeGuiDesign(design){
+console.log(design)
+if (
+    design != "default" &&
+    design != "default_light" &&
+    design != "default_dark" &&
+    design != "default_auto"
+  ) {
+    var theme_path =
+      "../node_modules/bootswatch/dist/" + design + "/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+  } else if (design == "default" || design == "default_light") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  } else if (design == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.querySelector("html").setAttribute("data-bs-theme", "dark");
+  } else if (design == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    // https://stackoverflow.com/a/57795495
+    // check if dark mode or light mode used in OS
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      // dark mode
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", "light");
+    }
+
+    // also register event listener for automatic change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        let newColorScheme = event.matches ? "dark" : "light";
+        if (newColorScheme == "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        } else {
+          document.documentElement.setAttribute("data-bs-theme", "light");
+        }
+      });
+  } else {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  }
+
+  //update path to css file
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+
+
 }
