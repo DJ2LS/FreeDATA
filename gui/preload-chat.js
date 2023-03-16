@@ -144,29 +144,30 @@ updateAllChat(false);
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
-  if (config.theme != "default" && config.theme != "default_light" && config.theme != "default_dark" && config.theme != "default_auto") {
+  if (
+    config.theme != "default" &&
+    config.theme != "default_light" &&
+    config.theme != "default_dark" &&
+    config.theme != "default_auto"
+  ) {
     var theme_path =
       "../node_modules/bootswatch/dist/" + config.theme + "/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-  } else if (config.theme == "default" || config.theme == "default_light"){
+  } else if (config.theme == "default" || config.theme == "default_light") {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.documentElement.setAttribute('data-bs-theme','light')
-
+    document.documentElement.setAttribute("data-bs-theme", "light");
   } else if (config.theme == "default_dark") {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.querySelector("html").setAttribute('data-bs-theme','dark')
-
+    document.querySelector("html").setAttribute("data-bs-theme", "dark");
   } else if (config.theme == "default_auto") {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
-
   } else {
     var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
     document.getElementById("bootstrap_theme").href = escape(theme_path);
-    document.documentElement.setAttribute('data-bs-theme','light')
+    document.documentElement.setAttribute("data-bs-theme", "light");
   }
 
   const userInfoFields = [
