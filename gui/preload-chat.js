@@ -144,7 +144,7 @@ updateAllChat(false);
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
-  changeGuiDesign(config.theme)
+  changeGuiDesign(config.theme);
 
   const userInfoFields = [
     "user_info_image",
@@ -2230,10 +2230,9 @@ function sendFileReq(dxcall, file) {
   });
 }
 
-
-function changeGuiDesign(design){
-console.log(design)
-if (
+function changeGuiDesign(design) {
+  console.log(design);
+  if (
     design != "default" &&
     design != "default_light" &&
     design != "default_dark" &&
@@ -2284,8 +2283,5 @@ if (
   }
 
   //update path to css file
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-
-
+  document.getElementById("bootstrap_theme").href = escape(theme_path);
 }

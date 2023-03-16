@@ -337,7 +337,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("autoTuneSwitch").checked = false;
   }
   // theme selector
-  changeGuiDesign(config.theme)
+  changeGuiDesign(config.theme);
 
   // Update channel selector
   document.getElementById("update_channel_selector").value =
@@ -3360,10 +3360,7 @@ function loadSettings(elements) {
   });
 }
 
-
-
-function changeGuiDesign(design){
-
+function changeGuiDesign(design) {
   if (
     design != "default" &&
     design != "default_light" &&
@@ -3423,8 +3420,5 @@ function changeGuiDesign(design){
   }
 
   //update path to css file
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-
-
+  document.getElementById("bootstrap_theme").href = escape(theme_path);
 }
