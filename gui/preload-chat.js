@@ -2042,7 +2042,7 @@ function getSetUserInformation(selected_callsign) {
       if (typeof data.user_info_image !== "undefined") {
         try {
           // determine if we have a base64 encoded image
-          atob(data.user_info_image);
+          atob(data.user_info_image.split('data:image/png;base64,')[0]);
 
           document.getElementById("dx_user_info_image").src =
             data.user_info_image;
