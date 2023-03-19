@@ -1915,9 +1915,11 @@ function getSetUserInformation(selected_callsign) {
         document.getElementById("user-image-" + selected_callsign).src =
           data.user_info_image;
       } else {
-        document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        document.getElementById("user-image-" + selected_callsign).src =
-          defaultUserIcon;
+        // throw error and use placeholder data
+        throw new Error('Data not available or corrupted');
+        //document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        //document.getElementById("user-image-" + selected_callsign).src =
+        //  defaultUserIcon;
       }
 
       // Callsign list elements
