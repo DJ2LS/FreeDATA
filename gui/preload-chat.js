@@ -991,9 +991,9 @@ update_chat = function (obj) {
 
       var controlarea_transmit = `
         <div class="ms-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download link-secondary" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
 
         `;
@@ -1001,8 +1001,8 @@ update_chat = function (obj) {
       var controlarea_receive = `
 
              <div class="me-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download link-secondary" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
 
         `;
@@ -1012,13 +1012,13 @@ update_chat = function (obj) {
       var filetype = "text/plain";
       var controlarea_transmit = `
 <div class="ms-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
         `;
       var controlarea_receive = `
       <div class="float-start" id="msg-${obj._id}-control-area">
-                      <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                      <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
                    </div>
               `;
     }
