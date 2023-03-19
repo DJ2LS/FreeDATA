@@ -1892,7 +1892,7 @@ async function updateAllChat(clear) {
 function getSetUserInformation(selected_callsign) {
   //Get user information
 
-    console.log(selected_callsign)
+  console.log(selected_callsign);
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
@@ -1905,7 +1905,7 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-    console.log(data)
+      console.log(data);
       // image
       if (typeof data.user_info_image !== "undefined") {
         document.getElementById("dx_user_info_image").src =
@@ -1914,7 +1914,7 @@ function getSetUserInformation(selected_callsign) {
           data.user_info_image;
       } else {
         // throw error and use placeholder data
-        throw new Error('Data not available or corrupted');
+        throw new Error("Data not available or corrupted");
         //document.getElementById("dx_user_info_image").src = defaultUserIcon;
         //document.getElementById("user-image-" + selected_callsign).src =
         //  defaultUserIcon;
@@ -2071,9 +2071,10 @@ function getSetUserInformation(selected_callsign) {
       }
     })
     .catch(function (err) {
-    console.log(err)
+      console.log(err);
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src = defaultUserIcon;
+      document.getElementById("user-image-" + selected_callsign).src =
+        defaultUserIcon;
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
