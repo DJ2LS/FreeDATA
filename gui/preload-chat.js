@@ -1040,7 +1040,6 @@ update_chat = function (obj) {
       selected_callsign = dxcallsign;
     }
 
-    getSetUserInformation(dxcallsign);
     var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
@@ -1063,6 +1062,8 @@ update_chat = function (obj) {
     document
       .getElementById("list-tab")
       .insertAdjacentHTML("beforeend", new_callsign);
+
+    getSetUserInformation(dxcallsign);
     var message_area = `
             <div class="tab-pane fade ${callsign_selected}" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>
             `;
@@ -1630,7 +1631,9 @@ addUserToDatabaseIfNotExists = function (obj) {
             user_info_comments: obj.user_info_comments,
           })
           .then(function (response) {
-            console.log("NEW USER ADDED");
+            console.log("NEW USER ADDED - " + obj.user_info_callsign);
+            // disabled, because this might cause an error
+            //getSetUserInformation(obj.user_info_callsign)
           })
           .catch(function (err) {
             console.log(err);
@@ -1889,6 +1892,7 @@ async function updateAllChat(clear) {
 function getSetUserInformation(selected_callsign) {
   //Get user information
 
+    console.log(selected_callsign)
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
@@ -1901,6 +1905,7 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
+    console.log(data)
       // image
       if (typeof data.user_info_image !== "undefined") {
         document.getElementById("dx_user_info_image").src =
@@ -1908,9 +1913,11 @@ function getSetUserInformation(selected_callsign) {
         document.getElementById("user-image-" + selected_callsign).src =
           data.user_info_image;
       } else {
-        document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        document.getElementById("user-image-" + selected_callsign).src =
-          defaultUserIcon;
+        // throw error and use placeholder data
+        throw new Error('Data not available or corrupted');
+        //document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        //document.getElementById("user-image-" + selected_callsign).src =
+        //  defaultUserIcon;
       }
 
       // Callsign list elements
@@ -2064,9 +2071,9 @@ function getSetUserInformation(selected_callsign) {
       }
     })
     .catch(function (err) {
+    console.log(err)
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src =
-        defaultUserIcon;
+      document.getElementById("user-image-" + selected_callsign).src = defaultUserIcon;
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
