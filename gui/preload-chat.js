@@ -1686,7 +1686,6 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
             getSetUserInformation(obj.user_info_callsign);
-
           })
           .catch(function (err) {
             console.log(err);
@@ -1898,8 +1897,7 @@ async function updateAllChat(clear) {
   }
 }
 
-
-function getSetUserSharedFolder(selected_callsign){
+function getSetUserSharedFolder(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
@@ -1909,8 +1907,7 @@ function getSetUserSharedFolder(selected_callsign){
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-
-    console.log(data)
+      console.log(data);
 
       console.log(data.user_shared_folder);
 
@@ -2020,22 +2017,9 @@ function getSetUserSharedFolder(selected_callsign){
       }
     })
     .catch(function (err) {
-
       document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
-
-
-
-
-
-
-
-
-
-
-
 }
-
 
 function getSetUserInformation(selected_callsign) {
   //Get user information
@@ -2052,8 +2036,7 @@ function getSetUserInformation(selected_callsign) {
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-
-    console.log(data)
+      console.log(data);
 
       // image
       if (typeof data.user_info_image !== "undefined") {
