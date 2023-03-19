@@ -2095,112 +2095,7 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_antenna").className = "";
       document.getElementById("dx_user_info_comments").className = "";
 
-      console.log(data.user_shared_folder);
 
-      if (typeof data.user_shared_folder !== "undefined") {
-        // shared folder table
-        var icons = [
-          "aac",
-          "ai",
-          "bmp",
-          "cs",
-          "css",
-          "csv",
-          "doc",
-          "docx",
-          "exe",
-          "gif",
-          "heic",
-          "html",
-          "java",
-          "jpg",
-          "js",
-          "json",
-          "jsx",
-          "key",
-          "m4p",
-          "md",
-          "mdx",
-          "mov",
-          "mp3",
-          "mp4",
-          "otf",
-          "pdf",
-          "php",
-          "png",
-          "ppt",
-          "pptx",
-          "psd",
-          "py",
-          "raw",
-          "rb",
-          "sass",
-          "scss",
-          "sh",
-          "sql",
-          "svg",
-          "tiff",
-          "tsx",
-          "ttf",
-          "txt",
-          "wav",
-          "woff",
-          "xls",
-          "xlsx",
-          "xml",
-          "yml",
-        ];
-        var tbl = document.getElementById("sharedFolderTableDX");
-        tbl.innerHTML = "";
-        let counter = 0;
-        data.user_shared_folder.forEach((file) => {
-          var row = document.createElement("tr");
-
-          let dxcall = selected_callsign;
-          let name = file["name"];
-          let type = file["extension"];
-
-          if (icons.indexOf(type) == -1) {
-            type = "bi-file-earmark";
-          } else {
-            type = "bi-filetype-" + type;
-          }
-
-          let id = document.createElement("td");
-          let idText = document.createElement("span");
-          counter += 1;
-          idText.innerHTML +=
-            '<i class="bi bi-file-earmark-arrow-down" style="font-size: 1.8rem;cursor: pointer"></i> ' +
-            counter;
-          id.appendChild(idText);
-          row.appendChild(id);
-
-          let filename = document.createElement("td");
-          let filenameText = document.createElement("span");
-          filenameText.innerText = file["name"];
-          filename.appendChild(filenameText);
-          row.appendChild(filename);
-
-          let filetype = document.createElement("td");
-          let filetypeText = document.createElement("span");
-          filetypeText.innerHTML = `<i class="bi ${type}" style="font-size: 1.8rem"></i>`;
-          filetype.appendChild(filetypeText);
-          row.appendChild(filetype);
-
-          let filesize = document.createElement("td");
-          let filesizeText = document.createElement("span");
-          filesizeText.innerText = formatBytes(file["size"], 2);
-          filesize.appendChild(filesizeText);
-          row.appendChild(filesize);
-          id.addEventListener("click", function () {
-            //console.log(name," clicked");
-            sendFileReq(dxcall, name);
-          });
-          tbl.appendChild(row);
-        });
-      } else {
-        document.getElementById("sharedFolderTableDX").innerHTML = "no data";
-      }
     })
     .catch(function (err) {
       // Callsign list elements
@@ -2238,7 +2133,6 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className =
         "placeholder col-7";
 
-      document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
 }
 
@@ -2264,7 +2158,7 @@ function sendSharedFolderList(dxcallsign) {
 
 function sendSharedFolderFile(dxcallsign, filename) {
   let filePath = path.join(config.shared_folder_path, filename);
-  console.log("In fuction sendSharedFolderFile ", filePath);
+  console.log("In function sendSharedFolderFile ", filePath);
 
   //Make sure nothing sneaky is going on
   if (!filePath.startsWith(config.shared_folder_path)) {
