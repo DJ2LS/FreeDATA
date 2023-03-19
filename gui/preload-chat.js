@@ -560,7 +560,7 @@ ipcRenderer.on("return-shared-folder-files", (event, arg) => {
   tbl.innerHTML = "";
   let counter = 0;
   arg.files.forEach((file) => {
-    console.log(file["name"]);
+    //console.log(file["name"]);
     var row = document.createElement("tr");
 
     let id = document.createElement("td");
@@ -903,7 +903,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         console.log(filelist);
         userData.user_shared_folder = filelist;
         addFileListToUserDatabaseIfNotExists(userData);
-        getSetUserInformation(selected_callsign);
+        console.log(selected_callsign)
+        getSetUserInformation(obj.dxcallsign);
+
+        //getSetUserInformation(selected_callsign);
       } else if (splitted_data[1] == "res-2") {
         console.log("In received respons-2");
         let sharedFileInfo = splitted_data[2].split("/", 2);
@@ -1670,6 +1673,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
+            getSetUserInformation(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1682,6 +1686,8 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
+            getSetUserInformation(obj.user_info_callsign);
+
           })
           .catch(function (err) {
             console.log(err);
