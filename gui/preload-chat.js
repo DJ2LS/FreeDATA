@@ -553,7 +553,7 @@ ipcRenderer.on("return-shared-folder-files", (event, arg) => {
   tbl.innerHTML = "";
   let counter = 0;
   arg.files.forEach((file) => {
-    console.log(file["name"]);
+    //console.log(file["name"]);
     var row = document.createElement("tr");
 
     let id = document.createElement("td");
@@ -873,7 +873,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         userData.user_info_comments = splitted_data[12];
 
         addUserToDatabaseIfNotExists(userData);
-        getSetUserInformation(selected_callsign);
+        getSetUserInformation(splitted_data[3]);
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -896,7 +896,9 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         console.log(filelist);
         userData.user_shared_folder = filelist;
         addFileListToUserDatabaseIfNotExists(userData);
-        getSetUserInformation(selected_callsign);
+        getSetUserSharedFolder(obj.dxcallsign);
+
+        //getSetUserInformation(selected_callsign);
       } else if (splitted_data[1] == "res-2") {
         console.log("In received respons-2");
         let sharedFileInfo = splitted_data[2].split("/", 2);
@@ -1663,6 +1665,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
+            //getSetUserInformation(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1675,6 +1678,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
+            //getSetUserInformation(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1886,9 +1890,7 @@ async function updateAllChat(clear) {
   }
 }
 
-function getSetUserInformation(selected_callsign) {
-  //Get user information
-
+function getSetUserSharedFolder(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
@@ -1896,65 +1898,9 @@ function getSetUserInformation(selected_callsign) {
   )
     return;
 
-  document.getElementById("dx_user_info_callsign").innerHTML =
-    selected_callsign;
-
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
-      // image
-      if (typeof data.user_info_image !== "undefined") {
-        document.getElementById("dx_user_info_image").src =
-          data.user_info_image;
-        document.getElementById("user-image-" + selected_callsign).src =
-          data.user_info_image;
-      } else {
-        document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        document.getElementById("user-image-" + selected_callsign).src =
-          defaultUserIcon;
-      }
-
-      // Callsign list elements
-      document.getElementById(
-        "chat-" + selected_callsign + "-list-dxgrid"
-      ).innerHTML = "<small>" + data.user_info_gridsquare + "</small>";
-      document.getElementById("user-image-" + selected_callsign).className =
-        "p-1 rounded-circle";
-      document.getElementById("user-image-" + selected_callsign).style =
-        "width: 60px";
-
-      // DX Station tab
-
-      document.getElementById("dx_user_info_name").innerHTML =
-        data.user_info_name;
-      document.getElementById("dx_user_info_age").innerHTML =
-        data.user_info_age;
-      document.getElementById("dx_user_info_gridsquare").innerHTML =
-        data.user_info_gridsquare;
-      document.getElementById("dx_user_info_location").innerHTML =
-        data.user_info_location;
-      document.getElementById("dx_user_info_email").innerHTML =
-        data.user_info_email;
-      document.getElementById("dx_user_info_website").innerHTML =
-        data.user_info_website;
-      document.getElementById("dx_user_info_radio").innerHTML =
-        data.user_info_radio;
-      document.getElementById("dx_user_info_antenna").innerHTML =
-        data.user_info_antenna;
-      document.getElementById("dx_user_info_comments").innerHTML =
-        data.user_info_comments;
-
-      document.getElementById("dx_user_info_gridsquare").className = "";
-      document.getElementById("dx_user_info_name").className =
-        "badge bg-secondary";
-      document.getElementById("dx_user_info_age").className =
-        "badge bg-secondary";
-      document.getElementById("dx_user_info_gridsquare").className = "";
-      document.getElementById("dx_user_info_location").className = "";
-      document.getElementById("dx_user_info_email").className = "";
-      document.getElementById("dx_user_info_website").className = "";
-      document.getElementById("dx_user_info_radio").className = "";
-      document.getElementById("dx_user_info_antenna").className = "";
-      document.getElementById("dx_user_info_comments").className = "";
+      console.log(data);
 
       console.log(data.user_shared_folder);
 
@@ -2064,6 +2010,96 @@ function getSetUserInformation(selected_callsign) {
       }
     })
     .catch(function (err) {
+      document.getElementById("sharedFolderTableDX").innerHTML = "no data";
+    });
+}
+
+function getSetUserInformation(selected_callsign) {
+  //Get user information
+
+  if (
+    selected_callsign == "" ||
+    selected_callsign == null ||
+    typeof selected_callsign == "undefined"
+  )
+    return;
+
+  document.getElementById("dx_user_info_callsign").innerHTML =
+    selected_callsign;
+
+  returnObjFromCallsign(users, selected_callsign)
+    .then(function (data) {
+      console.log(data);
+
+      // image
+      if (typeof data.user_info_image !== "undefined") {
+        try {
+          // determine if we have a base64 encoded image
+          console.log(data.user_info_image.split("data:image/png;base64,")[1]);
+          atob(data.user_info_image.split("data:image/png;base64,")[1]);
+
+          document.getElementById("dx_user_info_image").src =
+            data.user_info_image;
+          document.getElementById("user-image-" + selected_callsign).src =
+            data.user_info_image;
+        } catch (e) {
+          console.log(e);
+          console.log("corrupted image data");
+          document.getElementById("user-image-" + selected_callsign).src =
+            defaultUserIcon;
+        }
+      } else {
+        // throw error and use placeholder data
+        throw new Error("Data not available or corrupted");
+        //document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        //document.getElementById("user-image-" + selected_callsign).src =
+        //  defaultUserIcon;
+      }
+
+      // Callsign list elements
+      document.getElementById(
+        "chat-" + selected_callsign + "-list-dxgrid"
+      ).innerHTML = "<small>" + data.user_info_gridsquare + "</small>";
+      document.getElementById("user-image-" + selected_callsign).className =
+        "p-1 rounded-circle";
+      document.getElementById("user-image-" + selected_callsign).style =
+        "width: 60px";
+
+      // DX Station tab
+
+      document.getElementById("dx_user_info_name").innerHTML =
+        data.user_info_name;
+      document.getElementById("dx_user_info_age").innerHTML =
+        data.user_info_age;
+      document.getElementById("dx_user_info_gridsquare").innerHTML =
+        data.user_info_gridsquare;
+      document.getElementById("dx_user_info_location").innerHTML =
+        data.user_info_location;
+      document.getElementById("dx_user_info_email").innerHTML =
+        data.user_info_email;
+      document.getElementById("dx_user_info_website").innerHTML =
+        data.user_info_website;
+      document.getElementById("dx_user_info_radio").innerHTML =
+        data.user_info_radio;
+      document.getElementById("dx_user_info_antenna").innerHTML =
+        data.user_info_antenna;
+      document.getElementById("dx_user_info_comments").innerHTML =
+        data.user_info_comments;
+
+      document.getElementById("dx_user_info_gridsquare").className = "";
+      document.getElementById("dx_user_info_name").className =
+        "badge bg-secondary";
+      document.getElementById("dx_user_info_age").className =
+        "badge bg-secondary";
+      document.getElementById("dx_user_info_gridsquare").className = "";
+      document.getElementById("dx_user_info_location").className = "";
+      document.getElementById("dx_user_info_email").className = "";
+      document.getElementById("dx_user_info_website").className = "";
+      document.getElementById("dx_user_info_radio").className = "";
+      document.getElementById("dx_user_info_antenna").className = "";
+      document.getElementById("dx_user_info_comments").className = "";
+    })
+    .catch(function (err) {
       // Callsign list elements
       document.getElementById("user-image-" + selected_callsign).src =
         defaultUserIcon;
@@ -2098,8 +2134,6 @@ function getSetUserInformation(selected_callsign) {
         "placeholder col-4";
       document.getElementById("dx_user_info_comments").className =
         "placeholder col-7";
-
-      document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
 }
 
@@ -2125,7 +2159,7 @@ function sendSharedFolderList(dxcallsign) {
 
 function sendSharedFolderFile(dxcallsign, filename) {
   let filePath = path.join(config.shared_folder_path, filename);
-  console.log("In fuction sendSharedFolderFile ", filePath);
+  console.log("In function sendSharedFolderFile ", filePath);
 
   //Make sure nothing sneaky is going on
   if (!filePath.startsWith(config.shared_folder_path)) {
