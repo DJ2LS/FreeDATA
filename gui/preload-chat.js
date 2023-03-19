@@ -903,7 +903,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         console.log(filelist);
         userData.user_shared_folder = filelist;
         addFileListToUserDatabaseIfNotExists(userData);
-        console.log(selected_callsign)
+        console.log(selected_callsign);
         getSetUserInformation(obj.dxcallsign);
 
         //getSetUserInformation(selected_callsign);
@@ -1687,7 +1687,6 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
             getSetUserInformation(obj.user_info_callsign);
-
           })
           .catch(function (err) {
             console.log(err);
