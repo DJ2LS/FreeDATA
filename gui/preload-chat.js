@@ -2094,8 +2094,6 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_radio").className = "";
       document.getElementById("dx_user_info_antenna").className = "";
       document.getElementById("dx_user_info_comments").className = "";
-
-
     })
     .catch(function (err) {
       // Callsign list elements
@@ -2132,7 +2130,6 @@ function getSetUserInformation(selected_callsign) {
         "placeholder col-4";
       document.getElementById("dx_user_info_comments").className =
         "placeholder col-7";
-
     });
 }
 
