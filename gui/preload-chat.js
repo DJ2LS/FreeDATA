@@ -880,7 +880,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         userData.user_info_comments = splitted_data[12];
 
         addUserToDatabaseIfNotExists(userData);
-        getSetUserInformation(splitted_data[2]);
+        getSetUserInformation(splitted_data[3]);
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -1672,7 +1672,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
-            getSetUserInformation(obj.user_info_callsign);
+            //getSetUserInformation(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1685,7 +1685,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
-            getSetUserInformation(obj.user_info_callsign);
+            //getSetUserInformation(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
