@@ -1916,7 +1916,7 @@ function getSetUserInformation(selected_callsign) {
           data.user_info_image;
       } else {
         // throw error and use placeholder data
-        throw new Error('Data not available or corrupted');
+        throw new Error("Data not available or corrupted");
         //document.getElementById("dx_user_info_image").src = defaultUserIcon;
         //document.getElementById("user-image-" + selected_callsign).src =
         //  defaultUserIcon;
