@@ -32,7 +32,7 @@
     "@electron/osx-sign": "^1.0.4",
     "@popperjs/core": "^2.11.6",
     "blob-util": "^2.0.2",
-    "bootstrap": "^5.2.3",
+    "bootstrap": "^5.3.0-alpha.1",
     "bootstrap-icons": "^1.10.3",
     "bootswatch": "^5.2.3",
     "browser-image-compression": "^2.0.0",

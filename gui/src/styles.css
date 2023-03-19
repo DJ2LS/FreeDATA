@@ -93,3 +93,17 @@ https://stackoverflow.com/a/9622873
   opacity: 0.75 !important;
   transition: 0.5s;
 }
+
+/* theme area */
+
+/* default light theme mods */
+[data-bs-theme="light"] {
+  .card-header {
+    background-color: var(--bs-card-cap-bg);
+    /*--bs-card-cap-bg: rgba(var(--bs-body-color-rgb), 0.3);*/
+  }
+}
+/* default dark theme mods */
+[data-bs-theme="dark"] {
+  /* default dark theme mods */
+}

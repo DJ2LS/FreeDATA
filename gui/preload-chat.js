@@ -144,14 +144,7 @@ updateAllChat(false);
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // theme selector
-  if (config.theme != "default") {
-    var theme_path =
-      "../node_modules/bootswatch/dist/" + config.theme + "/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = theme_path;
-  } else {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("bootstrap_theme").href = theme_path;
-  }
+  changeGuiDesign(config.theme);
 
   const userInfoFields = [
     "user_info_image",
@@ -975,7 +968,7 @@ update_chat = function (obj) {
         <img class="w-100 rounded-2" src="data:image/png;base64,${FD.atob(
           obj._attachments[filename]["data"]
         )}">
-       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+       <p class="text-right mb-0 p-1" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
                             <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
@@ -986,7 +979,7 @@ update_chat = function (obj) {
       } else {
         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
-       <p class="text-right mb-0 p-1 text-black" style="text-align: right; font-size : 1rem">
+       <p class="text-right mb-0 p-1" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filesize}</span>
                             <i class="bi bi-filetype-${filetype}" style="font-size: 2rem;"></i>
@@ -998,9 +991,9 @@ update_chat = function (obj) {
 
       var controlarea_transmit = `
         <div class="ms-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download link-secondary" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
 
         `;
@@ -1008,8 +1001,8 @@ update_chat = function (obj) {
       var controlarea_receive = `
 
              <div class="me-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download" id="save-file-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-download link-secondary" id="save-file-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
 
         `;
@@ -1019,13 +1012,13 @@ update_chat = function (obj) {
       var filetype = "text/plain";
       var controlarea_transmit = `
 <div class="ms-auto" id="msg-${obj._id}-control-area">
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
              </div>
         `;
       var controlarea_receive = `
       <div class="float-start" id="msg-${obj._id}-control-area">
-                      <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash" id="del-msg-${obj._id}" style="font-size: 1.2rem; color: grey;"></i></button>
+                      <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
                    </div>
               `;
     }
@@ -1221,7 +1214,7 @@ update_chat = function (obj) {
 
                             <!--<button type="button" id="retransmit-msg-${
                               obj._id
-                            }" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem; color: black;"></i></button>-->
+                            }" class="btn btn-sm btn-light p-0" style="height:20px;width:30px"><i class="bi bi-arrow-repeat" style="font-size: 0.9rem;"></i></button>-->
 
                         </p>
 
@@ -2235,4 +2228,60 @@ function sendFileReq(dxcall, file) {
     dxcallsign: dxcall,
     file: file,
   });
+}
+
+function changeGuiDesign(design) {
+  console.log(design);
+  if (
+    design != "default" &&
+    design != "default_light" &&
+    design != "default_dark" &&
+    design != "default_auto"
+  ) {
+    var theme_path =
+      "../node_modules/bootswatch/dist/" + design + "/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+  } else if (design == "default" || design == "default_light") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  } else if (design == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.querySelector("html").setAttribute("data-bs-theme", "dark");
+  } else if (design == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    // https://stackoverflow.com/a/57795495
+    // check if dark mode or light mode used in OS
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      // dark mode
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", "light");
+    }
+
+    // also register event listener for automatic change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        let newColorScheme = event.matches ? "dark" : "light";
+        if (newColorScheme == "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        } else {
+          document.documentElement.setAttribute("data-bs-theme", "light");
+        }
+      });
+  } else {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  }
+
+  //update path to css file
+  document.getElementById("bootstrap_theme").href = escape(theme_path);
 }
