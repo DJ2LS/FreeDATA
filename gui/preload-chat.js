@@ -880,7 +880,8 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         userData.user_info_comments = splitted_data[12];
 
         addUserToDatabaseIfNotExists(userData);
-        getSetUserInformation(selected_callsign);
+        getSetUserInformation(splitted_data[2]);
+
       } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -2040,10 +2041,17 @@ function getSetUserInformation(selected_callsign) {
 
       // image
       if (typeof data.user_info_image !== "undefined") {
+      try{
         document.getElementById("dx_user_info_image").src =
           data.user_info_image;
         document.getElementById("user-image-" + selected_callsign).src =
           data.user_info_image;
+          } catch(e){
+          console.log(e)
+          console.log("corrupted image data")
+          document.getElementById("user-image-" + selected_callsign).src = defaultUserIcon;
+
+          }
       } else {
         // throw error and use placeholder data
         throw new Error("Data not available or corrupted");
