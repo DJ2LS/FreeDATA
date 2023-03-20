@@ -159,7 +159,8 @@ class radio:
         """
         if self.data_connected:
             self.data_connection.setblocking(False)
-            self.data_connection.settimeout(0.05)
+            #Allow a little more time for a response from rigctld before generating a timeout, seems to have no ill effects on a well behaving setup and fixes Issue #373
+            self.data_connection.settimeout(0.30)
             try:
                 self.data_connection.sendall(command + b"\n")
 
