@@ -1894,13 +1894,10 @@ async function updateAllChat(clear) {
             }
           }
 
-                          document.getElementById("blurOverlay").style.webkitFilter = "blur(0px)";
-
         }
         )
         .catch(function (err) {
           console.log(err);
-          document.getElementById("blurOverlay").style.webkitFilter = "blur(0px)";
 
         });
     })
