@@ -1875,6 +1875,12 @@ async function updateAllChat(clear) {
         })
         .then(async function (result) {
           // handle result async
+            //document.getElementById("blurOverlay").classList.add("bg-primary");
+            document.getElementById("blurOverlay").style.webkitFilter = "blur(10px)";
+
+
+
+
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -1887,9 +1893,15 @@ async function updateAllChat(clear) {
                 });
             }
           }
-        })
+
+                          document.getElementById("blurOverlay").style.webkitFilter = "blur(0px)";
+
+        }
+        )
         .catch(function (err) {
           console.log(err);
+          document.getElementById("blurOverlay").style.webkitFilter = "blur(0px)";
+
         });
     })
     .catch(function (err) {
