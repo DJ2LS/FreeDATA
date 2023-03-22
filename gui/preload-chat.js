@@ -2019,7 +2019,7 @@ function getSetUserSharedFolder(selected_callsign) {
 
 function getSetUserInformation(selected_callsign) {
   //Get user information
-  console.log("get set user information:" + selected_callsign)
+  console.log("get set user information:" + selected_callsign);
 
   if (
     selected_callsign == "" ||
@@ -2038,7 +2038,7 @@ function getSetUserInformation(selected_callsign) {
       // image
       if (typeof data.user_info_image !== "undefined") {
         try {
-          console.log("try checking for image if base64 data")
+          console.log("try checking for image if base64 data");
           // determine if we have a base64 encoded image
           console.log(data.user_info_image.split("data:image/png;base64,")[1]);
           atob(data.user_info_image.split("data:image/png;base64,")[1]);
