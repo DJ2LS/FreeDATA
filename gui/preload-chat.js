@@ -2043,8 +2043,9 @@ function getSetUserInformation(selected_callsign) {
           console.log("try checking for image if base64 data");
           // determine if we have a base64 encoded image
           console.log(data.user_info_image);
-          console.log(data.user_info_image.split("data:image/png;base64,")[1]);
-          atob(data.user_info_image.split("data:image/png;base64,")[1]);
+          console.log(data.user_info_image.split(";base64,")[1]);
+          // split data string by "base64" for separating image type from base64 string
+          atob(data.user_info_image.split(";base64,")[1]);
 
           document.getElementById("dx_user_info_image").src =
             data.user_info_image;
