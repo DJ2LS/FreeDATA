@@ -1184,8 +1184,13 @@ update_chat = function (obj) {
 
       if (obj.status == "failed") {
         var progressbar_bg = "bg-danger";
+        var percent_value = "TRANSMISSION FAILED"
+      } else if(obj.status == "transmitted"){
+      var progressbar_bg = "bg-success";
+      var percent_value = "TRANSMITTED"
       } else {
         var progressbar_bg = "bg-primary";
+        var percent_value = obj.percent;
       }
 
       //Sneak in low graphics mode if so enabled for progress bars
@@ -1236,7 +1241,7 @@ update_chat = function (obj) {
 							<p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
                 obj._id
               }-progress-information">
-							    ${obj.percent} % - ${obj.bytesperminute} Bpm
+							    ${percent_value} % - ${obj.bytesperminute} Bpm
 
 							</p>
 
