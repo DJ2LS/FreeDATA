@@ -1898,10 +1898,10 @@ function getSetUserSharedFolder(selected_callsign) {
     selected_callsign == "" ||
     selected_callsign == null ||
     typeof selected_callsign == "undefined"
-  ){
- console.log("return triggered")
+  ) {
+    console.log("return triggered");
     return;
-}
+  }
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
       console.log(data);
@@ -2026,10 +2026,10 @@ function getSetUserInformation(selected_callsign) {
     selected_callsign == "" ||
     selected_callsign == null ||
     typeof selected_callsign == "undefined"
-  ){
- console.log("return triggered")
+  ) {
+    console.log("return triggered");
     return;
-}
+  }
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
 
