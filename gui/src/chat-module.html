@@ -47,671 +47,671 @@
       ></emoji-picker>
     </div>
     <div id="blurOverlay" style="-webkit-filter: blur(0px); filter: blur(10px)">
-
-    <div class="container-fluid">
-      <div class="row h-100">
-        <div class="col-4 p-2">
-          <! ------Chats area ---------------------------------------------------------------------->
-          <div class="container-fluid m-0 p-0">
-            <div class="input-group bottom-0 m-0 w-100">
-              <input
-                class="form-control w-50"
-                maxlength="9"
-                style="text-transform: uppercase"
-                id="chatModuleNewDxCall"
-                placeholder="DX CALL"
-              />
-              <button
-                class="btn btn-sm btn-success"
-                id="createNewChatButton"
-                type="button"
-                title="Start a new chat (enter dx call sign first)"
-              >
-                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                id="userModalButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModal"
-                class="btn btn-sm btn-primary ms-2"
-                title="My station info"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
-              <button
-                type="button"
-                id="sharedFolderButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModal"
-                class="btn btn-sm btn-primary"
-                title="My shared folder"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-            </div>
-          </div>
-          <hr class="m-2" />
-          <div class="overflow-auto vh-100">
-            <div
-              class="list-group overflow-auto"
-              id="list-tab"
-              role="tablist"
-              style="height: calc(100vh - 70px)"
-            ></div>
-          </div>
-        </div>
-        <div class="col-8 border vh-100 p-0">
-          <! ------ chat navbar ---------------------------------------------------------------------->
-          <div class="container-fluid m-2 p-0">
-            <div class="input-group bottom-0">
-              <button
-                class="btn btn-sm btn-outline-secondary me"
-                id="ping"
-                type="button"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="false"
-                title="Ping remote station"
-              >
-                Ping
-              </button>
-
-              <button
-                type="button"
-                id="userModalDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModalDX"
-                class="btn btn-sm btn-outline-secondary"
-                title="Request remote station's information"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                id="sharedFolderDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModalDX"
-                class="btn btn-sm btn-outline-secondary me-2"
-                title="Request remote station's shared files"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-small btn-outline-primary dropdown-toggle me-2"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                data-bs-auto-close="outside"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="false"
-                title="Message filter"
-              >
-                <i class="bi bi-funnel-fill"></i>
-              </button>
-              <form class="dropdown-menu p-4" id="frmFilter">
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      checked="true"
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkMessage"
-                    />
-                    <label class="form-check-label" for="chkMessage">
-                      Messages
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkPing"
-                    />
-                    <label class="form-check-label" for="chkPing">
-                      Pings
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      checked="true"
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkPingAck"
-                    />
-                    <label class="form-check-label" for="chkPingAck">
-                      Ping-Acks
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkBeacon"
-                    />
-                    <label class="form-check-label" for="chkBeacon">
-                      Beacons
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkRequest"
-                    />
-                    <label class="form-check-label" for="chkRequest">
-                      Requests
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkResponse"
-                    />
-                    <label class="form-check-label" for="chkResponse">
-                      Responses
-                    </label>
-                  </div>
-                </div>
-                <button type="button" class="btn btn-primary" id="btnFilter">
-                  Refresh
+      <div class="container-fluid">
+        <div class="row h-100">
+          <div class="col-4 p-2">
+            <! ------Chats area ---------------------------------------------------------------------->
+            <div class="container-fluid m-0 p-0">
+              <div class="input-group bottom-0 m-0 w-100">
+                <input
+                  class="form-control w-50"
+                  maxlength="9"
+                  style="text-transform: uppercase"
+                  id="chatModuleNewDxCall"
+                  placeholder="DX CALL"
+                />
+                <button
+                  class="btn btn-sm btn-success"
+                  id="createNewChatButton"
+                  type="button"
+                  title="Start a new chat (enter dx call sign first)"
+                >
+                  <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
                 </button>
-              </form>
-
-              <button
-                id="chatSettingsDropDown"
-                type="button"
-                class="btn btn-outline-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                title="More options...."
-              >
-                <i class="bi bi-three-dots-vertical"></i>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
-                <li>
-                  <a
-                    class="dropdown-item bg-danger text-white"
-                    id="delete_selected_chat"
-                    href="#"
-                    >Delete chat</a
-                  >
-                </li>
-              </ul>
-            </div>
-          </div>
-          <hr class="m-0" />
-          <! ------messages area ---------------------------------------------------------------------->
-          <div
-            class="container overflow-auto"
-            id="message-container"
-            style="height: calc(100% - 150px)"
-          >
-            <div class="tab-content" id="nav-tabContent"></div>
-            <!--<div class="container position-absolute bottom-0">-->
-          </div>
-          <!-- </div>-->
-          <div class="container-fluid mt-2 p-0">
-            <input
-              type="checkbox"
-              id="expand_textarea"
-              class="btn-check"
-              autocomplete="off"
-            />
-            <label
-              class="btn d-flex justify-content-center"
-              id="expand_textarea_label"
-              for="expand_textarea"
-              ><i
-                id="expand_textarea_button"
-                class="bi bi-chevron-compact-up"
-              ></i
-            ></label>
-
-            <div class="input-group bottom-0 ms-2">
-              <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
-              <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
-              <div class="input-group-text">
-                <i
-                  id="emojipickerbutton"
-                  class="bi bi-emoji-smile p-0"
-                  style="font-size: 1rem"
-                ></i>
-              </div>
-
-              <textarea
-                class="form-control"
-                rows="1"
-                id="chatModuleMessage"
-                placeholder="Message - Send with [Enter]"
-              ></textarea>
-
-              <div class="input-group-text me-3">
-                <i
-                  class="bi bi-paperclip"
-                  style="font-size: 1rem"
-                  id="selectFilesButton"
-                ></i>
 
                 <button
-                  class="btn btn-sm btn-secondary d-none invisible"
-                  id="sendMessage"
                   type="button"
+                  id="userModalButton"
+                  data-bs-toggle="modal"
+                  data-bs-target="#userModal"
+                  class="btn btn-sm btn-primary ms-2"
+                  title="My station info"
                 >
-                  <i class="bi bi-send" style="font-size: 1.2rem"></i>
+                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
+                </button>
+                <button
+                  type="button"
+                  id="sharedFolderButton"
+                  data-bs-toggle="modal"
+                  data-bs-target="#sharedFolderModal"
+                  class="btn btn-sm btn-primary"
+                  title="My shared folder"
+                >
+                  <i class="bi bi-files" style="font-size: 1.2rem"></i>
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- user modal -->
-
-    <div
-      class="modal fade"
-      id="userModal"
-      tabindex="-1"
-      aria-labelledby="userModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" style="max-width: 600px">
-        <div class="modal-content">
-          <div class="card mb-1 border-0">
-            <div class="row g-0">
-              <div class="col-md-4">
-                <div class="row position-relative p-0 m-0">
-                  <div class="col p-0 m-0">
-                    <img
-                      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
-                      class="img-fluid rounded-start w-100"
-                      alt="..."
-                      id="user_info_image"
-                    />
-                  </div>
-                  <div
-                    class="col position-absolute image-overlay text-white justify-content-center align-items-center d-flex align-middle h-100 opacity-0"
-                    id="userImageSelector"
-                  >
-                    <i class="bi bi-upload" style="font-size: 2.2rem"></i>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="card-body">
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-pass"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Callsign"
-                      id="user_info_callsign"
-                      aria-label="Call"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-person-vcard"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="name"
-                      id="user_info_name"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-sunrise"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="age"
-                      id="user_info_age"
-                      aria-label="age"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-house"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Location"
-                      id="user_info_location"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-pin-map"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Grid"
-                      id="user_info_gridsquare"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-projector"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Radio"
-                      id="user_info_radio"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-
-                    <span class="input-group-text"
-                      ><i class="bi bi-broadcast-pin"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Antenna"
-                      id="user_info_antenna"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-envelope"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Email"
-                      id="user_info_email"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-
-                    <span class="input-group-text"
-                      ><i class="bi bi-globe"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Website"
-                      id="user_info_website"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-info-circle"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Comments"
-                      id="user_info_comments"
-                      aria-label="Comments"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                </div>
-              </div>
+            <hr class="m-2" />
+            <div class="overflow-auto vh-100">
+              <div
+                class="list-group overflow-auto"
+                id="list-tab"
+                role="tablist"
+                style="height: calc(100vh - 70px)"
+              ></div>
             </div>
           </div>
+          <div class="col-8 border vh-100 p-0">
+            <! ------ chat navbar ---------------------------------------------------------------------->
+            <div class="container-fluid m-2 p-0">
+              <div class="input-group bottom-0">
+                <button
+                  class="btn btn-sm btn-outline-secondary me"
+                  id="ping"
+                  type="button"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="Ping remote station"
+                >
+                  Ping
+                </button>
 
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-            id="userInfoSave"
-          >
-            Save & Close
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- dx user modal -->
-    <div
-      class="modal fade"
-      id="userModalDX"
-      tabindex="-1"
-      aria-labelledby="userModalDXLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" style="max-width: 600px">
-        <div class="modal-content">
-          <div class="card mb-1 border-0">
-            <div class="row g-0">
-              <div class="col-md-4">
-                <img
-                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
-                  class="img-fluid rounded-start w-100"
-                  alt="..."
-                  id="dx_user_info_image"
-                />
-              </div>
-              <div class="col-md-8">
-                <div class="card-body">
-                  <h5>
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_callsign"
-                    ></span>
-                    -
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_name"
-                    ></span>
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_age"
-                    ></span>
-                  </h5>
+                <button
+                  type="button"
+                  id="userModalDXButton"
+                  data-bs-toggle="modal"
+                  data-bs-target="#userModalDX"
+                  class="btn btn-sm btn-outline-secondary"
+                  title="Request remote station's information"
+                >
+                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
+                </button>
 
-                  <ul class="card-text list-unstyled">
-                    <li>
-                      <strong class="col"><i class="bi bi-house"></i> </strong
-                      ><span id="dx_user_info_location"></span> (<span
-                        id="dx_user_info_gridsquare"
-                      ></span
-                      >)
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-envelope"></i> </strong
-                      ><span id="dx_user_info_email"></span>
-                    </li>
-                    <li>
-                      <strong class="col"><i class="bi bi-globe"></i> </strong
-                      ><span id="dx_user_info_website"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-broadcast-pin"></i> </strong
-                      ><span id="dx_user_info_antenna"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-projector"></i> </strong
-                      ><span id="dx_user_info_radio"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-info-circle"></i> </strong
-                      ><span id="dx_user_info_comments"></span>
-                    </li>
-                  </ul>
-                </div>
+                <button
+                  type="button"
+                  id="sharedFolderDXButton"
+                  data-bs-toggle="modal"
+                  data-bs-target="#sharedFolderModalDX"
+                  class="btn btn-sm btn-outline-secondary me-2"
+                  title="Request remote station's shared files"
+                >
+                  <i class="bi bi-files" style="font-size: 1.2rem"></i>
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-small btn-outline-primary dropdown-toggle me-2"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  data-bs-auto-close="outside"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="Message filter"
+                >
+                  <i class="bi bi-funnel-fill"></i>
+                </button>
+                <form class="dropdown-menu p-4" id="frmFilter">
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        checked="true"
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkMessage"
+                      />
+                      <label class="form-check-label" for="chkMessage">
+                        Messages
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkPing"
+                      />
+                      <label class="form-check-label" for="chkPing">
+                        Pings
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        checked="true"
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkPingAck"
+                      />
+                      <label class="form-check-label" for="chkPingAck">
+                        Ping-Acks
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkBeacon"
+                      />
+                      <label class="form-check-label" for="chkBeacon">
+                        Beacons
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkRequest"
+                      />
+                      <label class="form-check-label" for="chkRequest">
+                        Requests
+                      </label>
+                    </div>
+                  </div>
+                  <div class="mb-1">
+                    <div class="form-check">
+                      <input
+                        type="checkbox"
+                        class="form-check-input"
+                        id="chkResponse"
+                      />
+                      <label class="form-check-label" for="chkResponse">
+                        Responses
+                      </label>
+                    </div>
+                  </div>
+                  <button type="button" class="btn btn-primary" id="btnFilter">
+                    Refresh
+                  </button>
+                </form>
+
+                <button
+                  id="chatSettingsDropDown"
+                  type="button"
+                  class="btn btn-outline-secondary dropdown-toggle"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                  title="More options...."
+                >
+                  <i class="bi bi-three-dots-vertical"></i>
+                </button>
+                <ul
+                  class="dropdown-menu"
+                  aria-labelledby="chatSettingsDropDown"
+                >
+                  <li>
+                    <a
+                      class="dropdown-item bg-danger text-white"
+                      id="delete_selected_chat"
+                      href="#"
+                      >Delete chat</a
+                    >
+                  </li>
+                </ul>
               </div>
             </div>
-          </div>
-
-          <div class="input-group input-group-sm m-0 p-0">
-            <button
-              type="button"
-              class="btn btn-warning w-75"
-              aria-label="Request"
-              id="requestUserInfo"
+            <hr class="m-0" />
+            <! ------messages area ---------------------------------------------------------------------->
+            <div
+              class="container overflow-auto"
+              id="message-container"
+              style="height: calc(100% - 150px)"
             >
-              Request user data (about 20kBytes!)
-            </button>
+              <div class="tab-content" id="nav-tabContent"></div>
+              <!--<div class="container position-absolute bottom-0">-->
+            </div>
+            <!-- </div>-->
+            <div class="container-fluid mt-2 p-0">
+              <input
+                type="checkbox"
+                id="expand_textarea"
+                class="btn-check"
+                autocomplete="off"
+              />
+              <label
+                class="btn d-flex justify-content-center"
+                id="expand_textarea_label"
+                for="expand_textarea"
+                ><i
+                  id="expand_textarea_button"
+                  class="bi bi-chevron-compact-up"
+                ></i
+              ></label>
+
+              <div class="input-group bottom-0 ms-2">
+                <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
+                <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
+                <div class="input-group-text">
+                  <i
+                    id="emojipickerbutton"
+                    class="bi bi-emoji-smile p-0"
+                    style="font-size: 1rem"
+                  ></i>
+                </div>
+
+                <textarea
+                  class="form-control"
+                  rows="1"
+                  id="chatModuleMessage"
+                  placeholder="Message - Send with [Enter]"
+                ></textarea>
+
+                <div class="input-group-text me-3">
+                  <i
+                    class="bi bi-paperclip"
+                    style="font-size: 1rem"
+                    id="selectFilesButton"
+                  ></i>
+
+                  <button
+                    class="btn btn-sm btn-secondary d-none invisible"
+                    id="sendMessage"
+                    type="button"
+                  >
+                    <i class="bi bi-send" style="font-size: 1.2rem"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- user modal -->
+
+      <div
+        class="modal fade"
+        id="userModal"
+        tabindex="-1"
+        aria-labelledby="userModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" style="max-width: 600px">
+          <div class="modal-content">
+            <div class="card mb-1 border-0">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <div class="row position-relative p-0 m-0">
+                    <div class="col p-0 m-0">
+                      <img
+                        src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
+                        class="img-fluid rounded-start w-100"
+                        alt="..."
+                        id="user_info_image"
+                      />
+                    </div>
+                    <div
+                      class="col position-absolute image-overlay text-white justify-content-center align-items-center d-flex align-middle h-100 opacity-0"
+                      id="userImageSelector"
+                    >
+                      <i class="bi bi-upload" style="font-size: 2.2rem"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text"
+                        ><i class="bi bi-pass"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Callsign"
+                        id="user_info_callsign"
+                        aria-label="Call"
+                        aria-describedby="basic-addon1"
+                      />
+                      <span class="input-group-text"
+                        ><i class="bi bi-person-vcard"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="name"
+                        id="user_info_name"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+                      <span class="input-group-text"
+                        ><i class="bi bi-sunrise"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="age"
+                        id="user_info_age"
+                        aria-label="age"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text"
+                        ><i class="bi bi-house"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Location"
+                        id="user_info_location"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+                      <span class="input-group-text"
+                        ><i class="bi bi-pin-map"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Grid"
+                        id="user_info_gridsquare"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text"
+                        ><i class="bi bi-projector"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Radio"
+                        id="user_info_radio"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+
+                      <span class="input-group-text"
+                        ><i class="bi bi-broadcast-pin"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Antenna"
+                        id="user_info_antenna"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text"
+                        ><i class="bi bi-envelope"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Email"
+                        id="user_info_email"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+
+                      <span class="input-group-text"
+                        ><i class="bi bi-globe"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Website"
+                        id="user_info_website"
+                        aria-label="Name"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text"
+                        ><i class="bi bi-info-circle"></i
+                      ></span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Comments"
+                        id="user_info_comments"
+                        aria-label="Comments"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             <button
               type="button"
-              class="btn btn-primary w-25"
+              class="btn btn-primary"
               data-bs-dismiss="modal"
               aria-label="Close"
+              id="userInfoSave"
             >
-              Close
+              Save & Close
             </button>
           </div>
         </div>
       </div>
-    </div>
+      <!-- dx user modal -->
+      <div
+        class="modal fade"
+        id="userModalDX"
+        tabindex="-1"
+        aria-labelledby="userModalDXLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog" style="max-width: 600px">
+          <div class="modal-content">
+            <div class="card mb-1 border-0">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <img
+                    src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
+                    class="img-fluid rounded-start w-100"
+                    alt="..."
+                    id="dx_user_info_image"
+                  />
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h5>
+                      <span
+                        class="badge bg-secondary"
+                        id="dx_user_info_callsign"
+                      ></span>
+                      -
+                      <span
+                        class="badge bg-secondary"
+                        id="dx_user_info_name"
+                      ></span>
+                      <span
+                        class="badge bg-secondary"
+                        id="dx_user_info_age"
+                      ></span>
+                    </h5>
 
-    <!-- user shared folder -->
-    <div
-      class="modal fade"
-      id="sharedFolderModal"
-      tabindex="-1"
-      aria-labelledby="sharedFolderModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
-              My Shared folder
+                    <ul class="card-text list-unstyled">
+                      <li>
+                        <strong class="col"><i class="bi bi-house"></i> </strong
+                        ><span id="dx_user_info_location"></span> (<span
+                          id="dx_user_info_gridsquare"
+                        ></span
+                        >)
+                      </li>
+                      <li>
+                        <strong class="col"
+                          ><i class="bi bi-envelope"></i> </strong
+                        ><span id="dx_user_info_email"></span>
+                      </li>
+                      <li>
+                        <strong class="col"><i class="bi bi-globe"></i> </strong
+                        ><span id="dx_user_info_website"></span>
+                      </li>
+                      <li>
+                        <strong class="col"
+                          ><i class="bi bi-broadcast-pin"></i> </strong
+                        ><span id="dx_user_info_antenna"></span>
+                      </li>
+                      <li>
+                        <strong class="col"
+                          ><i class="bi bi-projector"></i> </strong
+                        ><span id="dx_user_info_radio"></span>
+                      </li>
+                      <li>
+                        <strong class="col"
+                          ><i class="bi bi-info-circle"></i> </strong
+                        ><span id="dx_user_info_comments"></span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group input-group-sm m-0 p-0">
               <button
                 type="button"
-                class="btn btn-primary"
-                id="openSharedFilesFolder"
+                class="btn btn-warning w-75"
+                aria-label="Request"
+                id="requestUserInfo"
               >
-                <i class="bi bi-archive"></i>
+                Request user data (about 20kBytes!)
               </button>
-            </h1>
 
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
+              <button
+                type="button"
+                class="btn btn-primary w-25"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              >
+                Close
+              </button>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <div class="modal-body">
-            <div class="container-fluid p-0">
-              <div class="center mb-1">
-                <div class="badge text-bg-info">
-                  <i class="bi bi-info"></i> Change folder in settings!
+      <!-- user shared folder -->
+      <div
+        class="modal fade"
+        id="sharedFolderModal"
+        tabindex="-1"
+        aria-labelledby="sharedFolderModalLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
+                My Shared folder
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  id="openSharedFilesFolder"
+                >
+                  <i class="bi bi-archive"></i>
+                </button>
+              </h1>
+
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <div class="modal-body">
+              <div class="container-fluid p-0">
+                <div class="center mb-1">
+                  <div class="badge text-bg-info">
+                    <i class="bi bi-info"></i> Change folder in settings!
+                  </div>
+                </div>
+                <div class="table-responsive">
+                  <!-- START OF TABLE FOR SHARED FOLDER -->
+                  <table
+                    class="table table-sm table-hover table-bordered align-middle"
+                  >
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Size</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sharedFolderTable"></tbody>
+                  </table>
                 </div>
               </div>
-              <div class="table-responsive">
-                <!-- START OF TABLE FOR SHARED FOLDER -->
-                <table
-                  class="table table-sm table-hover table-bordered align-middle"
-                >
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Size</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sharedFolderTable"></tbody>
-                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- dx user shared folder -->
+      <div
+        class="modal fade"
+        id="sharedFolderModalDX"
+        tabindex="-1"
+        aria-labelledby="sharedFolderModalDXLabel"
+        aria-hidden="true"
+      >
+        <div class="modal-dialog modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
+                Shared folder
+              </h1>
+              <button
+                type="button"
+                class="btn btn-primary m-2"
+                aria-label="Request"
+                id="requestSharedFolderList"
+              >
+                <i class="bi bi-arrow-repeat"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body">
+              <div class="container-fluid">
+                <div class="table-responsive">
+                  <!-- START OF TABLE FOR SHARED FOLDER DX -->
+                  <table
+                    class="table table-sm table-hover table-bordered align-middle"
+                  >
+                    <thead>
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Size</th>
+                      </tr>
+                    </thead>
+                    <tbody id="sharedFolderTableDX"></tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <div class="input-group input-group-sm m-0 p-0"></div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- dx user shared folder -->
-    <div
-      class="modal fade"
-      id="sharedFolderModalDX"
-      tabindex="-1"
-      aria-labelledby="sharedFolderModalDXLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
-              Shared folder
-            </h1>
-            <button
-              type="button"
-              class="btn btn-primary m-2"
-              aria-label="Request"
-              id="requestSharedFolderList"
-            >
-              <i class="bi bi-arrow-repeat"></i>
-            </button>
-
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="container-fluid">
-              <div class="table-responsive">
-                <!-- START OF TABLE FOR SHARED FOLDER DX -->
-                <table
-                  class="table table-sm table-hover table-bordered align-middle"
-                >
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Size</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sharedFolderTableDX"></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <div class="input-group input-group-sm m-0 p-0"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
     </div>
   </body>
 </html>
