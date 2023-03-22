@@ -1184,10 +1184,10 @@ update_chat = function (obj) {
 
       if (obj.status == "failed") {
         var progressbar_bg = "bg-danger";
-        var percent_value = "TRANSMISSION FAILED"
-      } else if(obj.status == "transmitted"){
-      var progressbar_bg = "bg-success";
-      var percent_value = "TRANSMITTED"
+        var percent_value = "TRANSMISSION FAILED";
+      } else if (obj.status == "transmitted") {
+        var progressbar_bg = "bg-success";
+        var percent_value = "TRANSMITTED";
       } else {
         var progressbar_bg = "bg-primary";
         var percent_value = obj.percent;
@@ -2067,7 +2067,6 @@ function getSetUserInformation(selected_callsign) {
             defaultUserIcon;
         }
       } else {
-
         // throw error and use placeholder data
         throw new Error("Data not available or corrupted");
         //document.getElementById("dx_user_info_image").src = defaultUserIcon;
