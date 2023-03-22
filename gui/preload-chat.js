@@ -1891,8 +1891,8 @@ async function updateAllChat(clear) {
 }
 
 function getSetUserSharedFolder(selected_callsign) {
-    // TODO: This is a dirty hotfix for avoiding, this function is canceld too fast.
-    console.log("get set user information:" + selected_callsign)
+  // TODO: This is a dirty hotfix for avoiding, this function is canceld too fast.
+  console.log("get set user information:" + selected_callsign);
 
   if (
     selected_callsign == "" ||
