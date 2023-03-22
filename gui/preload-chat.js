@@ -1353,6 +1353,16 @@ update_chat = function (obj) {
         document.getElementById("msg-" + obj._id).remove();
         document.getElementById("msg-" + obj._id + "-control-area").remove();
         console.log("Removed message " + obj._id.toString());
+
+        // stop transmission if deleted message is still in progress
+        if(obj.status == "transmitting"){
+            let Data = {
+                command: "stop_transmission",
+            };
+            ipcRenderer.send("run-tnc-command", Data);
+
+        }
+
       });
     //scrollMessagesToBottom();
   }
