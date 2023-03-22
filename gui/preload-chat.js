@@ -1043,6 +1043,8 @@ update_chat = function (obj) {
     }
 
     getSetUserInformation(dxcallsign);
+    getSetUserSharedFolder(dxcallsign);
+
     var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
@@ -1074,6 +1076,7 @@ update_chat = function (obj) {
 
     // finally get and set user information to first selected item
     getSetUserInformation(selected_callsign);
+    getSetUserSharedFolder(selected_callsign);
 
     // create eventlistener for listening on clicking on a callsign
     document
@@ -1085,6 +1088,7 @@ update_chat = function (obj) {
 
         //get user information
         getSetUserInformation(selected_callsign);
+        getSetUserSharedFolder(selected_callsign);
       });
 
     // if callsign entry already exists - update
@@ -2058,6 +2062,7 @@ function getSetUserInformation(selected_callsign) {
             defaultUserIcon;
         }
       } else {
+
         // throw error and use placeholder data
         throw new Error("Data not available or corrupted");
         //document.getElementById("dx_user_info_image").src = defaultUserIcon;
