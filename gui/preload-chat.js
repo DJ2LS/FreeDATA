@@ -1355,14 +1355,12 @@ update_chat = function (obj) {
         console.log("Removed message " + obj._id.toString());
 
         // stop transmission if deleted message is still in progress
-        if(obj.status == "transmitting"){
-            let Data = {
-                command: "stop_transmission",
-            };
-            ipcRenderer.send("run-tnc-command", Data);
-
+        if (obj.status == "transmitting") {
+          let Data = {
+            command: "stop_transmission",
+          };
+          ipcRenderer.send("run-tnc-command", Data);
         }
-
       });
     //scrollMessagesToBottom();
   }
