@@ -2042,7 +2042,7 @@ function getSetUserInformation(selected_callsign) {
         try {
           console.log("try checking for image if base64 data");
           // determine if we have a base64 encoded image
-          console.log(data.user_info_image)
+          console.log(data.user_info_image);
           console.log(data.user_info_image.split("data:image/png;base64,")[1]);
           atob(data.user_info_image.split("data:image/png;base64,")[1]);
 
@@ -2107,9 +2107,8 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className = "";
     })
     .catch(function (err) {
-        console.log("writing user info to modal failed")
-        console.log(err);
-
+      console.log("writing user info to modal failed");
+      console.log(err);
 
       // Callsign list elements
       document.getElementById("user-image-" + selected_callsign).src =
