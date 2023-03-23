@@ -2044,6 +2044,7 @@ function getSetUserSharedFolder(selected_callsign) {
       }
     })
     .catch(function (err) {
+        console.log(err)
       document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
 }
