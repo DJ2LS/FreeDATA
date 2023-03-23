@@ -1301,7 +1301,7 @@ update_chat = function (obj) {
       document.getElementById("msg-" + obj._id + "-progress").innerHTML = "";
 document.getElementById(
       "msg-" + obj._id + "-progress-information"
-    ).innerHTML = percent_value + "% - " + obj.bytesperminute + " Bpm";
+    ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
 
 
     } else {
@@ -1327,7 +1327,7 @@ document.getElementById(
 
 document.getElementById(
       "msg-" + obj._id + "-progress-information"
-    ).innerHTML = percent_value + "% - " + obj.bytesperminute + " Bpm";
+    ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
 
     }
 
