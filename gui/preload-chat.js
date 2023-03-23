@@ -1043,6 +1043,8 @@ update_chat = function (obj) {
     }
 
     getSetUserInformation(dxcallsign);
+    getSetUserSharedFolder(dxcallsign);
+
     var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
@@ -1074,6 +1076,7 @@ update_chat = function (obj) {
 
     // finally get and set user information to first selected item
     getSetUserInformation(selected_callsign);
+    getSetUserSharedFolder(selected_callsign);
 
     // create eventlistener for listening on clicking on a callsign
     document
@@ -1085,6 +1088,7 @@ update_chat = function (obj) {
 
         //get user information
         getSetUserInformation(selected_callsign);
+        getSetUserSharedFolder(selected_callsign);
       });
 
     // if callsign entry already exists - update
@@ -1180,8 +1184,13 @@ update_chat = function (obj) {
 
       if (obj.status == "failed") {
         var progressbar_bg = "bg-danger";
+        var percent_value = "TRANSMISSION FAILED";
+      } else if (obj.status == "transmitted") {
+        var progressbar_bg = "bg-success";
+        var percent_value = "TRANSMITTED";
       } else {
         var progressbar_bg = "bg-primary";
+        var percent_value = obj.percent;
       }
 
       //Sneak in low graphics mode if so enabled for progress bars
@@ -1232,7 +1241,7 @@ update_chat = function (obj) {
 							<p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
                 obj._id
               }-progress-information">
-							    ${obj.percent} % - ${obj.bytesperminute} Bpm
+							    ${percent_value} % - ${obj.bytesperminute} Bpm
 
 							</p>
 
@@ -1344,6 +1353,14 @@ update_chat = function (obj) {
         document.getElementById("msg-" + obj._id).remove();
         document.getElementById("msg-" + obj._id + "-control-area").remove();
         console.log("Removed message " + obj._id.toString());
+
+        // stop transmission if deleted message is still in progress
+        if (obj.status == "transmitting") {
+          let Data = {
+            command: "stop_transmission",
+          };
+          ipcRenderer.send("run-tnc-command", Data);
+        }
       });
     //scrollMessagesToBottom();
   }
@@ -1592,6 +1609,7 @@ addUserToDatabaseIfNotExists = function (obj) {
     })
     .then(function (result) {
       // handle result
+      console.log(result);
       if (result.docs.length > 0) {
         users
           .put({
@@ -1660,12 +1678,22 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             _id: result.docs[0]._id,
             _rev: result.docs[0]._rev,
             user_shared_folder: obj.user_shared_folder,
+            user_info_callsign: result.docs[0].user_info_callsign,
+            user_info_gridsquare: result.docs[0].user_info_gridsquare,
+            user_info_name: result.docs[0].user_info_name,
+            user_info_age: result.docs[0].user_info_age,
+            user_info_location: result.docs[0].user_info_location,
+            user_info_radio: result.docs[0].user_info_radio,
+            user_info_antenna: result.docs[0].user_info_antenna,
+            user_info_email: result.docs[0].user_info_email,
+            user_info_website: result.docs[0].user_info_website,
+            user_info_comments: result.docs[0].user_info_comments,
           })
           .then(function (response) {
             console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
-            //getSetUserInformation(obj.user_info_callsign);
+            getSetUserSharedFolder(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1678,7 +1706,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
-            //getSetUserInformation(obj.user_info_callsign);
+            getSetUserSharedFolder(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1858,6 +1886,8 @@ async function updateAllChat(clear) {
         })
         .then(async function (result) {
           // handle result async
+          //document.getElementById("blurOverlay").classList.add("bg-primary");
+
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -1891,13 +1921,17 @@ async function updateAllChat(clear) {
 }
 
 function getSetUserSharedFolder(selected_callsign) {
+  // TODO: This is a dirty hotfix for avoiding, this function is canceld too fast.
+  console.log("get set user information:" + selected_callsign);
+
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
     typeof selected_callsign == "undefined"
-  )
+  ) {
+    console.log("return triggered");
     return;
-
+  }
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
       console.log(data);
@@ -2010,20 +2044,23 @@ function getSetUserSharedFolder(selected_callsign) {
       }
     })
     .catch(function (err) {
+      console.log(err);
       document.getElementById("sharedFolderTableDX").innerHTML = "no data";
     });
 }
 
 function getSetUserInformation(selected_callsign) {
   //Get user information
+  console.log("get set user information:" + selected_callsign);
 
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
     typeof selected_callsign == "undefined"
-  )
+  ) {
+    console.log("return triggered");
     return;
-
+  }
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
 
@@ -2034,9 +2071,12 @@ function getSetUserInformation(selected_callsign) {
       // image
       if (typeof data.user_info_image !== "undefined") {
         try {
+          console.log("try checking for image if base64 data");
           // determine if we have a base64 encoded image
-          console.log(data.user_info_image.split("data:image/png;base64,")[1]);
-          atob(data.user_info_image.split("data:image/png;base64,")[1]);
+          console.log(data.user_info_image);
+          console.log(data.user_info_image.split(";base64,")[1]);
+          // split data string by "base64" for separating image type from base64 string
+          atob(data.user_info_image.split(";base64,")[1]);
 
           document.getElementById("dx_user_info_image").src =
             data.user_info_image;
@@ -2047,13 +2087,14 @@ function getSetUserInformation(selected_callsign) {
           console.log("corrupted image data");
           document.getElementById("user-image-" + selected_callsign).src =
             defaultUserIcon;
+          document.getElementById("dx_user_info_image").src = defaultUserIcon;
         }
       } else {
         // throw error and use placeholder data
-        throw new Error("Data not available or corrupted");
-        //document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        //document.getElementById("user-image-" + selected_callsign).src =
-        //  defaultUserIcon;
+        // throw new Error("Data not available or corrupted");
+        document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        document.getElementById("user-image-" + selected_callsign).src =
+          defaultUserIcon;
       }
 
       // Callsign list elements
@@ -2066,7 +2107,6 @@ function getSetUserInformation(selected_callsign) {
         "width: 60px";
 
       // DX Station tab
-
       document.getElementById("dx_user_info_name").innerHTML =
         data.user_info_name;
       document.getElementById("dx_user_info_age").innerHTML =
@@ -2100,6 +2140,9 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("dx_user_info_comments").className = "";
     })
     .catch(function (err) {
+      console.log("writing user info to modal failed");
+      console.log(err);
+
       // Callsign list elements
       document.getElementById("user-image-" + selected_callsign).src =
         defaultUserIcon;
