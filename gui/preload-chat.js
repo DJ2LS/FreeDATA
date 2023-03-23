@@ -2075,13 +2075,14 @@ function getSetUserInformation(selected_callsign) {
           console.log("corrupted image data");
           document.getElementById("user-image-" + selected_callsign).src =
             defaultUserIcon;
+          document.getElementById("dx_user_info_image").src = defaultUserIcon;
         }
       } else {
         // throw error and use placeholder data
-        throw new Error("Data not available or corrupted");
-        //document.getElementById("dx_user_info_image").src = defaultUserIcon;
-        //document.getElementById("user-image-" + selected_callsign).src =
-        //  defaultUserIcon;
+        // throw new Error("Data not available or corrupted");
+        document.getElementById("dx_user_info_image").src = defaultUserIcon;
+        document.getElementById("user-image-" + selected_callsign).src =
+          defaultUserIcon;
       }
 
       // Callsign list elements
