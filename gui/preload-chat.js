@@ -1299,11 +1299,9 @@ update_chat = function (obj) {
         .classList.add("bg-success");
 
       document.getElementById("msg-" + obj._id + "-progress").innerHTML = "";
-document.getElementById(
-      "msg-" + obj._id + "-progress-information"
-    ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
-
-
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
     } else {
       document
         .getElementById("msg-" + obj._id + "-progress")
@@ -1325,10 +1323,9 @@ document.getElementById(
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("bg-danger");
 
-document.getElementById(
-      "msg-" + obj._id + "-progress-information"
-    ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
-
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
     }
 
     //document.getElementById(id).className = message_class;
