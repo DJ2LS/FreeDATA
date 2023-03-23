@@ -1609,6 +1609,7 @@ addUserToDatabaseIfNotExists = function (obj) {
     })
     .then(function (result) {
       // handle result
+      console.log(result)
       if (result.docs.length > 0) {
         users
           .put({
