@@ -1677,6 +1677,16 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             _id: result.docs[0]._id,
             _rev: result.docs[0]._rev,
             user_shared_folder: obj.user_shared_folder,
+            user_info_callsign: result.docs[0].user_info_callsign,
+            user_info_gridsquare: result.docs[0].user_info_gridsquare,
+            user_info_name: result.docs[0].user_info_name,
+            user_info_age: result.docs[0].user_info_age,
+            user_info_location: result.docs[0].user_info_location,
+            user_info_radio: result.docs[0].user_info_radio,
+            user_info_antenna: result.docs[0].user_info_antenna,
+            user_info_email: result.docs[0].user_info_email,
+            user_info_website: result.docs[0].user_info_website,
+            user_info_comments: result.docs[0].user_info_comments,
           })
           .then(function (response) {
             console.log("File List:  UPDATED USER");
