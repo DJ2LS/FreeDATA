@@ -1682,7 +1682,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
             console.log("File List:  UPDATED USER");
             console.log(response);
             console.log(obj);
-            //getSetUserInformation(obj.user_info_callsign);
+            getSetUserSharedFolder(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
@@ -1695,7 +1695,7 @@ addFileListToUserDatabaseIfNotExists = function (obj) {
           })
           .then(function (response) {
             console.log("File List:  NEW USER ADDED");
-            //getSetUserInformation(obj.user_info_callsign);
+            getSetUserSharedFolder(obj.user_info_callsign);
           })
           .catch(function (err) {
             console.log(err);
