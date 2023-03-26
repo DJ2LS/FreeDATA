@@ -1286,7 +1286,7 @@ update_chat = function (obj) {
       "msg-" + obj._id + "-progress-information"
     ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
 
-    if (obj.percent >= 100) {
+    if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
       document
         .getElementById("msg-" + obj._id + "-progress")
@@ -1296,9 +1296,12 @@ update_chat = function (obj) {
         .classList.remove("bg-danger");
       document
         .getElementById("msg-" + obj._id + "-progress")
-        .classList.add("bg-primary");
+        .classList.add("bg-success");
 
       document.getElementById("msg-" + obj._id + "-progress").innerHTML = "";
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
     } else {
       document
         .getElementById("msg-" + obj._id + "-progress")
@@ -1319,6 +1322,10 @@ update_chat = function (obj) {
       document
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("bg-danger");
+
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
     }
 
     //document.getElementById(id).className = message_class;
