@@ -1084,16 +1084,16 @@ window.addEventListener("DOMContentLoaded", () => {
     set_CPU_mode();
   });
 
-//Handle change of Auto-start settings
-document.getElementById("AutoStartSwitch").addEventListener("click", () => {
-  if (document.getElementById("AutoStartSwitch").checked == true) {
-    config.auto_start = "1";
-  } else {
-    config.auto_start = "0";
-  }
-  //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  FD.saveConfig(config, configPath);
-});
+  //Handle change of Auto-start settings
+  document.getElementById("AutoStartSwitch").addEventListener("click", () => {
+    if (document.getElementById("AutoStartSwitch").checked == true) {
+      config.auto_start = "1";
+    } else {
+      config.auto_start = "0";
+    }
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
 
   // enable fsk Switch clicked
   document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -3203,7 +3203,7 @@ function checkRigctld() {
 
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
-  rigctlActive=data["active"];
+  rigctlActive = data["active"];
 });
 
 ipcRenderer.on("action-set-app-version", (event, data) => {
@@ -3443,13 +3443,12 @@ function changeGuiDesign(design) {
 
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
-  
-  function autostart()
-  {
+
+  function autostart() {
     //Auto start stuff if option is enabled
     if (config.auto_start == 1) {
       //Start rigctld if radiocontrol is in correct mode and is not active
-      if (config.radiocontrol == "rigctld" && rigctlActive == false){
+      if (config.radiocontrol == "rigctld" && rigctlActive == false) {
         //console.log("Autostarting rigctld");
         document.getElementById("hamlib_rigctld_start").click();
       }
@@ -3458,6 +3457,6 @@ function changeGuiDesign(design) {
     }
   }
   setTimeout(() => {
-    autostart()
+    autostart();
   }, 1250);
 }
