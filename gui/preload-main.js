@@ -336,6 +336,13 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById("autoTuneSwitch").checked = false;
   }
+
+  if (config.auto_start == 1) {
+    document.getElementById("AutoStartSwitch").checked = true;
+  } else {
+    document.getElementById("AutoStartSwitch").checked = false;
+  }
+
   // theme selector
   changeGuiDesign(config.theme);
 
@@ -1064,6 +1071,8 @@ window.addEventListener("DOMContentLoaded", () => {
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
   });
+
+  //Handle change of fancy graphics
   document.getElementById("GraphicsSwitch").addEventListener("click", () => {
     if (document.getElementById("GraphicsSwitch").checked == true) {
       config.high_graphics = "True";
@@ -1074,6 +1083,17 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
     set_CPU_mode();
   });
+
+//Handle change of Auto-start settings
+document.getElementById("AutoStartSwitch").addEventListener("click", () => {
+  if (document.getElementById("AutoStartSwitch").checked == true) {
+    config.auto_start = "1";
+  } else {
+    config.auto_start = "0";
+  }
+  //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  FD.saveConfig(config, configPath);
+});
 
   // enable fsk Switch clicked
   document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -3164,6 +3184,7 @@ function set_setting_switch(setting_switch, enable_object, state) {
   enable_setting(setting_switch, enable_object);
 }
 
+var rigctlActive = false;
 setInterval(checkRigctld, 500);
 function checkRigctld() {
   var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
@@ -3182,6 +3203,7 @@ function checkRigctld() {
 
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
+  rigctlActive=data["active"];
 });
 
 ipcRenderer.on("action-set-app-version", (event, data) => {
@@ -3421,4 +3443,21 @@ function changeGuiDesign(design) {
 
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
+  
+  function autostart()
+  {
+    //Auto start stuff if option is enabled
+    if (config.auto_start == 1) {
+      //Start rigctld if radiocontrol is in correct mode and is not active
+      if (config.radiocontrol == "rigctld" && rigctlActive == false){
+        //console.log("Autostarting rigctld");
+        document.getElementById("hamlib_rigctld_start").click();
+      }
+      //Now start TNC
+      document.getElementById("startTNC").click();
+    }
+  }
+  setTimeout(() => {
+    autostart()
+  }, 1250);
 }
