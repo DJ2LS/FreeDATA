@@ -335,8 +335,8 @@ class RF:
 
             # -----write
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
-                data_out48k = self.modoutqueue.popleft()
-                self.tci_module.push_audio(data_out48k)
+                data_out = self.modoutqueue.popleft()
+                self.tci_module.push_audio(data_out)
 
     def tci_rx_callback(self) -> None:
         """

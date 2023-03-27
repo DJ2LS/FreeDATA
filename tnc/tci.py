@@ -103,6 +103,7 @@ class TCI:
         )
 
     def on_open(self, ws):
+        self.ws = ws
         self.log.info(
             "[TCI] Connected FreeDATA to TCI rig!", ip=self.hostname, port=self.port
         )
@@ -111,3 +112,32 @@ class TCI:
         self.log.info(
             "[TCI] Init...", ip=self.hostname, port=self.port
         )
+
+    def push_audio(self, data_out):
+
+        audio = bytearray(4096 + 64)
+        """
+        # audio[:4] = receiver.to_bytes(4,byteorder='little', signed=False)
+        audio[4:8] = sample_rate.to_bytes(4, byteorder='little', signed=False)
+        audio[8:12] = format.to_bytes(4, byteorder='little', signed=False)
+        audio[12:16] = codec.to_bytes(4, byteorder='little', signed=False)
+        audio[16:20] = crc.to_bytes(4, byteorder='little', signed=False)
+        audio[20:24] = audio_length.to_bytes(4, byteorder='little', signed=False)
+        audio[24:28] = int(2).to_bytes(4, byteorder='little', signed=True)
+        audio[28:32] = channel.to_bytes(4, byteorder='little', signed=False)
+        audio[32:36] = reserved1.to_bytes(4, byteorder='little', signed=False)
+        audio[36:40] = reserved2.to_bytes(4, byteorder='little', signed=False)
+        audio[40:44] = reserved3.to_bytes(4, byteorder='little', signed=False)
+        audio[44:48] = reserved4.to_bytes(4, byteorder='little', signed=False)
+        audio[48:52] = reserved5.to_bytes(4, byteorder='little', signed=False)
+        audio[52:56] = reserved6.to_bytes(4, byteorder='little', signed=False)
+        audio[56:60] = reserved7.to_bytes(4, byteorder='little', signed=False)
+        audio[60:64] = reserved8.to_bytes(4, byteorder='little', signed=False)
+        """
+        self.ws.send(audio, websocket.ABNF.OPCODE_BINARY)
+
+    def set_ptt(self, state):
+        if state:
+            self.ws.send('trx:0,true,tci;')
+        else:
+            self.ws.send('trx:0,false;')
