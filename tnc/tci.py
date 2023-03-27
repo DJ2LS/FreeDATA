@@ -32,6 +32,11 @@ class TCI:
         )
         tci_thread.start()
 
+        # flag if we're receiving a tx_chrono
+        self.tx_chrono = False
+
+
+
     def connect(self):
         self.log.info(
             "[TCI] Starting TCI thread!", ip=self.hostname, port=self.port
@@ -49,13 +54,23 @@ class TCI:
         #rel.dispatch()
 
     def on_message(self, ws, message):
+
+        # ready message
+        # we need to wait until radio is ready before we can push commands
         if message == "ready;":
             self.ws.send('audio_samplerate:8000;')
             self.ws.send('audio_stream_channels:1;')
-            self.ws.send('AUDIO_STREAM_SAMPLE_TYPE:int16;')
-            self.ws.send('AUDIO_STREAM_SAMPLES:1200;')
+            self.ws.send('audio_stream_sample_type:int16;')
+            self.ws.send('audio_stream_samples:1200;')
             self.ws.send('audio_start:0;')
 
+        # tx chrono frame
+        if len(message) in {64}:
+            type = int.from_bytes(message[24:28], "little")
+            if type == 3:
+                self.tx_chrono = True
+
+        # audio frame
         if len(message) in {576, 2464, 4160}:
             # audio received
             receiver = message[:4]
