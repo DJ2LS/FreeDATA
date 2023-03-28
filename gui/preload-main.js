@@ -589,19 +589,19 @@ window.addEventListener("DOMContentLoaded", () => {
       switch (os.platform().toLowerCase()) {
         case "darwin":
         case "linux":
-          rigctld = rigctld.replace(" ","\\ ");
+          rigctld = rigctld.replace(" ", "\\ ");
           break;
         case "win32":
         case "win64":
-          if (rigctld.indexOf(" ") > -1)
-            rigctld = "\"" + rigctld + "\""; 
+          if (rigctld.indexOf(" ") > -1) rigctld = '"' + rigctld + '"';
           break;
         default:
           console.log("Unhandled OS Platform: ", os.platform());
           break;
       }
 
-      rigctld += " " + document.getElementById("hamlib_rigctld_command").value + " -vv";
+      rigctld +=
+        " " + document.getElementById("hamlib_rigctld_command").value + " -vv";
       document.getElementById("btnHamlibCopyCommandBi").classList =
         "bi bi-clipboard2-check-fill";
       clipboard.writeText(rigctld);
@@ -2359,9 +2359,9 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
     document.getElementById("node_version").innerHTML = "Node " + process.version
     document.getElementById("node_version").className = "btn btn-sm btn-success";
     */
-    
-    if (arg.tnc_running_state != "stopped" && populateSerial == true) return;
-// UPDATE SERIAL DEVICES
+
+  if (arg.tnc_running_state != "stopped" && populateSerial == true) return;
+  // UPDATE SERIAL DEVICES
   if (
     document.getElementById("hamlib_deviceport").length !=
     arg.serial_devices.length
@@ -2409,46 +2409,43 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
   //Serial devices are updated on first pass
   populateSerial = true;
   if (arg.tnc_running_state != "stopped") return;
-  
+
   // UPDATE AUDIO INPUT
-    if (
-      document.getElementById("audio_input_selectbox").length !=
-      arg.input_devices.length
-    ) {
-      document.getElementById("audio_input_selectbox").innerHTML = "";
-      for (i = 0; i < arg.input_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text = arg.input_devices[i]["name"];
-        option.value = arg.input_devices[i]["id"];
-        // set device from config if available
+  if (
+    document.getElementById("audio_input_selectbox").length !=
+    arg.input_devices.length
+  ) {
+    document.getElementById("audio_input_selectbox").innerHTML = "";
+    for (i = 0; i < arg.input_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text = arg.input_devices[i]["name"];
+      option.value = arg.input_devices[i]["id"];
+      // set device from config if available
 
-        if (config.rx_audio == option.text) {
-          option.setAttribute("selected", true);
-        }
-        document.getElementById("audio_input_selectbox").add(option);
+      if (config.rx_audio == option.text) {
+        option.setAttribute("selected", true);
       }
+      document.getElementById("audio_input_selectbox").add(option);
     }
-  
+  }
+
   // UPDATE AUDIO OUTPUT
-    if (
-      document.getElementById("audio_output_selectbox").length !=
-      arg.output_devices.length
-    ) {
-      document.getElementById("audio_output_selectbox").innerHTML = "";
-      for (i = 0; i < arg.output_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text = arg.output_devices[i]["name"];
-        option.value = arg.output_devices[i]["id"];
-        // set device from config if available
-        if (config.tx_audio == option.text) {
-          option.setAttribute("selected", true);
-        }
-        document.getElementById("audio_output_selectbox").add(option);
+  if (
+    document.getElementById("audio_output_selectbox").length !=
+    arg.output_devices.length
+  ) {
+    document.getElementById("audio_output_selectbox").innerHTML = "";
+    for (i = 0; i < arg.output_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text = arg.output_devices[i]["name"];
+      option.value = arg.output_devices[i]["id"];
+      // set device from config if available
+      if (config.tx_audio == option.text) {
+        option.setAttribute("selected", true);
       }
+      document.getElementById("audio_output_selectbox").add(option);
     }
-
-  
-  
+  }
 });
 
 // ACTION UPDATE HAMLIB TEST
