@@ -584,7 +584,24 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       hamlib_params();
       let rigctld = document.getElementById("hamlib_rigctld_path").value;
-      rigctld += " " + document.getElementById("hamlib_rigctld_command").value;
+
+      //Escape spaces in executable file
+      switch (os.platform().toLowerCase()) {
+        case "darwin":
+        case "linux":
+          rigctld = rigctld.replace(" ","\\ ");
+          break;
+        case "win32":
+        case "win64":
+          if (rigctld.indexOf(" ") > -1)
+            rigctld = "\"" + rigctld + "\""; 
+          break;
+        default:
+          console.log("Unhandled OS Platform: ", os.platform());
+          break;
+      }
+
+      rigctld += " " + document.getElementById("hamlib_rigctld_command").value + " -vv";
       document.getElementById("btnHamlibCopyCommandBi").classList =
         "bi bi-clipboard2-check-fill";
       clipboard.writeText(rigctld);
@@ -2306,6 +2323,7 @@ function updateHeardStations(arg) {
   }
 }
 
+var populateSerial = false;
 ipcRenderer.on("action-update-daemon-state", (event, arg) => {
   /*
     // deactivetd RAM und CPU view so we dont get errors. We need to find a new place for this feature
@@ -2341,9 +2359,58 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
     document.getElementById("node_version").innerHTML = "Node " + process.version
     document.getElementById("node_version").className = "btn btn-sm btn-success";
     */
+    
+    if (arg.tnc_running_state != "stopped" && populateSerial == true) return;
+// UPDATE SERIAL DEVICES
+  if (
+    document.getElementById("hamlib_deviceport").length !=
+    arg.serial_devices.length
+  ) {
+    document.getElementById("hamlib_deviceport").innerHTML = "";
+    var ignore = document.createElement("option");
+    ignore.text = "-- ignore --";
+    ignore.value = "ignore";
+    document.getElementById("hamlib_deviceport").add(ignore);
+    for (i = 0; i < arg.serial_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text =
+        arg.serial_devices[i]["port"] +
+        " -- " +
+        arg.serial_devices[i]["description"];
+      option.value = arg.serial_devices[i]["port"];
+      document.getElementById("hamlib_deviceport").add(option);
+    }
+    // set device from config if available
+    document.getElementById("hamlib_deviceport").value =
+      config.hamlib_deviceport;
+  }
 
+  if (
+    document.getElementById("hamlib_ptt_port").length !=
+    arg.serial_devices.length
+  ) {
+    document.getElementById("hamlib_ptt_port").innerHTML = "";
+    var ignore = document.createElement("option");
+    ignore.text = "-- ignore --";
+    ignore.value = "ignore";
+    document.getElementById("hamlib_ptt_port").add(ignore);
+    for (i = 0; i < arg.serial_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text =
+        arg.serial_devices[i]["port"] +
+        " -- " +
+        arg.serial_devices[i]["description"];
+      option.value = arg.serial_devices[i]["port"];
+      document.getElementById("hamlib_ptt_port").add(option);
+    }
+    // set device from config if available
+    document.getElementById("hamlib_ptt_port").value = config.hamlib_ptt_port;
+  }
+  //Serial devices are updated on first pass
+  populateSerial = true;
+  if (arg.tnc_running_state != "stopped") return;
+  
   // UPDATE AUDIO INPUT
-  if (arg.tnc_running_state == "stopped") {
     if (
       document.getElementById("audio_input_selectbox").length !=
       arg.input_devices.length
@@ -2361,9 +2428,8 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
         document.getElementById("audio_input_selectbox").add(option);
       }
     }
-  }
+  
   // UPDATE AUDIO OUTPUT
-  if (arg.tnc_running_state == "stopped") {
     if (
       document.getElementById("audio_output_selectbox").length !=
       arg.output_devices.length
@@ -2380,57 +2446,9 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
         document.getElementById("audio_output_selectbox").add(option);
       }
     }
-  }
 
-  // UPDATE SERIAL DEVICES
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("hamlib_deviceport").length !=
-      arg.serial_devices.length
-    ) {
-      document.getElementById("hamlib_deviceport").innerHTML = "";
-      var ignore = document.createElement("option");
-      ignore.text = "-- ignore --";
-      ignore.value = "ignore";
-      document.getElementById("hamlib_deviceport").add(ignore);
-      for (i = 0; i < arg.serial_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text =
-          arg.serial_devices[i]["port"] +
-          " -- " +
-          arg.serial_devices[i]["description"];
-        option.value = arg.serial_devices[i]["port"];
-        document.getElementById("hamlib_deviceport").add(option);
-      }
-      // set device from config if available
-      document.getElementById("hamlib_deviceport").value =
-        config.hamlib_deviceport;
-    }
-  }
-
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("hamlib_ptt_port").length !=
-      arg.serial_devices.length
-    ) {
-      document.getElementById("hamlib_ptt_port").innerHTML = "";
-      var ignore = document.createElement("option");
-      ignore.text = "-- ignore --";
-      ignore.value = "ignore";
-      document.getElementById("hamlib_ptt_port").add(ignore);
-      for (i = 0; i < arg.serial_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text =
-          arg.serial_devices[i]["port"] +
-          " -- " +
-          arg.serial_devices[i]["description"];
-        option.value = arg.serial_devices[i]["port"];
-        document.getElementById("hamlib_ptt_port").add(option);
-      }
-      // set device from config if available
-      document.getElementById("hamlib_ptt_port").value = config.hamlib_ptt_port;
-    }
-  }
+  
+  
 });
 
 // ACTION UPDATE HAMLIB TEST
@@ -3184,7 +3202,7 @@ function set_setting_switch(setting_switch, enable_object, state) {
   enable_setting(setting_switch, enable_object);
 }
 
-var rigctlActive = false;
+var rigctldActive = false;
 setInterval(checkRigctld, 500);
 function checkRigctld() {
   var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
@@ -3203,7 +3221,7 @@ function checkRigctld() {
 
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
-  rigctlActive = data["active"];
+  rigctldActive = data["active"];
 });
 
 ipcRenderer.on("action-set-app-version", (event, data) => {
@@ -3448,7 +3466,7 @@ function changeGuiDesign(design) {
     //Auto start stuff if option is enabled
     if (config.auto_start == 1) {
       //Start rigctld if radiocontrol is in correct mode and is not active
-      if (config.radiocontrol == "rigctld" && rigctlActive == false) {
+      if (config.radiocontrol == "rigctld" && rigctldActive == false) {
         //console.log("Autostarting rigctld");
         document.getElementById("hamlib_rigctld_start").click();
       }
