@@ -46,6 +46,13 @@ class TCI:
         self.crc = None
         self.channel = None
 
+        self.frequency = None
+        self.bandwidth = None
+        self.mode = None
+        self.alc = None
+        self.meter = None
+        self.level = None
+
     def connect(self):
         self.log.info(
             "[TCI] Starting TCI thread!", ip=self.hostname, port=self.port
@@ -122,6 +129,24 @@ class TCI:
             reserved8 = int.from_bytes(message[60:64], "little")
             audio_data = message[64:]
             self.audio_received_queue.put(audio_data)
+
+        # find frequency
+        if message.startswith("TX_FREQUENCY:"):
+            splitted_message = message.split("TX_FREQUENCY:")
+            self.frequency = splitted_message[1][:-1]
+
+        # find bandwidth
+        #if message.startswith("rx_filter_band:0,"):
+        #    splitted_message = message.split("rx_filter_band:0,")
+        #    bandwidths = splitted_message[1]
+        #    splitted_bandwidths = bandwidths.split(",")
+        #    lower_bandwidth = int(splitted_bandwidths[0])
+        #    upper_bandwidth = int(splitted_bandwidths[1][:-1])
+        #    self.bandwidth = upper_bandwidth - lower_bandwidth
+
+
+
+
 
     def on_error(self, error):
         self.log.error(
@@ -212,27 +237,28 @@ class TCI:
 
     def get_frequency(self):
         """ """
-        return None
+        self.ws.send('TX_FREQUENCY;')
+        return self.frequency
 
     def get_mode(self):
         """ """
-        return None
+        return self.mode
 
     def get_level(self):
         """ """
-        return None
+        return self.level
 
     def get_alc(self):
         """ """
-        return None
+        return self.alc
 
     def get_meter(self):
         """ """
-        return None
+        return self.meter
 
     def get_bandwidth(self):
         """ """
-        return None
+        return self.bandwidth
 
     def get_strength(self):
         """ """
