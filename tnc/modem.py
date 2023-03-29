@@ -335,8 +335,8 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
-            if len(self.modoutqustatic.PTT_STATEeue) > 0 and not self.mod_out_locked:
-                 = self.radio.set_ptt(True)
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
+                static.PTT_STATE = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
