@@ -62,9 +62,13 @@ class RF:
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
+
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 2400 * 2
+        if not static.AUDIO_ENABLE_TCI:
+            self.AUDIO_FRAMES_PER_BUFFER_TX = 2400 * 2
+        else:
+            self.AUDIO_FRAMES_PER_BUFFER_TX = 1200
 
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1

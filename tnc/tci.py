@@ -5,6 +5,7 @@ import structlog
 import threading
 import websocket
 import numpy as np
+import time
 from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
 
 """
@@ -12,6 +13,7 @@ trx:0,true;
 trx:0,false;
 
 """
+
 
 class TCI:
     def __init__(self, hostname='127.0.0.1', port=50001):
@@ -41,6 +43,8 @@ class TCI:
         self.format = None
         self.codec = None
         self.audio_length = None
+        self.crc = None
+        self.channel = None
 
     def connect(self):
         self.log.info(
@@ -55,8 +59,8 @@ class TCI:
         )
 
         self.ws.run_forever(reconnect=5)  # Set dispatcher to automatic reconnection, 5 second reconnect delay if con>
-        #rel.signal(2, rel.abort)  # Keyboard Interrupt
-        #rel.dispatch()
+        # rel.signal(2, rel.abort)  # Keyboard Interrupt
+        # rel.dispatch()
 
     def on_message(self, ws, message):
 
@@ -94,6 +98,8 @@ class TCI:
                 self.format = format
                 self.codec = codec
                 self.audio_length = audio_length
+                self.channel = channel
+                self.crc = crc
 
         # audio frame
         if len(message) in {576, 2464, 4160}:
@@ -124,7 +130,8 @@ class TCI:
 
     def on_close(self, ws, close_status_code, close_msg):
         self.log.warning(
-            "[TCI] Closed FreeDATA to TCI connection!", ip=self.hostname, port=self.port, statu=close_status_code, msg=close_msg
+            "[TCI] Closed FreeDATA to TCI connection!", ip=self.hostname, port=self.port, statu=close_status_code,
+            msg=close_msg
         )
 
     def on_open(self, ws):
@@ -132,7 +139,6 @@ class TCI:
         self.log.info(
             "[TCI] Connected FreeDATA to TCI rig!", ip=self.hostname, port=self.port
         )
-
 
         self.log.info(
             "[TCI] Init...", ip=self.hostname, port=self.port
@@ -160,35 +166,49 @@ class TCI:
         audio[60:64] = reserved8.to_bytes(4, byteorder='little', signed=False)
         """
 
+        while not self.tx_chrono:
+            time.sleep(0.01)
+
+        print(len(data_out))
+        print(self.sample_rate)
         print(self.audio_length)
-        print(self.tx_chrono)
-        print(self.format)
+        print(self.channel)
+        print(self.crc)
         print(self.codec)
+        print(self.tx_chrono)
 
         if self.tx_chrono:
-            # dummy for now ...
+            print("#############")
+            print(len(data_out))
+            print(len(bytes(data_out)))
+            print("-------------")
             audio = bytearray(4096 + 64)
 
-            # generate sine wave
-            rate = 8000  # samples per second
-            T = 3  # sample duration (seconds)
-            # n = int(rate*T)        # number of samples
-            n = 1200
-            t = np.arange(n) / rate  # grid of time values
+            audio[64:64 + len(bytes(data_out))] = bytes(data_out)
+            audio[4:8] = self.sample_rate.to_bytes(4, byteorder='little', signed=False)
+            # audio[8:12] = format.to_bytes(4,byteorder='little', signed=False)
+            audio[12:16] = self.codec.to_bytes(4, byteorder='little', signed=False)
+            audio[16:20] = self.crc.to_bytes(4, byteorder='little', signed=False)
+            audio[20:24] = self.audio_length.to_bytes(4, byteorder='little', signed=False)
+            audio[24:28] = int(2).to_bytes(4, byteorder='little', signed=False)
+            audio[28:32] = self.channel.to_bytes(4, byteorder='little', signed=False)
+            # audio[32:36] = reserved1.to_bytes(4,byteorder='little', signed=False)
+            # audio[36:40] = reserved2.to_bytes(4,byteorder='little', signed=False)
+            # audio[40:44] = reserved3.to_bytes(4,byteorder='little', signed=False)
+            # audio[44:48] = reserved4.to_bytes(4,byteorder='little', signed=False)
+            # audio[48:52] = reserved5.to_bytes(4,byteorder='little', signed=False)
+            # audio[52:56] = reserved6.to_bytes(4,byteorder='little', signed=False)
+            # audio[56:60] = reserved7.to_bytes(4,byteorder='little', signed=False)
 
-            f = 440.0  # sound frequency (Hz)
-            x = np.sin(2 * np.pi * f * t)
-
-            # print(len(x))
-            audio[64:] = bytes(x)
-            audio[24:28] = int(2).to_bytes(4, byteorder='little', signed=True)
             self.ws.send(audio, websocket.ABNF.OPCODE_BINARY)
 
     def set_ptt(self, state):
         if state:
             self.ws.send('trx:0,true,tci;')
         else:
+
             self.ws.send('trx:0,false;')
+            self.tx_chrono = False
 
     def get_frequency(self):
         """ """
