@@ -695,9 +695,8 @@ class RF:
 
         # we need to wait manually for tci processing
         if static.AUDIO_ENABLE_TCI:
-
             duration = len(txbuffer_out) / 8000
-            timestamp_to_sleep = time.time() + (duration)
+            timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
             while time.time() < timestamp_to_sleep:
                 threading.Event().wait(0.01)
