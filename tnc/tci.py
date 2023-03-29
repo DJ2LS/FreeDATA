@@ -312,7 +312,7 @@ class TCI:
 
     def get_ptt(self):
         """ """
-        self.ws.send(f'trx:0;')
+        self.ws.send('trx:0;')
         return self.ptt
 
     def close_rig(self):
