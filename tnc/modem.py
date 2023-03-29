@@ -259,11 +259,12 @@ class RF:
         else:
             import rigdummy as rig
 
-        self.radio = rig.radio()
-        self.radio.open_rig(
-            rigctld_ip=static.HAMLIB_RIGCTLD_IP,
-            rigctld_port=static.HAMLIB_RIGCTLD_PORT,
-        )
+        if not static.AUDIO_ENABLE_TCI:
+            self.radio = rig.radio()
+            self.radio.open_rig(
+                rigctld_ip=static.HAMLIB_RIGCTLD_IP,
+                rigctld_port=static.HAMLIB_RIGCTLD_PORT,
+            )
 
         # --------------------------------------------START DECODER THREAD
         if static.ENABLE_FFT:

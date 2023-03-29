@@ -42,7 +42,6 @@ class TCI:
         self.codec = None
         self.audio_length = None
 
-
     def connect(self):
         self.log.info(
             "[TCI] Starting TCI thread!", ip=self.hostname, port=self.port
