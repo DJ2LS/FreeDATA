@@ -691,6 +691,15 @@ class RF:
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
 
+        # we need to wait manually for tci processing
+        if static.AUDIO_ENABLE_TCI:
+            #
+            duration = len(txbuffer) / 8000
+            timestamp_to_sleep = time.time() + duration
+            self.log.debug("[MDM] TCI calculated duration", duration=duration)
+            while time.time() < timestamp_to_sleep:
+                threading.Event().wait(0.01)
+
         static.PTT_STATE = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
