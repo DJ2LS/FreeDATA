@@ -254,11 +254,13 @@ class RF:
             sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
+        elif static.AUDIO_ENABLE_TCI:
+            rig = self.tci_module
         else:
             import rigdummy as rig
 
-        self.hamlib = rig.radio()
-        self.hamlib.open_rig(
+        self.radio = rig.radio()
+        self.radio.open_rig(
             rigctld_ip=static.HAMLIB_RIGCTLD_IP,
             rigctld_port=static.HAMLIB_RIGCTLD_PORT,
         )
@@ -469,7 +471,7 @@ class RF:
             if not static.PTT_STATE:
                 # TODO: Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
-                static.PTT_STATE = self.hamlib.set_ptt(True)
+                static.PTT_STATE = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
@@ -528,7 +530,7 @@ class RF:
         start_of_transmission = time.time()
         # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        # static.PTT_STATE = self.hamlib.set_ptt(True)
+        # static.PTT_STATE = self.radio.set_ptt(True)
         # jsondata = {"ptt": "True"}
         # data_out = json.dumps(jsondata)
         # sock.SOCKET_QUEUE.put(data_out)
@@ -681,7 +683,7 @@ class RF:
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
 
-        static.PTT_STATE = self.hamlib.set_ptt(False)
+        static.PTT_STATE = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
         jsondata = {"ptt": "False"}
@@ -1051,10 +1053,10 @@ class RF:
             cmd = RIGCTLD_COMMAND_QUEUE.get()
             if cmd[0] == "set_frequency":
                 # [1] = Frequency
-                self.hamlib.set_frequency(cmd[1])
+                self.radio.set_frequency(cmd[1])
             if cmd[0] == "set_mode":
                 # [1] = Mode
-                self.hamlib.set_mode(cmd[1])
+                self.radio.set_mode(cmd[1])
 
     def update_rig_data(self) -> None:
         """
@@ -1067,20 +1069,20 @@ class RF:
         while True:
             # this looks weird, but is necessary for avoiding rigctld packet colission sock
             threading.Event().wait(0.25)
-            static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
+            static.HAMLIB_FREQUENCY = self.radio.get_frequency()
             threading.Event().wait(0.1)
-            static.HAMLIB_MODE = self.hamlib.get_mode()
+            static.HAMLIB_MODE = self.radio.get_mode()
             threading.Event().wait(0.1)
-            static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
+            static.HAMLIB_BANDWIDTH = self.radio.get_bandwidth()
             threading.Event().wait(0.1)
-            static.HAMLIB_STATUS = self.hamlib.get_status()
+            static.HAMLIB_STATUS = self.radio.get_status()
             threading.Event().wait(0.1)
             if static.TRANSMITTING:
-                static.HAMLIB_ALC = self.hamlib.get_alc()
+                static.HAMLIB_ALC = self.radio.get_alc()
                 threading.Event().wait(0.1)
-            #static.HAMLIB_RF = self.hamlib.get_level()
+            #static.HAMLIB_RF = self.radio.get_level()
             #threading.Event().wait(0.1)
-            static.HAMLIB_STRENGTH = self.hamlib.get_strength()
+            static.HAMLIB_STRENGTH = self.radio.get_strength()
 
             #print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
 
