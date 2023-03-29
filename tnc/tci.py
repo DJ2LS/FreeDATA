@@ -130,19 +130,26 @@ class TCI:
             audio_data = message[64:]
             self.audio_received_queue.put(audio_data)
 
-        # find frequency
-        if message.startswith("TX_FREQUENCY:"):
-            splitted_message = message.split("TX_FREQUENCY:")
-            self.frequency = splitted_message[1][:-1]
 
-        # find bandwidth
-        #if message.startswith("rx_filter_band:0,"):
-        #    splitted_message = message.split("rx_filter_band:0,")
-        #    bandwidths = splitted_message[1]
-        #    splitted_bandwidths = bandwidths.split(",")
-        #    lower_bandwidth = int(splitted_bandwidths[0])
-        #    upper_bandwidth = int(splitted_bandwidths[1][:-1])
-        #    self.bandwidth = upper_bandwidth - lower_bandwidth
+        if len(message)< 64:
+            # find frequency
+            if bytes(message, "utf-8").startswith(b"vfo:0,0,"):
+                splitted_message = message.split("vfo:0,0,")
+                self.frequency = splitted_message[1][:-1]
+
+            # find mode
+            if bytes(message, "utf-8").startswith(b"modulation:0,"):
+                splitted_message = message.split("modulation:0,")
+                self.mode = splitted_message[1][:-1]
+
+            # find bandwidth
+            #if message.startswith("rx_filter_band:0,"):
+            #    splitted_message = message.split("rx_filter_band:0,")
+            #    bandwidths = splitted_message[1]
+            #    splitted_bandwidths = bandwidths.split(",")
+            #    lower_bandwidth = int(splitted_bandwidths[0])
+            #    upper_bandwidth = int(splitted_bandwidths[1][:-1])
+            #    self.bandwidth = upper_bandwidth - lower_bandwidth
 
 
 
@@ -237,11 +244,12 @@ class TCI:
 
     def get_frequency(self):
         """ """
-        self.ws.send('TX_FREQUENCY;')
+        self.ws.send('VFO:0,0;')
         return self.frequency
 
     def get_mode(self):
         """ """
+        self.ws.send('MODULATION:0;')
         return self.mode
 
     def get_level(self):
@@ -277,6 +285,7 @@ class TCI:
         Returns:
 
         """
+        self.ws.send('MODULATION:0,' + mode + ';')
         return None
 
     def set_frequency(self, frequency):
@@ -288,6 +297,7 @@ class TCI:
         Returns:
 
         """
+        self.ws.send('VFO:0,0' + frequency + ';')
         return None
 
     def get_status(self):
