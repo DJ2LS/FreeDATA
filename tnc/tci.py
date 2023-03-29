@@ -74,7 +74,6 @@ class TCI:
             self.ws.send('audio_stream_samples:1200;')
             self.ws.send('audio_start:0;')
 
-        if message == "ready;":
         # tx chrono frame
         if len(message) in {64}:
             receiver = message[:4]
