@@ -8,13 +8,6 @@ import numpy as np
 import time
 from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
 
-"""
-trx:0,true;
-trx:0,false;
-
-"""
-
-
 class TCI:
     def __init__(self, hostname='127.0.0.1', port=50001):
         # websocket.enableTrace(True)
@@ -52,6 +45,7 @@ class TCI:
         self.alc = None
         self.meter = None
         self.level = None
+        self.ptt
 
     def connect(self):
         self.log.info(
@@ -141,6 +135,11 @@ class TCI:
             if bytes(message, "utf-8").startswith(b"modulation:0,"):
                 splitted_message = message.split("modulation:0,")
                 self.mode = splitted_message[1][:-1]
+
+                # find ptt
+            if bytes(message, "utf-8").startswith(b"trx:0,"):
+                splitted_message = message.split("trx:0,")
+                self.ptt = splitted_message[1][:-1]
 
             # find bandwidth
             #if message.startswith("rx_filter_band:0,"):
@@ -285,7 +284,7 @@ class TCI:
         Returns:
 
         """
-        self.ws.send('MODULATION:0,' + mode + ';')
+        self.ws.send(f'MODULATION:0,{str(mode)};')
         return None
 
     def set_frequency(self, frequency):
@@ -297,7 +296,7 @@ class TCI:
         Returns:
 
         """
-        self.ws.send('VFO:0,0' + frequency + ';')
+        self.ws.send(f'VFO:0,0,{str(frequency)};')
         return None
 
     def get_status(self):
@@ -313,7 +312,8 @@ class TCI:
 
     def get_ptt(self):
         """ """
-        return None
+        self.ws.send(f'trx:0;')
+        return self.ptt
 
     def close_rig(self):
         """ """
