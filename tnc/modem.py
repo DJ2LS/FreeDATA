@@ -255,7 +255,7 @@ class RF:
         elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
         elif static.AUDIO_ENABLE_TCI:
-            rig = self.tci_module
+            self.radio = self.tci_module
         else:
             import rigdummy as rig
 
