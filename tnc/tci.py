@@ -45,7 +45,7 @@ class TCI:
         self.alc = None
         self.meter = None
         self.level = None
-        self.ptt
+        self.ptt = None
 
     def connect(self):
         self.log.info(
