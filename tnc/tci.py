@@ -145,7 +145,7 @@ class TCI:
         )
 
     def push_audio(self, data_out):
-        print(data_out)
+        #print(data_out)
 
         """
         # audio[:4] = receiver.to_bytes(4,byteorder='little', signed=False)
@@ -169,19 +169,19 @@ class TCI:
         while not self.tx_chrono:
             time.sleep(0.01)
 
-        print(len(data_out))
-        print(self.sample_rate)
-        print(self.audio_length)
-        print(self.channel)
-        print(self.crc)
-        print(self.codec)
-        print(self.tx_chrono)
+        #print(len(data_out))
+        #print(self.sample_rate)
+        #print(self.audio_length)
+        #print(self.channel)
+        #print(self.crc)
+        #print(self.codec)
+        #print(self.tx_chrono)
 
         if self.tx_chrono:
-            print("#############")
-            print(len(data_out))
-            print(len(bytes(data_out)))
-            print("-------------")
+            #print("#############")
+            #print(len(data_out))
+            #print(len(bytes(data_out)))
+            #print("-------------")
             audio = bytearray(4096 + 64)
 
             audio[64:64 + len(bytes(data_out))] = bytes(data_out)
