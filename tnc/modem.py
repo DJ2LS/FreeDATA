@@ -334,8 +334,6 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
-
-            # -----write
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 data_out = self.modoutqueue.popleft()
                 self.tci_module.push_audio(data_out)
