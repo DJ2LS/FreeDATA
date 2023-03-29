@@ -699,7 +699,7 @@ class RF:
         else:
             timestamp_to_sleep = time.time()
 
-        while self.modoutqueue and time.time() < timestamp_to_sleep:
+        while self.modoutqueue and time.time() < timestamp_to_sleep and not TESTMODE:
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
