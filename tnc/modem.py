@@ -693,21 +693,15 @@ class RF:
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
 
-        # we need to wait manually for tci processing
-        if static.AUDIO_ENABLE_TCI:
-
-            duration = len(txbuffer_out) / 8000
-            timestamp_to_sleep = time.time() + (duration)
-            self.log.debug("[MDM] TCI calculated duration", duration=duration)
-            while time.time() < timestamp_to_sleep:
-                threading.Event().wait(0.01)
-        else:
-            timestamp_to_sleep = time.time()
-
-        while self.modoutqueue and time.time() < timestamp_to_sleep:
+        while self.modoutqueue:
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
+
+        # wait until tci protocol released tx state
+        if static.AUDIO_ENABLE_TCI:
+            while not self.tci_module.get_tx_enable():
+                threading.Event().wait(0.01)
 
         static.PTT_STATE = self.radio.set_ptt(False)
 

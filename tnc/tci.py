@@ -46,6 +46,8 @@ class TCI:
         self.meter = None
         self.level = None
         self.ptt = None
+        self.tx_enable = False
+
 
     def connect(self):
         self.log.info(
@@ -73,6 +75,10 @@ class TCI:
             self.ws.send('audio_stream_sample_type:int16;')
             self.ws.send('audio_stream_samples:1200;')
             self.ws.send('audio_start:0;')
+
+        if message == "tx_enable:1,true":
+            self.tx_enable = True
+            self.set_ptt(False)
 
         # tx chrono frame
         if len(message) in {64}:
@@ -315,6 +321,9 @@ class TCI:
         self.ws.send(f'trx:0;')
         return self.ptt
 
+    def get_tx_enable(self):
+        """ """
+        return self.tx_enable
     def close_rig(self):
         """ """
         return
