@@ -141,3 +141,76 @@ class TCI:
             self.ws.send('trx:0,true,tci;')
         else:
             self.ws.send('trx:0,false;')
+
+    def get_frequency(self):
+        """ """
+        return None
+
+    def get_mode(self):
+        """ """
+        return None
+
+    def get_level(self):
+        """ """
+        return None
+
+    def get_alc(self):
+        """ """
+        return None
+
+    def get_meter(self):
+        """ """
+        return None
+
+    def get_bandwidth(self):
+        """ """
+        return None
+
+    def get_strength(self):
+        """ """
+        return None
+
+    def set_bandwidth(self):
+        """ """
+        return None
+
+    def set_mode(self, mode):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return None
+
+    def set_frequency(self, frequency):
+        """
+
+        Args:
+          frequency:
+
+        Returns:
+
+        """
+        return None
+
+    def get_status(self):
+        """
+
+        Args:
+          mode:
+
+        Returns:
+
+        """
+        return "connected"
+
+    def get_ptt(self):
+        """ """
+        return None
+
+    def close_rig(self):
+        """ """
+        return
