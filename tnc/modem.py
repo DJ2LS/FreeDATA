@@ -683,7 +683,6 @@ class RF:
                 delta_zeros = np.zeros(delta, dtype=np.int16)
                 c = np.append(c, delta_zeros)
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
-
             self.modoutqueue.append(c)
 
         # Release our mod_out_lock, so we can use the queue
@@ -699,7 +698,15 @@ class RF:
         else:
             timestamp_to_sleep = time.time()
 
-        while self.modoutqueue and time.time() < timestamp_to_sleep and not TESTMODE:
+        tci_timeout_reached = False
+        while self.modoutqueue and not TESTMODE or not tci_timeout_reached:
+            if static.AUDIO_ENABLE_TCI:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+
+
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
