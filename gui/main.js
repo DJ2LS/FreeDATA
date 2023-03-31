@@ -95,7 +95,8 @@ const configDefaultSettings =
                   "shared_folder_path" : ".", \
                   "enable_request_profile" : "True", \
                   "enable_request_shared_folder" : "False", \
-                  "tx_delay" : 0 \
+                  "tx_delay" : 0, \
+                  "auto_start": 0 \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -950,6 +951,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
         rigctld_connection_state = true;
         Data["state"] =
           "connection possible - (" + data.ip + ":" + data.port + ")";
+        Data["active"] = true;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
           try {
@@ -963,6 +965,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
       rigctld_connection.on("error", function () {
         rigctld_connection_state = false;
         Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+        Data["active"] = false;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
           try {

@@ -336,6 +336,13 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById("autoTuneSwitch").checked = false;
   }
+
+  if (config.auto_start == 1) {
+    document.getElementById("AutoStartSwitch").checked = true;
+  } else {
+    document.getElementById("AutoStartSwitch").checked = false;
+  }
+
   // theme selector
   changeGuiDesign(config.theme);
 
@@ -577,7 +584,24 @@ window.addEventListener("DOMContentLoaded", () => {
     .addEventListener("click", () => {
       hamlib_params();
       let rigctld = document.getElementById("hamlib_rigctld_path").value;
-      rigctld += " " + document.getElementById("hamlib_rigctld_command").value;
+
+      //Escape spaces in executable file
+      switch (os.platform().toLowerCase()) {
+        case "darwin":
+        case "linux":
+          rigctld = rigctld.replace(" ", "\\ ");
+          break;
+        case "win32":
+        case "win64":
+          if (rigctld.indexOf(" ") > -1) rigctld = '"' + rigctld + '"';
+          break;
+        default:
+          console.log("Unhandled OS Platform: ", os.platform());
+          break;
+      }
+
+      rigctld +=
+        " " + document.getElementById("hamlib_rigctld_command").value + " -vv";
       document.getElementById("btnHamlibCopyCommandBi").classList =
         "bi bi-clipboard2-check-fill";
       clipboard.writeText(rigctld);
@@ -1064,6 +1088,8 @@ window.addEventListener("DOMContentLoaded", () => {
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
   });
+
+  //Handle change of fancy graphics
   document.getElementById("GraphicsSwitch").addEventListener("click", () => {
     if (document.getElementById("GraphicsSwitch").checked == true) {
       config.high_graphics = "True";
@@ -1073,6 +1099,17 @@ window.addEventListener("DOMContentLoaded", () => {
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
     set_CPU_mode();
+  });
+
+  //Handle change of Auto-start settings
+  document.getElementById("AutoStartSwitch").addEventListener("click", () => {
+    if (document.getElementById("AutoStartSwitch").checked == true) {
+      config.auto_start = "1";
+    } else {
+      config.auto_start = "0";
+    }
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
   });
 
   // enable fsk Switch clicked
@@ -2286,6 +2323,7 @@ function updateHeardStations(arg) {
   }
 }
 
+var populateSerial = false;
 ipcRenderer.on("action-update-daemon-state", (event, arg) => {
   /*
     // deactivetd RAM und CPU view so we dont get errors. We need to find a new place for this feature
@@ -2322,93 +2360,90 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
     document.getElementById("node_version").className = "btn btn-sm btn-success";
     */
 
-  // UPDATE AUDIO INPUT
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("audio_input_selectbox").length !=
-      arg.input_devices.length
-    ) {
-      document.getElementById("audio_input_selectbox").innerHTML = "";
-      for (i = 0; i < arg.input_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text = arg.input_devices[i]["name"];
-        option.value = arg.input_devices[i]["id"];
-        // set device from config if available
-
-        if (config.rx_audio == option.text) {
-          option.setAttribute("selected", true);
-        }
-        document.getElementById("audio_input_selectbox").add(option);
-      }
-    }
-  }
-  // UPDATE AUDIO OUTPUT
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("audio_output_selectbox").length !=
-      arg.output_devices.length
-    ) {
-      document.getElementById("audio_output_selectbox").innerHTML = "";
-      for (i = 0; i < arg.output_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text = arg.output_devices[i]["name"];
-        option.value = arg.output_devices[i]["id"];
-        // set device from config if available
-        if (config.tx_audio == option.text) {
-          option.setAttribute("selected", true);
-        }
-        document.getElementById("audio_output_selectbox").add(option);
-      }
-    }
-  }
-
+  if (arg.tnc_running_state != "stopped" && populateSerial == true) return;
   // UPDATE SERIAL DEVICES
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("hamlib_deviceport").length !=
-      arg.serial_devices.length
-    ) {
-      document.getElementById("hamlib_deviceport").innerHTML = "";
-      var ignore = document.createElement("option");
-      ignore.text = "-- ignore --";
-      ignore.value = "ignore";
-      document.getElementById("hamlib_deviceport").add(ignore);
-      for (i = 0; i < arg.serial_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text =
-          arg.serial_devices[i]["port"] +
-          " -- " +
-          arg.serial_devices[i]["description"];
-        option.value = arg.serial_devices[i]["port"];
-        document.getElementById("hamlib_deviceport").add(option);
-      }
+  if (
+    document.getElementById("hamlib_deviceport").length !=
+    arg.serial_devices.length
+  ) {
+    document.getElementById("hamlib_deviceport").innerHTML = "";
+    var ignore = document.createElement("option");
+    ignore.text = "-- ignore --";
+    ignore.value = "ignore";
+    document.getElementById("hamlib_deviceport").add(ignore);
+    for (i = 0; i < arg.serial_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text =
+        arg.serial_devices[i]["port"] +
+        " -- " +
+        arg.serial_devices[i]["description"];
+      option.value = arg.serial_devices[i]["port"];
+      document.getElementById("hamlib_deviceport").add(option);
+    }
+    // set device from config if available
+    document.getElementById("hamlib_deviceport").value =
+      config.hamlib_deviceport;
+  }
+
+  if (
+    document.getElementById("hamlib_ptt_port").length !=
+    arg.serial_devices.length
+  ) {
+    document.getElementById("hamlib_ptt_port").innerHTML = "";
+    var ignore = document.createElement("option");
+    ignore.text = "-- ignore --";
+    ignore.value = "ignore";
+    document.getElementById("hamlib_ptt_port").add(ignore);
+    for (i = 0; i < arg.serial_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text =
+        arg.serial_devices[i]["port"] +
+        " -- " +
+        arg.serial_devices[i]["description"];
+      option.value = arg.serial_devices[i]["port"];
+      document.getElementById("hamlib_ptt_port").add(option);
+    }
+    // set device from config if available
+    document.getElementById("hamlib_ptt_port").value = config.hamlib_ptt_port;
+  }
+  //Serial devices are updated on first pass
+  populateSerial = true;
+  if (arg.tnc_running_state != "stopped") return;
+
+  // UPDATE AUDIO INPUT
+  if (
+    document.getElementById("audio_input_selectbox").length !=
+    arg.input_devices.length
+  ) {
+    document.getElementById("audio_input_selectbox").innerHTML = "";
+    for (i = 0; i < arg.input_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text = arg.input_devices[i]["name"];
+      option.value = arg.input_devices[i]["id"];
       // set device from config if available
-      document.getElementById("hamlib_deviceport").value =
-        config.hamlib_deviceport;
+
+      if (config.rx_audio == option.text) {
+        option.setAttribute("selected", true);
+      }
+      document.getElementById("audio_input_selectbox").add(option);
     }
   }
 
-  if (arg.tnc_running_state == "stopped") {
-    if (
-      document.getElementById("hamlib_ptt_port").length !=
-      arg.serial_devices.length
-    ) {
-      document.getElementById("hamlib_ptt_port").innerHTML = "";
-      var ignore = document.createElement("option");
-      ignore.text = "-- ignore --";
-      ignore.value = "ignore";
-      document.getElementById("hamlib_ptt_port").add(ignore);
-      for (i = 0; i < arg.serial_devices.length; i++) {
-        var option = document.createElement("option");
-        option.text =
-          arg.serial_devices[i]["port"] +
-          " -- " +
-          arg.serial_devices[i]["description"];
-        option.value = arg.serial_devices[i]["port"];
-        document.getElementById("hamlib_ptt_port").add(option);
-      }
+  // UPDATE AUDIO OUTPUT
+  if (
+    document.getElementById("audio_output_selectbox").length !=
+    arg.output_devices.length
+  ) {
+    document.getElementById("audio_output_selectbox").innerHTML = "";
+    for (i = 0; i < arg.output_devices.length; i++) {
+      var option = document.createElement("option");
+      option.text = arg.output_devices[i]["name"];
+      option.value = arg.output_devices[i]["id"];
       // set device from config if available
-      document.getElementById("hamlib_ptt_port").value = config.hamlib_ptt_port;
+      if (config.tx_audio == option.text) {
+        option.setAttribute("selected", true);
+      }
+      document.getElementById("audio_output_selectbox").add(option);
     }
   }
 });
@@ -3164,6 +3199,7 @@ function set_setting_switch(setting_switch, enable_object, state) {
   enable_setting(setting_switch, enable_object);
 }
 
+var rigctldActive = false;
 setInterval(checkRigctld, 500);
 function checkRigctld() {
   var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
@@ -3182,6 +3218,7 @@ function checkRigctld() {
 
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
+  rigctldActive = data["active"];
 });
 
 ipcRenderer.on("action-set-app-version", (event, data) => {
@@ -3421,4 +3458,20 @@ function changeGuiDesign(design) {
 
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+  function autostart() {
+    //Auto start stuff if option is enabled
+    if (config.auto_start == 1) {
+      //Start rigctld if radiocontrol is in correct mode and is not active
+      if (config.radiocontrol == "rigctld" && rigctldActive == false) {
+        //console.log("Autostarting rigctld");
+        document.getElementById("hamlib_rigctld_start").click();
+      }
+      //Now start TNC
+      document.getElementById("startTNC").click();
+    }
+  }
+  setTimeout(() => {
+    autostart();
+  }, 1250);
 }
