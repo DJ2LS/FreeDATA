@@ -693,24 +693,26 @@ class RF:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
-            while time.time() < timestamp_to_sleep:
-                threading.Event().wait(0.01)
+            tci_timeout_reached = False
+            #while time.time() < timestamp_to_sleep:
+            #    threading.Event().wait(0.01)
         else:
             timestamp_to_sleep = time.time()
+            # set tci timeout reached to True for overriding if not used
+            tci_timeout_reached = True
 
-        tci_timeout_reached = False
-        while self.modoutqueue and not TESTMODE or not tci_timeout_reached:
+        while self.modoutqueue or not tci_timeout_reached:
             if static.AUDIO_ENABLE_TCI:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
                     tci_timeout_reached = True
 
-
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
 
+        print("ENDE GELÄNDE")
         static.PTT_STATE = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
