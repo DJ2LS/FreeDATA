@@ -623,6 +623,9 @@ class RF:
                 txbuffer += bytes(mod_out_postamble)
 
             # Add delay to end of frames
+            # for TESTMODE we need some additional delay for making ctests stable because of MKFIFO related problems
+            if TESTMODE:
+                repeat_delay = 100
             samples_delay = int(self.MODEM_SAMPLE_RATE * (repeat_delay / 1000))  # type: ignore
             mod_out_silence = ctypes.create_string_buffer(samples_delay * 2)
             txbuffer += bytes(mod_out_silence)
