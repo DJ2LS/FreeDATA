@@ -32,6 +32,7 @@ class AGWPE_FRAMES(Enum):
     send_unproto_info = b'M'  # Send Unproto Info  --> Broadcasted
     send_unproto_info_via = b'V'  # Send Unproto Info VIA  --> Broadcasted
     send_connected_data = b'D'  # Send connected data or AX.25 packet --> ARQ
+    request_connection_outstanding_frames = b'Y'  # Outstanding frames on a connection
 
     @classmethod
     def has_value(cls, value):
@@ -84,25 +85,36 @@ class AGWPE:
                 "Payload": Payload
                 }
 
-    def encode_agwpe_frame(self, DataKind: str, CallTo:bytes = bytes(10), CallFrom:bytes = bytes(10), Payload: bytes=b'', PID:bytes=bytes(1) ):
+    def encode_agwpe_frame(self, DataKind: str, CallTo:bytes = bytes(10), CallFrom:bytes = bytes(10), Payload: bytes=b'', PID:bytes=bytes(1), DataLen:int=0 ):
         print(CallFrom)
         print(CallTo)
 
-        call = bytearray(10)
-        call[:len(CallFrom)] = CallFrom
-        CallFrom = bytes(call)
+        #call = bytearray(10)
+        #call[:len(CallFrom)] = CallFrom
+        #CallFrom = bytes(call)
 
-        call = bytearray(10)
-        call[:len(CallTo)] = CallTo
-        CallTo = bytes(call)
+        #call = bytearray(10)
+        #call[:len(CallTo)] = CallTo
+        #CallTo = bytes(call)
 
+        CallFrom += b'\x00' * (10 - len(CallFrom))
+        CallTo += b'\x00' * (10 - len(CallTo))
+
+        print(DataLen)
+
+        if DataLen == 0:
+            DataLen = len(Payload).to_bytes(4, byteorder="little", signed=False)
+        elif DataLen is None:
+            DataLen = int(0).to_bytes(4, byteorder="little", signed=False)
+        else:
+            DataLen = int(DataLen).to_bytes(4, byteorder="little", signed=False)
 
         frame = bytearray(36)
         frame[4:5] = bytes(DataKind, 'ascii')
         frame[5:6] = PID
         frame[8:18] = CallFrom
         frame[18:28] = CallTo
-        frame[28:32] = len(Payload).to_bytes(4, byteorder="little", signed=False)
+        frame[28:32] = DataLen
         frame += Payload
         print(frame)
         return bytes(frame)
@@ -115,14 +127,23 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         # data dispatcher
         # sending data via socket only to registered callsign
         while True:
+            # rest override state
+            override = False
+
             if TRANSMIT_QUEUE.qsize() > 0:
                 # adjust callsigns to length of 10 for easy callsign comparison
                 TRANSMIT_QUEUE.queue[0][0] += b'\x00' * (10 - len(TRANSMIT_QUEUE.queue[0][0]))
                 TRANSMIT_QUEUE.queue[0][1] += b'\x00' * (10 - len(TRANSMIT_QUEUE.queue[0][1]))
 
+                # check if we have a unproto frame in queue
+                if TRANSMIT_QUEUE.queue[0][2] in ["unproto"]:
+                    override = True
+
+
             if (TRANSMIT_QUEUE.qsize() > 0
                 and TRANSMIT_QUEUE.queue[0][0]
                 in self.REGISTERED_CALLSIGN_FOR_SOCKET
+                or override
             ):
                 command = TRANSMIT_QUEUE.get()
                 print(command)
@@ -146,6 +167,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                 elif command[2] == "data_received":
                     self.send_to_client_data_received(CallFrom=command[0], CallTo=command[1], Payload=command[3])
+
+                elif command[2] == "unproto":
+                    self.send_to_client_unproto(CallFrom=command[0], CallTo=command[1], Payload=command[3])
+
 
                 else:
                     self.log.error(
@@ -318,6 +343,17 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         data_out = AGWPE().encode_agwpe_frame(DataKind="G", Payload=version)
                         self.request.sendall(data_out)
 
+                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.request_connection_outstanding_frames.value:
+                        self.log.info(
+                            "[AGWPE] request outstanding frames on connection",
+                            ip=self.client_address[0],
+                            port=self.client_address[1],
+                        )
+
+                        data_out = AGWPE().encode_agwpe_frame(DataKind="Y", DataLen=DATA_QUEUE_TRANSMIT.qsize(), CallFrom=decoded_frame["CallTo"], CallTo=decoded_frame["CallFrom"])
+                        print(data_out)
+                        self.request.sendall(data_out)
+
                     else:
                         print("------------")
                         print(data)
@@ -331,21 +367,29 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     print("has value check")
                     decoded_frame = AGWPE().decode(data)
 
-                    print(
-                        len(b'\x00\x00\x00\x00V\x00\xf0\x00DJ2LS\x00\x00\x00\x00\x00APX216\x00\x00\x00\x00]\x00\x00\x00\x00\x00\x00\x00\x01WIDE2-2\x00\x00\x00:DN2LS    :1111111111111111111111111111111111111111111111111111111111111111111{06}'))
+                    #print(
+                    #    len(b'\x00\x00\x00\x00V\x00\xf0\x00DJ2LS\x00\x00\x00\x00\x00APX216\x00\x00\x00\x00]\x00\x00\x00\x00\x00\x00\x00\x01WIDE2-2\x00\x00\x00:DN2LS    :1111111111111111111111111111111111111111111111111111111111111111111{06}'))
 
                     if decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info.value:
+
                         print("send unproto info")
+                        print(data)
+                        print(len(data))
+                        """
+                        print(data)
                         # Callsign info switched here
                         print(f"CallTo: {decoded_frame['CallFrom']}")
                         print(f"CallFrom: {decoded_frame['CallTo']}")
                         print(decoded_frame['CallFrom'])
 
-                        payload = bytes("PR", "ascii")
+                        payload = bytes()
                         payload += decoded_frame['CallFrom']  # to
                         payload += decoded_frame['CallTo']  # from
                         payload += decoded_frame["Payload"]
-
+                        """
+                        payload = data[6:]
+                        print(len(payload))
+                        print(payload)
                         DATA_QUEUE_TRANSMIT.put(["FEC", payload, 'datac3'])
 
                     elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info_via.value:
@@ -354,7 +398,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         print(f"CallTo: {decoded_frame['CallFrom']}")
                         print(f"CallFrom: {decoded_frame['CallTo']}")
 
-                        payload = bytes("PR", "ascii")
+                        payload = bytes()
                         payload += decoded_frame['CallFrom']  # to
                         payload += decoded_frame['CallTo']  # from
                         payload += decoded_frame["Payload"]
@@ -485,6 +529,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def send_to_client_connecting(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
         pass
+
     def send_to_client_connected(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
 
         self.log.info(
@@ -525,7 +570,43 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
         self.send_to_socket(data_out)
 
+    def send_to_client_unproto(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10), Payload:bytes = bytes()):
+        #we need to check here against validity of our data
+        #datalen = int.from_bytes(Payload[21:25], byteorder="little")
+        #print(Payload[21:25])
+        ##payload = bytes_out[25:25 + datalen]
+        #print("--------------")
+        #print(datalen)
+        print("############")
+        print(Payload)
+        print("############")
+        #datalenint = len(Payload[:-2].strip(b'\x00'))
+        #datalenbin = int(datalenint).to_bytes(4, byteorder="little", signed=False)
+        #print(datalenint)
 
+
+        print(CallTo)
+
+        frame = bytearray(6)
+        frame[4:5] = bytes("U", 'ascii')
+        frame += Payload
+        datalen = int.from_bytes(frame[28:32], byteorder="little")
+        frame = frame[:36+datalen]
+        #print(frame)
+        #print(len(b'\x00\x00\x00\x00M\x00\xf0\x00DJ2LS-1\x00\x00\x00BEACON\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00ok\r'))
+        #print(frame[28:32])
+        #data_out = AGWPE().encode_agwpe_frame(CallTo=CallTo,
+        #                                      CallFrom=CallFrom,
+        #                                      DataKind="U",
+        #                                      DataLen=None,
+        #                                      Payload=Payload,
+        #                                      )
+        print(frame)
+
+        #frame = b'\x00\x00\x00\x00I\x00\xf0\x00DJ2LS-1\x00\x00\x00BEACON\x00\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00ok\r'
+        #frame = b'\x00\x00\x00\x00U\x00\xf0\x00BEACON\x00\x00\x00\x00DJ2LS-1\x00\x00\x00\x03\x00\x00\x00\x00\x00\x00\x00ok\r'
+
+        self.send_to_socket(bytes(frame))
 
 
     def send_to_socket(self, data_out:bytes):

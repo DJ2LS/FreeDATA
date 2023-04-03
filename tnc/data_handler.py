@@ -382,6 +382,7 @@ class DATA:
                         FR_TYPE.PING.value,
                         FR_TYPE.BEACON.value,
                         FR_TYPE.IS_WRITING.value,
+                        FR_TYPE.FEC.value,
                 ]
         ):
 
@@ -411,6 +412,14 @@ class DATA:
                 # if static.RX_BURST_BUFFER.count(None) <= 1 or (frame+1) == n_frames_per_burst:
                 #    self.log.debug(f"[TNC] LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                 #    self.c_lib.freedv_set_sync(freedv, 0)
+
+            # FEC frames - for now move them to AGWPE TODO: Find a better place
+            elif frametype == FR_TYPE.FEC.value:
+                self.log.debug("[TNC] FEC FRAME RECEIVED", frame=bytes_out[:])
+                callfrom = bytes_out[1:11]
+                callto = bytes_out[11:21]
+                agwpe.TRANSMIT_QUEUE.put([callfrom, callto, "unproto", bytes_out[1:-2]])
+
 
             # TESTFRAMES
             elif frametype == FR_TYPE.TEST_FRAME.value:
@@ -1624,6 +1633,11 @@ class DATA:
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
+
+            # send agwpe information
+            if static.AGWPE_ENABLE:
+                agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
+
             return True
 
         self.log.warning(
@@ -1944,8 +1958,9 @@ class DATA:
             )
 
             # send agwpe information
-            if static.AGWPE_ENABLE:
-                agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
+            # disabled for now as its flooding applications
+            #if static.AGWPE_ENABLE:
+            #    agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
 
             static.ARQ_SESSION = True
             static.ARQ_SESSION_STATE = "connected"
