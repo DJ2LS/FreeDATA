@@ -1064,6 +1064,10 @@ class DATA:
                 irs=helpers.bool_to_string(self.is_IRS)
             )
 
+            # send agwpe information
+            if static.AGWPE_ENABLE:
+                agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "data_received", data_frame])
+
             if static.ENABLE_STATS:
                 duration = time.time() - self.rx_start_of_transmission
                 self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)

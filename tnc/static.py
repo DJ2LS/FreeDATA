@@ -38,12 +38,12 @@ LOW_BANDWIDTH_MODE: bool = False
 # ---------------------------------
 
 # Server Defaults
-HOST: str = "0.0.0.0"
+HOST: str = "127.0.0.1"
 PORT: int = 3000
 SOCKET_TIMEOUT: int = 1  # seconds
 
 AGWPE_ENABLE: bool = True
-AGWPE_HOST: str = "0.0.0.0"
+AGWPE_HOST: str = "127.0.0.1"
 AGWPE_PORT: int = 8000
 # ---------------------------------
 SERIAL_DEVICES: list = []

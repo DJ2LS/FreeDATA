@@ -31,6 +31,7 @@ class AGWPE_FRAMES(Enum):
     get_version = b'R'  # AGWPE Version
     send_unproto_info = b'M'  # Send Unproto Info  --> Broadcasted
     send_unproto_info_via = b'V'  # Send Unproto Info VIA  --> Broadcasted
+    send_connected_data = b'D'  # Send connected data or AX.25 packet --> ARQ
 
     @classmethod
     def has_value(cls, value):
@@ -84,13 +85,26 @@ class AGWPE:
                 }
 
     def encode_agwpe_frame(self, DataKind: str, CallTo:bytes = bytes(10), CallFrom:bytes = bytes(10), Payload: bytes=b'', PID:bytes=bytes(1) ):
+        print(CallFrom)
+        print(CallTo)
+
+        call = bytearray(10)
+        call[:len(CallFrom)] = CallFrom
+        CallFrom = bytes(call)
+
+        call = bytearray(10)
+        call[:len(CallTo)] = CallTo
+        CallTo = bytes(call)
+
+
         frame = bytearray(36)
         frame[4:5] = bytes(DataKind, 'ascii')
         frame[5:6] = PID
-        frame[8:18] = CallTo
-        frame[18:28] = CallFrom
+        frame[8:18] = CallFrom
+        frame[18:28] = CallTo
         frame[28:32] = len(Payload).to_bytes(4, byteorder="little", signed=False)
         frame += Payload
+        print(frame)
         return bytes(frame)
 
 class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
@@ -101,9 +115,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         # data dispatcher
         # sending data via socket only to registered callsign
         while True:
+            if TRANSMIT_QUEUE.qsize() > 0:
+                # adjust callsigns to length of 10 for easy callsign comparison
+                TRANSMIT_QUEUE.queue[0][0] += b'\x00' * (10 - len(TRANSMIT_QUEUE.queue[0][0]))
+                TRANSMIT_QUEUE.queue[0][1] += b'\x00' * (10 - len(TRANSMIT_QUEUE.queue[0][1]))
 
-            if (
-                TRANSMIT_QUEUE.qsize() > 0
+            if (TRANSMIT_QUEUE.qsize() > 0
                 and TRANSMIT_QUEUE.queue[0][0]
                 in self.REGISTERED_CALLSIGN_FOR_SOCKET
             ):
@@ -115,8 +132,21 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 # [2] = State like "connecting/connected/..../data"
                 # [3] = Payload
 
-                if command[2] == "connected":
+                if command[2] == "connecting":
+                    self.send_to_client_connecting(CallFrom=command[0], CallTo=command[1])
+
+                elif command[2] == "connected":
                     self.send_to_client_connected(CallFrom=command[0], CallTo=command[1])
+
+                elif command[2] == "disconnecting":
+                    self.send_to_client_disconnecting(CallFrom=command[0], CallTo=command[1])
+
+                elif command[2] == "disconnected":
+                    self.send_to_client_disconnected(CallFrom=command[0], CallTo=command[1])
+
+                elif command[2] == "data_received":
+                    self.send_to_client_data_received(CallFrom=command[0], CallTo=command[1], Payload=command[3])
+
                 else:
                     self.log.error(
                         "[AGWPE] No commmand in stack",
@@ -145,7 +175,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                         if decoded_frame["CallFrom"] not in CALLSIGNS:
 
-                            self.REGISTERED_CALLSIGN_FOR_SOCKET = decoded_frame["CallFrom"]
+                            self.REGISTERED_CALLSIGN_FOR_SOCKET.add(decoded_frame["CallFrom"])
 
                             data_out = AGWPE().encode_agwpe_frame(CallFrom=decoded_frame["CallFrom"],
                                                                   DataKind="X",
@@ -217,11 +247,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         )
 
                         self.tnc_arq_connect(decoded_frame)
+
+                        """
                         while static.ARQ_SESSION_STATE in ["connecting", "disconnected"]:
                             threading.Event().wait(0.1)
 
                         if static.ARQ_SESSION_STATE == "connected":
-                            """
+                            
                             self.log.info(
                                 "[AGWPE] connected",
                                 CallTo=decoded_frame["CallTo"],
@@ -237,7 +269,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                                                                   DataKind="C",
                                                                   Payload=info)
                             self.request.sendall(data_out)
-                            """
+                            
+                            pass
+                    
                         else:
                             self.log.warning(
                                 "[AGWPE] connection failed",
@@ -246,10 +280,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                                 ip=self.client_address[0],
                                 port=self.client_address[1],
                             )
+                        """
 
                     elif decoded_frame["DataKind"] == AGWPE_FRAMES.disconnect.value:
                         self.log.warning(
-                            "[AGWPE] disconnecting",
+                            "[AGWPE] request disconnecting",
                             CallTo=decoded_frame["CallTo"],
                             CallFrom=decoded_frame["CallFrom"],
                             ip=self.client_address[0],
@@ -257,19 +292,20 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                         )
 
                         self.tnc_arq_disconnect(decoded_frame)
-                        while static.ARQ_SESSION_STATE in ["disconnecting", "connected", "connecting"]:
-                            threading.Event().wait(0.1)
 
-                        data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
-                                                              CallFrom=decoded_frame["CallTo"], DataKind="d")
-                        self.request.sendall(data_out)
-                        self.log.info(
-                            "[AGWPE] disconnected",
-                            CallTo=decoded_frame["CallTo"],
-                            CallFrom=decoded_frame["CallFrom"],
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
+                        #while static.ARQ_SESSION_STATE in ["disconnecting", "connected", "connecting"]:
+                        #    threading.Event().wait(0.1)
+
+                        #data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
+                        #                                      CallFrom=decoded_frame["CallTo"], DataKind="d")
+                        #self.request.sendall(data_out)
+                        #self.log.info(
+                        #    "[AGWPE] disconnected",
+                        #    CallTo=decoded_frame["CallTo"],
+                        #    CallFrom=decoded_frame["CallFrom"],
+                        #    ip=self.client_address[0],
+                        #    port=self.client_address[1],
+                        #)
 
                     elif decoded_frame["DataKind"] == AGWPE_FRAMES.get_version.value:
                         self.log.info(
@@ -325,6 +361,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                         DATA_QUEUE_TRANSMIT.put(["FEC", decoded_frame["Payload"], 'datac3'])
 
+                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_connected_data.value:
+                        print("send connected data")  #
+                        print(data)
+                        DATA_QUEUE_TRANSMIT.put(["ARQ_RAW", decoded_frame["Payload"], 255, 1, 'no-uuid', decoded_frame['CallFrom'].strip(b'\x00'), decoded_frame['CallTo'].strip(b'\x00'), 10])
+
                 elif data not in [b'']:
                     print("empty check")
                     print(data)
@@ -332,7 +373,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 data = b''
 
     def handle(self):
-        self.REGISTERED_CALLSIGN_FOR_SOCKET = b''
+        self.REGISTERED_CALLSIGN_FOR_SOCKET = set()
         CONNECTED_CLIENTS.add(self.request)
 
 
@@ -369,7 +410,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         pass
 
     def tnc_arq_connect(self, decoded_frame):
-
+        print(decoded_frame)
         # pause our beacon first
         static.BEACON_PAUSE = True
 
@@ -442,6 +483,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command=decoded_frame,
             )
 
+    def send_to_client_connecting(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
+        pass
     def send_to_client_connected(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
 
         self.log.info(
@@ -452,14 +495,51 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             port=self.client_address[1],
         )
 
-        info = bytes(f'*** CONNECTED With {CallTo}', 'ascii')
-        data_out = AGWPE().encode_agwpe_frame(CallTo=CallTo,
-                                              CallFrom=CallFrom,
-                                              PID=b'',
+        # CallFrom / CallTo is switched for this response
+        info = bytes(f'*** CONNECTED With {CallTo.decode("ascii")}', 'ascii')
+        data_out = AGWPE().encode_agwpe_frame(CallTo=CallFrom,
+                                              CallFrom=CallTo,
+                                              PID=b'\xf0',
                                               DataKind="C",
                                               Payload=info)
-        self.request.sendall(data_out)
+        self.send_to_socket(data_out)
 
+    def send_to_client_disconnecting(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
+        pass
+
+    def send_to_client_disconnected(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10) ):
+        data_out = AGWPE().encode_agwpe_frame(CallTo=CallFrom,
+                                              CallFrom=CallTo,
+                                              PID=b'\xf0',
+                                              DataKind="d",
+                                              )
+        self.send_to_socket(data_out)
+
+    def send_to_client_data_received(self, CallFrom: bytes = bytes(10), CallTo: bytes = bytes(10), Payload:bytes = bytes()):
+        data_out = AGWPE().encode_agwpe_frame(CallTo=CallFrom,
+                                              CallFrom=CallTo,
+                                              PID=b'\xf0',
+                                              DataKind="D",
+                                              Payload=Payload,
+                                              )
+
+        self.send_to_socket(data_out)
+
+
+
+
+    def send_to_socket(self, data_out:bytes):
+        try:
+            self.request.send(data_out)
+        except Exception as err:
+            self.log.error(
+                "[AGWPE] socket error",
+                CallTo=CallTo,
+                CallFrom=CallFrom,
+                ip=self.client_address[0],
+                port=self.client_address[1],
+                error=err
+            )
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     pass
