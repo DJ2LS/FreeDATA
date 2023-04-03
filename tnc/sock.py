@@ -81,7 +81,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             while not SOCKET_QUEUE.empty():
                 data = SOCKET_QUEUE.get()
-                sock_data = bytes(data, "utf-8")
+                try:
+                    sock_data = bytes(data, "utf-8")
+                except TypeError:
+                    sock_data = data
                 sock_data += b"\n"  # append line limiter
 
                 # send data to all clients
@@ -141,6 +144,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                     # finally delete our rx buffer to be ready for new commands
                     data = bytes()
+
             except Exception as err:
                 self.log.info(
                     "[SCK] Connection closed",

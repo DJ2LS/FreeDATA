@@ -39,7 +39,7 @@ static.TRANSMITTING = False
 RECEIVE_SIG0 = True
 RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
-RECEIVE_DATAC3 = False
+RECEIVE_DATAC3 = True
 
 # state buffer
 SIG0_DATAC0_STATE = []

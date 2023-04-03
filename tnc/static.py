@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.8.0-alpha.4-TCI-exp"
+VERSION = "0.8.0-alpha.4-AGWPE-exp"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
@@ -41,6 +41,10 @@ LOW_BANDWIDTH_MODE: bool = False
 HOST: str = "0.0.0.0"
 PORT: int = 3000
 SOCKET_TIMEOUT: int = 1  # seconds
+
+AGWPE_ENABLE: bool = True
+AGWPE_HOST: str = "0.0.0.0"
+AGWPE_PORT: int = 8000
 # ---------------------------------
 SERIAL_DEVICES: list = []
 # ---------------------------------

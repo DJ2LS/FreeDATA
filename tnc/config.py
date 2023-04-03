@@ -79,6 +79,13 @@ class CONFIG:
                               'fsk': data[13],
                               'tx_delay': data[21]
                               }
+
+        self.config['AGWPE'] = {'#AGWPE settings': None,
+                              'enable': True,
+                              'ip': '0.0.0.0',
+                              'port': 8000,
+                              }
+
         try:
             with open(self.config_name, 'w') as configfile:
                 self.config.write(configfile)

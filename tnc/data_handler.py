@@ -29,6 +29,8 @@ from codec2 import FREEDV_MODE
 from exceptions import NoCallsign
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
+import agwpe
+
 
 TESTMODE = False
 
@@ -1685,6 +1687,10 @@ class DATA:
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
 
+                # send agwpe information
+                if static.AGWPE_ENABLE:
+                    agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connecting"])
+
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
@@ -1717,6 +1723,12 @@ class DATA:
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
+
+        # send agwpe information
+        if static.AGWPE_ENABLE:
+            agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
+
+
         return True
 
     def received_session_opener(self, data_in: bytes) -> None:
@@ -1779,11 +1791,20 @@ class DATA:
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
+
+        # send agwpe information
+        if static.AGWPE_ENABLE:
+            agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
+
         self.transmit_session_heartbeat()
 
     def close_session(self) -> None:
         """Close the ARQ session"""
         static.ARQ_SESSION_STATE = "disconnecting"
+
+        # send agwpe information
+        if static.AGWPE_ENABLE:
+            agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "disconnecting"])
 
         self.log.info(
             "[TNC] SESSION ["
@@ -1801,6 +1822,10 @@ class DATA:
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
+
+        # send agwpe information
+        if static.AGWPE_ENABLE:
+            agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "disconnected"])
 
         self.IS_ARQ_SESSION_MASTER = False
         static.ARQ_SESSION = False
@@ -1853,6 +1878,10 @@ class DATA:
                 mycallsign=str(mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
+
+            # send agwpe information
+            if static.AGWPE_ENABLE:
+                agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "disconnected"])
 
             self.IS_ARQ_SESSION_MASTER = False
             static.ARQ_SESSION = False
@@ -1909,6 +1938,10 @@ class DATA:
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
             )
+
+            # send agwpe information
+            if static.AGWPE_ENABLE:
+                agwpe.TRANSMIT_QUEUE.put([self.mycallsign, self.dxcallsign, "connected"])
 
             static.ARQ_SESSION = True
             static.ARQ_SESSION_STATE = "connected"

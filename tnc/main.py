@@ -32,6 +32,7 @@ import static
 import structlog
 import explorer
 import json
+import agwpe
 
 log = structlog.get_logger("main")
 
@@ -252,6 +253,31 @@ if __name__ == "__main__":
         type=int,
     )
 
+    PARSER.add_argument(
+        "--agwpe",
+        dest="agwpe_enable",
+        action="store_true",
+        help="Enable AGWPE support",
+    )
+
+    PARSER.add_argument(
+        "--agwpe-ip",
+        dest="agwpe_ip",
+        default='127.0.0.1',
+        type=str,
+        help="Set agwpe server ip",
+    )
+
+    PARSER.add_argument(
+        "--agwpe-port",
+        dest="agwpe_port",
+        default=8000,
+        type=int,
+        help="Set agwpe server port",
+    )
+
+
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -306,6 +332,9 @@ if __name__ == "__main__":
             static.TCI_IP = ARGS.tci_ip
             static.TCI_PORT = ARGS.tci_port
             static.TX_DELAY = ARGS.tx_delay
+            static.AGWPE_ENABLE = ARGS.agwpe_enable
+            static.AGWPE_HOST = ARGS.agwpe_ip
+            static.AGWPE_PORT = ARGS.agwpe_port
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -338,6 +367,13 @@ if __name__ == "__main__":
                 static.AUDIO_OUTPUT_DEVICE = conf.get('AUDIO', 'tx', '0')
 
             static.PORT = int(conf.get('NETWORK', 'tncport', '3000'))
+
+
+            static.AGWPE_ENABLE = conf.get('AGWPE', 'enable', 'True')
+            static.AGWPE_HOST = conf.get('AGWPE', 'ip', '0.0.0.0')
+            static.AGWPE_PORT = int(conf.get('AGWPE', 'port', '8000'))
+
+
             static.HAMLIB_RADIOCONTROL = conf.get('RADIO', 'radiocontrol', 'rigctld')
             static.HAMLIB_RIGCTLD_IP = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
             static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', '4532'))
@@ -424,5 +460,22 @@ if __name__ == "__main__":
     except Exception as err:
         log.error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
         sys.exit(1)
+
+    try:
+        log.info("[TNC] Starting AGWPE socket", port=static.AGWPE_PORT)
+        # https://stackoverflow.com/a/16641793
+        socketserver.TCPServer.allow_reuse_address = True
+        agwpeserver = agwpe.ThreadedTCPServer(
+            (static.AGWPE_HOST, static.AGWPE_PORT), agwpe.ThreadedTCPRequestHandler
+        )
+        agwpe_server_thread = threading.Thread(target=agwpeserver.serve_forever)
+
+        agwpe_server_thread.daemon = True
+        agwpe_server_thread.start()
+
+    except Exception as err:
+        log.error("[TNC] Starting AGWPE socket failed", port=static.AGWPE_PORT, e=err)
+        sys.exit(1)
+
     while True:
         threading.Event().wait(1)
