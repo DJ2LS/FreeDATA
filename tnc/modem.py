@@ -26,7 +26,8 @@ import static
 import structlog
 import ujson as json
 import tci
-from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
+from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
+    AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -40,7 +41,6 @@ RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
 RECEIVE_DATAC3 = False
 
-
 # state buffer
 SIG0_DATAC0_STATE = []
 SIG1_DATAC0_STATE = []
@@ -48,6 +48,7 @@ DAT0_DATAC1_STATE = []
 DAT0_DATAC3_STATE = []
 FSK_LDPC0_STATE = []
 FSK_LDPC1_STATE = []
+
 
 class RF:
     """Class to encapsulate interactions between the audio device and codec2"""
@@ -62,10 +63,10 @@ class RF:
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
         self.MODEM_SAMPLE_RATE = codec2.api.FREEDV_FS_8000
+
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 2400 * 2
-
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if static.AUDIO_ENABLE_TCI else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -88,7 +89,6 @@ class RF:
 
         self.audio_received_queue = AUDIO_RECEIVED_QUEUE
         self.audio_transmit_queue = AUDIO_TRANSMIT_QUEUE
-
 
         # Init FIFO queue to store modulation out in
         self.modoutqueue = deque()
@@ -188,10 +188,12 @@ class RF:
             # placeholder area for processing audio via TCI
             # https://github.com/maksimus1210/TCI
             self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=static.TCI_IP, port=static.TCI_PORT)
+
             # we are trying this by simulating an audio stream Object like with mkfifo
             class Object:
                 """An object for simulating audio stream"""
                 active = True
+
             self.stream = Object()
 
             # lets init TCI module
@@ -254,14 +256,17 @@ class RF:
             sys.exit(1)
         elif static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
+        elif static.AUDIO_ENABLE_TCI:
+            self.radio = self.tci_module
         else:
             import rigdummy as rig
 
-        self.hamlib = rig.radio()
-        self.hamlib.open_rig(
-            rigctld_ip=static.HAMLIB_RIGCTLD_IP,
-            rigctld_port=static.HAMLIB_RIGCTLD_PORT,
-        )
+        if not static.AUDIO_ENABLE_TCI:
+            self.radio = rig.radio()
+            self.radio.open_rig(
+                rigctld_ip=static.HAMLIB_RIGCTLD_IP,
+                rigctld_port=static.HAMLIB_RIGCTLD_PORT,
+            )
 
         # --------------------------------------------START DECODER THREAD
         if static.ENABLE_FFT:
@@ -302,7 +307,6 @@ class RF:
             )
             audio_thread_dat0_datac3.start()
 
-
         hamlib_thread = threading.Thread(
             target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
         )
@@ -332,11 +336,14 @@ class RF:
         while True:
             threading.Event().wait(0.01)
 
-
-            # -----write
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
-                data_out48k = self.modoutqueue.popleft()
-                self.tci_module.push_audio(data_out48k)
+                static.PTT_STATE = self.radio.set_ptt(True)
+                jsondata = {"ptt": "True"}
+                data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(data_out)
+
+                data_out = self.modoutqueue.popleft()
+                self.tci_module.push_audio(data_out)
 
     def tci_rx_callback(self) -> None:
         """
@@ -351,7 +358,7 @@ class RF:
 
             x = self.audio_received_queue.get()
             x = np.frombuffer(x, dtype=np.int16)
-            #x = self.resampler.resample48_to_8(x)
+            # x = self.resampler.resample48_to_8(x)
 
             self.fft_data = x
 
@@ -369,8 +376,6 @@ class RF:
                         and receive
                 ):
                     data_buffer.push(x)
-
-
 
     def mkfifo_read_callback(self) -> None:
         """
@@ -469,7 +474,7 @@ class RF:
             if not static.PTT_STATE:
                 # TODO: Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
-                static.PTT_STATE = self.hamlib.set_ptt(True)
+                static.PTT_STATE = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
@@ -528,7 +533,7 @@ class RF:
         start_of_transmission = time.time()
         # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        # static.PTT_STATE = self.hamlib.set_ptt(True)
+        # static.PTT_STATE = self.radio.set_ptt(True)
         # jsondata = {"ptt": "True"}
         # data_out = json.dumps(jsondata)
         # sock.SOCKET_QUEUE.put(data_out)
@@ -632,24 +637,32 @@ class RF:
             elif 0.0 < static.HAMLIB_ALC <= 0.1:
                 print("0.0 < static.HAMLIB_ALC <= 0.1")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
+                               alc_level=str(static.HAMLIB_ALC))
             elif 0.1 < static.HAMLIB_ALC < 0.2:
                 print("0.1 < static.HAMLIB_ALC < 0.2")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
+                               alc_level=str(static.HAMLIB_ALC))
             elif 0.2 < static.HAMLIB_ALC < 0.99:
                 print("0.2 < static.HAMLIB_ALC < 0.99")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 20
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
-            elif 1.0 >=static.HAMLIB_ALC:
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
+                               alc_level=str(static.HAMLIB_ALC))
+            elif 1.0 >= static.HAMLIB_ALC:
                 print("1.0 >= static.HAMLIB_ALC")
                 static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 40
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
+                               alc_level=str(static.HAMLIB_ALC))
             else:
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL), alc_level=str(static.HAMLIB_ALC))
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
+                               alc_level=str(static.HAMLIB_ALC))
         x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
 
-        txbuffer_48k = self.resampler.resample8_to_48(x)
+        if not static.AUDIO_ENABLE_TCI:
+            txbuffer_out = self.resampler.resample8_to_48(x)
+        else:
+            txbuffer_out = x
 
         # Explicitly lock our usage of mod_out_queue if needed
         # This could avoid audio problems on slower CPU
@@ -660,8 +673,8 @@ class RF:
         # -------------------------------
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
         chunk = [
-            txbuffer_48k[i: i + chunk_length]
-            for i in range(0, len(txbuffer_48k), chunk_length)
+            txbuffer_out[i: i + chunk_length]
+            for i in range(0, len(txbuffer_out), chunk_length)
         ]
         for c in chunk:
             # Pad the chunk, if needed
@@ -670,18 +683,36 @@ class RF:
                 delta_zeros = np.zeros(delta, dtype=np.int16)
                 c = np.append(c, delta_zeros)
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
-
             self.modoutqueue.append(c)
 
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
 
-        while self.modoutqueue:
+        # we need to wait manually for tci processing
+        if static.AUDIO_ENABLE_TCI:
+            duration = len(txbuffer_out) / 8000
+            timestamp_to_sleep = time.time() + duration
+            self.log.debug("[MDM] TCI calculated duration", duration=duration)
+            tci_timeout_reached = False
+            #while time.time() < timestamp_to_sleep:
+            #    threading.Event().wait(0.01)
+        else:
+            timestamp_to_sleep = time.time()
+            # set tci timeout reached to True for overriding if not used
+            tci_timeout_reached = True
+
+        while self.modoutqueue or not tci_timeout_reached:
+            if static.AUDIO_ENABLE_TCI:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
             static.CHANNEL_BUSY = False
 
-        static.PTT_STATE = self.hamlib.set_ptt(False)
+        static.PTT_STATE = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
         jsondata = {"ptt": "False"}
@@ -1051,10 +1082,10 @@ class RF:
             cmd = RIGCTLD_COMMAND_QUEUE.get()
             if cmd[0] == "set_frequency":
                 # [1] = Frequency
-                self.hamlib.set_frequency(cmd[1])
+                self.radio.set_frequency(cmd[1])
             if cmd[0] == "set_mode":
                 # [1] = Mode
-                self.hamlib.set_mode(cmd[1])
+                self.radio.set_mode(cmd[1])
 
     def update_rig_data(self) -> None:
         """
@@ -1067,22 +1098,22 @@ class RF:
         while True:
             # this looks weird, but is necessary for avoiding rigctld packet colission sock
             threading.Event().wait(0.25)
-            static.HAMLIB_FREQUENCY = self.hamlib.get_frequency()
+            static.HAMLIB_FREQUENCY = self.radio.get_frequency()
             threading.Event().wait(0.1)
-            static.HAMLIB_MODE = self.hamlib.get_mode()
+            static.HAMLIB_MODE = self.radio.get_mode()
             threading.Event().wait(0.1)
-            static.HAMLIB_BANDWIDTH = self.hamlib.get_bandwidth()
+            static.HAMLIB_BANDWIDTH = self.radio.get_bandwidth()
             threading.Event().wait(0.1)
-            static.HAMLIB_STATUS = self.hamlib.get_status()
+            static.HAMLIB_STATUS = self.radio.get_status()
             threading.Event().wait(0.1)
             if static.TRANSMITTING:
-                static.HAMLIB_ALC = self.hamlib.get_alc()
+                static.HAMLIB_ALC = self.radio.get_alc()
                 threading.Event().wait(0.1)
-            #static.HAMLIB_RF = self.hamlib.get_level()
-            #threading.Event().wait(0.1)
-            static.HAMLIB_STRENGTH = self.hamlib.get_strength()
+            # static.HAMLIB_RF = self.radio.get_level()
+            # threading.Event().wait(0.1)
+            static.HAMLIB_STRENGTH = self.radio.get_strength()
 
-            #print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
+            # print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
 
     def calculate_fft(self) -> None:
         """
