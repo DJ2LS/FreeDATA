@@ -6,6 +6,7 @@ Created on Wed Dec 23 07:04:24 2020
 @author: DJ2LS
 """
 
+
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel
 
@@ -39,13 +40,7 @@ static.TRANSMITTING = False
 RECEIVE_SIG0 = True
 RECEIVE_SIG1 = False
 RECEIVE_DATAC1 = False
-if not static.AGWPE_ENABLE:
-    RECEIVE_DATAC3 = False
-else:
-    RECEIVE_DATAC3 = True
-
-
-
+RECEIVE_DATAC3 = bool(static.AGWPE_ENABLE)
 # state buffer
 SIG0_DATAC0_STATE = []
 SIG1_DATAC0_STATE = []
