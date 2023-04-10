@@ -3066,7 +3066,13 @@ class DATA:
         modem.RECEIVE_SIG0 = True
         modem.RECEIVE_SIG1 = False
         modem.RECEIVE_DATAC1 = False
-        modem.RECEIVE_DATAC3 = False
+        # if we are not in AGWPE state disable
+        # else enable datac3 for receiving braodcasts
+        if not static.AGWPE_ENABLE:
+            modem.RECEIVE_DATAC3 = False
+        else:
+            modem.RECEIVE_DATAC3 = True
+
         # modem.RECEIVE_FSK_LDPC_0 = False
         modem.RECEIVE_FSK_LDPC_1 = False
 
