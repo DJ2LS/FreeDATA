@@ -425,7 +425,6 @@ window.addEventListener("DOMContentLoaded", () => {
   if (config.radiocontrol == "rigctld") {
     document.getElementById("radio-control-switch-disabled").checked = false;
     document.getElementById("radio-control-switch-rigctld").checked = true;
-    document.getElementById("radio-control-switch-help").checked = false;
 
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
@@ -439,7 +438,6 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-rigctld").style.display = "block";
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
-    document.getElementById("radio-control-switch-help").checked = false;
     document.getElementById("radio-control-switch-rigctld").checked = false;
 
     document.getElementById("radio-control-help").style.display = "none";
@@ -532,29 +530,7 @@ window.addEventListener("DOMContentLoaded", () => {
       FD.saveConfig(config, configPath);
     });
 
-  // // radio settings 'network' event listener
-  document
-    .getElementById("radio-control-switch-help")
-    .addEventListener("click", () => {
-      //document.getElementById("hamlib_info_field").innerHTML =
-      //  "Set the ip and port of a rigctld session";
 
-      document.getElementById("radio-control-disabled").style.display = "none";
-      document.getElementById("radio-control-disabled").style.visibility =
-        "hidden";
-
-      document.getElementById("radio-control-help").style.display = "block";
-      document.getElementById("radio-control-help").style.visibility =
-        "visible";
-
-      document.getElementById("radio-control-rigctld").style.visibility =
-        "hidden";
-      document.getElementById("radio-control-rigctld").style.display = "none";
-
-      config.radiocontrol = "rigctld";
-      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      FD.saveConfig(config, configPath);
-    });
 
   // // radio settings 'rigctld' event listener
   document
@@ -1983,9 +1959,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   // AUDIO RECORDING
   if (arg.audio_recording == "True") {
-    document.getElementById("startStopRecording").textContent = "Stop Rec";
+    document.getElementById("startStopRecording").textContent = "Stop recording";
   } else {
-    document.getElementById("startStopRecording").textContent = "Start Rec";
+    document.getElementById("startStopRecording").textContent = "Start recording";
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {

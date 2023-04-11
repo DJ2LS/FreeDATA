@@ -54,6 +54,7 @@
               for="local-remote-switch1"
             >
               <i class="bi bi-pc-display-horizontal"></i>
+              <span class="ms-2 me-2">Local tnc</span>
             </label>
             <input
               type="radio"
@@ -67,10 +68,11 @@
               for="local-remote-switch2"
             >
               <i class="bi bi-ethernet"></i>
+              <span class="ms-2 me-2">Remote tnc</span>
             </label>
           </div>
           <div class="input-group input-group-sm me-2" id="remote-tnc-field">
-            <span class="input-group-text">TNC IP</span>
+            <span class="input-group-text">tnc ip</span>
             <input
               type="text"
               class="form-control"
@@ -134,6 +136,7 @@
             title="Start the TNC. Please set your audio and radio settings first!"
           >
             <i class="bi bi-play-fill"></i>
+            <span class="ms-2">Start tnc</span>
           </button>
           <button
             type="button"
@@ -145,6 +148,7 @@
             title="Stop the TNC."
           >
             <i class="bi bi-stop-fill"></i>
+            <span class="ms-2">Stop tnc</span>
           </button>
         </div>
         <!-- Split Button -->
@@ -229,10 +233,10 @@
 
       <!--
 	<div class="btn-toolbar" role="toolbar">
-		
+
 <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false"
 			title="View the received files. This is currently under development!">
-			
+
 
 	   <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
@@ -242,7 +246,7 @@
 	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
 	   </button>
-	  
+
 		</span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="true"
 			title="Settings and Info">
 
@@ -267,18 +271,49 @@
         ></div>
       </div>
       <!------------------------------------------------------------------------------------------>
-      <div class="container p-0" style="margin-top: 55px">
+      <div class="container p-3" style="margin-top: 55px">
         <div class="row collapse multi-collapse show" id="collapseFirstRow">
           <div class="col">
             <div class="card mb-0">
-              <div class="card-header p-2">
-                <div class="">
-                  <i class="bi bi-volume-up" style="font-size: 1rem"></i
-                  ><strong>AUDIO</strong>
-                </div>
+              <div class="card-header p-1">
+
+
+
+                  <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-10">
+                        <strong class="fs-5">Audio devices</strong>
+                      </div>
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalAudio"
+                  data-bs-toggle="modal"
+                  data-bs-target="#audioHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
+
+
               </div>
 
-              <div class="card-body p-1" style="height: 100px">
+              <div class="card-body p-2" style="height: 100px">
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text">
                     <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
@@ -291,7 +326,7 @@
                     <!-- 					 					<option selected value="3011">USB Interface</option>-->
                   </select>
                 </div>
-                <div class="input-group input-group-sm mb-1">
+                <div class="input-group input-group-sm">
                   <span class="input-group-text">
                     <i class="bi bi-volume-up" style="font-size: 1rem"></i>
                   </span>
@@ -302,18 +337,25 @@
                   ></select>
                 </div>
               </div>
-              <div class="card-footer text-muted small">
-                Please select audio device for RX and TX
-              </div>
+
             </div>
             <!--Start of TNC rig control pane-->
           </div>
           <div class="col">
             <div class="card mb-0">
               <div class="card-header p-1">
-                <i class="bi bi-projector" style="font-size: 1rem"></i
-                ><strong> TNC RIG CONTROL</strong>
-                <div
+
+
+                                  <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-projector" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-3">
+                        <strong class="fs-5">Rig control</strong>
+                      </div>
+                      <div class="col-7">
+                                        <div
                   class="btn-group btn-group-sm"
                   role="group"
                   aria-label="radio-control-switch-disabled"
@@ -329,7 +371,7 @@
                     class="btn btn-sm btn-outline-secondary"
                     for="radio-control-switch-disabled"
                   >
-                    None
+                    None / Vox
                   </label>
 
                   <div
@@ -352,25 +394,31 @@
                     </label>
                   </div>
                 </div>
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="radio-control-switch-rigctld"
+
+                      </div>
+
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalRigControl"
+                  data-bs-toggle="modal"
+                  data-bs-target="#rigcontrolHelpModal"
+                  class="btn m-0 p-0 border-0"
                 >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="radio-control-switch"
-                    id="radio-control-switch-help"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-help"
-                  >
-                    <i class="bi bi-question-circle"></i>
-                  </label>
-                </div>
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
               </div>
               <div class="card-body p-2" style="height: 100px">
                 <!-- RADIO CONTROL DISABLED -->
@@ -387,9 +435,9 @@
                   <div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text"
-                        >Rigctld Network settings</span
+                        >Rigctld</span
                       >
-                      <span class="input-group-text">IP</span>
+                      <span class="input-group-text">Address</span>
                       <input
                         type="text"
                         class="form-control"
@@ -410,7 +458,8 @@
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">Rigctld application</span>
+                      <span class="input-group-text">Rigctld</span>
+                      <span class="input-group-text">Service</span>
                       <button
                         class="btn btn-outline-success"
                         type="button"
@@ -460,20 +509,48 @@
                   happens automatically.
                 </div>
               </div>
-              <div class="card-footer text-muted small" id="hamlib_info_field">
+              <!--<div class="card-footer text-muted small" id="hamlib_info_field">
                 Define TNC rig control mode (none/hamlib)
               </div>
+              -->
             </div>
           </div>
         </div>
         <div
-          class="row collapse multi-collapse show mt-2"
+          class="row collapse multi-collapse show mt-4"
           id="collapseSecondRow"
         >
           <div class="col">
             <div class="card mb-1">
-              <div class="card-header p-2">
-                <i class="bi bi-house-door"></i><strong> MY STATION</strong>
+              <div class="card-header p-1">
+
+                                  <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-10">
+                        <strong class="fs-5">My station</strong>
+                      </div>
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalStation"
+                  data-bs-toggle="modal"
+                  data-bs-target="#stationHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
               </div>
               <div class="card-body p-2">
                 <div class="row">
@@ -558,13 +635,17 @@
           </div>
           <div class="col">
             <div class="card mb-0">
-              <div class="card-header p-2 d-flex">
-                <i
-                  class="bi bi-cloud-download ms-1 me-1"
-                  style="font-size: 1rem"
-                ></i>
-                <strong>UPDATER</strong>
-                <div class="progress w-75 ms-1 m-1">
+              <div class="card-header p-1 d-flex">
+                                  <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-cloud-download" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-2">
+                        <strong class="fs-5">Updater</strong>
+                      </div>
+                                            <div class="col-8">
+                        <div class="progress w-100 ms-1 m-1">
                   <div
                     class="progress-bar"
                     style="width: 0%"
@@ -577,6 +658,31 @@
                     <span id="UpdateProgressInfo"></span>
                   </div>
                 </div>
+                      </div>
+
+
+
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalUpdater"
+                  data-bs-toggle="modal"
+                  data-bs-target="#updaterHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
               </div>
               <div class="card-body p-2 mb-1">
                 <button
@@ -616,13 +722,22 @@
           </div>
         </div>
       </div>
-      <div class="container mt-2 p-0">
+      <div class="container">
         <div class="row collapse multi-collapse" id="collapseThirdRow">
           <div class="col-5">
             <div class="card mb-1">
               <div class="card-header p-1">
-                <i class="bi bi-volume-up" style="font-size: 1rem"></i>
-                <strong>AUDIO LEVEL</strong>
+
+                 <div class="container">
+                    <div class="row">
+                      <div class="col-1">
+                        <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-4">
+                        <strong class="fs-5">Audio level</strong>
+                      </div>
+                       <div class="col-6">
+
                 <button
                   type="button"
                   id="audioModalButton"
@@ -639,12 +754,34 @@
                 >
                   Record audio
                 </button>
+                      </div>
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalAudioLevel"
+                  data-bs-toggle="modal"
+                  data-bs-target="#audioLevelHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
               </div>
               <div class="card-body p-2">
                 <div class="container">
                   <div class="row">
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 15px">
+                      <div class="progress mb-0" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="noise_level"
@@ -661,7 +798,7 @@
                           S-Meter (dB)
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 5px">
+                      <div class="progress mb-0" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"
@@ -697,7 +834,7 @@
                       </div>
                     </div>
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 15px">
+                      <div class="progress mb-0" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="dbfs_level"
@@ -714,7 +851,7 @@
                           dBFS (Audio Level)
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 5px">
+                      <div class="progress mb-0" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"
@@ -756,8 +893,38 @@
           </div>
           <div class="col">
             <div class="card mb-1">
-              <div class="card-header p-2">
-                <strong>PING, CQ & BEACON</strong>
+              <div class="card-header p-1">
+
+                 <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-10">
+                        <strong class="fs-5">Broadcasts</strong>
+                      </div>
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalBroadcasts"
+                  data-bs-toggle="modal"
+                  data-bs-target="#broadcastsHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
               </div>
               <div class="card-body p-2">
                 <div class="row">
@@ -835,7 +1002,7 @@
                         id="sendCQ"
                         type="button"
                       >
-                        CQ
+                        Call cq cq cq
                       </button>
                     </div>
                   </div>
@@ -853,7 +1020,7 @@
                         id="startBeacon"
                         class="btn btn-sm btn-outline-secondary"
                       >
-                        <i class="bi bi-soundwave"></i>
+                        <i class="bi bi-soundwave"></i> Toggle beacon
                       </button>
                     </div>
                   </div>
@@ -863,11 +1030,15 @@
             </div>
           </div>
         </div>
-        <div class="row collapse multi-collapse" id="collapseFourthRow">
+        <div class="row collapse multi-collapse mt-3" id="collapseFourthRow">
           <div class="col-5">
             <div class="card mb-1">
               <div class="card-header p-1">
-                <div
+
+                 <div class="container">
+                    <div class="row">
+                      <div class="col-11">
+                                        <div
                   class="btn-group btn-group-sm"
                   role="group"
                   aria-label="waterfall-scatter-switch toggle button group"
@@ -937,9 +1108,33 @@
                     data-bs-html="true"
                     title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
                   >
-                    rd
+                    signal
                   </button>
                 </div>
+                      </div>
+
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalWaterfall"
+                  data-bs-toggle="modal"
+                  data-bs-target="#waterfallHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
               </div>
               <div class="card-body p-1" style="height: 200px">
                 <!--278px-->
@@ -964,12 +1159,38 @@
           <div class="col">
             <div class="card mb-1" style="height: 240px">
               <!--325px-->
-              <div class="card-header p-2">
-                <i
-                  class="bi bi-list-columns-reverse"
-                  style="font-size: 1rem"
-                ></i>
-                <strong> HEARD STATIONS</strong>
+              <div class="card-header p-1">
+
+                 <div class="container">
+                    <div class="row">
+                      <div class="col-auto">
+                        <i class="bi bi-list-columns-reverse" style="font-size: 1.2rem"></i>
+                      </div>
+                      <div class="col-10">
+                        <strong class="fs-5">Heard stations</strong>
+                      </div>
+                      <div class="col-1 text-end">
+
+
+<button
+                  type="button"
+                  id="openHelpModalHeardStations"
+                  data-bs-toggle="modal"
+                  data-bs-target="#heardStationsHelpModal"
+                  class="btn m-0 p-0 border-0"
+                >
+                  <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                </button>
+
+
+
+
+                      </div>
+                    </div>
+                  </div>
+
+
+
               </div>
               <div class="card-body p-0">
                 <div class="table-responsive">
@@ -1108,7 +1329,7 @@
                       <div class="col-auto">
                         <!--
                                        <div class="input-group input-group-sm mb-0">
-                                       
+
                                        	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
                                        </div>
                                        -->
@@ -1532,6 +1753,213 @@
     <script src="waterfall/spectrum.js"></script>
     <script src="waterfall/spectrogram.js"></script>
     <!--<script src="waterfall/script.js"></script>-->
+
+    <!-- HELP MODALS AUDIO -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS RIGCONTROL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="rigcontrolHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- HELP MODALS STATION -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="stationHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- HELP MODALS UPDATER -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="updaterHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+
+            <!-- HELP MODALS AUDIO LEVEL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioLevelHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- HELP MODALS BROADCASTS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="broadcastsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+        <!-- HELP MODALS WATERFALL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="waterfallHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+
+            <!-- HELP MODALS HEARD STATIONS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="heardStationsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+
+            Test ...
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
     <!-- AUDIO MODAL -->
     <div
       class="modal fade"
@@ -1781,25 +2209,27 @@
                     <option value="alpha">alpha</option>
                   </select>
                 </div>
-                <div class="input-group input-group-sm mb-1">
-                  <label class="input-group-text w-50"
-                    >Auto-start TNC/rigctld</label
-                  >
-                  <label class="input-group-text w-50">
-                    <div class="form-check form-switch form-check-inline">
-                      <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="AutoStartSwitch"
-                      />
-                      <label class="form-check-label" for="AutoStartSwitch"
-                        >Start on launch</label
-                      >
-                    </div>
-                  </label>
-                </div>
+<div class="input-group input-group-sm mb-1">
+  <label class="input-group-text w-50"
+    >Auto-start TNC/rigctld</label
+  >
+  <label class="input-group-text w-50">
+    <div class="form-check form-switch form-check-inline">
+      <input
+        class="form-check-input"
+        type="checkbox"
+        id="AutoStartSwitch"
+      />
+      <label class="form-check-label" for="AutoStartSwitch"
+        >Start on launch</label
+      >
+    </div>
+  </label>
+</div>
+
               </div>
-              <!-- Chat tab contents -->
+
+
               <div
                 class="tab-pane"
                 id="chat"
@@ -1890,7 +2320,6 @@
                     class="btn btn-outline-secondary"
                     type="button"
                     id="btnHamlibCopyCommand"
-                    title="Copy exe and arguments to clipboard to run in terminal for troubleshooting"
                   >
                     <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
                   </button>
@@ -2623,8 +3052,8 @@
                 </div>
                 <div class="center">
                   <div class="badge text-bg-danger">
-                    <i class="bi bi-shield-exclamation"></i> These options are
-                    experimental and may not work as expected.
+                    <i class="bi bi-shield-exclamation"></i> These options may
+                    not work and are for experienced users only!
                   </div>
                 </div>
               </div>
@@ -2746,3 +3175,4 @@
     </div>
   </body>
 </html>
+
