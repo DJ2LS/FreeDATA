@@ -1717,11 +1717,9 @@
             ></button>
           </div>
           <div class="modal-body">
-
-
             <div class="card mb-3">
-  <div class="card-body">
-     <div class="input-group input-group-sm mb-1">
+              <div class="card-body">
+                <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text">
                     <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
                   </span>
@@ -1732,13 +1730,17 @@
                     <!-- 					 					<option selected value="3011">USB Interface</option>-->
                   </select>
                 </div>
-    <p class="card-text">Select your audio device for transmitting. It <strong>must</strong> be running on a sample rate of <strong>48000Hz</strong></p>
-  </div>
-</div>
+                <p class="card-text">
+                  Select your audio device for transmitting. It
+                  <strong>must</strong> be running on a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
 
             <div class="card">
-  <div class="card-body">
-   <div class="input-group input-group-sm">
+              <div class="card-body">
+                <div class="input-group input-group-sm">
                   <span class="input-group-text">
                     <i class="bi bi-volume-up" style="font-size: 1rem"></i>
                   </span>
@@ -1746,22 +1748,14 @@
                     class="form-select form-select-sm"
                     aria-label=".form-select-sm"
                   ></select>
-                </div>    <p class="card-text">Select your audio device for receiving. It <strong>must</strong> be running on a sample rate of <strong>48000Hz</strong></p>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
+                </div>
+                <p class="card-text">
+                  Select your audio device for receiving. It
+                  <strong>must</strong> be running on a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1807,90 +1801,87 @@
             ></button>
           </div>
           <div class="modal-body">
-
             <div class="alert alert-info" role="alert">
-  These settings will be saved automatically when changing.
-</div>
+              These settings will be saved automatically when changing.
+            </div>
 
-           <div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title"><div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Enter your callsign and save it"
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your callsign and save it"
+                  >
+                    <span class="input-group-text">
+                      <i
+                        class="bi bi-person-bounding-box"
+                        style="font-size: 1rem"
+                      ></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="callsign"
+                      pattern="[A-Z]*"
+                      maxlength="8"
+                      style="max-width: 8rem"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      style="max-width: 6rem"
+                      disabled
                     >
-                      <span class="input-group-text">
-                        <i
-                          class="bi bi-person-bounding-box"
-                          style="font-size: 1rem"
-                        ></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="callsign"
-                        pattern="[A-Z]*"
-                        maxlength="8"
-                        style="max-width: 8rem"
-                        aria-label="Input group"
-                        aria-describedby="btnGroupAddon"
-                        disabled
-                      />
-                      <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        style="max-width: 6rem"
-                        disabled
-                      >
-                        <option selected value="SSID">SSID</option>
-
-                      </select>
-                    </div></h5>
-    <p class="card-text">Enter your callsign and SSID. Your callsign can have a length of a maximum of 7 characters</p>
-  </div>
-</div>
-                      <div class="card mb-3">
-  <div class="card-body">
-    <h5 class="card-title"><div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Enter your gridsquare and save it"
-                    >
-                      <span class="input-group-text">
-                        <i class="bi bi-house-fill" style="font-size: 1rem"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control mr-1"
-                        style="max-width: 6rem"
-                        placeholder="locator"
-                        maxlength="6"
-                        aria-label="Input group"
-                        aria-describedby="btnGroupAddon"
-                        disabled
-                      />
-                    </div></h5>
-    <p class="card-text">Enter your position as qth-locator, also known as maidenhead locator. You can enter 4 or 6 digits, while 6 digits are recommended.</p>
-  </div>
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
+                      <option selected value="SSID">SSID</option>
+                    </select>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your callsign and SSID. Your callsign can have a length
+                  of a maximum of 7 characters
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your gridsquare and save it"
+                  >
+                    <span class="input-group-text">
+                      <i class="bi bi-house-fill" style="font-size: 1rem"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control mr-1"
+                      style="max-width: 6rem"
+                      placeholder="locator"
+                      maxlength="6"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your position as qth-locator, also known as maidenhead
+                  locator. You can enter 4 or 6 digits, while 6 digits are
+                  recommended.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
