@@ -530,8 +530,6 @@ window.addEventListener("DOMContentLoaded", () => {
       FD.saveConfig(config, configPath);
     });
 
-
-
   // // radio settings 'rigctld' event listener
   document
     .getElementById("radio-control-switch-rigctld")
@@ -1959,9 +1957,11 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   // AUDIO RECORDING
   if (arg.audio_recording == "True") {
-    document.getElementById("startStopRecording").textContent = "Stop recording";
+    document.getElementById("startStopRecording").textContent =
+      "Stop recording";
   } else {
-    document.getElementById("startStopRecording").textContent = "Start recording";
+    document.getElementById("startStopRecording").textContent =
+      "Start recording";
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
