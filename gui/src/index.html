@@ -107,6 +107,20 @@
               <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
             </button>
           </div>
+
+          <button
+                        type="button"
+                        id="openHelpModalLocalRemote"
+                        data-bs-toggle="modal"
+                        data-bs-target="#localRemoteHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+
         </div>
       </div>
       <div>
@@ -123,9 +137,21 @@
             class="bi bi-sign-stop-fill"
           ></i>
         </button>
+                <button
+                        type="button"
+                        id="openHelpModalStopTransmission"
+                        data-bs-toggle="modal"
+                        data-bs-target="#stopTransmissionHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
       </div>
       <div>
-        <div class="btn-group me-4" role="group">
+        <div class="btn-group" role="group">
           <button
             type="button"
             id="startTNC"
@@ -150,7 +176,20 @@
             <i class="bi bi-stop-fill"></i>
             <span class="ms-2">Stop tnc</span>
           </button>
+
         </div>
+         <button
+                        type="button"
+                        id="openHelpModalStartStopTNC"
+                        data-bs-toggle="modal"
+                        data-bs-target="#startStopTNCHelpModal"
+                        class="btn me-5 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
         <!-- Split Button -->
         <div class="btn-group me-2" role="group">
           <button
@@ -1908,7 +1947,72 @@
         </div>
       </div>
     </div>
-
+    <!-- HELP MODALS LOCAL REMOTE -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="localRemoteHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">Test ...</div>
+        </div>
+      </div>
+    </div>
+        <!-- HELP MODALS STOP TRANSMISSION -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="stopTransmissionHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">Test ...</div>
+        </div>
+      </div>
+    </div>
+            <!-- HELP MODALS START STOP TNC -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="startStopTNCHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">Test ...</div>
+        </div>
+      </div>
+    </div>
     <!-- HELP MODALS AUDIO LEVEL -->
     <div
       class="modal fade"
