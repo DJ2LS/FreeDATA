@@ -1750,14 +1750,14 @@
                   </span>
                   <select
                     class="form-select form-select-sm"
-                    aria-label=".form-select-sm"
+                    aria-label=".form-select-sm" disabled
                   >
                     <!-- 					 					<option selected value="3011">USB Interface</option>-->
                   </select>
                 </div>
                 <p class="card-text">
                   Select your audio device for transmitting. It
-                  <strong>must</strong> be running on a sample rate of
+                  <strong>must</strong> be using a sample rate of
                   <strong>48000Hz</strong>
                 </p>
               </div>
@@ -1771,12 +1771,12 @@
                   </span>
                   <select
                     class="form-select form-select-sm"
-                    aria-label=".form-select-sm"
+                    aria-label=".form-select-sm" disabled
                   ></select>
                 </div>
                 <p class="card-text">
                   Select your audio device for receiving. It
-                  <strong>must</strong> be running on a sample rate of
+                  <strong>must</strong> be using a sample rate of
                   <strong>48000Hz</strong>
                 </p>
               </div>
@@ -1908,8 +1908,8 @@
                   </div>
                 </h5>
                 <p class="card-text">
-                  Enter your position as qth-locator, also known as maidenhead
-                  locator. You can enter 4 or 6 digits, while 6 digits are
+                  Enter your position as a 4 or 6 digit grid square, also known as a maidenhead
+                  locator. Six digits are
                   recommended.
                 </p>
               </div>
@@ -2010,7 +2010,7 @@
                     </label>
                   </div>
                 </h5>
-                <p class="card-text">Local / Remote switch</p>
+                <p class="card-text">Local / Remote switch.  If the TNC is running on the same computer as the GUI, select local.  Otherwise choose remote and enter the IP/Port of where the TNC is running.</p>
               </div>
             </div>
             <div class="card mb-3">
@@ -2098,10 +2098,9 @@
                   </button>
                 </h5>
                 <p class="card-text">
-                  Stop the current transmission or connection. A bunch of bursts
-                  will be sent so the remote station is getting informed about
-                  our disconnect attempt. The remote station won't be staying
-                  then in unnecessary busy state.
+                  Stop the current transmission or connection. Bursts
+                  will be transmitted so the remote station is informed about
+                  our disconnect attempt and freeing the remote station from any unnecessary busy state.
                 </p>
               </div>
             </div>
@@ -2159,8 +2158,7 @@
                   </div>
                 </h5>
                 <p class="card-text">
-                  Start or stop the TNC service. This is only working if the
-                  daemon is running. This is working locally and also remotely.
+                  Start or stop the TNC service. The TNC daemon must be running and will work whether the TNC is local or remote.
                 </p>
               </div>
             </div>
