@@ -17,7 +17,7 @@ CLOSE_SIGNAL = False
 
 class AGWPE_FRAMES(Enum):
     """
-    Enumeration for codec2 modes and names
+    Enumeration for agwpe frame types
     """
     register_call = b'X'  # register callsign
     unregister_call = b'x'  # unregister callsign
@@ -184,237 +184,255 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def receive_from_client(self):
         data = b''
-        while True:
+        while self.connection_alive and not CLOSE_SIGNAL:
+            try:
+                chunk = self.request.recv(1024)
+                data += chunk
 
-            chunk = self.request.recv(1024)
-            data += chunk
-            defaultAGWPElength = 36
+                if chunk == b"":
+                    # print("connection broken. Closing...")
+                    self.connection_alive = False
 
-            if len(data) % defaultAGWPElength == 0 and AGWPE_FRAMES.has_value(data[4:5]):
-                frames = [data[i:i + defaultAGWPElength] for i in range(0, len(data), defaultAGWPElength)]
-                for frame in frames:
-                    decoded_frame = AGWPE().decode(frame)
-                    #print(decoded_frame)
+                print(data)
+                defaultAGWPElength = 36
 
-                    if decoded_frame["DataKind"] == AGWPE_FRAMES.register_call.value:
+                if len(data) % defaultAGWPElength == 0 and AGWPE_FRAMES.has_value(data[4:5]):
+                    frames = [data[i:i + defaultAGWPElength] for i in range(0, len(data), defaultAGWPElength)]
+                    for frame in frames:
+                        decoded_frame = AGWPE().decode(frame)
+                        #print(decoded_frame)
 
-                        if decoded_frame["CallFrom"] not in CALLSIGNS:
+                        if decoded_frame["DataKind"] == AGWPE_FRAMES.register_call.value:
 
-                            self.REGISTERED_CALLSIGN_FOR_SOCKET.add(decoded_frame["CallFrom"])
+                            if decoded_frame["CallFrom"] not in CALLSIGNS:
 
-                            data_out = AGWPE().encode_agwpe_frame(CallFrom=decoded_frame["CallFrom"],
-                                                                  DataKind="X",
-                                                                  Payload=bytes([1])
-                                                                  )
-                            self.request.sendall(data_out)
+                                self.REGISTERED_CALLSIGN_FOR_SOCKET.add(decoded_frame["CallFrom"])
+
+                                data_out = AGWPE().encode_agwpe_frame(CallFrom=decoded_frame["CallFrom"],
+                                                                      DataKind="X",
+                                                                      Payload=bytes([1])
+                                                                      )
+                                self.request.sendall(data_out)
+                                self.log.info(
+                                    "[AGWPE] Registered callsign",
+                                    call=decoded_frame["CallFrom"],
+                                    ip=self.client_address[0],
+                                    port=self.client_address[1],
+                                )
+
+                            else:
+
+                                data_out = AGWPE().encode_agwpe_frame(CallFrom=decoded_frame["CallFrom"],
+                                                                      DataKind="X",
+                                                                      Payload=bytes([0])
+                                                                      )
+                                self.request.sendall(data_out)
+                                self.log.warning(
+                                    "[AGWPE] Callsign already registered",
+                                    call=decoded_frame["CallFrom"],
+                                    ip=self.client_address[0],
+                                    port=self.client_address[1],
+                                )
+
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.enable_monitoring.value:
                             self.log.info(
-                                "[AGWPE] Registered callsign",
+                                "[AGWPE] Enable monitoring",
+                                info="not yet implemented",
                                 call=decoded_frame["CallFrom"],
                                 ip=self.client_address[0],
                                 port=self.client_address[1],
                             )
 
-                        else:
-
-                            data_out = AGWPE().encode_agwpe_frame(CallFrom=decoded_frame["CallFrom"],
-                                                                  DataKind="X",
-                                                                  Payload=bytes([0])
-                                                                  )
-                            self.request.sendall(data_out)
-                            self.log.warning(
-                                "[AGWPE] Callsign already registered",
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.get_ports.value:
+                            self.log.info(
+                                "[AGWPE] request ports",
+                                info="only one device yet",
                                 call=decoded_frame["CallFrom"],
                                 ip=self.client_address[0],
                                 port=self.client_address[1],
                             )
 
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.enable_monitoring.value:
-                        self.log.info(
-                            "[AGWPE] Enable monitoring",
-                            info="not yet implemented",
-                            call=decoded_frame["CallFrom"],
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
+                            ports = bytes(f'1;Port1 FreeDATA HF TNC {static.HAMLIB_FREQUENCY};', 'ascii')
+                            data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallTo"],
+                                                                  CallFrom=decoded_frame["CallFrom"], DataKind="G",
+                                                                  Payload=ports)
+                            self.request.sendall(data_out)
 
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.get_ports.value:
-                        self.log.info(
-                            "[AGWPE] request ports",
-                            info="only one device yet",
-                            call=decoded_frame["CallFrom"],
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
-
-                        ports = bytes(f'1;Port1 FreeDATA HF TNC {static.HAMLIB_FREQUENCY};', 'ascii')
-                        data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallTo"],
-                                                              CallFrom=decoded_frame["CallFrom"], DataKind="G",
-                                                              Payload=ports)
-                        self.request.sendall(data_out)
-
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.heard_stations.value:
-                        info = bytes('LU7DID-4 Mon,21Feb2000 11:14:30 Mon,21Feb2000 12:18:22', 'ascii')
-                        data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
-                                                              CallFrom=decoded_frame["CallTo"],
-                                                              PID=decoded_frame["PID"],
-                                                              DataKind="H",
-                                                              Payload=info
-                                                              )
-                        self.request.sendall(data_out)
-
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.connect_request.value:
-                        self.log.info(
-                            "[AGWPE] connecting",
-                            CallTo=decoded_frame["CallTo"],
-                            CallFrom=decoded_frame["CallFrom"],
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
-
-                        self.tnc_arq_connect(decoded_frame)
-
-                        """
-                        while static.ARQ_SESSION_STATE in ["connecting", "disconnected"]:
-                            threading.Event().wait(0.1)
-
-                        if static.ARQ_SESSION_STATE == "connected":
-                            
-                            self.log.info(
-                                "[AGWPE] connected",
-                                CallTo=decoded_frame["CallTo"],
-                                CallFrom=decoded_frame["CallFrom"],
-                                ip=self.client_address[0],
-                                port=self.client_address[1],
-                            )
-
-                            info = bytes(f'*** CONNECTED With {decoded_frame["CallTo"]}', 'ascii')
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.heard_stations.value:
+                            info = bytes('LU7DID-4 Mon,21Feb2000 11:14:30 Mon,21Feb2000 12:18:22', 'ascii')
                             data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
                                                                   CallFrom=decoded_frame["CallTo"],
                                                                   PID=decoded_frame["PID"],
-                                                                  DataKind="C",
-                                                                  Payload=info)
+                                                                  DataKind="H",
+                                                                  Payload=info
+                                                                  )
                             self.request.sendall(data_out)
-                            
-                            pass
-                    
-                        else:
-                            self.log.warning(
-                                "[AGWPE] connection failed",
+
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.connect_request.value:
+                            self.log.info(
+                                "[AGWPE] connecting",
                                 CallTo=decoded_frame["CallTo"],
                                 CallFrom=decoded_frame["CallFrom"],
                                 ip=self.client_address[0],
                                 port=self.client_address[1],
                             )
-                        """
 
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.disconnect.value:
-                        self.log.warning(
-                            "[AGWPE] request disconnecting",
-                            CallTo=decoded_frame["CallTo"],
-                            CallFrom=decoded_frame["CallFrom"],
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
+                            self.tnc_arq_connect(decoded_frame)
 
-                        self.tnc_arq_disconnect(decoded_frame)
+                            """
+                            while static.ARQ_SESSION_STATE in ["connecting", "disconnected"]:
+                                threading.Event().wait(0.1)
+    
+                            if static.ARQ_SESSION_STATE == "connected":
+                                
+                                self.log.info(
+                                    "[AGWPE] connected",
+                                    CallTo=decoded_frame["CallTo"],
+                                    CallFrom=decoded_frame["CallFrom"],
+                                    ip=self.client_address[0],
+                                    port=self.client_address[1],
+                                )
+    
+                                info = bytes(f'*** CONNECTED With {decoded_frame["CallTo"]}', 'ascii')
+                                data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
+                                                                      CallFrom=decoded_frame["CallTo"],
+                                                                      PID=decoded_frame["PID"],
+                                                                      DataKind="C",
+                                                                      Payload=info)
+                                self.request.sendall(data_out)
+                                
+                                pass
+                        
+                            else:
+                                self.log.warning(
+                                    "[AGWPE] connection failed",
+                                    CallTo=decoded_frame["CallTo"],
+                                    CallFrom=decoded_frame["CallFrom"],
+                                    ip=self.client_address[0],
+                                    port=self.client_address[1],
+                                )
+                            """
 
-                        #while static.ARQ_SESSION_STATE in ["disconnecting", "connected", "connecting"]:
-                        #    threading.Event().wait(0.1)
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.disconnect.value:
+                            self.log.warning(
+                                "[AGWPE] request disconnecting",
+                                CallTo=decoded_frame["CallTo"],
+                                CallFrom=decoded_frame["CallFrom"],
+                                ip=self.client_address[0],
+                                port=self.client_address[1],
+                            )
 
-                        #data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
-                        #                                      CallFrom=decoded_frame["CallTo"], DataKind="d")
-                        #self.request.sendall(data_out)
-                        #self.log.info(
-                        #    "[AGWPE] disconnected",
-                        #    CallTo=decoded_frame["CallTo"],
-                        #    CallFrom=decoded_frame["CallFrom"],
-                        #    ip=self.client_address[0],
-                        #    port=self.client_address[1],
-                        #)
+                            self.tnc_arq_disconnect(decoded_frame)
 
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.get_version.value:
-                        self.log.info(
-                            "[AGWPE] request version",
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
+                            #while static.ARQ_SESSION_STATE in ["disconnecting", "connected", "connecting"]:
+                            #    threading.Event().wait(0.1)
 
-                        version = bytes(static.VERSION, 'ascii')
-                        data_out = AGWPE().encode_agwpe_frame(DataKind="G", Payload=version)
-                        self.request.sendall(data_out)
+                            #data_out = AGWPE().encode_agwpe_frame(CallTo=decoded_frame["CallFrom"],
+                            #                                      CallFrom=decoded_frame["CallTo"], DataKind="d")
+                            #self.request.sendall(data_out)
+                            #self.log.info(
+                            #    "[AGWPE] disconnected",
+                            #    CallTo=decoded_frame["CallTo"],
+                            #    CallFrom=decoded_frame["CallFrom"],
+                            #    ip=self.client_address[0],
+                            #    port=self.client_address[1],
+                            #)
 
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.request_connection_outstanding_frames.value:
-                        self.log.info(
-                            "[AGWPE] request outstanding frames on connection",
-                            ip=self.client_address[0],
-                            port=self.client_address[1],
-                        )
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.get_version.value:
+                            self.log.info(
+                                "[AGWPE] request version",
+                                ip=self.client_address[0],
+                                port=self.client_address[1],
+                            )
 
-                        data_out = AGWPE().encode_agwpe_frame(DataKind="Y", DataLen=DATA_QUEUE_TRANSMIT.qsize(), CallFrom=decoded_frame["CallTo"], CallTo=decoded_frame["CallFrom"])
-                        print(data_out)
-                        self.request.sendall(data_out)
+                            version = bytes(static.VERSION, 'ascii')
+                            data_out = AGWPE().encode_agwpe_frame(DataKind="G", Payload=version)
+                            self.request.sendall(data_out)
 
-                    else:
-                        print("------------")
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.request_connection_outstanding_frames.value:
+                            self.log.info(
+                                "[AGWPE] request outstanding frames on connection",
+                                ip=self.client_address[0],
+                                port=self.client_address[1],
+                            )
+
+                            data_out = AGWPE().encode_agwpe_frame(DataKind="Y", DataLen=DATA_QUEUE_TRANSMIT.qsize(), CallFrom=decoded_frame["CallTo"], CallTo=decoded_frame["CallFrom"])
+                            print(data_out)
+                            self.request.sendall(data_out)
+
+                        else:
+                            print("------------")
+                            self.log.warning(
+                                "[AGWPE] Unknown frame received",
+                                frame=data,
+                                ip=self.client_address[0],
+                                port=self.client_address[1],
+                            )
+
+                        data = b''
+
+                else:
+
+                    if AGWPE_FRAMES.has_value(data[4:5]):
+                        print("has value check")
+                        decoded_frame = AGWPE().decode(data)
+
+                        #print(
+                        #    len(b'\x00\x00\x00\x00V\x00\xf0\x00DJ2LS\x00\x00\x00\x00\x00APX216\x00\x00\x00\x00]\x00\x00\x00\x00\x00\x00\x00\x01WIDE2-2\x00\x00\x00:DN2LS    :1111111111111111111111111111111111111111111111111111111111111111111{06}'))
+
+                        if decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info.value:
+
+                            print("send unproto info")
+                            print(data)
+                            print(len(data))
+                            """
+                            print(data)
+                            # Callsign info switched here
+                            print(f"CallTo: {decoded_frame['CallFrom']}")
+                            print(f"CallFrom: {decoded_frame['CallTo']}")
+                            print(decoded_frame['CallFrom'])
+    
+                            payload = bytes()
+                            payload += decoded_frame['CallFrom']  # to
+                            payload += decoded_frame['CallTo']  # from
+                            payload += decoded_frame["Payload"]
+                            """
+                            payload = data[6:]
+                            print(len(payload))
+                            print(payload)
+                            DATA_QUEUE_TRANSMIT.put(["FEC", payload, 'datac3'])
+
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info_via.value:
+                            print("send unproto info via")  #
+                            # Callsign info switched here
+                            print(f"CallTo: {decoded_frame['CallFrom']}")
+                            print(f"CallFrom: {decoded_frame['CallTo']}")
+
+                            payload = bytes()
+                            payload += decoded_frame['CallFrom']  # to
+                            payload += decoded_frame['CallTo']  # from
+                            payload += decoded_frame["Payload"]
+
+                            DATA_QUEUE_TRANSMIT.put(["FEC", decoded_frame["Payload"], 'datac3'])
+
+                        elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_connected_data.value:
+                            print("send connected data")  #
+                            print(data)
+                            DATA_QUEUE_TRANSMIT.put(["ARQ_RAW", decoded_frame["Payload"], 255, 1, 'no-uuid', decoded_frame['CallFrom'].strip(b'\x00'), decoded_frame['CallTo'].strip(b'\x00'), 10])
+
+                    elif data not in [b'']:
+                        print("empty check")
                         print(data)
-                        # disconnect
 
                     data = b''
-
-            else:
-
-                if AGWPE_FRAMES.has_value(data[4:5]):
-                    print("has value check")
-                    decoded_frame = AGWPE().decode(data)
-
-                    #print(
-                    #    len(b'\x00\x00\x00\x00V\x00\xf0\x00DJ2LS\x00\x00\x00\x00\x00APX216\x00\x00\x00\x00]\x00\x00\x00\x00\x00\x00\x00\x01WIDE2-2\x00\x00\x00:DN2LS    :1111111111111111111111111111111111111111111111111111111111111111111{06}'))
-
-                    if decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info.value:
-
-                        print("send unproto info")
-                        print(data)
-                        print(len(data))
-                        """
-                        print(data)
-                        # Callsign info switched here
-                        print(f"CallTo: {decoded_frame['CallFrom']}")
-                        print(f"CallFrom: {decoded_frame['CallTo']}")
-                        print(decoded_frame['CallFrom'])
-
-                        payload = bytes()
-                        payload += decoded_frame['CallFrom']  # to
-                        payload += decoded_frame['CallTo']  # from
-                        payload += decoded_frame["Payload"]
-                        """
-                        payload = data[6:]
-                        print(len(payload))
-                        print(payload)
-                        DATA_QUEUE_TRANSMIT.put(["FEC", payload, 'datac3'])
-
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_unproto_info_via.value:
-                        print("send unproto info via")  #
-                        # Callsign info switched here
-                        print(f"CallTo: {decoded_frame['CallFrom']}")
-                        print(f"CallFrom: {decoded_frame['CallTo']}")
-
-                        payload = bytes()
-                        payload += decoded_frame['CallFrom']  # to
-                        payload += decoded_frame['CallTo']  # from
-                        payload += decoded_frame["Payload"]
-
-                        DATA_QUEUE_TRANSMIT.put(["FEC", decoded_frame["Payload"], 'datac3'])
-
-                    elif decoded_frame["DataKind"] == AGWPE_FRAMES.send_connected_data.value:
-                        print("send connected data")  #
-                        print(data)
-                        DATA_QUEUE_TRANSMIT.put(["ARQ_RAW", decoded_frame["Payload"], 255, 1, 'no-uuid', decoded_frame['CallFrom'].strip(b'\x00'), decoded_frame['CallTo'].strip(b'\x00'), 10])
-
-                elif data not in [b'']:
-                    print("empty check")
-                    print(data)
-
-                data = b''
+            except Exception as err:
+                self.log.info(
+                    "[AGWPE] Connection closed",
+                    ip=self.client_address[0],
+                    port=self.client_address[1],
+                    e=err,
+                )
+                self.connection_alive = False
 
     def handle(self):
         self.REGISTERED_CALLSIGN_FOR_SOCKET = set()
@@ -443,6 +461,21 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             threading.Event().wait(1)
 
+    def finish(self):
+        """ """
+        self.log.warning(
+            "[AGWPE] Closing client socket",
+            ip=self.client_address[0],
+            port=self.client_address[1],
+        )
+        try:
+            CONNECTED_CLIENTS.remove(self.request)
+        except Exception as e:
+            self.log.warning(
+                "[AGWPE] client connection already removed from client list",
+                client=self.request,
+                e=e,
+            )
 
     def send_heard_stations(self):
         """
@@ -615,8 +648,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         except Exception as err:
             self.log.error(
                 "[AGWPE] socket error",
-                CallTo=CallTo,
-                CallFrom=CallFrom,
                 ip=self.client_address[0],
                 port=self.client_address[1],
                 error=err

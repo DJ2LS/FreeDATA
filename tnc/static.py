@@ -45,6 +45,11 @@ SOCKET_TIMEOUT: int = 1  # seconds
 AGWPE_ENABLE: bool = True
 AGWPE_HOST: str = "127.0.0.1"
 AGWPE_PORT: int = 8000
+
+KISS_ENABLE: bool = True
+KISS_HOST: str = "127.0.0.1"
+KISS_PORT: int = 8100
+
 # ---------------------------------
 SERIAL_DEVICES: list = []
 # ---------------------------------

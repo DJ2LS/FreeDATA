@@ -33,6 +33,7 @@ import structlog
 import explorer
 import json
 import agwpe
+import kiss
 
 log = structlog.get_logger("main")
 
@@ -48,6 +49,8 @@ def signal_handler(sig, frame):
     """
     print("Closing TNC...")
     sock.CLOSE_SIGNAL = True
+    agwpe.CLOSE_SIGNAL = True
+    kiss.CLOSE_SIGNAL = True
     sys.exit(0)
 
 
@@ -276,6 +279,28 @@ if __name__ == "__main__":
         help="Set agwpe server port",
     )
 
+    PARSER.add_argument(
+        "--kiss",
+        dest="kiss_enable",
+        action="store_true",
+        help="Enable KISS support",
+    )
+
+    PARSER.add_argument(
+        "--kiss-ip",
+        dest="kiss_ip",
+        default='127.0.0.1',
+        type=str,
+        help="Set KISS server ip",
+    )
+
+    PARSER.add_argument(
+        "--kiss-port",
+        dest="kiss_port",
+        default=8100,
+        type=int,
+        help="Set KISS server port",
+    )
 
 
     ARGS = PARSER.parse_args()
@@ -335,7 +360,9 @@ if __name__ == "__main__":
             static.AGWPE_ENABLE = ARGS.agwpe_enable
             static.AGWPE_HOST = ARGS.agwpe_ip
             static.AGWPE_PORT = ARGS.agwpe_port
-
+            static.KISS_ENABLE = ARGS.kiss_enable
+            static.KISS_HOST = ARGS.kiss_ip
+            static.KISS_PORT = ARGS.kiss_port
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
 
@@ -372,7 +399,9 @@ if __name__ == "__main__":
             static.AGWPE_ENABLE = conf.get('AGWPE', 'enable', 'True')
             static.AGWPE_HOST = conf.get('AGWPE', 'ip', '0.0.0.0')
             static.AGWPE_PORT = int(conf.get('AGWPE', 'port', '8000'))
-
+            static.KISS_ENABLE = conf.get('KISS', 'enable', 'True')
+            static.KISS_HOST = conf.get('KISS', 'ip', '0.0.0.0')
+            static.KISS_PORT = int(conf.get('KISS', 'port', '8000'))
 
             static.HAMLIB_RADIOCONTROL = conf.get('RADIO', 'radiocontrol', 'rigctld')
             static.HAMLIB_RIGCTLD_IP = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
@@ -461,21 +490,38 @@ if __name__ == "__main__":
         log.error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
         sys.exit(1)
 
-    try:
-        log.info("[TNC] Starting AGWPE socket", port=static.AGWPE_PORT)
-        # https://stackoverflow.com/a/16641793
-        socketserver.TCPServer.allow_reuse_address = True
-        agwpeserver = agwpe.ThreadedTCPServer(
-            (static.AGWPE_HOST, static.AGWPE_PORT), agwpe.ThreadedTCPRequestHandler
-        )
-        agwpe_server_thread = threading.Thread(target=agwpeserver.serve_forever)
+    if static.AGWPE_ENABLE:
+        try:
+            log.info("[TNC] Starting AGWPE socket", port=static.AGWPE_PORT)
+            # https://stackoverflow.com/a/16641793
+            socketserver.TCPServer.allow_reuse_address = True
+            agwpeserver = agwpe.ThreadedTCPServer(
+                (static.AGWPE_HOST, static.AGWPE_PORT), agwpe.ThreadedTCPRequestHandler
+            )
+            agwpe_server_thread = threading.Thread(target=agwpeserver.serve_forever)
 
-        agwpe_server_thread.daemon = True
-        agwpe_server_thread.start()
+            agwpe_server_thread.daemon = True
+            agwpe_server_thread.start()
 
-    except Exception as err:
-        log.error("[TNC] Starting AGWPE socket failed", port=static.AGWPE_PORT, e=err)
-        sys.exit(1)
+        except Exception as err:
+            log.error("[TNC] Starting AGWPE socket failed", port=static.AGWPE_PORT, e=err)
+            sys.exit(1)
 
+    if static.KISS_ENABLE:
+        try:
+            log.info("[TNC] Starting KISS socket", port=static.KISS_PORT)
+            # https://stackoverflow.com/a/16641793
+            socketserver.TCPServer.allow_reuse_address = True
+            kissserver = kiss.ThreadedTCPServer(
+                (static.KISS_HOST, static.KISS_PORT), kiss.ThreadedTCPRequestHandler
+            )
+            kiss_server_thread = threading.Thread(target=kissserver.serve_forever)
+
+            kiss_server_thread.daemon = True
+            kiss_server_thread.start()
+
+        except Exception as err:
+            log.error("[TNC] Starting KISS socket failed", port=static.KISS_PORT, e=err)
+            sys.exit(1)
     while True:
         threading.Event().wait(1)
