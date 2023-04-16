@@ -1809,7 +1809,11 @@
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Rig Control</h5>
-                <p class="card-text">This section is where you configure rig control method (none (VOX) or hamlib) for both GUI and TNC.  For the best experience hamlib control is recommended.</p>
+                <p class="card-text">
+                  This section is where you configure rig control method (none
+                  (VOX) or hamlib) for both GUI and TNC. For the best experience
+                  hamlib control is recommended.
+                </p>
               </div>
             </div>
 
@@ -1829,7 +1833,9 @@
                 <h5 class="card-title">Hamlib</h5>
                 <p class="card-text">
                   Select "Hamlib" if you want to have more control over your
-                  radio. Define your hamlib settings in settings, and click the start button to start rigctld.  You may use the 'PTT test' button to ensure rig control is working.
+                  radio. Define your hamlib settings in settings, and click the
+                  start button to start rigctld. You may use the 'PTT test'
+                  button to ensure rig control is working.
                 </p>
               </div>
             </div>
@@ -1899,8 +1905,8 @@
                   </div>
                 </h5>
                 <p class="card-text">
-                  Enter your callsign and SSID. Your callsign can have a maximum length
-                  of 7 characters
+                  Enter your callsign and SSID. Your callsign can have a maximum
+                  length of 7 characters
                 </p>
               </div>
             </div>
@@ -1974,7 +1980,8 @@
               <div class="card-body">
                 <h5 class="card-title">Alpha</h5>
                 <p class="card-text">
-                  Alpha releases are more frequent and contain the latest features, but are likely to be unstable and introduce bugs.
+                  Alpha releases are more frequent and contain the latest
+                  features, but are likely to be unstable and introduce bugs.
                 </p>
               </div>
             </div>
@@ -1984,7 +1991,8 @@
                 <p class="card-text">
                   Beta releases are more stable than Alpha releases. They are a
                   good tradeoff between latest features and stability. They will
-                  be updated less often. A beta release has not been released yet.
+                  be updated less often. A beta release has not been released
+                  yet.
                 </p>
               </div>
             </div>
@@ -1992,7 +2000,8 @@
               <div class="card-body">
                 <h5 class="card-title">Stable</h5>
                 <p class="card-text">
-                  Stable releases are the most stable versions with no known major issues. A stable release has not been released yet.
+                  Stable releases are the most stable versions with no known
+                  major issues. A stable release has not been released yet.
                 </p>
               </div>
             </div>
@@ -2247,7 +2256,7 @@
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Audio Level</h5>
-                
+
                 <div class="progress mb-0" style="height: 22px">
                   <div
                     class="progress-bar progress-bar-striped bg-primary force-gpu"
@@ -2298,7 +2307,11 @@
                   ></div>
                 </div>
 
-                <p class="card-text">Represents the level of audio from transceiver.  Excessively high levels will cause the TNC to believe the channel is constantly 'busy' and will not transmit.</p>
+                <p class="card-text">
+                  Represents the level of audio from transceiver. Excessively
+                  high levels will cause the TNC to believe the channel is
+                  constantly 'busy' and will not transmit.
+                </p>
               </div>
             </div>
             <div class="card mb-3">
@@ -2355,36 +2368,37 @@
                   ></div>
                 </div>
 
-                <p class="card-text">Represents noise level of the channel from the transceiver.  Requires hamlib rig control.</p>
-                </div>
+                <p class="card-text">
+                  Represents noise level of the channel from the transceiver.
+                  Requires hamlib rig control.
+                </p>
               </div>
-              <div class="card mb-3">
-                <div class="card-body">
-                  <h5 class="card-title">Tune</h5>
-                  
-                  <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary"
-                >
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Tune</h5>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary">
                   Tune
                 </button>
 
-
-                  <p class="card-text">Adjust volume level of outgoing audio to transceiver.  For best results lower the level so that a minimum amount of ALC is used.  Can be used in combination with rig's mic/input gain for furthrer refinement.</p>
-                  </div>
-                </div>
-                <div class="card mb-3">
-                  <div class="card-body">
-                    <h5 class="card-title">Record</h5>
-                    <button
-                    type="button"
-                    class="btn btn-sm btn-outline-danger"
-                  >
-                    Record audio
-                  </button>
-                    <p class="card-text">Create a recording of current channel</p>
-                    </div>
-                  </div>
+                <p class="card-text">
+                  Adjust volume level of outgoing audio to transceiver. For best
+                  results lower the level so that a minimum amount of ALC is
+                  used. Can be used in combination with rig's mic/input gain for
+                  furthrer refinement.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Record</h5>
+                <button type="button" class="btn btn-sm btn-outline-danger">
+                  Record audio
+                </button>
+                <p class="card-text">Create a recording of current channel</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2484,78 +2498,74 @@
               <div class="card-body">
                 <h5 class="card-title">Waterfall</h5>
                 <input
-                type="radio"
-                class="btn-check"
-                name="waterfall-scatter-switch"
-                autocomplete="off"
-                checked
-              />
-              <label
-                class="btn btn-sm btn-outline-secondary"
-                for="waterfall-scatter-switch1"
-                ><strong><i class="bi bi-water"></i></strong>
-              </label>
+                  type="radio"
+                  class="btn-check"
+                  name="waterfall-scatter-switch"
+                  autocomplete="off"
+                  checked
+                />
+                <label
+                  class="btn btn-sm btn-outline-secondary"
+                  for="waterfall-scatter-switch1"
+                  ><strong><i class="bi bi-water"></i></strong>
+                </label>
 
-                <p class="card-text">Displays a waterfall for activity of current channel.</p>
+                <p class="card-text">
+                  Displays a waterfall for activity of current channel.
+                </p>
               </div>
             </div>
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Busy Indicator</h5>
-                
-                <button
-                class="btn btn-sm btn-success"
-                type="button"
-              >
-                busy
-              </button>
 
-                <p class="card-text">Green when channel is open and changes to red to indicate there is activity on the channel.</p>
+                <button class="btn btn-sm btn-success" type="button">
+                  busy
+                </button>
+
+                <p class="card-text">
+                  Green when channel is open and changes to red to indicate
+                  there is activity on the channel.
+                </p>
               </div>
             </div>
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Signal Indicator</h5>
-                <button
-                class="btn btn-sm btn-success"
-                type="button"
-              >
-                signal
+                <button class="btn btn-sm btn-success" type="button">
+                  signal
                 </button>
-                <p class="card-text">Changes to green when Codec2 data is detected on channel.</p>
+                <p class="card-text">
+                  Changes to green when Codec2 data is detected on channel.
+                </p>
               </div>
             </div>
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Constellation Plot</h5>
-                <input
-                          type="radio"
-                          class="btn-check"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn btn-sm btn-outline-secondary"
-                          ><strong><i class="bi bi-border-outer"></i></strong>
-                        </label>
+                <input type="radio" class="btn-check" autocomplete="off" />
+                <label class="btn btn-sm btn-outline-secondary"
+                  ><strong><i class="bi bi-border-outer"></i></strong>
+                </label>
 
-                <p class="card-text">Displays a plot of last decoded message.  A constellation plot is a simple way to represent signal quality.</p>
+                <p class="card-text">
+                  Displays a plot of last decoded message. A constellation plot
+                  is a simple way to represent signal quality.
+                </p>
               </div>
             </div>
             <div class="card mb-3">
               <div class="card-body">
                 <h5 class="card-title">Speed Chart</h5>
-                
-                <input
-                type="radio"
-                class="btn-check"
-                autocomplete="off"
-              />
-              <label
-                class="btn btn-sm btn-outline-secondary"
-                ><strong><i class="bi bi-graph-up-arrow"></i></strong>
-              </label>
 
-                <p class="card-text">Shows history of SNR and bit rate of messages.</p>
+                <input type="radio" class="btn-check" autocomplete="off" />
+                <label class="btn btn-sm btn-outline-secondary"
+                  ><strong><i class="bi bi-graph-up-arrow"></i></strong>
+                </label>
+
+                <p class="card-text">
+                  Shows history of SNR and bit rate of messages.
+                </p>
               </div>
             </div>
           </div>
@@ -2582,7 +2592,11 @@
             ></button>
           </div>
           <div class="modal-body">
-            Stations that you've been able to decode will be listed here.  Details such as time, frequency, message type, call sign, location and SNR will be listed.  Existing entries are updated if they already exist and more detailed history can be viewed in chat window for each station.
+            Stations that you've been able to decode will be listed here.
+            Details such as time, frequency, message type, call sign, location
+            and SNR will be listed. Existing entries are updated if they already
+            exist and more detailed history can be viewed in chat window for
+            each station.
           </div>
         </div>
       </div>
