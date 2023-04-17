@@ -250,9 +250,21 @@
                     >Delete chat</a
                   >
                 </li>
+                <li>
+                  <button
+                  class="dropdown-item"
+                  id="openHelpModalchat"
+                  data-bs-toggle="modal"
+                  data-bs-target="#chatHelpModal"
+                ><i class="bi bi-question-circle" style="font-size: 1rem"></i>
+                  Help
+                </button>
+                </li>
               </ul>
             </div>
+
           </div>
+         
           <hr class="m-0" />
           <! ------messages area ---------------------------------------------------------------------->
           <div
@@ -651,7 +663,94 @@
         </div>
       </div>
     </div>
-
+    <!-- HELP MODAL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="chatHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Chat Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <p class="card-text">
+                  Welcome to the chat window.  Heard stations are listed in the list on the left.  Clicking on a station will show messages sent and/or received
+                  from the selected station.  Additional help is available on various extra features below.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                type="button"
+                class="btn btn-sm btn-primary ms-2"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+                <p class="card-text">
+                  Set your station information and picture.  This information can be requested by a remote station and can be enabled/disabled via settings.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary ms-2"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+                <p class="card-text">
+                  Request the selected station's information.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                type="button"
+                class="btn btn-sm btn-outline-secondary ms-2"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+                <p class="card-text">
+                  Request the selected station's shared file(s) list.  Clicking <button
+                  type="button"
+                  class="btn btn-sm btn-primary ms-2"
+                >
+                  <i class="bi bi-files" style="font-size: 1.2rem"></i>
+                </button> will allow you to preview your shared files.  Shared file can be enabled/disabled in settings.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                type="button"
+                class="btn btn-small btn-outline-primary dropdown-toggle me-2"
+              >
+                <i class="bi bi-funnel-fill"></i>
+              </button>
+                <p class="card-text">
+                  The filter button allows you to show or hide certain types of messages.  A lot of data is logged and this allows you to modify what is shown.  By default sent and received messages and ping acknowlegements are displayed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- dx user shared folder -->
     <div
       class="modal fade"
