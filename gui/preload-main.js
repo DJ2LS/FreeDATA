@@ -1944,24 +1944,24 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // PTT STATE
   switch (arg.ptt_state) {
     case "True":
-      document.getElementById("ptt_state").className = "btn btn-sm btn-danger";
+      document.getElementById("ptt_state").className = "btn btn-sm btn-danger me-1";
       break;
     case "False":
-      document.getElementById("ptt_state").className = "btn btn-sm btn-success";
+      document.getElementById("ptt_state").className = "btn btn-sm btn-success me-1";
       break;
     default:
       document.getElementById("ptt_state").className =
-        "btn btn-sm btn-secondary";
+        "btn btn-sm btn-secondary me-1";
       break;
   }
 
   // AUDIO RECORDING
   if (arg.audio_recording == "True") {
     document.getElementById("startStopRecording").textContent =
-      "Stop recording";
+      "Stop Rec";
   } else {
     document.getElementById("startStopRecording").textContent =
-      "Start recording";
+      "Record";
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
@@ -1989,17 +1989,17 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BUSY STATE
   switch (arg.busy_state) {
     case "BUSY":
-      document.getElementById("busy_state").className = "btn btn-sm btn-danger";
+      document.getElementById("busy_state").className = "btn btn-sm btn-danger me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = true;
       break;
     case "IDLE":
       document.getElementById("busy_state").className =
-        "btn btn-sm btn-success";
+        "btn btn-sm btn-success me-1";
       break;
     default:
       document.getElementById("busy_state").className =
-        "btn btn-sm btn-secondary";
+        "btn btn-sm btn-secondary me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = true;
       break;
@@ -2008,13 +2008,13 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // ARQ STATE
   switch (arg.arq_state) {
     case "True":
-      document.getElementById("arq_state").className = "btn btn-sm btn-warning";
+      document.getElementById("arq_state").className = "btn btn-sm btn-warning me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = false;
       break;
     default:
       document.getElementById("arq_state").className =
-        "btn btn-sm btn-secondary";
+        "btn btn-sm btn-secondary me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = false;
       break;
@@ -2024,17 +2024,17 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   switch (arg.arq_session) {
     case "True":
       document.getElementById("arq_session").className =
-        "btn btn-sm btn-warning";
+        "btn btn-sm btn-warning me-1";
       break;
     default:
       document.getElementById("arq_session").className =
-        "btn btn-sm btn-secondary";
+        "btn btn-sm btn-secondary me-1";
       break;
   }
 
   if (arg.arq_state == "True" || arg.arq_session == "True") {
     document.getElementById("spnConnectedWith").className =
-      "bi bi-chat-fill text-success";
+      "bi bi-chat-fill text-success me-1";
   } else {
     document.getElementById("spnConnectedWith").className = "bi bi-chat-fill";
   }
@@ -2042,24 +2042,24 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // HAMLIB STATUS
   if (arg.hamlib_status == "connected") {
     document.getElementById("rigctld_state").className =
-      "btn btn-success btn-sm";
+      "btn btn-success btn-sm me-1";
   } else {
     document.getElementById("rigctld_state").className =
-      "btn btn-secondary btn-sm";
+      "btn btn-secondary btn-sm me-1";
   }
 
   // BEACON
   switch (arg.beacon_state) {
     case "True":
       document.getElementById("startBeacon").className =
-        "btn btn-sm btn-success";
+        "btn btn-sm btn-success ms-1";
       if (document.getElementById("beaconInterval").disabled == false) {
         document.getElementById("beaconInterval").disabled = true;
       }
       break;
     default:
       document.getElementById("startBeacon").className =
-        "btn btn-sm btn-outline-secondary";
+        "btn btn-sm btn-outline-secondary ms-1";
       if (document.getElementById("beaconInterval").disabled == true) {
         document.getElementById("beaconInterval").disabled = false;
       }

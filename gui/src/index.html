@@ -283,7 +283,7 @@
 	 -->
     </nav>
 
-    <div id="blurdiv" style="-webkit-filter: blur(0px); filter: blur(0px)">
+    <div id="blurdiv" style="-webkit-filter: blur(0px); filter: blur(0px);">
       <!--beginn of blur div -->
       <!-------------------------------- MAIN AREA ---------------->
       <!-------------------------------- INFO TOASTS ---------------->
@@ -306,7 +306,7 @@
               <div class="card-header p-1">
                 <div class="container">
                   <div class="row">
-                    <div class="col-auto">
+                    <div class="col-1">
                       <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
                     </div>
                     <div class="col-10">
@@ -362,13 +362,13 @@
               <div class="card-header p-1">
                 <div class="container">
                   <div class="row">
-                    <div class="col-auto">
+                    <div class="col-1">
                       <i class="bi bi-projector" style="font-size: 1.2rem"></i>
                     </div>
-                    <div class="col-3">
+                    <div class="col-4">
                       <strong class="fs-5">Rig control</strong>
                     </div>
-                    <div class="col-7">
+                    <div class="col-6">
                       <div
                         class="btn-group btn-group-sm"
                         role="group"
@@ -530,7 +530,7 @@
               <div class="card-header p-1">
                 <div class="container">
                   <div class="row">
-                    <div class="col-auto">
+                    <div class="col-1">
                       <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
                     </div>
                     <div class="col-10">
@@ -639,16 +639,16 @@
               <div class="card-header p-1 d-flex">
                 <div class="container">
                   <div class="row">
-                    <div class="col-auto">
+                    <div class="col-1">
                       <i
                         class="bi bi-cloud-download"
                         style="font-size: 1.2rem"
                       ></i>
                     </div>
-                    <div class="col-2">
+                    <div class="col-3">
                       <strong class="fs-5">Updater</strong>
                     </div>
-                    <div class="col-8">
+                    <div class="col-7">
                       <div class="progress w-100 ms-1 m-1">
                         <div
                           class="progress-bar"
@@ -729,10 +729,10 @@
                     <div class="col-1">
                       <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
                     </div>
-                    <div class="col-4">
+                    <div class="col-5">
                       <strong class="fs-5">Audio level</strong>
                     </div>
-                    <div class="col-6">
+                    <div class="col-5">
                       <button
                         type="button"
                         id="audioModalButton"
@@ -886,7 +886,7 @@
               <div class="card-header p-1">
                 <div class="container">
                   <div class="row">
-                    <div class="col-auto">
+                    <div class="col-1">
                       <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>
                     </div>
                     <div class="col-10">
@@ -969,39 +969,23 @@
                         ></i>
                       </button>
                       -->
-                    </div>
-                  </div>
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Send a CQ to the world"
-                    >
+
                       <button
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-sm btn-outline-secondary ms-1"
                         id="sendCQ"
                         type="button"
+                                              title="Send a CQ to the world"
+
                       >
                         Call CQ
                       </button>
-                    </div>
-                  </div>
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
-                    >
+
                       <button
                         type="button"
                         id="startBeacon"
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+
                       >
                         <i class="bi bi-soundwave"></i> Toggle beacon
                       </button>
@@ -1433,7 +1417,7 @@
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
             <div class="btn-group btn-group-sm me-1" role="group">
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="ptt_state"
                 type="button"
                 data-bs-placement="top"
@@ -1444,10 +1428,9 @@
               >
                 <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="busy_state"
                 type="button"
                 data-bs-placement="top"
@@ -1458,10 +1441,9 @@
               >
                 <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="arq_session"
                 type="button"
                 data-bs-placement="top"
@@ -1472,10 +1454,9 @@
               >
                 <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="arq_state"
                 type="button"
                 data-bs-placement="top"
@@ -1489,10 +1470,9 @@
                   style="font-size: 0.8rem"
                 ></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="rigctld_state"
                 type="button"
                 data-bs-placement="top"
@@ -1690,7 +1670,7 @@
         </div>
         <div class="col-lg-4">
           <div style="margin-right: 2px">
-            <div class="progress w-100" style="height: 30px; min-width: 300px">
+            <div class="progress w-100" style="height: 30px; min-width: 200px">
               <div
                 class="progress-bar progress-bar-striped bg-primary force-gpu"
                 id="transmission_progress"
