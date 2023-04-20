@@ -54,6 +54,7 @@
               for="local-remote-switch1"
             >
               <i class="bi bi-pc-display-horizontal"></i>
+              <span class="ms-2 me-2">Local tnc</span>
             </label>
             <input
               type="radio"
@@ -67,10 +68,11 @@
               for="local-remote-switch2"
             >
               <i class="bi bi-ethernet"></i>
+              <span class="ms-2 me-2">Remote tnc</span>
             </label>
           </div>
           <div class="input-group input-group-sm me-2" id="remote-tnc-field">
-            <span class="input-group-text">TNC IP</span>
+            <span class="input-group-text">tnc ip</span>
             <input
               type="text"
               class="form-control"
@@ -105,6 +107,16 @@
               <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
             </button>
           </div>
+
+          <button
+            type="button"
+            id="openHelpModalLocalRemote"
+            data-bs-toggle="modal"
+            data-bs-target="#localRemoteHelpModal"
+            class="btn m-0 p-0 border-0"
+          >
+            <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+          </button>
         </div>
       </div>
       <div>
@@ -121,9 +133,18 @@
             class="bi bi-sign-stop-fill"
           ></i>
         </button>
+        <button
+          type="button"
+          id="openHelpModalStopTransmission"
+          data-bs-toggle="modal"
+          data-bs-target="#stopTransmissionHelpModal"
+          class="btn m-0 p-0 border-0"
+        >
+          <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+        </button>
       </div>
       <div>
-        <div class="btn-group me-4" role="group">
+        <div class="btn-group" role="group">
           <button
             type="button"
             id="startTNC"
@@ -134,6 +155,7 @@
             title="Start the TNC. Please set your audio and radio settings first!"
           >
             <i class="bi bi-play-fill"></i>
+            <span class="ms-2">Start tnc</span>
           </button>
           <button
             type="button"
@@ -145,8 +167,18 @@
             title="Stop the TNC."
           >
             <i class="bi bi-stop-fill"></i>
+            <span class="ms-2">Stop tnc</span>
           </button>
         </div>
+        <button
+          type="button"
+          id="openHelpModalStartStopTNC"
+          data-bs-toggle="modal"
+          data-bs-target="#startStopTNCHelpModal"
+          class="btn me-5 p-0 border-0"
+        >
+          <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+        </button>
         <!-- Split Button -->
         <div class="btn-group me-2" role="group">
           <button
@@ -229,10 +261,10 @@
 
       <!--
 	<div class="btn-toolbar" role="toolbar">
-		
+
 <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false"
 			title="View the received files. This is currently under development!">
-			
+
 
 	   <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
@@ -242,7 +274,7 @@
 	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
 	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
 	   </button>
-	  
+
 		</span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="true"
 			title="Settings and Info">
 
@@ -267,18 +299,38 @@
         ></div>
       </div>
       <!------------------------------------------------------------------------------------------>
-      <div class="container p-0" style="margin-top: 55px">
+      <div class="container p-3" style="margin-top: 55px">
         <div class="row collapse multi-collapse show" id="collapseFirstRow">
           <div class="col">
             <div class="card mb-0">
-              <div class="card-header p-2">
-                <div class="">
-                  <i class="bi bi-volume-up" style="font-size: 1rem"></i
-                  ><strong>AUDIO</strong>
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Audio devices</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalAudio"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div class="card-body p-1" style="height: 100px">
+              <div class="card-body p-2" style="height: 100px">
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text">
                     <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
@@ -291,7 +343,7 @@
                     <!-- 					 					<option selected value="3011">USB Interface</option>-->
                   </select>
                 </div>
-                <div class="input-group input-group-sm mb-1">
+                <div class="input-group input-group-sm">
                   <span class="input-group-text">
                     <i class="bi bi-volume-up" style="font-size: 1rem"></i>
                   </span>
@@ -302,74 +354,77 @@
                   ></select>
                 </div>
               </div>
-              <div class="card-footer text-muted small">
-                Please select audio device for RX and TX
-              </div>
             </div>
             <!--Start of TNC rig control pane-->
           </div>
           <div class="col">
             <div class="card mb-0">
               <div class="card-header p-1">
-                <i class="bi bi-projector" style="font-size: 1rem"></i
-                ><strong> TNC RIG CONTROL</strong>
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="radio-control-switch-disabled"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="radio-control-switch"
-                    id="radio-control-switch-disabled"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-disabled"
-                  >
-                    None
-                  </label>
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-projector" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-4">
+                      <strong class="fs-5">Rig control</strong>
+                    </div>
+                    <div class="col-6">
+                      <div
+                        class="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="radio-control-switch-disabled"
+                      >
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="radio-control-switch"
+                          id="radio-control-switch-disabled"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="radio-control-switch-disabled"
+                        >
+                          None / Vox
+                        </label>
 
-                  <div
-                    class="btn-group btn-group-sm"
-                    role="group"
-                    aria-label="radio-control-switch-rigctld"
-                  >
-                    <input
-                      type="radio"
-                      class="btn-check"
-                      name="radio-control-switch"
-                      id="radio-control-switch-rigctld"
-                      autocomplete="off"
-                    />
-                    <label
-                      class="btn btn-sm btn-outline-secondary"
-                      for="radio-control-switch-rigctld"
-                    >
-                      Hamlib
-                    </label>
+                        <div
+                          class="btn-group btn-group-sm"
+                          role="group"
+                          aria-label="radio-control-switch-rigctld"
+                        >
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="radio-control-switch"
+                            id="radio-control-switch-rigctld"
+                            autocomplete="off"
+                          />
+                          <label
+                            class="btn btn-sm btn-outline-secondary"
+                            for="radio-control-switch-rigctld"
+                          >
+                            Hamlib
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalRigControl"
+                        data-bs-toggle="modal"
+                        data-bs-target="#rigcontrolHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="radio-control-switch-rigctld"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="radio-control-switch"
-                    id="radio-control-switch-help"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="radio-control-switch-help"
-                  >
-                    <i class="bi bi-question-circle"></i>
-                  </label>
                 </div>
               </div>
               <div class="card-body p-2" style="height: 100px">
@@ -386,10 +441,8 @@
                 <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text"
-                        >Rigctld Network settings</span
-                      >
-                      <span class="input-group-text">IP</span>
+                      <span class="input-group-text">Rigctld</span>
+                      <span class="input-group-text">Address</span>
                       <input
                         type="text"
                         class="form-control"
@@ -410,7 +463,8 @@
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">Rigctld application</span>
+                      <span class="input-group-text">Rigctld</span>
+                      <span class="input-group-text">Service</span>
                       <button
                         class="btn btn-outline-success"
                         type="button"
@@ -460,20 +514,44 @@
                   happens automatically.
                 </div>
               </div>
-              <div class="card-footer text-muted small" id="hamlib_info_field">
+              <!--<div class="card-footer text-muted small" id="hamlib_info_field">
                 Define TNC rig control mode (none/hamlib)
               </div>
+              -->
             </div>
           </div>
         </div>
         <div
-          class="row collapse multi-collapse show mt-2"
+          class="row collapse multi-collapse show mt-4"
           id="collapseSecondRow"
         >
           <div class="col">
             <div class="card mb-1">
-              <div class="card-header p-2">
-                <i class="bi bi-house-door"></i><strong> MY STATION</strong>
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">My station</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalStation"
+                        data-bs-toggle="modal"
+                        data-bs-target="#stationHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body p-2">
                 <div class="row">
@@ -558,23 +636,48 @@
           </div>
           <div class="col">
             <div class="card mb-0">
-              <div class="card-header p-2 d-flex">
-                <i
-                  class="bi bi-cloud-download ms-1 me-1"
-                  style="font-size: 1rem"
-                ></i>
-                <strong>UPDATER</strong>
-                <div class="progress w-75 ms-1 m-1">
-                  <div
-                    class="progress-bar"
-                    style="width: 0%"
-                    role="progressbar"
-                    id="UpdateProgressBar"
-                    aria-valuenow="0"
-                    aria-valuemin="0"
-                    aria-valuemax="100"
-                  >
-                    <span id="UpdateProgressInfo"></span>
+              <div class="card-header p-1 d-flex">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i
+                        class="bi bi-cloud-download"
+                        style="font-size: 1.2rem"
+                      ></i>
+                    </div>
+                    <div class="col-3">
+                      <strong class="fs-5">Updater</strong>
+                    </div>
+                    <div class="col-7">
+                      <div class="progress w-100 ms-1 m-1">
+                        <div
+                          class="progress-bar"
+                          style="width: 0%"
+                          role="progressbar"
+                          id="UpdateProgressBar"
+                          aria-valuenow="0"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          <span id="UpdateProgressInfo"></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalUpdater"
+                        data-bs-toggle="modal"
+                        data-bs-target="#updaterHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -616,35 +719,59 @@
           </div>
         </div>
       </div>
-      <div class="container mt-2 p-0">
+      <div class="container">
         <div class="row collapse multi-collapse" id="collapseThirdRow">
           <div class="col-5">
             <div class="card mb-1">
               <div class="card-header p-1">
-                <i class="bi bi-volume-up" style="font-size: 1rem"></i>
-                <strong>AUDIO LEVEL</strong>
-                <button
-                  type="button"
-                  id="audioModalButton"
-                  data-bs-toggle="modal"
-                  data-bs-target="#audioModal"
-                  class="btn btn-sm btn-outline-secondary"
-                >
-                  Tune
-                </button>
-                <button
-                  type="button"
-                  id="startStopRecording"
-                  class="btn btn-sm btn-outline-danger"
-                >
-                  Record audio
-                </button>
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-5">
+                      <strong class="fs-5">Audio level</strong>
+                    </div>
+                    <div class="col-5">
+                      <button
+                        type="button"
+                        id="audioModalButton"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioModal"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
+                        Tune
+                      </button>
+                      <button
+                        type="button"
+                        id="startStopRecording"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        Record audio
+                      </button>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalAudioLevel"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioLevelHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body p-2">
                 <div class="container">
                   <div class="row">
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 15px">
+                      <div class="progress mb-0" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="noise_level"
@@ -661,7 +788,7 @@
                           S-Meter (dB)
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 5px">
+                      <div class="progress mb-0" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"
@@ -697,7 +824,7 @@
                       </div>
                     </div>
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 15px">
+                      <div class="progress mb-0" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="dbfs_level"
@@ -714,7 +841,7 @@
                           dBFS (Audio Level)
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 5px">
+                      <div class="progress mb-0" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"
@@ -756,8 +883,31 @@
           </div>
           <div class="col">
             <div class="card mb-1">
-              <div class="card-header p-2">
-                <strong>PING, CQ & BEACON</strong>
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Broadcasts</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalBroadcasts"
+                        data-bs-toggle="modal"
+                        data-bs-target="#broadcastsHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body p-2">
                 <div class="row">
@@ -819,41 +969,23 @@
                         ></i>
                       </button>
                       -->
-                    </div>
-                  </div>
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Send a CQ to the world"
-                    >
+
                       <button
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-sm btn-outline-secondary ms-1"
                         id="sendCQ"
                         type="button"
+                        title="Send a CQ to the world"
                       >
-                        CQ
+                        Call CQ
                       </button>
-                    </div>
-                  </div>
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
-                    >
+
                       <button
                         type="button"
                         id="startBeacon"
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
                       >
-                        <i class="bi bi-soundwave"></i>
+                        <i class="bi bi-soundwave"></i> Toggle beacon
                       </button>
                     </div>
                   </div>
@@ -863,82 +995,103 @@
             </div>
           </div>
         </div>
-        <div class="row collapse multi-collapse" id="collapseFourthRow">
+        <div class="row collapse multi-collapse mt-3" id="collapseFourthRow">
           <div class="col-5">
             <div class="card mb-1">
               <div class="card-header p-1">
-                <div
-                  class="btn-group btn-group-sm"
-                  role="group"
-                  aria-label="waterfall-scatter-switch toggle button group"
-                >
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="waterfall-scatter-switch"
-                    id="waterfall-scatter-switch1"
-                    autocomplete="off"
-                    checked
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="waterfall-scatter-switch1"
-                    ><strong><i class="bi bi-water"></i></strong>
-                  </label>
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="waterfall-scatter-switch"
-                    id="waterfall-scatter-switch2"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="waterfall-scatter-switch2"
-                    ><strong><i class="bi bi-border-outer"></i></strong>
-                  </label>
-                  <input
-                    type="radio"
-                    class="btn-check"
-                    name="waterfall-scatter-switch"
-                    id="waterfall-scatter-switch3"
-                    autocomplete="off"
-                  />
-                  <label
-                    class="btn btn-sm btn-outline-secondary"
-                    for="waterfall-scatter-switch3"
-                    ><strong><i class="bi bi-graph-up-arrow"></i></strong>
-                  </label>
-                </div>
-                <div
-                  class="btn-group"
-                  role="group"
-                  aria-label="Busy indicators"
-                >
-                  <button
-                    class="btn btn-sm btn-secondary"
-                    id="channel_busy"
-                    type="button"
-                    data-bs-placement="top"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="true"
-                    title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-                  >
-                    busy
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-secondary"
-                    id="c2_busy"
-                    type="button"
-                    data-bs-placement="top"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="true"
-                    title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
-                  >
-                    rd
-                  </button>
+                <div class="container">
+                  <div class="row">
+                    <div class="col-11">
+                      <div
+                        class="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="waterfall-scatter-switch toggle button group"
+                      >
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch1"
+                          autocomplete="off"
+                          checked
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch1"
+                          ><strong><i class="bi bi-water"></i></strong>
+                        </label>
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch2"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch2"
+                          ><strong><i class="bi bi-border-outer"></i></strong>
+                        </label>
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch3"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch3"
+                          ><strong><i class="bi bi-graph-up-arrow"></i></strong>
+                        </label>
+                      </div>
+                      <div
+                        class="btn-group"
+                        role="group"
+                        aria-label="Busy indicators"
+                      >
+                        <button
+                          class="btn btn-sm btn-secondary"
+                          id="channel_busy"
+                          type="button"
+                          data-bs-placement="top"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+                        >
+                          busy
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-secondary"
+                          id="c2_busy"
+                          type="button"
+                          data-bs-placement="top"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
+                        >
+                          signal
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalWaterfall"
+                        data-bs-toggle="modal"
+                        data-bs-target="#waterfallHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div class="card-body p-1" style="height: 200px">
@@ -964,12 +1117,34 @@
           <div class="col">
             <div class="card mb-1" style="height: 240px">
               <!--325px-->
-              <div class="card-header p-2">
-                <i
-                  class="bi bi-list-columns-reverse"
-                  style="font-size: 1rem"
-                ></i>
-                <strong> HEARD STATIONS</strong>
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-auto">
+                      <i
+                        class="bi bi-list-columns-reverse"
+                        style="font-size: 1.2rem"
+                      ></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Heard stations</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalHeardStations"
+                        data-bs-toggle="modal"
+                        data-bs-target="#heardStationsHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body p-0">
                 <div class="table-responsive">
@@ -1108,7 +1283,7 @@
                       <div class="col-auto">
                         <!--
                                        <div class="input-group input-group-sm mb-0">
-                                       
+
                                        	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
                                        </div>
                                        -->
@@ -1240,7 +1415,7 @@
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
             <div class="btn-group btn-group-sm me-1" role="group">
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="ptt_state"
                 type="button"
                 data-bs-placement="top"
@@ -1251,10 +1426,9 @@
               >
                 <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="busy_state"
                 type="button"
                 data-bs-placement="top"
@@ -1265,10 +1439,9 @@
               >
                 <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="arq_session"
                 type="button"
                 data-bs-placement="top"
@@ -1279,10 +1452,9 @@
               >
                 <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="arq_state"
                 type="button"
                 data-bs-placement="top"
@@ -1296,10 +1468,9 @@
                   style="font-size: 0.8rem"
                 ></i>
               </button>
-            </div>
-            <div class="btn-group btn-group-sm me-1" role="group">
+
               <button
-                class="btn btn-sm btn-secondary"
+                class="btn btn-sm btn-secondary me-1"
                 id="rigctld_state"
                 type="button"
                 data-bs-placement="top"
@@ -1398,7 +1569,6 @@
                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set LSB"
-                  type="button"
                   id="saveModeLSB"
                 >
                   LSB
@@ -1412,7 +1582,6 @@
                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set USB"
-                  type="button"
                   id="saveModeUSB"
                 >
                   USB
@@ -1425,7 +1594,6 @@
                   data-bs-trigger="hover"
                   data-bs-html="false"
                   title="set PKTUSB"
-                  type="button"
                   id="saveModePKTUSB"
                 >
                   PKTUSB
@@ -1500,7 +1668,7 @@
         </div>
         <div class="col-lg-4">
           <div style="margin-right: 2px">
-            <div class="progress w-100" style="height: 30px; min-width: 300px">
+            <div class="progress w-100" style="height: 30px; min-width: 200px">
               <div
                 class="progress-bar progress-bar-striped bg-primary force-gpu"
                 id="transmission_progress"
@@ -1532,6 +1700,899 @@
     <script src="waterfall/spectrum.js"></script>
     <script src="waterfall/spectrogram.js"></script>
     <!--<script src="waterfall/script.js"></script>-->
+
+    <!-- HELP MODALS AUDIO -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">
+                    <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    disabled
+                  >
+                    <!-- 					 					<option selected value="3011">USB Interface</option>-->
+                  </select>
+                </div>
+                <p class="card-text">
+                  Select your audio device for transmitting. It
+                  <strong>must</strong> be using a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">
+                    <i class="bi bi-volume-up" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    disabled
+                  ></select>
+                </div>
+                <p class="card-text">
+                  Select your audio device for receiving. It
+                  <strong>must</strong> be using a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS RIGCONTROL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="rigcontrolHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Rig Control</h5>
+                <p class="card-text">
+                  This section is where you configure rig control method (none
+                  (VOX) or hamlib) for both GUI and TNC. For the best experience
+                  hamlib control is recommended.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">None/Vox</h5>
+                <p class="card-text">
+                  Select "None/Vox" if you want to use Vox for triggering PTT.
+                  No connection to rigctld will be established. No frequency
+                  information is availble.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Hamlib</h5>
+                <p class="card-text">
+                  Select "Hamlib" if you want to have more control over your
+                  radio. Define your hamlib settings in settings, and click the
+                  start button to start rigctld. You may use the 'PTT test'
+                  button to ensure rig control is working.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS STATION -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="stationHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info" role="alert">
+              These settings will be saved automatically when changing.
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your callsign and save it"
+                  >
+                    <span class="input-group-text">
+                      <i
+                        class="bi bi-person-bounding-box"
+                        style="font-size: 1rem"
+                      ></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="callsign"
+                      pattern="[A-Z]*"
+                      maxlength="8"
+                      style="max-width: 8rem"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      style="max-width: 6rem"
+                      disabled
+                    >
+                      <option selected value="SSID">SSID</option>
+                    </select>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your callsign and SSID. Your callsign can have a maximum
+                  length of 7 characters
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your gridsquare and save it"
+                  >
+                    <span class="input-group-text">
+                      <i class="bi bi-house-fill" style="font-size: 1rem"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control mr-1"
+                      style="max-width: 6rem"
+                      placeholder="locator"
+                      maxlength="6"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your position as a 4 or 6 digit grid square, also known
+                  as a maidenhead locator. Six digits are recommended.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS UPDATER -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="updaterHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Auto-Updater</h5>
+                <p class="card-text">
+                  The auto updater loads the latest version from Github and
+                  installs it automatically. You can select the update channel
+                  in settings. Once an update has been downlaoded, you need to
+                  confirm the auto-installation and restart.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Alpha</h5>
+                <p class="card-text">
+                  Alpha releases are more frequent and contain the latest
+                  features, but are likely to be unstable and introduce bugs.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Beta</h5>
+                <p class="card-text">
+                  Beta releases are more stable than Alpha releases. They are a
+                  good tradeoff between latest features and stability. They will
+                  be updated less often. A beta release has not been released
+                  yet.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Stable</h5>
+                <p class="card-text">
+                  Stable releases are the most stable versions with no known
+                  major issues. A stable release has not been released yet.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS LOCAL REMOTE -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="localRemoteHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="btn-group btn-group-sm me-2"
+                    role="group"
+                    aria-label="local-remote-switch toggle button group"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="true"
+                    title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
+                  >
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="local-remote-switch"
+                      autocomplete="off"
+                      checked
+                      disabled
+                    />
+                    <label
+                      class="btn btn-sm btn-outline-secondary"
+                      for="local-remote-switch1"
+                    >
+                      <i class="bi bi-pc-display-horizontal"></i>
+                      <span class="ms-2 me-2">Local tnc</span>
+                    </label>
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="local-remote-switch"
+                      autocomplete="off"
+                      disabled
+                    />
+                    <label
+                      class="btn btn-sm btn-outline-secondary"
+                      for="local-remote-switch2"
+                    >
+                      <i class="bi bi-ethernet"></i>
+                      <span class="ms-2 me-2">Remote tnc</span>
+                    </label>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Local / Remote switch. If the TNC is running on the same
+                  computer as the GUI, select local. Otherwise choose remote and
+                  enter the IP/Port of where the TNC is running.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="input-group input-group-sm me-2">
+                    <span class="input-group-text">tnc ip</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="ip address"
+                      value="192.168.178.163"
+                      maxlength="17"
+                      style="width: 8rem"
+                      aria-label="Username"
+                      aria-describedby="basic-addon1"
+                      disabled
+                    />
+                    <span class="input-group-text">:</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="port"
+                      value="3000"
+                      maxlength="5"
+                      max="65534"
+                      min="1025"
+                      style="width: 4rem"
+                      aria-label="Username"
+                      aria-describedby="basic-addon1"
+                      disabled
+                    />
+                    <button
+                      class="btn btn-sm btn-danger"
+                      type="button"
+                      disabled
+                    >
+                      <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
+                    </button>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Remote IP of TNC. Port is port of daemon. The tnc port will
+                  automatically adjusted. ( daemon port - 1 )
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS STOP TRANSMISSION -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="stopTransmissionHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <button
+                    class="btn btn-sm btn-outline-danger"
+                    type="button"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Abort session and stop transmissions"
+                    disabled
+                  >
+                    <i class="bi bi-sign-stop-fill"></i> &nbsp;STOP
+                    TRANSMISSION&nbsp;<i class="bi bi-sign-stop-fill"></i>
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Stop the current transmission or connection. Bursts will be
+                  transmitted so the remote station is informed about our
+                  disconnect attempt and freeing the remote station from any
+                  unnecessary busy state.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS START STOP TNC -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="startStopTNCHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="btn-group" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-success"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Start the TNC. Please set your audio and radio settings first!"
+                      disabled
+                    >
+                      <i class="bi bi-play-fill"></i>
+                      <span class="ms-2">Start tnc</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Stop the TNC."
+                      disabled
+                    >
+                      <i class="bi bi-stop-fill"></i>
+                      <span class="ms-2">Stop tnc</span>
+                    </button>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Start or stop the TNC service. The TNC daemon must be running
+                  and will work whether the TNC is local or remote.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS AUDIO LEVEL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioLevelHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="progress mb-0" style="height: 22px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-primary force-gpu"
+                      role="progressbar"
+                      style="width: 5%"
+                      aria-valuenow="5"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <p
+                      class="justify-content-center d-flex position-absolute w-100"
+                    >
+                      -38 dBFS (Audio Level)
+                    </p>
+                  </div>
+                  <div class="progress mb-0" style="height: 8px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 1%"
+                      aria-valuenow="1"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 89%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 20%"
+                      aria-valuenow="20"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-danger"
+                      role="progressbar"
+                      style="width: 29%"
+                      aria-valuenow="29"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Represents the level of audio from transceiver. Excessively
+                  high levels will affect decoding performance negatively.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="progress mb-0" style="height: 22px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-primary force-gpu"
+                      role="progressbar"
+                      style="width: 30%"
+                      aria-valuenow="0"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <p
+                      class="justify-content-center d-flex position-absolute w-100"
+                      id="noise_level_value"
+                    >
+                      -24 S-Meter (dBm)
+                    </p>
+                  </div>
+                  <div class="progress mb-0" style="height: 8px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 1%"
+                      aria-valuenow="1"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 89%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 20%"
+                      aria-valuenow="20"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-danger"
+                      role="progressbar"
+                      style="width: 29%"
+                      aria-valuenow="29"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Represents noise level of the channel from the transceiver.
+                  Requires hamlib rig control.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
+                    Tune
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Adjust volume level of outgoing audio to transceiver. For best
+                  results lower the level so that a minimum amount of ALC is
+                  used. Can be used in combination with rig's mic/input gain for
+                  furthrer refinement.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <button type="button" class="btn btn-sm btn-outline-danger">
+                    Record audio
+                  </button>
+                </h5>
+                <p class="card-text">Create a recording of current channel</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS BROADCASTS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="broadcastsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  class="btn btn-sm btn-outline-secondary ms-1"
+                  type="button"
+                  disabled
+                >
+                  Ping
+                </button>
+                <p class="card-text">
+                  Send a ping to a remote station by entering a callsign and
+                  optional SSID (-0 will be used if not specified.)
+                  Alternatively click on a station in the heard station list to
+                  populate the call sign field. If the remote station decodes
+                  the ping it will transmit a reply. If able to decode the
+                  reply, a signal report will be listed in the heard station
+                  list.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  disabled
+                >
+                  Call CQ
+                </button>
+                <p class="card-text">Sending out a CQ CQ CQ to the world.</p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  disabled
+                >
+                  <i class="bi bi-soundwave"></i>Toggle beacon
+                </button>
+                <p class="card-text">
+                  Sends a periodic broadcast (duration is definable in settings)
+                  that announces you are available. Check explorer to see other
+                  active stations that may have decoded your beacon.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS WATERFALL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="waterfallHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Waterfall
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="waterfall-scatter-switch"
+                    autocomplete="off"
+                    checked
+                  />
+                  <label
+                    class="btn btn-sm btn-outline-secondary"
+                    for="waterfall-scatter-switch1"
+                    ><strong><i class="bi bi-water"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Displays a waterfall for activity of current channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Busy Indicator
+
+                  <button class="btn btn-sm btn-success" type="button">
+                    busy
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Green when channel is open and changes to red to indicate
+                  there is activity on the channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Signal Indicator
+                  <button class="btn btn-sm btn-success" type="button">
+                    signal
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Changes to green when Codec2 data is detected on channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Constellation Plot
+                  <input type="radio" class="btn-check" autocomplete="off" />
+                  <label class="btn btn-sm btn-outline-secondary"
+                    ><strong><i class="bi bi-border-outer"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Displays a plot of last decoded message. A constellation plot
+                  is a simple way to represent signal quality.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Speed Chart
+
+                  <input type="radio" class="btn-check" autocomplete="off" />
+                  <label class="btn btn-sm btn-outline-secondary"
+                    ><strong><i class="bi bi-graph-up-arrow"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Shows history of SNR and bit rate of messages.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP MODALS HEARD STATIONS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="heardStationsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Station List Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <p class="card-text">
+                  Stations that you've been able to decode will be listed here.
+                  Details such as time, frequency, message type, call sign,
+                  location and SNR will be listed. Existing entries are updated
+                  if they already exist and more detailed history can be viewed
+                  in chat window for each station.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- AUDIO MODAL -->
     <div
       class="modal fade"
@@ -1799,7 +2860,7 @@
                   </label>
                 </div>
               </div>
-              <!-- Chat tab contents -->
+
               <div
                 class="tab-pane"
                 id="chat"
@@ -1890,7 +2951,6 @@
                     class="btn btn-outline-secondary"
                     type="button"
                     id="btnHamlibCopyCommand"
-                    title="Copy exe and arguments to clipboard to run in terminal for troubleshooting"
                   >
                     <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
                   </button>
@@ -2623,8 +3683,8 @@
                 </div>
                 <div class="center">
                   <div class="badge text-bg-danger">
-                    <i class="bi bi-shield-exclamation"></i> These options are
-                    experimental and may not work as expected.
+                    <i class="bi bi-shield-exclamation"></i> These options may
+                    not work and are for experienced users only!
                   </div>
                 </div>
               </div>
