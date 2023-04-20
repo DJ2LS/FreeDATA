@@ -1944,10 +1944,12 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // PTT STATE
   switch (arg.ptt_state) {
     case "True":
-      document.getElementById("ptt_state").className = "btn btn-sm btn-danger me-1";
+      document.getElementById("ptt_state").className =
+        "btn btn-sm btn-danger me-1";
       break;
     case "False":
-      document.getElementById("ptt_state").className = "btn btn-sm btn-success me-1";
+      document.getElementById("ptt_state").className =
+        "btn btn-sm btn-success me-1";
       break;
     default:
       document.getElementById("ptt_state").className =
@@ -1957,11 +1959,9 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
 
   // AUDIO RECORDING
   if (arg.audio_recording == "True") {
-    document.getElementById("startStopRecording").textContent =
-      "Stop Rec";
+    document.getElementById("startStopRecording").textContent = "Stop Rec";
   } else {
-    document.getElementById("startStopRecording").textContent =
-      "Record";
+    document.getElementById("startStopRecording").textContent = "Record";
   }
   //CHANNEL CODEC2 BUSY STATE
   if (arg.is_codec2_traffic == "True") {
@@ -1989,7 +1989,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // BUSY STATE
   switch (arg.busy_state) {
     case "BUSY":
-      document.getElementById("busy_state").className = "btn btn-sm btn-danger me-1";
+      document.getElementById("busy_state").className =
+        "btn btn-sm btn-danger me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = true;
       break;
@@ -2008,7 +2009,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // ARQ STATE
   switch (arg.arq_state) {
     case "True":
-      document.getElementById("arq_state").className = "btn btn-sm btn-warning me-1";
+      document.getElementById("arq_state").className =
+        "btn btn-sm btn-warning me-1";
       //Seems to be no longer user accessible
       //document.getElementById("startTransmission").disabled = false;
       break;
