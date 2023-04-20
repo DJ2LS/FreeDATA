@@ -2233,7 +2233,7 @@
           <div class="modal-body">
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Audio Level</h5>
+                <h5 class="card-title">
 
                 <div class="progress mb-0" style="height: 22px">
                   <div
@@ -2283,8 +2283,9 @@
                     aria-valuemin="0"
                     aria-valuemax="100"
                   ></div>
-                </div>
 
+                </div>
+</h5>
                 <p class="card-text">
                   Represents the level of audio from transceiver. Excessively
                   high levels will affect decoding performance negatively.
@@ -2293,7 +2294,7 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Noise Level</h5>
+                <h5 class="card-title">
                 <div class="progress mb-0" style="height: 22px">
                   <div
                     class="progress-bar progress-bar-striped bg-primary force-gpu"
@@ -2343,22 +2344,24 @@
                     aria-valuemin="0"
                     aria-valuemax="100"
                   ></div>
-                </div>
 
+                </div>
+</h5>
                 <p class="card-text">
                   Represents noise level of the channel from the transceiver.
                   Requires hamlib rig control.
                 </p>
               </div>
+
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Tune</h5>
+                <h5 class="card-title">
 
                 <button type="button" class="btn btn-sm btn-outline-secondary">
                   Tune
                 </button>
-
+</h5>
                 <p class="card-text">
                   Adjust volume level of outgoing audio to transceiver. For best
                   results lower the level so that a minimum amount of ALC is
@@ -2369,10 +2372,11 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Record</h5>
+                <h5 class="card-title">
                 <button type="button" class="btn btn-sm btn-outline-danger">
                   Record audio
                 </button>
+                  </h5>
                 <p class="card-text">Create a recording of current channel</p>
               </div>
             </div>
@@ -2473,7 +2477,7 @@
           <div class="modal-body">
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Waterfall</h5>
+                <h5 class="card-title">Waterfall
                 <input
                   type="radio"
                   class="btn-check"
@@ -2486,7 +2490,7 @@
                   for="waterfall-scatter-switch1"
                   ><strong><i class="bi bi-water"></i></strong>
                 </label>
-
+</h5>
                 <p class="card-text">
                   Displays a waterfall for activity of current channel.
                 </p>
@@ -2494,12 +2498,12 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Busy Indicator</h5>
+                <h5 class="card-title">Busy Indicator
 
                 <button class="btn btn-sm btn-success" type="button">
                   busy
                 </button>
-
+</h5>
                 <p class="card-text">
                   Green when channel is open and changes to red to indicate
                   there is activity on the channel.
@@ -2508,10 +2512,11 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Signal Indicator</h5>
+                <h5 class="card-title">Signal Indicator
                 <button class="btn btn-sm btn-success" type="button">
                   signal
                 </button>
+                  </h5>
                 <p class="card-text">
                   Changes to green when Codec2 data is detected on channel.
                 </p>
@@ -2519,12 +2524,12 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Constellation Plot</h5>
+                <h5 class="card-title">Constellation Plot
                 <input type="radio" class="btn-check" autocomplete="off" />
                 <label class="btn btn-sm btn-outline-secondary"
                   ><strong><i class="bi bi-border-outer"></i></strong>
                 </label>
-
+</h5>
                 <p class="card-text">
                   Displays a plot of last decoded message. A constellation plot
                   is a simple way to represent signal quality.
@@ -2533,13 +2538,13 @@
             </div>
             <div class="card mb-3">
               <div class="card-body">
-                <h5 class="card-title">Speed Chart</h5>
+                <h5 class="card-title">Speed Chart
 
                 <input type="radio" class="btn-check" autocomplete="off" />
                 <label class="btn btn-sm btn-outline-secondary"
                   ><strong><i class="bi bi-graph-up-arrow"></i></strong>
                 </label>
-
+</h5>
                 <p class="card-text">
                   Shows history of SNR and bit rate of messages.
                 </p>
@@ -2569,11 +2574,19 @@
             ></button>
           </div>
           <div class="modal-body">
-            Stations that you've been able to decode will be listed here.
+            <div class="card mb-3">
+              <div class="card-body">
+
+                <p class="card-text">
+                   Stations that you've been able to decode will be listed here.
             Details such as time, frequency, message type, call sign, location
             and SNR will be listed. Existing entries are updated if they already
             exist and more detailed history can be viewed in chat window for
             each station.
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
