@@ -431,7 +431,7 @@ class DATA:
     def enqueue_frame_for_tx(
             self,
             frame_to_tx,# : list[bytearray], # this causes a crash on python 3.7
-            c2_mode=FREEDV_MODE.datac0.value,
+            c2_mode=FREEDV_MODE.sig0.value,
             copies=1,
             repeat_delay=0,
     ) -> None:
@@ -504,7 +504,7 @@ class DATA:
 
         # Transmit frame
         if transmit:
-            self.enqueue_frame_for_tx([ident_frame], c2_mode=FREEDV_MODE.datac0.value)
+            self.enqueue_frame_for_tx([ident_frame], c2_mode=FREEDV_MODE.sig0.value)
         else:
             return ident_frame
 
@@ -1685,7 +1685,7 @@ class DATA:
                     dxcallsign=str(self.dxcallsign, 'UTF-8'),
                 )
 
-                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
                 # Wait for a time, looking to see if `static.ARQ_SESSION`
                 # indicates we've received a positive response from the far station.
@@ -1877,7 +1877,7 @@ class DATA:
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
         )
 
-        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_session_heartbeat(self, data_in: bytes) -> None:
         """
@@ -2076,7 +2076,7 @@ class DATA:
                     while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                         threading.Event().wait(0.01)
 
-                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
                 timeout = time.time() + 3 + (static.TX_DELAY/1000 * 2)
                 while time.time() < timeout:
@@ -2284,7 +2284,7 @@ class DATA:
         connection_frame[8:9] = bytes([self.speed_level])
         connection_frame[13:14] = bytes([static.ARQ_PROTOCOL_VERSION])
 
-        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+        self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -2429,7 +2429,7 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
     def received_ping(self, data_in: bytes) -> None:
         """
@@ -2499,7 +2499,7 @@ class DATA:
         if static.ENABLE_FSK:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.datac0.value)
+            self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
     def received_ping_ack(self, data_in: bytes) -> None:
         """
@@ -2650,7 +2650,7 @@ class DATA:
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
                             )
                         else:
-                            self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1,
+                            self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
 
                     interval_timer = time.time() + self.beacon_interval
@@ -2728,7 +2728,7 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_cq(self, data_in: bytes) -> None:
         """
@@ -2801,7 +2801,7 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=static.ENABLE_FSK)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.datac0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes) -> None:
         """
@@ -3300,7 +3300,7 @@ class DATA:
         # otherwise burst will be dropped
         if not static.CHANNEL_BUSY and not static.TRANSMITTING:
             self.enqueue_frame_for_tx(
-                frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["datac0"].value
+                frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )
         else:
             return False
