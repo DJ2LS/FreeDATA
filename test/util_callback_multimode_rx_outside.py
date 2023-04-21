@@ -111,7 +111,7 @@ class Test:
 
         # open codec2 instance
         self.datac0_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac0.value), ctypes.c_void_p
         )
         self.datac0_bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv) / 8
@@ -123,7 +123,7 @@ class Test:
         self.datac0_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
 
         self.datac1_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), ctypes.c_void_p
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac1.value), ctypes.c_void_p
         )
         self.datac1_bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(self.datac1_freedv) / 8
@@ -135,7 +135,7 @@ class Test:
         self.datac1_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
 
         self.datac3_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), ctypes.c_void_p
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac3.value), ctypes.c_void_p
         )
         self.datac3_bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(self.datac3_freedv) / 8
