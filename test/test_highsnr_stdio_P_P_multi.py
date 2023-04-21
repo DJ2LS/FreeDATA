@@ -101,7 +101,7 @@ def t_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
                     if "DATAC" in str(line, "UTF-8")
                 ]
             )
-            assert f"datac13: {bursts}/{frames_per_burst * bursts}" in lastline
+            assert f"DATAC13: {bursts}/{frames_per_burst * bursts}" in lastline
             assert f"DATAC1: {bursts}/{frames_per_burst * bursts}" in lastline
             assert f"DATAC3: {bursts}/{frames_per_burst * bursts}" in lastline
             print(lastline)
