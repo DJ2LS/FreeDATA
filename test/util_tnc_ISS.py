@@ -122,18 +122,18 @@ def t_arq_iss(*args):
     else:
         assert not MESSAGE, f"{MESSAGE} not known to test."
 
-    time.sleep(0.5)
+    time.sleep(2.5)
 
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
-    time.sleep(1.5)
+    time.sleep(7.5)
 
     data = {"type": "arq", "command": "stop_transmission"}
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
-    time.sleep(0.5)
+    time.sleep(2.5)
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     # Set timeout
