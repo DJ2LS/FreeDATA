@@ -67,7 +67,7 @@ def test_mm_rx():
     for idx in range(3):
         datac_freedv.append(
             ctypes.cast(
-                codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+                codec2.api.freedv_open(codec2.FREEDV_MODE.datac0.value), ctypes.c_void_p
             )
         )
         datac_bytes_per_frame.append(
