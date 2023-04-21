@@ -112,6 +112,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
       - uses: uraimo/run-on-arch-action@v2
         name: Build artifact
         id: build
