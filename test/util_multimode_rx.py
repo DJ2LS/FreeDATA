@@ -206,7 +206,7 @@ def test_mm_rx():
         print("TIMEOUT REACHED", file=sys.stderr)
 
     print(
-        f"datac13: {rx_bursts_datac[0]}/{rx_total_frames_datac[0]} "
+        f"DATAC13: {rx_bursts_datac[0]}/{rx_total_frames_datac[0]} "
         f"DATAC1: {rx_bursts_datac[1]}/{rx_total_frames_datac[1]} "
         f"DATAC3: {rx_bursts_datac[2]}/{rx_total_frames_datac[2]}",
         file=sys.stderr,
