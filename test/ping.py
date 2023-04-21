@@ -204,7 +204,7 @@ for i in range(N_BURSTS):
 
     # time.sleep(DELAY_BETWEEN_BURSTS)
 
-    # WAIT UNTIL WE RECEIVD AN ACK/DATAC0 FRAME
+    # WAIT UNTIL WE RECEIVD AN ACK/datac13 FRAME
     while ACK_TIMEOUT >= time.time():
         time.sleep(0.01)
 
