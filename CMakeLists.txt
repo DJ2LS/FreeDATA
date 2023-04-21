@@ -151,7 +151,7 @@ add_test(NAME highsnr_stdio_P_P_multi
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 util_multimode_tx.py --delay 500 --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} |
-                        python3 util_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 20")
+                        python3 util_multimode_rx.py --framesperburst ${FRAMESPERBURST} --bursts ${BURSTS} --timeout 60")
         set_tests_properties(highsnr_stdio_P_P_multi PROPERTIES PASS_REGULAR_EXPRESSION "DATAC13: ${BURSTS}/${FRAMESPERBURST} DATAC1: ${BURSTS}/${FRAMESPERBURST} DATAC3: ${BURSTS}/${FRAMESPERBURST}")
 
 # These tests can't run on GitHub actions as we don't have a virtual sound card

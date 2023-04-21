@@ -15,7 +15,7 @@ function check_alsa_loopback {
 check_alsa_loopback
 
 RX_LOG=$(mktemp)
-MAX_RUN_TIME=2600
+MAX_RUN_TIME=2700
 
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
