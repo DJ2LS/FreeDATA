@@ -162,7 +162,7 @@ class RF:
                 self.fsk_ldpc_buffer_1, \
                 self.fsk_ldpc_nin_1 = \
                 self.init_codec2_mode(
-                codec2.api.FREEDV_MODE_FSK_LDPC,
+                codec2.FREEDV_MODE.fsk_ldpc.value,
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
 
@@ -835,7 +835,7 @@ class RF:
             # FSK Long-distance Parity Code 1 - data frames
             c2instance = ctypes.cast(
                 codec2.api.freedv_open_advanced(
-                    codec2.api.FREEDV_MODE_FSK_LDPC,
+                    codec2.FREEDV_MODE.fsk_ldpc.value,
                     ctypes.byref(adv),
                 ),
                 ctypes.c_void_p,
@@ -1266,7 +1266,7 @@ def open_codec2_instance(mode: int) -> ctypes.c_void_p:
     if mode in [codec2.FREEDV_MODE.fsk_ldpc_0.value]:
         return ctypes.cast(
             codec2.api.freedv_open_advanced(
-                codec2.api.FREEDV_MODE_FSK_LDPC,
+                codec2.FREEDV_MODE.fsk_ldpc.value,
                 ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV),
             ),
             ctypes.c_void_p,
@@ -1275,7 +1275,7 @@ def open_codec2_instance(mode: int) -> ctypes.c_void_p:
     if mode in [codec2.FREEDV_MODE.fsk_ldpc_1.value]:
         return ctypes.cast(
             codec2.api.freedv_open_advanced(
-                codec2.api.FREEDV_MODE_FSK_LDPC,
+                codec2.FREEDV_MODE.fsk_ldpc.value,
                 ctypes.byref(codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV),
             ),
             ctypes.c_void_p,
