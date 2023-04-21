@@ -47,7 +47,7 @@ if os.path.exists("test"):
 
 def t_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     """
-    Test a high signal-to-noise ratio path with DATAC0.
+    Test a high signal-to-noise ratio path with datac13.
 
     :param bursts: Number of bursts
     :type bursts: str
@@ -154,7 +154,7 @@ def t_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
 # @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST, 2, 3])
 @pytest.mark.parametrize("bursts", [BURSTS])
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
-@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
+@pytest.mark.parametrize("mode", ["datac13", "datac1", "datac3"])
 def test_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     proc = multiprocessing.Process(
         target=t_HighSNR_P_C_DATACx,

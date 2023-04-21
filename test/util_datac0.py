@@ -7,7 +7,7 @@ Near end-to-end test for sending / receiving control frames through the TNC and 
 and back through on the other station. Data injection initiates from the queue used
 by the daemon process into and out of the TNC.
 
-Invoked from test_datac0.py.
+Invoked from test_datac13.py.
 
 @author: N2KIQ
 """
@@ -83,7 +83,7 @@ def t_setup(
     return tnc, orig_rx_func, orig_tx_func
 
 
-def t_datac0_1(
+def t_datac13_1(
     parent_pipe,
     mycall: str,
     dxcall: str,
@@ -93,7 +93,7 @@ def t_datac0_1(
     log = structlog.get_logger("station1")
     orig_tx_func: Callable
     orig_rx_func: Callable
-    log.debug("t_datac0_1:", TMP_PATH=tmp_path)
+    log.debug("t_datac13_1:", TMP_PATH=tmp_path)
 
     # Unpack tuple
     data, timeout_duration, tx_check, _, final_tx_check, _ = config
@@ -143,12 +143,12 @@ def t_datac0_1(
         tmp_path,
     )
 
-    log.info("t_datac0_1:", RXCHANNEL=modem.RXCHANNEL)
-    log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
+    log.info("t_datac13_1:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_datac13_1:", TXCHANNEL=modem.TXCHANNEL)
 
     time.sleep(0.5)
     if "stop" in data["command"]:
-        log.debug("t_datac0_1: STOP test, setting TNC state")
+        log.debug("t_datac13_1: STOP test, setting TNC state")
         static.TNC_STATE = "BUSY"
         static.ARQ_STATE = True
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
@@ -199,7 +199,7 @@ def t_datac0_1(
     log.warning("station1: Exiting!")
 
 
-def t_datac0_2(
+def t_datac13_2(
     parent_pipe,
     mycall: str,
     dxcall: str,
@@ -209,7 +209,7 @@ def t_datac0_2(
     log = structlog.get_logger("station2")
     orig_tx_func: Callable
     orig_rx_func: Callable
-    log.debug("t_datac0_2:", TMP_PATH=tmp_path)
+    log.debug("t_datac13_2:", TMP_PATH=tmp_path)
 
     # Unpack tuple
     data, timeout_duration, _, rx_check, _, final_rx_check = config
@@ -259,8 +259,8 @@ def t_datac0_2(
         tmp_path,
     )
 
-    log.info("t_datac0_2:", RXCHANNEL=modem.RXCHANNEL)
-    log.info("t_datac0_2:", TXCHANNEL=modem.TXCHANNEL)
+    log.info("t_datac13_2:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_datac13_2:", TXCHANNEL=modem.TXCHANNEL)
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}

@@ -158,7 +158,7 @@ class Test:
     def create_modulation(self):
 
         modes = [
-            codec2.FREEDV_MODE.datac0.value,
+            codec2.FREEDV_MODE.datac13.value,
             codec2.FREEDV_MODE.datac1.value,
             codec2.FREEDV_MODE.datac3.value,
         ]

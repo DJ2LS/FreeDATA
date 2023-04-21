@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Negative tests for datac0 frames.
+Test control frame commands over a high quality simulated audio channel.
 
-@author: kronenpj
+Near end-to-end test for sending / receiving select control frames through the
+TNC and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the TNC.
+
+Can be invoked from CMake, pytest, coverage or directly.
+
+Uses util_datac13.py in separate process to perform the data transfer.
+
+@author: N2KIQ
 """
 
 import contextlib
@@ -20,9 +28,9 @@ import pytest
 import structlog
 
 try:
-    import test.util_datac0_negative as util
+    import test.util_datac13 as util
 except ImportError:
-    import util_datac0_negative as util
+    import util_datac13 as util
 
 
 STATIONS = ["AA2BB", "ZZ9YY"]
@@ -32,33 +40,40 @@ PIPE_THREAD_RUNNING = True
 
 def parameters() -> dict:
     # Construct message to start beacon.
-    beacon_data = {"type": "command", "command": "start_beacon", "parameter": "-5"}
+    beacon_data = {"type": "command", "command": "start_beacon", "parameter": "5"}
+    # Construct message to start cq.
+    cq_data = {"type": "command", "command": "cqcqcq"}
     # Construct message to start ping.
-    ping_data = {"type": "ping", "command": "ping", "dxcallsign": ""}
-    connect_data = {"type": "arq", "command": "connect", "dxcallsign": ""}
-    stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "DD5GG-3"}
+    ping_data = {"type": "ping", "command": "ping", "dxcallsign": "ZZ9YY-0"}
+    connect_data = {"type": "arq", "command": "connect", "dxcallsign": "ZZ9YY-0"}
+    stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "ZZ9YY-0"}
 
-    beacon_timeout = 1
-    ping_timeout = 1
-    connect_timeout = 1
-    stop_timeout = 1
+    beacon_timeout = 6
+    cq_timeout = 8
+    ping_timeout = 5
+    connect_timeout = 10
+    stop_timeout = 5
 
-    beacon_tx_check = '"status":"Failed"'
-    ping_tx_check = '"ping","status":"Failed"'
-    connect_tx_check = '"status":"Failed"'
+    beacon_tx_check = '"beacon":"transmitting"'
+    cq_tx_check = '"qrv":"received"'
+    ping_tx_check = '"ping":"transmitting"'
+    connect_tx_check = '"session":"connecting"'
     stop_tx_check = '"status":"stopped"'
 
     beacon_rx_check = '"beacon":"received"'
+    cq_rx_check = '"cq":"received"'
     ping_rx_check = '"ping":"received"'
     connect_rx_check = '"connect":"received"'
     stop_rx_check = '"status":"stopped"'
 
     beacon_final_tx_check = [beacon_tx_check]
-    ping_final_tx_check = [ping_tx_check]
-    connect_final_tx_check = [connect_tx_check]
+    cq_final_tx_check = ['"cq":"transmitting"', cq_tx_check]
+    ping_final_tx_check = [ping_tx_check, '"ping":"acknowledge"']
+    connect_final_tx_check = ['"status":"connected"', '"connect":"acknowledge"']
     stop_final_tx_check = [stop_tx_check]
 
     beacon_final_rx_check = [beacon_rx_check]
+    cq_final_rx_check = [cq_rx_check, '"qrv":"transmitting"']
     ping_final_rx_check = [ping_rx_check]
     connect_final_rx_check = [connect_rx_check]
     stop_final_rx_check = [stop_rx_check]
@@ -79,6 +94,14 @@ def parameters() -> dict:
             connect_rx_check,
             connect_final_tx_check,
             connect_final_rx_check,
+        ),
+        "cq": (
+            cq_data,
+            cq_timeout,
+            cq_tx_check,
+            cq_rx_check,
+            cq_final_tx_check,
+            cq_final_rx_check,
         ),
         "ping": (
             ping_data,
@@ -161,11 +184,21 @@ def analyze_results(station1: list, station2: list, call_list: list):
             locate_data_with_crc(s2, text, data, frametype)
 
 
-# @pytest.mark.parametrize("frame_type", ["beacon", "connect", "ping"])
-@pytest.mark.parametrize("frame_type", ["ping", "stop"])
-def test_datac0_negative(frame_type: str, tmp_path):
-    log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
-    log = structlog.get_logger("test_datac0")
+# frame_type "connect" doesn't work 2022-Jun-16. Missing / incomplete SOCKET_QUEUE data.
+# frame_type "cq" is overly flaky. Can't get the timing right / FIFO not delivering data.
+@pytest.mark.parametrize(
+    "frame_type",
+    [
+        pytest.param("beacon", marks=pytest.mark.flaky(reruns=2)),
+        pytest.param("ping", marks=pytest.mark.flaky(reruns=2)),
+        pytest.param("cq", marks=pytest.mark.flaky(reruns=20)),
+        # pytest.param("cq", marks=pytest.mark.xfail(reason="Too unstable for CI")),
+        pytest.param("stop", marks=pytest.mark.flaky(reruns=0)),
+    ],
+)
+def test_datac13(frame_type: str, tmp_path):
+    log_handler.setup_logging(filename=tmp_path / "test_datac13", level="DEBUG")
+    log = structlog.get_logger("test_datac13")
 
     s1_data = []
     s2_data = []
@@ -194,7 +227,7 @@ def test_datac0_negative(frame_type: str, tmp_path):
     from_s2, s2_send = multiprocessing.Pipe()
     proc = [
         multiprocessing.Process(
-            target=util.t_datac0_1,
+            target=util.t_datac13_1,
             args=(
                 s1_send,
                 STATIONS[0],
@@ -205,7 +238,7 @@ def test_datac0_negative(frame_type: str, tmp_path):
             daemon=True,
         ),
         multiprocessing.Process(
-            target=util.t_datac0_2,
+            target=util.t_datac13_2,
             args=(
                 s2_send,
                 STATIONS[1],

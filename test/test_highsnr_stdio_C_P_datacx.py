@@ -49,7 +49,7 @@ def t_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str
 ):
     """
-    Test a high signal-to-noise ratio path with DATAC0.
+    Test a high signal-to-noise ratio path with datac13.
 
     :param bursts: Number of bursts
     :type bursts: str
@@ -152,7 +152,7 @@ def t_HighSNR_C_P_DATACx(
 @pytest.mark.parametrize("bursts", [BURSTS])
 @pytest.mark.parametrize("frames_per_burst", [FRAMESPERBURST])
 @pytest.mark.parametrize("testframes", [TESTFRAMES])
-@pytest.mark.parametrize("mode", ["datac0", "datac1", "datac3"])
+@pytest.mark.parametrize("mode", ["datac13", "datac1", "datac3"])
 def test_HighSNR_C_P_DATACx(
     bursts: int, frames_per_burst: int, testframes: int, mode: str
 ):

@@ -9,7 +9,7 @@ queue used by the daemon process into and out of the TNC.
 
 Can be invoked from CMake, pytest, coverage or directly.
 
-Uses util_datac0.py in separate process to perform the data transfer.
+Uses util_datac13.py in separate process to perform the data transfer.
 
 @author: N2KIQ
 """

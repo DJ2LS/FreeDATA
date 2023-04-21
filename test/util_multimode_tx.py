@@ -49,7 +49,7 @@ def test_mm_tx():
     data_out = b"HELLO WORLD!"
 
     modes = [
-        codec2.FREEDV_MODE.datac0.value,
+        codec2.FREEDV_MODE.datac13.value,
         codec2.FREEDV_MODE.datac1.value,
         codec2.FREEDV_MODE.datac3.value,
     ]
