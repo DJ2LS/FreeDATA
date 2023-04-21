@@ -315,6 +315,11 @@ class RF:
             )
             audio_thread_dat0_datac3.start()
 
+            audio_thread_dat0_datac4 = threading.Thread(
+                target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
+            )
+            audio_thread_dat0_datac4.start()
+
         hamlib_thread = threading.Thread(
             target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
         )

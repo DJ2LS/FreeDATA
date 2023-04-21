@@ -108,9 +108,9 @@ class DATA:
             FREEDV_MODE.datac4.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_low_bw = [-5]
+        self.snr_list_low_bw = [-10]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [6]
+        self.time_list_low_bw = [9]
 
         # --------------------- HIGH BANDWIDTH
 
@@ -121,12 +121,12 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [-5, 0, 3]
+        self.snr_list_high_bw = [-10, 0, 3]
         # List for time to wait for corresponding mode in seconds
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
         # TODO: Adjust these times
-        self.time_list_high_bw = [7, 7, 8]
+        self.time_list_high_bw = [9, 7, 8]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
@@ -547,7 +547,7 @@ class DATA:
         # Transmit frame
         # TODO: Do we have to send , self.send_ident_frame(False) ?
         # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
-        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
 
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
@@ -598,7 +598,7 @@ class DATA:
         while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
             threading.Event().wait(0.01)
 
-        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
 
@@ -646,7 +646,7 @@ class DATA:
         while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
             threading.Event().wait(0.01)
 
-        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=3, repeat_delay=0)
 
     def arq_data_received(
             self, data_in: bytes, bytes_per_frame: int, snr: float, freedv
@@ -2584,7 +2584,7 @@ class DATA:
         # stop_frame[1:2] = self.session_id
         stop_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
 
-        self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.sig1.value, copies=6, repeat_delay=0)
+        self.enqueue_frame_for_tx([stop_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
 
         self.arq_cleanup()
 
@@ -3018,6 +3018,7 @@ class DATA:
         modem.RECEIVE_SIG1 = False
         modem.RECEIVE_DATAC1 = False
         modem.RECEIVE_DATAC3 = False
+        modem.RECEIVE_DATAC4 = False
         # modem.RECEIVE_FSK_LDPC_0 = False
         modem.RECEIVE_FSK_LDPC_1 = False
 
@@ -3081,24 +3082,34 @@ class DATA:
         modem.RECEIVE_SIG0 = enable_sig0
         modem.RECEIVE_SIG1 = enable_sig1
 
-        if mode == FREEDV_MODE.datac1.value:
+        if mode == codec2.FREEDV_MODE.datac1.value:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = False
+            modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = False
             self.log.debug("[TNC] Changing listening data mode", mode="datac1")
-        elif mode == FREEDV_MODE.datac3.value:
+        elif mode == codec2.FREEDV_MODE.datac3.value:
             modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = True
+            modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = False
             self.log.debug("[TNC] Changing listening data mode", mode="datac3")
-        elif mode == FREEDV_MODE.fsk_ldpc_1.value:
+        elif mode == codec2.FREEDV_MODE.datac4.value:
             modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = False
+            modem.RECEIVE_DATAC4 = True
+            modem.RECEIVE_FSK_LDPC_1 = False
+            self.log.debug("[TNC] Changing listening data mode", mode="datac4")
+        elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
+            modem.RECEIVE_DATAC1 = False
+            modem.RECEIVE_DATAC3 = False
+            modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
         else:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
+            modem.RECEIVE_DATAC4 = True
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug(
                 "[TNC] Changing listening data mode", mode="datac1/datac3/fsk_ldpc"
