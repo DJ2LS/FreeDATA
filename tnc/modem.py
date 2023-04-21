@@ -44,9 +44,6 @@ RECEIVE_DATAC4 = False
 
 
 # state buffer
-# TODO: Remove datac0
-#SIG0_DATAC0_STATE = []
-#SIG1_DATAC0_STATE = []
 
 SIG0_DATAC13_STATE = []
 SIG1_DATAC13_STATE = []
@@ -87,9 +84,7 @@ class RF:
         # Make sure our resampler will work
         assert (self.AUDIO_SAMPLE_RATE_RX / self.MODEM_SAMPLE_RATE) == codec2.api.FDMDV_OS_48  # type: ignore
 
-        # Small hack for initializing codec2 via codec2.py module
-        # TODO: Need to change the entire modem module to integrate codec2 module
-        self.c_lib = codec2.api
+        # init codec2 resampler
         self.resampler = codec2.resampler()
 
         self.modem_transmit_queue = MODEM_TRANSMIT_QUEUE
@@ -106,27 +101,6 @@ class RF:
 
         # Open codec2 instances
 
-        # DATAC0
-        # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
-        """
-        self.sig0_datac0_freedv, \
-                self.sig0_datac0_bytes_per_frame, \
-                self.sig0_datac0_bytes_out, \
-                self.sig0_datac0_buffer, \
-                self.sig0_datac0_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
-
-        # DATAC0
-        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
-        self.sig1_datac0_freedv, \
-                self.sig1_datac0_bytes_per_frame, \
-                self.sig1_datac0_bytes_out, \
-                self.sig1_datac0_buffer, \
-                self.sig1_datac0_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC0, None)
-        """
-
-
         # DATAC13
         # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
         self.sig0_datac13_freedv, \
@@ -134,7 +108,7 @@ class RF:
                 self.sig0_datac13_bytes_out, \
                 self.sig0_datac13_buffer, \
                 self.sig0_datac13_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC13, None)
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
 
         # DATAC13
         # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
@@ -143,7 +117,7 @@ class RF:
                 self.sig1_datac13_bytes_out, \
                 self.sig1_datac13_buffer, \
                 self.sig1_datac13_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC13, None)
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
 
         # DATAC1
         self.dat0_datac1_freedv, \
@@ -151,7 +125,7 @@ class RF:
                 self.dat0_datac1_bytes_out, \
                 self.dat0_datac1_buffer, \
                 self.dat0_datac1_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC1, None)
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac1.value, None)
 
         # DATAC3
         self.dat0_datac3_freedv, \
@@ -159,7 +133,7 @@ class RF:
                 self.dat0_datac3_bytes_out, \
                 self.dat0_datac3_buffer, \
                 self.dat0_datac3_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC3, None)
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac3.value, None)
 
         # DATAC4
         self.dat0_datac4_freedv, \
@@ -167,7 +141,7 @@ class RF:
                 self.dat0_datac4_bytes_out, \
                 self.dat0_datac4_buffer, \
                 self.dat0_datac4_nin = \
-                self.init_codec2_mode(codec2.api.FREEDV_MODE_DATAC4, None)
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac4.value, None)
 
 
         # FSK LDPC - 0
@@ -177,7 +151,7 @@ class RF:
                 self.fsk_ldpc_buffer_0, \
                 self.fsk_ldpc_nin_0 = \
                 self.init_codec2_mode(
-                codec2.api.FREEDV_MODE_FSK_LDPC,
+                codec2.FREEDV_MODE.fsk_ldpc.value,
                 codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
             )
 
@@ -192,17 +166,16 @@ class RF:
                 codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
             )
 
-        # INIT TX MODES
-        # TODO: Use enum from codec2
+        # INIT TX MODES - here we need all modes. 
         self.freedv_datac0_tx = open_codec2_instance(codec2.FREEDV_MODE.datac0.value)
         self.freedv_datac1_tx = open_codec2_instance(codec2.FREEDV_MODE.datac1.value)
         self.freedv_datac3_tx = open_codec2_instance(codec2.FREEDV_MODE.datac3.value)
         self.freedv_datac4_tx = open_codec2_instance(codec2.FREEDV_MODE.datac4.value)
         self.freedv_datac13_tx = open_codec2_instance(codec2.FREEDV_MODE.datac13.value)
-
-        self.freedv_ldpc0_tx = open_codec2_instance(200)
-        self.freedv_ldpc1_tx = open_codec2_instance(201)
-        # --------------------------------------------CREATE PYAUDIO INSTANCE
+        self.freedv_ldpc0_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
+        self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
+        
+        # --------------------------------------------CREATE PORTAUDIO INSTANCE
         if not TESTMODE and not static.AUDIO_ENABLE_TCI:
             try:
                 self.stream = sd.RawStream(
@@ -289,14 +262,7 @@ class RF:
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
-        # TODO: deprecated feature - we can remove this possibly
-        if static.HAMLIB_RADIOCONTROL == "direct":
-            print("direct hamlib support deprecated - not usable anymore")
-            sys.exit(1)
-        elif static.HAMLIB_RADIOCONTROL == "rigctl":
-            print("rigctl support deprecated - not usable anymore")
-            sys.exit(1)
-        elif static.HAMLIB_RADIOCONTROL == "rigctld":
+        if static.HAMLIB_RADIOCONTROL == "rigctld":
             import rigctld as rig
         elif static.AUDIO_ENABLE_TCI:
             self.radio = self.tci_module
@@ -329,15 +295,15 @@ class RF:
             audio_thread_fsk_ldpc1.start()
 
         else:
-            audio_thread_sig0_datac0 = threading.Thread(
+            audio_thread_sig0_datac13 = threading.Thread(
                 target=self.audio_sig0_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
             )
-            audio_thread_sig0_datac0.start()
+            audio_thread_sig0_datac13.start()
 
-            audio_thread_sig1_datac0 = threading.Thread(
+            audio_thread_sig1_datac13 = threading.Thread(
                 target=self.audio_sig1_datac13, name="AUDIO_THREAD DATAC13 - 1", daemon=True
             )
-            audio_thread_sig1_datac0.start()
+            audio_thread_sig1_datac13.start()
 
             audio_thread_dat0_datac1 = threading.Thread(
                 target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
@@ -406,8 +372,8 @@ class RF:
 
             length_x = len(x)
             for data_buffer, receive in [
-                (self.sig0_datac0_buffer, RECEIVE_SIG0),
-                (self.sig1_datac0_buffer, RECEIVE_SIG1),
+                (self.sig0_datac13_buffer, RECEIVE_SIG0),
+                (self.sig1_datac13_buffer, RECEIVE_SIG1),
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4),
@@ -440,8 +406,8 @@ class RF:
 
                         length_x = len(x)
                         for data_buffer, receive in [
-                            (self.sig0_datac0_buffer, RECEIVE_SIG0),
-                            (self.sig1_datac0_buffer, RECEIVE_SIG1),
+                            (self.sig0_datac13_buffer, RECEIVE_SIG0),
+                            (self.sig1_datac13_buffer, RECEIVE_SIG1),
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, RECEIVE_DATAC4),
@@ -548,16 +514,6 @@ class RF:
 
         """
 
-        """
-        sig0 = 14
-        sig1 = 14
-        datac0 = 14
-        datac1 = 10
-        datac3 = 12
-        fsk_ldpc = 9
-        fsk_ldpc_0 = 200
-        fsk_ldpc_1 = 201
-        """
         if mode == codec2.FREEDV_MODE.datac0.value:
             freedv = self.freedv_datac0_tx
         elif mode == codec2.FREEDV_MODE.datac1.value:
@@ -892,7 +848,7 @@ class RF:
             )
 
         # set tuning range
-        self.c_lib.freedv_set_tuning_range(
+        codec2.api.freedv_set_tuning_range(
             c2instance,
             ctypes.c_float(static.TUNING_RANGE_FMIN),
             ctypes.c_float(static.TUNING_RANGE_FMAX),
@@ -917,47 +873,21 @@ class RF:
 
         # Additional Datac0-specific information - these are not referenced anywhere else.
         # self.sig0_datac0_payload_per_frame = self.sig0_datac0_bytes_per_frame - 2
-        # self.sig0_datac0_n_nom_modem_samples = self.c_lib.freedv_get_n_nom_modem_samples(
+        # self.sig0_datac0_n_nom_modem_samples = codec2.api.freedv_get_n_nom_modem_samples(
         #     self.sig0_datac0_freedv
         # )
-        # self.sig0_datac0_n_tx_modem_samples = self.c_lib.freedv_get_n_tx_modem_samples(
+        # self.sig0_datac0_n_tx_modem_samples = codec2.api.freedv_get_n_tx_modem_samples(
         #     self.sig0_datac0_freedv
         # )
         # self.sig0_datac0_n_tx_preamble_modem_samples = (
-        #     self.c_lib.freedv_get_n_tx_preamble_modem_samples(self.sig0_datac0_freedv)
+        #     codec2.api.freedv_get_n_tx_preamble_modem_samples(self.sig0_datac0_freedv)
         # )
         # self.sig0_datac0_n_tx_postamble_modem_samples = (
-        #     self.c_lib.freedv_get_n_tx_postamble_modem_samples(self.sig0_datac0_freedv)
+        #     codec2.api.freedv_get_n_tx_postamble_modem_samples(self.sig0_datac0_freedv)
         # )
 
         # return values
         return c2instance, bytes_per_frame, bytes_out, audio_buffer, nin
-
-    # TODO: Remove datac0
-    # def audio_sig0_datac0(self) -> None:
-    #    """Receive data encoded with datac0 - 0"""
-    #    self.sig0_datac0_nin = self.demodulate_audio(
-    #        self.sig0_datac0_buffer,
-    #        self.sig0_datac0_nin,
-    #        self.sig0_datac0_freedv,
-    #        self.sig0_datac0_bytes_out,
-    #        self.sig0_datac0_bytes_per_frame,
-    #        SIG0_DATAC0_STATE,
-    #        "sig0-datac0"
-    #    )
-
-    # def audio_sig1_datac0(self) -> None:
-    #    """Receive data encoded with datac0 - 1"""
-    #    self.sig1_datac0_nin = self.demodulate_audio(
-    #        self.sig1_datac0_buffer,
-    #        self.sig1_datac0_nin,
-    #        self.sig1_datac0_freedv,
-    #        self.sig1_datac0_bytes_out,
-    #        self.sig1_datac0_bytes_per_frame,
-    #        SIG1_DATAC0_STATE,
-    #        "sig1-datac0"
-    #    )
-
 
     def audio_sig0_datac13(self) -> None:
         """Receive data encoded with datac13 - 0"""
@@ -1081,7 +1011,7 @@ class RF:
         :rtype: float
         """
         modemStats = codec2.MODEMSTATS()
-        self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
+        codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
         static.FREQ_OFFSET = offset
         return offset
@@ -1099,7 +1029,7 @@ class RF:
 
         modemStats = codec2.MODEMSTATS()
         ctypes.cast(
-            self.c_lib.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats)),
+            codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats)),
             ctypes.c_void_p,
         )
 
@@ -1142,7 +1072,7 @@ class RF:
             modem_stats_snr = ctypes.c_float()
             modem_stats_sync = ctypes.c_int()
 
-            self.c_lib.freedv_get_modem_stats(
+            codec2.api.freedv_get_modem_stats(
                 freedv, ctypes.byref(modem_stats_sync), ctypes.byref(modem_stats_snr)
             )
             modem_stats_snr = modem_stats_snr.value
@@ -1249,7 +1179,6 @@ class RF:
                         if rms_counter > 50:
                             d = np.frombuffer(self.fft_data, np.int16).astype(np.float32)
                             # calculate RMS and then dBFS
-                            # TODO: Need to change static.AUDIO_RMS to AUDIO_DBFS somewhen
                             # https://dsp.stackexchange.com/questions/8785/how-to-compute-dbfs
                             # try except for avoiding runtime errors by division/0
                             try:

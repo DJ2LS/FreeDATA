@@ -105,10 +105,10 @@ class DATA:
 
         # List of codec2 modes to use in "low bandwidth" mode.
         self.mode_list_low_bw = [
-            FREEDV_MODE.datac3.value,
+            FREEDV_MODE.datac4.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_low_bw = [0]
+        self.snr_list_low_bw = [-5]
         # List for time to wait for corresponding mode in seconds
         self.time_list_low_bw = [6]
 
@@ -116,15 +116,17 @@ class DATA:
 
         # List of codec2 modes to use in "high bandwidth" mode.
         self.mode_list_high_bw = [
+            FREEDV_MODE.datac4.value,
             FREEDV_MODE.datac3.value,
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [0, 3]
+        self.snr_list_high_bw = [-5, 0, 3]
         # List for time to wait for corresponding mode in seconds
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
-        self.time_list_high_bw = [7, 8]
+        # TODO: Adjust these times
+        self.time_list_high_bw = [7, 7, 8]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
@@ -440,7 +442,7 @@ class DATA:
 
         :param frame_to_tx: Frame data to send
         :type frame_to_tx: list of bytearrays
-        :param c2_mode: Codec2 mode to use, defaults to 14 (datac0)
+        :param c2_mode: Codec2 mode to use, defaults to datac13
         :type c2_mode: int, optional
         :param copies: Number of frame copies to send, defaults to 1
         :type copies: int, optional
@@ -2779,6 +2781,7 @@ class DATA:
           dxcallsign
 
         """
+        # TODO: Update this to datac13
         # Sleep a random amount of time before responding to make it more likely to be
         # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
         # duration, plus overhead. Set the wait interval to be random between 0 and 2s

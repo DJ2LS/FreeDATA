@@ -154,15 +154,6 @@ api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
 api.FREEDV_FS_8000 = 8000  # type: ignore
 
-# TODO: do we need this code? Can we change it to just use Enum from above?
-api.FREEDV_MODE_DATAC1 = FREEDV_MODE.datac1.value  # type: ignore
-api.FREEDV_MODE_DATAC3 = FREEDV_MODE.datac3.value  # type: ignore
-api.FREEDV_MODE_DATAC4 = FREEDV_MODE.datac4.value  # type: ignore
-# api.FREEDV_MODE_DATAC0 = FREEDV_MODE.datac0.value  # type: ignore
-api.FREEDV_MODE_DATAC13 = FREEDV_MODE.datac13.value  # type: ignore
-
-api.FREEDV_MODE_FSK_LDPC = FREEDV_MODE.fsk_ldpc.value  # type: ignore
-
 # -------------------------------- FSK LDPC MODE SETTINGS
 
 
