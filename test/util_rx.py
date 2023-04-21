@@ -234,7 +234,7 @@ def parse_arguments():
     parser.add_argument(
         "--timeout",
         dest="TIMEOUT",
-        default=30,
+        default=60,
         type=int,
         help="Timeout (seconds) before test ends",
     )

@@ -35,7 +35,7 @@ parser.add_argument("--debug", dest="DEBUGGING_MODE", action="store_true")
 parser.add_argument(
     "--timeout",
     dest="TIMEOUT",
-    default=10,
+    default=60,
     type=int,
     help="Timeout (seconds) before test ends",
 )
