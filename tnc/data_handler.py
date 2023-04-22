@@ -1977,7 +1977,7 @@ class DATA:
         # wait a moment for the case, a heartbeat is already on the way back to us
         # this makes channel establishment more clean
         if static.ARQ_SESSION:
-            threading.Event().wait(2)
+            threading.Event().wait(2.5)
 
         self.datachannel_timeout = False
 
@@ -2080,7 +2080,7 @@ class DATA:
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
-                timeout = time.time() + 3 + (static.TX_DELAY/1000 * 2)
+                timeout = time.time() + 5 + (static.TX_DELAY/1000 * 2)
                 while time.time() < timeout:
                     threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
