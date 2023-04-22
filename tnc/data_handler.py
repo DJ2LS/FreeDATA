@@ -763,6 +763,9 @@ class DATA:
                 search_area = self.arq_burst_maximum_payload  # (3 bytes arq frame header)
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
+                # if search position < 0, then search position = 0
+                search_position = max(0, search_position)
+
                 # find position of data. returns -1 if nothing found in area else >= 0
                 # we are beginning from the end, so if data exists twice or more,
                 # only the last one should be replaced
@@ -2785,7 +2788,6 @@ class DATA:
           dxcallsign
 
         """
-        # TODO: Update this to datac13
         # Sleep a random amount of time before responding to make it more likely to be
         # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
         # duration, plus overhead. Set the wait interval to be random between 0 and

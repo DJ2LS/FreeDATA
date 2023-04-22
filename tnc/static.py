@@ -11,7 +11,7 @@ Not nice, suggestions are appreciated :-)
 import subprocess
 from enum import Enum
 
-VERSION = "0.9.0-alpha-exp"
+VERSION = "0.9.0-alpha-exp.1"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
