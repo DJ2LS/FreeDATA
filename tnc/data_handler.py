@@ -38,7 +38,6 @@ class DATA:
 
     log = structlog.get_logger("DATA")
 
-
     def __init__(self) -> None:
 
         self.stats = stats.stats()
@@ -53,6 +52,11 @@ class DATA:
         # length of signalling frame
         self.length_sig0_frame = 14
         self.length_sig1_frame = 14
+
+        # duration of signalling frame
+        self.duration_sig0_frame = 1.98
+        self.duration_sig1_frame = 1.98
+        self.longest_duration = 5.8 # datac5
 
         # hold session id
         self.session_id = bytes(1)
@@ -149,7 +153,7 @@ class DATA:
         # minimum payload for arq burst
         # import for avoiding byteorder bug and buffer search area
         self.arq_burst_header_size = 3
-        self.arq_burst_minimum_payload = 126 - self.arq_burst_header_size
+        self.arq_burst_minimum_payload = 56 - self.arq_burst_header_size
         self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
 
         self.is_IRS = False
@@ -2074,13 +2078,13 @@ class DATA:
                     )
 
                     # wait while timeout not reached and our busy state is busy
-                    channel_busy_timeout = time.time() + 10
+                    channel_busy_timeout = time.time() + 5
                     while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
                         threading.Event().wait(0.01)
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
-                timeout = time.time() + 5 + (static.TX_DELAY/1000 * 2)
+                timeout = time.time() + self.duration_sig1_frame * 3 + (static.TX_DELAY/1000 * 2)
                 while time.time() < timeout:
                     threading.Event().wait(0.01)
                     # Stop waiting if data channel is opened
@@ -2784,9 +2788,11 @@ class DATA:
         # TODO: Update this to datac13
         # Sleep a random amount of time before responding to make it more likely to be
         # heard when many stations respond. Each DATAC0 frame is 0.44 sec (440ms) in
-        # duration, plus overhead. Set the wait interval to be random between 0 and 2s
-        # in 0.5s increments.
-        helpers.wait(randrange(0, 20, 5) / 10.0)
+        # duration, plus overhead. Set the wait interval to be random between 0 and
+        # self.duration_sig1_frame * 4 == 4 slots
+        # in self.duration_sig1_frame increments.
+        self.log.info("[TNC] Waiting for QRV slot...")
+        helpers.wait(randrange(0, int(self.duration_sig1_frame*4), self.duration_sig1_frame*10 // 10.0))
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="transmitting",
