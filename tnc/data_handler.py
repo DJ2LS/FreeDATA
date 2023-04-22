@@ -3286,7 +3286,7 @@ class DATA:
         test_frame = bytearray(126)
         test_frame[:1] = bytes([FR_TYPE.TEST_FRAME.value])
         self.enqueue_frame_for_tx(
-            frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac3.value
+            frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value
         )
 
     def send_fec_frame(self, payload, mode) -> None:
