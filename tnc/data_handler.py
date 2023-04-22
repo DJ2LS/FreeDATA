@@ -110,7 +110,7 @@ class DATA:
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_low_bw = [-10]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [9]
+        self.time_list_low_bw = [6+5]
 
         # --------------------- HIGH BANDWIDTH
 
@@ -126,7 +126,7 @@ class DATA:
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
         # TODO: Adjust these times
-        self.time_list_high_bw = [9, 7, 8]
+        self.time_list_high_bw = [6+5, 7, 8]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
