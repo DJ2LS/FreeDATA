@@ -56,7 +56,7 @@ class DATA:
         # duration of signalling frame
         self.duration_sig0_frame = 1.98
         self.duration_sig1_frame = 1.98
-        self.longest_duration = 5.8 # datac5
+        self.longest_duration = 5.8  # datac5
 
         # hold session id
         self.session_id = bytes(1)
@@ -74,7 +74,7 @@ class DATA:
 
         self.transmission_uuid = ""
 
-        self.burst_last_received = 0.0 # time of last "live sign" of a burst
+        self.burst_last_received = 0.0  # time of last "live sign" of a burst
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received burst ack frames
 
@@ -166,9 +166,9 @@ class DATA:
         self.rx_frame_eof_received = False
 
         # TIMEOUTS
-        self.burst_ack_timeout_seconds = 3.0  # timeout for burst  acknowledges
-        self.data_frame_ack_timeout_seconds = 3.0  # timeout for data frame acknowledges
-        self.rpt_ack_timeout_seconds = 3.0  # timeout for rpt frame acknowledges
+        self.burst_ack_timeout_seconds = 4.5  # timeout for burst  acknowledges
+        self.data_frame_ack_timeout_seconds = 4.5  # timeout for data frame acknowledges
+        self.rpt_ack_timeout_seconds = 4.5  # timeout for rpt frame acknowledges
         self.transmission_timeout = 180  # transmission timeout in seconds
 
         # Dictionary of functions and log messages used in process_data
@@ -436,7 +436,7 @@ class DATA:
 
     def enqueue_frame_for_tx(
             self,
-            frame_to_tx,# : list[bytearray], # this causes a crash on python 3.7
+            frame_to_tx, # : list[bytearray], # this causes a crash on python 3.7
             c2_mode=FREEDV_MODE.sig0.value,
             copies=1,
             repeat_delay=0,
