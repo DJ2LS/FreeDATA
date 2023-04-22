@@ -1627,7 +1627,7 @@ ipcRenderer.on("action-update-reception-status", (event, arg) => {
   var arq_bytes_per_minute_compressed = Math.round(
     arq_bytes_per_minute * compress
   );
-    console.log(arq_bytes_per_minute)
+  console.log(arq_bytes_per_minute);
   time_left +=
     formatBytes(arq_bytes_per_minute, 1) +
     " (comp: " +
@@ -2190,9 +2190,9 @@ function updateHeardStations(arg) {
     //https://stackoverflow.com/a/847196
     timestampRaw = arg.stations[i]["timestamp"];
 
-     var datetime = new Date(
-                timestampRaw * 1000
-              ).toLocaleString(navigator.language);
+    var datetime = new Date(timestampRaw * 1000).toLocaleString(
+      navigator.language
+    );
     //var hours = date.getHours();
     //var minutes = "0" + date.getMinutes();
     //var seconds = "0" + date.getSeconds();
