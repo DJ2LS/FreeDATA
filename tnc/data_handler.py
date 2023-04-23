@@ -526,7 +526,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
-        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
         # Transmit frame
@@ -545,7 +545,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
-        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
         # Transmit frame
@@ -599,7 +599,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
-        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
@@ -622,7 +622,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
-        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
         # TRANSMIT NACK FRAME FOR BURST
@@ -647,7 +647,7 @@ class DATA:
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5
-        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+        while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
             threading.Event().wait(0.01)
 
         self.enqueue_frame_for_tx([disconnection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=3, repeat_delay=0)
@@ -941,6 +941,27 @@ class DATA:
             self.rx_start_of_transmission, len(static.RX_FRAME_BUFFER)
         )
 
+    def check_if_mode_fits_to_busy_slot(self):
+        """
+        Check if actual mode is fitting into given busy state
+
+        Returns:
+
+        """
+        mode_name = FREEDV_MODE(self.mode_list[self.speed_level]).name
+        mode_slots = FREEDV_MODE_USED_SLOTS[mode_name].value
+        if mode_slots in [static.CHANNEL_BUSY_SLOT]:
+            self.log.warning(
+                "[TNC] busy slot detection",
+                slots=static.CHANNEL_BUSY_SLOT,
+                mode_slots=mode_slots,
+            )
+            return False
+
+        else:
+            return True
+
+
     def arq_calculate_speed_level(self, snr):
         self.frame_received_counter += 1
         # try increasing speed level only if we had two successful decodes
@@ -961,15 +982,8 @@ class DATA:
                               )
 
             # calculate if speed level fits to busy condition
-            mode_name = FREEDV_MODE(self.mode_list[self.speed_level]).name
-            mode_slots = FREEDV_MODE_USED_SLOTS[mode_name].value
-            if mode_slots in [static.CHANNEL_BUSY_SLOT]:
+            if not self.check_if_mode_fits_to_busy_slot():
                 self.speed_level = 0
-                self.log.warning(
-                    "[TNC] busy slot detection",
-                    slots=static.CHANNEL_BUSY_SLOT,
-                    mode_slots=mode_slots,
-                )
 
 
             static.ARQ_SPEED_LEVEL = self.speed_level
@@ -1603,7 +1617,7 @@ class DATA:
 
             # wait while timeout not reached and our busy state is busy
             channel_busy_timeout = time.time() + 15
-            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+            while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
                 threading.Event().wait(0.01)
 
             # if channel busy timeout reached stop connecting
@@ -2097,7 +2111,7 @@ class DATA:
 
                     # wait while timeout not reached and our busy state is busy
                     channel_busy_timeout = time.time() + 5
-                    while static.CHANNEL_BUSY and time.time() < channel_busy_timeout:
+                    while static.CHANNEL_BUSY and time.time() < channel_busy_timeout and not self.check_if_mode_fits_to_busy_slot():
                         threading.Event().wait(0.01)
 
                 self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
