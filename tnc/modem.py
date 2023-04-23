@@ -1219,23 +1219,42 @@ class RF:
                     # 2700Hz = 266
                     # 3200Hz = 315
 
-                    # define the area, we are detecting busy state
-                    dfft = dfft[120:176] if static.LOW_BANDWIDTH_MODE else dfft[65:231]
+                    # slot
+                    slot = 0
+                    slot1 = [0, 65]
+                    slot2 = [65,120]
+                    slot3 = [120, 176]
+                    slot4 = [176, 231]
+                    slot5 = [231, len(dfftlist)]
+                    for range in [slot1, slot2, slot3, slot4, slot5]:
 
-                    # Check for signals higher than average by checking for "100"
-                    # If we have a signal, increment our channel_busy delay counter
-                    # so we have a smoother state toggle
-                    if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
-                        static.CHANNEL_BUSY = True
-                        # Limit delay counter to a maximum of 200. The higher this value,
-                        # the longer we will wait until releasing state
-                        channel_busy_delay = min(channel_busy_delay + 10, 200)
-                    else:
-                        # Decrement channel busy counter if no signal has been detected.
-                        channel_busy_delay = max(channel_busy_delay - 1, 0)
-                        # When our channel busy counter reaches 0, toggle state to False
-                        if channel_busy_delay == 0:
-                            static.CHANNEL_BUSY = False
+                        range_start = range[0]
+                        range_end = range[1]
+                        # define the area, we are detecting busy state
+                        #dfft = dfft[120:176] if static.LOW_BANDWIDTH_MODE else dfft[65:231]
+                        dfft = dfft[range_start:range_end]
+                        # Check for signals higher than average by checking for "100"
+                        # If we have a signal, increment our channel_busy delay counter
+                        # so we have a smoother state toggle
+                        if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
+                            static.CHANNEL_BUSY = True
+                            static.CHANNEL_BUSY_SLOT[slot] = True
+                            # Limit delay counter to a maximum of 200. The higher this value,
+                            # the longer we will wait until releasing state
+                            channel_busy_delay = min(channel_busy_delay + 10, 200)
+                        else:
+                            # Decrement channel busy counter if no signal has been detected.
+                            channel_busy_delay = max(channel_busy_delay - 1, 0)
+                            # When our channel busy counter reaches 0, toggle state to False
+                            if channel_busy_delay == 0:
+                                static.CHANNEL_BUSY = False
+                                static.CHANNEL_BUSY_SLOT[slot] = False
+
+                        # increment slot
+                        slot += 1
+
+                    print(static.CHANNEL_BUSY_SLOT)
+
 
                     static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:

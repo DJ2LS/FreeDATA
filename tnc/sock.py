@@ -996,7 +996,6 @@ def send_tnc_state():
     send the tnc state to network
     """
     encoding = "utf-8"
-
     output = {
         "command": "tnc_state",
         "ptt_state": str(static.PTT_STATE),
@@ -1017,6 +1016,7 @@ def send_tnc_state():
         "bandwidth": str(static.HAMLIB_BANDWIDTH),
         "fft": str(static.FFT),
         "channel_busy": str(static.CHANNEL_BUSY),
+        "channel_busy_slot": str(static.CHANNEL_BUSY_SLOT),
         "is_codec2_traffic": str(static.IS_CODEC2_TRAFFIC),
         "scatter": static.SCATTER,
         "rx_buffer_length": str(RX_BUFFER.qsize()),
