@@ -792,8 +792,6 @@ class RF:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
                             static.IS_CODEC2_TRAFFIC = True
-                            # set channel busy state to True
-                            static.CHANNEL_BUSY = True
 
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
