@@ -1251,9 +1251,6 @@ class RF:
                         # increment slot
                         slot += 1
 
-                    print(static.CHANNEL_BUSY_SLOT)
-
-
                     static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")

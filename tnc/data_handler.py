@@ -25,7 +25,7 @@ import static
 import structlog
 import stats
 import ujson as json
-from codec2 import FREEDV_MODE
+from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from exceptions import NoCallsign
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
@@ -952,11 +952,26 @@ class DATA:
             # check if actual snr is higher than minimum snr for next mode
             if static.SNR >= self.snr_list[new_speed_level]:
                 self.speed_level = new_speed_level
+
+
             else:
                 self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
                               given_snr=static.SNR,
                               needed_snr=self.snr_list[new_speed_level]
                               )
+
+            # calculate if speed level fits to busy condition
+            mode_name = codec2.FREEDV_MODE(self.mode_list[self.speed_level]).name
+            mode_slots = codec2.FREEDV_MODE_USED_SLOTS[mode_name].value
+            if mode_slots in [static.CHANNEL_BUSY_SLOT]:
+                self.speed_level = 0
+                self.log.warning(
+                    "[TNC] busy slot detection",
+                    slots=static.CHANNEL_BUSY_SLOT,
+                    mode_slots=mode_slots,
+                )
+
+
             static.ARQ_SPEED_LEVEL = self.speed_level
 
         # Update modes we are listening to
@@ -2231,9 +2246,25 @@ class DATA:
         # get mode which fits to given SNR
         # initially set speed_level 0 in case of bad SNR and no matching mode
         self.speed_level = 0
+
+
+        # TODO: MOVE THIS TO arq_calculate_speed_level()
+        # calculate speed level in correlation to latest known SNR
         for i in range(len(self.mode_list)):
             if static.SNR >= self.snr_list[i]:
                 self.speed_level = i
+
+        # calculate if speed level fits to busy condition
+        mode_name = codec2.FREEDV_MODE(self.mode_list[self.speed_level]).name
+        mode_slots = codec2.FREEDV_MODE_USED_SLOTS[mode_name].value
+        if mode_slots in [static.CHANNEL_BUSY_SLOT]:
+            self.speed_level = 0
+            self.log.warning(
+                "[TNC] busy slot detection",
+                slots=static.CHANNEL_BUSY_SLOT,
+                mode_slots=mode_slots,
+            )
+
 
         self.log.debug(
             "[TNC] calculated speed level",
