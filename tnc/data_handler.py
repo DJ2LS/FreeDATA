@@ -961,8 +961,8 @@ class DATA:
                               )
 
             # calculate if speed level fits to busy condition
-            mode_name = codec2.FREEDV_MODE(self.mode_list[self.speed_level]).name
-            mode_slots = codec2.FREEDV_MODE_USED_SLOTS[mode_name].value
+            mode_name = FREEDV_MODE(self.mode_list[self.speed_level]).name
+            mode_slots = FREEDV_MODE_USED_SLOTS[mode_name].value
             if mode_slots in [static.CHANNEL_BUSY_SLOT]:
                 self.speed_level = 0
                 self.log.warning(
