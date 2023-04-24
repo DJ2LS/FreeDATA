@@ -1315,7 +1315,7 @@ def get_bytes_per_frame(mode: int) -> int:
     :rtype: int
     """
     freedv = open_codec2_instance(mode)
-
+    # TODO: add close session
     # get number of bytes per frame for mode
     return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 

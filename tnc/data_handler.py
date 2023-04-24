@@ -155,6 +155,8 @@ class DATA:
         self.arq_burst_header_size = 3
         self.arq_burst_minimum_payload = 56 - self.arq_burst_header_size
         self.arq_burst_maximum_payload = 510 - self.arq_burst_header_size
+        # save last used payload for optimising buffer search area
+        self.arq_burst_last_payload = self.arq_burst_maximum_payload
 
         self.is_IRS = False
         self.burst_nack = False
@@ -757,10 +759,7 @@ class DATA:
                 # temp_burst_buffer --> new data
                 # search_area --> area where we want to search
 
-                # data_mode = self.mode_list[self.speed_level]
-                # payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
-                # search_area = payload_per_frame - 3  # (3 bytes arq frame header)
-                search_area = self.arq_burst_maximum_payload  # (3 bytes arq frame header)
+                search_area = self.arq_burst_last_payload
 
                 search_position = len(static.RX_FRAME_BUFFER) - search_area
                 # if search position < 0, then search position = 0
@@ -789,6 +788,9 @@ class DATA:
                     self.log.debug("[TNC] ARQ | RX | appending data to buffer")
 
                 static.RX_FRAME_BUFFER += temp_burst_buffer
+
+                self.arq_burst_last_payload = len(temp_burst_buffer)
+
             # Check if we didn't receive a BOF and EOF yet to avoid sending
             # ack frames if we already received all data
             if (
@@ -3065,6 +3067,7 @@ class DATA:
         static.RX_BURST_BUFFER = []
         static.RX_FRAME_BUFFER = b""
         self.burst_ack_snr = 0
+        self.arq_burst_last_payload = 0
 
         # reset modem receiving state to reduce cpu load
         modem.RECEIVE_SIG0 = True
