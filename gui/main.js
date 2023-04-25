@@ -484,7 +484,6 @@ ipcMain.on("get-folder-path", (event, data) => {
         win.webContents.send(data.action, { path: folderPaths });
         //win.webContents.send(data.action, { path: filePaths });
       }
-      
     });
 });
 
