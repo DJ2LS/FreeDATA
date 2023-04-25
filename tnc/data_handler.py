@@ -1241,14 +1241,17 @@ class DATA:
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
+                self.log.info("[TNC] early buffer info",
+                              bufferposition=bufferposition,
+                              bufferposition_end=bufferposition_end,
+                              bufferposition_temp=bufferposition_temp
+                              )
+
                 # check for maximum frames per burst for remaining data
                 n_frames_per_burst = 1
-                print(bufferposition)
-                print(bufferposition_end)
-                print(bufferposition_temp)
-
                 if self.max_n_frames_per_burst > 1:
                     while (payload_per_frame * n_frames_per_burst) % len(data_out[bufferposition_temp:]) == (payload_per_frame * n_frames_per_burst):
+                        threading.Event().wait(0.01)
                         print((payload_per_frame * n_frames_per_burst) % len(data_out))
                         n_frames_per_burst += 1
                         if n_frames_per_burst == self.max_n_frames_per_burst:
@@ -3282,7 +3285,8 @@ class DATA:
             frames_left = 1
 
         timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
-        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
+        # TODO: Enable this for development
+        #print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
         if timeout <= time.time() or modem_error_state:
             self.log.warning(
                 "[TNC] Burst decoding error or timeout",
@@ -3329,7 +3333,7 @@ class DATA:
 
                 # Update data_channel timestamp
                 # TODO: Disabled this one for testing.
-                self.data_channel_last_received = time.time()
+                #self.data_channel_last_received = time.time()
                 self.n_retries_per_burst += 1
         else:
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
