@@ -23,6 +23,7 @@ import numpy as np
 import sock
 import sounddevice as sd
 import static
+from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
@@ -518,6 +519,7 @@ class RF:
           frames:
 
         """
+        self.reset_data_sync()
 
         if mode == codec2.FREEDV_MODE.datac0.value:
             freedv = self.freedv_datac0_tx
@@ -586,18 +588,20 @@ class RF:
         )
 
         for _ in range(repeats):
-            # codec2 fsk preamble may be broken -
-            # at least it sounds like that, so we are disabling it for testing
-            if self.MODE not in [
-                codec2.FREEDV_MODE.fsk_ldpc_0.value,
-                codec2.FREEDV_MODE.fsk_ldpc_1.value,
-            ]:
-                # Write preamble to txbuffer
-                codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
-                txbuffer += bytes(mod_out_preamble)
 
-            # Create modulaton for all frames in the list
+            # Create modulation for all frames in the list
             for frame in frames:
+                # Write preamble to txbuffer
+                # codec2 fsk preamble may be broken -
+                # at least it sounds like that, so we are disabling it for testing
+                if self.MODE not in [
+                    codec2.FREEDV_MODE.fsk_ldpc_0.value,
+                    codec2.FREEDV_MODE.fsk_ldpc_1.value,
+                ]:
+                    # Write preamble to txbuffer
+                    codec2.api.freedv_rawdatapreambletx(freedv, mod_out_preamble)
+                    txbuffer += bytes(mod_out_preamble)
+
                 # Create buffer for data
                 # Use this if CRC16 checksum is required (DATAc1-3)
                 buffer = bytearray(payload_bytes_per_frame)
@@ -621,16 +625,16 @@ class RF:
                 codec2.api.freedv_rawdatatx(freedv, mod_out, data)
                 txbuffer += bytes(mod_out)
 
-            # codec2 fsk postamble may be broken -
-            # at least it sounds like that, so we are disabling it for testing
-            if self.MODE not in [
-                codec2.FREEDV_MODE.fsk_ldpc_0.value,
-                codec2.FREEDV_MODE.fsk_ldpc_1.value,
-            ]:
-                # Write postamble to txbuffer
-                codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
-                # Append postamble to txbuffer
-                txbuffer += bytes(mod_out_postamble)
+                # codec2 fsk postamble may be broken -
+                # at least it sounds like that, so we are disabling it for testing
+                if self.MODE not in [
+                    codec2.FREEDV_MODE.fsk_ldpc_0.value,
+                    codec2.FREEDV_MODE.fsk_ldpc_1.value,
+                ]:
+                    # Write postamble to txbuffer
+                    codec2.api.freedv_rawdatapostambletx(freedv, mod_out_postamble)
+                    # Append postamble to txbuffer
+                    txbuffer += bytes(mod_out_postamble)
 
             # Add delay to end of frames
             samples_delay = int(self.MODEM_SAMPLE_RATE * (repeat_delay / 1000))  # type: ignore
@@ -806,15 +810,31 @@ class RF:
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
+
                         # process commands only if static.LISTEN = True
                         if static.LISTEN:
-                            self.log.debug(
-                                "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
-                            )
-                            self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
-                            self.get_scatter(freedv)
-                            self.calculate_snr(freedv)
-                            state_buffer = []
+
+
+                            # ignore data channel opener frames for avoiding toggle states
+                            # use case: opener already received, but ack got lost and we are receiving
+                            # an opener again
+                            if mode_name in ["sig1-datac13"] and int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                                FRAME_TYPE.ARQ_SESSION_OPEN.value,
+                                FRAME_TYPE.ARQ_DC_OPEN_W.value,
+                                FRAME_TYPE.ARQ_DC_OPEN_ACK_W.value,
+                                FRAME_TYPE.ARQ_DC_OPEN_N.value,
+                                FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
+                            ]:
+                                print("dropp")
+                            else:
+                                self.log.debug(
+                                    "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
+                                )
+
+                                self.modem_received_queue.put([bytes_out, freedv, bytes_per_frame])
+                                self.get_scatter(freedv)
+                                self.calculate_snr(freedv)
+                                state_buffer = []
                         else:
                             self.log.warning(
                                 "[MDM] [demod_audio] received frame but ignored processing",
@@ -1269,10 +1289,25 @@ class RF:
         frames_per_burst = min(frames_per_burst, 1)
         frames_per_burst = max(frames_per_burst, 5)
 
+        frames_per_burst = 1
+
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac1_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac3_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.dat0_datac4_freedv, frames_per_burst)
         codec2.api.freedv_set_frames_per_burst(self.fsk_ldpc_freedv_0, frames_per_burst)
+
+    def reset_data_sync(self) -> None:
+        """
+        reset sync state for data modes
+
+        :param frames_per_burst: Number of frames per burst requested
+        :type frames_per_burst: int
+        """
+
+        codec2.api.freedv_set_sync(self.dat0_datac1_freedv, 0)
+        codec2.api.freedv_set_sync(self.dat0_datac3_freedv, 0)
+        codec2.api.freedv_set_sync(self.dat0_datac4_freedv, 0)
+        codec2.api.freedv_set_sync(self.fsk_ldpc_freedv_0, 0)
 
 
 def open_codec2_instance(mode: int) -> ctypes.c_void_p:

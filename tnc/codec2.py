@@ -119,6 +119,9 @@ if api is None or "api" not in locals():
 api.freedv_open.argype = [ctypes.c_int]  # type: ignore
 api.freedv_open.restype = ctypes.c_void_p
 
+api.freedv_set_sync.argype = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.freedv_set_sync.restype = ctypes.c_void_p
+
 api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
