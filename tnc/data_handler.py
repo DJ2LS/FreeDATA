@@ -101,7 +101,7 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
-        # Flag to indicate if we recevied a low bandwidth mode channel opener
+        # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
 
         self.data_channel_max_retries = 15
@@ -607,11 +607,14 @@ class DATA:
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
 
-    def send_burst_nack_frame_watchdog(self, snr: bytes) -> None:
+    def send_burst_nack_frame_watchdog(self, snr: bytes, tx_n_frames_per_burst) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
         # increment nack counter for transmission stats
         self.frame_nack_counter += 1
+
+        # we need to clear our rx burst buffer
+        static.RX_BURST_BUFFER = []
 
         # Create and send ACK frame
         self.log.info("[TNC] ARQ | RX | SENDING NACK")
@@ -620,6 +623,7 @@ class DATA:
         nack_frame[1:2] = self.session_id
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
+        nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5 + 5
@@ -628,8 +632,6 @@ class DATA:
 
         # TRANSMIT NACK FRAME FOR BURST
         self.enqueue_frame_for_tx([nack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
-        # reset burst timeout in case we had to wait too long
-        self.burst_last_received = time.time()
 
         # reset frame counter for not increasing speed level
         self.frame_received_counter = 0
@@ -1619,18 +1621,16 @@ class DATA:
         print(missing_area)
         print(self.rpt_request_buffer)
 
-        tempbuffer = []
+        tempbuffer_rptframes = []
         for i in range(0, len(missing_area)):
 
             print(missing_area[i])
-            missing_frames = missing_area[i] -1
-            # print(self.rpt_request_buffer[missing_frames])
-            tempbuffer.append(self.rpt_request_buffer[missing_frames])
+            missing_frames_buffer_position = missing_area[i] -1
+            tempbuffer_rptframes.append(self.rpt_request_buffer[missing_frames_buffer_position])
 
         self.log.info("[TNC] SENDING REPEAT....")
         data_mode = self.mode_list[self.speed_level]
-        print(tempbuffer)
-        self.enqueue_frame_for_tx(tempbuffer, c2_mode=data_mode)
+        self.enqueue_frame_for_tx(tempbuffer_rptframes, c2_mode=data_mode)
 
         #for i in range(0, 6, 2):
         #    if not missing_area[i: i + 2].endswith(b"\x00\x00"):
@@ -2341,7 +2341,6 @@ class DATA:
                 slots=static.CHANNEL_BUSY_SLOT,
                 mode_slots=mode_slots,
             )
-
 
         self.log.debug(
             "[TNC] calculated speed level",
@@ -3278,8 +3277,12 @@ class DATA:
         else:
             frames_left = 1
 
+        # make sure we don't have a 0 here for avoiding too short timeouts
+        if frames_left == 0:
+            frames_left = 1
+
         timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
-        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} | speed level: {self.speed_level}")
+        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
         if timeout <= time.time() or modem_error_state:
             self.log.warning(
                 "[TNC] Burst decoding error or timeout",
@@ -3289,10 +3292,11 @@ class DATA:
                 modem_error_state=modem_error_state
             )
 
-            print(f"frames_per_burst {self.rx_n_frame_of_burst} / {self.rx_n_frames_per_burst}")
-            if self.rx_n_frames_per_burst > 1 and self.burst_rpt_counter < 100 and None in [static.RX_BURST_BUFFER]:
+            print(f"frames_per_burst {self.rx_n_frame_of_burst} / {self.rx_n_frames_per_burst}, Repeats: {self.burst_rpt_counter} Nones: {static.RX_BURST_BUFFER.count(None)}")
+
+            if self.rx_n_frames_per_burst > 1 and self.burst_rpt_counter < 3 and static.RX_BURST_BUFFER.count(None) > 0:
                 # reset self.burst_last_received
-                self.burst_last_received = time.time() + self.time_list[self.speed_level]
+                self.burst_last_received = time.time() + self.time_list[self.speed_level] * frames_left
                 self.burst_rpt_counter += 1
                 self.send_retransmit_request_frame()
 
@@ -3309,11 +3313,19 @@ class DATA:
                     self.speed_level = max(self.speed_level - 1, 0)
                     static.ARQ_SPEED_LEVEL = self.speed_level
 
+                # TODO: Create better mechanisms for handling n frames per burst for bad channels
+                # reduce frames per burst
+                if self.burst_rpt_counter >= 2:
+                    tx_n_frames_per_burst = max(self.rx_n_frames_per_burst - 1, 1)
+                else:
+                    tx_n_frames_per_burst = self.rx_n_frames_per_burst
+
                 # Update modes we are listening to
                 self.set_listening_modes(True, True, self.mode_list[self.speed_level])
 
-                # Why not pass `snr` or `static.SNR`?
-                self.send_burst_nack_frame_watchdog(0)
+
+                # TODO: Does SNR make sense for NACK if we dont have an actual SNR information?
+                self.send_burst_nack_frame_watchdog(0, tx_n_frames_per_burst)
 
                 # Update data_channel timestamp
                 # TODO: Disabled this one for testing.
@@ -3341,7 +3353,7 @@ class DATA:
 
                 timeleft = int((self.data_channel_last_received + self.transmission_timeout) - time.time())
                 if timeleft % 10 == 0:
-                    self.log.debug("Time left until timeout", seconds=timeleft)
+                    self.log.debug("Time left until channel timeout", seconds=timeleft)
 
                 # threading.Event().wait(5)
                 # print(self.data_channel_last_received + self.transmission_timeout - time.time())
