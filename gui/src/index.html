@@ -2854,7 +2854,7 @@
                         id="AutoStartSwitch"
                       />
                       <label class="form-check-label" for="AutoStartSwitch"
-                        >Start on launch</label
+                        >Start on app launch</label
                       >
                     </div>
                   </label>
@@ -2935,26 +2935,6 @@
                 aria-labelledby="hamlib-tab"
                 tabindex="0"
               >
-                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text" style="width: 180px"
-                    >Rigctld command</span
-                  >
-                  <input
-                    type="text"
-                    class="form-control"
-                    placeholder="Command"
-                    id="hamlib_rigctld_command"
-                    aria-label="Device Port"
-                    aria-describedby="basic-addon1"
-                  />
-                  <button
-                    class="btn btn-outline-secondary"
-                    type="button"
-                    id="btnHamlibCopyCommand"
-                  >
-                    <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
-                  </button>
-                </div>
                 <hr class="m-2" />
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px"
@@ -3413,6 +3393,25 @@
                     <option value="OFF">OFF</option>
                     <option value="ON">ON</option>
                   </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Rigctld command</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="hamlib_rigctld_command"
+                    aria-label="Device Port"
+                    aria-describedby="basic-addon1" disabled placeholder="auto populated from above settings"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="btnHamlibCopyCommand"
+                  >
+                    <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
+                  </button>
                 </div>
                 <div class="input-group input-group-sm mb-1">
                   <span class="input-group-text" style="width: 180px"
