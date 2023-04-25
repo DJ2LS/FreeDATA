@@ -80,13 +80,13 @@ const configDefaultSettings =
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
-                  "beacon_interval" : 5,\
+                  "beacon_interval" : 60,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
                   "rx_buffer_size" : "16", \
-                  "enable_explorer" : "False", \
+                  "enable_explorer" : "True", \
                   "wftheme": 2, \
                   "high_graphics" : "True",\
                   "explorer_stats" : "False", \
@@ -480,7 +480,11 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-      win.webContents.send(data.action, { path: folderPaths });
+      if (folderPaths.canceled == false) {
+        win.webContents.send(data.action, { path: folderPaths });
+        //win.webContents.send(data.action, { path: filePaths });
+      }
+      
     });
 });
 
