@@ -99,6 +99,7 @@ class DATA:
         self.n_retries_per_burst = 0
         self.rx_n_frame_of_burst = 0
         self.rx_n_frames_per_burst = 0
+        self.max_n_frames_per_burst = 1
 
         # Flag to indicate if we recevied a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
@@ -804,12 +805,11 @@ class DATA:
                 self.arq_calculate_speed_level(snr)
 
                 self.data_channel_last_received = int(time.time()) + 6 + 6
+                self.burst_last_received = int(time.time()) + 6 + 6
                 # Create and send ACK frame
                 self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=static.ARQ_SECONDS_UNTIL_FINISH,
                               bytesperminute=static.ARQ_BYTES_PER_MINUTE)
-                while static.IS_CODEC2_TRAFFIC:
-                    print("waiting.....")
-
+                
                 self.send_burst_ack_frame(snr)
 
                 # Reset n retries per burst counter
@@ -1153,6 +1153,7 @@ class DATA:
           n_frames_per_burst:int:
 
         """
+
         # set signalling modes we want to listen to
         # we are in an ongoing arq transmission, so we don't need sig0 actually
         modem.RECEIVE_SIG0 = False
@@ -1212,7 +1213,10 @@ class DATA:
         )
         self.log.debug("[TNC] frame raw data:", data=data_out)
         # Initial bufferposition is 0
-        bufferposition = bufferposition_end = 0
+        bufferposition = 0
+        bufferposition_end = 0
+        bufferposition_temp = 0
+
 
         # Iterate through data_out buffer
         while not self.data_frame_ack_received and static.ARQ_STATE:
@@ -1237,20 +1241,17 @@ class DATA:
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
-                # Append data frames with n_frames_per_burst to tempbuffer
-                # TODO: this part needs a complete rewrite!
-
                 # check for maximum frames per burst for remaining data
                 n_frames_per_burst = 1
-                max_n_frames_per_burst = 1
-                print(payload_per_frame)
-                print(len(data_out[bufferposition:]))
+                print(bufferposition)
+                print(bufferposition_end)
+                print(bufferposition_temp)
 
-                if max_n_frames_per_burst > 1:
-                    while (payload_per_frame * n_frames_per_burst) % len(data_out[bufferposition:]) == (payload_per_frame * n_frames_per_burst):
+                if self.max_n_frames_per_burst > 1:
+                    while (payload_per_frame * n_frames_per_burst) % len(data_out[bufferposition_temp:]) == (payload_per_frame * n_frames_per_burst):
                         print((payload_per_frame * n_frames_per_burst) % len(data_out))
                         n_frames_per_burst += 1
-                        if n_frames_per_burst == max_n_frames_per_burst:
+                        if n_frames_per_burst == self.max_n_frames_per_burst:
                             break
                 else:
                     n_frames_per_burst = 1
@@ -1258,6 +1259,7 @@ class DATA:
 
                 tempbuffer = []
                 self.rpt_request_buffer = []
+                # Append data frames with n_frames_per_burst to tempbuffer
                 for n_frame in range(0,n_frames_per_burst):
                     arqheader = bytearray()
                     arqheader[:1] = bytes([FR_TYPE.BURST_01.value + n_frame])
@@ -1323,6 +1325,8 @@ class DATA:
                     self.log.debug(
                         "[TNC] arq_transmit: Received BURST ACK. Sending next chunk."
                     , irs_snr=self.burst_ack_snr)
+                    # update temp bufferposition for n frames per burst early calculation
+                    bufferposition_temp = bufferposition_end
                     break  # break retry loop
 
                 if self.burst_nack:
@@ -3267,14 +3271,22 @@ class DATA:
 
         # We want to reach this state only if connected ( == return above not called )
         if self.rx_n_frames_per_burst > 1:
+            # uses case for IRS: reduce time for waiting by counting "None" in burst buffer
             frames_left = static.RX_BURST_BUFFER.count(None)
+        elif self.rx_n_frame_of_burst== 0 and self.rx_n_frames_per_burst == 0:
+            # use case for IRS: We didn't receive a burst yet, because the first one got lost
+            # in this case we don't have any information about the expected burst length
+            # we must assume, we are getting a burst with max_n_frames_per_burst
+            frames_left = self.max_n_frames_per_burst
         else:
             frames_left = 1
+
         print(frames_left)
-        timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
+        timeout = time.time() + self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
         print(timeout - time.time())
         if timeout <= time.time() or modem_error_state:
             print("timeout----------------")
+            print(frames_left)
             print(time.time() - timeout)
             print(time.time() - (self.burst_last_received + self.time_list[self.speed_level] * frames_left))
             #if time.time() > (self.burst_last_received + (6 * (self.rx_n_frames_per_burst - self.rx_n_frame_of_burst))):
