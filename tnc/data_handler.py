@@ -130,7 +130,7 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [-10, 0-1, 3-3]
+        self.snr_list_high_bw = [-10, 0-1, 0]
         # List for time to wait for corresponding mode in seconds
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
