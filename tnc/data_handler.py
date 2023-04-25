@@ -78,11 +78,11 @@ class DATA:
         self.data_channel_last_received = 0.0  # time of last "live sign" of a frame
         self.burst_ack_snr = 0  # SNR from received burst ack frames
 
-        # Flag to indicate if we received an acknowledge frame for a burst
+        # Flag to indicate if we received an ACK frame for a burst
         self.burst_ack = False
-        # Flag to indicate if we received an acknowledge frame for a data frame
+        # Flag to indicate if we received an ACK frame for a data frame
         self.data_frame_ack_received = False
-        # Flag to indicate if we received an request for repeater frames
+        # Flag to indicate if we received a request for repeater frames
         self.rpt_request_received = False
         self.rpt_request_buffer = []  # requested frames, saved in a list
         self.burst_rpt_counter = 0
@@ -117,7 +117,7 @@ class DATA:
             FREEDV_MODE.datac4.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_low_bw = [-10]
+        self.snr_list_low_bw = [-100]
         # List for time to wait for corresponding mode in seconds
         self.time_list_low_bw = [6+5]
 
@@ -130,7 +130,7 @@ class DATA:
             FREEDV_MODE.datac1.value,
         ]
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
-        self.snr_list_high_bw = [-10, 0-1, 3-3]
+        self.snr_list_high_bw = [-100, 0, 3]
         # List for time to wait for corresponding mode in seconds
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
@@ -541,8 +541,6 @@ class DATA:
         # Transmit frame
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value)
 
-        # reset burst timeout in case we had to wait too long
-        self.burst_last_received = time.time()
 
     def send_data_ack_frame(self, snr) -> None:
         """Build and send ACK frame for received DATA frame"""
@@ -1481,7 +1479,6 @@ class DATA:
             )
 
             frametype = int.from_bytes(bytes(data_in[:1]), "big")
-            desc = "ack"
             if frametype == FR_TYPE.BURST_ACK.value:
                 # Increase speed level if we received a burst ack
                 # self.speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
@@ -3273,7 +3270,7 @@ class DATA:
         if self.rx_n_frames_per_burst > 1:
             # uses case for IRS: reduce time for waiting by counting "None" in burst buffer
             frames_left = static.RX_BURST_BUFFER.count(None)
-        elif self.rx_n_frame_of_burst== 0 and self.rx_n_frames_per_burst == 0:
+        elif self.rx_n_frame_of_burst == 0 and self.rx_n_frames_per_burst == 0:
             # use case for IRS: We didn't receive a burst yet, because the first one got lost
             # in this case we don't have any information about the expected burst length
             # we must assume, we are getting a burst with max_n_frames_per_burst
@@ -3281,18 +3278,9 @@ class DATA:
         else:
             frames_left = 1
 
-        print(frames_left)
-        timeout = time.time() + self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
-        print(timeout - time.time())
+        timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
+        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} | speed level: {self.speed_level}")
         if timeout <= time.time() or modem_error_state:
-            print("timeout----------------")
-            print(frames_left)
-            print(time.time() - timeout)
-            print(time.time() - (self.burst_last_received + self.time_list[self.speed_level] * frames_left))
-            #if time.time() > (self.burst_last_received + (6 * (self.rx_n_frames_per_burst - self.rx_n_frame_of_burst))):
-            #    print("burst timeout reached...")
-            print("-----------------------")
-
             self.log.warning(
                 "[TNC] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
@@ -3307,6 +3295,7 @@ class DATA:
                 self.burst_last_received = time.time() + self.time_list[self.speed_level]
                 self.burst_rpt_counter += 1
                 self.send_retransmit_request_frame()
+
             else:
 
                 # reset self.burst_last_received
@@ -3328,7 +3317,7 @@ class DATA:
 
                 # Update data_channel timestamp
                 # TODO: Disabled this one for testing.
-                # self.data_channel_last_received = time.time()
+                self.data_channel_last_received = time.time()
                 self.n_retries_per_burst += 1
         else:
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())

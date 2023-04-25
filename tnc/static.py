@@ -12,7 +12,7 @@ import subprocess
 from enum import Enum
 CHANNEL_BUSY_SLOT = [False] * 5
 
-VERSION = "0.9.0-alpha-exp.3"
+VERSION = "0.9.0-alpha-exp.4"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
