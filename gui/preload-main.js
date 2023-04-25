@@ -3451,5 +3451,5 @@ function changeGuiDesign(design) {
   }
   setTimeout(() => {
     autostart();
-  }, 1250);
+  }, 2500);
 }
