@@ -954,7 +954,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
         mainLog.info("Starting rigctld event listeners");
         rigctld_connection_state = true;
         Data["state"] =
-          "connection possible - (" + data.ip + ":" + data.port + ")";
+          "Connected";
         Data["active"] = true;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
@@ -968,7 +968,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
 
       rigctld_connection.on("error", function () {
         rigctld_connection_state = false;
-        Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+        Data["state"] = "Not Connected";
         Data["active"] = false;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
