@@ -27,6 +27,8 @@ import log_handler
 import serial.tools.list_ports
 import sock
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+
 import structlog
 import ujson as json
 import config
@@ -210,10 +212,10 @@ class DAEMON:
         self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
 
         # list of parameters, necessary for running subprocess command as a list
-        options = ["--port", str(static.DAEMONPORT - 1)]
+        options = ["--port", str(DAEMON.port - 1)]
 
         # create an additional list entry for parameters not covered by gui
-        data[50] = int(static.DAEMONPORT - 1)
+        data[50] = int(DAEMON.port - 1)
 
         options.append("--mycall")
         options.extend((data[1], "--mygrid"))
@@ -335,7 +337,7 @@ if __name__ == "__main__":
     )
     ARGS = PARSER.parse_args()
 
-    static.DAEMONPORT = ARGS.socket_port
+    DAEMON.port = ARGS.socket_port
 
     try:
         if sys.platform == "linux":
@@ -363,11 +365,11 @@ if __name__ == "__main__":
     config = config.CONFIG("config.ini")
 
     try:
-        mainlog.info("[DMN] Starting TCP/IP socket", port=static.DAEMONPORT)
+        mainlog.info("[DMN] Starting TCP/IP socket", port=DAEMON.port)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer(
-            (static.HOST, static.DAEMONPORT), sock.ThreadedTCPRequestHandler
+            (static.HOST, DAEMON.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
@@ -375,7 +377,7 @@ if __name__ == "__main__":
 
     except Exception as err:
         mainlog.error(
-            "[DMN] Starting TCP/IP socket failed", port=static.DAEMONPORT, e=err
+            "[DMN] Starting TCP/IP socket failed", port=DAEMON.port, e=err
         )
         sys.exit(1)
     daemon = DAEMON()
@@ -384,7 +386,7 @@ if __name__ == "__main__":
         "[DMN] Starting FreeDATA Daemon",
         author="DJ2LS",
         year="2023",
-        version=static.VERSION,
+        version=TNC.version,
     )
     while True:
         threading.Event().wait(1)

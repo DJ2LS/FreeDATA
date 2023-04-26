@@ -23,7 +23,7 @@ ENABLE_STATS = False
 
 
 # DAEMON
-DAEMONPORT: int = 3001
+
 TNCSTARTED: bool = False
 TNCPROCESS: subprocess.Popen
 
@@ -43,9 +43,7 @@ LOW_BANDWIDTH_MODE: bool = False
 # ---------------------------------
 
 # Server Defaults
-HOST: str = "0.0.0.0"
-PORT: int = 3000
-SOCKET_TIMEOUT: int = 1  # seconds
+
 # ---------------------------------
 SERIAL_DEVICES: list = []
 # ---------------------------------
@@ -200,7 +198,7 @@ class Channel:
 
 @dataclass
 class Daemon:
-    pass
+    port: int = 3001
 
 @dataclass
 class Hamlib:
@@ -221,4 +219,7 @@ class TCI:
 @dataclass
 class TNC:
     version = "0.9.0-alpha-exp.5"
+    host: str = "0.0.0.0"
+    port: int = 3000
+    SOCKET_TIMEOUT: int = 1  # seconds
 

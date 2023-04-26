@@ -287,7 +287,7 @@ if __name__ == "__main__":
             except ValueError:
                 static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
 
-            static.PORT = ARGS.socket_port
+            TNC.port = ARGS.socket_port
             static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
             static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
             static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
@@ -338,7 +338,7 @@ if __name__ == "__main__":
             except ValueError:
                 static.AUDIO_OUTPUT_DEVICE = conf.get('AUDIO', 'tx', '0')
 
-            static.PORT = int(conf.get('NETWORK', 'tncport', '3000'))
+            TNC.port = int(conf.get('NETWORK', 'tncport', '3000'))
             static.HAMLIB_RADIOCONTROL = conf.get('RADIO', 'radiocontrol', 'rigctld')
             static.HAMLIB_RIGCTLD_IP = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
             static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', '4532'))
@@ -411,11 +411,11 @@ if __name__ == "__main__":
 
     # --------------------------------------------START CMD SERVER
     try:
-        log.info("[TNC] Starting TCP/IP socket", port=static.PORT)
+        log.info("[TNC] Starting TCP/IP socket", port=TNC.port)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer(
-            (static.HOST, static.PORT), sock.ThreadedTCPRequestHandler
+            (TNC.host, TNC.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
 
@@ -423,7 +423,7 @@ if __name__ == "__main__":
         server_thread.start()
 
     except Exception as err:
-        log.error("[TNC] Starting TCP/IP socket failed", port=static.PORT, e=err)
+        log.error("[TNC] Starting TCP/IP socket failed", port=TNC.port, e=err)
         sys.exit(1)
     while True:
         threading.Event().wait(1)

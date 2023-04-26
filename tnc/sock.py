@@ -68,7 +68,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         while self.connection_alive and not CLOSE_SIGNAL:
             # send tnc state as network stream
             # check server port against daemon port and send corresponding data
-            if self.server.server_address[1] == static.PORT and not static.TNCSTARTED:
+            if self.server.server_address[1] == TNC.port and not static.TNCSTARTED:
                 data = send_tnc_state()
                 if data != tempdata:
                     tempdata = data
@@ -128,7 +128,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                     # iterate thorugh data list
                     for commands in data:
-                        if self.server.server_address[1] == static.PORT:
+                        if self.server.server_address[1] == TNC.port:
                             self.process_tnc_commands(commands)
                         else:
                             self.process_daemon_commands(commands)
