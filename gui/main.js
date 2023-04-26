@@ -952,8 +952,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
         rigctld_events_wired = true;
         mainLog.info("Starting rigctld event listeners");
         rigctld_connection_state = true;
-        Data["state"] =
-          "Connected";
+        Data["state"] = "Connected";
         Data["active"] = true;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close

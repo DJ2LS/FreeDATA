@@ -1249,7 +1249,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("discordUrl").addEventListener("click", () => {
     shell.openExternal("https://discord.gg/jnADeDtxUF");
   });
-  
+
   //Track the number of times TNC has been started
   //So that warning is shown when using auto start and 2nd start
   //if hamlib is not running
@@ -1403,14 +1403,18 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
 
     //Display a message if hamlib control is enabled and not running
-    if (config.radiocontrol == "rigctld" && rigctldActive == false && (config.auto_start == 0 || tncStartCount > 1 )) {
-
+    if (
+      config.radiocontrol == "rigctld" &&
+      rigctldActive == false &&
+      (config.auto_start == 0 || tncStartCount > 1)
+    ) {
       if (
-        !window.confirm("Rig control is set to hamlib/rigctl, but it doesn't appear to be running.\n\nPlease start rigctld (start button in Rig Control area), or use rigctl mode 'none'.  If you're having issues starting rigctld please review the Hamlib tab in settings.\n\nClick OK to continue or cancel to abort.")
+        !window.confirm(
+          "Rig control is set to hamlib/rigctl, but it doesn't appear to be running.\n\nPlease start rigctld (start button in Rig Control area), or use rigctl mode 'none'.  If you're having issues starting rigctld please review the Hamlib tab in settings.\n\nClick OK to continue or cancel to abort."
         )
-         {
-          return;
-        }
+      ) {
+        return;
+      }
     }
 
     daemon.startTNC(
@@ -3215,17 +3219,14 @@ function checkRigctld() {
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
   rigctldActive = data["active"];
-  if (data["active"] == true)
-  {
-    document.getElementById("hamlib_rigctld_stop").disabled=false;
-    document.getElementById("hamlib_rigctld_start").disabled=true;
-    document.getElementById("testHamlib").disabled=false;
-        
-
-  }  else {
-    document.getElementById("hamlib_rigctld_stop").disabled=true;
-    document.getElementById("hamlib_rigctld_start").disabled=false;
-    document.getElementById("testHamlib").disabled=true;
+  if (data["active"] == true) {
+    document.getElementById("hamlib_rigctld_stop").disabled = false;
+    document.getElementById("hamlib_rigctld_start").disabled = true;
+    document.getElementById("testHamlib").disabled = false;
+  } else {
+    document.getElementById("hamlib_rigctld_stop").disabled = true;
+    document.getElementById("hamlib_rigctld_start").disabled = false;
+    document.getElementById("testHamlib").disabled = true;
   }
 });
 
