@@ -1406,7 +1406,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (config.radiocontrol == "rigctld" && rigctldActive == false && (config.auto_start == 0 || tncStartCount > 1 )) {
 
       if (
-        !window.confirm("Rig control is set to hamlib/rigctl, but it doesn't appear to be running.  Please start rigctld (start button in rigctl area), or use rigctl mode 'none'.  If having trouble starting rigctl please review your settings.\n\nClick OK to continue or cancel to abort.")
+        !window.confirm("Rig control is set to hamlib/rigctl, but it doesn't appear to be running.\n\nPlease start rigctld (start button in Rig Control area), or use rigctl mode 'none'.  If you're having issues starting rigctld please review the Hamlib tab in settings.\n\nClick OK to continue or cancel to abort.")
         )
          {
           return;
