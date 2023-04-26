@@ -27,6 +27,7 @@ import time
 import wave
 import helpers
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 import structlog
 from random import randrange
 import ujson as json

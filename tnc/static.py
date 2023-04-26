@@ -8,11 +8,15 @@ Here we are saving application wide variables and stats, which have to be access
 Not nice, suggestions are appreciated :-)
 """
 
+
+
+
+from dataclasses import dataclass, field
+from typing import List
 import subprocess
 from enum import Enum
 CHANNEL_BUSY_SLOT = [False] * 5
 
-VERSION = "0.9.0-alpha-exp.5"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
@@ -173,3 +177,48 @@ class FRAME_TYPE(Enum):
     FEC = 251
     IDENT = 254
     TEST_FRAME = 255
+
+
+
+# TODO: Move settings above to dataclasses
+
+@dataclass
+class ARQ:
+    pass
+
+@dataclass
+class Audio:
+    pass
+
+@dataclass
+class Beacon:
+    pass
+
+@dataclass
+class Channel:
+    pass
+
+@dataclass
+class Daemon:
+    pass
+
+@dataclass
+class Hamlib:
+    pass
+
+@dataclass
+class Modem:
+    pass
+
+@dataclass
+class Station:
+    pass
+
+@dataclass
+class TCI:
+    pass
+
+@dataclass
+class TNC:
+    version = "0.9.0-alpha-exp.5"
+

@@ -10,6 +10,7 @@ import time
 import structlog
 import threading
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 
 # set global hamlib version
 hamlib_version = 0

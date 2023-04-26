@@ -22,6 +22,7 @@ import modem
 import numpy as np
 import sock
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 import structlog
 import stats
 import ujson as json
@@ -29,6 +30,7 @@ from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from exceptions import NoCallsign
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
+
 
 TESTMODE = False
 

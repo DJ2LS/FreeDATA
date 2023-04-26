@@ -23,6 +23,7 @@ import numpy as np
 import sock
 import sounddevice as sd
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 from static import FRAME_TYPE
 import structlog
 import ujson as json

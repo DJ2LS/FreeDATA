@@ -8,6 +8,7 @@ import time
 from datetime import datetime,timezone
 import crcengine
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 import structlog
 import numpy as np
 import threading

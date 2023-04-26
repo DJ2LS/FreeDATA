@@ -3,6 +3,7 @@ Hold queues used by more than one module to eliminate cyclic imports.
 """
 import queue
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 
 DATA_QUEUE_TRANSMIT = queue.Queue()
 DATA_QUEUE_RECEIVED = queue.Queue()

@@ -13,6 +13,7 @@ import time
 import ujson as json
 import structlog
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 
 log = structlog.get_logger("stats")
 

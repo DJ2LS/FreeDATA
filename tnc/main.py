@@ -29,6 +29,7 @@ import helpers
 import log_handler
 import modem
 import static
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
 import structlog
 import explorer
 import json
@@ -394,7 +395,7 @@ if __name__ == "__main__":
         log.error("[DMN] logger init error", exception=err)
 
     log.info(
-        "[TNC] Starting FreeDATA", author="DJ2LS", version=static.VERSION
+        "[TNC] Starting FreeDATA", author="DJ2LS", version=TNC.version
     )
 
     # start data handler
