@@ -1078,9 +1078,9 @@ window.addEventListener("DOMContentLoaded", () => {
   //Handle change of Auto-start settings
   document.getElementById("AutoStartSwitch").addEventListener("click", () => {
     if (document.getElementById("AutoStartSwitch").checked == true) {
-      config.auto_start = "1";
+      config.auto_start = 1;
     } else {
-      config.auto_start = "0";
+      config.auto_start = 0;
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1249,8 +1249,15 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("discordUrl").addEventListener("click", () => {
     shell.openExternal("https://discord.gg/jnADeDtxUF");
   });
+  
+  //Track the number of times TNC has been started
+  //So that warning is shown when using auto start and 2nd start
+  //if hamlib is not running
+  var tncStartCount = 0;
+
   // startTNC button clicked
   document.getElementById("startTNC").addEventListener("click", () => {
+    tncStartCount++;
     var tuning_range_fmin = document.getElementById("tuning_range_fmin").value;
     var tuning_range_fmax = document.getElementById("tuning_range_fmax").value;
 
@@ -1394,6 +1401,17 @@ window.addEventListener("DOMContentLoaded", () => {
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
+
+    //Display a message if hamlib control is enabled and not running
+    if (config.radiocontrol == "rigctld" && rigctldActive == false && (config.auto_start == 0 || tncStartCount > 1 )) {
+
+      if (
+        !window.confirm("Rig control is set to hamlib/rigctl, but it doesn't appear to be running.  Please start rigctld (start button in rigctl area), or use rigctl mode 'none'.  If having trouble starting rigctl please review your settings.\n\nClick OK to continue or cancel to abort.")
+        )
+         {
+          return;
+        }
+    }
 
     daemon.startTNC(
       callsign_ssid,
@@ -3197,6 +3215,18 @@ function checkRigctld() {
 ipcRenderer.on("action-check-rigctld", (event, data) => {
   document.getElementById("hamlib_rigctld_status").value = data["state"];
   rigctldActive = data["active"];
+  if (data["active"] == true)
+  {
+    document.getElementById("hamlib_rigctld_stop").disabled=false;
+    document.getElementById("hamlib_rigctld_start").disabled=true;
+    document.getElementById("testHamlib").disabled=false;
+        
+
+  }  else {
+    document.getElementById("hamlib_rigctld_stop").disabled=true;
+    document.getElementById("hamlib_rigctld_start").disabled=false;
+    document.getElementById("testHamlib").disabled=true;
+  }
 });
 
 ipcRenderer.on("action-set-app-version", (event, data) => {
