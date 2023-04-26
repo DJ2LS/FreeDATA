@@ -12,7 +12,7 @@ import subprocess
 from enum import Enum
 CHANNEL_BUSY_SLOT = [False] * 5
 
-VERSION = "0.9.0-alpha-exp.4"
+VERSION = "0.9.0-alpha-exp.5"
 
 ENABLE_EXPLORER = False
 ENABLE_STATS = False
@@ -88,8 +88,6 @@ AUDIO_ENABLE_TCI: bool = False
 TCI_IP: str = '127.0.0.1'
 TCI_PORT: int = '9000'
 
-
-
 AUDIO_DBFS: int = 0
 FFT: list = [0]
 ENABLE_FFT: bool = True
@@ -141,7 +139,8 @@ INFO: list = []
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN: float = -50.0
 TUNING_RANGE_FMAX: float = 50.0
-IS_CODEC2_TRAFFIC: bool = False # true if we have codec2 signalling mode traffic on channel
+IS_CODEC2_TRAFFIC: bool = False  # true if we have codec2 signalling mode traffic on channel
+
 
 class FRAME_TYPE(Enum):
     """Lookup for frame types"""
