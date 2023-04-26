@@ -44,7 +44,7 @@ jobs:
         shell: bash
         run: |
           git clone https://github.com/drowe67/codec2.git -b dr-datac4
-          cd codec2 && git checkout master # This should be pinned to a release
+          cd codec2
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
       - name: run ctests
