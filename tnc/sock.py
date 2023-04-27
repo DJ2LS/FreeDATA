@@ -27,7 +27,7 @@ import time
 import wave
 import helpers
 import static
-from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 import structlog
 from random import randrange
 import ujson as json
@@ -68,7 +68,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         while self.connection_alive and not CLOSE_SIGNAL:
             # send tnc state as network stream
             # check server port against daemon port and send corresponding data
-            if self.server.server_address[1] == TNC.port and not static.TNCSTARTED:
+            if self.server.server_address[1] == TNC.port and not Daemon.tncstarted:
                 data = send_tnc_state()
                 if data != tempdata:
                     tempdata = data
@@ -99,9 +99,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
 
             # we want to transmit scatter data only once to reduce network traffic
-            static.SCATTER = []
+            ModemParam.scatter = []
             # we want to display INFO messages only once
-            static.INFO = []
+            #static.INFO = []
             # self.request.sendall(sock_data)
             threading.Event().wait(0.15)
 
@@ -355,14 +355,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_set_listen(self, received_json):
         try:
-            static.LISTEN = received_json["state"] in ['true', 'True', True, "ON", "on"]
+            TNC.listen = received_json["state"] in ['true', 'True', True, "ON", "on"]
             command_response("listen", True)
 
-            # if tnc is connected, force disconnect when static.LISTEN == False
-            if not static.LISTEN and static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
+            # if tnc is connected, force disconnect when TNC.listen == False
+            if not TNC.listen and ARQ.arq_session_state not in ["disconnecting", "disconnected", "failed"]:
                 DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
                 # set early disconnecting state so we can interrupt connection attempts
-                static.ARQ_SESSION_STATE = "disconnecting"
+                ARQ.arq_session_state = "disconnecting"
                 command_response("disconnect", True)
 
         except Exception as err:
@@ -373,15 +373,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_set_record_audio(self, received_json):
         try:
-            if not static.AUDIO_RECORD:
-                static.AUDIO_RECORD_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
-                static.AUDIO_RECORD_FILE.setnchannels(1)
-                static.AUDIO_RECORD_FILE.setsampwidth(2)
-                static.AUDIO_RECORD_FILE.setframerate(8000)
-                static.AUDIO_RECORD = True
+            if not AudioParam.audio_record:
+                AudioParam.audio_record_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                AudioParam.audio_record_FILE.setnchannels(1)
+                AudioParam.audio_record_FILE.setsampwidth(2)
+                AudioParam.audio_record_FILE.setframerate(8000)
+                AudioParam.audio_record = True
             else:
-                static.AUDIO_RECORD = False
-                static.AUDIO_RECORD_FILE.close()
+                AudioParam.audio_record = False
+                AudioParam.audio_record_FILE.close()
 
             command_response("respond_to_call", True)
 
@@ -393,7 +393,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_set_respond_to_call(self, received_json):
         try:
-            static.RESPOND_TO_CALL = received_json["state"] in ['true', 'True', True]
+            TNC.respond_to_call = received_json["state"] in ['true', 'True', True]
             command_response("respond_to_call", True)
 
         except Exception as err:
@@ -404,7 +404,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_set_respond_to_cq(self, received_json):
         try:
-            static.RESPOND_TO_CQ = received_json["state"] in ['true', 'True', True]
+            TNC.respond_to_cq = received_json["state"] in ['true', 'True', True]
             command_response("respond_to_cq", True)
 
         except Exception as err:
@@ -415,7 +415,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_set_tx_audio_level(self, received_json):
         try:
-            static.TX_AUDIO_LEVEL = int(received_json["value"])
+            AudioParam.tx_audio_level = int(received_json["value"])
             command_response("tx_audio_level", True)
 
         except Exception as err:
@@ -482,7 +482,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_start_beacon(self, received_json):
         try:
-            static.BEACON_STATE = True
+            Beacon.beacon_state = True
             interval = int(received_json["parameter"])
             DATA_QUEUE_TRANSMIT.put(["BEACON", interval, True])
             command_response("start_beacon", True)
@@ -497,7 +497,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_stop_beacon(self, received_json):
         try:
             log.warning("[SCK] Stopping beacon!")
-            static.BEACON_STATE = False
+            Beacon.beacon_state = False
             DATA_QUEUE_TRANSMIT.put(["BEACON", None, False])
             command_response("stop_beacon", True)
         except Exception as err:
@@ -528,7 +528,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 mycallsign = helpers.bytes_to_callsign(mycallsign)
 
             except Exception:
-                mycallsign = static.MYCALLSIGN
+                mycallsign = Station.mycallsign
 
             DATA_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
             command_response("ping", True)
@@ -544,7 +544,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_arq_connect(self, received_json):
 
         # pause our beacon first
-        static.BEACON_PAUSE = True
+        Beacon.beacon_pause = True
 
         # check for connection attempts key
         try:
@@ -562,7 +562,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             mycallsign = helpers.bytes_to_callsign(mycallsign)
 
         except Exception:
-            mycallsign = static.MYCALLSIGN
+            mycallsign = Station.mycallsign
 
         # additional step for being sure our callsign is correctly
         # in case we are not getting a station ssid
@@ -570,11 +570,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         dxcallsign = helpers.callsign_to_bytes(dxcallsign)
         dxcallsign = helpers.bytes_to_callsign(dxcallsign)
 
-        if static.ARQ_SESSION_STATE not in ["disconnected", "failed"]:
+        if ARQ.arq_session_state not in ["disconnected", "failed"]:
             command_response("connect", False)
             log.warning(
                 "[SCK] Connect command execution error",
-                e=f"already connected to station:{static.DXCALLSIGN}",
+                e=f"already connected to station:{Station.dxcallsign}",
                 command=received_json,
             )
         else:
@@ -594,24 +594,24 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     command=received_json,
                 )
                 # allow beacon transmission again
-                static.BEACON_PAUSE = False
+                Beacon.beacon_pause = False
 
             # allow beacon transmission again
-            static.BEACON_PAUSE = False
+            Beacon.beacon_pause = False
 
     def tnc_arq_disconnect(self, received_json):
         try:
-            if static.ARQ_SESSION_STATE not in ["disconnecting", "disconnected", "failed"]:
+            if ARQ.arq_session_state not in ["disconnecting", "disconnected", "failed"]:
                 DATA_QUEUE_TRANSMIT.put(["DISCONNECT"])
 
                 # set early disconnecting state so we can interrupt connection attempts
-                static.ARQ_SESSION_STATE = "disconnecting"
+                ARQ.arq_session_state = "disconnecting"
                 command_response("disconnect", True)
             else:
                 command_response("disconnect", False)
                 log.warning(
                     "[SCK] Disconnect command not possible",
-                    state=static.ARQ_SESSION_STATE,
+                    state=ARQ.arq_session_state,
                     command=received_json,
                 )
         except Exception as err:
@@ -623,13 +623,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             )
 
     def tnc_arq_send_raw(self, received_json):
-        static.BEACON_PAUSE = True
+        Beacon.beacon_pause = True
 
         # wait some random time
         helpers.wait(randrange(5, 25, 5) / 10.0)
 
         # we need to warn if already in arq state
-        if static.ARQ_STATE:
+        if ARQ.arq_state:
             command_response("send_raw", False)
             log.warning(
                 "[SCK] Send raw command execution warning",
@@ -639,19 +639,19 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             )
 
         try:
-            if not static.ARQ_SESSION:
+            if not ARQ.arq_session:
                 dxcallsign = received_json["parameter"][0]["dxcallsign"]
                 # additional step for being sure our callsign is correctly
                 # in case we are not getting a station ssid
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-                static.DXCALLSIGN = dxcallsign
-                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+                Station.dxcallsign = dxcallsign
+                Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
                 command_response("send_raw", True)
             else:
-                dxcallsign = static.DXCALLSIGN
-                static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+                dxcallsign = Station.dxcallsign
+                Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
             mode = int(received_json["parameter"][0]["mode"])
             n_frames = int(received_json["parameter"][0]["n_frames"])
@@ -664,7 +664,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 mycallsign = helpers.bytes_to_callsign(mycallsign)
 
             except Exception:
-                mycallsign = static.MYCALLSIGN
+                mycallsign = Station.mycallsign
 
             # check for connection attempts key
             try:
@@ -698,11 +698,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_arq_stop_transmission(self, received_json):
         try:
-            if static.TNC_STATE == "BUSY" or static.ARQ_STATE:
+            if TNC.tnc_state == "BUSY" or ARQ.arq_state:
                 DATA_QUEUE_TRANSMIT.put(["STOP"])
             log.warning("[SCK] Stopping transmission!")
-            static.TNC_STATE = "IDLE"
-            static.ARQ_STATE = False
+            TNC.tnc_state = "IDLE"
+            ARQ.arq_state = False
             command_response("stop_transmission", True)
         except Exception as err:
             command_response("stop_transmission", False)
@@ -804,7 +804,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         if (
                 received_json["type"] == "set"
                 and received_json["command"] == "start_tnc"
-                and not static.TNCSTARTED
+                and not Daemon.tncstarted
         ):
             self.daemon_start_tnc(received_json)
 
@@ -822,18 +822,18 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 self.request.sendall(b"INVALID CALLSIGN")
                 log.warning(
                     "[SCK] SET MYCALL FAILED",
-                    call=static.MYCALLSIGN,
-                    crc=static.MYCALLSIGN_CRC.hex(),
+                    call=Station.mycallsign,
+                    crc=Station.mycallsign_crc.hex(),
                 )
             else:
-                static.MYCALLSIGN = bytes(callsign, "utf-8")
-                static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+                Station.mycallsign = bytes(callsign, "utf-8")
+                Station.mycallsign_crc = helpers.get_crc_24(Station.mycallsign)
 
                 command_response("mycallsign", True)
                 log.info(
                     "[SCK] SET MYCALL",
-                    call=static.MYCALLSIGN,
-                    crc=static.MYCALLSIGN_CRC.hex(),
+                    call=Station.mycallsign,
+                    crc=Station.mycallsign_crc.hex(),
                 )
         except Exception as err:
             command_response("mycallsign", False)
@@ -847,8 +847,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 self.request.sendall(b"INVALID GRID")
                 command_response("mygrid", False)
             else:
-                static.MYGRID = bytes(mygrid, "utf-8")
-                log.info("[SCK] SET MYGRID", grid=static.MYGRID)
+                Station.mygrid = bytes(mygrid, "utf-8")
+                log.info("[SCK] SET MYGRID", grid=Station.mygrid)
                 command_response("mygrid", True)
         except Exception as err:
             command_response("mygrid", False)
@@ -929,12 +929,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def daemon_stop_tnc(self, received_json):
         try:
-            static.TNCPROCESS.kill()
+            Daemon.tncprocess.kill()
             # unregister process from atexit to avoid process zombies
-            atexit.unregister(static.TNCPROCESS.kill)
+            atexit.unregister(Daemon.tncprocess.kill)
 
             log.warning("[SCK] Stopping TNC")
-            static.TNCSTARTED = False
+            Daemon.tncstarted = False
             command_response("stop_tnc", True)
         except Exception as err:
             command_response("stop_tnc", False)
@@ -973,15 +973,15 @@ def send_daemon_state():
             "command": "daemon_state",
             "daemon_state": [],
             "python_version": str(python_version),
-            "input_devices": static.AUDIO_INPUT_DEVICES,
-            "output_devices": static.AUDIO_OUTPUT_DEVICES,
-            "serial_devices": static.SERIAL_DEVICES,
+            "input_devices": AudioParam.audio_input_devices,
+            "output_devices": AudioParam.audio_output_devices,
+            "serial_devices": Daemon.serial_devices,
             # 'cpu': str(psutil.cpu_percent()),
             # 'ram': str(psutil.virtual_memory().percent),
             "version": "0.1",
         }
 
-        if static.TNCSTARTED:
+        if Daemon.tncstarted:
             output["daemon_state"].append({"status": "running"})
         else:
             output["daemon_state"].append({"status": "stopped"})
@@ -999,53 +999,53 @@ def send_tnc_state():
     encoding = "utf-8"
     output = {
         "command": "tnc_state",
-        "ptt_state": str(static.PTT_STATE),
-        "tnc_state": str(static.TNC_STATE),
-        "arq_state": str(static.ARQ_STATE),
-        "arq_session": str(static.ARQ_SESSION),
-        "arq_session_state": str(static.ARQ_SESSION_STATE),
-        "audio_dbfs": str(static.AUDIO_DBFS),
-        "snr": str(static.SNR),
-        "frequency": str(static.HAMLIB_FREQUENCY),
-        "rf_level": str(static.HAMLIB_RF),
-        "strength": str(static.HAMLIB_STRENGTH),
-        "alc": str(static.HAMLIB_ALC),
-        "audio_level": str(static.TX_AUDIO_LEVEL),
-        "audio_auto_tune": str(static.AUDIO_AUTO_TUNE),
-        "speed_level": str(static.ARQ_SPEED_LEVEL),
-        "mode": str(static.HAMLIB_MODE),
-        "bandwidth": str(static.HAMLIB_BANDWIDTH),
-        "fft": str(static.FFT),
-        "channel_busy": str(static.CHANNEL_BUSY),
-        "channel_busy_slot": str(static.CHANNEL_BUSY_SLOT),
-        "is_codec2_traffic": str(static.IS_CODEC2_TRAFFIC),
-        "scatter": static.SCATTER,
+        "ptt_state": str(HamlibParam.ptt_state),
+        "tnc_state": str(TNC.tnc_state),
+        "arq_state": str(ARQ.arq_state),
+        "arq_session": str(ARQ.arq_session),
+        "arq_session_state": str(ARQ.arq_session_state),
+        "audio_dbfs": str(AudioParam.audio_dbfs),
+        "snr": str(ModemParam.snr),
+        "frequency": str(HamlibParam.hamlib_frequency),
+        "rf_level": str(HamlibParam.hamlib_rf),
+        "strength": str(HamlibParam.hamlib_strength),
+        "alc": str(HamlibParam.alc),
+        "audio_level": str(AudioParam.tx_audio_level),
+        "audio_auto_tune": str(AudioParam.audio_auto_tune),
+        "speed_level": str(ARQ.arq_speed_level),
+        "mode": str(HamlibParam.hamlib_mode),
+        "bandwidth": str(HamlibParam.hamlib_bandwidth),
+        "fft": str(AudioParam.fft),
+        "channel_busy": str(ModemParam.channel_busy),
+        "channel_busy_slot": str(ModemParam.channel_busy_slot),
+        "is_codec2_traffic": str(ModemParam.is_codec2_traffic),
+        "scatter": ModemParam.scatter,
         "rx_buffer_length": str(RX_BUFFER.qsize()),
-        "rx_msg_buffer_length": str(len(static.RX_MSG_BUFFER)),
-        "arq_bytes_per_minute": str(static.ARQ_BYTES_PER_MINUTE),
-        "arq_bytes_per_minute_burst": str(static.ARQ_BYTES_PER_MINUTE_BURST),
-        "arq_seconds_until_finish": str(static.ARQ_SECONDS_UNTIL_FINISH),
-        "arq_compression_factor": str(static.ARQ_COMPRESSION_FACTOR),
-        "arq_transmission_percent": str(static.ARQ_TRANSMISSION_PERCENT),
-        "speed_list": static.SPEED_LIST,
-        "total_bytes": str(static.TOTAL_BYTES),
-        "beacon_state": str(static.BEACON_STATE),
+        "rx_msg_buffer_length": str(len(ARQ.rx_msg_buffer)),
+        "arq_bytes_per_minute": str(ARQ.bytes_per_minute),
+        "arq_bytes_per_minute_burst": str(ARQ.bytes_per_minute_burst),
+        "arq_seconds_until_finish": str(ARQ.arq_seconds_until_finish),
+        "arq_compression_factor": str(ARQ.arq_compression_factor),
+        "arq_transmission_percent": str(ARQ.arq_transmission_percent),
+        "speed_list": ARQ.speed_list,
+        "total_bytes": str(ARQ.total_bytes),
+        "beacon_state": str(Beacon.beacon_state),
         "stations": [],
-        "mycallsign": str(static.MYCALLSIGN, encoding),
-        "mygrid": str(static.MYGRID, encoding),
-        "dxcallsign": str(static.DXCALLSIGN, encoding),
-        "dxgrid": str(static.DXGRID, encoding),
-        "hamlib_status": static.HAMLIB_STATUS,
-        "listen": str(static.LISTEN),
-        "audio_recording": str(static.AUDIO_RECORD),
+        "mycallsign": str(Station.mycallsign, encoding),
+        "mygrid": str(Station.mygrid, encoding),
+        "dxcallsign": str(Station.dxcallsign, encoding),
+        "dxgrid": str(Station.dxgrid, encoding),
+        "hamlib_status": HamlibParam.hamlib_status,
+        "listen": str(TNC.listen),
+        "audio_recording": str(AudioParam.audio_record),
     }
 
     # add heard stations to heard stations object
-    for heard in static.HEARD_STATIONS:
+    for heard in TNC.heard_stations:
         output["stations"].append(
             {
-                "dxcallsign": str(heard[0], "utf-8"),
-                "dxgrid": str(heard[1], "utf-8"),
+                "dxcallsign": str(heard[0], encoding),
+                "dxgrid": str(heard[1], encoding),
                 "timestamp": heard[2],
                 "datatype": heard[3],
                 "snr": heard[4],

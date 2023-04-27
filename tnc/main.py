@@ -29,7 +29,7 @@ import helpers
 import log_handler
 import modem
 import static
-from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 import structlog
 import explorer
 import json
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
-    static.ARQ_SAVE_TO_FOLDER = ARGS.savetofolder
+    ARQ.arq_save_to_folder = ARGS.savetofolder
 
     if not ARGS.configfile:
     
@@ -267,46 +267,46 @@ if __name__ == "__main__":
         try:
             mycallsign = bytes(ARGS.mycall.upper(), "utf-8")
             mycallsign = helpers.callsign_to_bytes(mycallsign)
-            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-            static.SSID_LIST = ARGS.ssid_list
+            Station.mycallsign = helpers.bytes_to_callsign(mycallsign)
+            Station.mycallsign_crc = helpers.get_crc_24(Station.mycallsign)
+            Station.ssid_list = ARGS.ssid_list
             # check if own ssid is always part of ssid list
-            own_ssid = int(static.MYCALLSIGN.split(b"-")[1])
-            if own_ssid not in static.SSID_LIST:
-                static.SSID_LIST.append(own_ssid)
+            own_ssid = int(Station.mycallsign.split(b"-")[1])
+            if own_ssid not in Station.ssid_list:
+                Station.ssid_list.append(own_ssid)
 
-            static.MYGRID = bytes(ARGS.mygrid, "utf-8")
+            Station.mygrid = bytes(ARGS.mygrid, "utf-8")
 
             # check if we have an int or str as device name
             try:
-                static.AUDIO_INPUT_DEVICE = int(ARGS.audio_input_device)
+                AudioParam.audio_input_device = int(ARGS.audio_input_device)
             except ValueError:
-                static.AUDIO_INPUT_DEVICE = ARGS.audio_input_device
+                AudioParam.audio_input_device = ARGS.audio_input_device
             try:
-                static.AUDIO_OUTPUT_DEVICE = int(ARGS.audio_output_device)
+                AudioParam.audio_output_device = int(ARGS.audio_output_device)
             except ValueError:
-                static.AUDIO_OUTPUT_DEVICE = ARGS.audio_output_device
+                AudioParam.audio_output_device = ARGS.audio_output_device
 
             TNC.port = ARGS.socket_port
-            static.HAMLIB_RADIOCONTROL = ARGS.hamlib_radiocontrol
-            static.HAMLIB_RIGCTLD_IP = ARGS.rigctld_ip
-            static.HAMLIB_RIGCTLD_PORT = str(ARGS.rigctld_port)
-            static.ENABLE_SCATTER = ARGS.send_scatter
-            static.ENABLE_FFT = ARGS.send_fft
-            static.ENABLE_FSK = ARGS.enable_fsk
-            static.LOW_BANDWIDTH_MODE = ARGS.low_bandwidth_mode
-            static.TUNING_RANGE_FMIN = ARGS.tuning_range_fmin
-            static.TUNING_RANGE_FMAX = ARGS.tuning_range_fmax
-            static.TX_AUDIO_LEVEL = ARGS.tx_audio_level
-            static.RESPOND_TO_CQ = ARGS.enable_respond_to_cq
-            static.RX_BUFFER_SIZE = ARGS.rx_buffer_size
-            static.ENABLE_EXPLORER = ARGS.enable_explorer
-            static.AUDIO_AUTO_TUNE = ARGS.enable_audio_auto_tune
-            static.ENABLE_STATS = ARGS.enable_stats
-            static.AUDIO_ENABLE_TCI = ARGS.audio_enable_tci
-            static.TCI_IP = ARGS.tci_ip
-            static.TCI_PORT = ARGS.tci_port
-            static.TX_DELAY = ARGS.tx_delay
+            HamlibParam.hamlib_radiocontrol = ARGS.hamlib_radiocontrol
+            HamlibParam.hamlib_rigctld_ip = ARGS.rigctld_ip
+            HamlibParam.hamlib_rigctld_port = str(ARGS.rigctld_port)
+            ModemParam.enable_scatter = ARGS.send_scatter
+            AudioParam.enable_fft = ARGS.send_fft
+            TNC.enable_fsk = ARGS.enable_fsk
+            TNC.low_bandwidth_mode = ARGS.low_bandwidth_mode
+            ModemParam.tuning_range_fmin = ARGS.tuning_range_fmin
+            ModemParam.tuning_range_fmax = ARGS.tuning_range_fmax
+            AudioParam.tx_audio_level = ARGS.tx_audio_level
+            TNC.respond_to_cq = ARGS.enable_respond_to_cq
+            ARQ.rx_buffer_size = ARGS.rx_buffer_size
+            TNC.enable_explorer = ARGS.enable_explorer
+            AudioParam.audio_auto_tune = ARGS.enable_audio_auto_tune
+            TNC.enable_stats = ARGS.enable_stats
+            AudioParam.audio_enable_tci = ARGS.audio_enable_tci
+            TCIParam.ip = ARGS.tci_ip
+            TCIParam.port = ARGS.tci_port
+            ModemParam.tx_delay = ARGS.tx_delay
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -321,52 +321,52 @@ if __name__ == "__main__":
             # then we are forcing a station ssid = 0
             mycallsign = bytes(conf.get('STATION', 'mycall', 'AA0AA'), "utf-8")
             mycallsign = helpers.callsign_to_bytes(mycallsign)
-            static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-            static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+            Station.mycallsign = helpers.bytes_to_callsign(mycallsign)
+            Station.mycallsign_crc = helpers.get_crc_24(Station.mycallsign)
 
             #json.loads = for converting str list to list
-            static.SSID_LIST = json.loads(conf.get('STATION', 'ssid_list', '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'))
+            Station.ssid_list = json.loads(conf.get('STATION', 'ssid_list', '[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'))
 
-            static.MYGRID = bytes(conf.get('STATION', 'mygrid', 'JN12aa'), "utf-8")
+            Station.mygrid = bytes(conf.get('STATION', 'mygrid', 'JN12aa'), "utf-8")
             # check if we have an int or str as device name
             try:
-                static.AUDIO_INPUT_DEVICE = int(conf.get('AUDIO', 'rx', '0'))
+                AudioParam.audio_input_device = int(conf.get('AUDIO', 'rx', '0'))
             except ValueError:
-                static.AUDIO_INPUT_DEVICE = conf.get('AUDIO', 'rx', '0')
+                AudioParam.audio_input_device = conf.get('AUDIO', 'rx', '0')
             try:
-                static.AUDIO_OUTPUT_DEVICE = int(conf.get('AUDIO', 'tx', '0'))
+                AudioParam.audio_output_device = int(conf.get('AUDIO', 'tx', '0'))
             except ValueError:
-                static.AUDIO_OUTPUT_DEVICE = conf.get('AUDIO', 'tx', '0')
+                AudioParam.audio_output_device = conf.get('AUDIO', 'tx', '0')
 
             TNC.port = int(conf.get('NETWORK', 'tncport', '3000'))
-            static.HAMLIB_RADIOCONTROL = conf.get('RADIO', 'radiocontrol', 'rigctld')
-            static.HAMLIB_RIGCTLD_IP = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
-            static.HAMLIB_RIGCTLD_PORT = str(conf.get('RADIO', 'rigctld_port', '4532'))
-            static.ENABLE_SCATTER = conf.get('TNC', 'scatter', 'True')
-            static.ENABLE_FFT = conf.get('TNC', 'fft', 'True')
-            static.ENABLE_FSK = conf.get('TNC', 'fsk', 'False')
-            static.LOW_BANDWIDTH_MODE = conf.get('TNC', 'narrowband', 'False')
-            static.TUNING_RANGE_FMIN = float(conf.get('TNC', 'fmin', '-50.0'))
-            static.TUNING_RANGE_FMAX = float(conf.get('TNC', 'fmax', '50.0'))
-            static.TX_AUDIO_LEVEL = int(conf.get('AUDIO', 'txaudiolevel', '100'))
-            static.RESPOND_TO_CQ = conf.get('TNC', 'qrv', 'True')
-            static.RX_BUFFER_SIZE = int(conf.get('TNC', 'rxbuffersize', '16'))
-            static.ENABLE_EXPLORER = conf.get('TNC', 'explorer', 'False')
-            static.AUDIO_AUTO_TUNE = conf.get('AUDIO', 'auto_tune', 'False')
-            static.ENABLE_STATS = conf.get('TNC', 'stats', 'False')
-            static.AUDIO_ENABLE_TCI = conf.get('AUDIO', 'enable_tci', 'False')
-            static.TCI_IP = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
-            static.TCI_PORT = int(conf.get('AUDIO', 'tci_port', '50001'))
-            static.TX_DELAY = int(conf.get('TNC', 'tx_delay', '0'))
+            HamlibParam.hamlib_radiocontrol = conf.get('RADIO', 'radiocontrol', 'rigctld')
+            HamlibParam.hamlib_rigctld_ip = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
+            HamlibParam.hamlib_rigctld_port = str(conf.get('RADIO', 'rigctld_port', '4532'))
+            ModemParam.enable_scatter = conf.get('TNC', 'scatter', 'True')
+            AudioParam.enable_fft = conf.get('TNC', 'fft', 'True')
+            TNC.enable_fsk = conf.get('TNC', 'fsk', 'False')
+            TNC.low_bandwidth_mode = conf.get('TNC', 'narrowband', 'False')
+            ModemParam.tuning_range_fmin = float(conf.get('TNC', 'fmin', '-50.0'))
+            ModemParam.tuning_range_fmax = float(conf.get('TNC', 'fmax', '50.0'))
+            AudioParam.tx_audio_level = int(conf.get('AUDIO', 'txaudiolevel', '100'))
+            TNC.respond_to_cq = conf.get('TNC', 'qrv', 'True')
+            ARQ.rx_buffer_size = int(conf.get('TNC', 'rxbuffersize', '16'))
+            TNC.enable_explorer = conf.get('TNC', 'explorer', 'False')
+            AudioParam.audio_auto_tune = conf.get('AUDIO', 'auto_tune', 'False')
+            TNC.enable_stats = conf.get('TNC', 'stats', 'False')
+            AudioParam.audio_enable_tci = conf.get('AUDIO', 'enable_tci', 'False')
+            TCIParam.ip = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
+            TCIParam.port = int(conf.get('AUDIO', 'tci_port', '50001'))
+            ModemParam.tx_delay = int(conf.get('TNC', 'tx_delay', '0'))
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:
             log.warning("[CFG] Error", e=e)
 
     # make sure the own ssid is always part of the ssid list
-    my_ssid = int(static.MYCALLSIGN.split(b'-')[1])
-    if my_ssid not in static.SSID_LIST:
-        static.SSID_LIST.append(my_ssid)
+    my_ssid = int(Station.mycallsign.split(b'-')[1])
+    if my_ssid not in Station.ssid_list:
+        Station.ssid_list.append(my_ssid)
 
     # we need to wait until we got all parameters from argparse first before we can load the other modules
     import sock
@@ -405,8 +405,8 @@ if __name__ == "__main__":
     modem = modem.RF()
 
     # optionally start explorer module
-    if static.ENABLE_EXPLORER:
-        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=static.ENABLE_EXPLORER)
+    if TNC.enable_explorer:
+        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=TNC.enable_explorer)
         explorer = explorer.explorer()
 
     # --------------------------------------------START CMD SERVER

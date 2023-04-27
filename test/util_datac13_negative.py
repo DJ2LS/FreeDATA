@@ -15,9 +15,9 @@ import data_handler
 import helpers
 import modem
 import sock
-import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, FRAME_TYPE as FR_TYPE
 import structlog
-from static import FRAME_TYPE as FR_TYPE
+#from static import FRAME_TYPE as FR_TYPE
 
 
 def t_setup(
@@ -40,21 +40,21 @@ def t_setup(
     modem.RXCHANNEL = tmp_path / rx_channel
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / tx_channel
-    static.HAMLIB_RADIOCONTROL = "disabled"
-    static.LOW_BANDWIDTH_MODE = lowbwmode or True
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.RESPOND_TO_CQ = True
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    HamlibParam.hamlib_radiocontrol = "disabled"
+    TNC.low_bandwidth_mode = lowbwmode or True
+    Station.mygrid = bytes("AA12aa", "utf-8")
+    Station.respond_to_cq = True
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    
+    mycallsign_bytes = helpers.callsign_to_bytes(mycall)
+    mycallsign = helpers.bytes_to_callsign(mycallsign_bytes)
+    Station.mycallsign = mycallsign
+    Station.mycallsign_crc = helpers.get_crc_24(mycallsign)
 
-    mycallsign = helpers.callsign_to_bytes(mycall)
-    mycallsign = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN = mycallsign
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-
-    dxcallsign = helpers.callsign_to_bytes(dxcall)
-    dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+    dxcallsign_bytes = helpers.callsign_to_bytes(dxcall)
+    dxcallsign = helpers.bytes_to_callsign(dxcallsign_bytes)
+    Station.dxcallsign = dxcallsign
+    Station.dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
     # Create the TNC
     tnc = data_handler.DATA()
@@ -140,18 +140,18 @@ def t_datac13_1(
     log.info("t_datac13_1:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac13_1:", TXCHANNEL=modem.TXCHANNEL)
 
-    orig_dxcall = static.DXCALLSIGN
+    orig_dxcall = Station.dxcallsign
     if "stop" in data["command"]:
         time.sleep(0.5)
         log.debug(
             "t_datac13_1: STOP test, setting TNC state",
-            mycall=static.MYCALLSIGN,
-            dxcall=static.DXCALLSIGN,
+            mycall=Station.mycallsign,
+            dxcall=Station.dxcallsign,
         )
-        static.DXCALLSIGN = helpers.callsign_to_bytes(data["dxcallsign"])
-        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
-        static.TNC_STATE = "BUSY"
-        static.ARQ_STATE = True
+        Station.dxcallsign = helpers.callsign_to_bytes(data["dxcallsign"])
+        Station.dxcallsign_CRC = helpers.get_crc_24(Station.dxcallsign)
+        TNC.tnc_state = "BUSY"
+        ARQ.arq_state = True
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
@@ -172,10 +172,10 @@ def t_datac13_1(
     if "stop" in data["command"]:
         time.sleep(0.5)
         log.debug("STOP test, resetting DX callsign")
-        static.DXCALLSIGN = orig_dxcall
-        static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+        Station.dxcallsign = orig_dxcall
+        Station.dxcallsign_CRC = helpers.get_crc_24(Station.dxcallsign)
     # override ARQ SESSION STATE for allowing disconnect command
-    static.ARQ_SESSION_STATE = "connected"
+    ARQ.arq_session_state = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     time.sleep(0.5)
@@ -266,7 +266,7 @@ def t_datac13_2(
 
     log.info("t_datac13_2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac13_2:", TXCHANNEL=modem.TXCHANNEL)
-    log.info("t_datac13_2:", mycall=static.MYCALLSIGN)
+    log.info("t_datac13_2:", mycall=Station.mycallsign)
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}

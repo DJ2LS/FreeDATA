@@ -23,7 +23,7 @@ import numpy as np
 import sock
 import sounddevice as sd
 import static
-from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 from static import FRAME_TYPE
 import structlog
 import ujson as json
@@ -35,7 +35,7 @@ TESTMODE = False
 RXCHANNEL = ""
 TXCHANNEL = ""
 
-static.TRANSMITTING = False
+TNC.transmitting = False
 
 # Receive only specific modes to reduce CPU load
 RECEIVE_SIG0 = True
@@ -73,7 +73,7 @@ class RF:
 
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if static.AUDIO_ENABLE_TCI else 2400 * 2
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if AudioParam.audio_enable_tci else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -178,13 +178,13 @@ class RF:
         self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
         
         # --------------------------------------------CREATE PORTAUDIO INSTANCE
-        if not TESTMODE and not static.AUDIO_ENABLE_TCI:
+        if not TESTMODE and not AudioParam.audio_enable_tci:
             try:
                 self.stream = sd.RawStream(
                     channels=1,
                     dtype="int16",
                     callback=self.callback,
-                    device=(static.AUDIO_INPUT_DEVICE, static.AUDIO_OUTPUT_DEVICE),
+                    device=(AudioParam.audio_input_device, AudioParam.audio_output_device),
                     samplerate=self.AUDIO_SAMPLE_RATE_RX,
                     blocksize=4800,
                 )
@@ -204,7 +204,7 @@ class RF:
         elif not TESTMODE:
             # placeholder area for processing audio via TCI
             # https://github.com/maksimus1210/TCI
-            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=static.TCI_IP, port=static.TCI_PORT)
+            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.tci_ip, port=TCIParam.tci_port)
 
             # we are trying this by simulating an audio stream Object like with mkfifo
             class Object:
@@ -214,7 +214,7 @@ class RF:
             self.stream = Object()
 
             # lets init TCI module
-            self.tci_module = tci.TCI()
+            self.tci_module = tci.TCICtrl()
 
             tci_rx_callback_thread = threading.Thread(
                 target=self.tci_rx_callback,
@@ -264,28 +264,28 @@ class RF:
 
         # --------------------------------------------INIT AND OPEN HAMLIB
         # Check how we want to control the radio
-        if static.HAMLIB_RADIOCONTROL == "rigctld":
+        if HamlibParam.hamlib_radiocontrol == "rigctld":
             import rigctld as rig
-        elif static.AUDIO_ENABLE_TCI:
+        elif AudioParam.audio_enable_tci:
             self.radio = self.tci_module
         else:
             import rigdummy as rig
 
-        if not static.AUDIO_ENABLE_TCI:
+        if not AudioParam.audio_enable_tci:
             self.radio = rig.radio()
             self.radio.open_rig(
-                rigctld_ip=static.HAMLIB_RIGCTLD_IP,
-                rigctld_port=static.HAMLIB_RIGCTLD_PORT,
+                rigctld_ip=HamlibParam.hamlib_rigctld_ip,
+                rigctld_port=HamlibParam.hamlib_rigctld_port,
             )
 
         # --------------------------------------------START DECODER THREAD
-        if static.ENABLE_FFT:
+        if AudioParam.enable_fft:
             fft_thread = threading.Thread(
                 target=self.calculate_fft, name="FFT_THREAD", daemon=True
             )
             fft_thread.start()
 
-        if static.ENABLE_FSK:
+        if TNC.enable_fsk:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
             )
@@ -352,7 +352,7 @@ class RF:
             threading.Event().wait(0.01)
 
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
-                static.PTT_STATE = self.radio.set_ptt(True)
+                HamlibParam.ptt_state = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
@@ -384,8 +384,8 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
-                (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
+                (self.fsk_ldpc_buffer_0, TNC.enable_fsk),
+                (self.fsk_ldpc_buffer_1, TNC.enable_fsk),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -418,8 +418,8 @@ class RF:
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK),
-                            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK),
+                            (self.fsk_ldpc_buffer_0, TNC.enable_fsk),
+                            (self.fsk_ldpc_buffer_1, TNC.enable_fsk),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -460,13 +460,13 @@ class RF:
         x = self.resampler.resample48_to_8(x)
 
         # audio recording for debugging purposes
-        if static.AUDIO_RECORD:
-            # static.AUDIO_RECORD_FILE.write(x)
-            static.AUDIO_RECORD_FILE.writeframes(x)
+        if AudioParam.audio_record:
+            # AudioParam.audio_record_file.write(x)
+            AudioParam.audio_record_file.writeframes(x)
 
         # Avoid decoding when transmitting to reduce CPU
         # TODO: Overriding this for testing purposes
-        # if not static.TRANSMITTING:
+        # if not TNC.transmitting:
         length_x = len(x)
         # Avoid buffer overflow by filling only if buffer for
         # selected datachannel mode is not full
@@ -476,23 +476,23 @@ class RF:
             (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
             (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
             (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
-            (self.fsk_ldpc_buffer_0, static.ENABLE_FSK, 5),
-            (self.fsk_ldpc_buffer_1, static.ENABLE_FSK, 6),
+            (self.fsk_ldpc_buffer_0, TNC.enable_fsk, 5),
+            (self.fsk_ldpc_buffer_1, TNC.enable_fsk, 6),
         ]:
             if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
-                static.BUFFER_OVERFLOW_COUNTER[index] += 1
+                AudioParam.buffer_overflow_counter[index] += 1
             elif receive:
                 audiobuffer.push(x)
-        # end of "not static.TRANSMITTING" if block
+        # end of "not TNC.transmitting" if block
 
         if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
             self.fft_data = x
         else:
-            if not static.PTT_STATE:
+            if not HamlibParam.ptt_state:
                 # TODO: Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
-                static.PTT_STATE = self.radio.set_ptt(True)
+                HamlibParam.ptt_state = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
                 data_out = json.dumps(jsondata)
                 sock.SOCKET_QUEUE.put(data_out)
@@ -539,14 +539,14 @@ class RF:
         else:
             return False
 
-        static.TRANSMITTING = True
+        TNC.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
-        static.CHANNEL_BUSY = False
+        ModemParam.channel_busy = False
 
         start_of_transmission = time.time()
         # TODO: Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
-        # static.PTT_STATE = self.radio.set_ptt(True)
+        # HamlibParam.ptt_state = self.radio.set_ptt(True)
         # jsondata = {"ptt": "True"}
         # data_out = json.dumps(jsondata)
         # sock.SOCKET_QUEUE.put(data_out)
@@ -577,15 +577,15 @@ class RF:
         )
 
         # Add empty data to handle ptt toggle time
-        if static.TX_DELAY > 0:
-            data_delay = int(self.MODEM_SAMPLE_RATE * (static.TX_DELAY / 1000))  # type: ignore
+        if ModemParam.tx_delay > 0:
+            data_delay = int(self.MODEM_SAMPLE_RATE * (ModemParam.tx_delay / 1000))  # type: ignore
             mod_out_silence = ctypes.create_string_buffer(data_delay * 2)
             txbuffer = bytes(mod_out_silence)
         else:
             txbuffer = bytes()
 
         self.log.debug(
-            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=static.TX_DELAY
+            "[MDM] TRANSMIT", mode=self.MODE, payload=payload_bytes_per_frame, delay=ModemParam.tx_delay
         )
 
         for _ in range(repeats):
@@ -646,35 +646,35 @@ class RF:
         x = np.frombuffer(txbuffer, dtype=np.int16)
 
         # enable / disable AUDIO TUNE Feature / ALC correction
-        if static.AUDIO_AUTO_TUNE:
-            if static.HAMLIB_ALC == 0.0:
-                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 20
-            elif 0.0 < static.HAMLIB_ALC <= 0.1:
-                print("0.0 < static.HAMLIB_ALC <= 0.1")
-                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL + 2
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
-                               alc_level=str(static.HAMLIB_ALC))
-            elif 0.1 < static.HAMLIB_ALC < 0.2:
-                print("0.1 < static.HAMLIB_ALC < 0.2")
-                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
-                               alc_level=str(static.HAMLIB_ALC))
-            elif 0.2 < static.HAMLIB_ALC < 0.99:
-                print("0.2 < static.HAMLIB_ALC < 0.99")
-                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 20
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
-                               alc_level=str(static.HAMLIB_ALC))
-            elif 1.0 >= static.HAMLIB_ALC:
-                print("1.0 >= static.HAMLIB_ALC")
-                static.TX_AUDIO_LEVEL = static.TX_AUDIO_LEVEL - 40
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
-                               alc_level=str(static.HAMLIB_ALC))
+        if AudioParam.audio_auto_tune:
+            if HamlibParam.alc == 0.0:
+                AudioParam.tx_audio_level = AudioParam.tx_audio_level + 20
+            elif 0.0 < HamlibParam.alc <= 0.1:
+                print("0.0 < HamlibParam.alc <= 0.1")
+                AudioParam.tx_audio_level = AudioParam.tx_audio_level + 2
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 0.1 < HamlibParam.alc < 0.2:
+                print("0.1 < HamlibParam.alc < 0.2")
+                AudioParam.tx_audio_level = AudioParam.tx_audio_level
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 0.2 < HamlibParam.alc < 0.99:
+                print("0.2 < HamlibParam.alc < 0.99")
+                AudioParam.tx_audio_level = AudioParam.tx_audio_level - 20
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+            elif 1.0 >= HamlibParam.alc:
+                print("1.0 >= HamlibParam.alc")
+                AudioParam.tx_audio_level = AudioParam.tx_audio_level - 40
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
             else:
-                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(static.TX_AUDIO_LEVEL),
-                               alc_level=str(static.HAMLIB_ALC))
-        x = set_audio_volume(x, static.TX_AUDIO_LEVEL)
+                self.log.debug("[MDM] AUDIO TUNE", audio_level=str(AudioParam.tx_audio_level),
+                               alc_level=str(HamlibParam.alc))
+        x = set_audio_volume(x, AudioParam.tx_audio_level)
 
-        if not static.AUDIO_ENABLE_TCI:
+        if not AudioParam.audio_enable_tci:
             txbuffer_out = self.resampler.resample8_to_48(x)
         else:
             txbuffer_out = x
@@ -704,7 +704,7 @@ class RF:
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if static.AUDIO_ENABLE_TCI:
+        if AudioParam.audio_enable_tci:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -717,7 +717,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if static.AUDIO_ENABLE_TCI:
+            if AudioParam.audio_enable_tci:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -725,9 +725,9 @@ class RF:
 
             threading.Event().wait(0.01)
             # if we're transmitting FreeDATA signals, reset channel busy state
-            static.CHANNEL_BUSY = False
+            ModemParam.channel_busy = False
 
-        static.PTT_STATE = self.radio.set_ptt(False)
+        HamlibParam.ptt_state = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
         jsondata = {"ptt": "False"}
@@ -738,7 +738,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        static.TRANSMITTING = False
+        TNC.transmitting = False
         threading.Event().set()
 
         end_of_transmission = time.time()
@@ -796,14 +796,14 @@ class RF:
                     if rx_status != 0:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
-                            static.IS_CODEC2_TRAFFIC = True
+                            ModemParam.is_codec2_traffic = True
 
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
                     else:
-                        static.IS_CODEC2_TRAFFIC = False
+                        ModemParam.is_codec2_traffic = False
 
                     if rx_status == 10:
                         state_buffer.append(rx_status)
@@ -812,8 +812,8 @@ class RF:
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
 
-                        # process commands only if static.LISTEN = True
-                        if static.LISTEN:
+                        # process commands only if TNC.listen = True
+                        if TNC.listen:
 
 
                             # ignore data channel opener frames for avoiding toggle states
@@ -839,7 +839,7 @@ class RF:
                         else:
                             self.log.warning(
                                 "[MDM] [demod_audio] received frame but ignored processing",
-                                listen=static.LISTEN
+                                listen=TNC.listen
                             )
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
@@ -876,8 +876,8 @@ class RF:
         # set tuning range
         codec2.api.freedv_set_tuning_range(
             c2instance,
-            ctypes.c_float(static.TUNING_RANGE_FMIN),
-            ctypes.c_float(static.TUNING_RANGE_FMAX),
+            ctypes.c_float(ModemParam.tuning_range_fmin),
+            ctypes.c_float(ModemParam.tuning_range_fmax),
         )
 
         # get bytes per frame
@@ -1029,7 +1029,7 @@ class RF:
     def get_frequency_offset(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for the calculated (audio) frequency offset of the received signal.
-        Side-effect: sets static.FREQ_OFFSET
+        Side-effect: sets ModemParam.frequency_offset
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1039,18 +1039,18 @@ class RF:
         modemStats = codec2.MODEMSTATS()
         codec2.api.freedv_get_modem_extended_stats(freedv, ctypes.byref(modemStats))
         offset = round(modemStats.foff) * (-1)
-        static.FREQ_OFFSET = offset
+        ModemParam.frequency_offset = offset
         return offset
 
     def get_scatter(self, freedv: ctypes.c_void_p) -> None:
         """
         Ask codec2 for data about the received signal and calculate the scatter plot.
-        Side-effect: sets static.SCATTER
+        Side-effect: sets ModemParam.scatter
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
         """
-        if not static.ENABLE_SCATTER:
+        if not ModemParam.enable_scatter:
             return
 
         modemStats = codec2.MODEMSTATS()
@@ -1078,16 +1078,16 @@ class RF:
 
         # Send all the data if we have too-few samples, otherwise send a sampling
         if 150 > len(scatterdata) > 0:
-            static.SCATTER = scatterdata
+            ModemParam.scatter = scatterdata
         else:
             # only take every tenth data point
-            static.SCATTER = scatterdata[::10]
+            ModemParam.scatter = scatterdata[::10]
 
     def calculate_snr(self, freedv: ctypes.c_void_p) -> float:
         """
         Ask codec2 for data about the received signal and calculate
         the signal-to-noise ratio.
-        Side-effect: sets static.SNR
+        Side-effect: sets ModemParam.snr
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1106,15 +1106,15 @@ class RF:
 
             snr = round(modem_stats_snr, 1)
             self.log.info("[MDM] calculate_snr: ", snr=snr)
-            static.SNR = snr
-            # static.SNR = np.clip(
+            ModemParam.snr = snr
+            # ModemParam.snr = np.clip(
             #    snr, -127, 127
             # )  # limit to max value of -128/128 as a possible fix of #188
-            return static.SNR
+            return ModemParam.snr
         except Exception as err:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
-            static.SNR = 0
-            return static.SNR
+            ModemParam.snr = 0
+            return ModemParam.snr
 
     def set_rig_data(self) -> None:
         """
@@ -1134,29 +1134,29 @@ class RF:
         """
         Request information about the current state of the radio via hamlib
         Side-effect: sets
-          - static.HAMLIB_FREQUENCY
-          - static.HAMLIB_MODE
-          - static.HAMLIB_BANDWIDTH
+          - HamlibParam.hamlib_frequency
+          - HamlibParam.hamlib_mode
+          - HamlibParam.hamlib_bandwidth
         """
         while True:
             # this looks weird, but is necessary for avoiding rigctld packet colission sock
             threading.Event().wait(0.25)
-            static.HAMLIB_FREQUENCY = self.radio.get_frequency()
+            HamlibParam.hamlib_frequency = self.radio.get_frequency()
             threading.Event().wait(0.1)
-            static.HAMLIB_MODE = self.radio.get_mode()
+            HamlibParam.hamlib_mode = self.radio.get_mode()
             threading.Event().wait(0.1)
-            static.HAMLIB_BANDWIDTH = self.radio.get_bandwidth()
+            HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
             threading.Event().wait(0.1)
-            static.HAMLIB_STATUS = self.radio.get_status()
+            HamlibParam.hamlib_status = self.radio.get_status()
             threading.Event().wait(0.1)
-            if static.TRANSMITTING:
-                static.HAMLIB_ALC = self.radio.get_alc()
+            if TNC.transmitting:
+                HamlibParam.alc = self.radio.get_alc()
                 threading.Event().wait(0.1)
-            # static.HAMLIB_RF = self.radio.get_level()
+            # HamlibParam.hamlib_rf = self.radio.get_level()
             # threading.Event().wait(0.1)
-            static.HAMLIB_STRENGTH = self.radio.get_strength()
+            HamlibParam.hamlib_strength = self.radio.get_strength()
 
-            # print(f"ALC: {static.HAMLIB_ALC}, RF: {static.HAMLIB_RF}, STRENGTH: {static.HAMLIB_STRENGTH}")
+            # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
 
     def calculate_fft(self) -> None:
         """
@@ -1195,7 +1195,7 @@ class RF:
                     # Therefore we are setting it to 100 so it will be highlighted
                     # Have to do this when we are not transmitting so our
                     # own sending data will not affect this too much
-                    if not static.TRANSMITTING:
+                    if not TNC.transmitting:
                         dfft[dfft > avg + 15] = 100
 
                         # Calculate audio dbfs
@@ -1211,20 +1211,20 @@ class RF:
                                 rms = int(np.sqrt(np.max(d ** 2)))
                                 if rms == 0:
                                     raise ZeroDivisionError
-                                static.AUDIO_DBFS = 20 * np.log10(rms / 32768)
+                                AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
                             except Exception as e:
                                 self.log.warning(
                                     "[MDM] fft calculation error - please check your audio setup",
                                     e=e,
                                 )
-                                static.AUDIO_DBFS = -100
+                                AudioParam.audio_dbfs = -100
 
                             rms_counter = 0
 
                     # Convert data to int to decrease size
                     dfft = dfft.astype(int)
 
-                    # Create list of dfft for later pushing to static.FFT
+                    # Create list of dfft for later pushing to AudioParam.fft
                     dfftlist = dfft.tolist()
 
                     # Reduce area where the busy detection is enabled
@@ -1250,14 +1250,14 @@ class RF:
                         range_start = range[0]
                         range_end = range[1]
                         # define the area, we are detecting busy state
-                        #dfft = dfft[120:176] if static.LOW_BANDWIDTH_MODE else dfft[65:231]
+                        #dfft = dfft[120:176] if TNC.low_bandwidth_mode else dfft[65:231]
                         dfft = dfft[range_start:range_end]
                         # Check for signals higher than average by checking for "100"
                         # If we have a signal, increment our channel_busy delay counter
                         # so we have a smoother state toggle
-                        if np.sum(dfft[dfft > avg + 15]) >= 400 and not static.TRANSMITTING:
-                            static.CHANNEL_BUSY = True
-                            static.CHANNEL_BUSY_SLOT[slot] = True
+                        if np.sum(dfft[dfft > avg + 15]) >= 400 and not TNC.transmitting:
+                            ModemParam.channel_busy = True
+                            ModemParam.channel_busy_slot[slot] = True
                             # Limit delay counter to a maximum of 200. The higher this value,
                             # the longer we will wait until releasing state
                             channel_busy_delay = min(channel_busy_delay + 10, 200)
@@ -1266,18 +1266,18 @@ class RF:
                             channel_busy_delay = max(channel_busy_delay - 1, 0)
                             # When our channel busy counter reaches 0, toggle state to False
                             if channel_busy_delay == 0:
-                                static.CHANNEL_BUSY = False
-                                static.CHANNEL_BUSY_SLOT[slot] = False
+                                ModemParam.channel_busy = False
+                                ModemParam.channel_busy_slot[slot] = False
 
                         # increment slot
                         slot += 1
 
-                    static.FFT = dfftlist[:315]  # 315 --> bandwidth 3200
+                    AudioParam.fft = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")
                     self.log.debug("[MDM] Setting fft=0")
                     # else 0
-                    static.FFT = [0]
+                    AudioParam.fft = [0]
 
     def set_frames_per_burst(self, frames_per_burst: int) -> None:
         """

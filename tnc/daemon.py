@@ -26,8 +26,7 @@ import crcengine
 import log_handler
 import serial.tools.list_ports
 import sock
-import static
-from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 
 import structlog
 import ujson as json
@@ -84,10 +83,10 @@ class DAEMON:
         """
         while True:
             try:
-                if not static.TNCSTARTED:
+                if not Daemon.tncstarted:
                     (
-                        static.AUDIO_INPUT_DEVICES,
-                        static.AUDIO_OUTPUT_DEVICES,
+                        AudioParam.audio_input_devices,
+                        AudioParam.audio_output_devices,
                     ) = audio.get_audio_devices()
             except Exception as err1:
                 self.log.error(
@@ -114,7 +113,7 @@ class DAEMON:
                         {"port": str(port), "description": str(description)}
                     )
 
-                static.SERIAL_DEVICES = serial_devices
+                Daemon.serial_devices = serial_devices
                 threading.Event().wait(1)
             except Exception as err1:
                 self.log.error(
@@ -319,8 +318,8 @@ class DAEMON:
 
             self.log.info("[DMN] TNC started", path="source")
 
-        static.TNCPROCESS = proc
-        static.TNCSTARTED = True
+        Daemon.tncprocess = proc
+        Daemon.tncstarted = True
 if __name__ == "__main__":
     mainlog = structlog.get_logger(__file__)
     # we need to run this on Windows for multiprocessing support
@@ -369,7 +368,7 @@ if __name__ == "__main__":
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer(
-            (static.HOST, DAEMON.port), sock.ThreadedTCPRequestHandler
+            (TNC.host, DAEMON.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
