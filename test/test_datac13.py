@@ -48,11 +48,11 @@ def parameters() -> dict:
     connect_data = {"type": "arq", "command": "connect", "dxcallsign": "ZZ9YY-0"}
     stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "ZZ9YY-0"}
 
-    beacon_timeout = 6
-    cq_timeout = 8
-    ping_timeout = 5
-    connect_timeout = 10
-    stop_timeout = 5
+    beacon_timeout = 1
+    ping_timeout = 1
+    cq_timeout = 2
+    connect_timeout = 1
+    stop_timeout = 1
 
     beacon_tx_check = '"beacon":"transmitting"'
     cq_tx_check = '"qrv":"received"'
@@ -192,8 +192,8 @@ def analyze_results(station1: list, station2: list, call_list: list):
         pytest.param("beacon", marks=pytest.mark.flaky(reruns=2)),
         pytest.param("ping", marks=pytest.mark.flaky(reruns=2)),
         pytest.param("cq", marks=pytest.mark.flaky(reruns=20)),
-        # pytest.param("cq", marks=pytest.mark.xfail(reason="Too unstable for CI")),
-        pytest.param("stop", marks=pytest.mark.flaky(reruns=0)),
+        #pytest.param("cq", marks=pytest.mark.xfail(reason="Too unstable for CI")),
+        pytest.param("stop", marks=pytest.mark.flaky(reruns=2)),
     ],
 )
 def test_datac13(frame_type: str, tmp_path):

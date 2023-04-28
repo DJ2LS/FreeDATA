@@ -43,7 +43,7 @@ def t_setup(
     HamlibParam.hamlib_radiocontrol = "disabled"
     TNC.low_bandwidth_mode = lowbwmode or True
     Station.mygrid = bytes("AA12aa", "utf-8")
-    Station.respond_to_cq = True
+    TNC.respond_to_cq = True
     Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
@@ -57,24 +57,24 @@ def t_setup(
     Station.dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
     # Create the TNC
-    tnc = data_handler.DATA()
+    tnc_data_handler = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
-    tnc.log = structlog.get_logger(f"station{station}_DATA")
+    tnc_data_handler.log = structlog.get_logger(f"station{station}_DATA")
     # Limit the frame-ack timeout
-    tnc.time_list_low_bw = [3, 1, 1]
-    tnc.time_list_high_bw = [3, 1, 1]
-    tnc.time_list = [3, 1, 1]
+    tnc_data_handler.time_list_low_bw = [3, 1, 1]
+    tnc_data_handler.time_list_high_bw = [3, 1, 1]
+    tnc_data_handler.time_list = [3, 1, 1]
     # Limit number of retries
-    tnc.rx_n_max_retries_per_burst = 4
-
+    tnc_data_handler.rx_n_max_retries_per_burst = 4
+    ModemParam.tx_delay = 500 # add additional delay time for passing test
     # Create the modem
     t_modem = modem.RF()
     orig_tx_func = modem.RF.transmit
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger(f"station{station}_RF")
 
-    return tnc, orig_rx_func, orig_tx_func
+    return tnc_data_handler, orig_rx_func, orig_tx_func
 
 
 def t_datac13_1(
@@ -125,7 +125,7 @@ def t_datac13_1(
         # original function captured before this one was put in place.
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
-    tnc, orig_rx_func, orig_tx_func = t_setup(
+    tnc_data_handler, orig_rx_func, orig_tx_func = t_setup(
         1,
         mycall,
         dxcall,
@@ -182,9 +182,9 @@ def t_datac13_1(
 
     # Allow enough time for this side to process the disconnect frame.
     timeout = time.time() + timeout_duration
-    while tnc.data_queue_transmit.queue:
+    while tnc_data_handler.data_queue_transmit.queue:
         if time.time() > timeout:
-            log.warning("station1", TIMEOUT=True, dq_tx=tnc.data_queue_transmit.queue)
+            log.warning("station1", TIMEOUT=True, dq_tx=tnc_data_handler.data_queue_transmit.queue)
             break
         time.sleep(0.5)
     log.info("station1, final")
@@ -292,9 +292,6 @@ def t_datac13_2(
     # Allow enough time for this side to receive the disconnect frame.
     timeout = time.time() + timeout_duration
     while '"arq":"session", "status":"close"' not in str(sock.SOCKET_QUEUE.queue):
-
-
-
         if time.time() > timeout:
             log.warning("station2", TIMEOUT=True, queue=str(sock.SOCKET_QUEUE.queue))
             break

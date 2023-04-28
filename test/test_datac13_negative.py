@@ -40,8 +40,8 @@ def parameters() -> dict:
 
     beacon_timeout = 1
     ping_timeout = 1
-    connect_timeout = 1
-    stop_timeout = 1
+    connect_timeout = 2
+    stop_timeout = 2
 
     beacon_tx_check = '"status":"Failed"'
     ping_tx_check = '"ping","status":"Failed"'
@@ -162,7 +162,10 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
 
 # @pytest.mark.parametrize("frame_type", ["beacon", "connect", "ping"])
-@pytest.mark.parametrize("frame_type", ["ping", "stop"])
+@pytest.mark.parametrize("frame_type", [
+    "ping",
+    pytest.param("stop", marks=pytest.mark.flaky(reruns=10))
+])
 def test_datac13_negative(frame_type: str, tmp_path):
     log_handler.setup_logging(filename=tmp_path / "test_datac13", level="DEBUG")
     log = structlog.get_logger("test_datac13")

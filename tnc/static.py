@@ -113,7 +113,7 @@ class Station:
     dxcallsign_crc: bytes = b"A"
     mygrid: bytes = b""
     dxgrid: bytes = b""
-    ssid_list  = []  # ssid list we are responding to
+    ssid_list = []  # ssid list we are responding to
 
 
 @dataclass

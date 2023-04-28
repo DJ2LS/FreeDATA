@@ -100,8 +100,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
             # we want to transmit scatter data only once to reduce network traffic
             ModemParam.scatter = []
-            # we want to display INFO messages only once
-            #static.INFO = []
             # self.request.sendall(sock_data)
             threading.Event().wait(0.15)
 
