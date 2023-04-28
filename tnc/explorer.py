@@ -36,7 +36,7 @@ class explorer():
 
         frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
         band = "USB"
-        callsign = str(Station.mycallcallsign, "utf-8")
+        callsign = str(Station.mycallsign, "utf-8")
         gridsquare = str(Station.mygrid, "utf-8")
         version = str(TNC.version)
         bandwidth = str(TNC.low_bandwidth_mode)
