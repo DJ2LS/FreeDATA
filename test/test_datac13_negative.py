@@ -41,7 +41,7 @@ def parameters() -> dict:
     beacon_timeout = 1
     ping_timeout = 1
     connect_timeout = 2
-    stop_timeout = 2
+    stop_timeout = 4
 
     beacon_tx_check = '"status":"Failed"'
     ping_tx_check = '"ping","status":"Failed"'

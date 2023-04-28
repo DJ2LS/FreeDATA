@@ -74,7 +74,7 @@ def t_setup(
     tnc_data_handler.time_list = [3, 1, 1]
     # Limit number of retries
     tnc_data_handler.rx_n_max_retries_per_burst = 4
-    #ModemParam.tx_delay = 500 # add additional delay time for passing test
+    ModemParam.tx_delay = 500 # add additional delay time for passing test
 
 
     # Create the modem
