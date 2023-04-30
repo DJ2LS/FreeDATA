@@ -612,6 +612,7 @@ class DATA:
         # increment nack counter for transmission stats
         self.frame_nack_counter += 1
 
+
         # we need to clear our rx burst buffer
         ARQ.rx_burst_buffer = []
 
@@ -623,6 +624,8 @@ class DATA:
         nack_frame[2:3] = helpers.snr_to_bytes(snr)
         nack_frame[3:4] = bytes([int(self.speed_level)])
         nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
+        nack_frame[5:9] = len(ARQ.rx_frame_buffer).to_bytes(4, byteorder="big")
+
 
         # wait while timeout not reached and our busy state is busy
         channel_busy_timeout = time.time() + 5 + 5
@@ -1331,15 +1334,25 @@ class DATA:
                     bufferposition_burst_start = bufferposition_end
                     break  # break retry loop
 
-                if self.burst_nack:
-                    bufferposition_burst_start = bufferposition
-                    self.burst_nack = False  # reset nack state
-
                 if self.data_frame_ack_received:
                     self.log.debug(
                         "[TNC] arq_transmit: Received FRAME ACK. Braking retry loop."
                     )
                     break  # break retry loop
+
+                if self.burst_nack:
+                    self.tx_n_retry_of_burst += 1
+
+                    self.log.warning(
+                        "[TNC] arq_transmit: Received BURST NACK. Resending data",
+                        bufferposition_burst_start=bufferposition_burst_start,
+                        bufferposition=bufferposition
+                    )
+
+                    bufferposition = bufferposition_burst_start
+                    self.burst_nack = False  # reset nack state
+
+
 
                 # We need this part for leaving the repeat loop
                 # ARQ.arq_state == "DATA" --> when stopping transmission manually
@@ -1505,7 +1518,7 @@ class DATA:
                 # Increment burst nack counter
                 self.burst_nack_counter += 1
                 self.burst_ack_snr = 'NaN'
-                self.irs_buffer_position = int.from_bytes(data_in[4:8], "big")
+                self.irs_buffer_position = int.from_bytes(data_in[5:9], "big")
 
                 self.log.warning(
                     "[TNC] ARQ | TX | Burst NACK received",
