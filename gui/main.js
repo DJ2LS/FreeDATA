@@ -80,7 +80,7 @@ const configDefaultSettings =
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
-                  "beacon_interval" : 5,\
+                  "beacon_interval" : 60,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
@@ -480,7 +480,10 @@ ipcMain.on("get-folder-path", (event, data) => {
       properties: ["openDirectory"],
     })
     .then((folderPaths) => {
-      win.webContents.send(data.action, { path: folderPaths });
+      if (folderPaths.canceled == false) {
+        win.webContents.send(data.action, { path: folderPaths });
+        //win.webContents.send(data.action, { path: filePaths });
+      }
     });
 });
 
@@ -949,8 +952,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
         rigctld_events_wired = true;
         mainLog.info("Starting rigctld event listeners");
         rigctld_connection_state = true;
-        Data["state"] =
-          "connection possible - (" + data.ip + ":" + data.port + ")";
+        Data["state"] = "Connected";
         Data["active"] = true;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
@@ -964,7 +966,7 @@ ipcMain.on("request-check-rigctld", (event, data) => {
 
       rigctld_connection.on("error", function () {
         rigctld_connection_state = false;
-        Data["state"] = "unknown/stopped - (" + data.ip + ":" + data.port + ")";
+        Data["state"] = "Not Connected";
         Data["active"] = false;
         if (win !== null && win !== "" && typeof win != "undefined") {
           // try catch for being sure we have a clean app close
