@@ -355,8 +355,8 @@ if __name__ == "__main__":
             AudioParam.audio_auto_tune = conf.get('AUDIO', 'auto_tune', 'False')
             TNC.enable_stats = conf.get('TNC', 'stats', 'False')
             AudioParam.audio_enable_tci = conf.get('AUDIO', 'enable_tci', 'False')
-            TCIParam.ip = str(conf.get('AUDIO', 'tci_ip', 'localhost'))
-            TCIParam.port = int(conf.get('AUDIO', 'tci_port', '50001'))
+            TCIParam.ip = str(conf.get('TCI', 'tci_ip', 'localhost'))
+            TCIParam.port = int(conf.get('TCI', 'tci_port', '50001'))
             ModemParam.tx_delay = int(conf.get('TNC', 'tx_delay', '0'))
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
