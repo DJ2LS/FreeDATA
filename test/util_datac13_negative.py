@@ -62,12 +62,12 @@ def t_setup(
     data_handler.DATA.process_data = t_process_data
     tnc_data_handler.log = structlog.get_logger(f"station{station}_DATA")
     # Limit the frame-ack timeout
-    tnc_data_handler.time_list_low_bw = [3, 1, 1]
-    tnc_data_handler.time_list_high_bw = [3, 1, 1]
-    tnc_data_handler.time_list = [3, 1, 1]
+    tnc_data_handler.time_list_low_bw = [8, 8, 8]
+    tnc_data_handler.time_list_high_bw = [8, 8, 8]
+    tnc_data_handler.time_list = [8, 8, 8]
     # Limit number of retries
     tnc_data_handler.rx_n_max_retries_per_burst = 4
-    ModemParam.tx_delay = 500 # add additional delay time for passing test
+    ModemParam.tx_delay = 100  # add additional delay time for passing test
     # Create the modem
     t_modem = modem.RF()
     orig_tx_func = modem.RF.transmit

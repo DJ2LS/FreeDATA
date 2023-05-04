@@ -137,7 +137,7 @@ class TNC:
     transmitting: bool = False
     low_bandwidth_mode: bool = False
     enable_fsk: bool = False
-    respond_to_cq: bool = False
+    respond_to_cq: bool = True
     respond_to_call: bool = True  # respond to cq, ping, connection request, file request if not in session
     heard_stations = []
     listen: bool = True

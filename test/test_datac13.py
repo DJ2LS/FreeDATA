@@ -48,11 +48,11 @@ def parameters() -> dict:
     connect_data = {"type": "arq", "command": "connect", "dxcallsign": "ZZ9YY-0"}
     stop_data = {"type": "arq", "command": "stop_transmission", "dxcallsign": "ZZ9YY-0"}
 
-    beacon_timeout = 4
-    ping_timeout = 4
+    beacon_timeout = 2
+    ping_timeout = 2
     cq_timeout = 2
-    connect_timeout = 4
-    stop_timeout = 4
+    connect_timeout = 2
+    stop_timeout = 2
 
     beacon_tx_check = '"beacon":"transmitting"'
     cq_tx_check = '"qrv":"received"'
