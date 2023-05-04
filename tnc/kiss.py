@@ -42,12 +42,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     log = structlog.get_logger("ThreadedTCPRequestHandler")
 
     def send_to_client(self):
+        # rest override state
+        override = False
+
         # data dispatcher
         # sending data via socket only to registered callsign
         while True:
-            # rest override state
-            override = False
-
             if TRANSMIT_QUEUE.qsize() > 0:
                 command = TRANSMIT_QUEUE.get()
                 print(command)
@@ -70,12 +70,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 if data.startswith(KISS_FRAMES.FEND.value) and data.endswith(KISS_FRAMES.FEND.value) and data not in [b'']:
                     commands = data.split(KISS_FRAMES.FEND.value)
 
-                    for i in range(0, commands.count(b'')):
+                    for _ in range(commands.count(b'')):
                         commands.remove(b'')
                     for command in commands:
                         self.log.warning(
-                            f"[KISS] [AX.25]",
-                            raw = command,
+                            "[KISS] [AX.25]",
+                            raw=command,
                             ip=self.client_address[0],
                             port=self.client_address[1],
                         )
