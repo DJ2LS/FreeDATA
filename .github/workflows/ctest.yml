@@ -43,7 +43,7 @@ jobs:
       - name: Build codec2
         shell: bash
         run: |
-          git clone https://github.com/drowe67/codec2.git -b dr-datac4
+          git clone https://github.com/drowe67/codec2.git
           cd codec2
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
