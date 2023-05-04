@@ -127,7 +127,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.9.0-alpha.1"
+    version = "0.9.0-alpha.2"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
