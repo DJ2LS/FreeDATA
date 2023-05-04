@@ -7,6 +7,8 @@ simple TNC self tests
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 import sys
 import structlog
+from static import ARQ, Audio, Beacon, Channel, Daemon, Hamlib, Modem, Station, TCI, TNC
+
 log = structlog.get_logger("selftest")
 
 

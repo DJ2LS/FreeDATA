@@ -10,9 +10,7 @@ import time
 import structlog
 import threading
 import static
-
-# set global hamlib version
-hamlib_version = 0
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam
 
 
 class radio:
@@ -243,7 +241,7 @@ class radio:
             if 'RPRT' not in alc:
                 try:
                     alc = float(alc)
-                    self.alc = alc if alc != 0.0 else static.HAMLIB_ALC
+                    self.alc = alc if alc != 0.0 else HamlibParam.alc
                 except ValueError:
                     self.alc = 0.0
 

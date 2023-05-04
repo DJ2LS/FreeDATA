@@ -16,8 +16,8 @@ check_alsa_loopback
 # make sure all child processes are killed when we exit
 trap 'jobs -p | xargs -r kill' EXIT
 
-python3 util_callback_rx.py --mode datac0 --frames 2 --bursts 3 --audiodev -2 --debug  &
+python3 util_callback_rx.py --mode datac13 --frames 2 --bursts 3 --audiodev -2 --debug  &
 rx_pid=$!
 sleep 1
-python3 util_tx.py --mode datac0 --frames 2 --bursts 3 --audiodev -2
+python3 util_tx.py --mode datac13 --frames 2 --bursts 3 --audiodev -2
 wait ${rx_pid}

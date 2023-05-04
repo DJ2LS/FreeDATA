@@ -1634,6 +1634,7 @@ ipcRenderer.on("action-update-reception-status", (event, arg) => {
   var time_left = "<strong>" + time_left + " || Speed/min: ";
 
   // SET BYTES PER MINUTE
+
   if (typeof data.bytesperminute == "undefined") {
     var arq_bytes_per_minute = 0;
   } else {
@@ -1648,7 +1649,7 @@ ipcRenderer.on("action-update-reception-status", (event, arg) => {
   var arq_bytes_per_minute_compressed = Math.round(
     arq_bytes_per_minute * compress
   );
-
+  console.log(arq_bytes_per_minute);
   time_left +=
     formatBytes(arq_bytes_per_minute, 1) +
     " (comp: " +
@@ -2210,11 +2211,14 @@ function updateHeardStations(arg) {
 
     //https://stackoverflow.com/a/847196
     timestampRaw = arg.stations[i]["timestamp"];
-    var date = new Date(timestampRaw * 1000);
-    var hours = date.getHours();
-    var minutes = "0" + date.getMinutes();
-    var seconds = "0" + date.getSeconds();
-    var datetime = hours + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
+
+    var datetime = new Date(timestampRaw * 1000).toLocaleString(
+      navigator.language
+    );
+    //var hours = date.getHours();
+    //var minutes = "0" + date.getMinutes();
+    //var seconds = "0" + date.getSeconds();
+    //var datetime = hours + ":" + minutes.substr(-2) + ":" + seconds.substr(-2);
 
     var timestamp = document.createElement("td");
     var timestampText = document.createElement("span");

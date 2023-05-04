@@ -8,8 +8,8 @@ MAX_RUN_TIME=2600
 trap 'jobs -p | xargs -r kill' EXIT
 
 arecord -r 48000 --device="plughw:CARD=CHAT1,DEV=0" -f S16_LE -d $MAX_RUN_TIME | \
-    python3 util_rx.py --mode datac0 --frames 2 --bursts 5 --debug --timeout 20 &
+    python3 util_rx.py --mode datac13 --frames 2 --bursts 5 --debug --timeout 20 &
 rx_pid=$!
 sleep 1
-python3 util_tx.py --mode datac0 --frames 2 --bursts 5 --delay 2000 --audiodev -2
+python3 util_tx.py --mode datac13 --frames 2 --bursts 5 --delay 2000 --audiodev -2
 wait ${rx_pid}

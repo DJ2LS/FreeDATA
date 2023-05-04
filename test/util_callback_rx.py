@@ -22,7 +22,7 @@ parser = argparse.ArgumentParser(description="FreeDATA audio test")
 parser.add_argument("--bursts", dest="N_BURSTS", default=1, type=int)
 parser.add_argument("--framesperburst", dest="N_FRAMES_PER_BURST", default=1, type=int)
 parser.add_argument(
-    "--mode", dest="FREEDV_MODE", type=str, choices=["datac0", "datac1", "datac3"]
+    "--mode", dest="FREEDV_MODE", type=str, choices=["datac13", "datac1", "datac3"]
 )
 parser.add_argument(
     "--audiodev",
@@ -35,7 +35,7 @@ parser.add_argument("--debug", dest="DEBUGGING_MODE", action="store_true")
 parser.add_argument(
     "--timeout",
     dest="TIMEOUT",
-    default=10,
+    default=60,
     type=int,
     help="Timeout (seconds) before test ends",
 )

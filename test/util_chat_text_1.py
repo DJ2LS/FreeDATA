@@ -22,7 +22,7 @@ import data_handler
 import helpers
 import modem
 import sock
-import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 import structlog
 
 
@@ -39,23 +39,23 @@ def t_setup(
     modem.RXCHANNEL = tmp_path / "hfchannel1"
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / "hfchannel2"
-    static.HAMLIB_RADIOCONTROL = "disabled"
-    static.LOW_BANDWIDTH_MODE = lowbwmode
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.RESPOND_TO_CQ = True
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    HamlibParam.hamlib_radiocontrol = "disabled"
+    TNC.low_bandwidth_mode = lowbwmode
+    Station.mygrid = bytes("AA12aa", "utf-8")
+    TNC.respond_to_cq = True
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # override ARQ SESSION STATE for allowing disconnect command
-    static.ARQ_SESSION_STATE = "connected"
+    ARQ.arq_session_state = "connected"
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN = mycallsign
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+    Station.mycallsign = mycallsign
+    Station.mycallsign_crc = helpers.get_crc_24(Station.mycallsign)
 
     dxcallsign = helpers.callsign_to_bytes(dxcall)
     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+    Station.dxcallsign = dxcallsign
+    Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
     # Create the TNC
     tnc = data_handler.DATA()
@@ -105,7 +105,7 @@ def t_highsnr_arq_short_station1(
             log.info("S1 TX: ", mode=static.FRAME_TYPE(frametype).name)
 
             if (
-                static.LOW_BANDWIDTH_MODE
+                TNC.low_bandwidth_mode
                 and frametype == static.FRAME_TYPE.ARQ_DC_OPEN_W.value
             ):
                 mesg = (
@@ -116,7 +116,7 @@ def t_highsnr_arq_short_station1(
                 log.error(mesg)
                 assert False, mesg
             if (
-                not static.LOW_BANDWIDTH_MODE
+                not TNC.low_bandwidth_mode
                 and frametype == static.FRAME_TYPE.ARQ_DC_OPEN_N.value
             ):
                 mesg = (
@@ -184,23 +184,23 @@ def t_highsnr_arq_short_station1(
             log.warning("station1 TIMEOUT", first=True)
             break
         time.sleep(0.1)
-    log.info("station1, first", arq_state=pformat(static.ARQ_STATE))
+    log.info("station1, first", arq_state=pformat(ARQ.arq_state))
 
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.process_tnc_commands(json.dumps(data, indent=None))
     time.sleep(0.5)
     # override ARQ SESSION STATE for allowing disconnect command
-    static.ARQ_SESSION_STATE = "connected"
+    ARQ.arq_session_state = "connected"
     sock.process_tnc_commands(json.dumps(data, indent=None))
 
     # Allow enough time for this side to process the disconnect frame.
     timeout = time.time() + 20
-    while static.ARQ_STATE or tnc.data_queue_transmit.queue:
+    while ARQ.arq_state or tnc.data_queue_transmit.queue:
         if time.time() > timeout:
             log.error("station1", TIMEOUT=True)
             break
         time.sleep(0.5)
-    log.info("station1", arq_state=pformat(static.ARQ_STATE))
+    log.info("station1", arq_state=pformat(ARQ.arq_state))
 
     # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
     # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))

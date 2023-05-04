@@ -13,6 +13,7 @@ import time
 import ujson as json
 import structlog
 import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, TNC
 
 log = structlog.get_logger("stats")
 
@@ -25,29 +26,29 @@ class stats():
         crcerror = status in ["crc_error", "wrong_crc"]
         # get avg snr
         try:
-            snr_raw = [item["snr"] for item in static.SPEED_LIST]
+            snr_raw = [item["snr"] for item in ARQ.speed_list]
             avg_snr = round(sum(snr_raw) / len(snr_raw), 2 )
         except Exception:
             avg_snr = 0
 
         headers = {"Content-Type": "application/json"}
         station_data = {
-            'callsign': str(static.MYCALLSIGN, "utf-8"),
-            'dxcallsign': str(static.DXCALLSIGN, "utf-8"),
-            'gridsquare': str(static.MYGRID, "utf-8"),
-            'dxgridsquare': str(static.DXGRID, "utf-8"),
-            'frequency': 0 if static.HAMLIB_FREQUENCY is None else static.HAMLIB_FREQUENCY,
+            'callsign': str(Station.mycallsign, "utf-8"),
+            'dxcallsign': str(Station.dxcallsign, "utf-8"),
+            'gridsquare': str(Station.mygrid, "utf-8"),
+            'dxgridsquare': str(Station.dxgrid, "utf-8"),
+            'frequency': 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency,
             'avgstrength': 0,
             'avgsnr': avg_snr,
-            'bytesperminute': static.ARQ_BYTES_PER_MINUTE,
-            'filesize': static.TOTAL_BYTES,
-            'compressionfactor': static.ARQ_COMPRESSION_FACTOR,
+            'bytesperminute': ARQ.bytes_per_minute,
+            'filesize': ARQ.total_bytes,
+            'compressionfactor': ARQ.arq_compression_factor,
             'nacks': frame_nack_counter,
             'crcerror': crcerror,
             'duration': duration,
-            'percentage': static.ARQ_TRANSMISSION_PERCENT,
+            'percentage': ARQ.arq_transmission_percent,
             'status': status,
-            'version': static.VERSION
+            'version': TNC.version
         }
 
         station_data = json.dumps(station_data)

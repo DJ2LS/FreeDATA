@@ -14,7 +14,7 @@ import sys
 
 import helpers
 import pytest
-import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 
 
 @pytest.mark.parametrize("callsign", ["AA1AA", "DE2DE", "E4AWQ-4"])
@@ -22,7 +22,7 @@ def test_check_callsign(callsign: str):
     """
     Execute test to demonstrate how to create and verify callsign checksums.
     """
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 
     t_callsign_bytes = helpers.callsign_to_bytes(callsign)
     t_callsign = helpers.bytes_to_callsign(t_callsign_bytes)
@@ -41,7 +41,7 @@ def test_callsign_to_bytes(callsign: str):
     """
     Execute test to demonsrate symmetry when converting callsigns to and from byte arrays.
     """
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
 
     t_callsign_crc = helpers.get_crc_24(bytes(callsign, "UTF-8"))
     t_callsign_bytes = helpers.callsign_to_bytes(callsign)

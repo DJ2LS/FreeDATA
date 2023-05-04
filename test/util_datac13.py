@@ -5,9 +5,9 @@ simulated audio channel.
 
 Near end-to-end test for sending / receiving control frames through the TNC and modem
 and back through on the other station. Data injection initiates from the queue used
-by the daemon process into and out of the TNC.
+by the daemon process into and out of the TNCParam.
 
-Invoked from test_datac0.py.
+Invoked from test_datac13.py.
 
 @author: N2KIQ
 """
@@ -21,9 +21,10 @@ import data_handler
 import helpers
 import modem
 import sock
-import static
-import structlog
+from static import ARQ, HamlibParam, ModemParam, Station, TNC as TNCParam
 from static import FRAME_TYPE as FR_TYPE
+import structlog
+#from static import FRAME_TYPE as FR_TYPE
 
 
 def t_setup(
@@ -46,33 +47,35 @@ def t_setup(
     modem.RXCHANNEL = tmp_path / rx_channel
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / tx_channel
-    static.HAMLIB_RADIOCONTROL = "disabled"
-    static.LOW_BANDWIDTH_MODE = lowbwmode or True
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.RESPOND_TO_CQ = True
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    HamlibParam.hamlib_radiocontrol = "disabled"
+    TNCParam.low_bandwidth_mode = lowbwmode or True
+    Station.mygrid = bytes("AA12aa", "utf-8")
+    TNCParam.respond_to_cq = True
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     mycallsign = helpers.callsign_to_bytes(mycall)
     mycallsign = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN = mycallsign
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
+    Station.mycallsign = mycallsign
+    Station.mycallsign_crc = helpers.get_crc_24(Station.mycallsign)
 
     dxcallsign = helpers.callsign_to_bytes(dxcall)
     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+    Station.dxcallsign = dxcallsign
+    Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
     # Create the TNC
-    tnc = data_handler.DATA()
+    tnc_data_handler = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
-    tnc.log = structlog.get_logger(f"station{station}_DATA")
+    tnc_data_handler.log = structlog.get_logger(f"station{station}_DATA")
     # Limit the frame-ack timeout
-    tnc.time_list_low_bw = [3, 1, 1]
-    tnc.time_list_high_bw = [3, 1, 1]
-    tnc.time_list = [3, 1, 1]
+    tnc_data_handler.time_list_low_bw = [8, 8, 8]
+    tnc_data_handler.time_list_high_bw = [8, 8, 8]
+    tnc_data_handler.time_list = [8, 8, 8]
     # Limit number of retries
-    tnc.rx_n_max_retries_per_burst = 4
+    tnc_data_handler.rx_n_max_retries_per_burst = 4
+    ModemParam.tx_delay = 50  # add additional delay time for passing test
+
 
     # Create the modem
     t_modem = modem.RF()
@@ -80,10 +83,10 @@ def t_setup(
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger(f"station{station}_RF")
 
-    return tnc, orig_rx_func, orig_tx_func
+    return tnc_data_handler, orig_rx_func, orig_tx_func
 
 
-def t_datac0_1(
+def t_datac13_1(
     parent_pipe,
     mycall: str,
     dxcall: str,
@@ -93,7 +96,7 @@ def t_datac0_1(
     log = structlog.get_logger("station1")
     orig_tx_func: Callable
     orig_rx_func: Callable
-    log.debug("t_datac0_1:", TMP_PATH=tmp_path)
+    log.debug("t_datac13_1:", TMP_PATH=tmp_path)
 
     # Unpack tuple
     data, timeout_duration, tx_check, _, final_tx_check, _ = config
@@ -131,7 +134,7 @@ def t_datac0_1(
         # original function captured before this one was put in place.
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
-    tnc, orig_rx_func, orig_tx_func = t_setup(
+    tnc_data_handler, orig_rx_func, orig_tx_func = t_setup(
         1,
         mycall,
         dxcall,
@@ -143,20 +146,20 @@ def t_datac0_1(
         tmp_path,
     )
 
-    log.info("t_datac0_1:", RXCHANNEL=modem.RXCHANNEL)
-    log.info("t_datac0_1:", TXCHANNEL=modem.TXCHANNEL)
+    log.info("t_datac13_1:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_datac13_1:", TXCHANNEL=modem.TXCHANNEL)
 
     time.sleep(0.5)
     if "stop" in data["command"]:
-        log.debug("t_datac0_1: STOP test, setting TNC state")
-        static.TNC_STATE = "BUSY"
-        static.ARQ_STATE = True
+        log.debug("t_datac13_1: STOP test, setting TNC state")
+        TNCParam.tnc_state = "BUSY"
+        ARQ.arq_state = True
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     time.sleep(0.5)
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + timeout_duration
+    timeout = time.time() + timeout_duration  
     while tx_check not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning(
@@ -166,25 +169,25 @@ def t_datac0_1(
                 tx_check=tx_check,
             )
             break
-        time.sleep(0.1)
+        time.sleep(0.5)
     log.info("station1, first")
     # override ARQ SESSION STATE for allowing disconnect command
-    static.ARQ_SESSION_STATE = "connected"
+    ARQ.arq_session_state = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
     time.sleep(0.5)
 
     # Allow enough time for this side to process the disconnect frame.
-    timeout = time.time() + timeout_duration
-    while tnc.data_queue_transmit.queue:
+    timeout = time.time() + timeout_duration  
+    while tnc_data_handler.data_queue_transmit.queue:
         if time.time() > timeout:
-            log.warning("station1", TIMEOUT=True, dq_tx=tnc.data_queue_transmit.queue)
+            log.warning("station1", TIMEOUT=True, dq_tx=tnc_data_handler.data_queue_transmit.queue)
             break
         time.sleep(0.5)
     log.info("station1, final")
 
-    # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S1 DQT: ", DQ_Tx=pformat(TNCParam.data_queue_transmit.queue))
+    # log.info("S1 DQR: ", DQ_Rx=pformat(TNCParam.data_queue_received.queue))
     log.debug("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     for item in final_tx_check:
@@ -199,7 +202,7 @@ def t_datac0_1(
     log.warning("station1: Exiting!")
 
 
-def t_datac0_2(
+def t_datac13_2(
     parent_pipe,
     mycall: str,
     dxcall: str,
@@ -209,7 +212,7 @@ def t_datac0_2(
     log = structlog.get_logger("station2")
     orig_tx_func: Callable
     orig_rx_func: Callable
-    log.debug("t_datac0_2:", TMP_PATH=tmp_path)
+    log.debug("t_datac13_2:", TMP_PATH=tmp_path)
 
     # Unpack tuple
     data, timeout_duration, _, rx_check, _, final_rx_check = config
@@ -259,8 +262,8 @@ def t_datac0_2(
         tmp_path,
     )
 
-    log.info("t_datac0_2:", RXCHANNEL=modem.RXCHANNEL)
-    log.info("t_datac0_2:", TXCHANNEL=modem.TXCHANNEL)
+    log.info("t_datac13_2:", RXCHANNEL=modem.RXCHANNEL)
+    log.info("t_datac13_2:", TXCHANNEL=modem.TXCHANNEL)
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}
@@ -268,7 +271,7 @@ def t_datac0_2(
         sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + timeout_duration
+    timeout = time.time() + timeout_duration  
     # Compare with the string conversion instead of repeatedly dumping
     # the queue to an object for comparisons.
     while rx_check not in str(sock.SOCKET_QUEUE.queue):
@@ -284,7 +287,7 @@ def t_datac0_2(
     log.info("station2, first")
 
     # Allow enough time for this side to receive the disconnect frame.
-    timeout = time.time() + timeout_duration
+    timeout = time.time() + timeout_duration  
     while '"arq":"session","status":"close"' not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning("station2", TIMEOUT=True, queue=str(sock.SOCKET_QUEUE.queue))
@@ -292,8 +295,8 @@ def t_datac0_2(
         time.sleep(0.5)
     log.info("station2, final")
 
-    # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S2 DQT: ", DQ_Tx=pformat(TNCParam.data_queue_transmit.queue))
+    # log.info("S2 DQR: ", DQ_Rx=pformat(TNCParam.data_queue_received.queue))
     log.debug("S2 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     for item in final_rx_check:

@@ -7,8 +7,9 @@ import websocket
 import numpy as np
 import time
 from queues import AUDIO_TRANSMIT_QUEUE, AUDIO_RECEIVED_QUEUE
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, TNC
 
-class TCI:
+class TCICtrl:
     def __init__(self, hostname='127.0.0.1', port=50001):
         # websocket.enableTrace(True)
         self.log = structlog.get_logger("TCI")

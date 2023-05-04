@@ -198,6 +198,7 @@ client.on("data", function (socketdata) {
           dbfs_level: data["audio_dbfs"],
           fft: data["fft"],
           channel_busy: data["channel_busy"],
+          channel_busy_slot: data["channel_busy_slot"],
           scatter: data["scatter"],
           info: data["info"],
           rx_buffer_length: data["rx_buffer_length"],

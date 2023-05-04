@@ -13,6 +13,8 @@ import time
 import ujson as json
 import structlog
 import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+
 
 log = structlog.get_logger("explorer")
 
@@ -32,30 +34,31 @@ class explorer():
 
     def push(self):
 
-        frequency = 0 if static.HAMLIB_FREQUENCY is None else static.HAMLIB_FREQUENCY
+        frequency = 0 if HamlibParam.hamlib_frequency is None else HamlibParam.hamlib_frequency
         band = "USB"
-        callsign = str(static.MYCALLSIGN, "utf-8")
-        gridsquare = str(static.MYGRID, "utf-8")
-        version = str(static.VERSION)
-        bandwidth = str(static.LOW_BANDWIDTH_MODE)
-        beacon = str(static.BEACON_STATE)
-        strength = str(static.HAMLIB_STRENGTH)
+        callsign = str(Station.mycallsign, "utf-8")
+        gridsquare = str(Station.mygrid, "utf-8")
+        version = str(TNC.version)
+        bandwidth = str(TNC.low_bandwidth_mode)
+        beacon = str(Beacon.beacon_state)
+        strength = str(HamlibParam.hamlib_strength)
 
         log.info("[EXPLORER] publish", frequency=frequency, band=band, callsign=callsign, gridsquare=gridsquare, version=version, bandwidth=bandwidth)
 
         headers = {"Content-Type": "application/json"}
         station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
-        for i in static.HEARD_STATIONS:
+        for i in TNC.heard_stations:
             try:
                 callsign = str(i[0], "UTF-8")
                 grid = str(i[1], "UTF-8")
                 timestamp = i[2]
+                frequency = i[6]
                 try:
                     snr = i[4].split("/")[1]
                 except AttributeError:
                     snr = str(i[4])
-                station_data["lastheard"].append({"callsign": callsign, "grid": grid, "snr": snr, "timestamp": timestamp})
+                station_data["lastheard"].append({"callsign": callsign, "grid": grid, "snr": snr, "timestamp": timestamp, "frequency": frequency})
             except Exception as e:
                 log.debug("[EXPLORER] not publishing station", e=e)
 

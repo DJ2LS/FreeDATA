@@ -18,19 +18,37 @@ import structlog
 
 log = structlog.get_logger("codec2")
 
+
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
-    sig0 = 14
-    sig1 = 14
+    sig0 = 19
+    sig1 = 19
     datac0 = 14
     datac1 = 10
     datac3 = 12
+    datac4 = 18
+    datac13 = 19
     fsk_ldpc = 9
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
+
+class FREEDV_MODE_USED_SLOTS(Enum):
+    """
+    Enumeration for codec2 used slots
+    """
+    sig0 = [False, False, True, False, False]
+    sig1 = [False, False, True, False, False]
+    datac0 = [False, False, True, False, False]
+    datac1 = [False, True, True, True, False]
+    datac3 = [False, False, True, False, False]
+    datac4 = [False, False, True, False, False]
+    datac13 = [False, False, True, False, False]
+    fsk_ldpc = [False, False, True, False, False]
+    fsk_ldpc_0 = [False, False, True, False, False]
+    fsk_ldpc_1 = [False, False, True, False, False]
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
@@ -101,6 +119,9 @@ if api is None or "api" not in locals():
 api.freedv_open.argype = [ctypes.c_int]  # type: ignore
 api.freedv_open.restype = ctypes.c_void_p
 
+api.freedv_set_sync.argype = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.freedv_set_sync.restype = ctypes.c_void_p
+
 api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
 api.freedv_open_advanced.restype = ctypes.c_void_p
 
@@ -150,10 +171,6 @@ api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
 api.FREEDV_FS_8000 = 8000  # type: ignore
-api.FREEDV_MODE_DATAC1 = 10  # type: ignore
-api.FREEDV_MODE_DATAC3 = 12  # type: ignore
-api.FREEDV_MODE_DATAC0 = 14  # type: ignore
-api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
 
 # -------------------------------- FSK LDPC MODE SETTINGS
 
@@ -216,7 +233,7 @@ api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_4096_8192_3d".encode("utf-8")  # co
 
 # ------- MODEM STATS STRUCTURES
 MODEM_STATS_NC_MAX = 50 + 1 * 2
-MODEM_STATS_NR_MAX = 160 * 2
+MODEM_STATS_NR_MAX = 320 * 2
 MODEM_STATS_ET_MAX = 8
 MODEM_STATS_EYE_IND_MAX = 160
 MODEM_STATS_NSPEC = 512

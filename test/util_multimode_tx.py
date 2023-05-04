@@ -49,9 +49,9 @@ def test_mm_tx():
     data_out = b"HELLO WORLD!"
 
     modes = [
-        codec2.api.FREEDV_MODE_DATAC0,
-        codec2.api.FREEDV_MODE_DATAC1,
-        codec2.api.FREEDV_MODE_DATAC3,
+        codec2.FREEDV_MODE.datac13.value,
+        codec2.FREEDV_MODE.datac1.value,
+        codec2.FREEDV_MODE.datac3.value,
     ]
 
     if AUDIO_OUTPUT_DEVICE != -1:
