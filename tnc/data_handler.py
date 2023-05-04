@@ -21,7 +21,6 @@ import helpers
 import modem
 import numpy as np
 import sock
-import static
 from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 import structlog
 import stats
@@ -56,8 +55,8 @@ class DATA:
         self.length_sig1_frame = 14
 
         # duration of signalling frame
-        self.duration_sig0_frame = 1.98
-        self.duration_sig1_frame = 1.98
+        self.duration_sig0_frame = 2.3
+        self.duration_sig1_frame = 2.3
         self.longest_duration = 5.8  # datac5
 
         # hold session id
@@ -121,7 +120,7 @@ class DATA:
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_low_bw = [-100]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [6 + 5]
+        self.time_list_low_bw = [6 + self.duration_sig0_frame + 1]
 
         # --------------------- HIGH BANDWIDTH
 
@@ -137,7 +136,7 @@ class DATA:
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO: Need to check why ACK frames needs more time
         # TODO: Adjust these times
-        self.time_list_high_bw = [6 + 5, 7, 10]
+        self.time_list_high_bw = [6 + self.duration_sig0_frame + 1, 6 + self.duration_sig0_frame + 1, 6 + self.duration_sig0_frame + 1]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
