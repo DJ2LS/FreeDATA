@@ -53,7 +53,7 @@ class AudioParam:
     audio_output_device: int = -2
     audio_record: bool = False
     audio_record_file = ''
-    buffer_overflow_counter = []
+    buffer_overflow_counter = [0, 0, 0, 0, 0]
     audio_auto_tune: bool = False
     # Audio TCI Support
     audio_enable_tci: bool = False
