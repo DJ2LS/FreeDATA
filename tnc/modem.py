@@ -204,7 +204,7 @@ class RF:
         elif not TESTMODE:
             # placeholder area for processing audio via TCI
             # https://github.com/maksimus1210/TCI
-            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.tci_ip, port=TCIParam.tci_port)
+            self.log.warning("[MDM] [TCI] Not yet fully implemented", ip=TCIParam.ip, port=TCIParam.port)
 
             # we are trying this by simulating an audio stream Object like with mkfifo
             class Object:
