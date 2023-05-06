@@ -461,8 +461,8 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        print(frame_to_tx[0])
-        print(frame_to_tx)
+        #print(frame_to_tx[0])
+        #print(frame_to_tx)
         frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
         self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
@@ -566,7 +566,7 @@ class DATA:
     def send_retransmit_request_frame(self) -> None:
         # check where a None is in our burst buffer and do frame+1, because lists start at 0
         # FIXME: Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
-        print(ARQ.rx_burst_buffer)
+        #print(ARQ.rx_burst_buffer)
         missing_frames = [
             frame + 1
             for frame, element in enumerate(ARQ.rx_burst_buffer)
@@ -1251,7 +1251,7 @@ class DATA:
                     while (payload_per_frame * n_frames_per_burst) % len(data_out[bufferposition_burst_start:]) == (
                             payload_per_frame * n_frames_per_burst):
                         threading.Event().wait(0.01)
-                        print((payload_per_frame * n_frames_per_burst) % len(data_out))
+                        #print((payload_per_frame * n_frames_per_burst) % len(data_out))
                         n_frames_per_burst += 1
                         if n_frames_per_burst == self.max_n_frames_per_burst:
                             break
