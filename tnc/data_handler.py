@@ -3064,7 +3064,7 @@ class DATA:
         Reset statistics
         """
         # reset ARQ statistics
-        ARQ.bytes_per_minute_BURST = 0
+        ARQ.bytes_per_minute_burst = 0
         ARQ.bytes_per_minute = 0
         ARQ.arq_bits_per_second_burst = 0
         ARQ.arq_bits_per_second = 0
