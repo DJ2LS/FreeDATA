@@ -415,14 +415,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_set_record_audio(self, received_json):
         try:
             if not AudioParam.audio_record:
-                AudioParam.audio_record_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
-                AudioParam.audio_record_FILE.setnchannels(1)
-                AudioParam.audio_record_FILE.setsampwidth(2)
-                AudioParam.audio_record_FILE.setframerate(8000)
+                AudioParam.audio_record_file = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                AudioParam.audio_record_file.setnchannels(1)
+                AudioParam.audio_record_file.setsampwidth(2)
+                AudioParam.audio_record_file.setframerate(8000)
                 AudioParam.audio_record = True
             else:
                 AudioParam.audio_record = False
-                AudioParam.audio_record_FILE.close()
+                AudioParam.audio_record_file.close()
 
             command_response("respond_to_call", True)
 
