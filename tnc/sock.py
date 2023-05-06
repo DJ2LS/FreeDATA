@@ -247,6 +247,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_set_send_test_frame(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_set_send_test_frame(received_json)
 
@@ -261,6 +268,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "fec" and received_json["command"] == "transmit_is_writing":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_fec_is_writing(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_fec_is_writing(received_json)
 
@@ -268,6 +282,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["command"] == "cqcqcq":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_cqcqcq(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_cqcqcq(received_json)
 
@@ -290,6 +311,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_ping_ping(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
+
                 else:
                     self.tnc_ping_ping(received_json)
 
@@ -297,6 +326,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "arq" and received_json["command"] == "connect":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_connect(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_arq_connect(received_json)
 
@@ -311,6 +347,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "arq" and received_json["command"] == "send_raw":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_send_raw(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_arq_send_raw(received_json)
 
@@ -508,6 +551,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_ping_ping(self, received_json):
         # send ping frame and wait for ACK
+
         try:
             dxcallsign = received_json["dxcallsign"]
             if not str(dxcallsign).strip():
