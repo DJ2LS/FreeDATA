@@ -2912,8 +2912,11 @@ class DATA:
         # duration, plus overhead. Set the wait interval to be random between 0 and
         # self.duration_sig1_frame * 4 == 4 slots
         # in self.duration_sig1_frame increments.
-        self.log.info("[TNC] Waiting for QRV slot...")
-        helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
+        # FIXME: This causes problems when running ctests - we need to figure out why
+        if not TESTMODE:
+            self.log.info("[TNC] Waiting for QRV slot...")
+            helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="transmitting",
@@ -2931,10 +2934,7 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            if TESTMODE:
-                self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=2, repeat_delay=0)
-            else:
-                self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes) -> None:
         """

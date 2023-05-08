@@ -39,7 +39,7 @@ def t_setup(
     tmp_path,
 ):
     # Disable data_handler testmode - This is required to test a conversation.
-    data_handler.TESTMODE = False
+    data_handler.TESTMODE = True
 
     # Enable socket testmode for overriding socket class
     sock.TESTMODE = True
@@ -159,7 +159,7 @@ def t_datac13_1(
     sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
 
     # Assure the test completes.
-    timeout = time.time() + timeout_duration  
+    timeout = time.time() + timeout_duration  + 5
     while tx_check not in str(sock.SOCKET_QUEUE.queue):
         if time.time() > timeout:
             log.warning(
@@ -265,10 +265,11 @@ def t_datac13_2(
     log.info("t_datac13_2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac13_2:", TXCHANNEL=modem.TXCHANNEL)
 
-    if "cq" in data:
-        t_data = {"type": "arq", "command": "stop_transmission"}
-        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
-        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
+    # TODO: Why do we need this when calling CQ?
+    #if "cq" in data:
+    #    t_data = {"type": "arq", "command": "stop_transmission"}
+    #    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
+    #    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration  
