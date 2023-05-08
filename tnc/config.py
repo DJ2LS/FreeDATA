@@ -73,7 +73,7 @@ class CONFIG:
                               'fmin': data[11],
                               'fmax': data[12],
                               'qrv': data[15],
-                              'rxbuffersize': data[16],
+                              'rx_buffer_size': data[16],
                               'explorer': data[17],
                               'stats': data[19],
                               'fsk': data[13],

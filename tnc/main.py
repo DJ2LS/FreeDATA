@@ -350,7 +350,7 @@ if __name__ == "__main__":
             ModemParam.tuning_range_fmax = float(conf.get('TNC', 'fmax', '50.0'))
             AudioParam.tx_audio_level = int(conf.get('AUDIO', 'txaudiolevel', '100'))
             TNC.respond_to_cq = conf.get('TNC', 'qrv', 'True')
-            ARQ.rx_buffer_size = int(conf.get('TNC', 'rxbuffersize', '16'))
+            ARQ.rx_buffer_size = int(conf.get('TNC', 'rx_buffer_size', '16'))
             TNC.enable_explorer = conf.get('TNC', 'explorer', 'False')
             AudioParam.audio_auto_tune = conf.get('AUDIO', 'auto_tune', 'False')
             TNC.enable_stats = conf.get('TNC', 'stats', 'False')

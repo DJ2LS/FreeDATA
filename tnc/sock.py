@@ -247,6 +247,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_set_send_test_frame(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_set_send_test_frame(received_json)
 
@@ -261,6 +268,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "fec" and received_json["command"] == "transmit_is_writing":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_fec_is_writing(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_fec_is_writing(received_json)
 
@@ -268,6 +282,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["command"] == "cqcqcq":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_cqcqcq(None, received_json)
+                elif TNC.tnc_state in ['BUSY']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_cqcqcq(received_json)
 
@@ -290,6 +311,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_ping_ping(None, received_json)
+                elif TNC.tnc_state in ['BUSY']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
+
                 else:
                     self.tnc_ping_ping(received_json)
 
@@ -297,6 +326,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "arq" and received_json["command"] == "connect":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_connect(None, received_json)
+                elif TNC.tnc_state in ['BUSY']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_arq_connect(received_json)
 
@@ -311,6 +347,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "arq" and received_json["command"] == "send_raw":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_send_raw(None, received_json)
+                elif TNC.tnc_state in ['busy']:
+                    log.warning(
+                        "[SCK] Dropping command",
+                        e="tnc state",
+                        state=TNC.tnc_state,
+                        command=received_json,
+                    )
                 else:
                     self.tnc_arq_send_raw(received_json)
 
@@ -372,14 +415,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_set_record_audio(self, received_json):
         try:
             if not AudioParam.audio_record:
-                AudioParam.audio_record_FILE = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
-                AudioParam.audio_record_FILE.setnchannels(1)
-                AudioParam.audio_record_FILE.setsampwidth(2)
-                AudioParam.audio_record_FILE.setframerate(8000)
+                AudioParam.audio_record_file = wave.open(f"{int(time.time())}_audio_recording.wav", 'w')
+                AudioParam.audio_record_file.setnchannels(1)
+                AudioParam.audio_record_file.setsampwidth(2)
+                AudioParam.audio_record_file.setframerate(8000)
                 AudioParam.audio_record = True
             else:
                 AudioParam.audio_record = False
-                AudioParam.audio_record_FILE.close()
+                AudioParam.audio_record_file.close()
 
             command_response("respond_to_call", True)
 
@@ -508,6 +551,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_ping_ping(self, received_json):
         # send ping frame and wait for ACK
+
         try:
             dxcallsign = received_json["dxcallsign"]
             if not str(dxcallsign).strip():
@@ -607,11 +651,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command_response("disconnect", True)
             else:
                 command_response("disconnect", False)
-                log.warning(
-                    "[SCK] Disconnect command not possible",
-                    state=ARQ.arq_session_state,
-                    command=received_json,
-                )
+
         except Exception as err:
             command_response("disconnect", False)
             log.warning(
@@ -651,8 +691,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 dxcallsign = Station.dxcallsign
                 Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
-            mode = int(received_json["parameter"][0]["mode"])
-            n_frames = int(received_json["parameter"][0]["n_frames"])
             base64data = received_json["parameter"][0]["data"]
 
             # check if specific callsign is set with different SSID than the TNC is initialized
@@ -683,7 +721,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             binarydata = base64.b64decode(base64data)
 
             DATA_QUEUE_TRANSMIT.put(
-                ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
+                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts]
             )
 
         except Exception as err:

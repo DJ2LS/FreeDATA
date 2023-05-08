@@ -28,8 +28,8 @@ class ARQ:
     arq_seconds_until_finish: int = 0
     rx_buffer_size: int = 16
     rx_frame_buffer: bytes = b""
-    rx_burst_buffer =[]
-    arq_session_state: str = "disconnected"
+    rx_burst_buffer = []
+    arq_session_state: str = "disconnected" # can be: disconnected, disconnecting, connected, connecting, failed
     arq_session: bool = False
     arq_state: bool = False
     # ARQ PROTOCOL VERSION
@@ -127,7 +127,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.9.0-alpha.2"
+    version = "0.9.0-alpha.3"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
@@ -270,45 +270,41 @@ CHANNEL_BUSY: bool = False
 # ARQ PROTOCOL VERSION
 # v.5 - signalling frame uses datac0
 # v.6 - signalling frame uses datac13
-ARQ_PROTOCOL_VERSION: int = 6
+# CHECKED # ARQ_PROTOCOL_VERSION: int = 6
 
 # ARQ statistics
-SPEED_LIST: list = []
-ARQ_BYTES_PER_MINUTE_BURST: int = 0
-ARQ_BYTES_PER_MINUTE: int = 0
-ARQ_BITS_PER_SECOND_BURST: int = 0
-ARQ_BITS_PER_SECOND: int = 0
-ARQ_COMPRESSION_FACTOR: int = 0
-ARQ_TRANSMISSION_PERCENT: int = 0
-ARQ_SECONDS_UNTIL_FINISH: int = 0
-ARQ_SPEED_LEVEL: int = 0
-TOTAL_BYTES: int = 0
+# CHECKED # SPEED_LIST: list = []
+# CHECKED # ARQ_BYTES_PER_MINUTE_BURST: int = 0
+# CHECKED # ARQ_BYTES_PER_MINUTE: int = 0
+# CHECKED # ARQ_BITS_PER_SECOND_BURST: int = 0
+# CHECKED # ARQ_BITS_PER_SECOND: int = 0
+# CHECKED # ARQ_COMPRESSION_FACTOR: int = 0
+# CHECKED # ARQ_TRANSMISSION_PERCENT: int = 0
+# CHECKED # ARQ_SECONDS_UNTIL_FINISH: int = 0
+# CHECKED # ARQ_SPEED_LEVEL: int = 0
+# CHECKED # TOTAL_BYTES: int = 0
 # set save to folder state for allowing downloading files to local file system
-ARQ_SAVE_TO_FOLDER: bool = False
+# CHECKED # ARQ_SAVE_TO_FOLDER: bool = False
 
 # CHANNEL_STATE = 'RECEIVING_SIGNALLING'
 TNC_STATE: str = "IDLE"
-ARQ_STATE: bool = False
-ARQ_SESSION: bool = False
+# CHECKED # ARQ_STATE: bool = False
+# CHECKED # ARQ_SESSION: bool = False
 # disconnected, connecting, connected, disconnecting, failed
-ARQ_SESSION_STATE: str = "disconnected"
+# CHECKED # ARQ_SESSION_STATE: str = "disconnected"
 
 # BEACON STATE
 BEACON_STATE: bool = False
 BEACON_PAUSE: bool = False
 
 # ------- RX BUFFER
-RX_MSG_BUFFER: list = []
-RX_BURST_BUFFER: list = []
-RX_FRAME_BUFFER: bytes = b""
-RX_BUFFER_SIZE: int = 16
+# CHECKED # RX_MSG_BUFFER: list = []
+# CHECKED # RX_BURST_BUFFER: list = []
+# CHECKED # RX_FRAME_BUFFER: bytes = b""
+# CHECKED # RX_BUFFER_SIZE: int = 16
 
 # ------- HEARD STATIONS BUFFER
 HEARD_STATIONS: list = []
-
-# ------- INFO MESSAGE BUFFER
-# TODO: This can be removed?
-INFO: list = []
 
 # ------- CODEC2 SETTINGS
 TUNING_RANGE_FMIN: float = -50.0

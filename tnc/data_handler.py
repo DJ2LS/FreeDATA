@@ -26,7 +26,6 @@ import structlog
 import stats
 import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
-from exceptions import NoCallsign
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
 
@@ -318,13 +317,11 @@ class DATA:
 
             elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
-                # [2] MODE int
-                # [3] N_FRAMES_PER_BURST int
-                # [4] self.transmission_uuid str
-                # [5] mycallsign with ssid
-                # [6] dxcallsign with ssid
-                # [7] attempts
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
+                # [2] self.transmission_uuid str
+                # [3] mycallsign with ssid
+                # [4] dxcallsign with ssid
+                # [5] attempts
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
             elif data[0] == "FEC":
                 # [1] DATA_OUT bytes
@@ -461,8 +458,8 @@ class DATA:
         :param repeat_delay: Delay time before sending repeat frame, defaults to 0
         :type repeat_delay: int, optional
         """
-        print(frame_to_tx[0])
-        print(frame_to_tx)
+        #print(frame_to_tx[0])
+        #print(frame_to_tx)
         frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
         self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
@@ -566,7 +563,7 @@ class DATA:
     def send_retransmit_request_frame(self) -> None:
         # check where a None is in our burst buffer and do frame+1, because lists start at 0
         # FIXME: Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
-        print(ARQ.rx_burst_buffer)
+        #print(ARQ.rx_burst_buffer)
         missing_frames = [
             frame + 1
             for frame, element in enumerate(ARQ.rx_burst_buffer)
@@ -1142,14 +1139,13 @@ class DATA:
             snr=snr,
         )
 
-    def arq_transmit(self, data_out: bytes, mode: int, n_frames_per_burst: int):
+    def arq_transmit(self, data_out: bytes):
         """
         Transmit ARQ frame
 
         Args:
           data_out:bytes:
-          mode:int:
-          n_frames_per_burst:int:
+
 
         """
 
@@ -1251,7 +1247,7 @@ class DATA:
                     while (payload_per_frame * n_frames_per_burst) % len(data_out[bufferposition_burst_start:]) == (
                             payload_per_frame * n_frames_per_burst):
                         threading.Event().wait(0.01)
-                        print((payload_per_frame * n_frames_per_burst) % len(data_out))
+                        #print((payload_per_frame * n_frames_per_burst) % len(data_out))
                         n_frames_per_burst += 1
                         if n_frames_per_burst == self.max_n_frames_per_burst:
                             break
@@ -1924,8 +1920,6 @@ class DATA:
         self.send_disconnect_frame()
         self.arq_cleanup()
 
-        ARQ.arq_session_state = "disconnected"
-
     def received_session_close(self, data_in: bytes):
         """
         Closes the session when a close session frame is received and
@@ -2052,8 +2046,6 @@ class DATA:
     def open_dc_and_transmit(
             self,
             data_out: bytes,
-            mode: int,
-            n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
             dxcallsign,
@@ -2064,8 +2056,6 @@ class DATA:
 
         Args:
           data_out:bytes:
-          mode:int:
-          n_frames_per_burst:int:
           transmission_uuid:str:
           mycallsign:bytes:
           attempts:int: Overriding number of attempts initiating a connection
@@ -2098,27 +2088,25 @@ class DATA:
         # for calculating transmission statistics
         # ARQ.arq_compression_factor = len(data_out) / len(lzma.compress(data_out))
 
-        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
+        self.arq_open_data_channel(mycallsign)
 
         # wait until data channel is open
-        while not ARQ.arq_state and not self.datachannel_timeout:
+        while not ARQ.arq_state and not self.datachannel_timeout and TNC.tnc_state in ["BUSY"]:
             threading.Event().wait(0.01)
 
         if ARQ.arq_state:
-            self.arq_transmit(data_out, mode, n_frames_per_burst)
+            self.arq_transmit(data_out)
             return True
 
         return False
 
     def arq_open_data_channel(
-            self, mode: int, n_frames_per_burst: int, mycallsign
+            self, mycallsign
     ) -> bool:
         """
         Open an ARQ data channel.
 
         Args:
-          mode:int:
-          n_frames_per_burst:int:
           mycallsign:bytes:
 
         Returns:
@@ -2129,7 +2117,6 @@ class DATA:
 
         # init a new random session id if we are not in an arq session
         if not ARQ.arq_session:
-            # self.session_id = randbytes(1)
             self.session_id = np.random.bytes(1)
 
         # Update data_channel timestamp
@@ -2148,7 +2135,6 @@ class DATA:
         connection_frame[1:4] = Station.dxcallsign_crc
         connection_frame[4:7] = Station.mycallsign_crc
         connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-        # connection_frame[13:14] = bytes([n_frames_per_burst])
         connection_frame[13:14] = self.session_id
 
         while not ARQ.arq_state:
@@ -2753,7 +2739,7 @@ class DATA:
                             and not self.arq_file_transfer
                             and not Beacon.beacon_pause
                             and not ModemParam.channel_busy
-                            and TNC.tnc_state not in ["busy"]
+                            and TNC.tnc_state not in ["BUSY"]
                             and not ARQ.arq_state
                     ):
                         self.send_data_to_socket_queue(
@@ -2912,8 +2898,11 @@ class DATA:
         # duration, plus overhead. Set the wait interval to be random between 0 and
         # self.duration_sig1_frame * 4 == 4 slots
         # in self.duration_sig1_frame increments.
-        self.log.info("[TNC] Waiting for QRV slot...")
-        helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
+        # FIXME: This causes problems when running ctests - we need to figure out why
+        if not TESTMODE:
+            self.log.info("[TNC] Waiting for QRV slot...")
+            helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             qrv="transmitting",
@@ -2931,10 +2920,7 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            if TESTMODE:
-                self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=2, repeat_delay=0)
-            else:
-                self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
     def received_qrv(self, data_in: bytes) -> None:
         """
@@ -3064,7 +3050,7 @@ class DATA:
         Reset statistics
         """
         # reset ARQ statistics
-        ARQ.bytes_per_minute_BURST = 0
+        ARQ.bytes_per_minute_burst = 0
         ARQ.bytes_per_minute = 0
         ARQ.arq_bits_per_second_burst = 0
         ARQ.arq_bits_per_second = 0
@@ -3186,6 +3172,7 @@ class DATA:
             self.mycallsign = Station.mycallsign
             self.session_id = bytes(1)
 
+        ARQ.arq_session_state = "disconnected"
         ARQ.speed_list = []
         ARQ.arq_state = False
         self.arq_file_transfer = False
