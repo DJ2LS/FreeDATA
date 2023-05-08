@@ -1139,14 +1139,13 @@ class DATA:
             snr=snr,
         )
 
-    def arq_transmit(self, data_out: bytes, mode: int, n_frames_per_burst: int):
+    def arq_transmit(self, data_out: bytes):
         """
         Transmit ARQ frame
 
         Args:
           data_out:bytes:
-          mode:int:
-          n_frames_per_burst:int:
+
 
         """
 
