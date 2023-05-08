@@ -651,11 +651,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command_response("disconnect", True)
             else:
                 command_response("disconnect", False)
-                log.warning(
-                    "[SCK] Disconnect command not possible",
-                    state=ARQ.arq_session_state,
-                    command=received_json,
-                )
+
         except Exception as err:
             command_response("disconnect", False)
             log.warning(

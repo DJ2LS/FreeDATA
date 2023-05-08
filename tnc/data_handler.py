@@ -1920,8 +1920,6 @@ class DATA:
         self.send_disconnect_frame()
         self.arq_cleanup()
 
-        ARQ.arq_session_state = "disconnected"
-
     def received_session_close(self, data_in: bytes):
         """
         Closes the session when a close session frame is received and
@@ -2093,7 +2091,7 @@ class DATA:
         self.arq_open_data_channel(mycallsign)
 
         # wait until data channel is open
-        while not ARQ.arq_state and not self.datachannel_timeout:
+        while not ARQ.arq_state and not self.datachannel_timeout and TNC.tnc_state in ["BUSY"]:
             threading.Event().wait(0.01)
 
         if ARQ.arq_state:
@@ -3174,6 +3172,7 @@ class DATA:
             self.mycallsign = Station.mycallsign
             self.session_id = bytes(1)
 
+        ARQ.arq_session_state = "disconnected"
         ARQ.speed_list = []
         ARQ.arq_state = False
         self.arq_file_transfer = False
