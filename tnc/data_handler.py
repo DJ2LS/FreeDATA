@@ -318,13 +318,11 @@ class DATA:
 
             elif data[0] == "ARQ_RAW":
                 # [1] DATA_OUT bytes
-                # [2] MODE int
-                # [3] N_FRAMES_PER_BURST int
-                # [4] self.transmission_uuid str
-                # [5] mycallsign with ssid
-                # [6] dxcallsign with ssid
-                # [7] attempts
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6], data[7])
+                # [2] self.transmission_uuid str
+                # [3] mycallsign with ssid
+                # [4] dxcallsign with ssid
+                # [5] attempts
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
             elif data[0] == "FEC":
                 # [1] DATA_OUT bytes
@@ -2052,8 +2050,6 @@ class DATA:
     def open_dc_and_transmit(
             self,
             data_out: bytes,
-            mode: int,
-            n_frames_per_burst: int,
             transmission_uuid: str,
             mycallsign,
             dxcallsign,
@@ -2064,8 +2060,6 @@ class DATA:
 
         Args:
           data_out:bytes:
-          mode:int:
-          n_frames_per_burst:int:
           transmission_uuid:str:
           mycallsign:bytes:
           attempts:int: Overriding number of attempts initiating a connection

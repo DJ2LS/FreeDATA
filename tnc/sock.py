@@ -695,8 +695,6 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 dxcallsign = Station.dxcallsign
                 Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
-            mode = int(received_json["parameter"][0]["mode"])
-            n_frames = int(received_json["parameter"][0]["n_frames"])
             base64data = received_json["parameter"][0]["data"]
 
             # check if specific callsign is set with different SSID than the TNC is initialized
@@ -727,7 +725,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             binarydata = base64.b64decode(base64data)
 
             DATA_QUEUE_TRANSMIT.put(
-                ["ARQ_RAW", binarydata, mode, n_frames, arq_uuid, mycallsign, dxcallsign, attempts]
+                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts]
             )
 
         except Exception as err:
