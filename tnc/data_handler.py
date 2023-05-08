@@ -26,7 +26,6 @@ import structlog
 import stats
 import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
-from exceptions import NoCallsign
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
 
@@ -2092,7 +2091,7 @@ class DATA:
         # for calculating transmission statistics
         # ARQ.arq_compression_factor = len(data_out) / len(lzma.compress(data_out))
 
-        self.arq_open_data_channel(mode, n_frames_per_burst, mycallsign)
+        self.arq_open_data_channel(mycallsign)
 
         # wait until data channel is open
         while not ARQ.arq_state and not self.datachannel_timeout:
