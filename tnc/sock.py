@@ -282,7 +282,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["command"] == "cqcqcq":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_cqcqcq(None, received_json)
-                elif TNC.tnc_state in ['busy']:
+                elif TNC.tnc_state in ['BUSY']:
                     log.warning(
                         "[SCK] Dropping command",
                         e="tnc state",
@@ -311,7 +311,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_ping_ping(None, received_json)
-                elif TNC.tnc_state in ['busy']:
+                elif TNC.tnc_state in ['BUSY']:
                     log.warning(
                         "[SCK] Dropping command",
                         e="tnc state",
@@ -326,7 +326,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "arq" and received_json["command"] == "connect":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.tnc_arq_connect(None, received_json)
-                elif TNC.tnc_state in ['busy']:
+                elif TNC.tnc_state in ['BUSY']:
                     log.warning(
                         "[SCK] Dropping command",
                         e="tnc state",
