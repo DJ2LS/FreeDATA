@@ -2099,20 +2099,18 @@ class DATA:
             threading.Event().wait(0.01)
 
         if ARQ.arq_state:
-            self.arq_transmit(data_out, mode, n_frames_per_burst)
+            self.arq_transmit(data_out)
             return True
 
         return False
 
     def arq_open_data_channel(
-            self, mode: int, n_frames_per_burst: int, mycallsign
+            self, mycallsign
     ) -> bool:
         """
         Open an ARQ data channel.
 
         Args:
-          mode:int:
-          n_frames_per_burst:int:
           mycallsign:bytes:
 
         Returns:
@@ -2123,7 +2121,6 @@ class DATA:
 
         # init a new random session id if we are not in an arq session
         if not ARQ.arq_session:
-            # self.session_id = randbytes(1)
             self.session_id = np.random.bytes(1)
 
         # Update data_channel timestamp
@@ -2142,7 +2139,6 @@ class DATA:
         connection_frame[1:4] = Station.dxcallsign_crc
         connection_frame[4:7] = Station.mycallsign_crc
         connection_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
-        # connection_frame[13:14] = bytes([n_frames_per_burst])
         connection_frame[13:14] = self.session_id
 
         while not ARQ.arq_state:
