@@ -272,6 +272,15 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("shared_folder_path").value =
     config.shared_folder_path;
 
+  if (config.enable_auto_retry == "True") {
+    document.getElementById("enable_auto_retry").checked = true;
+  } else {
+    document.getElementById("enable_auto_retry").checked = false;
+  }
+
+  document.getElementById("max_retry_attempts").value = config.max_retry_attempts;
+
+
   if (config.enable_request_profile == "True") {
     document.getElementById("enable_request_profile").checked = true;
   } else {
@@ -984,6 +993,30 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
     bcn.disabled = false;
   });
+
+
+  // enable_auto_retry Switch clicked
+  document.getElementById("enable_auto_retry").addEventListener("click", () => {
+    console.log(document.getElementById("enable_auto_retry").checked);
+    if (document.getElementById("enable_auto_retry").checked == true) {
+      config.enable_auto_retry = "True";
+    } else {
+      config.enable_auto_retry = "False";
+    }
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
+
+  // max_retry_attempts Switch clicked
+  document.getElementById("max_retry_attempts").addEventListener("change", () => {
+    console.log(document.getElementById("max_retry_attempts").value);
+      config.max_retry_attempts = document.getElementById("max_retry_attempts").value;
+
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
+
+
 
   // sendscatter Switch clicked
   document.getElementById("scatterSwitch").addEventListener("click", () => {
