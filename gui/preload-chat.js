@@ -944,11 +944,8 @@ update_chat = function (obj) {
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
-
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-
-
 
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
@@ -1127,12 +1124,10 @@ update_chat = function (obj) {
 
   if (!document.getElementById("msg-" + obj._id)) {
     if (obj.type == "ping") {
-
       // check for messages which failed and try to transmit them
-  if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-       checkForWaitingMessages(obj.dxcallsign)
-        }
-
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
 
       var new_message = `
                 <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
@@ -1148,10 +1143,10 @@ update_chat = function (obj) {
             `;
     }
     if (obj.type == "beacon") {
-       // check for messages which failed and try to transmit them
-       if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-       checkForWaitingMessages(obj.dxcallsign)
-        }
+      // check for messages which failed and try to transmit them
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
       var new_message = `
                 <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
@@ -1235,11 +1230,19 @@ update_chat = function (obj) {
                         <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
-                            <span class="text-white" id="msg-${obj._id}-status" style="font-size:0.8rem;">${get_icon_for_state(obj.status)}</span>
+                            <span class="text-white" id="msg-${
+                              obj._id
+                            }-status" style="font-size:0.8rem;">${get_icon_for_state(
+        obj.status
+      )}</span>
                         </p>
-                        <span id="msg-${obj._id}-attempts-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-primary border border-white">
+                        <span id="msg-${
+                          obj._id
+                        }-attempts-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-primary border border-white">
 
-                            <span id="msg-${obj._id}-attempts" class="">${attempt}/${max_retry_attempts}</span>
+                            <span id="msg-${
+                              obj._id
+                            }-attempts" class="">${attempt}/${max_retry_attempts}</span>
                             <span class="visually-hidden">retries</span>
                         </span>
                         <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
@@ -2399,55 +2402,54 @@ function changeGuiDesign(design) {
 }
 
 function checkForWaitingMessages(dxcall) {
-console.log(dxcall)
-    db.find({
-      selector: {
-        dxcallsign: dxcall,
-        type: "transmit",
-        status: "failed",
-        //attempt: { $lt: parseInt(config.max_retry_attempts) }
-
-      },
-    })
+  console.log(dxcall);
+  db.find({
+    selector: {
+      dxcallsign: dxcall,
+      type: "transmit",
+      status: "failed",
+      //attempt: { $lt: parseInt(config.max_retry_attempts) }
+    },
+  })
     .then(function (result) {
       // handle result
       if (result.docs.length > 0) {
-            // only want to process the first available item object, then return
-            // this ensures, we are only sending one message at once
+        // only want to process the first available item object, then return
+        // this ensures, we are only sending one message at once
 
-            if (typeof result.docs[0].attempt == "undefined") {
-
-                db.upsert(obj._id, function (doc) {
-                  if (!doc.attempt) {
-                    doc.attempt = 1;
-                  }
-                  doc.attempt++;
-                  return doc;
-                })
-                console.log("old message found - adding attempt field")
-                                result.docs[0].attempt = 1;
-
+        if (typeof result.docs[0].attempt == "undefined") {
+          db.upsert(obj._id, function (doc) {
+            if (!doc.attempt) {
+              doc.attempt = 1;
             }
-
-            if (result.docs[0].attempt < config.max_retry_attempts){
-                console.log("RESENDING MESSAGE TRIGGERED BY BEACON OR PING")
-                console.log(result.docs[0]);
-                document.getElementById("retransmit-msg-"+ result.docs[0]._id).click();
-            } else {
-                console.log("max retries reached...can't auto repeat")
-                document.getElementById("msg-" + result.docs[0]._id + "-attempts-badge").classList.remove("bg-primary");
-                document.getElementById("msg-" + result.docs[0]._id + "-attempts-badge").classList.add("bg-danger");
-
-            }
-            return;
-
-
-      } else {
-       console.log("nope")
+            doc.attempt++;
+            return doc;
+          });
+          console.log("old message found - adding attempt field");
+          result.docs[0].attempt = 1;
         }
-        })
-        .catch(function (err) {
-          console.log(err);
-        });
 
-  };
+        if (result.docs[0].attempt < config.max_retry_attempts) {
+          console.log("RESENDING MESSAGE TRIGGERED BY BEACON OR PING");
+          console.log(result.docs[0]);
+          document
+            .getElementById("retransmit-msg-" + result.docs[0]._id)
+            .click();
+        } else {
+          console.log("max retries reached...can't auto repeat");
+          document
+            .getElementById("msg-" + result.docs[0]._id + "-attempts-badge")
+            .classList.remove("bg-primary");
+          document
+            .getElementById("msg-" + result.docs[0]._id + "-attempts-badge")
+            .classList.add("bg-danger");
+        }
+        return;
+      } else {
+        console.log("nope");
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
