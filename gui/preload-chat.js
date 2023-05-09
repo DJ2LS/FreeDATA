@@ -2418,7 +2418,7 @@ function checkForWaitingMessages(dxcall) {
         // this ensures, we are only sending one message at once
 
         if (typeof result.docs[0].attempt == "undefined") {
-          db.upsert(obj._id, function (doc) {
+          db.upsert(result.docs[0]._id, function (doc) {
             if (!doc.attempt) {
               doc.attempt = 1;
             }
