@@ -934,17 +934,16 @@ update_chat = function (obj) {
 
   var dxgrid = obj.dxgrid;
 
-
   // check if obj.attempt exists
-   if (typeof obj.attempt == "undefined") {
-          db.upsert(obj._id, function (doc) {
-            if (!doc.attempt) {
-              doc.attempt = 1;
-            }
-            return doc;
-          });
-          obj.attempt = 1;
-    }
+  if (typeof obj.attempt == "undefined") {
+    db.upsert(obj._id, function (doc) {
+      if (!doc.attempt) {
+        doc.attempt = 1;
+      }
+      return doc;
+    });
+    obj.attempt = 1;
+  }
 
   // define attempts
   if (typeof obj.attempt == "undefined") {
@@ -1286,16 +1285,11 @@ update_chat = function (obj) {
     console.log("element already exists......");
     console.log(obj);
 
-
-
     console.log(
       document
         .getElementById("msg-" + obj._id + "-progress")
         .getAttribute("aria-valuenow")
     );
-
-
-
 
     document.getElementById("msg-" + obj._id + "-status").innerHTML =
       get_icon_for_state(obj.status);
@@ -1309,10 +1303,6 @@ update_chat = function (obj) {
     document.getElementById(
       "msg-" + obj._id + "-progress-information"
     ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
-
-
-
-
 
     document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
       obj.attempt + "/" + max_retry_attempts;
