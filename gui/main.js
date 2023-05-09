@@ -95,6 +95,8 @@ const configDefaultSettings =
                   "shared_folder_path" : ".", \
                   "enable_request_profile" : "True", \
                   "enable_request_shared_folder" : "False", \
+                  "max_retry_attempts" : 5, \
+                  "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
                   "auto_start": 0 \
                   }';
