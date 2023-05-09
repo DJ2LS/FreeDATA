@@ -336,7 +336,7 @@ window.addEventListener("DOMContentLoaded", () => {
     textarea.rows = lines;
 
     console.log(textarea.value);
-    if (lastIsWritingBroadcast < new Date().getTime() - 5 * 1000) {
+    if (lastIsWritingBroadcast < new Date().getTime() - 5 * 2000) {
       //console.log("Sending FECIsWriting");
       console.log(config.enable_is_writing);
       if (config.enable_is_writing == "True") {
