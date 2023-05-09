@@ -76,7 +76,7 @@ try {
 
 PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
-PouchDB.plugin(require('pouchdb-upsert'));
+PouchDB.plugin(require("pouchdb-upsert"));
 
 var db = new PouchDB(chatDB);
 var users = new PouchDB(userDB);
@@ -731,8 +731,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       update_chat_obj_by_uuid(obj.uuid);
 
       // handle beacon
-    }
-    else if (item.ping == "acknowledge") {
+    } else if (item.ping == "acknowledge") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
       obj.dxgrid = item.dxgrid;
@@ -751,8 +750,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       update_chat_obj_by_uuid(obj.uuid);
 
       // handle beacon
-    }
-    else if (item.beacon == "received") {
+    } else if (item.beacon == "received") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
       obj.dxgrid = item.dxgrid;
@@ -771,8 +769,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       update_chat_obj_by_uuid(obj.uuid);
 
       // handle ARQ transmission
-    }
-    else if (item.arq == "transmission" && item.status == "received") {
+    } else if (item.arq == "transmission" && item.status == "received") {
       //var encoded_data = atob(item.data);
       //var encoded_data = Buffer.from(item.data,'base64').toString('utf-8');
       var encoded_data = FD.atob_FD(item.data);
@@ -795,9 +792,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
         obj.file = FD.btoa_FD(splitted_data[8]);
-
-      }
-      else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
+      } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
         obj.dxcallsign = item.dxcallsign;
@@ -813,8 +808,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
-      }
-      else if (splitted_data[1] == "req" && splitted_data[2] == "1") {
+      } else if (splitted_data[1] == "req" && splitted_data[2] == "1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
         obj.dxcallsign = item.dxcallsign;
@@ -830,8 +824,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
-      }
-      else if (splitted_data[1] == "req" && splitted_data[2].substring(0, 1) == "2") {
+      } else if (
+        splitted_data[1] == "req" &&
+        splitted_data[2].substring(0, 1) == "2"
+      ) {
         let name = splitted_data[2].substring(1);
         //console.log("In handle req for shared folder file");
         obj.uuid = uuidv4().toString();
@@ -849,8 +845,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign, name);
         }
-      }
-      else if (splitted_data[1] == "res-0") {
+      } else if (splitted_data[1] == "res-0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
         obj.dxcallsign = item.dxcallsign;
@@ -879,8 +874,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         addUserToDatabaseIfNotExists(userData);
         getSetUserInformation(splitted_data[3]);
-      }
-      else if (splitted_data[1] == "res-1") {
+      } else if (splitted_data[1] == "res-1") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
         obj.dxcallsign = item.dxcallsign;
@@ -905,8 +899,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         getSetUserSharedFolder(obj.dxcallsign);
 
         //getSetUserInformation(selected_callsign);
-      }
-      else if (splitted_data[1] == "res-2") {
+      } else if (splitted_data[1] == "res-2") {
         console.log("In received respons-2");
         let sharedFileInfo = splitted_data[2].split("/", 2);
 
@@ -921,8 +914,9 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = sharedFileInfo[0];
         obj.filetype = "application/octet-stream";
         obj.file = FD.btoa_FD(sharedFileInfo[1]);
+      } else {
+        console.log("no rule matched for handling received data!");
       }
-      else{ console.log("no rule matched for handling received data!");}
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -940,11 +934,11 @@ update_chat = function (obj) {
 
   var dxgrid = obj.dxgrid;
 
-    // define attempts
+  // define attempts
   if (typeof obj.attempt == "undefined") {
-      var attempt = 1;
+    var attempt = 1;
   } else {
-      var attempt = obj.attempt;
+    var attempt = obj.attempt;
   }
   var max_attempts = 3;
 
@@ -1222,16 +1216,32 @@ update_chat = function (obj) {
                         <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
                             <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
-                            <span class="text-white" id="msg-${obj._id}-status" style="font-size:0.8rem;">${get_icon_for_state(obj.status)}</span>
+                            <span class="text-white" id="msg-${
+                              obj._id
+                            }-status" style="font-size:0.8rem;">${get_icon_for_state(
+        obj.status
+      )}</span>
                         </p>
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-primary border border-white">
 
-                            <span id="msg-${obj._id}-attempts" class="">${attempt}/${max_attempts}</span>
+                            <span id="msg-${
+                              obj._id
+                            }-attempts" class="">${attempt}/${max_attempts}</span>
                             <span class="visually-hidden">retries</span>
                         </span>
                         <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
-                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${obj._id}-progress" role="progressbar" style="width: ${obj.percent}%;" aria-valuenow="${obj.percent}" aria-valuemin="0" aria-valuemax="100"></div>
-                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${obj._id}-progress-information">${percent_value} % - ${obj.bytesperminute} Bpm</p>
+                            <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${
+        obj._id
+      }-progress" role="progressbar" style="width: ${
+        obj.percent
+      }%;" aria-valuenow="${
+        obj.percent
+      }" aria-valuemin="0" aria-valuemax="100"></div>
+                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
+                              obj._id
+                            }-progress-information">${percent_value} % - ${
+        obj.bytesperminute
+      } Bpm</p>
                         </div>
                     </div>
                 </div>
@@ -1267,11 +1277,8 @@ update_chat = function (obj) {
       "msg-" + obj._id + "-progress-information"
     ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
 
-document.getElementById(
-      "msg-" + obj._id + "-attempts"
-    ).innerHTML = obj.attempt + "/" + max_attempts;
-
-
+    document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
+      obj.attempt + "/" + max_attempts;
 
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
@@ -1393,28 +1400,23 @@ document.getElementById(
     document
       .getElementById("retransmit-msg-" + obj._id)
       .addEventListener("click", () => {
-
-      // increment attempt
-      db.upsert(obj._id, function (doc) {
+        // increment attempt
+        db.upsert(obj._id, function (doc) {
           if (!doc.attempt) {
             doc.attempt = 1;
           }
           doc.attempt++;
           return doc;
-      }).then(function (res) {
-          // success, res is {rev: '1-xxx', updated: true, id: 'myDocId'}
-          console.log(res)
-          update_chat_obj_by_uuid(obj.uuid);
-      }).catch(function (err) {
-          // error
-          console.log(err)
-      });
-
-
-
-
-
-
+        })
+          .then(function (res) {
+            // success, res is {rev: '1-xxx', updated: true, id: 'myDocId'}
+            console.log(res);
+            update_chat_obj_by_uuid(obj.uuid);
+          })
+          .catch(function (err) {
+            // error
+            console.log(err);
+          });
 
         db.get(obj._id, {
           attachments: true,
@@ -1574,8 +1576,6 @@ update_chat_obj_by_uuid = function (uuid) {
 };
 
 add_obj_to_database = function (obj) {
-
-
   console.log(obj);
   db.put({
     _id: obj.uuid,
@@ -1605,7 +1605,6 @@ add_obj_to_database = function (obj) {
       console.log("already exists");
       console.log(err);
     });
-
 };
 
 /* users database functions */
