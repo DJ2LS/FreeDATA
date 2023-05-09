@@ -661,7 +661,7 @@ exports.sendMessage = function (
     frames +
     '", "data" : "' +
     data +
-    '", "attempts": "15"}]}';
+    '", "attempts": "10"}]}';
   socketLog.info(command);
   socketLog.info("-------------------------------------");
   writeTncCommand(command);
@@ -680,7 +680,7 @@ function sendRequest(dxcallsign, mode, frames, data, command) {
     frames +
     '", "data" : "' +
     data +
-    '", "attempts": "15"}]}';
+    '", "attempts": "10"}]}';
   socketLog.info(command);
   socketLog.info("--------------REQ--------------------");
   writeTncCommand(command);
@@ -699,7 +699,7 @@ function sendResponse(dxcallsign, mode, frames, data, command) {
     frames +
     '", "data" : "' +
     data +
-    '", "attempts": "15"}]}';
+    '", "attempts": "10"}]}';
   socketLog.info(command);
   socketLog.info("--------------RES--------------------");
   writeTncCommand(command);
@@ -799,7 +799,7 @@ exports.connectARQ = function (dxcallsign) {
   command =
     '{"type" : "arq", "command" : "connect", "dxcallsign": "' +
     dxcallsign +
-    '", "attempts": "15"}';
+    '", "attempts": "10"}';
   writeTncCommand(command);
 };
 
