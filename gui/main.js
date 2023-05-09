@@ -80,7 +80,7 @@ const configDefaultSettings =
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
-                  "beacon_interval" : 60,\
+                  "beacon_interval" : 300,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
