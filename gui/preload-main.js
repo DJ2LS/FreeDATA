@@ -3519,5 +3519,5 @@ function changeGuiDesign(design) {
   }
   setTimeout(() => {
     autostart();
-  }, 2500);
+  }, 5000);
 }
