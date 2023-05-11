@@ -80,7 +80,7 @@ const configDefaultSettings =
                   "screen_height" : 430,\
                   "screen_width" : 1050,\
                   "update_channel" : "latest",\
-                  "beacon_interval" : 60,\
+                  "beacon_interval" : 300,\
                   "received_files_folder" : "None",\
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
@@ -95,6 +95,8 @@ const configDefaultSettings =
                   "shared_folder_path" : ".", \
                   "enable_request_profile" : "True", \
                   "enable_request_shared_folder" : "False", \
+                  "max_retry_attempts" : 5, \
+                  "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
                   "auto_start": 0 \
                   }';
@@ -626,7 +628,7 @@ ipcMain.on("save-file-to-folder", (event, data) => {
 
 // FEC iswriting received
 ipcMain.on("request-show-fec-toast-iswriting", (event, data) => {
-  //win.webContents.send("action-show-fec-toast-iswriting", data);
+  win.webContents.send("action-show-fec-toast-iswriting", data);
   chat.webContents.send("action-show-feciswriting", data);
 });
 

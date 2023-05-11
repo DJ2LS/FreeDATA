@@ -2068,6 +2068,9 @@ class DATA:
         self.mycallsign = mycallsign
         self.dxcallsign = dxcallsign
 
+        Station.dxcallsign = dxcallsign
+        Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
+
         # override session connection attempts
         self.data_channel_max_retries = attempts
 

@@ -684,8 +684,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 # then we are forcing a station ssid = 0
                 dxcallsign = helpers.callsign_to_bytes(dxcallsign)
                 dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-                Station.dxcallsign = dxcallsign
-                Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
+
                 command_response("send_raw", True)
             else:
                 dxcallsign = Station.dxcallsign

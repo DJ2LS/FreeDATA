@@ -49,6 +49,7 @@
     "pouchdb-express-router": "^0.0.11",
     "pouchdb-find": "^8.0.1",
     "pouchdb-replication": "^8.0.1",
+    "pouchdb-upsert": "^2.2.0",
     "qth-locator": "^2.1.0",
     "utf8": "^3.0.0",
     "uuid": "^9.0.0"
