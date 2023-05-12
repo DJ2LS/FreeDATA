@@ -257,18 +257,15 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // running this in try catch for setting default value in case of wrong beacon intervals
   // https://stackoverflow.com/a/69293164
-  console.log(config.beacon_interval)
-   let selectElement = document.getElementById('beaconInterval');
-  let optionValues = [...selectElement.options].map(o => o.value);
+  console.log(config.beacon_interval);
+  let selectElement = document.getElementById("beaconInterval");
+  let optionValues = [...selectElement.options].map((o) => o.value);
   console.log(optionValues);
-  if (optionValues.includes(config.beacon_interval)){
-  document.getElementById("beaconInterval").value = config.beacon_interval;
-
+  if (optionValues.includes(config.beacon_interval)) {
+    document.getElementById("beaconInterval").value = config.beacon_interval;
   } else {
-
-  document.getElementById("beaconInterval").value = "300";
+    document.getElementById("beaconInterval").value = "300";
   }
-
 
   document.getElementById("scatterSwitch").value = config.enable_scatter;
   document.getElementById("fftSwitch").value = config.enable_fft;
