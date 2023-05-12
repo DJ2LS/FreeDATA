@@ -255,8 +255,15 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("hamlib_rigctld_server_port").value =
     config.hamlib_rigctld_server_port;
 
+        // running this in try catch for setting default value in case of wrong beacon intervals
+  try{
   document.getElementById("beaconInterval").value = config.beacon_interval;
+    } catch(e){
+    console.log(e);
+    document.getElementById("beaconInterval").value = 300;
 
+
+    }
   document.getElementById("scatterSwitch").value = config.enable_scatter;
   document.getElementById("fftSwitch").value = config.enable_fft;
 
