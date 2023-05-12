@@ -1793,13 +1793,12 @@ var lastHeard = "";
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   // update FFT
   if (typeof arg.fft !== "undefined") {
-  // FIXME: WE need to fix this when disabled waterfall chart
-    try{
-
-    var array = JSON.parse("[" + arg.fft + "]");
-    spectrum.addData(array[0]);
-    } catch (e){
-    console.log(e)
+    // FIXME: WE need to fix this when disabled waterfall chart
+    try {
+      var array = JSON.parse("[" + arg.fft + "]");
+      spectrum.addData(array[0]);
+    } catch (e) {
+      console.log(e);
     }
   }
 
