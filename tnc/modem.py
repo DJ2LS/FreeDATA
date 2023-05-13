@@ -1255,7 +1255,7 @@ class RF:
                         # Check for signals higher than average by checking for "100"
                         # If we have a signal, increment our channel_busy delay counter
                         # so we have a smoother state toggle
-                        if np.sum(slotdfft[slotdfft > avg + 15]) >= 400 and not TNC.transmitting:
+                        if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not TNC.transmitting:
                             ModemParam.channel_busy = True
                             ModemParam.channel_busy_slot[slot] = True
                             # Limit delay counter to a maximum of 200. The higher this value,
