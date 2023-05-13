@@ -254,6 +254,7 @@ class DATA:
         arq_session_thread.start()
 
         self.beacon_interval = 0
+        self.beacon_interval_timer = 0
         self.beacon_thread = threading.Thread(
             target=self.run_beacon, name="watchdog", daemon=True
         )
@@ -2770,9 +2771,9 @@ class DATA:
                             self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
 
-                    interval_timer = time.time() + self.beacon_interval
+                    self.beacon_interval_timer = time.time() + self.beacon_interval
                     while (
-                            time.time() < interval_timer
+                            time.time() < self.beacon_interval_timer
                             and Beacon.beacon_state
                             and not Beacon.beacon_pause
                     ):
@@ -3181,6 +3182,8 @@ class DATA:
         self.arq_file_transfer = False
 
         Beacon.beacon_pause = False
+        # reset beacon interval timer for not directly starting beacon after ARQ
+        self.beacon_interval_timer = time.time() + self.beacon_interval
 
     def arq_reset_ack(self, state: bool) -> None:
         """
