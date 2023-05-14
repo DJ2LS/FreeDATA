@@ -334,7 +334,8 @@ class DATA:
                 # [1] WAKEUP bool
                 # [2] MODE str datac0/1/3...
                 # [3] PAYLOAD
-                self.send_fec(data[1], data[2], data[3])
+                # [4] MYCALLSIGN
+                self.send_fec(data[1], data[2], data[3], data[4])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -3449,18 +3450,14 @@ class DATA:
             frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value
         )
 
-    def send_fec(self, mode, wakeup, payload):
+    def send_fec(self, mode, wakeup, payload, mycallsign):
         """Send an empty test frame"""
-        print(mode)
-        print(wakeup)
-        print(payload)
-        print(codec2.FREEDV_MODE[mode.lower()].value)
         if mode:
             mode_int = codec2.freedv_get_mode_value_by_name("sig0")
             payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
             fec_wakeup_frame = bytearray(payload_per_frame)
             fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
-            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(Station.mycallsign)
+            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE[mode].value
             )

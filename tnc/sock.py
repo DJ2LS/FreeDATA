@@ -488,7 +488,16 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 raise TypeError
             payload = base64.b64decode(base64data)
 
-            DATA_QUEUE_TRANSMIT.put(["FEC", mode, wakeup, payload])
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = Station.mycallsign
+
+
+            DATA_QUEUE_TRANSMIT.put(["FEC", mode, wakeup, payload, mycallsign])
             command_response("fec_transmit", True)
         except Exception as err:
             command_response("fec_transmit", False)
