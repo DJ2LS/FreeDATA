@@ -92,36 +92,43 @@
           </div>
           <hr class="m-2" />
           <div class="overflow-auto vh-100">
-
-
-
-
             <div
               class="list-group overflow-auto"
               id="list-tab"
               role="tablist"
               style="height: calc(100vh - 70px)"
             >
+              <a
+                class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-0 broadcast"
+                id="chat-broadcast-list"
+                data-bs-toggle="list"
+                href="#chat-broadcast"
+                role="tab"
+                aria-controls="chat-${dxcallsign}"
+              >
+                <div class="d-flex w-100 justify-content-between">
+                  <div class="rounded-circle p-0">
+                    <i
+                      class="bi bi-people-fill p-1"
+                      style="font-size: 2rem"
+                    ></i>
+                  </div>
 
-
-               <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-0 broadcast" id="chat-broadcast-list" data-bs-toggle="list" href="#chat-broadcast" role="tab" aria-controls="chat-${dxcallsign}">
-
-                      <div class="d-flex w-100 justify-content-between">
-                          <div class="rounded-circle p-0">
-                            <i class="bi bi-people-fill p-1" style="font-size:2rem;"></i>
-                          </div>
-
-                        <span style="font-size:1.2rem;"><strong>BROADCAST @ALL</strong></span>
-                        <span style="font-size:0.8rem;" id="chat-broadcast-list-time">---</span>
-                        <span class="position-absolute m-2 bottom-0 end-0" style="font-size:0.8rem;" id="chat-broadcast-list-shortmsg">---</span>
-                      </div>
-
-                  </a>
-            <hr class="m-2">
-
-
-
-
+                  <span style="font-size: 1.2rem"
+                    ><strong>BROADCAST @ALL</strong></span
+                  >
+                  <span style="font-size: 0.8rem" id="chat-broadcast-list-time"
+                    >---</span
+                  >
+                  <span
+                    class="position-absolute m-2 bottom-0 end-0"
+                    style="font-size: 0.8rem"
+                    id="chat-broadcast-list-shortmsg"
+                    >---</span
+                  >
+                </div>
+              </a>
+              <hr class="m-2" />
             </div>
           </div>
         </div>
@@ -301,16 +308,22 @@
             style="height: calc(100% - 150px)"
           >
             <div class="tab-content" id="nav-tabContent">
-              <div class="tab-pane fade broadcast" id="chat-broadcast" role="tabpanel" aria-labelledby="chat-broadcast-list">
+              <div
+                class="tab-pane fade broadcast"
+                id="chat-broadcast"
+                role="tabpanel"
+                aria-labelledby="chat-broadcast-list"
+              >
                 <h3>Broadcast work in progress...</h3>
-                ToDo:<br>
-                - disable request buttons and ping when selecting broadcast field<br>
-                - enable request buttons and ping when selecting normal messages<br>
-                - received broadcast messages must find its place here<br>
-                - transmitted messages here need a broadcast handler <br>
-                - prepare tnc for sending and receiving broadcasts with wakeup frame <br>
-
-
+                ToDo:<br />
+                - disable request buttons and ping when selecting broadcast
+                field<br />
+                - enable request buttons and ping when selecting normal
+                messages<br />
+                - received broadcast messages must find its place here<br />
+                - transmitted messages here need a broadcast handler <br />
+                - prepare tnc for sending and receiving broadcasts with wakeup
+                frame <br />
               </div>
             </div>
             <!--<div class="container position-absolute bottom-0">-->
