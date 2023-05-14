@@ -161,8 +161,6 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
-
-
   users
     .find({
       selector: {
