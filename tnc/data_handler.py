@@ -101,6 +101,8 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
+        self.fec_wakeup_received = False
+
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
 
@@ -221,6 +223,8 @@ class DATA:
             FR_TYPE.PING.value: (self.received_ping, "PING"),
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
             FR_TYPE.IS_WRITING.value: (self.received_is_writing, "IS_WRITING"),
+            FR_TYPE.FEC.value: (self.received_fec, "FEC"),
+            FR_TYPE.FEC_WAKEUP.value: (self.received_fec_wakeup, "FEC WAKEUP"),
 
         }
         self.command_dispatcher = {
@@ -2970,6 +2974,39 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
 
+
+    def received_fec_wakeup(self, data_in: bytes):
+        dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
+        mode = helpers.bytes_to_callsign(bytes(data_in[7:8]))
+        bursts = helpers.bytes_to_callsign(bytes(data_in[8:9]))
+
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            fec="wakeup",
+            mode=mode,
+            bursts=bursts,
+            dxcallsign=str(dxcallsign, "UTF-8")
+        )
+
+        self.log.info(
+            "[TNC] IS_WRITING RCVD ["
+            + str(dxcallsign, "UTF-8")
+            + "] ",
+        )
+    def received_fec(self, data_in: bytes):
+        self.send_data_to_socket_queue(
+            freedata="tnc-message",
+            fec="payload",
+            data=str(data_in, "UTF-8")
+        )
+
+        self.log.info(
+            "[TNC] FEC DATA RCVD ["
+            + str(data_in, "UTF-8")
+            + "] ",
+        )
+
+
     def received_is_writing(self, data_in: bytes) -> None:
         """
         Called when we receive a IS WRITING frame
@@ -3452,12 +3489,15 @@ class DATA:
 
     def send_fec(self, mode, wakeup, payload, mycallsign):
         """Send an empty test frame"""
-        if mode:
+        if wakeup:
             mode_int = codec2.freedv_get_mode_value_by_name("sig0")
             payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
             fec_wakeup_frame = bytearray(payload_per_frame)
             fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
             fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
+            fec_wakeup_frame[7:8] = bytes([mode_int])
+            fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
+
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE[mode].value
             )
