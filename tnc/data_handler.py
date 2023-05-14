@@ -324,15 +324,17 @@ class DATA:
                 # [5] attempts
                 self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
 
-            elif data[0] == "FEC":
-                # [1] DATA_OUT bytes
-                # [2] MODE str datac0/1/3...
-                self.send_fec_frame(data[1], data[2])
 
             elif data[0] == "FEC_IS_WRITING":
                 # [1] DATA_OUT bytes
                 # [2] MODE str datac0/1/3...
                 self.send_fec_is_writing(data[1])
+
+            elif data[0] == "FEC":
+                # [1] WAKEUP bool
+                # [2] MODE str datac0/1/3...
+                # [3] PAYLOAD
+                self.send_fec(data[1], data[2], data[3])
             else:
                 self.log.error(
                     "[TNC] worker_transmit: received invalid command:", data=data
@@ -3447,8 +3449,21 @@ class DATA:
             frame_to_tx=[test_frame], c2_mode=FREEDV_MODE.datac13.value
         )
 
-    def send_fec_frame(self, payload, mode) -> None:
+    def send_fec(self, mode, wakeup, payload):
         """Send an empty test frame"""
+        print(mode)
+        print(wakeup)
+        print(payload)
+        print(codec2.FREEDV_MODE[mode.lower()].value)
+        if mode:
+            mode_int = codec2.freedv_get_mode_value_by_name("sig0")
+            payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
+            fec_wakeup_frame = bytearray(payload_per_frame)
+            fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
+            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(Station.mycallsign)
+            self.enqueue_frame_for_tx(
+                frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE[mode].value
+            )
 
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
         payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
@@ -3462,7 +3477,7 @@ class DATA:
         )
 
     def send_fec_is_writing(self, mycallsign) -> None:
-        """Send an empty test frame"""
+        """Send an fec is writing frame"""
 
         fec_frame = bytearray(14)
         fec_frame[:1] = bytes([FR_TYPE.IS_WRITING.value])
@@ -3476,6 +3491,7 @@ class DATA:
             )
         else:
             return False
+
 
     def save_data_to_folder(self,
                             transmission_uuid,

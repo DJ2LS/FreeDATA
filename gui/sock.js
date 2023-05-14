@@ -835,6 +835,35 @@ exports.sendFecIsWriting = function (mycallsign) {
   writeTncCommand(command);
 };
 
+// SEND FEC TO BROADCASTCHANNEL
+exports.sendBroadcastChannel = function (channel, data) {
+
+    let checksum = ''
+    let uuid = ''
+    let command = ''
+  data = FD.btoa_FD(
+    "m" +
+      split_char +
+      command +
+      split_char +
+      checksum +
+      split_char +
+      uuid +
+      split_char +
+      data
+  );
+
+
+
+  let payload = data;
+  command =
+    '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
+    payload +
+    '"}';
+  writeTncCommand(command);
+};
+
+
 // RECORD AUDIO
 exports.record_audio = function () {
   command = '{"type" : "set", "command" : "record_audio"}';

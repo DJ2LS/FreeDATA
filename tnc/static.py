@@ -174,6 +174,7 @@ class FRAME_TYPE(Enum):
     ARQ_STOP = 249
     BEACON = 250
     FEC = 251
+    FEC_WAKEUP = 252
     IDENT = 254
     TEST_FRAME = 255
 
