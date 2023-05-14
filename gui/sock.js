@@ -837,10 +837,9 @@ exports.sendFecIsWriting = function (mycallsign) {
 
 // SEND FEC TO BROADCASTCHANNEL
 exports.sendBroadcastChannel = function (channel, data) {
-
-    let checksum = ''
-    let uuid = ''
-    let command = ''
+  let checksum = "";
+  let uuid = "";
+  let command = "";
   data = FD.btoa_FD(
     "m" +
       split_char +
@@ -853,8 +852,6 @@ exports.sendBroadcastChannel = function (channel, data) {
       data
   );
 
-
-
   let payload = data;
   command =
     '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
@@ -862,7 +859,6 @@ exports.sendBroadcastChannel = function (channel, data) {
     '"}';
   writeTncCommand(command);
 };
-
 
 // RECORD AUDIO
 exports.record_audio = function () {
