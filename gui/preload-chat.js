@@ -1951,7 +1951,7 @@ async function updateAllChat(clear) {
           },
           sort: [
             {
-              timestamp: "desc",
+              timestamp: "asc",
             },
           ],
         })

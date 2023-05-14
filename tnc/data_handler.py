@@ -399,6 +399,8 @@ class DATA:
             FR_TYPE.PING.value,
             FR_TYPE.BEACON.value,
             FR_TYPE.IS_WRITING.value,
+            FR_TYPE.FEC.value,
+            FR_TYPE.FEC_WAKEUP.value,
         ]
         ):
 
@@ -2977,8 +2979,10 @@ class DATA:
 
     def received_fec_wakeup(self, data_in: bytes):
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        mode = helpers.bytes_to_callsign(bytes(data_in[7:8]))
-        bursts = helpers.bytes_to_callsign(bytes(data_in[8:9]))
+        mode = int.from_bytes(bytes(data_in[7:8]), "big")
+        bursts = int.from_bytes(bytes(data_in[8:9]), "big")
+
+        self.set_listening_modes(True, False, mode)
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
@@ -2988,15 +2992,29 @@ class DATA:
             dxcallsign=str(dxcallsign, "UTF-8")
         )
 
+        timeout = time.time() + (self.longest_duration * bursts)
         self.log.info(
-            "[TNC] IS_WRITING RCVD ["
+            "[TNC] FRAME WAKEUP RCVD ["
             + str(dxcallsign, "UTF-8")
-            + "] ",
+            + "] ", mode=mode, bursts=bursts, timeout=timeout,
         )
+
+        while time.time() < timeout:
+            threading.Event().wait(0.01)
+        # TODO: We need a dynamic way of modifying this
+        modem.RECEIVE_DATAC4 = False
+
+        self.log.info(
+            "[TNC] closing broadcast slot ["
+            + str(dxcallsign, "UTF-8")
+            + "] ", mode=mode, bursts=bursts,
+        )
+
+
     def received_fec(self, data_in: bytes):
         self.send_data_to_socket_queue(
             freedata="tnc-message",
-            fec="payload",
+            fec="broadcast",
             data=str(data_in, "UTF-8")
         )
 
@@ -3489,22 +3507,27 @@ class DATA:
 
     def send_fec(self, mode, wakeup, payload, mycallsign):
         """Send an empty test frame"""
-        if wakeup:
-            mode_int = codec2.freedv_get_mode_value_by_name("sig0")
-            payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
-            fec_wakeup_frame = bytearray(payload_per_frame)
-            fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
-            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
-            fec_wakeup_frame[7:8] = bytes([mode_int])
-            fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
-
-            self.enqueue_frame_for_tx(
-                frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE[mode].value
-            )
+        print(wakeup)
+        print(payload)
+        print(mycallsign)
 
         mode_int = codec2.freedv_get_mode_value_by_name(mode)
         payload_per_frame = modem.get_bytes_per_frame(mode_int) - 2
         fec_payload_length = payload_per_frame - 1
+
+        if wakeup:
+            mode_int_wakeup = codec2.freedv_get_mode_value_by_name("sig0")
+            payload_per_wakeup_frame = modem.get_bytes_per_frame(mode_int_wakeup) - 2
+            fec_wakeup_frame = bytearray(payload_per_wakeup_frame)
+            fec_wakeup_frame[:1] = bytes([FR_TYPE.FEC_WAKEUP.value])
+            fec_wakeup_frame[1:7] = helpers.callsign_to_bytes(mycallsign)
+            fec_wakeup_frame[7:8] = bytes([mode_int])
+            fec_wakeup_frame[8:9] = bytes([1]) # n payload bursts
+            print(mode_int_wakeup)
+
+            self.enqueue_frame_for_tx(
+                frame_to_tx=[fec_wakeup_frame], c2_mode=codec2.FREEDV_MODE["sig1"].value
+            )
 
         fec_frame = bytearray(payload_per_frame)
         fec_frame[:1] = bytes([FR_TYPE.FEC.value])
