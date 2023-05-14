@@ -1009,6 +1009,12 @@ class RF:
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             data = self.modem_transmit_queue.get()
 
+            # TODO: carefully test this
+            # avoid sending data while we are receiving codec2 signalling data
+            interrupt_time = time.time() + 5
+            while ModemParam.is_codec2_traffic and time.time() < interrupt_time:
+                threading.Event().wait(0.01)
+
             # self.log.debug("[MDM] worker_transmit", mode=data[0])
             self.transmit(
                 mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
