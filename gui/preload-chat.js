@@ -460,57 +460,50 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     var timestamp = Math.floor(Date.now() / 1000);
 
-
     // check if broadcast
-    if (dxcallsign == 'broadcast') {
-
-        var tnc_command = "broadcast"
+    if (dxcallsign == "broadcast") {
+      var tnc_command = "broadcast";
 
       let Data = {
-      command: tnc_command,
-      data: chatmessage,
-    };
-    ipcRenderer.send("run-tnc-command", Data);
-
-
-
+        command: tnc_command,
+        data: chatmessage,
+      };
+      ipcRenderer.send("run-tnc-command", Data);
     } else {
-        var file_checksum = crc32(file).toString(16).toUpperCase();
-        var tnc_command = "msg"
-        var file_checksum = crc32(file).toString(16).toUpperCase();
-    console.log(file_checksum);
-    var data_with_attachment =
-      timestamp +
-      split_char +
-      chatmessage +
-      split_char +
-      filename +
-      split_char +
-      filetype +
-      split_char +
-      file;
+      var file_checksum = crc32(file).toString(16).toUpperCase();
+      var tnc_command = "msg";
+      var file_checksum = crc32(file).toString(16).toUpperCase();
+      console.log(file_checksum);
+      var data_with_attachment =
+        timestamp +
+        split_char +
+        chatmessage +
+        split_char +
+        filename +
+        split_char +
+        filetype +
+        split_char +
+        file;
 
-    document.getElementById("selectFilesButton").innerHTML = ``;
-    var uuid = uuidv4();
-    let uuidlast = uuid.lastIndexOf("-");
-    uuidlast += 1;
-    if (uuidlast > 0) {
-      uuid = uuid.substring(uuidlast);
+      document.getElementById("selectFilesButton").innerHTML = ``;
+      var uuid = uuidv4();
+      let uuidlast = uuid.lastIndexOf("-");
+      uuidlast += 1;
+      if (uuidlast > 0) {
+        uuid = uuid.substring(uuidlast);
+      }
+      console.log(data_with_attachment);
+      let Data = {
+        command: tnc_command,
+        dxcallsign: dxcallsign,
+        mode: 255,
+        frames: 5,
+        data: data_with_attachment,
+        checksum: file_checksum,
+        uuid: uuid,
+      };
+      ipcRenderer.send("run-tnc-command", Data);
     }
-    console.log(data_with_attachment);
-    let Data = {
-      command: tnc_command,
-      dxcallsign: dxcallsign,
-      mode: 255,
-      frames: 5,
-      data: data_with_attachment,
-      checksum: file_checksum,
-      uuid: uuid,
-    };
-    ipcRenderer.send("run-tnc-command", Data);
-    }
-
-
 
     db.post({
       _id: uuid,
