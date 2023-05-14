@@ -666,6 +666,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         # wait some random time
         helpers.wait(randrange(5, 25, 5) / 10.0)
 
+        # TODO: carefully test this
+        # avoid sending data while we are receiving codec2 signalling data
+        interrupt_time = time.time() + 5
+        while ModemParam.is_codec2_traffic and time.time() < interrupt_time:
+            threading.Event().wait(0.01)
+
         # we need to warn if already in arq state
         if ARQ.arq_state:
             command_response("send_raw", False)
