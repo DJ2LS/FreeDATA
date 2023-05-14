@@ -452,15 +452,32 @@ window.addEventListener("DOMContentLoaded", () => {
       "bi bi-chevron-compact-up";
     document.getElementById("expand_textarea").checked = false;
 
-    console.log(file);
-    console.log(filename);
-    console.log(filetype);
+    //console.log(file);
+    //console.log(filename);
+    //console.log(filetype);
     if (filetype == "") {
       filetype = "plain/text";
     }
     var timestamp = Math.floor(Date.now() / 1000);
 
-    var file_checksum = crc32(file).toString(16).toUpperCase();
+
+    // check if broadcast
+    if (dxcallsign == 'broadcast') {
+
+        var tnc_command = "broadcast"
+
+      let Data = {
+      command: tnc_command,
+      data: chatmessage,
+    };
+    ipcRenderer.send("run-tnc-command", Data);
+
+
+
+    } else {
+        var file_checksum = crc32(file).toString(16).toUpperCase();
+        var tnc_command = "msg"
+        var file_checksum = crc32(file).toString(16).toUpperCase();
     console.log(file_checksum);
     var data_with_attachment =
       timestamp +
@@ -482,7 +499,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     console.log(data_with_attachment);
     let Data = {
-      command: "msg",
+      command: tnc_command,
       dxcallsign: dxcallsign,
       mode: 255,
       frames: 5,
@@ -491,6 +508,10 @@ window.addEventListener("DOMContentLoaded", () => {
       uuid: uuid,
     };
     ipcRenderer.send("run-tnc-command", Data);
+    }
+
+
+
     db.post({
       _id: uuid,
       timestamp: timestamp,
