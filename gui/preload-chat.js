@@ -161,6 +161,8 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_comments",
   ];
 
+
+
   users
     .find({
       selector: {
@@ -245,6 +247,7 @@ window.addEventListener("DOMContentLoaded", () => {
       element.style.display = "none";
     }
   });
+
   document
     .getElementById("delete_selected_chat")
     .addEventListener("click", () => {
@@ -1929,7 +1932,7 @@ async function updateAllChat(clear) {
           },
           sort: [
             {
-              timestamp: "asc",
+              timestamp: "desc",
             },
           ],
         })
