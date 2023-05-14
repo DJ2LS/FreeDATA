@@ -1601,6 +1601,32 @@ window.addEventListener("DOMContentLoaded", () => {
     };
     ipcRenderer.send("request-show-chat-window", Data);
   });
+
+  document.getElementById("thTime").addEventListener("click", () => {
+    if (hslLastSort == 0 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(0);
+  });
+  document.getElementById("thFreq").addEventListener("click", () => {
+    if (hslLastSort == 1 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(1);
+  });
+  document.getElementById("thDxcall").addEventListener("click", () => {
+    if (hslLastSort == 3 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(3);
+  });
+  document.getElementById("thDxgrid").addEventListener("click", () => {
+    if (hslLastSort == 4 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(4);
+  });
+  document.getElementById("thDist").addEventListener("click", () => {
+    if (hslLastSort == 5 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(5);
+  });
 });
 
 function connectedStation(data) {
@@ -2368,6 +2394,7 @@ function updateHeardStations(arg) {
 
     tbl.appendChild(row);
   }
+  sorthslTable(hslLastSort);
 }
 
 var populateSerial = false;
@@ -3514,20 +3541,81 @@ function changeGuiDesign(design) {
 
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
+}
 
-  function autostart() {
-    //Auto start stuff if option is enabled
-    if (config.auto_start == 1) {
-      //Start rigctld if radiocontrol is in correct mode and is not active
-      if (config.radiocontrol == "rigctld" && rigctldActive == false) {
-        //console.log("Autostarting rigctld");
-        document.getElementById("hamlib_rigctld_start").click();
+var hslLastSort = 0;
+var hslLastSortDir = "asc";
+
+//https://www.w3schools.com/howto/howto_js_sort_table.asp
+function sorthslTable(n) {
+  hslLastSort = n;
+  var table,
+    rows,
+    switching,
+    i,
+    x,
+    y,
+    shouldSwitch,
+    dir,
+    switchcount = 0;
+  table = document.getElementById("tblHeardStationList");
+  switching = true;
+  // Set the sorting direction to ascending:
+  //hslLastSortDir = "asc";
+  /* Make a loop that will continue until
+    no switching has been done: */
+  while (switching) {
+    // Start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /* Loop through all table rows (except the
+      first, which contains table headers): */
+    for (i = 1; i < rows.length - 1; i++) {
+      // Start by saying there should be no switching:
+      shouldSwitch = false;
+      /* Get the two elements you want to compare,
+        one from current row and one from the next: */
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      /* Check if the two rows should switch place,
+        based on the direction, asc or desc: */
+      if (hslLastSortDir == "asc") {
+        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
+      } else if (hslLastSortDir == "desc") {
+        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+          // If so, mark as a switch and break the loop:
+          shouldSwitch = true;
+          break;
+        }
       }
-      //Now start TNC
-      document.getElementById("startTNC").click();
+    }
+    if (shouldSwitch) {
+      /* If a switch has been marked, make the switch
+        and mark that a switch has been done: */
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      // Each time a switch is done, increase this count by 1:
+      switchcount++;
     }
   }
-  setTimeout(() => {
-    autostart();
-  }, 5000);
 }
+
+function autostart() {
+  //Auto start stuff if option is enabled
+  if (config.auto_start == 1) {
+    //Start rigctld if radiocontrol is in correct mode and is not active
+    if (config.radiocontrol == "rigctld" && rigctldActive == false) {
+      //console.log("Autostarting rigctld");
+      document.getElementById("hamlib_rigctld_start").click();
+    }
+    //Now start TNC
+    document.getElementById("startTNC").click();
+  }
+}
+setTimeout(() => {
+  autostart();
+}, 5000);
