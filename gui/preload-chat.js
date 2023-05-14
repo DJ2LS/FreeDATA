@@ -731,7 +731,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
     if (item.fec == "broadcast") {
       obj.timestamp = Math.floor(Date.now() / 1000);
       obj.dxcallsign = item.dxcallsign;
-      obj.dxgrid = 'null';
+      obj.dxgrid = "null";
       obj.uuid = uuidv4().toString();
       obj.command = "msg";
       obj.checksum = "null";
@@ -742,11 +742,11 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      console.log(obj)
+      console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
-    //handle ping
+      //handle ping
     } else if (item.ping == "received") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;

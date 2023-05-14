@@ -243,21 +243,21 @@ client.on("data", function (socketdata) {
             });
             break;
 
-        case "broadcast":
+          case "broadcast":
             // RX'd FEC BROADCAST
-              var encoded_data = FD.atob_FD(data["data"]);
-              var splitted_data = encoded_data.split(split_char);
-              var messageArray = [];
-              if (splitted_data[0] == "m") {
-                messageArray.push(data);
-                console.log(data);
-              }
+            var encoded_data = FD.atob_FD(data["data"]);
+            var splitted_data = encoded_data.split(split_char);
+            var messageArray = [];
+            if (splitted_data[0] == "m") {
+              messageArray.push(data);
+              console.log(data);
+            }
 
-              let Messages = {
-                data: messageArray,
-              };
-              ipcRenderer.send("request-new-msg-received", Messages);
-              break;
+            let Messages = {
+              data: messageArray,
+            };
+            ipcRenderer.send("request-new-msg-received", Messages);
+            break;
         }
 
         switch (data["cq"]) {
