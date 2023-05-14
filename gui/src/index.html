@@ -1149,29 +1149,21 @@
               <div class="card-body p-0" style="overflow-y: overlay">
                 <div class="table-responsive">
                   <!-- START OF TABLE FOR HEARD STATIONS -->
-                  <table class="table table-sm">
+                  <table class="table table-sm" id="tblHeardStationList">
                     <thead>
                       <tr>
-                        <th scope="col">Time</th>
-                        <th scope="col">Frequency</th>
+                        <th scope="col" id="thTime">Time</th>
+                        <th scope="col" id="thFreq">Frequency</th>
                         <th>&nbsp;</th>
-                        <th scope="col">DXCall</th>
-                        <th scope="col">DXGrid</th>
-                        <th scope="col">Distance</th>
+                        <th scope="col" id="thDxcall">DXCall</th>
+                        <th scope="col" id="thDxgrid">DXGrid</th>
+                        <th scope="col" id="thDist">Distance</th>
                         <th scope="col">Type</th>
                         <th scope="col">SNR (rx/dx)</th>
                         <!--<th scope="col">Off</th>-->
                       </tr>
                     </thead>
                     <tbody id="heardstations">
-                      <!--
-                                 <tr>
-                                   <th scope="row">1</th>
-                                   <td>Mark</td>
-                                   <td>Otto</td>
-                                   <td>@mdo</td>
-                                 </tr>
-                                     -->
                     </tbody>
                   </table>
                 </div>
