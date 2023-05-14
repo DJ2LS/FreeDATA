@@ -727,8 +727,27 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
     console.log(item.status);
     let obj = new Object();
 
+    //handle broadcast
+    if (item.fec == "broadcast") {
+      obj.timestamp = Math.floor(Date.now() / 1000);
+      obj.dxcallsign = item.dxcallsign;
+      obj.dxgrid = 'null';
+      obj.uuid = uuidv4().toString();
+      obj.command = "msg";
+      obj.checksum = "null";
+      obj.msg = "null";
+      obj.status = "received";
+      obj.snr = item.snr;
+      obj.type = "broadcast";
+      obj.filename = "null";
+      obj.filetype = "null";
+      obj.file = "null";
+      console.log(obj)
+      add_obj_to_database(obj);
+      update_chat_obj_by_uuid(obj.uuid);
+
     //handle ping
-    if (item.ping == "received") {
+    } else if (item.ping == "received") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
       obj.dxgrid = item.dxgrid;
