@@ -17,43 +17,40 @@ class broadcastHandler:
     def __init__(self) -> None:
         self.fec_wakeup_callsign = bytes()
         self.longest_duration = 6
+        self.broadcast_timeout_reached = False
+        self.broadcast_payload_bursts = 1
+        self.broadcast_watchdog = threading.Thread(
+            target=self.watchdog, name="watchdog thread", daemon=True
+        )
+
+
 
     def received_fec_wakeup(self, data_in: bytes):
         self.fec_wakeup_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        mode = int.from_bytes(bytes(data_in[7:8]), "big")
+        self.wakeup_mode = int.from_bytes(bytes(data_in[7:8]), "big")
         bursts = int.from_bytes(bytes(data_in[8:9]), "big")
+
+        self.broadcast_watchdog.start()
 
         modem.RECEIVE_DATAC4 = True
 
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             fec="wakeup",
-            mode=mode,
+            mode=self.wakeup_mode,
             bursts=bursts,
             dxcallsign=str(self.fec_wakeup_callsign, "UTF-8")
         )
 
-        timeout = time.time() + (self.longest_duration * bursts) + 2
         self.log.info(
             "[TNC] FRAME WAKEUP RCVD ["
             + str(self.fec_wakeup_callsign, "UTF-8")
-            + "] ", mode=mode, bursts=bursts, timeout=timeout,
+            + "] ", mode=self.wakeup_mode, bursts=bursts,
         )
-
-        while time.time() < timeout:
-            threading.Event().wait(0.01)
-
-        self.log.info(
-            "[TNC] closing broadcast slot ["
-            + str(self.fec_wakeup_callsign, "UTF-8")
-            + "] ", mode=mode, bursts=bursts,
-        )
-        # TODO: We need a dynamic way of modifying this
-        modem.RECEIVE_DATAC4 = False
-        self.fec_wakeup_callsign = bytes()
-
 
     def received_fec(self, data_in: bytes):
+        print(self.fec_wakeup_callsign)
+
         self.send_data_to_socket_queue(
             freedata="tnc-message",
             fec="broadcast",
@@ -87,7 +84,7 @@ class broadcastHandler:
         # and make sure we are not overwrite them if they exist
         try:
             if "mycallsign" not in jsondata:
-                jsondata["mycallsign"] = str(self.mycallsign, "UTF-8")
+                jsondata["mycallsign"] = str(Station.mycallsign, "UTF-8")
             if "dxcallsign" not in jsondata:
                 jsondata["dxcallsign"] = str(Station.dxcallsign, "UTF-8")
         except Exception as e:
@@ -99,3 +96,19 @@ class broadcastHandler:
         self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
+
+    def watchdog(self):
+        timeout = time.time() + (self.longest_duration * self.broadcast_payload_bursts) + 2
+        while time.time() < timeout:
+            threading.Event().wait(0.01)
+
+        self.broadcast_timeout_reached = True
+
+        self.log.info(
+            "[TNC] closing broadcast slot ["
+            + str(self.fec_wakeup_callsign, "UTF-8")
+            + "] ", mode=self.wakeup_mode, bursts=self.broadcast_payload_bursts,
+        )
+        # TODO: We need a dynamic way of modifying this
+        modem.RECEIVE_DATAC4 = False
+        self.fec_wakeup_callsign = bytes()
