@@ -2787,7 +2787,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
     );
   }
   if (arg.command == "broadcast") {
-    sock.sendBroadcastChannel(arg.broadcastChannel, arg.data);
+    sock.sendBroadcastChannel(arg.broadcastChannel, arg.data, arg.uuid);
   }
   if (arg.command == "stop_transmission") {
     sock.stopTransmission();

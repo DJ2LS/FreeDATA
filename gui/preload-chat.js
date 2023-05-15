@@ -460,27 +460,34 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     var timestamp = Math.floor(Date.now() / 1000);
 
-    // check if broadcast
-    dxcallsign.starts;
-    if (dxcallsign.startsWith("BC-")) {
-      let broadcastChannelId = dxcallsign.split("BC-")[1];
-      broadcastChannelIdCRC = crc32(broadcastChannelId)
-        .toString(16)
-        .toUpperCase();
+      var uuid = uuidv4();
+      let uuidlast = uuid.lastIndexOf("-");
+      uuidlast += 1;
+      if (uuidlast > 0) {
+        uuid = uuid.substring(uuidlast);
+      }
 
-      dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
+
+    // check if broadcast
+    if (dxcallsign.startsWith("BC-")) {
+      //let broadcastChannelId = dxcallsign.split("BC-")[1];
+      //broadcastChannelIdCRC = crc32(broadcastChannelId)
+      //  .toString(16)
+      //  .toUpperCase();
+      //dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
       var tnc_command = "broadcast";
+      var message_type = "broadcast_transmit"
       let Data = {
         command: tnc_command,
         broadcastChannel: dxcallsign,
         data: chatmessage,
+        uuid: uuid
       };
       ipcRenderer.send("run-tnc-command", Data);
     } else {
+      var message_type = "transmit"
       var file_checksum = crc32(file).toString(16).toUpperCase();
       var tnc_command = "msg";
-      var file_checksum = crc32(file).toString(16).toUpperCase();
-      console.log(file_checksum);
       var data_with_attachment =
         timestamp +
         split_char +
@@ -493,12 +500,7 @@ window.addEventListener("DOMContentLoaded", () => {
         file;
 
       document.getElementById("selectFilesButton").innerHTML = ``;
-      var uuid = uuidv4();
-      let uuidlast = uuid.lastIndexOf("-");
-      uuidlast += 1;
-      if (uuidlast > 0) {
-        uuid = uuid.substring(uuidlast);
-      }
+
       console.log(data_with_attachment);
       let Data = {
         command: tnc_command,
@@ -519,7 +521,7 @@ window.addEventListener("DOMContentLoaded", () => {
       dxgrid: "null",
       msg: chatmessage,
       checksum: file_checksum,
-      type: "transmit",
+      type: message_type,
       status: "transmit",
       attempt: 1,
       uuid: uuid,
@@ -730,7 +732,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
   var new_msg = arg.data;
   new_msg.forEach(function (item) {
-    console.log(item.status);
     let obj = new Object();
 
     //handle broadcast
@@ -748,13 +749,13 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.timestamp = Math.floor(Date.now() / 1000);
       obj.dxcallsign = splitted_data[1];
       obj.dxgrid = "null";
-      obj.uuid = uuidv4().toString();
+      obj.uuid = splitted_data[3];
       obj.command = "msg";
       obj.checksum = "null";
       obj.msg = message;
       obj.status = "received";
       obj.snr = item.snr;
-      obj.type = "broadcast";
+      obj.type = "broadcast_received";
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
@@ -1263,30 +1264,63 @@ update_chat = function (obj) {
                 `;
     }
 
-    if (obj.type == "broadcast") {
+    if (obj.type == "broadcast_received") {
       var new_message = `
-                 <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
+             <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
-                        <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
-                        <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
-                        <div class="card border-light bg-light" id="msg-${obj._id}">
+                    <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
+                    <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
+                    <div class="card border-light bg-light" id="msg-${obj._id}">
 
-                          <div class="card-body rounded-3 p-0">
-                            <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
-                            <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
-                                <span class="badge bg-light text-muted">${timestamp}</span>
+                      <div class="card-body rounded-3 p-0">
+                        <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
+                            <span class="badge bg-light text-muted">${timestamp}</span>
 
-                            </p>
-                          </div>
-                        </div>
+                        </p>
+                      </div>
                     </div>
-                    <div class="me-auto" id="msg-${obj._id}-control-area">
-                    <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
-             </div>
-                    </div>
-                    `;
+                </div>
+                </div>
+                `;
     }
+    if (obj.type == "broadcast_transmit") {
+      var new_message = `
+        <div class="d-flex align-items-center">
+            <div class="ms-auto" id="msg-${obj._id}-control-area">
+                <!--<button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>-->
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+             </div>
+            <div class="rounded-3 mt-3 mb-0 me-2" style="max-width: 75%;">
+                <div class="card border-primary bg-primary" id="msg-${obj._id}">
+                    <div class="card-body rounded-3 p-0 text-right bg-primary">
+                        <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
+                            <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
+                            <span class="text-white" id="msg-${
+                              obj._id
+                            }-status" style="font-size:0.8rem;">${get_icon_for_state(
+        obj.status
+      )}</span>
+                        </p>
+                        <span id="msg-${
+                          obj._id
+                        }-attempts-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-primary border border-white">
+
+                            <span id="msg-${
+                              obj._id
+                            }-attempts" class="">${attempt}/${max_retry_attempts}</span>
+                            <span class="visually-hidden">retries</span>
+                        </span>
+
+                </div>
+            </div>
+        </div>
+      `;
+    }
+
     if (obj.type == "transmit") {
+      console.log(obj)
       //console.log('msg-' + obj._id + '-status')
 
       if (obj.status == "failed") {
@@ -2011,7 +2045,7 @@ async function updateAllChat(clear) {
         .then(async function (result) {
           // handle result async
           //document.getElementById("blurOverlay").classList.add("bg-primary");
-
+            console.log(result)
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -2051,6 +2085,7 @@ function getSetUserSharedFolder(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
+    !selected_callsign.startsWith("BC-") ||
     typeof selected_callsign == "undefined"
   ) {
     console.log("return triggered");
@@ -2180,6 +2215,7 @@ function getSetUserInformation(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
+    !selected_callsign.startsWith("BC-") ||
     typeof selected_callsign == "undefined"
   ) {
     console.log("return triggered");
@@ -2220,6 +2256,8 @@ function getSetUserInformation(selected_callsign) {
         document.getElementById("user-image-" + selected_callsign).src =
           defaultUserIcon;
       }
+
+
 
       // Callsign list elements
       document.getElementById(

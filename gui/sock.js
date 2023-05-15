@@ -852,9 +852,8 @@ exports.sendFecIsWriting = function (mycallsign) {
 };
 
 // SEND FEC TO BROADCASTCHANNEL
-exports.sendBroadcastChannel = function (channel, data) {
+exports.sendBroadcastChannel = function (channel, data, uuid) {
   let checksum = "";
-  let uuid = "";
   let command = "";
   data = FD.btoa_FD(
     "m" +
