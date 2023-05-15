@@ -1632,6 +1632,18 @@ window.addEventListener("DOMContentLoaded", () => {
     sorthslTable(5);
     resetSortIcon();
   });
+  document.getElementById("thType").addEventListener("click", () => {
+    if (hslLastSort == 6 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(6);
+    resetSortIcon();
+  });
+  document.getElementById("thSnr").addEventListener("click", () => {
+    if (hslLastSort == 7 && hslLastSortDir == "asc") hslLastSortDir = "desc";
+    else hslLastSortDir = "asc";
+    sorthslTable(7);
+    resetSortIcon();
+  });
 });
 
 function resetSortIcon(){
