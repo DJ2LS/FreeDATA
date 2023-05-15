@@ -460,13 +460,12 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     var timestamp = Math.floor(Date.now() / 1000);
 
-      var uuid = uuidv4();
-      let uuidlast = uuid.lastIndexOf("-");
-      uuidlast += 1;
-      if (uuidlast > 0) {
-        uuid = uuid.substring(uuidlast);
-      }
-
+    var uuid = uuidv4();
+    let uuidlast = uuid.lastIndexOf("-");
+    uuidlast += 1;
+    if (uuidlast > 0) {
+      uuid = uuid.substring(uuidlast);
+    }
 
     // check if broadcast
     if (dxcallsign.startsWith("BC-")) {
@@ -476,16 +475,16 @@ window.addEventListener("DOMContentLoaded", () => {
       //  .toUpperCase();
       //dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
       var tnc_command = "broadcast";
-      var message_type = "broadcast_transmit"
+      var message_type = "broadcast_transmit";
       let Data = {
         command: tnc_command,
         broadcastChannel: dxcallsign,
         data: chatmessage,
-        uuid: uuid
+        uuid: uuid,
       };
       ipcRenderer.send("run-tnc-command", Data);
     } else {
-      var message_type = "transmit"
+      var message_type = "transmit";
       var file_checksum = crc32(file).toString(16).toUpperCase();
       var tnc_command = "msg";
       var data_with_attachment =
@@ -1123,7 +1122,7 @@ update_chat = function (obj) {
     getSetUserInformation(dxcallsign);
     getSetUserSharedFolder(dxcallsign);
 
-var new_callsign = `
+    var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
                       <div class="d-flex w-100 justify-content-between">
@@ -1141,7 +1140,6 @@ var new_callsign = `
                   </a>
 
             `;
-
 
     document
       .getElementById("list-tab")
@@ -1289,8 +1287,12 @@ var new_callsign = `
       var new_message = `
         <div class="d-flex align-items-center">
             <div class="ms-auto" id="msg-${obj._id}-control-area">
-                <!--<button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>-->
-                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+                <!--<button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${
+                  obj._id
+                }" style="font-size: 1.2rem;"></i></button>-->
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${
+                  obj._id
+                }" style="font-size: 1.2rem;"></i></button>
              </div>
             <div class="rounded-3 mt-3 mb-0 me-2" style="max-width: 75%;">
                 <div class="card border-primary bg-primary" id="msg-${obj._id}">
@@ -1321,7 +1323,7 @@ var new_callsign = `
     }
 
     if (obj.type == "transmit") {
-      console.log(obj)
+      console.log(obj);
       //console.log('msg-' + obj._id + '-status')
 
       if (obj.status == "failed") {
@@ -2046,7 +2048,7 @@ async function updateAllChat(clear) {
         .then(async function (result) {
           // handle result async
           //document.getElementById("blurOverlay").classList.add("bg-primary");
-            console.log(result)
+          console.log(result);
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -2086,22 +2088,18 @@ function getSetUserSharedFolder(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
-
     typeof selected_callsign == "undefined"
   ) {
     console.log("return triggered");
     return;
   }
 
-    // disable button if broadcast
-  if(selected_callsign.startsWith("BC-")){
-       document.getElementById("sharedFolderDXButton").disabled = true;
-
-  }else{
-       document.getElementById("sharedFolderDXButton").disabled = false;
+  // disable button if broadcast
+  if (selected_callsign.startsWith("BC-")) {
+    document.getElementById("sharedFolderDXButton").disabled = true;
+  } else {
+    document.getElementById("sharedFolderDXButton").disabled = false;
   }
-
-
 
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
@@ -2233,20 +2231,14 @@ function getSetUserInformation(selected_callsign) {
     return;
   }
 
-
-
-    // disable button if broadcast
-  if(selected_callsign.startsWith("BC-")){
-       document.getElementById("userModalDXButton").disabled = true;
-       document.getElementById("ping").disabled = true;
-
-  }else{
-       document.getElementById("userModalDXButton").disabled = false;
-              document.getElementById("ping").disabled = false;
-
+  // disable button if broadcast
+  if (selected_callsign.startsWith("BC-")) {
+    document.getElementById("userModalDXButton").disabled = true;
+    document.getElementById("ping").disabled = true;
+  } else {
+    document.getElementById("userModalDXButton").disabled = false;
+    document.getElementById("ping").disabled = false;
   }
-
-
 
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
@@ -2283,8 +2275,6 @@ function getSetUserInformation(selected_callsign) {
         document.getElementById("user-image-" + selected_callsign).src =
           defaultUserIcon;
       }
-
-
 
       // Callsign list elements
       document.getElementById(
