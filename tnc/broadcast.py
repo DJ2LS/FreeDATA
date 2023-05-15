@@ -17,20 +17,19 @@ class broadcastHandler:
     def __init__(self) -> None:
         self.fec_wakeup_callsign = bytes()
         self.longest_duration = 6
+        self.wakeup_received = False
         self.broadcast_timeout_reached = False
         self.broadcast_payload_bursts = 1
         self.broadcast_watchdog = threading.Thread(
             target=self.watchdog, name="watchdog thread", daemon=True
         )
-
-
+        self.broadcast_watchdog.start()
 
     def received_fec_wakeup(self, data_in: bytes):
         self.fec_wakeup_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         self.wakeup_mode = int.from_bytes(bytes(data_in[7:8]), "big")
         bursts = int.from_bytes(bytes(data_in[8:9]), "big")
-
-        self.broadcast_watchdog.start()
+        self.wakeup_received = True
 
         modem.RECEIVE_DATAC4 = True
 
@@ -98,17 +97,22 @@ class broadcastHandler:
         sock.SOCKET_QUEUE.put(json_data_out)
 
     def watchdog(self):
-        timeout = time.time() + (self.longest_duration * self.broadcast_payload_bursts) + 2
-        while time.time() < timeout:
-            threading.Event().wait(0.01)
+        while 1:
+            if self.wakeup_received:
+                timeout = time.time() + (self.longest_duration * self.broadcast_payload_bursts) + 2
+                while time.time() < timeout:
+                    threading.Event().wait(0.01)
 
-        self.broadcast_timeout_reached = True
+                self.broadcast_timeout_reached = True
 
-        self.log.info(
-            "[TNC] closing broadcast slot ["
-            + str(self.fec_wakeup_callsign, "UTF-8")
-            + "] ", mode=self.wakeup_mode, bursts=self.broadcast_payload_bursts,
-        )
-        # TODO: We need a dynamic way of modifying this
-        modem.RECEIVE_DATAC4 = False
-        self.fec_wakeup_callsign = bytes()
+                self.log.info(
+                    "[TNC] closing broadcast slot ["
+                    + str(self.fec_wakeup_callsign, "UTF-8")
+                    + "] ", mode=self.wakeup_mode, bursts=self.broadcast_payload_bursts,
+                )
+                # TODO: We need a dynamic way of modifying this
+                modem.RECEIVE_DATAC4 = False
+                self.fec_wakeup_callsign = bytes()
+                self.wakeup_received = False
+            else:
+                threading.Event().wait(0.01)

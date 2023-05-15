@@ -859,7 +859,7 @@ exports.sendBroadcastChannel = function (channel, data) {
   data = FD.btoa_FD(
     "m" +
       split_char +
-      command +
+      channel +
       split_char +
       checksum +
       split_char +
