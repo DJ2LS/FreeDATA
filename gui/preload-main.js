@@ -1606,28 +1606,41 @@ window.addEventListener("DOMContentLoaded", () => {
     if (hslLastSort == 0 && hslLastSortDir == "asc") hslLastSortDir = "desc";
     else hslLastSortDir = "asc";
     sorthslTable(0);
+    resetSortIcon();
   });
   document.getElementById("thFreq").addEventListener("click", () => {
     if (hslLastSort == 1 && hslLastSortDir == "asc") hslLastSortDir = "desc";
     else hslLastSortDir = "asc";
     sorthslTable(1);
+    resetSortIcon();
   });
   document.getElementById("thDxcall").addEventListener("click", () => {
     if (hslLastSort == 3 && hslLastSortDir == "asc") hslLastSortDir = "desc";
     else hslLastSortDir = "asc";
     sorthslTable(3);
+    resetSortIcon();
   });
   document.getElementById("thDxgrid").addEventListener("click", () => {
     if (hslLastSort == 4 && hslLastSortDir == "asc") hslLastSortDir = "desc";
     else hslLastSortDir = "asc";
     sorthslTable(4);
+    resetSortIcon();
   });
   document.getElementById("thDist").addEventListener("click", () => {
     if (hslLastSort == 5 && hslLastSortDir == "asc") hslLastSortDir = "desc";
     else hslLastSortDir = "asc";
     sorthslTable(5);
+    resetSortIcon();
   });
 });
+
+function resetSortIcon(){
+  document.getElementById("hslSort").remove();
+  let headers = document.querySelectorAll("#tblHeardStationList > thead > tr > th");
+  if (hslLastSortDir=="desc") text = "<i id=\"hslSort\" class=\"bi bi-sort-up\"></i>" + headers[hslLastSort].innerText;
+  else text = "<i id=\"hslSort\" class=\"bi bi-sort-down\"></i>" + headers[hslLastSort].innerText;
+  headers[hslLastSort].innerHTML=text;
+}
 
 function connectedStation(data) {
   if (typeof data.dxcallsign == "undefined") {
@@ -3547,7 +3560,7 @@ function changeGuiDesign(design) {
 }
 
 var hslLastSort = 0;
-var hslLastSortDir = "asc";
+var hslLastSortDir = "desc";
 
 //https://www.w3schools.com/howto/howto_js_sort_table.asp
 function sorthslTable(n) {
