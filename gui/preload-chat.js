@@ -1123,7 +1123,7 @@ update_chat = function (obj) {
     getSetUserInformation(dxcallsign);
     getSetUserSharedFolder(dxcallsign);
 
-    var new_callsign = `
+var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
                       <div class="d-flex w-100 justify-content-between">
@@ -1141,6 +1141,7 @@ update_chat = function (obj) {
                   </a>
 
             `;
+
 
     document
       .getElementById("list-tab")
@@ -2085,12 +2086,23 @@ function getSetUserSharedFolder(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
-    !selected_callsign.startsWith("BC-") ||
+
     typeof selected_callsign == "undefined"
   ) {
     console.log("return triggered");
     return;
   }
+
+    // disable button if broadcast
+  if(selected_callsign.startsWith("BC-")){
+       document.getElementById("sharedFolderDXButton").disabled = true;
+
+  }else{
+       document.getElementById("sharedFolderDXButton").disabled = false;
+  }
+
+
+
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
       console.log(data);
@@ -2215,12 +2227,27 @@ function getSetUserInformation(selected_callsign) {
   if (
     selected_callsign == "" ||
     selected_callsign == null ||
-    !selected_callsign.startsWith("BC-") ||
     typeof selected_callsign == "undefined"
   ) {
     console.log("return triggered");
     return;
   }
+
+
+
+    // disable button if broadcast
+  if(selected_callsign.startsWith("BC-")){
+       document.getElementById("userModalDXButton").disabled = true;
+       document.getElementById("ping").disabled = true;
+
+  }else{
+       document.getElementById("userModalDXButton").disabled = false;
+              document.getElementById("ping").disabled = false;
+
+  }
+
+
+
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
 
