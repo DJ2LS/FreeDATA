@@ -28,7 +28,7 @@ import ujson as json
 from codec2 import FREEDV_MODE, FREEDV_MODE_USED_SLOTS
 from queues import DATA_QUEUE_RECEIVED, DATA_QUEUE_TRANSMIT, RX_BUFFER
 from static import FRAME_TYPE as FR_TYPE
-
+import broadcast
 
 TESTMODE = False
 
@@ -101,7 +101,7 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
-        self.fec_wakeup_callsign = bytes()
+        self.broadcast = broadcast.broadcastHandler()
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
@@ -223,8 +223,8 @@ class DATA:
             FR_TYPE.PING.value: (self.received_ping, "PING"),
             FR_TYPE.QRV.value: (self.received_qrv, "QRV"),
             FR_TYPE.IS_WRITING.value: (self.received_is_writing, "IS_WRITING"),
-            FR_TYPE.FEC.value: (self.received_fec, "FEC"),
-            FR_TYPE.FEC_WAKEUP.value: (self.received_fec_wakeup, "FEC WAKEUP"),
+            FR_TYPE.FEC.value: (self.broadcast.received_fec, "FEC"),
+            FR_TYPE.FEC_WAKEUP.value: (self.broadcast.received_fec_wakeup, "FEC WAKEUP"),
 
         }
         self.command_dispatcher = {
@@ -2976,51 +2976,6 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
 
-
-    def received_fec_wakeup(self, data_in: bytes):
-        self.fec_wakeup_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        mode = int.from_bytes(bytes(data_in[7:8]), "big")
-        bursts = int.from_bytes(bytes(data_in[8:9]), "big")
-
-        self.set_listening_modes(True, False, mode)
-
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            fec="wakeup",
-            mode=mode,
-            bursts=bursts,
-            dxcallsign=str(self.fec_wakeup_callsign, "UTF-8")
-        )
-
-        timeout = time.time() + (self.longest_duration * bursts) + 2
-        self.log.info(
-            "[TNC] FRAME WAKEUP RCVD ["
-            + str(self.fec_wakeup_callsign, "UTF-8")
-            + "] ", mode=mode, bursts=bursts, timeout=timeout,
-        )
-
-        while time.time() < timeout:
-            threading.Event().wait(0.01)
-
-        self.log.info(
-            "[TNC] closing broadcast slot ["
-            + str(self.fec_wakeup_callsign, "UTF-8")
-            + "] ", mode=mode, bursts=bursts,
-        )
-        # TODO: We need a dynamic way of modifying this
-        modem.RECEIVE_DATAC4 = False
-        self.fec_wakeup_callsign = bytes()
-
-
-    def received_fec(self, data_in: bytes):
-        self.send_data_to_socket_queue(
-            freedata="tnc-message",
-            fec="broadcast",
-            dxcallsign=str(self.fec_wakeup_callsign, "UTF-8"),
-            data=base64.b64encode(data_in[1:]).decode("UTF-8")
-        )
-
-        self.log.info("[TNC] FEC DATA RCVD")
 
 
     def received_is_writing(self, data_in: bytes) -> None:
