@@ -463,9 +463,10 @@ window.addEventListener("DOMContentLoaded", () => {
     // check if broadcast
     dxcallsign.starts;
     if (dxcallsign.startsWith("BC-")) {
-          let broadcastChannelId = dxcallsign.split("BC-")[1];
-      broadcastChannelIdCRC = crc32(broadcastChannelId).toString(16).toUpperCase();
-
+      let broadcastChannelId = dxcallsign.split("BC-")[1];
+      broadcastChannelIdCRC = crc32(broadcastChannelId)
+        .toString(16)
+        .toUpperCase();
 
       dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
       var tnc_command = "broadcast";
@@ -734,18 +735,16 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
     //handle broadcast
     if (item.fec == "broadcast") {
-
-        console.log("BROADCAST RECEIVED")
-        console.log(item)
+      console.log("BROADCAST RECEIVED");
+      console.log(item);
       var transmitting_station = item.dxcallsign;
       var encoded_data = FD.atob_FD(item.data);
       var splitted_data = encoded_data.split(split_char);
       console.log(splitted_data);
 
-
       // add callsign to message:
       var message = transmitting_station + ":" + splitted_data[4];
-        console.log(message)
+      console.log(message);
       obj.timestamp = Math.floor(Date.now() / 1000);
       obj.dxcallsign = splitted_data[1];
       obj.dxgrid = "null";
@@ -1264,8 +1263,8 @@ update_chat = function (obj) {
                 `;
     }
 
-        if (obj.type == "broadcast") {
-          var new_message = `
+    if (obj.type == "broadcast") {
+      var new_message = `
                  <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
                         <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
@@ -1286,7 +1285,7 @@ update_chat = function (obj) {
              </div>
                     </div>
                     `;
-        }
+    }
     if (obj.type == "transmit") {
       //console.log('msg-' + obj._id + '-status')
 
