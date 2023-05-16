@@ -48,7 +48,8 @@ var selected_callsign = "";
 var lastIsWritingBroadcast = new Date().getTime();
 var defaultUserIcon =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
-        var defaultGroupIcon = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4="
+var defaultGroupIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4=";
 
 // -----------------------------------
 // Initially fill sharedFolderFileList
@@ -1133,15 +1134,19 @@ update_chat = function (obj) {
       selected_callsign = dxcallsign;
     }
 
-    if (dxcallsign.startsWith("BC-")){
-        var user_image = '<img id="user-image-'+dxcallsign+'" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4="></img>';
-
-
+    if (dxcallsign.startsWith("BC-")) {
+      var user_image =
+        '<img id="user-image-' +
+        dxcallsign +
+        '" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4="></img>';
     } else {
-        var user_image = '<img id="user-image-'+dxcallsign+'" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4="></img>';
+      var user_image =
+        '<img id="user-image-' +
+        dxcallsign +
+        '" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4="></img>';
 
-    getSetUserInformation(dxcallsign);
-    getSetUserSharedFolder(dxcallsign);
+      getSetUserInformation(dxcallsign);
+      getSetUserSharedFolder(dxcallsign);
     }
 
     var new_callsign = `
@@ -1300,13 +1305,9 @@ update_chat = function (obj) {
 
                         </p>
 
-                        <span id="msg-${
-                          obj._id
-                        }-dxcallsign-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
+                        <span id="msg-${obj._id}-dxcallsign-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
 
-                            <span id="msg-${
-                              obj._id
-                            }-attempts" class="">${obj.broadcast_sender}</span>
+                            <span id="msg-${obj._id}-attempts" class="">${obj.broadcast_sender}</span>
                             <span class="visually-hidden">dxcallsign</span>
                         </span>
                       </div>
@@ -2302,10 +2303,9 @@ function getSetUserInformation(selected_callsign) {
           // split data string by "base64" for separating image type from base64 string
           atob(data.user_info_image.split(";base64,")[1]);
 
-
-    if (selected_callsign.startsWith("BC-")){
-        data.user_info_image = defaultGroupIcon
-    }
+          if (selected_callsign.startsWith("BC-")) {
+            data.user_info_image = defaultGroupIcon;
+          }
 
           document.getElementById("dx_user_info_image").src =
             data.user_info_image;
@@ -2315,11 +2315,11 @@ function getSetUserInformation(selected_callsign) {
           console.log(e);
           console.log("corrupted image data");
 
-             if (selected_callsign.startsWith("BC-")){
-        var userIcon = defaultGroupIcon;
-    } else {
-    var userIcon = defaultUserIcon;
-    }
+          if (selected_callsign.startsWith("BC-")) {
+            var userIcon = defaultGroupIcon;
+          } else {
+            var userIcon = defaultUserIcon;
+          }
 
           document.getElementById("user-image-" + selected_callsign).src =
             userIcon;
@@ -2379,15 +2379,14 @@ function getSetUserInformation(selected_callsign) {
       console.log("writing user info to modal failed");
       console.log(err);
 
- if (selected_callsign.startsWith("BC-")){
+      if (selected_callsign.startsWith("BC-")) {
         var userIcon = defaultGroupIcon;
-    } else {
-    var userIcon = defaultUserIcon;
-    }
+      } else {
+        var userIcon = defaultUserIcon;
+      }
 
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src =
-        userIcon;
+      document.getElementById("user-image-" + selected_callsign).src = userIcon;
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
