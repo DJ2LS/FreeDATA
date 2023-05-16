@@ -765,19 +765,14 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
-      db
-    .find({
-      selector: {
-        dxcallsign: obj.dxcallsign,
-      },
-    })
-    .then(function (result) {
-      // handle result
-      console.log(result);
-       });
-
-
-
+      db.find({
+        selector: {
+          dxcallsign: obj.dxcallsign,
+        },
+      }).then(function (result) {
+        // handle result
+        console.log(result);
+      });
 
       //handle ping
     } else if (item.ping == "received") {
@@ -1414,22 +1409,25 @@ update_chat = function (obj) {
     console.log("element already exists......");
     console.log(obj);
 
-    if (!obj.status == "broadcast_transmit" || !obj.status == "broadcast_received") {
-    document.getElementById("msg-" + obj._id + "-status").innerHTML =
-      get_icon_for_state(obj.status);
+    if (
+      !obj.status == "broadcast_transmit" ||
+      !obj.status == "broadcast_received"
+    ) {
+      document.getElementById("msg-" + obj._id + "-status").innerHTML =
+        get_icon_for_state(obj.status);
 
-    document
-      .getElementById("msg-" + obj._id + "-progress")
-      .setAttribute("aria-valuenow", obj.percent);
-    document
-      .getElementById("msg-" + obj._id + "-progress")
-      .setAttribute("style", "width:" + obj.percent + "%;");
-    document.getElementById(
-      "msg-" + obj._id + "-progress-information"
-    ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("aria-valuenow", obj.percent);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:" + obj.percent + "%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
 
-    document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
-      obj.attempt + "/" + max_retry_attempts;
+      document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
+        obj.attempt + "/" + max_retry_attempts;
     }
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
@@ -1447,7 +1445,10 @@ update_chat = function (obj) {
       document.getElementById(
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
-    } else if (!obj.status == "broadcast_transmit" || !obj.status == "broadcast_received") {
+    } else if (
+      !obj.status == "broadcast_transmit" ||
+      !obj.status == "broadcast_received"
+    ) {
       document
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("progress-bar-striped");
@@ -1755,17 +1756,19 @@ add_obj_to_database = function (obj) {
     .catch(function (err) {
       console.log("already exists");
       console.log(err);
-      console.log(obj)
+      console.log(obj);
       db.upsert(obj.uuid, function (doc) {
-            doc = obj
-            return doc;
-        }).then(function (response) {
-      console.log("upsert");
-      console.log(response);
-    }).catch(function (err) {;
-console.log(err)
+        doc = obj;
+        return doc;
+      })
+        .then(function (response) {
+          console.log("upsert");
+          console.log(response);
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
     });
-});
 };
 /* users database functions */
 addUserToDatabaseIfNotExists = function (obj) {
@@ -2067,7 +2070,7 @@ async function updateAllChat(clear) {
           ],
         })
         .then(async function (result) {
-        console.log(result)
+          console.log(result);
           // handle result async
           //document.getElementById("blurOverlay").classList.add("bg-primary");
           console.log(result);
