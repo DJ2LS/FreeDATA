@@ -136,6 +136,9 @@ var chatFilter = [
   { type: "received" },
   { type: "transmit" },
   { type: "ping-ack" },
+  { type: "broadcast_received" },
+  { type: "broadcast_transmit" },
+
   //{ type: "request" },
   //{ type: "response" },
 ];
@@ -761,6 +764,20 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
+
+      db
+    .find({
+      selector: {
+        dxcallsign: obj.dxcallsign,
+      },
+    })
+    .then(function (result) {
+      // handle result
+      console.log(result);
+       });
+
+
+
 
       //handle ping
     } else if (item.ping == "received") {
@@ -1397,12 +1414,7 @@ update_chat = function (obj) {
     console.log("element already exists......");
     console.log(obj);
 
-    console.log(
-      document
-        .getElementById("msg-" + obj._id + "-progress")
-        .getAttribute("aria-valuenow")
-    );
-
+    if (!obj.status == "broadcast_transmit" || !obj.status == "broadcast_received") {
     document.getElementById("msg-" + obj._id + "-status").innerHTML =
       get_icon_for_state(obj.status);
 
@@ -1418,7 +1430,7 @@ update_chat = function (obj) {
 
     document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
       obj.attempt + "/" + max_retry_attempts;
-
+    }
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
       document
@@ -1435,7 +1447,7 @@ update_chat = function (obj) {
       document.getElementById(
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
-    } else {
+    } else if (!obj.status == "broadcast_transmit" || !obj.status == "broadcast_received") {
       document
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("progress-bar-striped");
@@ -1743,9 +1755,18 @@ add_obj_to_database = function (obj) {
     .catch(function (err) {
       console.log("already exists");
       console.log(err);
+      console.log(obj)
+      db.upsert(obj.uuid, function (doc) {
+            doc = obj
+            return doc;
+        }).then(function (response) {
+      console.log("upsert");
+      console.log(response);
+    }).catch(function (err) {;
+console.log(err)
     });
+});
 };
-
 /* users database functions */
 addUserToDatabaseIfNotExists = function (obj) {
   /*
@@ -2046,6 +2067,7 @@ async function updateAllChat(clear) {
           ],
         })
         .then(async function (result) {
+        console.log(result)
           // handle result async
           //document.getElementById("blurOverlay").classList.add("bg-primary");
           console.log(result);
