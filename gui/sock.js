@@ -866,7 +866,7 @@ exports.sendBroadcastChannel = function (channel, data_out, uuid) {
       split_char +
       data_out
   );
-    console.log(data.length)
+  console.log(data.length);
   let payload = data;
   command =
     '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
