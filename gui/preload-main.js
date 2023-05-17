@@ -444,10 +444,15 @@ window.addEventListener("DOMContentLoaded", () => {
   if (config.radiocontrol == "rigctld") {
     document.getElementById("radio-control-switch-disabled").checked = false;
     document.getElementById("radio-control-switch-rigctld").checked = true;
+    document.getElementById("radio-control-switch-tci").checked = false;
+
 
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
+
+    document.getElementById("radio-control-tci").style.display = "none";
+    document.getElementById("radio-control-tci").style.visibility = "hidden";
 
     document.getElementById("radio-control-help").style.visibility = "hidden";
     document.getElementById("radio-control-help").style.display = "none";
@@ -455,12 +460,34 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-rigctld").style.visibility =
       "visible";
     document.getElementById("radio-control-rigctld").style.display = "block";
+  } else if(config.radiocontrol == "tci"){
+    document.getElementById("radio-control-switch-disabled").checked = false;
+    document.getElementById("radio-control-switch-rigctld").checked = false;
+    document.getElementById("radio-control-switch-tci").checked = true;
+
+    document.getElementById("radio-control-disabled").style.visibility =
+      "hidden";
+    document.getElementById("radio-control-disabled").style.display = "none";
+
+    document.getElementById("radio-control-help").style.visibility = "hidden";
+    document.getElementById("radio-control-help").style.display = "none";
+    document.getElementById("radio-control-rigctld").style.visibility = "hidden";
+    document.getElementById("radio-control-rigctld").style.display = "none";
+
+    document.getElementById("radio-control-tci").style.visibility =
+      "visible";
+    document.getElementById("radio-control-tci").style.display = "block";
+
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
     document.getElementById("radio-control-switch-rigctld").checked = false;
+    document.getElementById("radio-control-switch-tci").checked = false;
 
     document.getElementById("radio-control-help").style.display = "none";
     document.getElementById("radio-control-help").style.visibility = "hidden";
+
+    document.getElementById("radio-control-tci").style.display = "none";
+    document.getElementById("radio-control-tci").style.visibility = "hidden";
 
     document.getElementById("radio-control-rigctld").style.visibility =
       "hidden";
@@ -536,6 +563,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.display = "block";
       document.getElementById("radio-control-disabled").style.visibility =
         "visible";
+      document.getElementById("radio-control-tci").style.display = "none";
+      document.getElementById("radio-control-tci").style.visibility = "hidden";
 
       document.getElementById("radio-control-help").style.display = "none";
       document.getElementById("radio-control-help").style.visibility = "hidden";
@@ -563,11 +592,40 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-help").style.display = "none";
       document.getElementById("radio-control-help").style.visibility = "hidden";
 
+      document.getElementById("radio-control-tci").style.display = "none";
+      document.getElementById("radio-control-tci").style.visibility = "hidden";
+
       document.getElementById("radio-control-rigctld").style.visibility =
         "visible";
       document.getElementById("radio-control-rigctld").style.display = "block";
 
       config.radiocontrol = "rigctld";
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
+
+  // // radio settings 'rigctld' event listener
+  document
+    .getElementById("radio-control-switch-tci")
+    .addEventListener("click", () => {
+      //document.getElementById("hamlib_info_field").innerHTML =
+      //  "Edit your rigctld settings and start and stop rigctld .";
+
+      document.getElementById("radio-control-disabled").style.display = "none";
+      document.getElementById("radio-control-disabled").style.visibility =
+        "hidden";
+
+      document.getElementById("radio-control-rigctld").style.display = "none";
+      document.getElementById("radio-control-rigctld").style.visibility = "hidden";
+
+      document.getElementById("radio-control-help").style.display = "none";
+      document.getElementById("radio-control-help").style.visibility = "hidden";
+
+      document.getElementById("radio-control-tci").style.visibility =
+        "visible";
+      document.getElementById("radio-control-tci").style.display = "block";
+
+      config.radiocontrol = "tci";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
     });

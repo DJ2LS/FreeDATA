@@ -28,6 +28,7 @@ from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
+import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 
@@ -686,19 +687,8 @@ class RF:
         self.mod_out_locked = True
 
         # -------------------------------
-        chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
-        chunk = [
-            txbuffer_out[i: i + chunk_length]
-            for i in range(0, len(txbuffer_out), chunk_length)
-        ]
-        for c in chunk:
-            # Pad the chunk, if needed
-            if len(c) < chunk_length:
-                delta = chunk_length - len(c)
-                delta_zeros = np.zeros(delta, dtype=np.int16)
-                c = np.append(c, delta_zeros)
-                # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
-            self.modoutqueue.append(c)
+        # add modulation to modout_queue
+        self.enqueue_modulation(txbuffer_out)
 
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
@@ -744,6 +734,93 @@ class RF:
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
+    def transmit_morse(self, repeats, repeat_delay, frames):
+        TNC.transmitting = True
+        # if we're transmitting FreeDATA signals, reset channel busy state
+        ModemParam.channel_busy = False
+        self.log.debug(
+            "[MDM] TRANSMIT", mode="MORSE"
+        )
+        start_of_transmission = time.time()
+
+        txbuffer = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
+        print(txbuffer)
+        print(type(txbuffer))
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        print(type(x))
+        txbuffer_out = x
+        print(txbuffer_out)
+
+        #if not AudioParam.audio_enable_tci:
+        #    txbuffer_out = self.resampler.resample8_to_48(x)
+        #else:
+        #    txbuffer_out = x
+
+        self.mod_out_locked = True
+        self.enqueue_modulation(txbuffer_out)
+        self.mod_out_locked = False
+
+        # we need to wait manually for tci processing
+        if AudioParam.audio_enable_tci:
+            duration = len(txbuffer_out) / 8000
+            timestamp_to_sleep = time.time() + duration
+            self.log.debug("[MDM] TCI calculated duration", duration=duration)
+            tci_timeout_reached = False
+            #while time.time() < timestamp_to_sleep:
+            #    threading.Event().wait(0.01)
+        else:
+            timestamp_to_sleep = time.time()
+            # set tci timeout reached to True for overriding if not used
+            tci_timeout_reached = True
+
+        while self.modoutqueue or not tci_timeout_reached:
+            if AudioParam.audio_enable_tci:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+
+            threading.Event().wait(0.01)
+            # if we're transmitting FreeDATA signals, reset channel busy state
+            ModemParam.channel_busy = False
+
+
+
+
+        HamlibParam.ptt_state = self.radio.set_ptt(False)
+
+        # Push ptt state to socket stream
+        jsondata = {"ptt": "False"}
+        data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(data_out)
+
+        # After processing, set the locking state back to true to be prepared for next transmission
+        self.mod_out_locked = True
+
+        self.modem_transmit_queue.task_done()
+        TNC.transmitting = False
+        threading.Event().set()
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
+    def enqueue_modulation(self, txbuffer_out):
+        chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
+        chunk = [
+            txbuffer_out[i: i + chunk_length]
+            for i in range(0, len(txbuffer_out), chunk_length)
+        ]
+        for c in chunk:
+            # Pad the chunk, if needed
+            if len(c) < chunk_length:
+                delta = chunk_length - len(c)
+                delta_zeros = np.zeros(delta, dtype=np.int16)
+                c = np.append(c, delta_zeros)
+                # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
+            self.modoutqueue.append(c)
+
 
     def demodulate_audio(
             self,
@@ -1009,10 +1086,12 @@ class RF:
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             data = self.modem_transmit_queue.get()
 
-            # self.log.debug("[MDM] worker_transmit", mode=data[0])
-            self.transmit(
-                mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
-            )
+            if data[0] in ["morse"]:
+                self.transmit_morse(repeats=data[1], repeat_delay=data[2], frames=data[3])
+            else:
+                self.transmit(
+                    mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
+                )
             # self.modem_transmit_queue.task_done()
 
     def worker_received(self) -> None:
@@ -1399,3 +1478,4 @@ def get_modem_error_state():
         return True
 
     return False
+
