@@ -750,7 +750,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       var encoded_data = FD.atob_FD(item.data);
       var splitted_data = encoded_data.split(split_char);
       console.log(splitted_data);
-        console.log(transmitting_station)
+      console.log(transmitting_station);
       // add callsign to message:
       var message = splitted_data[3];
       console.log(message);
@@ -1027,7 +1027,7 @@ update_chat = function (obj) {
   } else {
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-console.log(obj.msg)
+  console.log(obj.msg);
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
     var shortmsg = obj.type;
@@ -1295,7 +1295,7 @@ console.log(obj.msg)
     }
 
     if (obj.type == "broadcast_received") {
-    console.log(obj)
+      console.log(obj);
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
                     <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
