@@ -1293,11 +1293,9 @@ update_chat = function (obj) {
     if (obj.type == "broadcast_received") {
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
-
                     <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
                     <div class="card border-light bg-light" id="msg-${obj._id}">
-
                       <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
@@ -1313,6 +1311,9 @@ update_chat = function (obj) {
                       </div>
                     </div>
                 </div>
+                      <div class="me-auto" id="msg-${obj._id}-control-area">
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+             </div>
                 </div>
                 `;
     }
