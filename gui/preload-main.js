@@ -250,6 +250,11 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
   document.getElementById("hamlib_rigctld_port").value =
     config.hamlib_rigctld_port;
+      document.getElementById("tci_ip").value = config.tci_ip;
+  document.getElementById("tci_port").value =
+    config.tci_port;
+
+
   document.getElementById("hamlib_rigctld_path").value =
     config.hamlib_rigctld_path;
   document.getElementById("hamlib_rigctld_server_port").value =
@@ -1364,6 +1369,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
     var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+
+        var tci_ip = document.getElementById("tci_ip").value;
+    var tci_port = document.getElementById("tci_port").value;
+
     var hamlib_rigctld_server_port = document.getElementById(
       "hamlib_rigctld_server_port"
     ).value;
@@ -1373,6 +1382,8 @@ window.addEventListener("DOMContentLoaded", () => {
     var serialspeed = document.getElementById("hamlib_serialspeed").value;
     var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
     var hamlib_dcd = document.getElementById("hamlib_dcd").value;
+
+
 
     var mycall = document.getElementById("myCall").value;
     var ssid = document.getElementById("myCallSSID").value;
@@ -1464,10 +1475,14 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (!document.getElementById("radio-control-switch-disabled").checked) {
-      var radiocontrol = "rigctld";
+
+
+    if (document.getElementById("radio-control-switch-rigctld").checked) {
+    var radiocontrol = "rigctld";
+    } else if (document.getElementById("radio-control-switch-tci").checked) {
+    var radiocontrol = "tci";
     } else {
-      var radiocontrol = "disabled";
+    var radiocontrol = "disabled";
     }
 
     var tx_audio_level = document.getElementById("audioLevelTX").value;
@@ -1499,6 +1514,8 @@ window.addEventListener("DOMContentLoaded", () => {
     config.explorer_stats = explorer_stats;
     config.auto_tune = auto_tune;
     config.tx_delay = tx_delay;
+    config.tci_ip = tci_ip;
+    config.tci_port = tci_port;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1546,7 +1563,9 @@ window.addEventListener("DOMContentLoaded", () => {
       enable_explorer,
       explorer_stats,
       auto_tune,
-      tx_delay
+      tx_delay,
+      tci_ip,
+      tci_port
     );
   });
 
