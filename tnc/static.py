@@ -127,7 +127,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.9.1-alpha.3"
+    version = "0.9.2-alpha.1"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
@@ -174,6 +174,7 @@ class FRAME_TYPE(Enum):
     ARQ_STOP = 249
     BEACON = 250
     FEC = 251
+    FEC_WAKEUP = 252
     IDENT = 254
     TEST_FRAME = 255
 

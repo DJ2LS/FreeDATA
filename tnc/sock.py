@@ -482,12 +482,22 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_fec_transmit(self, received_json):
         try:
             mode = received_json["mode"]
+            wakeup = received_json["wakeup"]
             base64data = received_json["payload"]
             if len(base64data) % 4:
                 raise TypeError
             payload = base64.b64decode(base64data)
 
-            DATA_QUEUE_TRANSMIT.put(["FEC", payload, mode])
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = Station.mycallsign
+
+
+            DATA_QUEUE_TRANSMIT.put(["FEC", mode, wakeup, payload, mycallsign])
             command_response("fec_transmit", True)
         except Exception as err:
             command_response("fec_transmit", False)

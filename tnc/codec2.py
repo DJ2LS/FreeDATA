@@ -35,6 +35,7 @@ class FREEDV_MODE(Enum):
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
 
+
 class FREEDV_MODE_USED_SLOTS(Enum):
     """
     Enumeration for codec2 used slots

@@ -242,6 +242,22 @@ client.on("data", function (socketdata) {
               data: [data],
             });
             break;
+
+          case "broadcast":
+            // RX'd FEC BROADCAST
+            var encoded_data = FD.atob_FD(data["data"]);
+            var splitted_data = encoded_data.split(split_char);
+            var messageArray = [];
+            if (splitted_data[0] == "m") {
+              messageArray.push(data);
+              console.log(data);
+            }
+
+            let Messages = {
+              data: messageArray,
+            };
+            ipcRenderer.send("request-new-msg-received", Messages);
+            break;
         }
 
         switch (data["cq"]) {
@@ -831,6 +847,30 @@ exports.sendFecIsWriting = function (mycallsign) {
   command =
     '{"type" : "fec", "command" : "transmit_is_writing", "mycallsign" : "' +
     mycallsign +
+    '"}';
+  writeTncCommand(command);
+};
+
+// SEND FEC TO BROADCASTCHANNEL
+exports.sendBroadcastChannel = function (channel, data_out, uuid) {
+  let checksum = "";
+  let command = "";
+  let data = FD.btoa_FD(
+    "m" +
+      split_char +
+      channel +
+      //split_char +
+      //checksum +
+      split_char +
+      uuid +
+      split_char +
+      data_out
+  );
+  console.log(data.length);
+  let payload = data;
+  command =
+    '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
+    payload +
     '"}';
   writeTncCommand(command);
 };

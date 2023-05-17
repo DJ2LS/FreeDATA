@@ -48,6 +48,8 @@ var selected_callsign = "";
 var lastIsWritingBroadcast = new Date().getTime();
 var defaultUserIcon =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg==";
+var defaultGroupIcon =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4=";
 
 // -----------------------------------
 // Initially fill sharedFolderFileList
@@ -136,6 +138,9 @@ var chatFilter = [
   { type: "received" },
   { type: "transmit" },
   { type: "ping-ack" },
+  { type: "broadcast_received" },
+  { type: "broadcast_transmit" },
+
   //{ type: "request" },
   //{ type: "response" },
 ];
@@ -245,6 +250,7 @@ window.addEventListener("DOMContentLoaded", () => {
       element.style.display = "none";
     }
   });
+
   document
     .getElementById("delete_selected_chat")
     .addEventListener("click", () => {
@@ -451,45 +457,71 @@ window.addEventListener("DOMContentLoaded", () => {
       "bi bi-chevron-compact-up";
     document.getElementById("expand_textarea").checked = false;
 
-    console.log(file);
-    console.log(filename);
-    console.log(filetype);
+    //console.log(file);
+    //console.log(filename);
+    //console.log(filetype);
     if (filetype == "") {
       filetype = "plain/text";
     }
     var timestamp = Math.floor(Date.now() / 1000);
 
-    var file_checksum = crc32(file).toString(16).toUpperCase();
-    console.log(file_checksum);
-    var data_with_attachment =
-      timestamp +
-      split_char +
-      chatmessage +
-      split_char +
-      filename +
-      split_char +
-      filetype +
-      split_char +
-      file;
-
-    document.getElementById("selectFilesButton").innerHTML = ``;
     var uuid = uuidv4();
     let uuidlast = uuid.lastIndexOf("-");
     uuidlast += 1;
     if (uuidlast > 0) {
       uuid = uuid.substring(uuidlast);
     }
-    console.log(data_with_attachment);
-    let Data = {
-      command: "msg",
-      dxcallsign: dxcallsign,
-      mode: 255,
-      frames: 5,
-      data: data_with_attachment,
-      checksum: file_checksum,
-      uuid: uuid,
-    };
-    ipcRenderer.send("run-tnc-command", Data);
+
+    // check if broadcast
+    if (dxcallsign.startsWith("BC-")) {
+      //let broadcastChannelId = dxcallsign.split("BC-")[1];
+      //broadcastChannelIdCRC = crc32(broadcastChannelId)
+      //  .toString(16)
+      //  .toUpperCase();
+      //dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
+      var tnc_command = "broadcast";
+      var message_type = "broadcast_transmit";
+
+      // slice uuid for reducing overhead
+      uuid = uuid.slice(-4);
+
+      let Data = {
+        command: tnc_command,
+        broadcastChannel: dxcallsign,
+        data: chatmessage,
+        uuid: uuid,
+      };
+      ipcRenderer.send("run-tnc-command", Data);
+    } else {
+      var message_type = "transmit";
+      var file_checksum = crc32(file).toString(16).toUpperCase();
+      var tnc_command = "msg";
+      var data_with_attachment =
+        timestamp +
+        split_char +
+        chatmessage +
+        split_char +
+        filename +
+        split_char +
+        filetype +
+        split_char +
+        file;
+
+      document.getElementById("selectFilesButton").innerHTML = ``;
+
+      console.log(data_with_attachment);
+      let Data = {
+        command: tnc_command,
+        dxcallsign: dxcallsign,
+        mode: 255,
+        frames: 5,
+        data: data_with_attachment,
+        checksum: file_checksum,
+        uuid: uuid,
+      };
+      ipcRenderer.send("run-tnc-command", Data);
+    }
+
     db.post({
       _id: uuid,
       timestamp: timestamp,
@@ -497,7 +529,7 @@ window.addEventListener("DOMContentLoaded", () => {
       dxgrid: "null",
       msg: chatmessage,
       checksum: file_checksum,
-      type: "transmit",
+      type: message_type,
       status: "transmit",
       attempt: 1,
       uuid: uuid,
@@ -708,11 +740,49 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
   var new_msg = arg.data;
   new_msg.forEach(function (item) {
-    console.log(item.status);
     let obj = new Object();
 
-    //handle ping
-    if (item.ping == "received") {
+    //handle broadcast
+    if (item.fec == "broadcast") {
+      console.log("BROADCAST RECEIVED");
+      console.log(item);
+      var transmitting_station = item.dxcallsign;
+      var encoded_data = FD.atob_FD(item.data);
+      var splitted_data = encoded_data.split(split_char);
+      console.log(splitted_data);
+      console.log(transmitting_station);
+      // add callsign to message:
+      var message = splitted_data[3];
+      console.log(message);
+      obj.timestamp = Math.floor(Date.now() / 1000);
+      obj.dxcallsign = splitted_data[1];
+      obj.dxgrid = "null";
+      obj.uuid = splitted_data[2];
+      obj.broadcast_sender = transmitting_station;
+      obj.command = "msg";
+      obj.checksum = "null";
+      obj.msg = message;
+      obj.status = "received";
+      obj.snr = item.snr;
+      obj.type = "broadcast_received";
+      obj.filename = "null";
+      obj.filetype = "null";
+      obj.file = "null";
+      console.log(obj);
+      add_obj_to_database(obj);
+      update_chat_obj_by_uuid(obj.uuid);
+
+      db.find({
+        selector: {
+          dxcallsign: obj.dxcallsign,
+        },
+      }).then(function (result) {
+        // handle result
+        console.log(result);
+      });
+
+      //handle ping
+    } else if (item.ping == "received") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
       obj.dxgrid = item.dxgrid;
@@ -957,7 +1027,7 @@ update_chat = function (obj) {
   } else {
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-
+  console.log(obj.msg);
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
     var shortmsg = obj.type;
@@ -1068,16 +1138,28 @@ update_chat = function (obj) {
       selected_callsign = dxcallsign;
     }
 
-    getSetUserInformation(dxcallsign);
-    getSetUserSharedFolder(dxcallsign);
+    if (dxcallsign.startsWith("BC-")) {
+      var user_image =
+        '<img id="user-image-' +
+        dxcallsign +
+        '" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVvcGxlLWZpbGwiIHZpZXdCb3g9IjAgMCAxNiAxNiI+CiAgPHBhdGggZD0iTTcgMTRzLTEgMC0xLTEgMS00IDUtNCA1IDMgNSA0LTEgMS0xIDFIN1ptNC02YTMgMyAwIDEgMCAwLTYgMyAzIDAgMCAwIDAgNlptLTUuNzg0IDZBMi4yMzggMi4yMzggMCAwIDEgNSAxM2MwLTEuMzU1LjY4LTIuNzUgMS45MzYtMy43MkE2LjMyNSA2LjMyNSAwIDAgMCA1IDljLTQgMC01IDMtNSA0czEgMSAxIDFoNC4yMTZaTTQuNSA4YTIuNSAyLjUgMCAxIDAgMC01IDIuNSAyLjUgMCAwIDAgMCA1WiIvPgo8L3N2Zz4="></img>';
+    } else {
+      var user_image =
+        '<img id="user-image-' +
+        dxcallsign +
+        '" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4="></img>';
+
+      getSetUserInformation(dxcallsign);
+      getSetUserSharedFolder(dxcallsign);
+    }
 
     var new_callsign = `
             <a class="list-group-item list-group-item-action rounded-4 rounded-top rounded-bottom border-1 mb-2 ${callsign_selected}" id="chat-${dxcallsign}-list" data-bs-toggle="list" href="#chat-${dxcallsign}" role="tab" aria-controls="chat-${dxcallsign}">
 
                       <div class="d-flex w-100 justify-content-between">
                           <div class="rounded-circle p-0">
-                            <img id="user-image-${dxcallsign}" class="p-1 rounded-circle" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWNpcmNsZSIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMTEgNmEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+CiAgPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBkPSJNMCA4YTggOCAwIDEgMSAxNiAwQTggOCAwIDAgMSAwIDh6bTgtN2E3IDcgMCAwIDAtNS40NjggMTEuMzdDMy4yNDIgMTEuMjI2IDQuODA1IDEwIDggMTBzNC43NTcgMS4yMjUgNS40NjggMi4zN0E3IDcgMCAwIDAgOCAxeiIvPgo8L3N2Zz4="></img>
-                            <!--<i class="bi bi-person-circle p-1" style="font-size:2rem;"></i>-->
+                          ${user_image}
+
                           </div>
 
                         <span style="font-size:1.2rem;"><strong>${dxcallsign}</strong></span>
@@ -1211,7 +1293,76 @@ update_chat = function (obj) {
                 </div>
                 `;
     }
+
+    if (obj.type == "broadcast_received") {
+      console.log(obj);
+      var new_message = `
+             <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
+                    <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
+                    <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
+                    <div class="card border-light bg-light" id="msg-${obj._id}">
+                      <div class="card-body rounded-3 p-0">
+                        <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
+                            <span class="badge bg-light text-muted">${timestamp}</span>
+
+                        </p>
+
+                        <span id="msg-${obj._id}-dxcallsign-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
+
+                            <span id="msg-${obj._id}-attempts" class="">${obj.broadcast_sender}</span>
+                            <span class="visually-hidden">dxcallsign</span>
+                        </span>
+                      </div>
+                    </div>
+                </div>
+                      <div class="me-auto" id="msg-${obj._id}-control-area">
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${obj._id}" style="font-size: 1.2rem;"></i></button>
+             </div>
+                </div>
+                `;
+    }
+    if (obj.type == "broadcast_transmit") {
+      var new_message = `
+        <div class="d-flex align-items-center">
+            <div class="ms-auto" id="msg-${obj._id}-control-area">
+                <!--<button class="btn bg-transparent p-1 m-1"><i class="bi bi-arrow-repeat link-secondary" id="retransmit-msg-${
+                  obj._id
+                }" style="font-size: 1.2rem;"></i></button>-->
+                <button class="btn bg-transparent p-1 m-1"><i class="bi bi-trash link-secondary" id="del-msg-${
+                  obj._id
+                }" style="font-size: 1.2rem;"></i></button>
+             </div>
+            <div class="rounded-3 mt-3 mb-0 me-2" style="max-width: 75%;">
+                <div class="card border-primary bg-primary" id="msg-${obj._id}">
+                    <div class="card-body rounded-3 p-0 text-right bg-primary">
+                        <p class="card-text p-1 mb-0 text-white text-break text-wrap">${message_html}</p>
+                        <p class="text-right mb-0 p-1 text-white" style="text-align: right; font-size : 0.9rem">
+                            <span class="text-light" style="font-size: 0.7rem;">${timestamp} - </span>
+                            <span class="text-white" id="msg-${
+                              obj._id
+                            }-status" style="font-size:0.8rem;">${get_icon_for_state(
+        obj.status
+      )}</span>
+                        </p>
+                        <span id="msg-${
+                          obj._id
+                        }-attempts-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-primary border border-white">
+
+                            <span id="msg-${
+                              obj._id
+                            }-attempts" class="">${attempt}/${max_retry_attempts}</span>
+                            <span class="visually-hidden">retries</span>
+                        </span>
+
+                </div>
+            </div>
+        </div>
+      `;
+    }
+
     if (obj.type == "transmit") {
+      console.log(obj);
       //console.log('msg-' + obj._id + '-status')
 
       if (obj.status == "failed") {
@@ -1285,28 +1436,26 @@ update_chat = function (obj) {
     console.log("element already exists......");
     console.log(obj);
 
-    console.log(
+    if (
+      !obj.status == "broadcast_transmit" ||
+      !obj.status == "broadcast_received"
+    ) {
+      document.getElementById("msg-" + obj._id + "-status").innerHTML =
+        get_icon_for_state(obj.status);
+
       document
         .getElementById("msg-" + obj._id + "-progress")
-        .getAttribute("aria-valuenow")
-    );
+        .setAttribute("aria-valuenow", obj.percent);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:" + obj.percent + "%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
 
-    document.getElementById("msg-" + obj._id + "-status").innerHTML =
-      get_icon_for_state(obj.status);
-
-    document
-      .getElementById("msg-" + obj._id + "-progress")
-      .setAttribute("aria-valuenow", obj.percent);
-    document
-      .getElementById("msg-" + obj._id + "-progress")
-      .setAttribute("style", "width:" + obj.percent + "%;");
-    document.getElementById(
-      "msg-" + obj._id + "-progress-information"
-    ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
-
-    document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
-      obj.attempt + "/" + max_retry_attempts;
-
+      document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
+        obj.attempt + "/" + max_retry_attempts;
+    }
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
       document
@@ -1323,7 +1472,10 @@ update_chat = function (obj) {
       document.getElementById(
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
-    } else {
+    } else if (
+      !obj.status == "broadcast_transmit" ||
+      !obj.status == "broadcast_received"
+    ) {
       document
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("progress-bar-striped");
@@ -1607,6 +1759,7 @@ add_obj_to_database = function (obj) {
   db.put({
     _id: obj.uuid,
     timestamp: parseInt(obj.timestamp),
+    broadcast_sender: obj.broadcast_sender,
     uuid: obj.uuid,
     dxcallsign: obj.dxcallsign,
     dxgrid: obj.dxgrid,
@@ -1631,9 +1784,20 @@ add_obj_to_database = function (obj) {
     .catch(function (err) {
       console.log("already exists");
       console.log(err);
+      console.log(obj);
+      db.upsert(obj.uuid, function (doc) {
+        doc = obj;
+        return doc;
+      })
+        .then(function (response) {
+          console.log("upsert");
+          console.log(response);
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
     });
 };
-
 /* users database functions */
 addUserToDatabaseIfNotExists = function (obj) {
   /*
@@ -1934,9 +2098,10 @@ async function updateAllChat(clear) {
           ],
         })
         .then(async function (result) {
+          console.log(result);
           // handle result async
           //document.getElementById("blurOverlay").classList.add("bg-primary");
-
+          console.log(result);
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -1981,6 +2146,14 @@ function getSetUserSharedFolder(selected_callsign) {
     console.log("return triggered");
     return;
   }
+
+  // disable button if broadcast
+  if (selected_callsign.startsWith("BC-")) {
+    document.getElementById("sharedFolderDXButton").disabled = true;
+  } else {
+    document.getElementById("sharedFolderDXButton").disabled = false;
+  }
+
   returnObjFromCallsign(users, selected_callsign)
     .then(function (data) {
       console.log(data);
@@ -2110,6 +2283,16 @@ function getSetUserInformation(selected_callsign) {
     console.log("return triggered");
     return;
   }
+
+  // disable button if broadcast
+  if (selected_callsign.startsWith("BC-")) {
+    document.getElementById("userModalDXButton").disabled = true;
+    document.getElementById("ping").disabled = true;
+  } else {
+    document.getElementById("userModalDXButton").disabled = false;
+    document.getElementById("ping").disabled = false;
+  }
+
   document.getElementById("dx_user_info_callsign").innerHTML =
     selected_callsign;
 
@@ -2127,6 +2310,10 @@ function getSetUserInformation(selected_callsign) {
           // split data string by "base64" for separating image type from base64 string
           atob(data.user_info_image.split(";base64,")[1]);
 
+          if (selected_callsign.startsWith("BC-")) {
+            data.user_info_image = defaultGroupIcon;
+          }
+
           document.getElementById("dx_user_info_image").src =
             data.user_info_image;
           document.getElementById("user-image-" + selected_callsign).src =
@@ -2134,9 +2321,22 @@ function getSetUserInformation(selected_callsign) {
         } catch (e) {
           console.log(e);
           console.log("corrupted image data");
+
+          if (selected_callsign.startsWith("BC-")) {
+            var userIcon = defaultGroupIcon;
+            document
+              .getElementById("chatModuleMessage")
+              .setAttribute("maxlength", 16);
+          } else {
+            var userIcon = defaultUserIcon;
+            document
+              .getElementById("chatModuleMessage")
+              .setAttribute("maxlength", 524288);
+          }
+
           document.getElementById("user-image-" + selected_callsign).src =
-            defaultUserIcon;
-          document.getElementById("dx_user_info_image").src = defaultUserIcon;
+            userIcon;
+          document.getElementById("dx_user_info_image").src = userIcon;
         }
       } else {
         // throw error and use placeholder data
@@ -2192,9 +2392,20 @@ function getSetUserInformation(selected_callsign) {
       console.log("writing user info to modal failed");
       console.log(err);
 
+      if (selected_callsign.startsWith("BC-")) {
+        document
+          .getElementById("chatModuleMessage")
+          .setAttribute("maxlength", 16);
+        var userIcon = defaultGroupIcon;
+      } else {
+        var userIcon = defaultUserIcon;
+        document
+          .getElementById("chatModuleMessage")
+          .setAttribute("maxlength", 524288);
+      }
+
       // Callsign list elements
-      document.getElementById("user-image-" + selected_callsign).src =
-        defaultUserIcon;
+      document.getElementById("user-image-" + selected_callsign).src = userIcon;
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle w-100";
       document.getElementById("user-image-" + selected_callsign).style =
