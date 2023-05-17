@@ -481,6 +481,10 @@ window.addEventListener("DOMContentLoaded", () => {
       //dxcallsignWithID = "BC-" + broadcastChannelIdCRC;
       var tnc_command = "broadcast";
       var message_type = "broadcast_transmit";
+
+          // slice uuid for reducing overhead
+    uuid = uuid.slice(-4);
+
       let Data = {
         command: tnc_command,
         broadcastChannel: dxcallsign,
@@ -2318,8 +2322,13 @@ function getSetUserInformation(selected_callsign) {
 
           if (selected_callsign.startsWith("BC-")) {
             var userIcon = defaultGroupIcon;
+                    document.getElementById("chatModuleMessage").setAttribute("maxlength", 16);
+
           } else {
             var userIcon = defaultUserIcon;
+                                        document.getElementById("chatModuleMessage").setAttribute("maxlength", 524288);
+
+
           }
 
           document.getElementById("user-image-" + selected_callsign).src =
@@ -2381,9 +2390,12 @@ function getSetUserInformation(selected_callsign) {
       console.log(err);
 
       if (selected_callsign.startsWith("BC-")) {
+                                        document.getElementById("chatModuleMessage").setAttribute("maxlength", 16);
         var userIcon = defaultGroupIcon;
       } else {
         var userIcon = defaultUserIcon;
+                                                document.getElementById("chatModuleMessage").setAttribute("maxlength", 524288);
+
       }
 
       // Callsign list elements

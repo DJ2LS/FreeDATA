@@ -852,21 +852,21 @@ exports.sendFecIsWriting = function (mycallsign) {
 };
 
 // SEND FEC TO BROADCASTCHANNEL
-exports.sendBroadcastChannel = function (channel, data, uuid) {
+exports.sendBroadcastChannel = function (channel, data_out, uuid) {
   let checksum = "";
   let command = "";
-  data = FD.btoa_FD(
+  let data = FD.btoa_FD(
     "m" +
       split_char +
       channel +
-      split_char +
-      checksum +
+      //split_char +
+      //checksum +
       split_char +
       uuid +
       split_char +
-      data
+      data_out
   );
-
+    console.log(data.length)
   let payload = data;
   command =
     '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
