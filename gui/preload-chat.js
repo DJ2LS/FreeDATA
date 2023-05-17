@@ -750,14 +750,14 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       var encoded_data = FD.atob_FD(item.data);
       var splitted_data = encoded_data.split(split_char);
       console.log(splitted_data);
-
+        console.log(transmitting_station)
       // add callsign to message:
-      var message = splitted_data[4];
+      var message = splitted_data[3];
       console.log(message);
       obj.timestamp = Math.floor(Date.now() / 1000);
       obj.dxcallsign = splitted_data[1];
       obj.dxgrid = "null";
-      obj.uuid = splitted_data[3];
+      obj.uuid = splitted_data[2];
       obj.broadcast_sender = transmitting_station;
       obj.command = "msg";
       obj.checksum = "null";
@@ -1027,7 +1027,7 @@ update_chat = function (obj) {
   } else {
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-
+console.log(obj.msg)
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
     var shortmsg = obj.type;
@@ -1295,6 +1295,7 @@ update_chat = function (obj) {
     }
 
     if (obj.type == "broadcast_received") {
+    console.log(obj)
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
                     <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
@@ -1758,6 +1759,7 @@ add_obj_to_database = function (obj) {
   db.put({
     _id: obj.uuid,
     timestamp: parseInt(obj.timestamp),
+    broadcast_sender: obj.broadcast_sender,
     uuid: obj.uuid,
     dxcallsign: obj.dxcallsign,
     dxgrid: obj.dxgrid,
