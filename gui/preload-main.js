@@ -1648,12 +1648,14 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function resetSortIcon() {
   document.getElementById("hslSort").remove();
-  let headers = document.querySelectorAll("#tblHeardStationList > thead > tr > th");
-  if (hslLastSortDir=="desc") text = "bi-sort-up";
+  let headers = document.querySelectorAll(
+    "#tblHeardStationList > thead > tr > th"
+  );
+  if (hslLastSortDir == "desc") text = "bi-sort-up";
   else text = "bi-sort-down";
-  const sicon = document.createElement('i');
-  sicon.id='hslSort';
-  sicon.classList.add('bi',text)
+  const sicon = document.createElement("i");
+  sicon.id = "hslSort";
+  sicon.classList.add("bi", text);
   headers[hslLastSort].prepend(sicon);
 }
 
