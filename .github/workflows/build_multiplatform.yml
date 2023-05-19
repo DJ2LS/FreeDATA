@@ -14,28 +14,28 @@ jobs:
         include:
 
           - os: ubuntu-20.04
-            libcodec2_name: libcodec2.so.1.0
+            libcodec2_name: libcodec2.so.1.1
             libcodec2_os_name: libcodec2_ubuntu-2004
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: ubuntu-22.04
-            libcodec2_name: libcodec2.so.1.0
+            libcodec2_name: libcodec2.so.1.1
             libcodec2_os_name: libcodec2_ubuntu-2204
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-11
-            libcodec2_name: libcodec2.1.0.dylib
+            libcodec2_name: libcodec2.1.1.dylib
             libcodec2_os_name: libcodec2_macos-11
             libcodec2_filetype: dylib
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-12
-            libcodec2_name: libcodec2.1.0.dylib
+            libcodec2_name: libcodec2.1.1.dylib
             libcodec2_os_name: libcodec2_macos-12
             libcodec2_filetype: dylib
             generator: Unix Makefiles
