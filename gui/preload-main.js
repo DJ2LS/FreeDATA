@@ -70,6 +70,11 @@ var noise_level_raw = 0;
 //Global version variable
 var appVer = null;
 
+  //Track the number of times TNC has been started
+  //So that warning is shown when using auto start and 2nd start
+  //if hamlib is not running
+  var tncStartCount = 0;
+
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
 
@@ -1284,19 +1289,11 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("wikiUrl").addEventListener("click", () => {
     shell.openExternal("https://wiki.freedata.app");
   });
-  // Groups.io Link clicked
-  document.getElementById("groupsioUrl").addEventListener("click", () => {
-    shell.openExternal("https://groups.io/g/freedata");
-  });
+
   // Discord Link clicked
   document.getElementById("discordUrl").addEventListener("click", () => {
     shell.openExternal("https://discord.gg/jnADeDtxUF");
   });
-
-  //Track the number of times TNC has been started
-  //So that warning is shown when using auto start and 2nd start
-  //if hamlib is not running
-  var tncStartCount = 0;
 
   // startTNC button clicked
   document.getElementById("startTNC").addEventListener("click", () => {
@@ -1644,6 +1641,8 @@ window.addEventListener("DOMContentLoaded", () => {
     sorthslTable(7);
     resetSortIcon();
   });
+
+  autostart_rigctld();
 });
 
 function resetSortIcon() {
@@ -2555,6 +2554,9 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
       document.getElementById("audio_output_selectbox").add(option);
     }
   }
+  //Once audio devices are populated, try starting TNC if it hasn't been started yet in this session
+  //and if autostart is enabled
+  if (tncStartCount <= 0) autostart_tnc();
 });
 
 // ACTION UPDATE HAMLIB TEST
@@ -2635,6 +2637,9 @@ ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
 
     //Set tuning for fancy graphics mode (high/low CPU)
     set_CPU_mode();
+
+    //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
+    if (tncStartCount==0) tncStartCount++;
   } else {
     /*
         document.getElementById('hamlib_deviceid').disabled = false;
@@ -3642,18 +3647,18 @@ function sorthslTable(n) {
   }
 }
 
-function autostart() {
-  //Auto start stuff if option is enabled
+function autostart_rigctld() {
   if (config.auto_start == 1) {
     //Start rigctld if radiocontrol is in correct mode and is not active
     if (config.radiocontrol == "rigctld" && rigctldActive == false) {
       //console.log("Autostarting rigctld");
       document.getElementById("hamlib_rigctld_start").click();
     }
-    //Now start TNC
-    document.getElementById("startTNC").click();
   }
 }
-setTimeout(() => {
-  autostart();
-}, 5000);
+function autostart_tnc() {
+  if (config.auto_start == 1) {
+    //Now start TNC
+    document.getElementById("startTNC").click();
+}
+}
