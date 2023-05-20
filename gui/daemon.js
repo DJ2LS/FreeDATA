@@ -263,7 +263,7 @@ exports.startTNC = function (
         enable_auto_tune: auto_tune,
         tx_delay: tx_delay,
         tci_ip: tci_ip,
-        tci_port: tci_port
+        tci_port: tci_port,
       },
     ],
   });
