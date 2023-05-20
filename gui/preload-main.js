@@ -250,10 +250,8 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
   document.getElementById("hamlib_rigctld_port").value =
     config.hamlib_rigctld_port;
-      document.getElementById("tci_ip").value = config.tci_ip;
-  document.getElementById("tci_port").value =
-    config.tci_port;
-
+  document.getElementById("tci_ip").value = config.tci_ip;
+  document.getElementById("tci_port").value = config.tci_port;
 
   document.getElementById("hamlib_rigctld_path").value =
     config.hamlib_rigctld_path;
@@ -451,7 +449,6 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-switch-rigctld").checked = true;
     document.getElementById("radio-control-switch-tci").checked = false;
 
-
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
@@ -465,7 +462,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-rigctld").style.visibility =
       "visible";
     document.getElementById("radio-control-rigctld").style.display = "block";
-  } else if(config.radiocontrol == "tci"){
+  } else if (config.radiocontrol == "tci") {
     document.getElementById("radio-control-switch-disabled").checked = false;
     document.getElementById("radio-control-switch-rigctld").checked = false;
     document.getElementById("radio-control-switch-tci").checked = true;
@@ -476,13 +473,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("radio-control-help").style.visibility = "hidden";
     document.getElementById("radio-control-help").style.display = "none";
-    document.getElementById("radio-control-rigctld").style.visibility = "hidden";
+    document.getElementById("radio-control-rigctld").style.visibility =
+      "hidden";
     document.getElementById("radio-control-rigctld").style.display = "none";
 
-    document.getElementById("radio-control-tci").style.visibility =
-      "visible";
+    document.getElementById("radio-control-tci").style.visibility = "visible";
     document.getElementById("radio-control-tci").style.display = "block";
-
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
     document.getElementById("radio-control-switch-rigctld").checked = false;
@@ -621,13 +617,13 @@ window.addEventListener("DOMContentLoaded", () => {
         "hidden";
 
       document.getElementById("radio-control-rigctld").style.display = "none";
-      document.getElementById("radio-control-rigctld").style.visibility = "hidden";
+      document.getElementById("radio-control-rigctld").style.visibility =
+        "hidden";
 
       document.getElementById("radio-control-help").style.display = "none";
       document.getElementById("radio-control-help").style.visibility = "hidden";
 
-      document.getElementById("radio-control-tci").style.visibility =
-        "visible";
+      document.getElementById("radio-control-tci").style.visibility = "visible";
       document.getElementById("radio-control-tci").style.display = "block";
 
       config.radiocontrol = "tci";
@@ -1370,7 +1366,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
     var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
 
-        var tci_ip = document.getElementById("tci_ip").value;
+    var tci_ip = document.getElementById("tci_ip").value;
     var tci_port = document.getElementById("tci_port").value;
 
     var hamlib_rigctld_server_port = document.getElementById(
@@ -1382,8 +1378,6 @@ window.addEventListener("DOMContentLoaded", () => {
     var serialspeed = document.getElementById("hamlib_serialspeed").value;
     var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
     var hamlib_dcd = document.getElementById("hamlib_dcd").value;
-
-
 
     var mycall = document.getElementById("myCall").value;
     var ssid = document.getElementById("myCallSSID").value;
@@ -1475,14 +1469,12 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-
-
     if (document.getElementById("radio-control-switch-rigctld").checked) {
-    var radiocontrol = "rigctld";
+      var radiocontrol = "rigctld";
     } else if (document.getElementById("radio-control-switch-tci").checked) {
-    var radiocontrol = "tci";
+      var radiocontrol = "tci";
     } else {
-    var radiocontrol = "disabled";
+      var radiocontrol = "disabled";
     }
 
     var tx_audio_level = document.getElementById("audioLevelTX").value;
