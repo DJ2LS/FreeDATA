@@ -121,99 +121,93 @@ def util_rx():
     time_start = 0
     time_end = 0
 
-    # Copy received 48 kHz to a file.  Listen to this file with:
-    #   aplay -r 48000 -f S16_LE rx48.raw
-    # Corruption of this file is a good way to detect audio card issues
-    frx = open("rx48.raw", mode="wb")
+    with open("rx48.raw", mode="wb") as frx:
+        # initial number of samples we need
+        nin = codec2.api.freedv_nin(freedv)
+        while receive and time.time() < timeout:
+            if AUDIO_INPUT_DEVICE != -1:
+                try:
+                    # data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
+                    data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)  # type: ignore
+                except OSError as err:
+                    print(err, file=sys.stderr)
+                    # if str(err).find("Input overflowed") != -1:
+                    #    nread_exceptions += 1
+                    # if str(err).find("Stream closed") != -1:
+                    #    print("Ending...")
+                    #    receive = False
+            else:
+                data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER * 2)
 
-    # initial number of samples we need
-    nin = codec2.api.freedv_nin(freedv)
-    while receive and time.time() < timeout:
-        if AUDIO_INPUT_DEVICE != -1:
-            try:
-                # data_in48k = stream_rx.read(AUDIO_FRAMES_PER_BUFFER, exception_on_overflow = True)
-                data_in48k, overflowed = stream_rx.read(AUDIO_FRAMES_PER_BUFFER)  # type: ignore
-            except OSError as err:
-                print(err, file=sys.stderr)
-                # if str(err).find("Input overflowed") != -1:
-                #    nread_exceptions += 1
-                # if str(err).find("Stream closed") != -1:
-                #    print("Ending...")
-                #    receive = False
-        else:
-            data_in48k = sys.stdin.buffer.read(AUDIO_FRAMES_PER_BUFFER * 2)
+            # insert samples in buffer
+            x = np.frombuffer(data_in48k, dtype=np.int16)  # type: ignore
+            # print(x)
+            # x = data_in48k
+            x.tofile(frx)
+            if len(x) != AUDIO_FRAMES_PER_BUFFER:
+                receive = False
+            x = resampler.resample48_to_8(x)
+            audio_buffer.push(x)
 
-        # insert samples in buffer
-        x = np.frombuffer(data_in48k, dtype=np.int16)  # type: ignore
-        # print(x)
-        # x = data_in48k
-        x.tofile(frx)
-        if len(x) != AUDIO_FRAMES_PER_BUFFER:
-            receive = False
-        x = resampler.resample48_to_8(x)
-        audio_buffer.push(x)
-
-        # when we have enough samples call FreeDV Rx
-        while audio_buffer.nbuffer >= nin:
-            # start time measurement
-            time_start = time.time()
-            # demodulate audio
-            nbytes = codec2.api.freedv_rawdatarx(
-                freedv, bytes_out, audio_buffer.buffer.ctypes
-            )
-            time_end = time.time()
-
-            audio_buffer.pop(nin)
-
-            # call me on every loop!
-            nin = codec2.api.freedv_nin(freedv)
-
-            rx_status = codec2.api.freedv_get_rx_status(freedv)
-            if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
-                rx_errors = rx_errors + 1
-            if DEBUGGING_MODE:
-                rx_status = codec2.api.rx_sync_flags_to_text[rx_status]  # type: ignore
-                time_needed = time_end - time_start
-
-                print(
-                    f"nin: {nin:5d} rx_status: {rx_status:4s} "
-                    f"naudio_buffer: {audio_buffer.nbuffer:4d} time: {time_needed:4f}",
-                    file=sys.stderr,
+            # when we have enough samples call FreeDV Rx
+            while audio_buffer.nbuffer >= nin:
+                # start time measurement
+                time_start = time.time()
+                # demodulate audio
+                nbytes = codec2.api.freedv_rawdatarx(
+                    freedv, bytes_out, audio_buffer.buffer.ctypes
                 )
+                time_end = time.time()
 
-            if nbytes:
-                total_n_bytes += nbytes
+                audio_buffer.pop(nin)
 
-                if nbytes == bytes_per_frame:
-                    rx_total_frames += 1
-                    rx_frames += 1
+                # call me on every loop!
+                nin = codec2.api.freedv_nin(freedv)
 
-                if rx_frames == N_FRAMES_PER_BURST:
-                    rx_frames = 0
-                    rx_bursts += 1
+                rx_status = codec2.api.freedv_get_rx_status(freedv)
+                if rx_status & codec2.api.FREEDV_RX_BIT_ERRORS:
+                    rx_errors = rx_errors + 1
+                if DEBUGGING_MODE:
+                    rx_status = codec2.api.rx_sync_flags_to_text[rx_status]  # type: ignore
+                    time_needed = time_end - time_start
 
-                if rx_bursts == N_BURSTS:
-                    receive = False
+                    print(
+                        f"nin: {nin:5d} rx_status: {rx_status:4s} "
+                        f"naudio_buffer: {audio_buffer.nbuffer:4d} time: {time_needed:4f}",
+                        file=sys.stderr,
+                    )
 
-        if time.time() >= timeout:
-            print("TIMEOUT REACHED")
+                if nbytes:
+                    total_n_bytes += nbytes
 
-        time.sleep(0.01)
+                    if nbytes == bytes_per_frame:
+                        rx_total_frames += 1
+                        rx_frames += 1
 
-    if nread_exceptions:
+                    if rx_frames == N_FRAMES_PER_BURST:
+                        rx_frames = 0
+                        rx_bursts += 1
+
+                    if rx_bursts == N_BURSTS:
+                        receive = False
+
+            if time.time() >= timeout:
+                print("TIMEOUT REACHED")
+
+            time.sleep(0.01)
+
+        if nread_exceptions:
+            print(
+                f"nread_exceptions {nread_exceptions:d} - receive audio lost! "
+                "Consider increasing Pyaudio frames_per_buffer...",
+                file=sys.stderr,
+            )
         print(
-            f"nread_exceptions {nread_exceptions:d} - receive audio lost! "
-            "Consider increasing Pyaudio frames_per_buffer...",
+            f"RECEIVED BURSTS: {rx_bursts} "
+            f"RECEIVED FRAMES: {rx_total_frames} "
+            f"RX_ERRORS: {rx_errors}",
             file=sys.stderr,
         )
-    print(
-        f"RECEIVED BURSTS: {rx_bursts} "
-        f"RECEIVED FRAMES: {rx_total_frames} "
-        f"RX_ERRORS: {rx_errors}",
-        file=sys.stderr,
-    )
-    frx.close()
-
     # and at last check if we had an opened audio instance and close it
     if AUDIO_INPUT_DEVICE != -1:
         sd._terminate()
@@ -227,7 +221,7 @@ def parse_arguments():
         "--framesperburst", dest="N_FRAMES_PER_BURST", default=1, type=int
     )
     parser.add_argument(
-        "--mode", dest="FREEDV_MODE", type=str, choices=["datac0", "datac1", "datac3"]
+        "--mode", dest="FREEDV_MODE", type=str, choices=["datac13", "datac1", "datac3"]
     )
     parser.add_argument(
         "--audiodev",
@@ -240,7 +234,7 @@ def parse_arguments():
     parser.add_argument(
         "--timeout",
         dest="TIMEOUT",
-        default=10,
+        default=60,
         type=int,
         help="Timeout (seconds) before test ends",
     )

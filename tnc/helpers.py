@@ -8,6 +8,7 @@ import time
 from datetime import datetime,timezone
 import crcengine
 import static
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 import structlog
 import numpy as np
 import threading
@@ -130,16 +131,16 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
         Nothing
     """
     # check if buffer empty
-    if len(static.HEARD_STATIONS) == 0:
-        static.HEARD_STATIONS.append(
+    if len(TNC.heard_stations) == 0:
+        TNC.heard_stations.append(
             [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
-        for i in range(len(static.HEARD_STATIONS)):
+        for i in range(len(TNC.heard_stations)):
             # Update callsign with new timestamp
-            if static.HEARD_STATIONS[i].count(dxcallsign) > 0:
-                static.HEARD_STATIONS[i] = [
+            if TNC.heard_stations[i].count(dxcallsign) > 0:
+                TNC.heard_stations[i] = [
                     dxcallsign,
                     dxgrid,
                     int(time.time()),
@@ -150,8 +151,8 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 ]
                 break
             # Insert if nothing found
-            if i == len(static.HEARD_STATIONS) - 1:
-                static.HEARD_STATIONS.append(
+            if i == len(TNC.heard_stations) - 1:
+                TNC.heard_stations.append(
                     [
                         dxcallsign,
                         dxgrid,
@@ -165,10 +166,10 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 break
 
 
-#    for idx, item in enumerate(static.HEARD_STATIONS):
+#    for idx, item in enumerate(TNC.heard_stations):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
-#            static.HEARD_STATIONS[idx] = item
+#            TNC.heard_stations[idx] = item
 
 
 def callsign_to_bytes(callsign) -> bytes:
@@ -305,7 +306,7 @@ def check_callsign(callsign: bytes, crc_to_check: bytes):
     except Exception as err:
         log.debug("[HLP] check_callsign: Error callsign SSID to integer:", e=err)
 
-    for ssid in static.SSID_LIST:
+    for ssid in Station.ssid_list:
         call_with_ssid = bytearray(callsign)
         call_with_ssid.extend("-".encode("utf-8"))
         call_with_ssid.extend(str(ssid).encode("utf-8"))
@@ -462,3 +463,28 @@ def snr_from_bytes(snr):
     snr = int.from_bytes(snr, byteorder='big', signed=True)
     snr = snr / 10
     return snr
+
+
+def safe_execute(default, exception, function, *args):
+    """
+    https://stackoverflow.com/a/36671208
+    from json import loads
+    safe_execute("Oh no, explosions occurred!", TypeError, loads, None)
+
+    """
+    try:
+        return function(*args)
+    except exception:
+        return default
+
+
+def return_key_from_object(default, obj, key):
+
+    try:
+        return obj[key]
+    except KeyError:
+        return default
+
+
+def bool_to_string(state):
+    return "True" if state else "False"

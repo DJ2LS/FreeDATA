@@ -81,7 +81,7 @@ c_lib.freedv_open.restype = ctypes.POINTER(ctypes.c_ubyte)
 def send_pong(burst,n_total_burst,frame,n_total_frame):
 
     data_out = bytearray()
-    data_out[0:1] = bytes([burst])
+    data_out[:1] = bytes([burst])
     data_out[1:2] = bytes([n_total_burst])
     data_out[2:3] = bytes([frame])
     data_out[4:5] = bytes([n_total_frame])
@@ -139,7 +139,7 @@ while receive:
     nin_converted = int(nin*(AUDIO_SAMPLE_RATE_RX/MODEM_SAMPLE_RATE))
     if DEBUGGING_MODE:
         print("-----------------------------")
-        print("NIN:  " + str(nin) + " [ " + str(nin_converted) + " ]")
+        print(f"NIN:  {str(nin)} [ {nin_converted} ]")
 
     data_in = stream_rx.read(nin_converted,  exception_on_overflow = False)
     data_in = data_in.rstrip(b'\x00')
@@ -148,17 +148,19 @@ while receive:
     nbytes = c_lib.freedv_rawdatarx(freedv, bytes_out, data_in)  # demodulate audio
 
     if DEBUGGING_MODE:
-        print("SYNC: " + str(c_lib.freedv_get_rx_status(freedv)))
+        print(f"SYNC: {str(c_lib.freedv_get_rx_status(freedv))}")
 
     if nbytes == bytes_per_frame:
 
-            burst = bytes_out[0]
-            n_total_burst = bytes_out[1]
-            frame = bytes_out[2]
-            n_total_frame = bytes_out[3]
-            print("RX | BURST [" + str(burst) + "/" + str(n_total_burst) +  "] FRAME [" + str(frame) + "/" + str(n_total_frame) + "] >>> SENDING PONG")
+        burst = bytes_out[0]
+        n_total_burst = bytes_out[1]
+        frame = bytes_out[2]
+        n_total_frame = bytes_out[3]
+        print(
+            f"RX | BURST [{str(burst)}/{str(n_total_burst)}] FRAME [{str(frame)}/{str(n_total_frame)}] >>> SENDING PONG"
+        )
 
-            TRANSMIT_PONG = threading.Thread(target=send_pong, args=[burst,n_total_burst,frame,n_total_frame], name="SEND PONG")
-            TRANSMIT_PONG.start()
+        TRANSMIT_PONG = threading.Thread(target=send_pong, args=[burst,n_total_burst,frame,n_total_frame], name="SEND PONG")
+        TRANSMIT_PONG.start()
 
-            c_lib.freedv_set_sync(freedv,0)
+        c_lib.freedv_set_sync(freedv,0)

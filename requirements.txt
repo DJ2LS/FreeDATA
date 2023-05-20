@@ -12,6 +12,7 @@ colorama
 ordered-set
 nuitka
 pyinstaller
+websocket-client
 
 # Development and test dependencies
 autopep8

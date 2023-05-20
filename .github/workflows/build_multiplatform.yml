@@ -8,40 +8,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
         platform: [{name: "native"}, {name: "Windows", file: "dll"}]
         architecture: [i686-w64-mingw32, x86_64-w64-mingw32]
         include:
-          - os: ubuntu-18.04
-            libcodec2_name: libcodec2.so.1.0
-            libcodec2_os_name: libcodec2_ubuntu-1804
-            libcodec2_filetype: so
-            generator: Unix Makefiles
-            shell: bash
 
           - os: ubuntu-20.04
-            libcodec2_name: libcodec2.so.1.0
+            libcodec2_name: libcodec2.so.1.1
             libcodec2_os_name: libcodec2_ubuntu-2004
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: ubuntu-22.04
-            libcodec2_name: libcodec2.so.1.0
+            libcodec2_name: libcodec2.so.1.1
             libcodec2_os_name: libcodec2_ubuntu-2204
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-11
-            libcodec2_name: libcodec2.1.0.dylib
+            libcodec2_name: libcodec2.1.1.dylib
             libcodec2_os_name: libcodec2_macos-11
             libcodec2_filetype: dylib
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-12
-            libcodec2_name: libcodec2.1.0.dylib
+            libcodec2_name: libcodec2.1.1.dylib
             libcodec2_os_name: libcodec2_macos-12
             libcodec2_filetype: dylib
             generator: Unix Makefiles
@@ -118,6 +112,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
       - uses: uraimo/run-on-arch-action@v2
         name: Build artifact
         id: build
@@ -178,7 +174,7 @@ jobs:
             cd build
             cmake ../
             make
-            mv ./src/libcodec2.so.1.0 /artifacts/${artifact_name}
+            mv ./src/libcodec2.so.1.1 /artifacts/${artifact_name}
 
       - name: Show recursive PWD/artifacts
         # Items placed in /artifacts in the container will be in
@@ -226,10 +222,10 @@ jobs:
         with:
           repository: DJ2LS/FreeDATA
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
@@ -338,12 +334,23 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      - name: Download Portaudio binaries
+      - name: Download Portaudio binaries Linux macOS
+        if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: tnc
         run: |
-          if !test -d "dist/_sounddevice_data";then
+          if ! test -d "dist/tnc/_sounddevice_data"; then
           git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
           fi
+
+      - name: Download Portaudio binaries Windows
+        if: ${{startsWith(matrix.os, 'windows')}}
+        working-directory: tnc
+        run: |
+          if(Test-Path -Path "dist/tnc/_sounddevice_data"){
+          echo "sounddevice folder already exists"
+          } else {
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
+          }
 
       - name: LIST ALL FILES
         run: ls -R
@@ -357,6 +364,9 @@ jobs:
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         with:
           package_root: "./gui/"
           github_token: ${{ secrets.github_token }}

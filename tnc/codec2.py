@@ -18,19 +18,38 @@ import structlog
 
 log = structlog.get_logger("codec2")
 
+
 # Enum for codec2 modes
 class FREEDV_MODE(Enum):
     """
     Enumeration for codec2 modes and names
     """
-    sig0 = 14
-    sig1 = 14
+    sig0 = 19
+    sig1 = 19
     datac0 = 14
     datac1 = 10
     datac3 = 12
+    datac4 = 18
+    datac13 = 19
     fsk_ldpc = 9
     fsk_ldpc_0 = 200
     fsk_ldpc_1 = 201
+
+
+class FREEDV_MODE_USED_SLOTS(Enum):
+    """
+    Enumeration for codec2 used slots
+    """
+    sig0 = [False, False, True, False, False]
+    sig1 = [False, False, True, False, False]
+    datac0 = [False, False, True, False, False]
+    datac1 = [False, True, True, True, False]
+    datac3 = [False, False, True, False, False]
+    datac4 = [False, False, True, False, False]
+    datac13 = [False, False, True, False, False]
+    fsk_ldpc = [False, False, True, False, False]
+    fsk_ldpc_0 = [False, False, True, False, False]
+    fsk_ldpc_1 = [False, False, True, False, False]
 
 # Function for returning the mode value
 def freedv_get_mode_value_by_name(mode: str) -> int:
@@ -60,17 +79,20 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
 
 
 # Check if we are running in a pyinstaller environment
-if hasattr(sys, "_MEIPASS"):
-    sys.path.append(getattr(sys, "_MEIPASS"))
-else:
-    sys.path.append(os.path.abspath("."))
+#if hasattr(sys, "_MEIPASS"):
+#    sys.path.append(getattr(sys, "_MEIPASS"))
+#else:
+sys.path.append(os.path.abspath("."))
 
 log.info("[C2 ] Searching for libcodec2...")
 if sys.platform == "linux":
     files = glob.glob(r"**/*libcodec2*", recursive=True)
     files.append("libcodec2.so")
 elif sys.platform == "darwin":
-    files = glob.glob(r"**/*libcodec2*.dylib", recursive=True)
+    if hasattr(sys, "_MEIPASS"):
+        files = glob.glob(getattr(sys, "_MEIPASS") + '/**/*libcodec2*', recursive=True)
+    else:
+        files = glob.glob(r"**/*libcodec2*.dylib", recursive=True)
 elif sys.platform in ["win32", "win64"]:
     files = glob.glob(r"**\*libcodec2*.dll", recursive=True)
 else:
@@ -97,6 +119,9 @@ if api is None or "api" not in locals():
 
 api.freedv_open.argype = [ctypes.c_int]  # type: ignore
 api.freedv_open.restype = ctypes.c_void_p
+
+api.freedv_set_sync.argype = [ctypes.c_void_p, ctypes.c_int]  # type: ignore
+api.freedv_set_sync.restype = ctypes.c_void_p
 
 api.freedv_open_advanced.argtype = [ctypes.c_int, ctypes.c_void_p]  # type: ignore
 api.freedv_open_advanced.restype = ctypes.c_void_p
@@ -147,10 +172,6 @@ api.freedv_get_n_max_modem_samples.argtype = [ctypes.c_void_p]  # type: ignore
 api.freedv_get_n_max_modem_samples.restype = ctypes.c_int
 
 api.FREEDV_FS_8000 = 8000  # type: ignore
-api.FREEDV_MODE_DATAC1 = 10  # type: ignore
-api.FREEDV_MODE_DATAC3 = 12  # type: ignore
-api.FREEDV_MODE_DATAC0 = 14  # type: ignore
-api.FREEDV_MODE_FSK_LDPC = 9  # type: ignore
 
 # -------------------------------- FSK LDPC MODE SETTINGS
 
@@ -195,25 +216,25 @@ H_1024_2048_4f       rate 0.50 (2048,1024)  BPF: 128    working
 api.FREEDV_MODE_FSK_LDPC_0_ADV = ADVANCED()  # type: ignore
 api.FREEDV_MODE_FSK_LDPC_0_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_0_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_0_ADV.Rs = 500
 api.FREEDV_MODE_FSK_LDPC_0_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1400  # 1150 4fsk, 1500 2fsk
-api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 120  # 200
+api.FREEDV_MODE_FSK_LDPC_0_ADV.first_tone = 1150  # 1150 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_0_ADV.tone_spacing = 200  # 200
 api.FREEDV_MODE_FSK_LDPC_0_ADV.codename = "H_128_256_5".encode("utf-8")  # code word
 
 # --------------- 4 H_256_512_4, 7 bytes
 api.FREEDV_MODE_FSK_LDPC_1_ADV = ADVANCED()  # type: ignore
 api.FREEDV_MODE_FSK_LDPC_1_ADV.interleave_frames = 0
 api.FREEDV_MODE_FSK_LDPC_1_ADV.M = 4
-api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 100
+api.FREEDV_MODE_FSK_LDPC_1_ADV.Rs = 1000
 api.FREEDV_MODE_FSK_LDPC_1_ADV.Fs = 8000
-api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1250  # 1250 4fsk, 1500 2fsk
+api.FREEDV_MODE_FSK_LDPC_1_ADV.first_tone = 1150  # 1250 4fsk, 1500 2fsk
 api.FREEDV_MODE_FSK_LDPC_1_ADV.tone_spacing = 200
-api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_256_512_4".encode("utf-8")  # code word
+api.FREEDV_MODE_FSK_LDPC_1_ADV.codename = "H_4096_8192_3d".encode("utf-8")  # code word
 
 # ------- MODEM STATS STRUCTURES
 MODEM_STATS_NC_MAX = 50 + 1 * 2
-MODEM_STATS_NR_MAX = 160 * 2
+MODEM_STATS_NR_MAX = 320 * 2
 MODEM_STATS_ET_MAX = 8
 MODEM_STATS_EYE_IND_MAX = 160
 MODEM_STATS_NSPEC = 512

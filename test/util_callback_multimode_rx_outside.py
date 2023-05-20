@@ -110,20 +110,20 @@ class Test:
             sys.exit()
 
         # open codec2 instance
-        self.datac0_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+        self.datac13_freedv = ctypes.cast(
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac13.value), ctypes.c_void_p
         )
-        self.datac0_bytes_per_frame = int(
-            codec2.api.freedv_get_bits_per_modem_frame(self.datac0_freedv) / 8
+        self.datac13_bytes_per_frame = int(
+            codec2.api.freedv_get_bits_per_modem_frame(self.datac13_freedv) / 8
         )
-        self.datac0_bytes_out = ctypes.create_string_buffer(self.datac0_bytes_per_frame)
+        self.datac13_bytes_out = ctypes.create_string_buffer(self.datac13_bytes_per_frame)
         codec2.api.freedv_set_frames_per_burst(
-            self.datac0_freedv, self.N_FRAMES_PER_BURST
+            self.datac13_freedv, self.N_FRAMES_PER_BURST
         )
-        self.datac0_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
+        self.datac13_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
 
         self.datac1_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC1), ctypes.c_void_p
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac1.value), ctypes.c_void_p
         )
         self.datac1_bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(self.datac1_freedv) / 8
@@ -135,7 +135,7 @@ class Test:
         self.datac1_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
 
         self.datac3_freedv = ctypes.cast(
-            codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC3), ctypes.c_void_p
+            codec2.api.freedv_open(codec2.FREEDV_MODE.datac3.value), ctypes.c_void_p
         )
         self.datac3_bytes_per_frame = int(
             codec2.api.freedv_get_bits_per_modem_frame(self.datac3_freedv) / 8
@@ -147,9 +147,9 @@ class Test:
         self.datac3_buffer = codec2.audio_buffer(2 * self.AUDIO_FRAMES_PER_BUFFER)
 
         # SET COUNTERS
-        self.rx_total_frames_datac0 = 0
-        self.rx_frames_datac0 = 0
-        self.rx_bursts_datac0 = 0
+        self.rx_total_frames_datac13 = 0
+        self.rx_frames_datac13 = 0
+        self.rx_bursts_datac13 = 0
 
         self.rx_total_frames_datac1 = 0
         self.rx_frames_datac1 = 0
@@ -171,7 +171,7 @@ class Test:
         self.frx = open("rx48_callback_multimode.raw", mode="wb")
 
         # initial nin values
-        self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
+        self.datac13_nin = codec2.api.freedv_nin(self.datac13_freedv)
         self.datac1_nin = codec2.api.freedv_nin(self.datac1_freedv)
         self.datac3_nin = codec2.api.freedv_nin(self.datac3_freedv)
 
@@ -181,7 +181,7 @@ class Test:
         x.tofile(self.frx)
         x = self.resampler.resample48_to_8(x)
 
-        self.datac0_buffer.push(x)
+        self.datac13_buffer.push(x)
         self.datac1_buffer.push(x)
         self.datac3_buffer.push(x)
 
@@ -189,9 +189,9 @@ class Test:
 
     def print_stats(self):
         if self.DEBUGGING_MODE:
-            self.datac0_rxstatus = codec2.api.freedv_get_rx_status(self.datac0_freedv)
-            self.datac0_rxstatus = codec2.api.rx_sync_flags_to_text[
-                self.datac0_rxstatus
+            self.datac13_rxstatus = codec2.api.freedv_get_rx_status(self.datac13_freedv)
+            self.datac13_rxstatus = codec2.api.rx_sync_flags_to_text[
+                self.datac13_rxstatus
             ]
 
             self.datac1_rxstatus = codec2.api.freedv_get_rx_status(self.datac1_freedv)
@@ -207,8 +207,8 @@ class Test:
             print(
                 "NIN0: %5d RX_STATUS0: %4s NIN1: %5d RX_STATUS1: %4s NIN3: %5d RX_STATUS3: %4s"
                 % (
-                    self.datac0_nin,
-                    self.datac0_rxstatus,
+                    self.datac13_nin,
+                    self.datac13_rxstatus,
                     self.datac1_nin,
                     self.datac1_rxstatus,
                     self.datac3_nin,
@@ -219,28 +219,28 @@ class Test:
 
     def run_audio(self):
         try:
-            print(f"starting pyaudio callback", file=sys.stderr)
+            print("starting pyaudio callback", file=sys.stderr)
             self.stream_rx.start_stream()
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr)
 
         while self.receive and time.time() < self.timeout:
-            while self.datac0_buffer.nbuffer >= self.datac0_nin:
+            while self.datac13_buffer.nbuffer >= self.datac13_nin:
                 # demodulate audio
                 nbytes = codec2.api.freedv_rawdatarx(
-                    self.datac0_freedv,
-                    self.datac0_bytes_out,
-                    self.datac0_buffer.buffer.ctypes,
+                    self.datac13_freedv,
+                    self.datac13_bytes_out,
+                    self.datac13_buffer.buffer.ctypes,
                 )
-                self.datac0_buffer.pop(self.datac0_nin)
-                self.datac0_nin = codec2.api.freedv_nin(self.datac0_freedv)
-                if nbytes == self.datac0_bytes_per_frame:
-                    self.rx_total_frames_datac0 = self.rx_total_frames_datac0 + 1
-                    self.rx_frames_datac0 = self.rx_frames_datac0 + 1
+                self.datac13_buffer.pop(self.datac13_nin)
+                self.datac13_nin = codec2.api.freedv_nin(self.datac13_freedv)
+                if nbytes == self.datac13_bytes_per_frame:
+                    self.rx_total_frames_datac13 = self.rx_total_frames_datac13 + 1
+                    self.rx_frames_datac13 = self.rx_frames_datac13 + 1
 
-                    if self.rx_frames_datac0 == self.N_FRAMES_PER_BURST:
-                        self.rx_frames_datac0 = 0
-                        self.rx_bursts_datac0 = self.rx_bursts_datac0 + 1
+                    if self.rx_frames_datac13 == self.N_FRAMES_PER_BURST:
+                        self.rx_frames_datac13 = 0
+                        self.rx_bursts_datac13 = self.rx_bursts_datac13 + 1
                 self.print_stats()
 
             while self.datac1_buffer.nbuffer >= self.datac1_nin:
@@ -280,7 +280,7 @@ class Test:
                 self.print_stats()
 
             if (
-                self.rx_bursts_datac0
+                self.rx_bursts_datac13
                 and self.rx_bursts_datac1
                 and self.rx_bursts_datac3
             ) == self.N_BURSTS:
@@ -297,7 +297,7 @@ class Test:
             )
 
         print(
-            f"DATAC0: {self.rx_bursts_datac0}/{self.rx_total_frames_datac0} DATAC1: {self.rx_bursts_datac1}/{self.rx_total_frames_datac1} DATAC3: {self.rx_bursts_datac3}/{self.rx_total_frames_datac3}",
+            f"datac13: {self.rx_bursts_datac13}/{self.rx_total_frames_datac13} DATAC1: {self.rx_bursts_datac1}/{self.rx_total_frames_datac1} DATAC3: {self.rx_bursts_datac3}/{self.rx_total_frames_datac3}",
             file=sys.stderr,
         )
         self.frx.close()

@@ -25,7 +25,7 @@ parser.add_argument("--bursts", dest="N_BURSTS", default=1, type=int)
 parser.add_argument("--framesperburst", dest="N_FRAMES_PER_BURST", default=1, type=int)
 parser.add_argument("--delay", dest="DELAY_BETWEEN_BURSTS", default=500, type=int)
 parser.add_argument(
-    "--mode", dest="FREEDV_MODE", type=str, choices=["datac0", "datac1", "datac3"]
+    "--mode", dest="FREEDV_MODE", type=str, choices=["datac13", "datac1", "datac3"]
 )
 parser.add_argument(
     "--audiodev",
@@ -87,10 +87,12 @@ class Test:
             self.p = pyaudio.PyAudio()
             # auto search for loopback devices
             if self.AUDIO_OUTPUT_DEVICE == -2:
-                loopback_list = []
-                for dev in range( self.p.get_device_count()):
-                    if "Loopback: PCM" in self.p.get_device_info_by_index(dev)["name"]:
-                        loopback_list.append(dev)
+                loopback_list = [
+                    dev
+                    for dev in range(self.p.get_device_count())
+                    if "Loopback: PCM"
+                    in self.p.get_device_info_by_index(dev)["name"]
+                ]
                 if len(loopback_list) >= 2:
                     self.AUDIO_OUTPUT_DEVICE = loopback_list[0]  # 0  = RX   1 = TX
                     print(f"loopback_list rx: {loopback_list}", file=sys.stderr)
@@ -148,7 +150,7 @@ class Test:
 
     def run_audio(self):
         try:
-            print(f"starting pyaudio callback", file=sys.stderr)
+            print("starting pyaudio callback", file=sys.stderr)
             self.stream_tx.start_stream()
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr)

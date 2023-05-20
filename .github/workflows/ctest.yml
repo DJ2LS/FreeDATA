@@ -21,7 +21,7 @@ jobs:
           - python-version: "3.9"
           - python-version: "3.10"
           - python-version: "3.11"
-          - python-version: "3.12-dev"
+          #- python-version: "3.12-dev"
 
     steps:
       - uses: actions/checkout@v3
@@ -37,14 +37,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install octave octave-common octave-signal sox portaudio19-dev python3-pyaudio
-          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice pyaudio
+          pip3 install psutil crcengine ujson pyserial numpy structlog sounddevice pyaudio requests websocket-client
           pip3 install pytest pytest-rerunfailures
 
       - name: Build codec2
         shell: bash
         run: |
           git clone https://github.com/drowe67/codec2.git
-          cd codec2 && git checkout master # This should be pinned to a release
+          cd codec2
           mkdir -p build_linux && cd build_linux && cmake .. && make
 
       - name: run ctests

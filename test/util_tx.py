@@ -198,7 +198,7 @@ def parse_arguments():
         help="delay between bursts in ms",
     )
     parser.add_argument(
-        "--mode", dest="FREEDV_MODE", type=str, choices=["datac0", "datac1", "datac3"]
+        "--mode", dest="FREEDV_MODE", type=str, choices=["datac13", "datac1", "datac3"]
     )
     parser.add_argument(
         "--audiodev",

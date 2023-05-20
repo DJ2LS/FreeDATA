@@ -46,7 +46,7 @@ if os.path.exists("test"):
 
 def t_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
     """
-    Test a high signal-to-noise ratio path with DATAC0, DATAC1 and DATAC3.
+    Test a high signal-to-noise ratio path with datac13, DATAC1 and DATAC3.
 
     :param bursts: Number of bursts
     :type bursts: int
@@ -101,7 +101,7 @@ def t_HighSNR_P_P_Multi(bursts: int, frames_per_burst: int):
                     if "DATAC" in str(line, "UTF-8")
                 ]
             )
-            assert f"DATAC0: {bursts}/{frames_per_burst * bursts}" in lastline
+            assert f"DATAC13: {bursts}/{frames_per_burst * bursts}" in lastline
             assert f"DATAC1: {bursts}/{frames_per_burst * bursts}" in lastline
             assert f"DATAC3: {bursts}/{frames_per_burst * bursts}" in lastline
             print(lastline)

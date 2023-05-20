@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Negative tests for datac0 frames.
+Negative tests for datac13 frames.
 
 @author: kronenpj
 """
@@ -20,9 +20,9 @@ import pytest
 import structlog
 
 try:
-    import test.util_datac0_negative as util
+    import test.util_datac13_negative as util
 except ImportError:
-    import util_datac0_negative as util
+    import util_datac13_negative as util
 
 
 STATIONS = ["AA2BB", "ZZ9YY"]
@@ -162,10 +162,13 @@ def analyze_results(station1: list, station2: list, call_list: list):
 
 
 # @pytest.mark.parametrize("frame_type", ["beacon", "connect", "ping"])
-@pytest.mark.parametrize("frame_type", ["ping", "stop"])
-def test_datac0_negative(frame_type: str, tmp_path):
-    log_handler.setup_logging(filename=tmp_path / "test_datac0", level="DEBUG")
-    log = structlog.get_logger("test_datac0")
+@pytest.mark.parametrize("frame_type", [
+    "ping",
+    pytest.param("stop", marks=pytest.mark.flaky(reruns=10))
+])
+def test_datac13_negative(frame_type: str, tmp_path):
+    log_handler.setup_logging(filename=tmp_path / "test_datac13", level="DEBUG")
+    log = structlog.get_logger("test_datac13")
 
     s1_data = []
     s2_data = []
@@ -194,7 +197,7 @@ def test_datac0_negative(frame_type: str, tmp_path):
     from_s2, s2_send = multiprocessing.Pipe()
     proc = [
         multiprocessing.Process(
-            target=util.t_datac0_1,
+            target=util.t_datac13_1,
             args=(
                 s1_send,
                 STATIONS[0],
@@ -205,7 +208,7 @@ def test_datac0_negative(frame_type: str, tmp_path):
             daemon=True,
         ),
         multiprocessing.Process(
-            target=util.t_datac0_2,
+            target=util.t_datac13_2,
             args=(
                 s2_send,
                 STATIONS[1],

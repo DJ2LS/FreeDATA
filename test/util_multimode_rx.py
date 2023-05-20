@@ -67,7 +67,7 @@ def test_mm_rx():
     for idx in range(3):
         datac_freedv.append(
             ctypes.cast(
-                codec2.api.freedv_open(codec2.api.FREEDV_MODE_DATAC0), ctypes.c_void_p
+                codec2.api.freedv_open(codec2.FREEDV_MODE.datac13.value), ctypes.c_void_p
             )
         )
         datac_bytes_per_frame.append(
@@ -121,11 +121,11 @@ def test_mm_rx():
     for idx in range(3):
         datac_nin[idx] = codec2.api.freedv_nin(datac_freedv[idx])
 
-    def print_stats(time_datac0, time_datac1, time_datac3):
+    def print_stats(time_datac13, time_datac1, time_datac3):
         if not DEBUGGING_MODE:
             return
 
-        time_datac = [time_datac0, time_datac1, time_datac3]
+        time_datac = [time_datac13, time_datac1, time_datac3]
         datac_rxstatus = ["", "", ""]
         for idx in range(3):
             datac_rxstatus[idx] = codec2.api.rx_sync_flags_to_text[
@@ -206,7 +206,7 @@ def test_mm_rx():
         print("TIMEOUT REACHED", file=sys.stderr)
 
     print(
-        f"DATAC0: {rx_bursts_datac[0]}/{rx_total_frames_datac[0]} "
+        f"DATAC13: {rx_bursts_datac[0]}/{rx_total_frames_datac[0]} "
         f"DATAC1: {rx_bursts_datac[1]}/{rx_total_frames_datac[1]} "
         f"DATAC3: {rx_bursts_datac[2]}/{rx_total_frames_datac[2]}",
         file=sys.stderr,
@@ -241,7 +241,7 @@ def parse_arguments():
     parser.add_argument(
         "--timeout",
         dest="TIMEOUT",
-        default=10,
+        default=60,
         type=int,
         help="Timeout (seconds) before test ends",
     )

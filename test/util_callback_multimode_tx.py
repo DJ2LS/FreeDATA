@@ -138,7 +138,7 @@ class Test:
 
     def run_audio(self):
         try:
-            print(f"starting pyaudio callback", file=sys.stderr)
+            print("starting pyaudio callback", file=sys.stderr)
             self.stream_tx.start_stream()
         except Exception as e:
             print(f"pyAudio error: {e}", file=sys.stderr)
@@ -158,9 +158,9 @@ class Test:
     def create_modulation(self):
 
         modes = [
-            codec2.api.FREEDV_MODE_DATAC0,
-            codec2.api.FREEDV_MODE_DATAC1,
-            codec2.api.FREEDV_MODE_DATAC3,
+            codec2.FREEDV_MODE.datac13.value,
+            codec2.FREEDV_MODE.datac1.value,
+            codec2.FREEDV_MODE.datac3.value,
         ]
         for m in modes:
 

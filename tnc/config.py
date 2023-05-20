@@ -51,38 +51,33 @@ class CONFIG:
         self.config['STATION'] = {'#Station settings': None,
                                   'mycall': data[1],
                                   'mygrid': data[2],
-                                  'ssid_list': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[26])
+                                  'ssid_list': list(data[18])# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[18])
                                   }
 
         self.config['AUDIO'] = {'#Audio settings': None,
                                 'rx': data[3],
                                 'tx': data[4],
-                                'txaudiolevel': data[22]
+                                'txaudiolevel': data[14],
+                                'auto_tune': data[19]
 
                                 }
         self.config['RADIO'] = {'#Radio settings': None,
-                                'radiocontrol': data[13],
-                                # TODO: disabled because we dont need these settings anymore
-                                #'devicename': data[5],
-                                #'deviceport': data[6],
-                                #'serialspeed': data[7],
-                                #'pttprotocol': data[8],
-                                #'pttport': data[9],
-                                #'data_bits': data[10],
-                                #'stop_bits': data[11],
-                                #'handshake': data[12],
-                                'rigctld_ip': data[14],
-                                'rigctld_port': data[15]
+                                'radiocontrol': data[5],
+                                'rigctld_ip': data[6],
+                                'rigctld_port': data[7]
                                 }
         self.config['TNC'] = {'#TNC settings': None,
-                              'scatter': data[16],
-                              'fft': data[17],
-                              'narrowband': data[18],
-                              'fmin': data[19],
-                              'fmax': data[20],
-                              'qrv': data[23],
-                              'rxbuffersize': data[24],
-                              'explorer': data[25]
+                              'scatter': data[8],
+                              'fft': data[9],
+                              'narrowband': data[10],
+                              'fmin': data[11],
+                              'fmax': data[12],
+                              'qrv': data[15],
+                              'rx_buffer_size': data[16],
+                              'explorer': data[17],
+                              'stats': data[19],
+                              'fsk': data[13],
+                              'tx_delay': data[21]
                               }
         try:
             with open(self.config_name, 'w') as configfile:
@@ -101,3 +96,21 @@ class CONFIG:
 
             return self.config
 
+    def get(self, area, key, default):
+        """
+        read from config and add if not exists
+
+        """
+
+        for _ in range(2):
+            try:
+                parameter = (
+                    self.config[area][key] in ["True", "true", True]
+                    if default in ["True", "true", True, "False", "false", False]
+                    else self.config[area][key]
+                )
+            except KeyError:
+                self.config[area][key] = str(default)
+
+        self.log.info("[CFG] reading...", parameter=parameter, key=key)
+        return parameter
