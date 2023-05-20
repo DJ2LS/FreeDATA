@@ -1720,15 +1720,12 @@ function resetSortIcon() {
   let headers = document.querySelectorAll(
     "#tblHeardStationList > thead > tr > th"
   );
-  if (hslLastSortDir == "desc")
-    text =
-      '<i id="hslSort" class="bi bi-sort-up"></i>' +
-      headers[hslLastSort].innerText;
-  else
-    text =
-      '<i id="hslSort" class="bi bi-sort-down"></i>' +
-      headers[hslLastSort].innerText;
-  headers[hslLastSort].innerHTML = text;
+  if (hslLastSortDir == "desc") text = "bi-sort-up";
+  else text = "bi-sort-down";
+  const sicon = document.createElement("i");
+  sicon.id = "hslSort";
+  sicon.classList.add("bi", text);
+  headers[hslLastSort].prepend(sicon);
 }
 
 function connectedStation(data) {
