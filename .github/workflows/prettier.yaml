@@ -1,7 +1,10 @@
 name: Prettier
 
 # This action works with pull requests and pushes
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
     prettier:
