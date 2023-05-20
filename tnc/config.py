@@ -79,6 +79,11 @@ class CONFIG:
                               'fsk': data[13],
                               'tx_delay': data[21]
                               }
+        self.config['TCI'] = {'#TCI settings': None,
+                              'ip': data[22],
+                              'port': data[23]
+                              }
+
         try:
             with open(self.config_name, 'w') as configfile:
                 self.config.write(configfile)

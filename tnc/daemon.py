@@ -236,6 +236,12 @@ class DAEMON:
                 options.extend((data[6], "--rigctld_port"))
                 options.append(data[7])
 
+            if data[5] == "tci":
+                options.append("--tci_ip")
+                options.extend((data[22], "--tci_port"))
+                options.append(data[23])
+
+
         if data[8] == "True":
             options.append("--scatter")
 

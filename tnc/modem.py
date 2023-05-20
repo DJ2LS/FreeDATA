@@ -74,7 +74,7 @@ class RF:
 
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if AudioParam.audio_enable_tci else 2400 * 2
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if HamlibParam.hamlib_radiocontrol in ["tci"] else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -179,7 +179,7 @@ class RF:
         self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
         
         # --------------------------------------------CREATE PORTAUDIO INSTANCE
-        if not TESTMODE and not AudioParam.audio_enable_tci:
+        if not TESTMODE and not HamlibParam.hamlib_radiocontrol in ["tci"]:
             try:
                 self.stream = sd.RawStream(
                     channels=1,
@@ -267,12 +267,12 @@ class RF:
         # Check how we want to control the radio
         if HamlibParam.hamlib_radiocontrol == "rigctld":
             import rigctld as rig
-        elif AudioParam.audio_enable_tci:
+        elif HamlibParam.hamlib_radiocontrol == "tci":
             self.radio = self.tci_module
         else:
             import rigdummy as rig
 
-        if not AudioParam.audio_enable_tci:
+        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
             self.radio = rig.radio()
             self.radio.open_rig(
                 rigctld_ip=HamlibParam.hamlib_rigctld_ip,
@@ -675,7 +675,7 @@ class RF:
                                alc_level=str(HamlibParam.alc))
         x = set_audio_volume(x, AudioParam.tx_audio_level)
 
-        if not AudioParam.audio_enable_tci:
+        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
             txbuffer_out = self.resampler.resample8_to_48(x)
         else:
             txbuffer_out = x
@@ -694,7 +694,7 @@ class RF:
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if AudioParam.audio_enable_tci:
+        if HamlibParam.hamlib_radiocontrol in ["tci"]:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -707,7 +707,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if AudioParam.audio_enable_tci:
+            if HamlibParam.hamlib_radiocontrol in ["tci"]:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -752,7 +752,7 @@ class RF:
         txbuffer_out = x
         print(txbuffer_out)
 
-        #if not AudioParam.audio_enable_tci:
+        #if not HamlibParam.hamlib_radiocontrol in ["tci"]:
         #    txbuffer_out = self.resampler.resample8_to_48(x)
         #else:
         #    txbuffer_out = x
@@ -762,7 +762,7 @@ class RF:
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if AudioParam.audio_enable_tci:
+        if HamlibParam.hamlib_radiocontrol in ["tci"]:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -775,7 +775,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if AudioParam.audio_enable_tci:
+            if HamlibParam.hamlib_radiocontrol in ["tci"]:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -1218,25 +1218,31 @@ class RF:
           - HamlibParam.hamlib_bandwidth
         """
         while True:
-            # this looks weird, but is necessary for avoiding rigctld packet colission sock
-            threading.Event().wait(0.25)
-            HamlibParam.hamlib_frequency = self.radio.get_frequency()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_mode = self.radio.get_mode()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_status = self.radio.get_status()
-            threading.Event().wait(0.1)
-            if TNC.transmitting:
-                HamlibParam.alc = self.radio.get_alc()
+            try:
+                # this looks weird, but is necessary for avoiding rigctld packet colission sock
+                threading.Event().wait(0.25)
+                HamlibParam.hamlib_frequency = self.radio.get_frequency()
                 threading.Event().wait(0.1)
-            # HamlibParam.hamlib_rf = self.radio.get_level()
-            # threading.Event().wait(0.1)
-            HamlibParam.hamlib_strength = self.radio.get_strength()
+                HamlibParam.hamlib_mode = self.radio.get_mode()
+                threading.Event().wait(0.1)
+                HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
+                threading.Event().wait(0.1)
+                HamlibParam.hamlib_status = self.radio.get_status()
+                threading.Event().wait(0.1)
+                if TNC.transmitting:
+                    HamlibParam.alc = self.radio.get_alc()
+                    threading.Event().wait(0.1)
+                # HamlibParam.hamlib_rf = self.radio.get_level()
+                # threading.Event().wait(0.1)
+                HamlibParam.hamlib_strength = self.radio.get_strength()
 
-            # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
-
+                # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
+            except Exception as e:
+                self.log.warning(
+                    "[MDM] error getting radio data",
+                    e=e,
+                )
+                threading.Event().wait(1)
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess

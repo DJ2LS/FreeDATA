@@ -155,7 +155,7 @@ class TCICtrl:
 
 
 
-    def on_error(self, error):
+    def on_error(self, ws, error):
         self.log.error(
             "[TCI] Error FreeDATA to TCI rig!", ip=self.hostname, port=self.port, e=error
         )
