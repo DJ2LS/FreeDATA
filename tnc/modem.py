@@ -28,7 +28,8 @@ from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
-import cw
+# FIXME: used for def transmit_morse
+# import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 

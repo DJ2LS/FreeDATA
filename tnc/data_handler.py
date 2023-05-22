@@ -2855,9 +2855,10 @@ class DATA:
             self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
-            #self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-            TNC.transmitting = True
-            modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, "123"])
+            self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            # FIXME: Remove or change this in later versions for full CW support
+            # TNC.transmitting = True
+            # modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, "123"])
 
     def received_cq(self, data_in: bytes) -> None:
         """
