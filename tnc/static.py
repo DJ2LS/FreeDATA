@@ -92,7 +92,10 @@ class HamlibParam:
     hamlib_mode: str = ""
     hamlib_rf: int = 0
 
-@dataclass 
+@dataclass
+class MeshParam:
+    routing_table = []
+@dataclass
 class ModemParam:
     tuning_range_fmin: float = -50.0
     tuning_range_fmax: float = 50.0

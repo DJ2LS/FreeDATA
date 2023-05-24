@@ -8,10 +8,11 @@ import time
 from datetime import datetime,timezone
 import crcengine
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
 import structlog
 import numpy as np
 import threading
+import mesh
 
 log = structlog.get_logger("helpers")
 
@@ -164,7 +165,8 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                     ]
                 )
                 break
-
+    # trigger update of routing table
+    mesh.MeshRouter.get_from_heard_stations()
 
 #    for idx, item in enumerate(TNC.heard_stations):
 #        if dxcallsign in item:
