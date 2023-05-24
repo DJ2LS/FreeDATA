@@ -233,7 +233,7 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--tci-port",
         dest="tci_port",
-        default=9000,
+        default=50001,
         type=int,
         help="Set tci destination port",
     )
