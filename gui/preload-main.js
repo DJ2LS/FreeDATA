@@ -2316,7 +2316,15 @@ function updateHeardStations(arg) {
     timestampRaw = arg.stations[i]["timestamp"];
 
     var datetime = new Date(timestampRaw * 1000).toLocaleString(
-      navigator.language
+      navigator.language,{
+        hourCycle: 'h23',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    }
     );
     //var hours = date.getHours();
     //var minutes = "0" + date.getMinutes();
