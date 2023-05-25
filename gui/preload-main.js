@@ -40,6 +40,7 @@ const contrib = [
   "DF7MH",
   "G0HWW",
   "N1QM",
+  "LA3QMA",
 ];
 
 //let elements = document.querySelectorAll('[id^="hamlib_"]'); // get all elements starting with...
@@ -103,6 +104,25 @@ window.addEventListener("DOMContentLoaded", () => {
       type: "set",
       command: "mode",
       mode: "PKTUSB",
+    };
+    ipcRenderer.send("run-tnc-command", Data);
+  });
+  // save mode event listener
+  document.getElementById("saveModeDIGU").addEventListener("click", () => {
+    let Data = {
+      type: "set",
+      command: "mode",
+      mode: "DIGU",
+    };
+    ipcRenderer.send("run-tnc-command", Data);
+  });
+
+  // save mode event listener
+  document.getElementById("saveModeDIGL").addEventListener("click", () => {
+    let Data = {
+      type: "set",
+      command: "mode",
+      mode: "DIGL",
     };
     ipcRenderer.send("run-tnc-command", Data);
   });
