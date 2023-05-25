@@ -225,7 +225,9 @@ exports.startTNC = function (
   enable_explorer,
   explorer_stats,
   auto_tune,
-  tx_delay
+  tx_delay,
+  tci_ip,
+  tci_port
 ) {
   var json_command = JSON.stringify({
     type: "set",
@@ -260,6 +262,8 @@ exports.startTNC = function (
         enable_stats: explorer_stats,
         enable_auto_tune: auto_tune,
         tx_delay: tx_delay,
+        tci_ip: tci_ip,
+        tci_port: tci_port,
       },
     ],
   });

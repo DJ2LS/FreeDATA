@@ -70,6 +70,8 @@ const configDefaultSettings =
                   "hamlib_rigctld_path" : "",\
                   "hamlib_rigctld_server_port" : "4532",\
                   "hamlib_rigctld_custom_args": "",\
+                  "tci_port" : "50001",\
+                  "tci_ip" : "127.0.0.1",\
                   "spectrum": "waterfall",\
                   "tnclocation": "localhost",\
                   "enable_scatter" : "False",\

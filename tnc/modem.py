@@ -28,6 +28,8 @@ from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
+# FIXME: used for def transmit_morse
+# import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
 
@@ -73,7 +75,7 @@ class RF:
 
         self.AUDIO_FRAMES_PER_BUFFER_RX = 2400 * 2  # 8192
         # 8192 Let's do some tests with very small chunks for TX
-        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if AudioParam.audio_enable_tci else 2400 * 2
+        self.AUDIO_FRAMES_PER_BUFFER_TX = 1200 if HamlibParam.hamlib_radiocontrol in ["tci"] else 2400 * 2
         # 8 * (self.AUDIO_SAMPLE_RATE_RX/self.MODEM_SAMPLE_RATE) == 48
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
@@ -178,7 +180,7 @@ class RF:
         self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
         
         # --------------------------------------------CREATE PORTAUDIO INSTANCE
-        if not TESTMODE and not AudioParam.audio_enable_tci:
+        if not TESTMODE and not HamlibParam.hamlib_radiocontrol in ["tci"]:
             try:
                 self.stream = sd.RawStream(
                     channels=1,
@@ -266,12 +268,12 @@ class RF:
         # Check how we want to control the radio
         if HamlibParam.hamlib_radiocontrol == "rigctld":
             import rigctld as rig
-        elif AudioParam.audio_enable_tci:
+        elif HamlibParam.hamlib_radiocontrol == "tci":
             self.radio = self.tci_module
         else:
             import rigdummy as rig
 
-        if not AudioParam.audio_enable_tci:
+        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
             self.radio = rig.radio()
             self.radio.open_rig(
                 rigctld_ip=HamlibParam.hamlib_rigctld_ip,
@@ -674,7 +676,7 @@ class RF:
                                alc_level=str(HamlibParam.alc))
         x = set_audio_volume(x, AudioParam.tx_audio_level)
 
-        if not AudioParam.audio_enable_tci:
+        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
             txbuffer_out = self.resampler.resample8_to_48(x)
         else:
             txbuffer_out = x
@@ -686,25 +688,14 @@ class RF:
         self.mod_out_locked = True
 
         # -------------------------------
-        chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
-        chunk = [
-            txbuffer_out[i: i + chunk_length]
-            for i in range(0, len(txbuffer_out), chunk_length)
-        ]
-        for c in chunk:
-            # Pad the chunk, if needed
-            if len(c) < chunk_length:
-                delta = chunk_length - len(c)
-                delta_zeros = np.zeros(delta, dtype=np.int16)
-                c = np.append(c, delta_zeros)
-                # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
-            self.modoutqueue.append(c)
+        # add modulation to modout_queue
+        self.enqueue_modulation(txbuffer_out)
 
         # Release our mod_out_lock, so we can use the queue
         self.mod_out_locked = False
 
         # we need to wait manually for tci processing
-        if AudioParam.audio_enable_tci:
+        if HamlibParam.hamlib_radiocontrol in ["tci"]:
             duration = len(txbuffer_out) / 8000
             timestamp_to_sleep = time.time() + duration
             self.log.debug("[MDM] TCI calculated duration", duration=duration)
@@ -717,7 +708,7 @@ class RF:
             tci_timeout_reached = True
 
         while self.modoutqueue or not tci_timeout_reached:
-            if AudioParam.audio_enable_tci:
+            if HamlibParam.hamlib_radiocontrol in ["tci"]:
                 if time.time() < timestamp_to_sleep:
                     tci_timeout_reached = False
                 else:
@@ -744,6 +735,93 @@ class RF:
         end_of_transmission = time.time()
         transmission_time = end_of_transmission - start_of_transmission
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
+    def transmit_morse(self, repeats, repeat_delay, frames):
+        TNC.transmitting = True
+        # if we're transmitting FreeDATA signals, reset channel busy state
+        ModemParam.channel_busy = False
+        self.log.debug(
+            "[MDM] TRANSMIT", mode="MORSE"
+        )
+        start_of_transmission = time.time()
+
+        txbuffer = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
+        print(txbuffer)
+        print(type(txbuffer))
+        x = np.frombuffer(txbuffer, dtype=np.int16)
+        print(type(x))
+        txbuffer_out = x
+        print(txbuffer_out)
+
+        #if not HamlibParam.hamlib_radiocontrol in ["tci"]:
+        #    txbuffer_out = self.resampler.resample8_to_48(x)
+        #else:
+        #    txbuffer_out = x
+
+        self.mod_out_locked = True
+        self.enqueue_modulation(txbuffer_out)
+        self.mod_out_locked = False
+
+        # we need to wait manually for tci processing
+        if HamlibParam.hamlib_radiocontrol in ["tci"]:
+            duration = len(txbuffer_out) / 8000
+            timestamp_to_sleep = time.time() + duration
+            self.log.debug("[MDM] TCI calculated duration", duration=duration)
+            tci_timeout_reached = False
+            #while time.time() < timestamp_to_sleep:
+            #    threading.Event().wait(0.01)
+        else:
+            timestamp_to_sleep = time.time()
+            # set tci timeout reached to True for overriding if not used
+            tci_timeout_reached = True
+
+        while self.modoutqueue or not tci_timeout_reached:
+            if HamlibParam.hamlib_radiocontrol in ["tci"]:
+                if time.time() < timestamp_to_sleep:
+                    tci_timeout_reached = False
+                else:
+                    tci_timeout_reached = True
+
+            threading.Event().wait(0.01)
+            # if we're transmitting FreeDATA signals, reset channel busy state
+            ModemParam.channel_busy = False
+
+
+
+
+        HamlibParam.ptt_state = self.radio.set_ptt(False)
+
+        # Push ptt state to socket stream
+        jsondata = {"ptt": "False"}
+        data_out = json.dumps(jsondata)
+        sock.SOCKET_QUEUE.put(data_out)
+
+        # After processing, set the locking state back to true to be prepared for next transmission
+        self.mod_out_locked = True
+
+        self.modem_transmit_queue.task_done()
+        TNC.transmitting = False
+        threading.Event().set()
+
+        end_of_transmission = time.time()
+        transmission_time = end_of_transmission - start_of_transmission
+        self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
+
+    def enqueue_modulation(self, txbuffer_out):
+        chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
+        chunk = [
+            txbuffer_out[i: i + chunk_length]
+            for i in range(0, len(txbuffer_out), chunk_length)
+        ]
+        for c in chunk:
+            # Pad the chunk, if needed
+            if len(c) < chunk_length:
+                delta = chunk_length - len(c)
+                delta_zeros = np.zeros(delta, dtype=np.int16)
+                c = np.append(c, delta_zeros)
+                # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
+            self.modoutqueue.append(c)
+
 
     def demodulate_audio(
             self,
@@ -1009,10 +1087,12 @@ class RF:
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
             data = self.modem_transmit_queue.get()
 
-            # self.log.debug("[MDM] worker_transmit", mode=data[0])
-            self.transmit(
-                mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
-            )
+            if data[0] in ["morse"]:
+                self.transmit_morse(repeats=data[1], repeat_delay=data[2], frames=data[3])
+            else:
+                self.transmit(
+                    mode=data[0], repeats=data[1], repeat_delay=data[2], frames=data[3]
+                )
             # self.modem_transmit_queue.task_done()
 
     def worker_received(self) -> None:
@@ -1139,25 +1219,31 @@ class RF:
           - HamlibParam.hamlib_bandwidth
         """
         while True:
-            # this looks weird, but is necessary for avoiding rigctld packet colission sock
-            threading.Event().wait(0.25)
-            HamlibParam.hamlib_frequency = self.radio.get_frequency()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_mode = self.radio.get_mode()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
-            threading.Event().wait(0.1)
-            HamlibParam.hamlib_status = self.radio.get_status()
-            threading.Event().wait(0.1)
-            if TNC.transmitting:
-                HamlibParam.alc = self.radio.get_alc()
+            try:
+                # this looks weird, but is necessary for avoiding rigctld packet colission sock
+                threading.Event().wait(0.25)
+                HamlibParam.hamlib_frequency = self.radio.get_frequency()
                 threading.Event().wait(0.1)
-            # HamlibParam.hamlib_rf = self.radio.get_level()
-            # threading.Event().wait(0.1)
-            HamlibParam.hamlib_strength = self.radio.get_strength()
+                HamlibParam.hamlib_mode = self.radio.get_mode()
+                threading.Event().wait(0.1)
+                HamlibParam.hamlib_bandwidth = self.radio.get_bandwidth()
+                threading.Event().wait(0.1)
+                HamlibParam.hamlib_status = self.radio.get_status()
+                threading.Event().wait(0.1)
+                if TNC.transmitting:
+                    HamlibParam.alc = self.radio.get_alc()
+                    threading.Event().wait(0.1)
+                # HamlibParam.hamlib_rf = self.radio.get_level()
+                # threading.Event().wait(0.1)
+                HamlibParam.hamlib_strength = self.radio.get_strength()
 
-            # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
-
+                # print(f"ALC: {HamlibParam.alc}, RF: {HamlibParam.hamlib_rf}, STRENGTH: {HamlibParam.hamlib_strength}")
+            except Exception as e:
+                self.log.warning(
+                    "[MDM] error getting radio data",
+                    e=e,
+                )
+                threading.Event().wait(1)
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
@@ -1399,3 +1485,4 @@ def get_modem_error_state():
         return True
 
     return False
+

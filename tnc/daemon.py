@@ -131,7 +131,6 @@ class DAEMON:
                 # increase length of list for storing additional
                 # parameters starting at entry 64
                 data = data[:64] + [None] * (64 - len(data))
-                print(data)
                 # data[1] mycall
                 # data[2] mygrid
                 # data[3] rx_audio
@@ -168,8 +167,6 @@ class DAEMON:
 
     def test_hamlib_ptt(self, data):
         radiocontrol = data[1]
-        rigctld_ip = data[2]
-        rigctld_port = data[3]
 
         # check how we want to control the radio
         if radiocontrol == "direct":
@@ -180,8 +177,18 @@ class DAEMON:
             sys.exit(1)
         elif radiocontrol == "rigctld":
             import rigctld as rig
+            rigctld_ip = data[2]
+            rigctld_port = data[3]
+
+        elif radiocontrol == "tci":
+            import tci as rig
+            rigctld_ip = data[22]
+            rigctld_port = data[23]
+
         else:
             import rigdummy as rig
+            rigctld_ip = '127.0.0.1'
+            rigctld_port = '0'
 
         hamlib = rig.radio()
         hamlib.open_rig(
@@ -193,7 +200,7 @@ class DAEMON:
 
         hamlib.set_ptt(True)
         #Allow a little time for network based rig to register PTT is active
-        time.sleep(.250);
+        time.sleep(.250)
         if hamlib.get_ptt():
             self.log.info("[DMN] Hamlib PTT", status="SUCCESS")
             response = {"command": "test_hamlib", "result": "SUCCESS"}
@@ -235,6 +242,12 @@ class DAEMON:
                 options.append("--rigctld_ip")
                 options.extend((data[6], "--rigctld_port"))
                 options.append(data[7])
+
+            if data[5] == "tci":
+                options.append("--tci-ip")
+                options.extend((data[22], "--tci-port"))
+                options.append(data[23])
+
 
         if data[8] == "True":
             options.append("--scatter")
@@ -296,6 +309,7 @@ class DAEMON:
                 command.append("freedata-tnc.exe")
 
             command += options
+
             proc = subprocess.Popen(command)
 
             atexit.register(proc.kill)
@@ -312,7 +326,6 @@ class DAEMON:
 
             command.append("main.py")
             command += options
-            print(command)
             proc = subprocess.Popen(command)
             atexit.register(proc.kill)
 

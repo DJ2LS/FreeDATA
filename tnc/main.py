@@ -127,7 +127,7 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--radiocontrol",
         dest="hamlib_radiocontrol",
-        choices=["disabled", "direct", "rigctl", "rigctld"],
+        choices=["disabled", "rigctld", "tci"],
         default="disabled",
         help="Set how you want to control your radio",
     )
@@ -223,13 +223,6 @@ if __name__ == "__main__":
     )
 
     PARSER.add_argument(
-        "--tci",
-        dest="audio_enable_tci",
-        action="store_true",
-        help="Enable TCI as audio source",
-    )
-
-    PARSER.add_argument(
         "--tci-ip",
         dest="tci_ip",
         default='127.0.0.1',
@@ -240,7 +233,7 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--tci-port",
         dest="tci_port",
-        default=9000,
+        default=50001,
         type=int,
         help="Set tci destination port",
     )
@@ -303,7 +296,6 @@ if __name__ == "__main__":
             TNC.enable_explorer = ARGS.enable_explorer
             AudioParam.audio_auto_tune = ARGS.enable_audio_auto_tune
             TNC.enable_stats = ARGS.enable_stats
-            AudioParam.audio_enable_tci = ARGS.audio_enable_tci
             TCIParam.ip = ARGS.tci_ip
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
@@ -339,7 +331,7 @@ if __name__ == "__main__":
                 AudioParam.audio_output_device = conf.get('AUDIO', 'tx', '0')
 
             TNC.port = int(conf.get('NETWORK', 'tncport', '3000'))
-            HamlibParam.hamlib_radiocontrol = conf.get('RADIO', 'radiocontrol', 'rigctld')
+            HamlibParam.hamlib_radiocontrol = conf.get('RADIO', 'radiocontrol', 'disabled')
             HamlibParam.hamlib_rigctld_ip = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
             HamlibParam.hamlib_rigctld_port = str(conf.get('RADIO', 'rigctld_port', '4532'))
             ModemParam.enable_scatter = conf.get('TNC', 'scatter', 'True')
@@ -354,7 +346,6 @@ if __name__ == "__main__":
             TNC.enable_explorer = conf.get('TNC', 'explorer', 'False')
             AudioParam.audio_auto_tune = conf.get('AUDIO', 'auto_tune', 'False')
             TNC.enable_stats = conf.get('TNC', 'stats', 'False')
-            AudioParam.audio_enable_tci = conf.get('AUDIO', 'enable_tci', 'False')
             TCIParam.ip = str(conf.get('TCI', 'tci_ip', 'localhost'))
             TCIParam.port = int(conf.get('TCI', 'tci_port', '50001'))
             ModemParam.tx_delay = int(conf.get('TNC', 'tx_delay', '0'))

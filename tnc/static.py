@@ -55,8 +55,6 @@ class AudioParam:
     audio_record_file = ''
     buffer_overflow_counter = [0, 0, 0, 0, 0]
     audio_auto_tune: bool = False
-    # Audio TCI Support
-    audio_enable_tci: bool = False
     audio_dbfs: int = 0
     fft = []
     enable_fft: bool = True
@@ -127,7 +125,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.9.2-alpha.5"
+    version = "0.9.3-alpha.1"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
