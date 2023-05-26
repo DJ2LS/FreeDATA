@@ -33,7 +33,7 @@ from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemP
 import structlog
 import explorer
 import json
-
+import mesh
 log = structlog.get_logger("main")
 
 def signal_handler(sig, frame):
@@ -403,6 +403,9 @@ if __name__ == "__main__":
 
     # start modem
     modem = modem.RF()
+
+    # start mesh module
+    mesh = mesh.MeshRouter()
 
     # optionally start explorer module
     if TNC.enable_explorer:

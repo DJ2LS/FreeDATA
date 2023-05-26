@@ -165,8 +165,7 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                     ]
                 )
                 break
-    # trigger update of routing table
-    mesh.MeshRouter.get_from_heard_stations()
+
 
 #    for idx, item in enumerate(TNC.heard_stations):
 #        if dxcallsign in item:
