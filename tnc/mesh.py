@@ -65,8 +65,14 @@ class MeshRouter():
         frequency = 6
 
         for item in TNC.heard_stations:
-            new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, int(item[snr]), int(item[snr]), item[timestamp]]
+            print(item[snr])
+            try:
+                snr = item[snr].split("/")
+                snr = int(float(snr[0]))
+            except Exception as e:
+                snr = int(float(item[snr]))
 
+            new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp]]
             self.add_router_to_routing_table(new_router)
 
     def add_router_to_routing_table(self, new_router):
@@ -81,7 +87,7 @@ class MeshRouter():
         if new_router not in MeshParam.routing_table:
             MeshParam.routing_table.append(new_router)
 
-    def broadcast_routing_table(self, interval=60):
+    def broadcast_routing_table(self, interval=240):
         # enable receiving for datac4 if broadcasting
         modem.RECEIVE_DATAC4 = True
 
@@ -106,33 +112,34 @@ class MeshRouter():
 
             # Iterate over the route subarrays and add the selected entries to the result bytearray
             index = 0
-            for route in MeshParam.routing_table:
-                dxcall = MeshParam.routing_table[route][0]
+            for route_id, route in enumerate(MeshParam.routing_table):
+                dxcall = MeshParam.routing_table[route_id][0]
                 # router = MeshParam.routing_table[i][1]
-                hops = MeshParam.routing_table[route][2]
+                hops = MeshParam.routing_table[route_id][2]
                 # snr = MeshParam.routing_table[i][3]
-                route_score = np.clip(MeshParam.routing_table[route][4], 0, 254)
+                route_score = np.clip(MeshParam.routing_table[route_id][4], 0, 254)
                 # timestamp = MeshParam.routing_table[i][5]
-                result[index:index + 3] = dxcall + hops + route_score
-                index += len(route[0])
-                index += len(route[2])
-                index += len(route[4])
+                print(dxcall)
+                result[index:index + 5] = dxcall + bytes([hops]) + bytes([route_score])
+                index += 3
+                index += 1
+                index += 1
 
+            print(len(result))
             # Split the result bytearray into a list of fixed-length bytearrays
             split_result = [result[i:i + 50] for i in range(0, len(result), 50)]
-
+            print(len(split_result))
             frame_list = []
             for _ in split_result:
                 # make sure payload is always 50
                 _[len(_):] = bytes(50 - len(_))
-                #print(_)
                 #print(len(_))
-                frame_list.apppend(mesh_broadcast_frame_header + _)
+                frame_list.append(mesh_broadcast_frame_header + _)
 
             print(frame_list)
             TNC.transmitting = True
             c2_mode = FREEDV_MODE.datac4.value
-            modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, [frame_list]])
+            modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
 
             # Wait while transmitting
             while TNC.transmitting:
@@ -142,7 +149,7 @@ class MeshRouter():
         while True:
             data_in = MESH_RECEIVED_QUEUE.get()
             if int.from_bytes(data_in[:1], "big") in [FRAME_TYPE.MESH_BROADCAST.value]:
-                self.received_routing_table(data_in)
+                self.received_routing_table(data_in[:-2])
             else:
                 print("wrong mesh data received")
                 print(data_in)
@@ -155,10 +162,10 @@ class MeshRouter():
 
         print("Router:", router)  # Output the header bytes
 
-        for i in range(0, len(payload), 5):
+        for i in range(0, len(payload)-1, 5):
             callsign_checksum = payload[i:i + 3]  # First 3 bytes of the information (callsign_checksum)
-            hops = payload[i + 3]  # Fourth byte of the information (hops)
-            score = payload[i + 4]  # Fifth byte of the information (score)
+            hops = payload[i+3:i + 4]  # Fourth byte of the information (hops)
+            score = payload[i+4:i + 5]  # Fifth byte of the information (score)
             timestamp = int(time.time())
             snr = int(ModemParam.snr)
             print("Callsign Checksum:", callsign_checksum)
@@ -186,6 +193,6 @@ class MeshRouter():
                 self.add_router_to_routing_table(new_router)
 
         print("-------------------------")
-        for _ in MeshParam.routing_table:
+        for _, item in enumerate(MeshParam.routing_table):
             print(MeshParam.routing_table[_])
         print("-------------------------")
