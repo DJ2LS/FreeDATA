@@ -182,16 +182,22 @@ class MeshRouter():
                 # use case 2: add new router to table only if not own callsign
                 _use_case2 = callsign_checksum not in [helpers.get_crc_24(Station.mycallsign)]
 
-                # use case 3: increment hop if not direct
+                # use case 3: increment hop if router not direct
                 if router not in [helpers.get_crc_24(b'direct')] and hops == 0:
                     hops += 1
 
+                # use case 4: if callsign is directly available skip route for only keeping shortest way in db
+                _use_case4 = False
+                for _, call in enumerate(MeshParam.routing_table):
+                    if callsign_checksum in MeshParam.routing_table[_][0]:
+                        _use_case4 = True
 
                 # use case N: calculate score
                 # TODO...
 
                 if not _use_case1 \
-                        and _use_case2:
+                        and _use_case2\
+                        and not _use_case4:
 
                     new_router = [callsign_checksum, router, hops, snr, score, timestamp]
                     print(new_router)
