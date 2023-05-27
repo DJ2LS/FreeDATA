@@ -1029,6 +1029,21 @@ if (typeof obj.percent == "undefined") {
      obj.bytesperminute = 0;
         }
 
+  // check if wrong status message
+if (obj.status == "transmit" && obj.percent == 0) {
+var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
+    if (TimeDifference > 3600){
+    db.upsert(obj._id, function (doc) {
+      if (!doc.status) {
+        doc.status = "failed";
+      }
+      return doc;
+    });
+    obj.status = "failed";
+
+    }
+}
+
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
