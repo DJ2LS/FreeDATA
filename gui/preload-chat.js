@@ -1022,6 +1022,13 @@ update_chat = function (obj) {
     var attempt = obj.attempt;
   }
 
+// add percent and bytes per minute if not existing
+console.log(obj.percent)
+if (typeof obj.percent == "undefined") {
+     obj.percent = 0;
+     obj.bytesperminute = 0;
+        }
+
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
@@ -1382,6 +1389,8 @@ update_chat = function (obj) {
         //console.log("Low graphics enabled for chat module");
       }
 
+
+
       var new_message = `
         <div class="d-flex align-items-center">
             ${controlarea_transmit}
@@ -1436,6 +1445,12 @@ update_chat = function (obj) {
     console.log("element already exists......");
     console.log(obj);
 
+        console.log(obj.status)
+        console.log(obj.attempt)
+
+
+
+
     if (
       !obj.status == "broadcast_transmit" ||
       !obj.status == "broadcast_received"
@@ -1456,6 +1471,44 @@ update_chat = function (obj) {
       document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
         obj.attempt + "/" + max_retry_attempts;
     }
+
+
+    if (obj.status == "transmit") {
+
+    document.getElementById("msg-" + obj._id + "-status").innerHTML =
+        get_icon_for_state(obj.status);
+
+if (typeof obj.percent !== "undefined") {
+          document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("aria-valuenow", obj.percent);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:" + obj.percent + "%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
+
+        } else {
+ document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("aria-valuenow", 0);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:0%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "0% - 0 Bpm";
+
+        }
+
+
+
+
+     document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
+        obj.attempt + "/" + max_retry_attempts;
+    }
+
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
       document
