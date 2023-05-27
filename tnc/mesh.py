@@ -168,8 +168,8 @@ class MeshRouter():
 
             for i in range(0, len(payload)-1, 5):
                 callsign_checksum = payload[i:i + 3]  # First 3 bytes of the information (callsign_checksum)
-                hops = payload[i+3:i + 4]  # Fourth byte of the information (hops)
-                score = payload[i+4:i + 5]  # Fifth byte of the information (score)
+                hops = int.from_bytes(payload[i+3:i + 4], "big")  # Fourth byte of the information (hops)
+                score = int.from_bytes(payload[i+4:i + 5], "big")  # Fifth byte of the information (score)
                 timestamp = int(time.time())
                 snr = int(ModemParam.snr)
                 print("Callsign Checksum:", callsign_checksum)
@@ -186,7 +186,8 @@ class MeshRouter():
                 if router not in [helpers.get_crc_24(b'direct')] and hops == 0:
                     hops += 1
 
-                # use case 4: calculate score
+
+                # use case N: calculate score
                 # TODO...
 
                 if not _use_case1 \
