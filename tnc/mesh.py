@@ -44,7 +44,7 @@ from queues import MESH_RECEIVED_QUEUE
 class MeshRouter():
     def __init__(self):
 
-        log = structlog.get_logger("RF")
+        self.log = structlog.get_logger("RF")
 
 
         self.mesh_broadcasting_thread = threading.Thread(
