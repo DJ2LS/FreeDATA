@@ -88,7 +88,7 @@ class MeshRouter():
             print(item[snr])
             try:
                 print(item[snr])
-                snr = bytes(item[snr]).split(b"/")
+                snr = bytes(item[snr], "utf-8").split(b"/")
                 snr = int(float(snr[0]))
             except Exception as e:
                 snr = int(float(item[snr]))
