@@ -189,7 +189,8 @@ class MeshRouter():
                 # use case 4: if callsign is directly available skip route for only keeping shortest way in db
                 _use_case4 = False
                 for _, call in enumerate(MeshParam.routing_table):
-                    if callsign_checksum in MeshParam.routing_table[_][0]:
+                    # check if callsign already in routing table and is direct connection
+                    if callsign_checksum in [MeshParam.routing_table[_][0]] and MeshParam.routing_table[_][1] in [helpers.get_crc_24(b'direct')]:
                         _use_case4 = True
 
                 # use case N: calculate score
