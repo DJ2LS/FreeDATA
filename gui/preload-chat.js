@@ -661,8 +661,18 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
     });
 });
 
+ipcRenderer.on("action-update-reception-status", (event, arg) => {
+  var data = arg["data"][0];
+
+ document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
+});
+
+
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
+
+ document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
+
   console.log(data.status);
   if (data.uuid !== "no-uuid") {
     db.get(data.uuid, {
