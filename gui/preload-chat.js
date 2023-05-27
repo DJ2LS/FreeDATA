@@ -1439,7 +1439,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       }%;" aria-valuenow="${
         obj.percent
       }" aria-valuemin="0" aria-valuemax="100"></div>
-                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
+                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white ${progressbar_bg}" style="font-size: xx-small" id="msg-${
                               obj._id
                             }-progress-information">${percent_value} % - ${
         obj.bytesperminute
@@ -1564,9 +1564,15 @@ if (typeof obj.percent !== "undefined") {
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("bg-danger");
 
+    console.log(document
+        .getElementById("msg-" + obj._id + "-progress")
+        .classList)
+
       document.getElementById(
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
+
+
     }
 
     //document.getElementById(id).className = message_class;
