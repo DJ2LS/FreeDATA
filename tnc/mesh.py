@@ -12,6 +12,20 @@ HF mesh networking prototype and testing module
         print(MeshParam.routing_table)
         print("---------------------------------")
 
+
+
+
+TODO: SIGNALLING FOR ACK/NACK:
+- mesh-signalling burst is datac13
+- mesh-signalling frame contains [message id, status]
+- create a list for signalling frames, contains [message id, message-status, attempts, state, timestamp]
+- on "IRS", send ACK/NACK 10 times on receiving beacon?
+- on "ROUTER", receive ACK/NACK, and store it in table, also send it 10 times
+- if sent 10 times, set ACK/NACK state to "done"
+- if done already in list, don't reset retry counter
+- delete ACK/NACK if "done" and timestamp older than 1day
+
+
 """
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
@@ -23,10 +37,16 @@ import time
 import threading
 import modem
 import helpers
+import structlog
+
 from queues import MESH_RECEIVED_QUEUE
 
 class MeshRouter():
     def __init__(self):
+
+        log = structlog.get_logger("RF")
+
+
         self.mesh_broadcasting_thread = threading.Thread(
             target=self.broadcast_routing_table, name="worker thread receive", daemon=True
         )
@@ -67,7 +87,8 @@ class MeshRouter():
         for item in TNC.heard_stations:
             print(item[snr])
             try:
-                snr = item[snr].split("/")
+                print(item[snr])
+                snr = bytes(item[snr]).split(b"/")
                 snr = int(float(snr[0]))
             except Exception as e:
                 snr = int(float(item[snr]))
