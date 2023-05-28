@@ -968,6 +968,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             enable_auto_tune = str(helpers.return_key_from_object("False", startparam, "enable_auto_tune"))
             enable_stats = str(helpers.return_key_from_object("False", startparam, "enable_stats"))
             tx_delay = str(helpers.return_key_from_object("0", startparam, "tx_delay"))
+            tci_ip = str(helpers.return_key_from_object("127.0.0.1", startparam, "tci_ip"))
+            tci_port = str(helpers.return_key_from_object("50001", startparam, "tci_port"))
             try:
                 # convert ssid list to python list
                 ssid_list = str(helpers.return_key_from_object("0, 1, 2, 3, 4, 5, 6, 7, 8, 9", startparam, "ssid_list"))
@@ -1008,7 +1010,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     ssid_list,
                     enable_auto_tune,
                     enable_stats,
-                    tx_delay
+                    tx_delay,
+                    tci_ip,
+                    tci_port
                 ]
             )
             command_response("start_tnc", True)

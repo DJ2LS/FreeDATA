@@ -40,6 +40,7 @@ const contrib = [
   "DF7MH",
   "G0HWW",
   "N1QM",
+  "LA3QMA",
 ];
 
 //let elements = document.querySelectorAll('[id^="hamlib_"]'); // get all elements starting with...
@@ -69,6 +70,11 @@ var noise_level_raw = 0;
 
 //Global version variable
 var appVer = null;
+
+  //Track the number of times TNC has been started
+  //So that warning is shown when using auto start and 2nd start
+  //if hamlib is not running
+  var tncStartCount = 0;
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
@@ -103,6 +109,25 @@ window.addEventListener("DOMContentLoaded", () => {
       type: "set",
       command: "mode",
       mode: "PKTUSB",
+    };
+    ipcRenderer.send("run-tnc-command", Data);
+  });
+  // save mode event listener
+  document.getElementById("saveModeDIGU").addEventListener("click", () => {
+    let Data = {
+      type: "set",
+      command: "mode",
+      mode: "DIGU",
+    };
+    ipcRenderer.send("run-tnc-command", Data);
+  });
+
+  // save mode event listener
+  document.getElementById("saveModeDIGL").addEventListener("click", () => {
+    let Data = {
+      type: "set",
+      command: "mode",
+      mode: "DIGL",
     };
     ipcRenderer.send("run-tnc-command", Data);
   });
@@ -250,6 +275,9 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("hamlib_rigctld_ip").value = config.hamlib_rigctld_ip;
   document.getElementById("hamlib_rigctld_port").value =
     config.hamlib_rigctld_port;
+  document.getElementById("tci_ip").value = config.tci_ip;
+  document.getElementById("tci_port").value = config.tci_port;
+
   document.getElementById("hamlib_rigctld_path").value =
     config.hamlib_rigctld_path;
   document.getElementById("hamlib_rigctld_server_port").value =
@@ -444,10 +472,14 @@ window.addEventListener("DOMContentLoaded", () => {
   if (config.radiocontrol == "rigctld") {
     document.getElementById("radio-control-switch-disabled").checked = false;
     document.getElementById("radio-control-switch-rigctld").checked = true;
+    document.getElementById("radio-control-switch-tci").checked = false;
 
     document.getElementById("radio-control-disabled").style.visibility =
       "hidden";
     document.getElementById("radio-control-disabled").style.display = "none";
+
+    document.getElementById("radio-control-tci").style.display = "none";
+    document.getElementById("radio-control-tci").style.visibility = "hidden";
 
     document.getElementById("radio-control-help").style.visibility = "hidden";
     document.getElementById("radio-control-help").style.display = "none";
@@ -455,12 +487,33 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("radio-control-rigctld").style.visibility =
       "visible";
     document.getElementById("radio-control-rigctld").style.display = "block";
+  } else if (config.radiocontrol == "tci") {
+    document.getElementById("radio-control-switch-disabled").checked = false;
+    document.getElementById("radio-control-switch-rigctld").checked = false;
+    document.getElementById("radio-control-switch-tci").checked = true;
+
+    document.getElementById("radio-control-disabled").style.visibility =
+      "hidden";
+    document.getElementById("radio-control-disabled").style.display = "none";
+
+    document.getElementById("radio-control-help").style.visibility = "hidden";
+    document.getElementById("radio-control-help").style.display = "none";
+    document.getElementById("radio-control-rigctld").style.visibility =
+      "hidden";
+    document.getElementById("radio-control-rigctld").style.display = "none";
+
+    document.getElementById("radio-control-tci").style.visibility = "visible";
+    document.getElementById("radio-control-tci").style.display = "block";
   } else {
     document.getElementById("radio-control-switch-disabled").checked = true;
     document.getElementById("radio-control-switch-rigctld").checked = false;
+    document.getElementById("radio-control-switch-tci").checked = false;
 
     document.getElementById("radio-control-help").style.display = "none";
     document.getElementById("radio-control-help").style.visibility = "hidden";
+
+    document.getElementById("radio-control-tci").style.display = "none";
+    document.getElementById("radio-control-tci").style.visibility = "hidden";
 
     document.getElementById("radio-control-rigctld").style.visibility =
       "hidden";
@@ -536,6 +589,8 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-disabled").style.display = "block";
       document.getElementById("radio-control-disabled").style.visibility =
         "visible";
+      document.getElementById("radio-control-tci").style.display = "none";
+      document.getElementById("radio-control-tci").style.visibility = "hidden";
 
       document.getElementById("radio-control-help").style.display = "none";
       document.getElementById("radio-control-help").style.visibility = "hidden";
@@ -563,11 +618,40 @@ window.addEventListener("DOMContentLoaded", () => {
       document.getElementById("radio-control-help").style.display = "none";
       document.getElementById("radio-control-help").style.visibility = "hidden";
 
+      document.getElementById("radio-control-tci").style.display = "none";
+      document.getElementById("radio-control-tci").style.visibility = "hidden";
+
       document.getElementById("radio-control-rigctld").style.visibility =
         "visible";
       document.getElementById("radio-control-rigctld").style.display = "block";
 
       config.radiocontrol = "rigctld";
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
+
+  // // radio settings 'rigctld' event listener
+  document
+    .getElementById("radio-control-switch-tci")
+    .addEventListener("click", () => {
+      //document.getElementById("hamlib_info_field").innerHTML =
+      //  "Edit your rigctld settings and start and stop rigctld .";
+
+      document.getElementById("radio-control-disabled").style.display = "none";
+      document.getElementById("radio-control-disabled").style.visibility =
+        "hidden";
+
+      document.getElementById("radio-control-rigctld").style.display = "none";
+      document.getElementById("radio-control-rigctld").style.visibility =
+        "hidden";
+
+      document.getElementById("radio-control-help").style.display = "none";
+      document.getElementById("radio-control-help").style.visibility = "hidden";
+
+      document.getElementById("radio-control-tci").style.visibility = "visible";
+      document.getElementById("radio-control-tci").style.display = "block";
+
+      config.radiocontrol = "tci";
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
     });
@@ -1284,19 +1368,11 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("wikiUrl").addEventListener("click", () => {
     shell.openExternal("https://wiki.freedata.app");
   });
-  // Groups.io Link clicked
-  document.getElementById("groupsioUrl").addEventListener("click", () => {
-    shell.openExternal("https://groups.io/g/freedata");
-  });
+
   // Discord Link clicked
   document.getElementById("discordUrl").addEventListener("click", () => {
     shell.openExternal("https://discord.gg/jnADeDtxUF");
   });
-
-  //Track the number of times TNC has been started
-  //So that warning is shown when using auto start and 2nd start
-  //if hamlib is not running
-  var tncStartCount = 0;
 
   // startTNC button clicked
   document.getElementById("startTNC").addEventListener("click", () => {
@@ -1306,6 +1382,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
     var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
     var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+
+    var tci_ip = document.getElementById("tci_ip").value;
+    var tci_port = document.getElementById("tci_port").value;
+
     var hamlib_rigctld_server_port = document.getElementById(
       "hamlib_rigctld_server_port"
     ).value;
@@ -1406,8 +1486,10 @@ window.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    if (!document.getElementById("radio-control-switch-disabled").checked) {
+    if (document.getElementById("radio-control-switch-rigctld").checked) {
       var radiocontrol = "rigctld";
+    } else if (document.getElementById("radio-control-switch-tci").checked) {
+      var radiocontrol = "tci";
     } else {
       var radiocontrol = "disabled";
     }
@@ -1441,6 +1523,8 @@ window.addEventListener("DOMContentLoaded", () => {
     config.explorer_stats = explorer_stats;
     config.auto_tune = auto_tune;
     config.tx_delay = tx_delay;
+    config.tci_ip = tci_ip;
+    config.tci_port = tci_port;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1488,7 +1572,9 @@ window.addEventListener("DOMContentLoaded", () => {
       enable_explorer,
       explorer_stats,
       auto_tune,
-      tx_delay
+      tx_delay,
+      tci_ip,
+      tci_port
     );
   });
 
@@ -1644,6 +1730,8 @@ window.addEventListener("DOMContentLoaded", () => {
     sorthslTable(7);
     resetSortIcon();
   });
+
+  autostart_rigctld();
 });
 
 function resetSortIcon() {
@@ -2317,7 +2405,15 @@ function updateHeardStations(arg) {
     timestampRaw = arg.stations[i]["timestamp"];
 
     var datetime = new Date(timestampRaw * 1000).toLocaleString(
-      navigator.language
+      navigator.language,{
+        hourCycle: 'h23',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    }
     );
     //var hours = date.getHours();
     //var minutes = "0" + date.getMinutes();
@@ -2555,6 +2651,9 @@ ipcRenderer.on("action-update-daemon-state", (event, arg) => {
       document.getElementById("audio_output_selectbox").add(option);
     }
   }
+  //Once audio devices are populated, try starting TNC if it hasn't been started yet in this session
+  //and if autostart is enabled
+  if (tncStartCount <= 0) autostart_tnc();
 });
 
 // ACTION UPDATE HAMLIB TEST
@@ -2635,6 +2734,9 @@ ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
 
     //Set tuning for fancy graphics mode (high/low CPU)
     set_CPU_mode();
+
+    //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
+    if (tncStartCount==0) tncStartCount++;
   } else {
     /*
         document.getElementById('hamlib_deviceid').disabled = false;
@@ -3642,18 +3744,18 @@ function sorthslTable(n) {
   }
 }
 
-function autostart() {
-  //Auto start stuff if option is enabled
+function autostart_rigctld() {
   if (config.auto_start == 1) {
     //Start rigctld if radiocontrol is in correct mode and is not active
     if (config.radiocontrol == "rigctld" && rigctldActive == false) {
       //console.log("Autostarting rigctld");
       document.getElementById("hamlib_rigctld_start").click();
     }
-    //Now start TNC
-    document.getElementById("startTNC").click();
   }
 }
-setTimeout(() => {
-  autostart();
-}, 5000);
+function autostart_tnc() {
+  if (config.auto_start == 1) {
+    //Now start TNC
+    document.getElementById("startTNC").click();
+}
+}

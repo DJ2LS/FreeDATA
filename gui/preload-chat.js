@@ -1022,6 +1022,28 @@ update_chat = function (obj) {
     var attempt = obj.attempt;
   }
 
+// add percent and bytes per minute if not existing
+console.log(obj.percent)
+if (typeof obj.percent == "undefined") {
+     obj.percent = 0;
+     obj.bytesperminute = 0;
+        }
+
+  // check if wrong status message
+if (obj.status == "transmit" && obj.percent == 0) {
+var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
+    if (TimeDifference > 3600){
+    db.upsert(obj._id, function (doc) {
+      if (!doc.status) {
+        doc.status = "failed";
+      }
+      return doc;
+    });
+    obj.status = "failed";
+
+    }
+}
+
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
@@ -1382,6 +1404,8 @@ update_chat = function (obj) {
         //console.log("Low graphics enabled for chat module");
       }
 
+
+
       var new_message = `
         <div class="d-flex align-items-center">
             ${controlarea_transmit}
@@ -1415,7 +1439,7 @@ update_chat = function (obj) {
       }%;" aria-valuenow="${
         obj.percent
       }" aria-valuemin="0" aria-valuemax="100"></div>
-                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
+                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white ${progressbar_bg}" style="font-size: xx-small" id="msg-${
                               obj._id
                             }-progress-information">${percent_value} % - ${
         obj.bytesperminute
@@ -1435,6 +1459,12 @@ update_chat = function (obj) {
   } else if (document.getElementById("msg-" + obj._id)) {
     console.log("element already exists......");
     console.log(obj);
+
+        console.log(obj.status)
+        console.log(obj.attempt)
+
+
+
 
     if (
       !obj.status == "broadcast_transmit" ||
@@ -1456,6 +1486,44 @@ update_chat = function (obj) {
       document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
         obj.attempt + "/" + max_retry_attempts;
     }
+
+
+    if (obj.status == "transmit") {
+
+    document.getElementById("msg-" + obj._id + "-status").innerHTML =
+        get_icon_for_state(obj.status);
+
+if (typeof obj.percent !== "undefined") {
+          document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("aria-valuenow", obj.percent);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:" + obj.percent + "%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
+
+        } else {
+ document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("aria-valuenow", 0);
+      document
+        .getElementById("msg-" + obj._id + "-progress")
+        .setAttribute("style", "width:0%;");
+      document.getElementById(
+        "msg-" + obj._id + "-progress-information"
+      ).innerHTML = "0% - 0 Bpm";
+
+        }
+
+
+
+
+     document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
+        obj.attempt + "/" + max_retry_attempts;
+    }
+
     if (obj.status == "transmitted") {
       //document.getElementById('msg-' + obj._id + '-progress').classList.remove("progress-bar-striped");
       document
@@ -1496,9 +1564,15 @@ update_chat = function (obj) {
         .getElementById("msg-" + obj._id + "-progress")
         .classList.add("bg-danger");
 
+    console.log(document
+        .getElementById("msg-" + obj._id + "-progress")
+        .classList)
+
       document.getElementById(
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
+
+
     }
 
     //document.getElementById(id).className = message_class;

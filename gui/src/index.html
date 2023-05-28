@@ -407,6 +407,25 @@
                             Hamlib
                           </label>
                         </div>
+                        <div
+                          class="btn-group btn-group-sm"
+                          role="group"
+                          aria-label="radio-control-switch-tci"
+                        >
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="radio-control-switch"
+                            id="radio-control-switch-tci"
+                            autocomplete="off"
+                          />
+                          <label
+                            class="btn btn-sm btn-outline-secondary"
+                            for="radio-control-switch-tci"
+                          >
+                            TCI
+                          </label>
+                        </div>
                       </div>
                     </div>
 
@@ -437,7 +456,7 @@
                   </p>
                 </div>
 
-                <!-- RADIO CONTROL RIGCTLD INFO-->
+                <!-- RADIO CONTROL RIGCTLD -->
                 <div id="radio-control-rigctld">
                   <div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
@@ -502,7 +521,35 @@
                     </div>
                   </div>
                 </div>
+                <!-- RADIO CONTROL TCI-->
+                <div id="radio-control-tci">
+                  <div class="input-group input-group-sm mb-1">
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">TCI</span>
+                      <span class="input-group-text">Address</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="tci IP"
+                        id="tci_ip"
+                        aria-label="Device IP"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
 
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">Port</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="tci port"
+                        id="tci_port"
+                        aria-label="Device Port"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+                  </div>
+                </div>
                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
                   <strong>VOX:</strong> Use rig control mode 'none'
@@ -1590,6 +1637,31 @@
                   id="saveModePKTUSB"
                 >
                   PKTUSB
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set DIGU"
+                  id="saveModeDIGU"
+                >
+                  DIGU
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set DIGL"
+                  id="saveModeDIGL"
+                >
+                  DIGL
                 </button>
               </form>
             </div>
@@ -3780,17 +3852,6 @@
                       data-bs-toggle="tooltip"
                       data-bs-trigger="hover"
                       title="Wiki"
-                      role="button"
-                    ></i>
-                  </div>
-                  <div class="btn-group">
-                    <i
-                      style="font-size: 1.5rem"
-                      class="btn bi bi-envelope-at"
-                      id="groupsioUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Groups.io"
                       role="button"
                     ></i>
                   </div>

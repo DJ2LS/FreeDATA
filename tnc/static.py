@@ -55,8 +55,6 @@ class AudioParam:
     audio_record_file = ''
     buffer_overflow_counter = [0, 0, 0, 0, 0]
     audio_auto_tune: bool = False
-    # Audio TCI Support
-    audio_enable_tci: bool = False
     audio_dbfs: int = 0
     fft = []
     enable_fft: bool = True
