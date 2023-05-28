@@ -775,10 +775,14 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 }
 
                 for _, route in enumerate(MeshParam.routing_table):
+                    if MeshParam.routing_table[_][0].hex() == helpers.get_crc_24(b"direct").hex():
+                        router = "direct"
+                    else:
+                        router = MeshParam.routing_table[_][0].hex()
                     output["routes"].append(
                         {
-                            "dxcall": MeshParam.routing_table[_][0],
-                            "router": MeshParam.routing_table[_][1],
+                            "dxcall": MeshParam.routing_table[_][0].hex(),
+                            "router": router,
                             "hops": MeshParam.routing_table[_][2],
                             "snr": MeshParam.routing_table[_][3],
                             "score": MeshParam.routing_table[_][4],
@@ -1150,17 +1154,21 @@ def send_tnc_state():
         )
 
     for _, route in enumerate(MeshParam.routing_table):
+        if MeshParam.routing_table[_][1].hex() == helpers.get_crc_24(b"direct").hex():
+            router = "direct"
+        else:
+            router = MeshParam.routing_table[_][1].hex()
         output["routing_table"].append(
             {
-                "dxcall": MeshParam.routing_table[_][0],
-                "router": MeshParam.routing_table[_][1],
+                "dxcall": MeshParam.routing_table[_][0].hex(),
+                "router": router,
                 "hops": MeshParam.routing_table[_][2],
                 "snr": MeshParam.routing_table[_][3],
                 "score": MeshParam.routing_table[_][4],
                 "timestamp": MeshParam.routing_table[_][5],
             }
         )
-
+    #print(output)
     return json.dumps(output)
 
 
