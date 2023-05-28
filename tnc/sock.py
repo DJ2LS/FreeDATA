@@ -777,8 +777,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 for _, route in enumerate(MeshParam.routing_table):
                     output["routes"].append(
                         {
-                            "dxcall": MeshParam.routing_table[_][0].decode('utf-8'),
-                            "router": MeshParam.routing_table[_][1].decode('utf-8'),
+                            "dxcall": MeshParam.routing_table[_][0],
+                            "router": MeshParam.routing_table[_][1],
                             "hops": MeshParam.routing_table[_][2],
                             "snr": MeshParam.routing_table[_][3],
                             "score": MeshParam.routing_table[_][4],
@@ -1152,8 +1152,8 @@ def send_tnc_state():
     for _, route in enumerate(MeshParam.routing_table):
         output["routing_table"].append(
             {
-                "dxcall": MeshParam.routing_table[_][0].decode('utf-8'),
-                "router": MeshParam.routing_table[_][1].decode('utf-8'),
+                "dxcall": MeshParam.routing_table[_][0],
+                "router": MeshParam.routing_table[_][1],
                 "hops": MeshParam.routing_table[_][2],
                 "snr": MeshParam.routing_table[_][3],
                 "score": MeshParam.routing_table[_][4],

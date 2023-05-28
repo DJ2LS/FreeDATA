@@ -29,7 +29,7 @@ def main_menu():
     while True:
         time.sleep(0.1)
         title = 'Please select a command you want to run: '
-        options = ['BEACON', 'PING', 'ARQ', 'LIST AUDIO DEVICES']
+        options = ['BEACON', 'PING', 'ARQ', 'LIST AUDIO DEVICES','LIST ROUTING TABLE']
         option, index = pick(options, title)
 
         # BEACON AREA
@@ -86,6 +86,10 @@ def main_menu():
             device_list.append('----- BACK -----')
 
             option, index = pick(device_list, "Audio devices")
+
+        elif option == 'LIST ROUTING TABLE':
+            run_network_command({"type": "get", "command": "routing_table"})
+
 
             if option == '----- BACK -----':
                 main_menu()
