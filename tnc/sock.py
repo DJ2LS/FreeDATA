@@ -27,7 +27,7 @@ import time
 import wave
 import helpers
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
 import structlog
 from random import randrange
 import ujson as json
@@ -390,6 +390,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     ThreadedTCPRequestHandler.tnc_set_mode(None, received_json)
                 else:
                     self.tnc_set_mode(received_json)
+
+            # GET ROUTING TABLE
+            if received_json["type"] == "get" and received_json["command"] == "routing_table":
+                self.tnc_get_mesh_routing_table(received_json)
+
 
         except Exception as err:
             log.error("[SCK] JSON decoding error", e=err)
@@ -759,6 +764,40 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             command_response("stop_transmission", False)
             log.warning(
                 "[SCK] STOP command execution error", e=err, command=received_json
+            )
+
+    def tnc_get_mesh_routing_table(self, received_json):
+        try:
+            if not RX_BUFFER.empty():
+                output = {
+                    "command": "routing_table",
+                    "routes": [],
+                }
+
+                for route in range(MeshParam.routing_table):
+                    output["routes"].append(
+                        {
+                            "dxcall": MeshParam.routing_table[route][0],
+                            "router": MeshParam.routing_table[route][1],
+                            "hops": MeshParam.routing_table[route][2],
+                            "snr": MeshParam.routing_table[route][3],
+                            "score": MeshParam.routing_table[route][4],
+                            "timestamp": MeshParam.routing_table[route][5],
+                        }
+                    )
+
+
+                jsondata = json.dumps(output)
+                # self.request.sendall(bytes(jsondata, encoding))
+                SOCKET_QUEUE.put(jsondata)
+                command_response("routing_table", True)
+
+        except Exception as err:
+            command_response("routing_table", False)
+            log.warning(
+                "[SCK] Send RX buffer command execution error",
+                e=err,
+                command=received_json,
             )
 
     def tnc_get_rx_buffer(self, received_json):
