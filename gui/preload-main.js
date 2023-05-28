@@ -2895,6 +2895,15 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
 });
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
+
+  if (arg.command == "enable_mesh") {
+    sock.enable_mesh();
+  }
+
+  if (arg.command == "disable_mesh") {
+    sock.disable_mesh();
+  }
+
   if (arg.command == "save_my_call") {
     sock.saveMyCall(arg.callsign);
   }

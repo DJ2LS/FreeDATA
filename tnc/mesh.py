@@ -117,66 +117,69 @@ class MeshRouter():
         except Exception as e:
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
-    def broadcast_routing_table(self, interval=40):
+    def broadcast_routing_table(self, interval=180):
         # enable receiving for datac4 if broadcasting
         modem.RECEIVE_DATAC4 = True
 
         while True:
-            try:
+            threading.Event().wait(1)
+            if MeshParam.enable_protocol:
+                try:
 
-                # wait some time until sending routing table
-                threading.Event().wait(interval)
+                    # wait some time until sending routing table
+                    threading.Event().wait(interval)
 
-                # before we are transmitting, let us update our routing table
-                self.get_from_heard_stations()
+                    # before we are transmitting, let us update our routing table
+                    self.get_from_heard_stations()
 
-                #[b'DJ2LS-0', 'direct', 0, 9.6, 9.6, 1684912305]
-                mesh_broadcast_frame_header = bytearray(4)
-                mesh_broadcast_frame_header[:1] = bytes([FRAME_TYPE.MESH_BROADCAST.value])
-                mesh_broadcast_frame_header[1:4] = helpers.get_crc_24(Station.mycallsign)
+                    #[b'DJ2LS-0', 'direct', 0, 9.6, 9.6, 1684912305]
+                    mesh_broadcast_frame_header = bytearray(4)
+                    mesh_broadcast_frame_header[:1] = bytes([FRAME_TYPE.MESH_BROADCAST.value])
+                    mesh_broadcast_frame_header[1:4] = helpers.get_crc_24(Station.mycallsign)
 
-                # callsign(6), router(6), hops(1), path_score(1) == 14 ==> 14 28 42 ==> 3 mesh routing entries
-                # callsign_crc(3), router_crc(3), hops(1), path_score(1) == 8 --> 6
-                # callsign_crc(3), hops(1), path_score(1) == 5 --> 10
+                    # callsign(6), router(6), hops(1), path_score(1) == 14 ==> 14 28 42 ==> 3 mesh routing entries
+                    # callsign_crc(3), router_crc(3), hops(1), path_score(1) == 8 --> 6
+                    # callsign_crc(3), hops(1), path_score(1) == 5 --> 10
 
-                # Create a new bytearray with a fixed length of 50
-                result = bytearray(50)
+                    # Create a new bytearray with a fixed length of 50
+                    result = bytearray(50)
 
-                # Iterate over the route subarrays and add the selected entries to the result bytearray
-                index = 0
-                for route_id, route in enumerate(MeshParam.routing_table):
-                    # the value 5 is the length of crc24 + hops + score
+                    # Iterate over the route subarrays and add the selected entries to the result bytearray
+                    index = 0
+                    for route_id, route in enumerate(MeshParam.routing_table):
+                        # the value 5 is the length of crc24 + hops + score
 
-                    dxcall = MeshParam.routing_table[route_id][0]
-                    # router = MeshParam.routing_table[i][1]
-                    hops = MeshParam.routing_table[route_id][2]
-                    # snr = MeshParam.routing_table[i][3]
-                    route_score = np.clip(MeshParam.routing_table[route_id][4], 0, 254)
-                    # timestamp = MeshParam.routing_table[i][5]
-                    result[index:index + 5] = dxcall + bytes([hops]) + bytes([route_score])
-                    index += 5
+                        dxcall = MeshParam.routing_table[route_id][0]
+                        # router = MeshParam.routing_table[i][1]
+                        hops = MeshParam.routing_table[route_id][2]
+                        # snr = MeshParam.routing_table[i][3]
+                        route_score = np.clip(MeshParam.routing_table[route_id][4], 0, 254)
+                        # timestamp = MeshParam.routing_table[i][5]
+                        result[index:index + 5] = dxcall + bytes([hops]) + bytes([route_score])
+                        index += 5
 
-                print(len(result))
-                # Split the result bytearray into a list of fixed-length bytearrays
-                split_result = [result[i:i + 50] for i in range(0, len(result), 50)]
-                print(len(split_result))
-                frame_list = []
-                for _ in split_result:
-                    # make sure payload is always 50
-                    _[len(_):] = bytes(50 - len(_))
-                    #print(len(_))
-                    frame_list.append(mesh_broadcast_frame_header + _)
+                    print(len(result))
+                    # Split the result bytearray into a list of fixed-length bytearrays
+                    split_result = [result[i:i + 50] for i in range(0, len(result), 50)]
+                    print(len(split_result))
+                    frame_list = []
+                    for _ in split_result:
+                        # make sure payload is always 50
+                        _[len(_):] = bytes(50 - len(_))
+                        #print(len(_))
+                        frame_list.append(mesh_broadcast_frame_header + _)
 
-                print(frame_list)
-                TNC.transmitting = True
-                c2_mode = FREEDV_MODE.datac4.value
-                modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
+                    print(frame_list)
+                    TNC.transmitting = True
+                    c2_mode = FREEDV_MODE.datac4.value
+                    modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
 
-                # Wait while transmitting
-                while TNC.transmitting:
-                    threading.Event().wait(0.01)
-            except Exception as e:
-                self.log.warning("[MESH] broadcasting routing table", e=e)
+                    # Wait while transmitting
+                    while TNC.transmitting:
+                        threading.Event().wait(0.01)
+                except Exception as e:
+                    self.log.warning("[MESH] broadcasting routing table", e=e)
+
 
     def mesh_rx_dispatcher(self):
         while True:

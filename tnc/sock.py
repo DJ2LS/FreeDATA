@@ -395,6 +395,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             if received_json["type"] == "get" and received_json["command"] == "routing_table":
                 self.tnc_get_mesh_routing_table(received_json)
 
+            # ENABLE MESH
+            if received_json["type"] == "set" and received_json["command"] == "enable_mesh":
+                MeshParam.enable_protocol = True
+
+            # DISABLE MESH
+            if received_json["type"] == "set" and received_json["command"] == "disable_mesh":
+                MeshParam.enable_protocol = False
 
         except Exception as err:
             log.error("[SCK] JSON decoding error", e=err)

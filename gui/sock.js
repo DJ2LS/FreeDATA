@@ -852,6 +852,21 @@ exports.sendFecIsWriting = function (mycallsign) {
   writeTncCommand(command);
 };
 
+// ENABLE MESH
+exports.enable_mesh = function () {
+  command =
+    '{"type" : "set", "command" : "enable_mesh"}';
+  writeTncCommand(command);
+};
+
+// DISABLE MESH
+exports.disable_mesh = function () {
+  command =
+    '{"type" : "set", "command" : "disable_mesh"}';
+  writeTncCommand(command);
+};
+
+
 // SEND FEC TO BROADCASTCHANNEL
 exports.sendBroadcastChannel = function (channel, data_out, uuid) {
   let checksum = "";

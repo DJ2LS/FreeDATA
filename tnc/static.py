@@ -93,6 +93,7 @@ class HamlibParam:
 @dataclass
 class MeshParam:
     routing_table = []
+    enable_protocol = False
 @dataclass
 class ModemParam:
     tuning_range_fmin: float = -50.0
