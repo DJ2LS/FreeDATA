@@ -84,17 +84,20 @@ class MeshRouter():
         offset = 5
         frequency = 6
 
-        for item in TNC.heard_stations:
-            print(item[snr])
-            try:
+        try:
+            for item in TNC.heard_stations:
                 print(item[snr])
-                snr = bytes(item[snr], "utf-8").split(b"/")
-                snr = int(float(snr[0]))
-            except Exception as e:
-                snr = int(float(item[snr]))
+                try:
+                    print(item[snr])
+                    snr = bytes(item[snr], "utf-8").split(b"/")
+                    snr = int(float(snr[0]))
+                except Exception as e:
+                    snr = int(float(item[snr]))
 
-            new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp]]
-            self.add_router_to_routing_table(new_router)
+                new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp]]
+                self.add_router_to_routing_table(new_router)
+        except Exception as e:
+            self.log.warning("[MESH] error fetching data from heard station list", e=e)
 
     def add_router_to_routing_table(self, new_router):
         # destination callsign # router callsign # hops # rx snr # route quality # timestamp
@@ -114,6 +117,7 @@ class MeshRouter():
 
         while True:
             try:
+
                 # wait some time until sending routing table
                 threading.Event().wait(interval)
 
@@ -135,17 +139,16 @@ class MeshRouter():
                 # Iterate over the route subarrays and add the selected entries to the result bytearray
                 index = 0
                 for route_id, route in enumerate(MeshParam.routing_table):
+                    # the value 5 is the length of crc24 + hops + score
+
                     dxcall = MeshParam.routing_table[route_id][0]
                     # router = MeshParam.routing_table[i][1]
                     hops = MeshParam.routing_table[route_id][2]
                     # snr = MeshParam.routing_table[i][3]
                     route_score = np.clip(MeshParam.routing_table[route_id][4], 0, 254)
                     # timestamp = MeshParam.routing_table[i][5]
-                    print(dxcall)
                     result[index:index + 5] = dxcall + bytes([hops]) + bytes([route_score])
-                    index += 3
-                    index += 1
-                    index += 1
+                    index += 5
 
                 print(len(result))
                 # Split the result bytearray into a list of fixed-length bytearrays
@@ -167,7 +170,7 @@ class MeshRouter():
                 while TNC.transmitting:
                     threading.Event().wait(0.01)
             except Exception as e:
-                self.log.warning("[MESH] error fetching data from heard station list", e=e)
+                self.log.warning("[MESH] broadcasting routing table", e=e)
 
     def mesh_rx_dispatcher(self):
         while True:
@@ -193,9 +196,6 @@ class MeshRouter():
                 score = int.from_bytes(payload[i+4:i + 5], "big")  # Fifth byte of the information (score)
                 timestamp = int(time.time())
                 snr = int(ModemParam.snr)
-                print("Callsign Checksum:", callsign_checksum)
-                print("Hops:", hops)
-                print("Score:", score)
 
                 # use case 1: add new router to table only if callsign not empty
                 _use_case1 = callsign_checksum.startswith(b'\x00')
@@ -220,6 +220,10 @@ class MeshRouter():
                 if not _use_case1 \
                         and _use_case2\
                         and not _use_case4:
+
+                    print("Callsign Checksum:", callsign_checksum)
+                    print("Hops:", hops)
+                    print("Score:", score)
 
                     new_router = [callsign_checksum, router, hops, snr, score, timestamp]
                     print(new_router)
