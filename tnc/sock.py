@@ -777,8 +777,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 for route in range(MeshParam.routing_table):
                     output["routes"].append(
                         {
-                            "dxcall": MeshParam.routing_table[route][0],
-                            "router": MeshParam.routing_table[route][1],
+                            "dxcall": str(MeshParam.routing_table[route][0], "utf-8"),
+                            "router": str(MeshParam.routing_table[route][1], "utf-8"),
                             "hops": MeshParam.routing_table[route][2],
                             "snr": MeshParam.routing_table[route][3],
                             "score": MeshParam.routing_table[route][4],
@@ -1121,6 +1121,7 @@ def send_tnc_state():
         "total_bytes": str(ARQ.total_bytes),
         "beacon_state": str(Beacon.beacon_state),
         "stations": [],
+        "routing_table": [],
         "mycallsign": str(Station.mycallsign, encoding),
         "mygrid": str(Station.mygrid, encoding),
         "dxcallsign": str(Station.dxcallsign, encoding),
@@ -1143,6 +1144,19 @@ def send_tnc_state():
                 "frequency": heard[6],
             }
         )
+
+    for route in range(MeshParam.routing_table):
+        output["routing_table"].append(
+            {
+                "dxcall": str(MeshParam.routing_table[route][0], encoding),
+                "router": str(MeshParam.routing_table[route][1], encoding),
+                "hops": MeshParam.routing_table[route][2],
+                "snr": MeshParam.routing_table[route][3],
+                "score": MeshParam.routing_table[route][4],
+                "timestamp": MeshParam.routing_table[route][5],
+            }
+        )
+
     return json.dumps(output)
 
 
