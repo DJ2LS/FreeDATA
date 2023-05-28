@@ -774,15 +774,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     "routes": [],
                 }
 
-                for route in range(MeshParam.routing_table):
+                for _, route in enumerate(MeshParam.routing_table):
                     output["routes"].append(
                         {
-                            "dxcall": str(MeshParam.routing_table[route][0], "utf-8"),
-                            "router": str(MeshParam.routing_table[route][1], "utf-8"),
-                            "hops": MeshParam.routing_table[route][2],
-                            "snr": MeshParam.routing_table[route][3],
-                            "score": MeshParam.routing_table[route][4],
-                            "timestamp": MeshParam.routing_table[route][5],
+                            "dxcall": str(MeshParam.routing_table[_][0], "utf-8"),
+                            "router": str(MeshParam.routing_table[_][1], "utf-8"),
+                            "hops": MeshParam.routing_table[_][2],
+                            "snr": MeshParam.routing_table[_][3],
+                            "score": MeshParam.routing_table[_][4],
+                            "timestamp": MeshParam.routing_table[_][5],
                         }
                     )
 
@@ -1149,15 +1149,15 @@ def send_tnc_state():
             }
         )
 
-    for route in range(MeshParam.routing_table):
+    for _, route in enumerate(MeshParam.routing_table):
         output["routing_table"].append(
             {
-                "dxcall": str(MeshParam.routing_table[route][0], encoding),
-                "router": str(MeshParam.routing_table[route][1], encoding),
-                "hops": MeshParam.routing_table[route][2],
-                "snr": MeshParam.routing_table[route][3],
-                "score": MeshParam.routing_table[route][4],
-                "timestamp": MeshParam.routing_table[route][5],
+                "dxcall": str(MeshParam.routing_table[_][0], encoding),
+                "router": str(MeshParam.routing_table[_][1], encoding),
+                "hops": MeshParam.routing_table[_][2],
+                "snr": MeshParam.routing_table[_][3],
+                "score": MeshParam.routing_table[_][4],
+                "timestamp": MeshParam.routing_table[_][5],
             }
         )
 
