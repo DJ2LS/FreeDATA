@@ -1582,6 +1582,10 @@ window.addEventListener("DOMContentLoaded", () => {
     ipcRenderer.send("request-open-tnc-log");
   });
 
+  document.getElementById("meshtable").addEventListener("click", () => {
+    ipcRenderer.send("request-open-mesh-module");
+  });
+
   // stopTNC button clicked
   document.getElementById("stopTNC").addEventListener("click", () => {
     if (!confirm("Stop the TNC?")) return;

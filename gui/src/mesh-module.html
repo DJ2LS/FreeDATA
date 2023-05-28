@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <title>FreeDATA - Mesh Table</title>
+  </head>
+  <body>
+    <!-- bootstrap -->
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- chart.js -->
+
+    <nav class="navbar fixed-top bg-light">
+      <div class="container-fluid">
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="enable_mesh"
+          autocomplete="off"
+          checked
+        />
+        <label class="btn btn-outline-info" for="enable_mesh"
+          >Enable / Disable Mesh</label
+        >
+
+
+      </div>
+    </nav>
+
+    <div class="container-fluid mt-5">
+      <div class="tableFixHead">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">DXCall</th>
+              <th scope="col">Router</th>
+              <th scope="col">Hops</th>
+              <th scope="col">SNR</th>
+              <th scope="col">Score</th>
+
+            </tr>
+          </thead>
+          <tbody id="mesh-table">
+            <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </body>
+</html>
