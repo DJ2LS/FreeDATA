@@ -91,7 +91,7 @@ class MeshRouter():
                     print(item[snr])
                     snr = bytes(item[snr], "utf-8").split(b"/")
                     snr = int(float(snr[0]))
-                except Exception as e:
+                except Exception as err:
                     snr = int(float(item[snr]))
 
                 new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp]]
