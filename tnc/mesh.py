@@ -100,16 +100,20 @@ class MeshRouter():
             self.log.warning("[MESH] error fetching data from heard station list", e=e)
 
     def add_router_to_routing_table(self, new_router):
-        # destination callsign # router callsign # hops # rx snr # route quality # timestamp
-        for _, item in enumerate(MeshParam.routing_table):
-            # update routing entry if exists
-            if new_router[0] in item[0] and new_router[1] in item[1]:
-                print(f"UPDATE {MeshParam.routing_table[_]} >>> {new_router}")
-                MeshParam.routing_table[_] = new_router
+        try:
+            # destination callsign # router callsign # hops # rx snr # route quality # timestamp
+            for _, item in enumerate(MeshParam.routing_table):
+                # update routing entry if exists
+                if new_router[0] in item[0] and new_router[1] in item[1]:
+                    print(f"UPDATE {MeshParam.routing_table[_]} >>> {new_router}")
+                    MeshParam.routing_table[_] = new_router
 
-        # add new routing entry if not exists
-        if new_router not in MeshParam.routing_table:
-            MeshParam.routing_table.append(new_router)
+            # add new routing entry if not exists
+            if new_router not in MeshParam.routing_table:
+                print(f"INSERT {new_router} >>> ROUTING TABLE")
+                MeshParam.routing_table.append(new_router)
+        except Exception as e:
+            self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
     def broadcast_routing_table(self, interval=240):
         # enable receiving for datac4 if broadcasting
