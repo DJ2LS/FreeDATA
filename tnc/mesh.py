@@ -76,25 +76,27 @@ class MeshRouter():
                     ]
                 )
         """
-        dxcallsign = 0
-        dxgrid = 1
-        timestamp = 2
-        type = 3
-        snr = 4
-        offset = 5
-        frequency = 6
+        dxcallsign_position = 0
+        dxgrid_position = 1
+        timestamp_position = 2
+        type_position = 3
+        snr_position = 4
+        offset_position = 5
+        frequency_position = 6
 
         try:
             for item in TNC.heard_stations:
-                print(item[snr])
+                print("-----------")
+                print(item)
+                print(item[snr_position])
                 try:
-                    print(item[snr])
-                    snr = bytes(item[snr], "utf-8").split(b"/")
+                    print(item[snr_position])
+                    snr = bytes(item[snr_position], "utf-8").split(b"/")
                     snr = int(float(snr[0]))
                 except Exception as err:
-                    snr = int(float(item[snr]))
+                    snr = int(float(item[snr_position]))
 
-                new_router = [helpers.get_crc_24(item[dxcallsign]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp]]
+                new_router = [helpers.get_crc_24(item[dxcallsign_position]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp_position]]
                 self.add_router_to_routing_table(new_router)
         except Exception as e:
             self.log.warning("[MESH] error fetching data from heard station list", e=e)
