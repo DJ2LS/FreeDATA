@@ -65,10 +65,20 @@ for (i = 0; i < routes.length; i++) {
 
 
   var row = document.createElement("tr");
-
+    var datetime = new Date(routes[i]["timestamp"] * 1000).toLocaleString(
+      navigator.language,{
+        hourCycle: 'h23',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    }
+    );
   var timestamp = document.createElement("td");
   var timestampText = document.createElement("span");
-  timestampText.innerText = routes[i]["timestamp"];
+  timestampText.innerText = datetime;
   timestamp.appendChild(timestampText);
 
   var dxcall = document.createElement("td");
