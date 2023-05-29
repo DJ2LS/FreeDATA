@@ -17,7 +17,11 @@ HF mesh networking prototype and testing module
 
 TODO: SIGNALLING FOR ACK/NACK:
 - mesh-signalling burst is datac13
-- mesh-signalling frame contains [message id, status]
+- mesh-signalling frame contains [message id, status, hops, score, payload]
+- frame type is 1 byte
+- message id is 32bit crc --> 4bytes
+- status can be ACK, NACK, PING, PINGACK --> 1byte
+- payload = 14bytes - 8 bytes  = 6bytes
 - create a list for signalling frames, contains [message id, message-status, attempts, state, timestamp]
 - on "IRS", send ACK/NACK 10 times on receiving beacon?
 - on "ROUTER", receive ACK/NACK, and store it in table, also send it 10 times
@@ -25,6 +29,8 @@ TODO: SIGNALLING FOR ACK/NACK:
 - if done already in list, don't reset retry counter
 - delete ACK/NACK if "done" and timestamp older than 1day
 
+TODO: SCORE CALCULATION:
+SNR: negative --> * 2
 
 """
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
@@ -96,7 +102,7 @@ class MeshRouter():
                 except Exception as err:
                     snr = int(float(item[snr_position]))
 
-                new_router = [helpers.get_crc_24(item[dxcallsign_position]), helpers.get_crc_24(b'direct'), 0, snr, snr, item[timestamp_position]]
+                new_router = [helpers.get_crc_24(item[dxcallsign_position]), helpers.get_crc_24(b'direct'), 0, snr, self.calculate_score_by_snr(snr), item[timestamp_position]]
                 self.add_router_to_routing_table(new_router)
         except Exception as e:
             self.log.warning("[MESH] error fetching data from heard station list", e=e)
@@ -203,8 +209,9 @@ class MeshRouter():
                 callsign_checksum = payload[i:i + 3]  # First 3 bytes of the information (callsign_checksum)
                 hops = int.from_bytes(payload[i+3:i + 4], "big")  # Fourth byte of the information (hops)
                 score = int.from_bytes(payload[i+4:i + 5], "big")  # Fifth byte of the information (score)
-                timestamp = int(time.time())
                 snr = int(ModemParam.snr)
+                score = self.calculate_new_avg_score(score, self.calculate_score_by_snr(snr))
+                timestamp = int(time.time())
 
                 # use case 1: add new router to table only if callsign not empty
                 _use_case1 = callsign_checksum.startswith(b'\x00')
@@ -244,3 +251,18 @@ class MeshRouter():
             print("-------------------------")
         except Exception as e:
             self.log.warning("[MESH] error processing received routing broadcast", e=e)
+
+    def calculate_score_by_snr(self, snr):
+        if snr < -12 or snr > 12:
+            raise ValueError("Value must be in the range of -12 to 12")
+
+        score = (snr + 12) * 100 / 24  # Scale the value to the range [0, 100]
+        if score < 0:
+            score = 0  # Ensure the score is not less than 0
+        elif score > 100:
+            score = 100  # Ensure the score is not greater than 100
+
+        return int(score)
+
+    def calculate_new_avg_score(self, value_old, value):
+        return int((value_old + value) / 2)
