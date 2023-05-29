@@ -124,10 +124,12 @@ class MeshRouter():
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
     def broadcast_routing_table(self, interval=180):
-        # enable receiving for datac4 if broadcasting
-        modem.RECEIVE_DATAC4 = True
 
         while True:
+            # always enable receiving for datac4 if broadcasting
+            modem.RECEIVE_DATAC4 = True
+
+
             threading.Event().wait(1)
             if MeshParam.enable_protocol:
                 try:
