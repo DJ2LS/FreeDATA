@@ -36,7 +36,7 @@ SNR: negative --> * 2
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
-from static import TNC, MeshParam, FRAME_TYPE, Station, ModemParam
+from static import TNC, MeshParam, FRAME_TYPE, Station, ModemParam, ARQ
 from codec2 import FREEDV_MODE
 import numpy as np
 import time
@@ -131,7 +131,7 @@ class MeshRouter():
 
 
             threading.Event().wait(1)
-            if MeshParam.enable_protocol:
+            if MeshParam.enable_protocol and not ARQ.arq_state and not ModemParam.channel_busy:
                 try:
 
                     # wait some time until sending routing table
