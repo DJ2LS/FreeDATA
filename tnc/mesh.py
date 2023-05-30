@@ -166,10 +166,8 @@ class MeshRouter():
                         result[index:index + 5] = dxcall + bytes([hops]) + bytes([route_score])
                         index += 5
 
-                    print(len(result))
                     # Split the result bytearray into a list of fixed-length bytearrays
                     split_result = [result[i:i + 50] for i in range(0, len(result), 50)]
-                    print(len(split_result))
                     frame_list = []
                     for _ in split_result:
                         # make sure payload is always 50
@@ -177,9 +175,9 @@ class MeshRouter():
                         #print(len(_))
                         frame_list.append(mesh_broadcast_frame_header + _)
 
-                    print(frame_list)
                     TNC.transmitting = True
                     c2_mode = FREEDV_MODE.datac4.value
+                    self.log.info("[MESH] broadcasting routing table", frame_list=frame_list, frames=len(split_result))
                     modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
 
                     # Wait while transmitting
