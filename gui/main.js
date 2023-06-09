@@ -386,6 +386,11 @@ ipcMain.on("request-show-chat-window", () => {
   chat.show();
 });
 
+ipcMain.on("request-clear-chat-connected", () => {
+  //Clear chat window's connected with text
+  chat.webContents.send("action-clear-reception-status");
+});
+
 // UPDATE TNC CONNECTION
 ipcMain.on("request-update-tnc-ip", (event, data) => {
   win.webContents.send("action-update-tnc-ip", data);

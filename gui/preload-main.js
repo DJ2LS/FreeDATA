@@ -2254,6 +2254,7 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
       "bi bi-chat-fill text-success me-1";
   } else {
     document.getElementById("spnConnectedWith").className = "bi bi-chat-fill";
+    ipcRenderer.send("request-clear-chat-connected");
   }
 
   // HAMLIB STATUS
