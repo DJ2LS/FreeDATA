@@ -1371,7 +1371,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Discord Link clicked
   document.getElementById("discordUrl").addEventListener("click", () => {
-    shell.openExternal("https://discord.gg/jnADeDtxUF");
+    shell.openExternal("https://discord.freedata.app/");
   });
 
   // startTNC button clicked
