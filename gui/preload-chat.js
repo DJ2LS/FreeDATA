@@ -785,6 +785,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
+      obj.new = 1;
       console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -813,6 +814,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
+      obj.new = 1;
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -832,7 +834,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-
+      obj.new = 1;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -851,7 +853,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-
+      obj.new = 1;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -879,6 +881,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
         obj.file = FD.btoa_FD(splitted_data[8]);
+        obj.new=1;
       } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -891,7 +894,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=1;
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
@@ -907,7 +910,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=1;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
@@ -928,7 +931,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=1;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign, name);
         }
@@ -944,7 +947,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=1;
         console.log(splitted_data);
         let userData = new Object();
         userData.user_info_image = splitted_data[2];
@@ -973,7 +976,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=1;
         console.log(splitted_data);
 
         let userData = new Object();
@@ -1001,6 +1004,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = sharedFileInfo[0];
         obj.filetype = "application/octet-stream";
         obj.file = FD.btoa_FD(sharedFileInfo[1]);
+        obj.new=1;
       } else {
         console.log("no rule matched for handling received data!");
       }
@@ -1060,7 +1064,10 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
     }
 }
-
+  if (typeof obj.new == "undefined"){
+    obj.new=0;
+  }
+ 
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
@@ -1201,7 +1208,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
                           </div>
 
-                        <span style="font-size:1.2rem;"><strong>${dxcallsign}</strong></span>
+                        <span style="font-size:1.2rem;" ><strong id="chat-${dxcallsign}-list-displaydxcall">${dxcallsign}</strong></span>
                         <span class="badge bg-secondary text-white p-1 h-100" id="chat-${dxcallsign}-list-dxgrid"><small>${dxgrid}</small></span>
                         <span style="font-size:0.8rem;" id="chat-${dxcallsign}-list-time">${timestampHours}</span>
                         <span class="position-absolute m-2 bottom-0 end-0" style="font-size:0.8rem;" id="chat-${dxcallsign}-list-shortmsg">${shortmsg}</span>
@@ -1230,6 +1237,12 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       .getElementById("chat-" + dxcallsign + "-list")
       .addEventListener("click", function () {
         //document.getElementById('chatModuleDxCall').value = dxcallsign;
+        
+        //Reset unread messages and new message indicator
+        let clear = selected_callsign;
+        clearUnreadMessages(clear);
+        document.getElementById(`chat-${selected_callsign}-list-displaydxcall`).textContent=selected_callsign;
+
         selected_callsign = dxcallsign;
         setTimeout(scrollMessagesToBottom, 200);
 
@@ -1251,6 +1264,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     // short message
     document.getElementById("chat-" + dxcallsign + "-list-shortmsg").innerHTML =
       shortmsg;
+      if (obj.new==1) document.getElementById(`chat-${obj.dxcallsign}-list-displaydxcall`).textContent="*" +obj.dxcallsign;
   }
   // APPEND MESSAGES TO CALLSIGN
 
@@ -1861,6 +1875,7 @@ add_obj_to_database = function (obj) {
     status: obj.status,
     snr: obj.snr,
     attempt: obj.attempt,
+    new: obj.new,
     _attachments: {
       [obj.filename]: {
         content_type: obj.filetype,
@@ -2110,6 +2125,7 @@ function createChatIndex() {
         "attempt",
         "bytesperminute",
         "_attachments",
+        "new",
       ],
     },
   })
@@ -2249,9 +2265,9 @@ function getSetUserSharedFolder(selected_callsign) {
     .then(function (data) {
       console.log(data);
 
-      console.log(data.user_shared_folder);
 
       if (typeof data.user_shared_folder !== "undefined") {
+        console.log(data.user_shared_folder);
         // shared folder table
         var icons = [
           "aac",
@@ -2761,6 +2777,31 @@ function checkForWaitingMessages(dxcall) {
       } else {
         console.log("nope");
       }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+
+function clearUnreadMessages(dxcall) {
+  //console.log(dxcall);
+  db.find({
+    selector: {
+      dxcallsign: dxcall,
+      new: {$eq: 1},
+    }
+  })
+    .then(function (result) {
+      //console.log(result);
+      //console.log ("New messages count to clear for " + dxcall + ": " + result.docs.length)
+        result.docs.forEach(function (item) {
+          db.upsert(item._id, function (doc) {
+            doc.new=0;
+            //console.log("Clearing new on _id " + item._id);
+            return doc;
+          });            
+        });
     })
     .catch(function (err) {
       console.log(err);
