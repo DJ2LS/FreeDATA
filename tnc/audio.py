@@ -78,7 +78,7 @@ def fetch_audio_devices(input_devices, output_devices):
             name = device["name"]
             # Ignore some Flex Radio devices to make device selection simpler
             if name.startswith("DAX RESERVED") or name.startswith("DAX IQ"):
-                continue;
+                continue
 
             max_output_channels = device["max_output_channels"]
             max_input_channels = device["max_input_channels"]

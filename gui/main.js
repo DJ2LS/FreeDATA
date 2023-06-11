@@ -465,7 +465,7 @@ ipcMain.on("request-update-reception-status", (event, arg) => {
 });
 
 //Called by main to query chat if there are new messages
-ipcMain.on("request-update-unread-messages", (event) => {
+ipcMain.on("request-update-unread-messages",() => {
   //mainLog.info("Got request to check if chat has new messages")
   chat.webContents.send("action-update-unread-messages");
   
