@@ -100,7 +100,8 @@ const configDefaultSettings =
                   "max_retry_attempts" : 5, \
                   "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
-                  "auto_start": 0 \
+                  "auto_start": 0, \
+                  "notification": 1 \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -410,6 +411,11 @@ ipcMain.on("request-show-chat-window", () => {
   chat.show();
 });
 
+ipcMain.on("request-clear-chat-connected", () => {
+  //Clear chat window's connected with text
+  chat.webContents.send("action-clear-reception-status");
+});
+
 // UPDATE TNC CONNECTION
 ipcMain.on("request-update-tnc-ip", (event, data) => {
   win.webContents.send("action-update-tnc-ip", data);
@@ -479,6 +485,20 @@ ipcMain.on("request-update-transmission-status", (event, arg) => {
 
 ipcMain.on("request-update-reception-status", (event, arg) => {
   win.webContents.send("action-update-reception-status", arg);
+  chat.webContents.send("action-update-reception-status", arg);
+
+});
+
+//Called by main to query chat if there are new messages
+ipcMain.on("request-update-unread-messages",() => {
+  //mainLog.info("Got request to check if chat has new messages")
+  chat.webContents.send("action-update-unread-messages");
+  
+});
+//Called by chat to notify main if there are new messages
+ipcMain.on("request-update-unread-messages-main", (event,arg) => {
+  win.webContents.send("action-update-unread-messages-main",arg);
+  //mainLog.info("Received reply from chat and ?new messages = " +arg);
 });
 
 ipcMain.on("request-open-tnc-log", () => {

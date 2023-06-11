@@ -76,6 +76,9 @@ def fetch_audio_devices(input_devices, output_devices):
         # Use a try/except block because Windows doesn't have an audio device range
         try:
             name = device["name"]
+            # Ignore some Flex Radio devices to make device selection simpler
+            if name.startswith("DAX RESERVED") or name.startswith("DAX IQ"):
+                continue
 
             max_output_channels = device["max_output_channels"]
             max_input_channels = device["max_input_channels"]
