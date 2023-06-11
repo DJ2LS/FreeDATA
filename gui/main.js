@@ -100,7 +100,8 @@ const configDefaultSettings =
                   "max_retry_attempts" : 5, \
                   "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
-                  "auto_start": 0 \
+                  "auto_start": 0, \
+                  "notification": 1 \
                   }';
 
 if (!fs.existsSync(configPath)) {

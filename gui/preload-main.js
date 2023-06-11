@@ -390,6 +390,12 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("AutoStartSwitch").checked = false;
   }
 
+  if (config.notification == 1) {
+    document.getElementById("NotificationSwitch").checked = true;
+  } else {
+    document.getElementById("NotificationSwitch").checked = false;
+  }
+
   // theme selector
   changeGuiDesign(config.theme);
 
@@ -1212,6 +1218,17 @@ window.addEventListener("DOMContentLoaded", () => {
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
   });
+
+    //Handle change of Notification settings
+    document.getElementById("NotificationSwitch").addEventListener("click", () => {
+      if (document.getElementById("NotificationSwitch").checked == true) {
+        config.notification = 1;
+      } else {
+        config.notification = 0;
+      }
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
 
   // enable fsk Switch clicked
   document.getElementById("fskModeSwitch").addEventListener("click", () => {
@@ -3072,7 +3089,7 @@ ipcRenderer.on("action-show-cq-toast-received", (event, data) => {
   let dxcallsign = data["data"][0]["dxcallsign"];
   let dxgrid = data["data"][0]["dxgrid"];
   let content = `cq from <strong>${dxcallsign}</strong> (${dxgrid})`;
-
+  showOsPopUp("CQ from " + dxcallsign,"Say hello!");
   displayToast(
     (type = "success"),
     (icon = "bi-broadcast"),
@@ -3759,4 +3776,13 @@ function autostart_tnc() {
     //Now start TNC
     document.getElementById("startTNC").click();
 }
+}
+
+//Have the operating system show a notification popup
+function showOsPopUp(title, message)
+{
+  if (config.notification == 0) return;
+  const NOTIFICATION_TITLE = title;
+  const NOTIFICATION_BODY = message;
+  new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
 }

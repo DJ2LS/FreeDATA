@@ -1274,7 +1274,10 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       if (config.enable_auto_retry.toUpperCase() == "TRUE") {
         checkForWaitingMessages(obj.dxcallsign);
       }
-
+      if (obj.new == 1)
+      {
+       showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
+      }
       var new_message = `
                 <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
@@ -1325,6 +1328,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     var message_html = obj.msg.replaceAll(/\n/g, "<br>");
 
     if (obj.type == "received") {
+      if (obj.new == 1)
+      {
+       showOsPopUp("Message received from " + obj.dxcallsign,obj.msg);
+      }
+      
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
@@ -2783,6 +2791,26 @@ function checkForWaitingMessages(dxcall) {
     });
 }
 
+function checkForWaitingMessages()
+{
+  var newmsgs;
+  db.find({
+    selector: {
+      new: {$eq: 1},
+    }, limit:1,
+  })
+    .then(function (result) {
+     if (result.docs.length >0)
+      newmsgs=true;
+    else
+      newmsgs=false;
+      //console.log ("New messages count to clear for " + dxcall + ": " + result.docs.length)
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+    return newmsgs;
+}
 
 function clearUnreadMessages(dxcall) {
   //console.log(dxcall);
@@ -2806,4 +2834,13 @@ function clearUnreadMessages(dxcall) {
     .catch(function (err) {
       console.log(err);
     });
+}
+
+//Have the operating system show a notification popup
+function showOsPopUp(title, message)
+{
+  if (config.notification == 0) return;
+  const NOTIFICATION_TITLE = title;
+  const NOTIFICATION_BODY = message;
+  new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
 }
