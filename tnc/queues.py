@@ -14,6 +14,9 @@ MODEM_TRANSMIT_QUEUE = queue.Queue()
 
 # Initialize FIFO queue to store received frames
 MESH_RECEIVED_QUEUE = queue.Queue()
+MESH_QUEUE_TRANSMIT = queue.Queue()
+MESH_COMMAND_STATES = {}
+
 
 # Initialize FIFO queue to store audio frames
 AUDIO_RECEIVED_QUEUE = queue.Queue()

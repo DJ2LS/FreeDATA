@@ -2983,6 +2983,12 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "responseSharedFile") {
     sock.sendResponseSharedFile(arg.dxcallsign, arg.file, arg.filedata);
   }
+
+    if (arg.command == "mesh_ping") {
+    sock.sendMeshPing(arg.dxcallsign);
+  }
+
+
 });
 
 // IPC ACTION FOR AUTO UPDATER

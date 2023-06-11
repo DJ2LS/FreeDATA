@@ -32,7 +32,7 @@ import structlog
 from random import randrange
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE, MESH_QUEUE_TRANSMIT
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -402,6 +402,10 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             # DISABLE MESH
             if received_json["type"] == "set" and received_json["command"] == "disable_mesh":
                 MeshParam.enable_protocol = False
+                # -------------- MESH ---------------- #
+            # MESH PING
+            if received_json["type"] == "mesh" and received_json["command"] == "ping":
+                self.tnc_mesh_ping(received_json)
 
         except Exception as err:
             log.error("[SCK] JSON decoding error", e=err)
@@ -417,6 +421,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 # set early disconnecting state so we can interrupt connection attempts
                 ARQ.arq_session_state = "disconnecting"
                 command_response("disconnect", True)
+
+
 
         except Exception as err:
             command_response("listen", False)
@@ -569,6 +575,40 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 "[SCK] Stop beacon command execution error",
                 e=err,
                 command=received_json,
+            )
+
+
+    def tnc_mesh_ping(self, received_json):
+        # send ping frame and wait for ACK
+        try:
+            dxcallsign = received_json["dxcallsign"]
+            if not str(dxcallsign).strip():
+                raise NoCallsign
+
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+
+            # check if specific callsign is set with different SSID than the TNC is initialized
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = Station.mycallsign
+
+            MESH_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
+            command_response("ping", True)
+        except NoCallsign:
+            command_response("ping", False)
+            log.warning("[SCK] callsign required for ping", command=received_json)
+        except Exception as err:
+            command_response("ping", False)
+            log.warning(
+                "[SCK] PING command execution error", e=err, command=received_json
             )
 
     def tnc_ping_ping(self, received_json):

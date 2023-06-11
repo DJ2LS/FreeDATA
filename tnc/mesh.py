@@ -44,8 +44,11 @@ import threading
 import modem
 import helpers
 import structlog
+import ujson as json
 
-from queues import MESH_RECEIVED_QUEUE
+from queues import MESH_RECEIVED_QUEUE, MESH_QUEUE_TRANSMIT
+
+MESH_SIGNALLING_TABLE = []
 
 class MeshRouter():
     def __init__(self):
@@ -63,6 +66,15 @@ class MeshRouter():
         )
         self.mesh_rx_dispatcher_thread.start()
 
+        self.mesh_tx_dispatcher_thread = threading.Thread(
+            target=self.mesh_tx_dispatcher, name="worker thread receive", daemon=True
+        )
+        self.mesh_tx_dispatcher_thread.start()
+
+        self.mesh_signalling_dispatcher_thread = threading.Thread(
+            target=self.mesh_signalling_dispatcher, name="worker thread receive", daemon=True
+        )
+        self.mesh_signalling_dispatcher_thread.start()
 
     def get_from_heard_stations(self):
         """
@@ -123,7 +135,7 @@ class MeshRouter():
         except Exception as e:
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
-    def broadcast_routing_table(self, interval=180):
+    def broadcast_routing_table(self, interval=600):
 
         while True:
             # always enable receiving for datac4 if broadcasting
@@ -192,9 +204,50 @@ class MeshRouter():
             data_in = MESH_RECEIVED_QUEUE.get()
             if int.from_bytes(data_in[:1], "big") in [FRAME_TYPE.MESH_BROADCAST.value]:
                 self.received_routing_table(data_in[:-2])
+            elif int.from_bytes(data_in[:1], "big") in [FRAME_TYPE.MESH_SIGNALLING_PING.value]:
+                self.received_mesh_ping(data_in[:-2])
             else:
                 print("wrong mesh data received")
                 print(data_in)
+
+    def mesh_tx_dispatcher(self):
+        while True:
+            data = MESH_QUEUE_TRANSMIT.get()
+            print(data)
+            if data[0] == "PING":
+                self.add_mesh_ping_to_signalling_table(data[2])
+            else:
+                print("wrong mesh command")
+
+
+
+    def mesh_signalling_dispatcher(self):
+        #           [timestamp, destination, router, frametype, payload, attempt]
+        # --------------0------------1---------2---------3--------4---------5---- #
+        while True:
+            threading.Event().wait(1.0)
+            for entry in MESH_SIGNALLING_TABLE:
+                print(entry)
+                timestamp = entry[0]
+                attempt = entry[5]
+                # check for PING cases
+                if entry[3] == "PING" and attempt < 10:
+
+
+                    # Calculate the transmission time with exponential increase
+                    transmission_time = timestamp + (2 ** attempt) * 10
+
+                    # check if it is time to transmit
+                    if time.time() >= transmission_time:
+                        entry[5] += 1
+                        print(attempt)
+                        print("transmit mesh ping")
+                        self.transmit_mesh_signalling(entry)
+                    else:
+                        print("wait some more time")
+                else:
+                    print("...")
+
     def received_routing_table(self, data_in):
         try:
             print("data received........")
@@ -266,3 +319,80 @@ class MeshRouter():
 
     def calculate_new_avg_score(self, value_old, value):
         return int((value_old + value) / 2)
+
+    def received_mesh_ping(self, data_in):
+        pass
+
+    def add_mesh_ping_to_signalling_table(self, dxcallsign):
+        timestamp = time.time()
+        destination = helpers.get_crc_24(dxcallsign).hex()
+        router = ""
+        frametype = "PING"
+        payload = ""
+        attempt = 0
+
+        #           [timestamp, destination, router, frametype, payload, attempt]
+        # --------------0------------1---------2---------3--------4---------5---- #
+        new_entry = [timestamp, destination, router, frametype, payload, attempt]
+        print(MESH_SIGNALLING_TABLE)
+        for _, item in enumerate(MESH_SIGNALLING_TABLE):
+            # update routing entry if exists
+            if new_entry[0] in item[0] and new_entry[1] in item[1]:
+                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {new_entry}")
+                MESH_SIGNALLING_TABLE[_] = new_entry
+
+        # add new routing entry if not exists
+        if new_entry not in MESH_SIGNALLING_TABLE:
+            print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            MESH_SIGNALLING_TABLE.append(new_entry)
+
+
+
+
+    def enqueue_frame_for_tx(
+            self,
+            frame_to_tx,  # : list[bytearray], # this causes a crash on python 3.7
+            c2_mode=FREEDV_MODE.sig0.value,
+            copies=1,
+            repeat_delay=0,
+    ) -> None:
+        """
+        Send (transmit) supplied frame to TNC
+
+        :param frame_to_tx: Frame data to send
+        :type frame_to_tx: list of bytearrays
+        :param c2_mode: Codec2 mode to use, defaults to datac13
+        :type c2_mode: int, optional
+        :param copies: Number of frame copies to send, defaults to 1
+        :type copies: int, optional
+        :param repeat_delay: Delay time before sending repeat frame, defaults to 0
+        :type repeat_delay: int, optional
+        """
+        #print(frame_to_tx[0])
+        #print(frame_to_tx)
+        frame_type = FRAME_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
+        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
+                       type=frame_type)
+
+        # Set the TRANSMITTING flag before adding an object to the transmit queue
+        # TODO: This is not that nice, we could improve this somehow
+        TNC.transmitting = True
+        modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
+
+        # Wait while transmitting
+        while TNC.transmitting:
+            threading.Event().wait(0.01)
+
+
+    def transmit_mesh_signalling(self, data):
+        dxcallsign_crc = bytes.fromhex(data[1])
+
+        frame_type = bytes([FRAME_TYPE.MESH_SIGNALLING_PING.value])
+
+        ping_frame = bytearray(14)
+        ping_frame[:1] = frame_type
+        ping_frame[1:4] = dxcallsign_crc
+        ping_frame[4:7] = helpers.get_crc_24(Station.mycallsign)
+        ping_frame[7:13] = helpers.callsign_to_bytes(Station.mycallsign)
+
+        self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)

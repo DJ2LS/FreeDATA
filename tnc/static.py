@@ -129,7 +129,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.10.0-alpha.1-mesh-exp8"
+    version = "0.10.0-alpha.1-mesh-exp9"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
@@ -162,6 +162,7 @@ class FRAME_TYPE(Enum):
     FR_NACK = 63
     BURST_NACK = 64
     MESH_BROADCAST = 100
+    MESH_SIGNALLING_PING = 101
     CQ = 200
     QRV = 201
     PING = 210

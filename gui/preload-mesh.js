@@ -13,6 +13,21 @@ const config = require(configPath);
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
+
+  // startPing button clicked
+  document.getElementById("transmit_mesh_ping").addEventListener("click", () => {
+    var dxcallsign = document.getElementById("dxCallMesh").value.toUpperCase();
+    if (dxcallsign == "" || dxcallsign == null || dxcallsign == undefined)
+      return;
+    //pauseButton(document.getElementById("transmit_mesh_ping"), 2000);
+    ipcRenderer.send("run-tnc-command", {
+      command: "mesh_ping",
+      dxcallsign: dxcallsign,
+    });
+  });
+
+
+
   document
     .getElementById("enable_mesh")
     .addEventListener("click", () => {
@@ -42,8 +57,17 @@ let Data = {
 
 ipcRenderer.on("action-update-mesh-table", (event, arg) => {
   var routes = arg.routing_table;
+
+if (typeof routes == "undefined") {
+    return;
+  }
+
+
     var tbl = document.getElementById("mesh-table");
+if (tbl !== null) {
       tbl.innerHTML = "";
+
+  }
 
 
 for (i = 0; i < routes.length; i++) {
@@ -119,7 +143,10 @@ for (i = 0; i < routes.length; i++) {
 }
 
 
+if (tbl !== null) {
+
   // scroll to bottom of page
   // https://stackoverflow.com/a/11715670
   window.scrollTo(0, document.body.scrollHeight);
+  }
 });

@@ -587,6 +587,15 @@ exports.sendPing = function (dxcallsign) {
   writeTncCommand(command);
 };
 
+// Send Mesh Ping
+exports.sendMeshPing = function (dxcallsign) {
+  command =
+    '{"type" : "mesh", "command" : "ping", "dxcallsign" : "' +
+    dxcallsign +
+    '"}';
+  writeTncCommand(command);
+};
+
 // Send CQ
 exports.sendCQ = function () {
   command = '{"type" : "broadcast", "command" : "cqcqcq"}';
