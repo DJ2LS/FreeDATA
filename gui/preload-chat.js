@@ -1237,13 +1237,12 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       .getElementById("chat-" + dxcallsign + "-list")
       .addEventListener("click", function () {
         //document.getElementById('chatModuleDxCall').value = dxcallsign;
-        
+        selected_callsign = dxcallsign;
         //Reset unread messages and new message indicator
         let clear = selected_callsign;
         clearUnreadMessages(clear);
         document.getElementById(`chat-${selected_callsign}-list-displaydxcall`).textContent=selected_callsign;
 
-        selected_callsign = dxcallsign;
         setTimeout(scrollMessagesToBottom, 200);
 
         //get user information
