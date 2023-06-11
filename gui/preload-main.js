@@ -390,7 +390,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("AutoStartSwitch").checked = false;
   }
 
-  if (config.notification == 1) {
+  if (config.enable_sys_notification == 1) {
     document.getElementById("NotificationSwitch").checked = true;
   } else {
     document.getElementById("NotificationSwitch").checked = false;
@@ -1222,9 +1222,9 @@ window.addEventListener("DOMContentLoaded", () => {
     //Handle change of Notification settings
     document.getElementById("NotificationSwitch").addEventListener("click", () => {
       if (document.getElementById("NotificationSwitch").checked == true) {
-        config.notification = 1;
+        config.enable_sys_notification = 1;
       } else {
-        config.notification = 0;
+        config.enable_sys_notification = 0;
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
@@ -3806,7 +3806,7 @@ function autostart_tnc() {
 //Have the operating system show a notification popup
 function showOsPopUp(title, message)
 {
-  if (config.notification == 0) return;
+  if (config.enable_sys_notification == 0) return;
   const NOTIFICATION_TITLE = title;
   const NOTIFICATION_BODY = message;
   new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });

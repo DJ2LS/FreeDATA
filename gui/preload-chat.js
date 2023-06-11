@@ -2843,7 +2843,7 @@ function clearUnreadMessages(dxcall) {
 //Have the operating system show a notification popup
 function showOsPopUp(title, message)
 {
-  if (config.notification == 0) return;
+  if (config.enable_sys_notification == 0) return;
   const NOTIFICATION_TITLE = title;
   const NOTIFICATION_BODY = message;
   new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
