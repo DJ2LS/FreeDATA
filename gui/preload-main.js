@@ -1951,7 +1951,16 @@ function signal_quality_perc_quad(rssi, perfect_rssi = 10, worst_rssi = -150) {
 }
 
 var lastHeard = "";
+var checkForNewMessageWait=85;
+
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
+  //check for new messages
+  if (checkForNewMessageWait >= 100){
+    //This is very expensive
+    ipcRenderer.send("request-update-unread-messages");
+    checkForNewMessageWait=-1;
+  }
+  checkForNewMessageWait++;
   // update FFT
   if (typeof arg.fft !== "undefined") {
     // FIXME: WE need to fix this when disabled waterfall chart
@@ -2907,6 +2916,22 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
   //console.log("Sending sendFecIsWriting");
   sock.sendFecIsWriting(config.mycall);
 });
+
+//Change background color of RF Chat button if new messages are available
+ipcRenderer.on("action-update-unread-messages-main", (event,data) => {
+  //Do something
+  if (data == true)
+  {
+    document.getElementById("openRFChat").classList.add("btn-warning")
+    document.getElementById("openRFChat").classList.remove("btn-secondary")
+  }
+  else
+  {
+    document.getElementById("openRFChat").classList.remove("btn-warning")
+    document.getElementById("openRFChat").classList.add("btn-secondary")
+  }
+});
+
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "save_my_call") {

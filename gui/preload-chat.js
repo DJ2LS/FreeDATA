@@ -1044,7 +1044,7 @@ update_chat = function (obj) {
   }
 
 // add percent and bytes per minute if not existing
-console.log(obj.percent)
+//console.log(obj.percent)
 if (typeof obj.percent == "undefined") {
      obj.percent = 0;
      obj.bytesperminute = 0;
@@ -1073,7 +1073,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
   } else {
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-  console.log(obj.msg);
+  //console.log(obj.msg);
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
     var shortmsg = obj.type;
@@ -1422,7 +1422,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     }
 
     if (obj.type == "transmit") {
-      console.log(obj);
+      //console.log(obj);
       //console.log('msg-' + obj._id + '-status')
 
       if (obj.status == "failed") {
@@ -1495,11 +1495,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
     /* UPDATE EXISTING ELEMENTS */
   } else if (document.getElementById("msg-" + obj._id)) {
-    console.log("element already exists......");
-    console.log(obj);
+    //console.log("element already exists......");
+    //console.log(obj);
 
-        console.log(obj.status)
-        console.log(obj.attempt)
+      //  console.log(obj.status)
+      //  console.log(obj.attempt)
 
 
 
@@ -2660,6 +2660,12 @@ ipcRenderer.on("update-config", (event, data) => {
   config = data;
 });
 
+ipcRenderer.on("action-update-unread-messages", (event) => {
+  checkForNewMessages().then(function(count) {
+    ipcRenderer.send("request-update-unread-messages-main",count);
+  });
+});
+
 // https://stackoverflow.com/a/18650828
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return "0 Bytes";
@@ -2790,10 +2796,10 @@ function checkForWaitingMessages(dxcall) {
     });
 }
 
-function checkForWaitingMessages()
+async function checkForNewMessages()
 {
   var newmsgs;
-  db.find({
+  await db.find({
     selector: {
       new: {$eq: 1},
     }, limit:1,
@@ -2803,7 +2809,6 @@ function checkForWaitingMessages()
       newmsgs=true;
     else
       newmsgs=false;
-      //console.log ("New messages count to clear for " + dxcall + ": " + result.docs.length)
     })
     .catch(function (err) {
       console.log(err);
