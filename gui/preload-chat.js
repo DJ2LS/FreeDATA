@@ -661,8 +661,25 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
     });
 });
 
+ipcRenderer.on("action-update-reception-status", (event, arg) => {
+  var data = arg["data"][0];
+
+ document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
+});
+ipcRenderer.on("action-clear-reception-status", (event) => {
+ //Clear connected with textbox
+ let cwc = document.getElementById("txtConnectedWithChat");
+ if (cwc.textContent != "------") {
+  cwc.textContent = "------";
+  //console.log("Reseting connected with");
+ }
+});
+
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
+
+ document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
+
   console.log(data.status);
   if (data.uuid !== "no-uuid") {
     db.get(data.uuid, {

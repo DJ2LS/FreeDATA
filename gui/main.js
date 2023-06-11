@@ -386,6 +386,11 @@ ipcMain.on("request-show-chat-window", () => {
   chat.show();
 });
 
+ipcMain.on("request-clear-chat-connected", () => {
+  //Clear chat window's connected with text
+  chat.webContents.send("action-clear-reception-status");
+});
+
 // UPDATE TNC CONNECTION
 ipcMain.on("request-update-tnc-ip", (event, data) => {
   win.webContents.send("action-update-tnc-ip", data);
@@ -454,6 +459,8 @@ ipcMain.on("request-update-transmission-status", (event, arg) => {
 
 ipcMain.on("request-update-reception-status", (event, arg) => {
   win.webContents.send("action-update-reception-status", arg);
+  chat.webContents.send("action-update-reception-status", arg);
+
 });
 
 ipcMain.on("request-open-tnc-log", () => {
