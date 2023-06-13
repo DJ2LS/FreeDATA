@@ -237,7 +237,10 @@ class MeshRouter():
 
 
                     # Calculate the transmission time with exponential increase
-                    transmission_time = timestamp + (2 ** attempt) * 10
+                    #transmission_time = timestamp + (2 ** attempt) * 10
+
+                    # Calculate transmission times for attempts 0 to 10 with stronger S-curves in minutes
+                    transmission_time = (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * 60
 
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
