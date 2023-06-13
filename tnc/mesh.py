@@ -46,9 +46,7 @@ import helpers
 import structlog
 import ujson as json
 
-from queues import MESH_RECEIVED_QUEUE, MESH_QUEUE_TRANSMIT
-
-MESH_SIGNALLING_TABLE = []
+from queues import MESH_RECEIVED_QUEUE, MESH_QUEUE_TRANSMIT, MESH_SIGNALLING_TABLE
 
 class MeshRouter():
     def __init__(self):
@@ -206,6 +204,9 @@ class MeshRouter():
                 self.received_routing_table(data_in[:-2])
             elif int.from_bytes(data_in[:1], "big") in [FRAME_TYPE.MESH_SIGNALLING_PING.value]:
                 self.received_mesh_ping(data_in[:-2])
+            elif int.from_bytes(data_in[:1], "big") in [FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value]:
+                self.received_mesh_ping_ack(data_in[:-2])
+
             else:
                 print("wrong mesh data received")
                 print(data_in)
@@ -215,23 +216,24 @@ class MeshRouter():
             data = MESH_QUEUE_TRANSMIT.get()
             print(data)
             if data[0] == "PING":
-                self.add_mesh_ping_to_signalling_table(data[2])
+                self.add_mesh_ping_to_signalling_table(helpers.get_crc_24(data[2]).hex(), status="awaiting_ack")
             else:
                 print("wrong mesh command")
 
 
 
     def mesh_signalling_dispatcher(self):
-        #           [timestamp, destination, router, frametype, payload, attempt]
-        # --------------0------------1---------2---------3--------4---------5---- #
+        #           [timestamp, destination, router, frametype, payload, attempt, status]
+        # --------------0------------1---------2---------3--------4---------5--------6 #
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
                 print(entry)
                 timestamp = entry[0]
                 attempt = entry[5]
+                status = entry[6]
                 # check for PING cases
-                if entry[3] == "PING" and attempt < 10:
+                if entry[3] in ["PING", "PING-ACK"] and attempt < 10 and status not in ["acknowledged"]:
 
 
                     # Calculate the transmission time with exponential increase
@@ -242,7 +244,7 @@ class MeshRouter():
                         entry[5] += 1
                         print(attempt)
                         print("transmit mesh ping")
-                        self.transmit_mesh_signalling(entry)
+                        self.transmit_mesh_signalling_ping(entry)
                     else:
                         print("wait some more time")
                 else:
@@ -321,25 +323,88 @@ class MeshRouter():
         return int((value_old + value) / 2)
 
     def received_mesh_ping(self, data_in):
-        pass
+        destination = data_in[1:4].hex()
+        if destination == Station.mycallsign_crc.hex():
+            print("its a ping for us")
+            # use case 1: set status to acknowleding if we are the receiver of a PING
+            self.add_mesh_ping_to_signalling_table(destination, status="acknowledging")
+            dxcallsign_crc = Station.mycallsign_crc
+            self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
+            # use case 2: set status to acknowledged if we are out of retries
+            #self.add_mesh_ping_to_signalling_table(destination, status="acknowledged")
+        else:
+            print(f"its a ping for {destination}")
+            # use case 1: set status to forwarding if we are not hte receiver of a PING
+            self.add_mesh_ping_to_signalling_table(destination, status="forwarding")
+            dxcallsign_crc = bytes.fromhex(destination)
+            self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
+            # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
+            #self.add_mesh_ping_to_signalling_table(destination, status="forwarded")
 
-    def add_mesh_ping_to_signalling_table(self, dxcallsign):
+    def received_mesh_ping_ack(self, data_in):
+        # TODO:
+        # Check if we have a ping callsign already in signalling table
+        # if PING, then override and make it a PING-ACK
+        # if not, then add to table
+
+        destination = data_in[1:4].hex()
         timestamp = time.time()
-        destination = helpers.get_crc_24(dxcallsign).hex()
+        router = ""
+        frametype = "PING-ACK"
+        payload = ""
+        attempt = 0
+        status = "forwarding"
+        new_entry = [timestamp, destination, router, frametype, payload, attempt, status]
+
+        print(MESH_SIGNALLING_TABLE)
+        for _, item in enumerate(MESH_SIGNALLING_TABLE):
+
+            # use case 3: PING ACK sets state to processed if we are the initiator of a PING
+            if destination == Station.mycallsign_crc.hex():
+                update_entry = [time.time(), destination, "", "PING-ACK", "", 0, "acknowledged"]
+                print(f"UPDATE AND CHANGE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                MESH_SIGNALLING_TABLE[_] = update_entry
+                return
+
+
+            # use case 1: PING-ACK updates PING-ACK, but stay at attempts
+            if destination in item[1] and "PING-ACK" in item[3]:
+                update_entry = [item[0], destination, "", "PING-ACK", "", item[5], "forwarding"]
+                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                MESH_SIGNALLING_TABLE[_] = update_entry
+                return
+
+            # use case 2: PING-ACK overwrites PING
+            # this avoids possible packet loops
+            if destination in item[1] and "PING" in item[3]:
+                update_entry = [time.time(), destination, "", "PING-ACK", "", 0, "forwarding"]
+                print(f"UPDATE AND CHANGE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                MESH_SIGNALLING_TABLE[_] = update_entry
+                return
+
+
+
+        if new_entry not in MESH_SIGNALLING_TABLE:
+            print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            MESH_SIGNALLING_TABLE.append(new_entry)
+
+    def add_mesh_ping_to_signalling_table(self, destination, status):
+        timestamp = time.time()
         router = ""
         frametype = "PING"
         payload = ""
         attempt = 0
 
-        #           [timestamp, destination, router, frametype, payload, attempt]
-        # --------------0------------1---------2---------3--------4---------5---- #
-        new_entry = [timestamp, destination, router, frametype, payload, attempt]
-        print(MESH_SIGNALLING_TABLE)
+        #           [timestamp, destination, router, frametype, payload, attempt, status]
+        # --------------0------------1---------2---------3--------4---------5--------6-----#
+        new_entry = [timestamp, destination, router, frametype, payload, attempt, status]
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
-            # update routing entry if exists
-            if new_entry[0] in item[0] and new_entry[1] in item[1]:
-                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {new_entry}")
-                MESH_SIGNALLING_TABLE[_] = new_entry
+            # update entry if exists
+            if destination in item[1] and "PING" in item[3]:
+                update_entry = [item[0], destination, "", "PING", "", item[5], status]
+                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                MESH_SIGNALLING_TABLE[_] = update_entry
+                return
 
         # add new routing entry if not exists
         if new_entry not in MESH_SIGNALLING_TABLE:
@@ -384,7 +449,7 @@ class MeshRouter():
             threading.Event().wait(0.01)
 
 
-    def transmit_mesh_signalling(self, data):
+    def transmit_mesh_signalling_ping(self, data):
         dxcallsign_crc = bytes.fromhex(data[1])
 
         frame_type = bytes([FRAME_TYPE.MESH_SIGNALLING_PING.value])
@@ -394,5 +459,18 @@ class MeshRouter():
         ping_frame[1:4] = dxcallsign_crc
         ping_frame[4:7] = helpers.get_crc_24(Station.mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(Station.mycallsign)
+
+        self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
+
+    def transmit_mesh_signalling_ping_ack(self, dxcallsign_crc):
+        #dxcallsign_crc = bytes.fromhex(data[1])
+
+        frame_type = bytes([FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value])
+
+        ping_frame = bytearray(14)
+        ping_frame[:1] = frame_type
+        ping_frame[1:4] = dxcallsign_crc
+        #ping_frame[4:7] = helpers.get_crc_24(Station.mycallsign)
+        #ping_frame[7:13] = helpers.callsign_to_bytes(Station.mycallsign)
 
         self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)

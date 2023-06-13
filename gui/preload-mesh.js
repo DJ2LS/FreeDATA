@@ -72,22 +72,6 @@ if (tbl !== null) {
 
 for (i = 0; i < routes.length; i++) {
 
-
-      /*
-      var myGrid = document.getElementById("myGrid").value;
-      try {
-        var dist = parseInt(distance(myGrid, dxGrid)) + " km";
-        document.getElementById("dataModalPingDistance").textContent = dist;
-      } catch {
-        document.getElementById("dataModalPingDistance").textContent = "---";
-      }
-      document.getElementById("dataModalPingDB").textContent =
-        arg.stations[i]["snr"];
-    }
-    */
-
-
-
   var row = document.createElement("tr");
     var datetime = new Date(routes[i]["timestamp"] * 1000).toLocaleString(
       navigator.language,{
@@ -141,12 +125,88 @@ for (i = 0; i < routes.length; i++) {
 
   tbl.appendChild(row);
 }
+  /*-------------------------------------------*/
+    var routes = arg.mesh_signalling_table;
+
+console.log(routes)
+if (typeof routes == "undefined") {
+    return;
+  }
+
+
+    var tbl = document.getElementById("mesh-signalling-table");
+if (tbl !== null) {
+      tbl.innerHTML = "";
+
+  }
+
+
+for (i = 0; i < routes.length; i++) {
+
+  var row = document.createElement("tr");
+    var datetime = new Date(routes[i]["timestamp"] * 1000).toLocaleString(
+      navigator.language,{
+        hourCycle: 'h23',
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    }
+    );
+  var timestamp = document.createElement("td");
+  var timestampText = document.createElement("span");
+  timestampText.innerText = datetime;
+  timestamp.appendChild(timestampText);
+
+  var destination = document.createElement("td");
+  var destinationText = document.createElement("span");
+  destinationText.innerText = routes[i]["destination"];
+  destination.appendChild(destinationText);
+
+  var router = document.createElement("td");
+  var routerText = document.createElement("span");
+  routerText.innerText = routes[i]["router"];
+  router.appendChild(routerText);
+
+  var frametype = document.createElement("td");
+  var frametypeText = document.createElement("span");
+  frametypeText.innerText = routes[i]["frametype"];
+  frametype.appendChild(frametypeText);
+
+    var payload = document.createElement("td");
+  var payloadText = document.createElement("span");
+  payloadText.innerText = routes[i]["payload"];
+  payload.appendChild(payloadText);
+
+    var attempt = document.createElement("td");
+  var attemptText = document.createElement("span");
+  attemptText.innerText = routes[i]["attempt"];
+  attempt.appendChild(attemptText);
+
+    var status = document.createElement("td");
+  var statusText = document.createElement("span");
+  statusText.innerText = routes[i]["status"];
+  status.appendChild(statusText);
+
+
+  row.appendChild(timestamp);
+  row.appendChild(destination);
+  row.appendChild(router);
+  row.appendChild(frametype);
+  row.appendChild(payload);
+  row.appendChild(attempt);
+  row.appendChild(status);
+
+  tbl.appendChild(row);
+}
 
 
 if (tbl !== null) {
 
   // scroll to bottom of page
   // https://stackoverflow.com/a/11715670
-  window.scrollTo(0, document.body.scrollHeight);
+  //window.scrollTo(0, document.body.scrollHeight);
   }
 });

@@ -32,7 +32,7 @@ import structlog
 from random import randrange
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE, MESH_QUEUE_TRANSMIT
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE, MESH_QUEUE_TRANSMIT, MESH_SIGNALLING_TABLE
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -1177,6 +1177,7 @@ def send_tnc_state():
         "beacon_state": str(Beacon.beacon_state),
         "stations": [],
         "routing_table": [],
+        "mesh_signalling_table" : [],
         "mycallsign": str(Station.mycallsign, encoding),
         "mygrid": str(Station.mygrid, encoding),
         "dxcallsign": str(Station.dxcallsign, encoding),
@@ -1215,6 +1216,22 @@ def send_tnc_state():
                 "timestamp": MeshParam.routing_table[_][5],
             }
         )
+
+    for _, entry in enumerate(MESH_SIGNALLING_TABLE):
+
+        output["mesh_signalling_table"].append(
+            {
+                "timestamp": MESH_SIGNALLING_TABLE[_][0],
+                "destination": MESH_SIGNALLING_TABLE[_][1],
+                "router": MESH_SIGNALLING_TABLE[_][2],
+                "frametype": MESH_SIGNALLING_TABLE[_][3],
+                "payload": MESH_SIGNALLING_TABLE[_][4],
+                "attempt": MESH_SIGNALLING_TABLE[_][5],
+                "status": MESH_SIGNALLING_TABLE[_][6],
+
+            }
+        )
+
     #print(output)
     return json.dumps(output)
 

@@ -219,6 +219,7 @@ client.on("data", function (socketdata) {
           arq_transmission_percent: data["arq_transmission_percent"],
           stations: data["stations"],
           routing_table: data["routing_table"],
+          mesh_signalling_table: data["mesh_signalling_table"],
           beacon_state: data["beacon_state"],
           hamlib_status: data["hamlib_status"],
           listen: data["listen"],
