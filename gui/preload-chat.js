@@ -165,7 +165,9 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_website",
     "user_info_comments",
   ];
-
+  document.getElementById("btndbClean").addEventListener("click", () => {
+    dbClean();
+  });
   users
     .find({
       selector: {
@@ -819,7 +821,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
-      // handle beacon
+      // handle ping-ack
     } else if (item.ping == "acknowledge") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
@@ -2847,4 +2849,42 @@ function showOsPopUp(title, message)
   const NOTIFICATION_TITLE = title;
   const NOTIFICATION_BODY = message;
   new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
+}
+
+//Function to clean old beacons and optimize database
+async function dbClean()
+{
+  //Only keep the most x latest days of beacons
+  let beaconKeep = 7;
+  let timestampPurge =  Math.floor((Date.now()- beaconKeep * 24*60*60*1000) / 1000) ;
+  if (confirm("Delete beacons older than " + beaconKeep + " days and compact database?")) {
+  } else {
+    return;
+  }
+  
+  await db.find({
+    selector: {
+      timestamp: {$lt: timestampPurge},
+      type: "beacon",
+    }
+  })
+    .then(async function (result) {
+      console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
+      result.docs.forEach(async function (item) {
+          await db.get(item._id)
+          .then(async function (doc) {
+            await db.remove(doc)
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+        });
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+    //Compact database
+    await db.compact();
+    window.alert("Database maintenance is complete.");
 }
