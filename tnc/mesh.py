@@ -233,14 +233,14 @@ class MeshRouter():
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
-                if entry[3] in ["PING", "PING-ACK"] and attempt < 10 and status not in ["acknowledged"]:
+                if entry[3] in ["PING", "PING-ACK"] and attempt < 30 and status not in ["acknowledged"]:
 
 
                     # Calculate the transmission time with exponential increase
                     #transmission_time = timestamp + (2 ** attempt) * 10
-
-                    # Calculate transmission times for attempts 0 to 10 with stronger S-curves in minutes
-                    transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * 60
+                    # Calculate transmission times for attempts 0 to 30 with stronger S-curves in minutes
+                    correction_factor = 750
+                    transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor
 
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
