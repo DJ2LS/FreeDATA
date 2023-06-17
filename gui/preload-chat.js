@@ -787,7 +787,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      obj.new = 1;
+      obj.new = 0;
       console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -816,7 +816,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      obj.new = 1;
+      obj.new = 0;
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -836,7 +836,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      obj.new = 1;
+      obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -855,7 +855,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      obj.new = 1;
+      obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -896,7 +896,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-        obj.new=1;
+        obj.new=0;
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
@@ -912,7 +912,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-        obj.new=1;
+        obj.new=0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
@@ -933,7 +933,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-        obj.new=1;
+        obj.new=0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign, name);
         }
@@ -949,7 +949,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-        obj.new=1;
+        obj.new=0;
         console.log(splitted_data);
         let userData = new Object();
         userData.user_info_image = splitted_data[2];
@@ -978,7 +978,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-        obj.new=1;
+        obj.new=0;
         console.log(splitted_data);
 
         let userData = new Object();
@@ -1006,7 +1006,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = sharedFileInfo[0];
         obj.filetype = "application/octet-stream";
         obj.file = FD.btoa_FD(sharedFileInfo[1]);
-        obj.new=1;
+        obj.new=0;
       } else {
         console.log("no rule matched for handling received data!");
       }
@@ -1244,7 +1244,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
         let clear = selected_callsign;
         clearUnreadMessages(clear);
         document.getElementById(`chat-${selected_callsign}-list-displaydxcall`).textContent=selected_callsign;
-
+        document.getElementById(`chat-${selected_callsign}-list`).classList.remove("list-group-item-warning");
         setTimeout(scrollMessagesToBottom, 200);
 
         //get user information
@@ -1265,7 +1265,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     // short message
     document.getElementById("chat-" + dxcallsign + "-list-shortmsg").innerHTML =
       shortmsg;
-      if (obj.new==1) document.getElementById(`chat-${obj.dxcallsign}-list-displaydxcall`).textContent="*" +obj.dxcallsign;
+      if (obj.new==1) {
+        document.getElementById(`chat-${obj.dxcallsign}-list-displaydxcall`).textContent="*" +obj.dxcallsign;
+        document.getElementById(`chat-${dxcallsign}-list`).classList.add("list-group-item-warning");
+        
+      }
   }
   // APPEND MESSAGES TO CALLSIGN
 
@@ -1275,10 +1279,10 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       if (config.enable_auto_retry.toUpperCase() == "TRUE") {
         checkForWaitingMessages(obj.dxcallsign);
       }
-      if (obj.new == 1)
-      {
-       showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
-      }
+      //if (obj.new == 1)
+      //{
+      // showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
+      //}
       var new_message = `
                 <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
