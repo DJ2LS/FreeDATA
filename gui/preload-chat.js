@@ -140,6 +140,7 @@ var chatFilter = [
   { type: "ping-ack" },
   { type: "broadcast_received" },
   { type: "broadcast_transmit" },
+  { type: "new"}
 
   //{ type: "request" },
   //{ type: "response" },
@@ -218,9 +219,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
   //Add event listener for filter apply button
   document.getElementById("btnFilter").addEventListener("click", () => {
-    chatFilter = [{ type: "newchat" }];
-    if (document.getElementById("chkMessage").checked == true)
+    chatFilter.length=0;
+    if (document.getElementById("chkMessage").checked == true) {
+      chatFilter = [{ type: "newchat" }];
       chatFilter.push({ type: "received" }, { type: "transmit" });
+    }
     if (document.getElementById("chkPing").checked == true)
       chatFilter.push({ type: "ping" });
     if (document.getElementById("chkPingAck").checked == true)
@@ -231,6 +234,8 @@ window.addEventListener("DOMContentLoaded", () => {
       chatFilter.push({ type: "request" });
     if (document.getElementById("chkResponse").checked == true)
       chatFilter.push({ type: "response" });
+    if (document.getElementById("chkNewMessage").checked == true)
+      chatFilter.push({new:1});
     updateAllChat(true);
   });
 
@@ -2200,7 +2205,10 @@ async function updateAllChat(clear) {
   await db
     .createIndex({
       index: {
-        fields: [{ timestamp: "asc" }],
+        fields: [
+          { dxcallsign:"asc" },
+          { timestamp:"asc" },
+        ],
       },
     })
     .then(async function (result) {
@@ -2208,14 +2216,16 @@ async function updateAllChat(clear) {
       await db
         .find({
           selector: {
-            $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
+            $and: [ 
+              {dxcallsign: { $exists: true } },
+              {timestamp: { $exists: true } },
+              { $or: chatFilter }]
             //$or: chatFilter
           },
           sort: [
-            {
-              timestamp: "asc",
-            },
-          ],
+            { dxcallsign:"asc" },
+            { timestamp: "asc" },
+          ]
         })
         .then(async function (result) {
           console.log(result);
