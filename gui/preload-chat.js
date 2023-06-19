@@ -140,7 +140,6 @@ var chatFilter = [
   { type: "ping-ack" },
   { type: "broadcast_received" },
   { type: "broadcast_transmit" },
-  { type: "new"}
 
   //{ type: "request" },
   //{ type: "response" },
