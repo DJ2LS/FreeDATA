@@ -2833,21 +2833,27 @@ async function checkForNewMessages()
 
 function clearUnreadMessages(dxcall) {
   //console.log(dxcall);
+  //Selector of dxcall and new $eq: 1 isn't working, don't know why
+  //For now parse all messages of callsign to clear new flag
   db.find({
-    selector: {
-      dxcallsign: dxcall,
-      new: {$eq: 1},
-    }
-  })
+    selector: //{
+      //$and:[
+        {dxcallsign:dxcall}//, {new: { $gte: 1}}
+      //]
+ // }
+})
     .then(function (result) {
       //console.log(result);
       //console.log ("New messages count to clear for " + dxcall + ": " + result.docs.length)
         result.docs.forEach(function (item) {
-          db.upsert(item._id, function (doc) {
-            doc.new=0;
-            //console.log("Clearing new on _id " + item._id);
-            return doc;
-          });            
+          if (item.new ==1)
+          {
+            db.upsert(item._id, function (doc) {
+              doc.new=0;
+              //console.log("Clearing new on _id " + item._id);
+              return doc;
+            });
+          }
         });
     })
     .catch(function (err) {
