@@ -791,7 +791,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-      obj.new = 0;
+      obj.new = 1;
       console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
