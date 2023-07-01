@@ -1606,6 +1606,11 @@ window.addEventListener("DOMContentLoaded", () => {
     daemon.stopTNC();
   });
 
+// btnCleanDB button clicked
+document.getElementById("btnCleanDB").addEventListener("click", () => {
+  ipcRenderer.send("request-clean-db");
+});
+
   // TEST HAMLIB
   document.getElementById("testHamlib").addEventListener("click", () => {
     var data_bits = document.getElementById("hamlib_data_bits").value;
@@ -1626,6 +1631,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       var radiocontrol = "rigctld";
     }
+
+
 
     daemon.testHamlib(
       radiocontrol,

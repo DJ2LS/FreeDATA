@@ -2681,6 +2681,10 @@ ipcRenderer.on("action-update-unread-messages", (event) => {
   });
 });
 
+ipcRenderer.on("action-clean-db", (event) => {
+  dbClean();
+});
+
 // https://stackoverflow.com/a/18650828
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return "0 Bytes";
@@ -2915,5 +2919,5 @@ async function dbClean()
 
     //Compact database
     await db.compact();
-    window.alert("Database maintenance is complete.  " + itemCount + " items removed from database.");
+    window.alert("Database maintenance is complete.  " + itemCount + " items removed from database.  It's recommended you now restart the GUI.");
 }

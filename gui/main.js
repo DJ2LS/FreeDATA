@@ -476,6 +476,11 @@ ipcMain.on("request-update-unread-messages-main", (event,arg) => {
   //mainLog.info("Received reply from chat and ?new messages = " +arg);
 });
 
+//Called by main to notify chat we should clean the DB
+ipcMain.on("request-clean-db", (event,arg) => {
+  chat.webContents.send("action-clean-db");
+});
+
 ipcMain.on("request-open-tnc-log", () => {
   logViewer.show();
 });
