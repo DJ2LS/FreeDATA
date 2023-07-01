@@ -2875,20 +2875,30 @@ async function dbClean()
 {
   //Only keep the most x latest days of beacons
   let beaconKeep = 7;
+  let itemCount = 0;
   let timestampPurge =  Math.floor((Date.now()- beaconKeep * 24*60*60*1000) / 1000) ;
-  if (confirm("Delete beacons older than " + beaconKeep + " days and compact database?")) {
+  if (confirm("Delete beacons and pings older than " + beaconKeep + " days and compact database?")) {
   } else {
     return;
   }
+
+  //Items to purge from database
+  var purgeFilter = [
+    { type: "beacon" },
+    { type: "ping-ack" },
+    { type: "ping" },
+  ];
   
   await db.find({
     selector: {
-      timestamp: {$lt: timestampPurge},
-      type: "beacon",
+      $and: [ 
+        {timestamp: { $lt: timestampPurge } },
+        { $or: purgeFilter }]
     }
   })
     .then(async function (result) {
-      console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
+      //console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
+      itemCount=result.docs.length;
       result.docs.forEach(async function (item) {
           await db.get(item._id)
           .then(async function (doc) {
@@ -2905,5 +2915,5 @@ async function dbClean()
 
     //Compact database
     await db.compact();
-    window.alert("Database maintenance is complete.");
+    window.alert("Database maintenance is complete.  " + itemCount + " items removed from database.");
 }
