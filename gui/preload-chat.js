@@ -165,9 +165,6 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_website",
     "user_info_comments",
   ];
-  document.getElementById("btndbClean").addEventListener("click", () => {
-    dbClean();
-  });
   users
     .find({
       selector: {
