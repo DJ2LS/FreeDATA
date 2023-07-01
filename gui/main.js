@@ -477,7 +477,7 @@ ipcMain.on("request-update-unread-messages-main", (event,arg) => {
 });
 
 //Called by main to notify chat we should clean the DB
-ipcMain.on("request-clean-db", (event,arg) => {
+ipcMain.on("request-clean-db", () => {
   chat.webContents.send("action-clean-db");
 });
 
