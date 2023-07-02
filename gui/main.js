@@ -461,18 +461,16 @@ ipcMain.on("request-update-transmission-status", (event, arg) => {
 ipcMain.on("request-update-reception-status", (event, arg) => {
   win.webContents.send("action-update-reception-status", arg);
   chat.webContents.send("action-update-reception-status", arg);
-
 });
 
 //Called by main to query chat if there are new messages
-ipcMain.on("request-update-unread-messages",() => {
+ipcMain.on("request-update-unread-messages", () => {
   //mainLog.info("Got request to check if chat has new messages")
   chat.webContents.send("action-update-unread-messages");
-  
 });
 //Called by chat to notify main if there are new messages
-ipcMain.on("request-update-unread-messages-main", (event,arg) => {
-  win.webContents.send("action-update-unread-messages-main",arg);
+ipcMain.on("request-update-unread-messages-main", (event, arg) => {
+  win.webContents.send("action-update-unread-messages-main", arg);
   //mainLog.info("Received reply from chat and ?new messages = " +arg);
 });
 
