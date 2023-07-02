@@ -71,10 +71,10 @@ var noise_level_raw = 0;
 //Global version variable
 var appVer = null;
 
-  //Track the number of times TNC has been started
-  //So that warning is shown when using auto start and 2nd start
-  //if hamlib is not running
-  var tncStartCount = 0;
+//Track the number of times TNC has been started
+//So that warning is shown when using auto start and 2nd start
+//if hamlib is not running
+var tncStartCount = 0;
 
 // START INTERVALL COMMAND EXECUTION FOR STATES
 //setInterval(sock.getRxBuffer, 1000);
@@ -390,7 +390,7 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("AutoStartSwitch").checked = false;
   }
 
-  if (config.notification == 1) {
+  if (config.enable_sys_notification == 1) {
     document.getElementById("NotificationSwitch").checked = true;
   } else {
     document.getElementById("NotificationSwitch").checked = false;
@@ -1219,12 +1219,14 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
   });
 
-    //Handle change of Notification settings
-    document.getElementById("NotificationSwitch").addEventListener("click", () => {
+  //Handle change of Notification settings
+  document
+    .getElementById("NotificationSwitch")
+    .addEventListener("click", () => {
       if (document.getElementById("NotificationSwitch").checked == true) {
-        config.notification = 1;
+        config.enable_sys_notification = 1;
       } else {
-        config.notification = 0;
+        config.enable_sys_notification = 0;
       }
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
@@ -1610,6 +1612,11 @@ window.addEventListener("DOMContentLoaded", () => {
     daemon.stopTNC();
   });
 
+  // btnCleanDB button clicked
+  document.getElementById("btnCleanDB").addEventListener("click", () => {
+    ipcRenderer.send("request-clean-db");
+  });
+
   // TEST HAMLIB
   document.getElementById("testHamlib").addEventListener("click", () => {
     var data_bits = document.getElementById("hamlib_data_bits").value;
@@ -1955,14 +1962,14 @@ function signal_quality_perc_quad(rssi, perfect_rssi = 10, worst_rssi = -150) {
 }
 
 var lastHeard = "";
-var checkForNewMessageWait=85;
+var checkForNewMessageWait = 85;
 
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
   //check for new messages
-  if (checkForNewMessageWait >= 100){
+  if (checkForNewMessageWait >= 100) {
     //This is very expensive
     ipcRenderer.send("request-update-unread-messages");
-    checkForNewMessageWait=-1;
+    checkForNewMessageWait = -1;
   }
   checkForNewMessageWait++;
   // update FFT
@@ -2436,15 +2443,16 @@ function updateHeardStations(arg) {
     timestampRaw = arg.stations[i]["timestamp"];
 
     var datetime = new Date(timestampRaw * 1000).toLocaleString(
-      navigator.language,{
-        hourCycle: 'h23',
+      navigator.language,
+      {
+        hourCycle: "h23",
         year: "numeric",
         month: "2-digit",
         day: "2-digit",
         hour: "2-digit",
         minute: "2-digit",
-        second: "2-digit"
-    }
+        second: "2-digit",
+      }
     );
     //var hours = date.getHours();
     //var minutes = "0" + date.getMinutes();
@@ -2767,7 +2775,7 @@ ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
     set_CPU_mode();
 
     //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
-    if (tncStartCount==0) tncStartCount++;
+    if (tncStartCount == 0) tncStartCount++;
   } else {
     /*
         document.getElementById('hamlib_deviceid').disabled = false;
@@ -2922,20 +2930,16 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
 });
 
 //Change background color of RF Chat button if new messages are available
-ipcRenderer.on("action-update-unread-messages-main", (event,data) => {
+ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
   //Do something
-  if (data == true)
-  {
-    document.getElementById("openRFChat").classList.add("btn-warning")
-    document.getElementById("openRFChat").classList.remove("btn-secondary")
-  }
-  else
-  {
-    document.getElementById("openRFChat").classList.remove("btn-warning")
-    document.getElementById("openRFChat").classList.add("btn-secondary")
+  if (data == true) {
+    document.getElementById("openRFChat").classList.add("btn-warning");
+    document.getElementById("openRFChat").classList.remove("btn-secondary");
+  } else {
+    document.getElementById("openRFChat").classList.remove("btn-warning");
+    document.getElementById("openRFChat").classList.add("btn-secondary");
   }
 });
-
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
 
@@ -3133,7 +3137,7 @@ ipcRenderer.on("action-show-cq-toast-received", (event, data) => {
   let dxcallsign = data["data"][0]["dxcallsign"];
   let dxgrid = data["data"][0]["dxgrid"];
   let content = `cq from <strong>${dxcallsign}</strong> (${dxgrid})`;
-  showOsPopUp("CQ from " + dxcallsign,"Say hello!");
+  showOsPopUp("CQ from " + dxcallsign, "Say hello!");
   displayToast(
     (type = "success"),
     (icon = "bi-broadcast"),
@@ -3819,13 +3823,12 @@ function autostart_tnc() {
   if (config.auto_start == 1) {
     //Now start TNC
     document.getElementById("startTNC").click();
-}
+  }
 }
 
 //Have the operating system show a notification popup
-function showOsPopUp(title, message)
-{
-  if (config.notification == 0) return;
+function showOsPopUp(title, message) {
+  if (config.enable_sys_notification == 0) return;
   const NOTIFICATION_TITLE = title;
   const NOTIFICATION_BODY = message;
   new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });

@@ -101,7 +101,7 @@ const configDefaultSettings =
                   "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
                   "auto_start": 0, \
-                  "notification": 1 \
+                  "enable_sys_notification": 1 \
                   }';
 
 if (!fs.existsSync(configPath)) {
@@ -486,19 +486,22 @@ ipcMain.on("request-update-transmission-status", (event, arg) => {
 ipcMain.on("request-update-reception-status", (event, arg) => {
   win.webContents.send("action-update-reception-status", arg);
   chat.webContents.send("action-update-reception-status", arg);
-
 });
 
 //Called by main to query chat if there are new messages
-ipcMain.on("request-update-unread-messages",() => {
+ipcMain.on("request-update-unread-messages", () => {
   //mainLog.info("Got request to check if chat has new messages")
   chat.webContents.send("action-update-unread-messages");
-  
 });
 //Called by chat to notify main if there are new messages
-ipcMain.on("request-update-unread-messages-main", (event,arg) => {
-  win.webContents.send("action-update-unread-messages-main",arg);
+ipcMain.on("request-update-unread-messages-main", (event, arg) => {
+  win.webContents.send("action-update-unread-messages-main", arg);
   //mainLog.info("Received reply from chat and ?new messages = " +arg);
+});
+
+//Called by main to notify chat we should clean the DB
+ipcMain.on("request-clean-db", () => {
+  chat.webContents.send("action-clean-db");
 });
 
 ipcMain.on("request-open-tnc-log", () => {

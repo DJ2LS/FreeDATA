@@ -4,7 +4,7 @@ name: Prettier
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
     prettier:
