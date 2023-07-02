@@ -165,7 +165,6 @@ window.addEventListener("DOMContentLoaded", () => {
     "user_info_website",
     "user_info_comments",
   ];
-
   users
     .find({
       selector: {
@@ -216,9 +215,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
   //Add event listener for filter apply button
   document.getElementById("btnFilter").addEventListener("click", () => {
-    chatFilter = [{ type: "newchat" }];
-    if (document.getElementById("chkMessage").checked == true)
+    chatFilter.length=0;
+    if (document.getElementById("chkMessage").checked == true) {
+      chatFilter = [{ type: "newchat" }];
       chatFilter.push({ type: "received" }, { type: "transmit" });
+    }
     if (document.getElementById("chkPing").checked == true)
       chatFilter.push({ type: "ping" });
     if (document.getElementById("chkPingAck").checked == true)
@@ -229,6 +230,8 @@ window.addEventListener("DOMContentLoaded", () => {
       chatFilter.push({ type: "request" });
     if (document.getElementById("chkResponse").checked == true)
       chatFilter.push({ type: "response" });
+    if (document.getElementById("chkNewMessage").checked == true)
+      chatFilter.push({new:1});
     updateAllChat(true);
   });
 
@@ -785,6 +788,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
+      obj.new = 1;
       console.log(obj);
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
@@ -813,11 +817,12 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
+      obj.new = 0;
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
-      // handle beacon
+      // handle ping-ack
     } else if (item.ping == "acknowledge") {
       obj.timestamp = parseInt(item.timestamp);
       obj.dxcallsign = item.dxcallsign;
@@ -832,7 +837,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-
+      obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -851,7 +856,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.filename = "null";
       obj.filetype = "null";
       obj.file = "null";
-
+      obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
 
@@ -879,6 +884,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
         obj.file = FD.btoa_FD(splitted_data[8]);
+        obj.new=1;
       } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
         obj.timestamp = Math.floor(Date.now() / 1000);
@@ -891,7 +897,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=0;
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
@@ -907,7 +913,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
         }
@@ -928,7 +934,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign, name);
         }
@@ -944,7 +950,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=0;
         console.log(splitted_data);
         let userData = new Object();
         userData.user_info_image = splitted_data[2];
@@ -973,7 +979,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
-
+        obj.new=0;
         console.log(splitted_data);
 
         let userData = new Object();
@@ -1001,6 +1007,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = sharedFileInfo[0];
         obj.filetype = "application/octet-stream";
         obj.file = FD.btoa_FD(sharedFileInfo[1]);
+        obj.new=0;
       } else {
         console.log("no rule matched for handling received data!");
       }
@@ -1040,7 +1047,7 @@ update_chat = function (obj) {
   }
 
 // add percent and bytes per minute if not existing
-console.log(obj.percent)
+//console.log(obj.percent)
 if (typeof obj.percent == "undefined") {
      obj.percent = 0;
      obj.bytesperminute = 0;
@@ -1060,13 +1067,16 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
     }
 }
-
+  if (typeof obj.new == "undefined"){
+    obj.new=0;
+  }
+ 
   if (typeof config.max_retry_attempts == "undefined") {
     var max_retry_attempts = 3;
   } else {
     var max_retry_attempts = parseInt(config.max_retry_attempts);
   }
-  console.log(obj.msg);
+  //console.log(obj.msg);
   // define shortmessage
   if (obj.msg == "null" || obj.msg == "NULL") {
     var shortmsg = obj.type;
@@ -1201,7 +1211,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
                           </div>
 
-                        <span style="font-size:1.2rem;"><strong>${dxcallsign}</strong></span>
+                        <span style="font-size:1.2rem;" ><strong id="chat-${dxcallsign}-list-displaydxcall">${dxcallsign}</strong></span>
                         <span class="badge bg-secondary text-white p-1 h-100" id="chat-${dxcallsign}-list-dxgrid"><small>${dxgrid}</small></span>
                         <span style="font-size:0.8rem;" id="chat-${dxcallsign}-list-time">${timestampHours}</span>
                         <span class="position-absolute m-2 bottom-0 end-0" style="font-size:0.8rem;" id="chat-${dxcallsign}-list-shortmsg">${shortmsg}</span>
@@ -1231,6 +1241,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       .addEventListener("click", function () {
         //document.getElementById('chatModuleDxCall').value = dxcallsign;
         selected_callsign = dxcallsign;
+        //Reset unread messages and new message indicator
+        let clear = selected_callsign;
+        clearUnreadMessages(clear);
+        document.getElementById(`chat-${selected_callsign}-list-displaydxcall`).textContent=selected_callsign;
+        document.getElementById(`chat-${selected_callsign}-list`).classList.remove("list-group-item-warning");
         setTimeout(scrollMessagesToBottom, 200);
 
         //get user information
@@ -1251,6 +1266,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     // short message
     document.getElementById("chat-" + dxcallsign + "-list-shortmsg").innerHTML =
       shortmsg;
+      if (obj.new==1) {
+        document.getElementById(`chat-${obj.dxcallsign}-list-displaydxcall`).textContent="*" +obj.dxcallsign;
+        document.getElementById(`chat-${dxcallsign}-list`).classList.add("list-group-item-warning");
+        
+      }
   }
   // APPEND MESSAGES TO CALLSIGN
 
@@ -1260,7 +1280,10 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
       if (config.enable_auto_retry.toUpperCase() == "TRUE") {
         checkForWaitingMessages(obj.dxcallsign);
       }
-
+      //if (obj.new == 1)
+      //{
+      // showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
+      //}
       var new_message = `
                 <div class="m-auto mt-1 p-0 w-50 rounded bg-secondary bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white mb-0 text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-arrow-left-right"></i>snr: ${obj.snr} - ${timestamp}     </p>
@@ -1311,6 +1334,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     var message_html = obj.msg.replaceAll(/\n/g, "<br>");
 
     if (obj.type == "received") {
+      if (obj.new == 1)
+      {
+       showOsPopUp("Message received from " + obj.dxcallsign,obj.msg);
+      }
+      
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
@@ -1401,7 +1429,7 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
     }
 
     if (obj.type == "transmit") {
-      console.log(obj);
+      //console.log(obj);
       //console.log('msg-' + obj._id + '-status')
 
       if (obj.status == "failed") {
@@ -1474,11 +1502,11 @@ var TimeDifference = (new Date().getTime()/1000) - obj.timestamp
 
     /* UPDATE EXISTING ELEMENTS */
   } else if (document.getElementById("msg-" + obj._id)) {
-    console.log("element already exists......");
-    console.log(obj);
+    //console.log("element already exists......");
+    //console.log(obj);
 
-        console.log(obj.status)
-        console.log(obj.attempt)
+      //  console.log(obj.status)
+      //  console.log(obj.attempt)
 
 
 
@@ -1861,6 +1889,7 @@ add_obj_to_database = function (obj) {
     status: obj.status,
     snr: obj.snr,
     attempt: obj.attempt,
+    new: obj.new,
     _attachments: {
       [obj.filename]: {
         content_type: obj.filetype,
@@ -2110,6 +2139,7 @@ function createChatIndex() {
         "attempt",
         "bytesperminute",
         "_attachments",
+        "new",
       ],
     },
   })
@@ -2171,7 +2201,10 @@ async function updateAllChat(clear) {
   await db
     .createIndex({
       index: {
-        fields: [{ timestamp: "asc" }],
+        fields: [
+          { dxcallsign:"asc" },
+          { timestamp:"asc" },
+        ],
       },
     })
     .then(async function (result) {
@@ -2179,14 +2212,16 @@ async function updateAllChat(clear) {
       await db
         .find({
           selector: {
-            $and: [{ timestamp: { $exists: true } }, { $or: chatFilter }],
+            $and: [ 
+              {dxcallsign: { $exists: true } },
+              {timestamp: { $exists: true } },
+              { $or: chatFilter }]
             //$or: chatFilter
           },
           sort: [
-            {
-              timestamp: "asc",
-            },
-          ],
+            { dxcallsign:"asc" },
+            { timestamp: "asc" },
+          ]
         })
         .then(async function (result) {
           console.log(result);
@@ -2249,9 +2284,9 @@ function getSetUserSharedFolder(selected_callsign) {
     .then(function (data) {
       console.log(data);
 
-      console.log(data.user_shared_folder);
 
       if (typeof data.user_shared_folder !== "undefined") {
+        console.log(data.user_shared_folder);
         // shared folder table
         var icons = [
           "aac",
@@ -2637,6 +2672,16 @@ ipcRenderer.on("update-config", (event, data) => {
   config = data;
 });
 
+ipcRenderer.on("action-update-unread-messages", (event) => {
+  checkForNewMessages().then(function(count) {
+    ipcRenderer.send("request-update-unread-messages-main",count);
+  });
+});
+
+ipcRenderer.on("action-clean-db", (event) => {
+  dbClean();
+});
+
 // https://stackoverflow.com/a/18650828
 function formatBytes(bytes, decimals = 2) {
   if (!+bytes) return "0 Bytes";
@@ -2765,4 +2810,111 @@ function checkForWaitingMessages(dxcall) {
     .catch(function (err) {
       console.log(err);
     });
+}
+
+async function checkForNewMessages()
+{
+  var newmsgs;
+  await db.find({
+    selector: {
+      new: {$eq: 1},
+    }, limit:1,
+  })
+    .then(function (result) {
+     if (result.docs.length >0)
+      newmsgs=true;
+    else
+      newmsgs=false;
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+    return newmsgs;
+}
+
+function clearUnreadMessages(dxcall) {
+  //console.log(dxcall);
+  //Selector of dxcall and new $eq: 1 isn't working, don't know why
+  //For now parse all messages of callsign to clear new flag
+  db.find({
+    selector: //{
+      //$and:[
+        {dxcallsign:dxcall}//, {new: { $gte: 1}}
+      //]
+ // }
+})
+    .then(function (result) {
+      //console.log(result);
+      //console.log ("New messages count to clear for " + dxcall + ": " + result.docs.length)
+        result.docs.forEach(function (item) {
+          if (item.new ==1)
+          {
+            db.upsert(item._id, function (doc) {
+              doc.new=0;
+              //console.log("Clearing new on _id " + item._id);
+              return doc;
+            });
+          }
+        });
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+}
+
+//Have the operating system show a notification popup
+function showOsPopUp(title, message)
+{
+  if (config.enable_sys_notification == 0) return;
+  const NOTIFICATION_TITLE = title;
+  const NOTIFICATION_BODY = message;
+  new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
+}
+
+//Function to clean old beacons and optimize database
+async function dbClean()
+{
+  //Only keep the most x latest days of beacons
+  let beaconKeep = 7;
+  let itemCount = 0;
+  let timestampPurge =  Math.floor((Date.now()- beaconKeep * 24*60*60*1000) / 1000) ;
+  if (confirm("Delete beacons and pings older than " + beaconKeep + " days and compact database?")) {
+  } else {
+    return;
+  }
+
+  //Items to purge from database
+  var purgeFilter = [
+    { type: "beacon" },
+    { type: "ping-ack" },
+    { type: "ping" },
+  ];
+  
+  await db.find({
+    selector: {
+      $and: [ 
+        {timestamp: { $lt: timestampPurge } },
+        { $or: purgeFilter }]
+    }
+  })
+    .then(async function (result) {
+      //console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
+      itemCount=result.docs.length;
+      result.docs.forEach(async function (item) {
+          await db.get(item._id)
+          .then(async function (doc) {
+            await db.remove(doc)
+          })
+          .catch(function (err) {
+            console.log(err);
+          });
+        });
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+    //Compact database
+    await db.compact();
+    window.alert("Database maintenance is complete.  " + itemCount + " items removed from database.  It's recommended you now restart the GUI.");
 }

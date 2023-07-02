@@ -390,6 +390,12 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("AutoStartSwitch").checked = false;
   }
 
+  if (config.enable_sys_notification == 1) {
+    document.getElementById("NotificationSwitch").checked = true;
+  } else {
+    document.getElementById("NotificationSwitch").checked = false;
+  }
+
   // theme selector
   changeGuiDesign(config.theme);
 
@@ -1213,6 +1219,17 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
   });
 
+    //Handle change of Notification settings
+    document.getElementById("NotificationSwitch").addEventListener("click", () => {
+      if (document.getElementById("NotificationSwitch").checked == true) {
+        config.enable_sys_notification = 1;
+      } else {
+        config.enable_sys_notification = 0;
+      }
+      //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      FD.saveConfig(config, configPath);
+    });
+
   // enable fsk Switch clicked
   document.getElementById("fskModeSwitch").addEventListener("click", () => {
     if (document.getElementById("fskModeSwitch").checked == true) {
@@ -1589,6 +1606,11 @@ window.addEventListener("DOMContentLoaded", () => {
     daemon.stopTNC();
   });
 
+// btnCleanDB button clicked
+document.getElementById("btnCleanDB").addEventListener("click", () => {
+  ipcRenderer.send("request-clean-db");
+});
+
   // TEST HAMLIB
   document.getElementById("testHamlib").addEventListener("click", () => {
     var data_bits = document.getElementById("hamlib_data_bits").value;
@@ -1609,6 +1631,8 @@ window.addEventListener("DOMContentLoaded", () => {
     } else {
       var radiocontrol = "rigctld";
     }
+
+
 
     daemon.testHamlib(
       radiocontrol,
@@ -1934,7 +1958,16 @@ function signal_quality_perc_quad(rssi, perfect_rssi = 10, worst_rssi = -150) {
 }
 
 var lastHeard = "";
+var checkForNewMessageWait=85;
+
 ipcRenderer.on("action-update-tnc-state", (event, arg) => {
+  //check for new messages
+  if (checkForNewMessageWait >= 100){
+    //This is very expensive
+    ipcRenderer.send("request-update-unread-messages");
+    checkForNewMessageWait=-1;
+  }
+  checkForNewMessageWait++;
   // update FFT
   if (typeof arg.fft !== "undefined") {
     // FIXME: WE need to fix this when disabled waterfall chart
@@ -2891,6 +2924,22 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
   sock.sendFecIsWriting(config.mycall);
 });
 
+//Change background color of RF Chat button if new messages are available
+ipcRenderer.on("action-update-unread-messages-main", (event,data) => {
+  //Do something
+  if (data == true)
+  {
+    document.getElementById("openRFChat").classList.add("btn-warning")
+    document.getElementById("openRFChat").classList.remove("btn-secondary")
+  }
+  else
+  {
+    document.getElementById("openRFChat").classList.remove("btn-warning")
+    document.getElementById("openRFChat").classList.add("btn-secondary")
+  }
+});
+
+
 ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "save_my_call") {
     sock.saveMyCall(arg.callsign);
@@ -3072,7 +3121,7 @@ ipcRenderer.on("action-show-cq-toast-received", (event, data) => {
   let dxcallsign = data["data"][0]["dxcallsign"];
   let dxgrid = data["data"][0]["dxgrid"];
   let content = `cq from <strong>${dxcallsign}</strong> (${dxgrid})`;
-
+  showOsPopUp("CQ from " + dxcallsign,"Say hello!");
   displayToast(
     (type = "success"),
     (icon = "bi-broadcast"),
@@ -3759,4 +3808,13 @@ function autostart_tnc() {
     //Now start TNC
     document.getElementById("startTNC").click();
 }
+}
+
+//Have the operating system show a notification popup
+function showOsPopUp(title, message)
+{
+  if (config.enable_sys_notification == 0) return;
+  const NOTIFICATION_TITLE = title;
+  const NOTIFICATION_BODY = message;
+  new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
 }
