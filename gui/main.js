@@ -101,7 +101,8 @@ const configDefaultSettings =
                   "enable_auto_retry" : "False", \
                   "tx_delay" : 0, \
                   "auto_start": 0, \
-                  "enable_sys_notification": 1 \
+                  "enable_sys_notification": 1, \
+                  "enable_mesh_features": 0 \
                   }';
 
 if (!fs.existsSync(configPath)) {

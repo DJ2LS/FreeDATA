@@ -1760,7 +1760,17 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   autostart_rigctld();
+
+  //Enable mesh features by setting to 1, should be changed for releases
+  config.enable_mesh_features =1;
+  //config.enable_mesh_features =0;
+  
+  if (! config.enable_mesh_features == 1) {
+    document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+  }
 });
+//End of domcontentloaded
 
 function resetSortIcon() {
   document.getElementById("hslSort").remove();
