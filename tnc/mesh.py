@@ -139,9 +139,8 @@ class MeshRouter():
             # always enable receiving for datac4 if broadcasting
             modem.RECEIVE_DATAC4 = True
 
-
             threading.Event().wait(1)
-            if MeshParam.enable_protocol and not ARQ.arq_state and not ModemParam.channel_busy:
+            if not ARQ.arq_state and not ModemParam.channel_busy:
                 try:
 
                     # wait some time until sending routing table
@@ -225,6 +224,59 @@ class MeshRouter():
     def mesh_signalling_dispatcher(self):
         #           [timestamp, destination, router, frametype, payload, attempt, status]
         # --------------0------------1---------2---------3--------4---------5--------6 #
+
+        transmission_time_list = [0, 30, 30, 30, 30, 30, 30,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360, 360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+                                  360, 360,
+                                  360, 360, 360, 360,
+                                  ]
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
@@ -232,16 +284,16 @@ class MeshRouter():
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
-                if entry[3] in ["PING", "PING-ACK"] and attempt < 30 and status not in ["acknowledged"]:
+                if entry[3] in ["PING", "PING-ACK"] and attempt < len(transmission_time_list) and status not in ["acknowledged"]:
 
 
                     # Calculate the transmission time with exponential increase
                     #transmission_time = timestamp + (2 ** attempt) * 10
                     # Calculate transmission times for attempts 0 to 30 with stronger S-curves in minutes
-                    correction_factor = 750
+                    #correction_factor = 750
                     timestamp = entry[0]
-                    transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
-
+                    #transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
+                    transmission_time = timestamp + sum(transmission_time_list[:attempt])
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
                         entry[5] += 1
