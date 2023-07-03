@@ -128,7 +128,6 @@ for (key in parsedConfig) {
   }
 }
 sysInfo.info("------------------------------------------  ");
-config.enable_mesh_features = FD.enable_mesh();
 /*
 var chatDB = path.join(configFolder, 'chatDB.json')
 // create chat database file if not exists
