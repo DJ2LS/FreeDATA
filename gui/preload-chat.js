@@ -15,7 +15,6 @@ var appDataFolder =
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
-config.enable_mesh_features = FD.enable_mesh();
 // set date format
 const dateFormat = new Intl.DateTimeFormat(navigator.language, {
   timeStyle: "long",
