@@ -102,11 +102,11 @@ class MeshRouter():
 
         try:
             for item in TNC.heard_stations:
-                print("-----------")
-                print(item)
-                print(item[snr_position])
+                #print("-----------")
+                #print(item)
+                #print(item[snr_position])
                 try:
-                    print(item[snr_position])
+                    #print(item[snr_position])
                     snr = bytes(item[snr_position], "utf-8").split(b"/")
                     snr = int(float(snr[0]))
                 except Exception as err:
@@ -123,12 +123,17 @@ class MeshRouter():
             for _, item in enumerate(MeshParam.routing_table):
                 # update routing entry if exists
                 if new_router[0] in item[0] and new_router[1] in item[1]:
-                    print(f"UPDATE {MeshParam.routing_table[_]} >>> {new_router}")
+                    #print(f"UPDATE {MeshParam.routing_table[_]} >>> {new_router}")
+                    self.log.info(f"[MESH] [ROUTING TABLE] [UPDATE]: {MeshParam.routing_table[_]} >>> ",
+                                  update=new_router)
+
                     MeshParam.routing_table[_] = new_router
 
             # add new routing entry if not exists
             if new_router not in MeshParam.routing_table:
-                print(f"INSERT {new_router} >>> ROUTING TABLE")
+                #print(f"INSERT {new_router} >>> ROUTING TABLE")
+                self.log.info(f"[MESH] [ROUTING TABLE] [INSERT]:", insert=new_router)
+
                 MeshParam.routing_table.append(new_router)
         except Exception as e:
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
@@ -208,12 +213,12 @@ class MeshRouter():
 
             else:
                 print("wrong mesh data received")
-                print(data_in)
+                #print(data_in)
 
     def mesh_tx_dispatcher(self):
         while True:
             data = MESH_QUEUE_TRANSMIT.get()
-            print(data)
+            #print(data)
             if data[0] == "PING":
                 self.add_mesh_ping_to_signalling_table(helpers.get_crc_24(data[2]).hex(), status="awaiting_ack")
             else:
@@ -280,7 +285,7 @@ class MeshRouter():
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
-                print(entry)
+                #print(entry)
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
@@ -297,7 +302,7 @@ class MeshRouter():
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
                         entry[5] += 1
-                        print("transmit mesh ping")
+                        self.log.info("[MESH] [TX] Ping", destination=entry[1])
                         channel_busy_timeout = time.time() + 5
                         while ModemParam.channel_busy and time.time() < channel_busy_timeout:
                             threading.Event().wait(0.01)
@@ -379,7 +384,7 @@ class MeshRouter():
     def received_mesh_ping(self, data_in):
         destination = data_in[1:4].hex()
         if destination == Station.mycallsign_crc.hex():
-            print("its a ping for us")
+            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
             # use case 1: set status to acknowleding if we are the receiver of a PING
             self.add_mesh_ping_to_signalling_table(destination, status="acknowledging")
 
@@ -392,7 +397,7 @@ class MeshRouter():
             # use case 2: set status to acknowledged if we are out of retries
             #self.add_mesh_ping_to_signalling_table(destination, status="acknowledged")
         else:
-            print(f"its a ping for {destination}")
+            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
             # use case 1: set status to forwarding if we are not hte receiver of a PING
             self.add_mesh_ping_to_signalling_table(destination, status="forwarding")
             dxcallsign_crc = bytes.fromhex(destination)
@@ -416,13 +421,13 @@ class MeshRouter():
 
 
         if destination == Station.mycallsign_crc.hex():
-            print("its a ping ack for us")
+            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
             status = "acknowledged"
             self.add_mesh_ping_ack_to_signalling_table(destination, status)
         else:
             status = "forwarding"
             self.add_mesh_ping_ack_to_signalling_table(destination, status)
-            print(f"it is a ping ack for {destination}")
+            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
 
         print(MESH_SIGNALLING_TABLE)
 
@@ -441,13 +446,18 @@ class MeshRouter():
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
                 update_entry = [item[0], destination, "", "PING", "", item[5], status]
-                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+
+                self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
+
                 MESH_SIGNALLING_TABLE[_] = update_entry
                 return
 
         # add new routing entry if not exists
         if new_entry not in MESH_SIGNALLING_TABLE:
-            print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT]:", insert=new_entry)
+
             MESH_SIGNALLING_TABLE.append(new_entry)
 
     def add_mesh_ping_ack_to_signalling_table(self, destination, status):
@@ -463,13 +473,17 @@ class MeshRouter():
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
                 update_entry = [item[0], destination, "", "PING-ACK", "", item[5], status]
-                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
+
                 MESH_SIGNALLING_TABLE[_] = update_entry
                 return
 
         # add new routing entry if not exists
         if new_entry not in MESH_SIGNALLING_TABLE:
-            print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+            self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=new_entry)
+
             MESH_SIGNALLING_TABLE.append(new_entry)
 
         """
