@@ -28,30 +28,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 
 
-  document
-    .getElementById("enable_mesh")
-    .addEventListener("click", () => {
-      if (document.getElementById("enable_mesh").checked) {
-
-
-        let Data = {
-      type: "set",
-      command: "enable_mesh",
-    };
-    ipcRenderer.send("run-tnc-command", Data);
-
-
-      } else {
-let Data = {
-      type: "set",
-      command: "disable_mesh",
-    };
-    ipcRenderer.send("run-tnc-command", Data);
-
-      }
-    });
-
-
 });
 
 

@@ -28,7 +28,8 @@ var appDataFolder =
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
-config.enable_mesh_features = FD.enable_mesh();
+
+//config.enable_mesh_features = FD.enable_mesh();
 const contrib = [
   "DK5SM",
   "DL4IAZ",
@@ -396,6 +397,21 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById("NotificationSwitch").checked = false;
   }
+
+  if(config.enable_mesh_features.toLowerCase() == "true"){
+            document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+    document.getElementById("enableMeshSwitch").checked = true;
+
+
+  } else {
+            document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+        document.getElementById("enableMeshSwitch").checked = false;
+
+  }
+
+
 
   // theme selector
   changeGuiDesign(config.theme);
@@ -1244,6 +1260,22 @@ window.addEventListener("DOMContentLoaded", () => {
     FD.saveConfig(config, configPath);
   });
 
+  // enable MESH Switch clicked
+  document.getElementById("enableMeshSwitch").addEventListener("click", () => {
+    if (document.getElementById("enableMeshSwitch").checked == true) {
+      config.enable_mesh_features = "True";
+          document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+    } else {
+      config.enable_mesh_features = "False";
+          document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+    }
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
+
+
   // enable is writing switch clicked
   document.getElementById("enable_is_writing").addEventListener("click", () => {
     if (document.getElementById("enable_is_writing").checked == true) {
@@ -1430,10 +1462,17 @@ window.addEventListener("DOMContentLoaded", () => {
     var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
     var tx_delay = document.getElementById("tx_delay").value;
-    var enable_mesh = "False"
-    if (config.enable_mesh_features == true) {
-      enable_mesh = "True";
-    }
+
+      if (document.getElementById("enableMeshSwitch").checked == true) {
+    var enable_mesh_features = "True"
+              document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+  } else {
+        var enable_mesh_features = "False"
+    document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+  }
+
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
     } else {
@@ -1548,6 +1587,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.tx_delay = tx_delay;
     config.tci_ip = tci_ip;
     config.tci_port = tci_port;
+    config.enable_mesh_features = enable_mesh_features;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1598,7 +1638,7 @@ window.addEventListener("DOMContentLoaded", () => {
       tx_delay,
       tci_ip,
       tci_port,
-      enable_mesh
+      enable_mesh_features
     );
   });
 
@@ -1764,12 +1804,13 @@ window.addEventListener("DOMContentLoaded", () => {
     resetSortIcon();
   });
 
-  autostart_rigctld();
 
-  if (! config.enable_mesh_features == 1) {
-    document.getElementById("liMeshTable").style.visibility = "hidden";
-    document.getElementById("liMeshTable").style.display = "none";
-  }
+
+
+    autostart_rigctld();
+
+
+
 });
 //End of domcontentloaded
 
@@ -2953,14 +2994,6 @@ ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
 });
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
-
-  if (arg.command == "enable_mesh") {
-    sock.enable_mesh();
-  }
-
-  if (arg.command == "disable_mesh") {
-    sock.disable_mesh();
-  }
 
   if (arg.command == "save_my_call") {
     sock.saveMyCall(arg.callsign);

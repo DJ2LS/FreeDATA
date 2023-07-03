@@ -404,8 +404,10 @@ if __name__ == "__main__":
     # start modem
     modem = modem.RF()
 
-    # start mesh module
-    mesh = mesh.MeshRouter()
+    # start mesh protocol only if enabled
+    if MeshParam.enable_protocol:
+        # start mesh module
+        mesh = mesh.MeshRouter()
 
     # optionally start explorer module
     if TNC.enable_explorer:
