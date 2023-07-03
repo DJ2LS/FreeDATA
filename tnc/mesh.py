@@ -229,7 +229,6 @@ class MeshRouter():
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
                 print(entry)
-                timestamp = entry[0]
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
@@ -240,6 +239,7 @@ class MeshRouter():
                     #transmission_time = timestamp + (2 ** attempt) * 10
                     # Calculate transmission times for attempts 0 to 30 with stronger S-curves in minutes
                     correction_factor = 750
+                    timestamp = entry[0]
                     transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
 
                     # check if it is time to transmit
@@ -250,11 +250,6 @@ class MeshRouter():
                         while ModemParam.channel_busy and time.time() < channel_busy_timeout:
                             threading.Event().wait(0.01)
                         self.transmit_mesh_signalling_ping(bytes.fromhex(entry[1]))
-                    else:
-                        pass
-                        #print("wait some more time")
-                else:
-                    pass
                     #print("...")
 
     def received_routing_table(self, data_in):
