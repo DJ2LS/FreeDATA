@@ -35,3 +35,8 @@ exports.atob_FD = function (data) {
 exports.atob = function (data) {
   return window.btoa(Buffer.from(data, "base64").toString("utf8"));
 };
+//**Global mesh setting, to enable mesh return true, otherwise false.  Set to false for release builds */
+exports.enable_mesh = function () {
+  return true;
+  //return false;
+};

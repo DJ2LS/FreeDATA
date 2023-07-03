@@ -227,7 +227,8 @@ exports.startTNC = function (
   auto_tune,
   tx_delay,
   tci_ip,
-  tci_port
+  tci_port,
+  enable_mesh
 ) {
   var json_command = JSON.stringify({
     type: "set",
@@ -264,6 +265,7 @@ exports.startTNC = function (
         tx_delay: tx_delay,
         tci_ip: tci_ip,
         tci_port: tci_port,
+        enable_mesh: enable_mesh
       },
     ],
   });

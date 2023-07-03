@@ -28,6 +28,7 @@ var appDataFolder =
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
+config.enable_mesh_features = FD.enable_mesh();
 const contrib = [
   "DK5SM",
   "DL4IAZ",
@@ -1429,7 +1430,10 @@ window.addEventListener("DOMContentLoaded", () => {
     var stop_bits = document.getElementById("hamlib_stop_bits").value;
     var handshake = document.getElementById("hamlib_handshake").value;
     var tx_delay = document.getElementById("tx_delay").value;
-
+    var enable_mesh = "False"
+    if (config.enable_mesh_features == true) {
+      enable_mesh = "True";
+    }
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
     } else {
@@ -1593,7 +1597,8 @@ window.addEventListener("DOMContentLoaded", () => {
       auto_tune,
       tx_delay,
       tci_ip,
-      tci_port
+      tci_port,
+      enable_mesh
     );
   });
 
@@ -1761,10 +1766,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
   autostart_rigctld();
 
-  //Enable mesh features by setting to 1, should be changed for releases
-  config.enable_mesh_features =1;
-  //config.enable_mesh_features =0;
-  
   if (! config.enable_mesh_features == 1) {
     document.getElementById("liMeshTable").style.visibility = "hidden";
     document.getElementById("liMeshTable").style.display = "none";
