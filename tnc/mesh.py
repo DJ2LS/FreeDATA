@@ -132,7 +132,7 @@ class MeshRouter():
             # add new routing entry if not exists
             if new_router not in MeshParam.routing_table:
                 #print(f"INSERT {new_router} >>> ROUTING TABLE")
-                self.log.info(f"[MESH] [ROUTING TABLE] [INSERT]:", insert=new_router)
+                self.log.info("[MESH] [ROUTING TABLE] [INSERT]:", insert=new_router)
 
                 MeshParam.routing_table.append(new_router)
         except Exception as e:
@@ -456,7 +456,7 @@ class MeshRouter():
         # add new routing entry if not exists
         if new_entry not in MESH_SIGNALLING_TABLE:
             #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
-            self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT]:", insert=new_entry)
+            self.log.info("[MESH] [SIGNALLING TABLE] [INSERT]:", insert=new_entry)
 
             MESH_SIGNALLING_TABLE.append(new_entry)
 
