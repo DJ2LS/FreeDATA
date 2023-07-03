@@ -286,7 +286,9 @@ class DAEMON:
         options.append("--tx-delay")
         options.append(data[21])
 
-
+        #Mesh
+        if data[24] == "True":
+            options.append("--mesh")
 
         # safe data to config file
         config.write_entire_config(data)
