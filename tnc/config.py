@@ -84,6 +84,10 @@ class CONFIG:
                               'port': data[23]
                               }
 
+        self.config['MESH'] = {'#TCI settings': None,
+                              'enable_protocol': data[24]
+                              }
+
         try:
             with open(self.config_name, 'w') as configfile:
                 self.config.write(configfile)

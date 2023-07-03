@@ -406,6 +406,7 @@ if __name__ == "__main__":
 
     # start mesh protocol only if enabled
     if MeshParam.enable_protocol:
+        log.info("[MESH] loading module")
         # start mesh module
         mesh = mesh.MeshRouter()
 

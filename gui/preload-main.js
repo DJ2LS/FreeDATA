@@ -29,7 +29,6 @@ var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
 
-//config.enable_mesh_features = FD.enable_mesh();
 const contrib = [
   "DK5SM",
   "DL4IAZ",
@@ -1464,11 +1463,11 @@ window.addEventListener("DOMContentLoaded", () => {
     var tx_delay = document.getElementById("tx_delay").value;
 
       if (document.getElementById("enableMeshSwitch").checked == true) {
-    var enable_mesh_features = "True"
+    var enable_mesh_features = "True";
               document.getElementById("liMeshTable").style.visibility = "visible";
     document.getElementById("liMeshTable").style.display = "block";
   } else {
-        var enable_mesh_features = "False"
+        var enable_mesh_features = "False";
     document.getElementById("liMeshTable").style.visibility = "hidden";
     document.getElementById("liMeshTable").style.display = "none";
   }
@@ -1558,7 +1557,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     var tx_audio_level = document.getElementById("audioLevelTX").value;
     var rx_buffer_size = document.getElementById("rx_buffer_size").value;
-
     config.radiocontrol = radiocontrol;
     config.mycall = callsign_ssid;
     config.mygrid = mygrid;
