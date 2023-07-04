@@ -445,7 +445,13 @@ class MeshRouter():
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
-                update_entry = [item[0], destination, "", "PING", "", item[5], status]
+                # reset attempts if entry exists and it failed or is acknowledged
+                if item[6] in ["failed", "acknowledged"]:
+                    attempt = 0
+                else:
+                    attempt = item[5]
+
+                update_entry = [item[0], destination, "", "PING", "",attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
 
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
@@ -472,7 +478,12 @@ class MeshRouter():
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
-                update_entry = [item[0], destination, "", "PING-ACK", "", item[5], status]
+                # reset attempts if entry exists and it failed or is acknowledged
+                if item[6] in ["failed", "acknowledged"]:
+                    attempt = 0
+                else:
+                    attempt = item[5]
+                update_entry = [item[0], destination, "", "PING-ACK", "", attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
 
