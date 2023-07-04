@@ -344,9 +344,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   if (config.low_bandwidth_mode == "True") {
-    document.getElementById("500HzModeSwitch").checked = true;
+    document.getElementById("250HzModeSwitch").checked = true;
   } else {
-    document.getElementById("500HzModeSwitch").checked = false;
+    document.getElementById("250HzModeSwitch").checked = false;
   }
 
   if (config.high_graphics == "True") {
@@ -1158,8 +1158,8 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // enable 500z Switch clicked
-  document.getElementById("500HzModeSwitch").addEventListener("click", () => {
-    if (document.getElementById("500HzModeSwitch").checked == true) {
+  document.getElementById("250HzModeSwitch").addEventListener("click", () => {
+    if (document.getElementById("250HzModeSwitch").checked == true) {
       config.low_bandwidth_mode = "True";
     } else {
       config.low_bandwidth_mode = "False";
@@ -1484,7 +1484,7 @@ window.addEventListener("DOMContentLoaded", () => {
       var enable_fft = "False";
     }
 
-    if (document.getElementById("500HzModeSwitch").checked == true) {
+    if (document.getElementById("250HzModeSwitch").checked == true) {
       var low_bandwidth_mode = "True";
     } else {
       var low_bandwidth_mode = "False";
