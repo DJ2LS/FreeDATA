@@ -1510,8 +1510,8 @@ update_chat = function (obj) {
     //  console.log(obj.attempt)
 
     if (
-      !obj.status == "broadcast_transmit" ||
-      !obj.status == "broadcast_received"
+      obj.status != "broadcast_transmit" ||
+      obj.status != "broadcast_received"
     ) {
       document.getElementById("msg-" + obj._id + "-status").innerHTML =
         get_icon_for_state(obj.status);
@@ -1577,8 +1577,8 @@ update_chat = function (obj) {
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
     } else if (
-      !obj.status == "broadcast_transmit" ||
-      !obj.status == "broadcast_received"
+      obj.status != "broadcast_transmit" ||
+      obj.status != "broadcast_received"
     ) {
       document
         .getElementById("msg-" + obj._id + "-progress")
