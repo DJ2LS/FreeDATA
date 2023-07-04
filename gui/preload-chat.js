@@ -683,8 +683,10 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
 
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
 
-  console.log(data.status);
-  if (typeof data.uuid !== "undefined" || data.uuid !== "no-uuid") {
+if (typeof data.uuid === undefined) return;
+
+  //console.log(data.status);
+  if (data.uuid !== "no-uuid") {
     db.get(data.uuid, {
       attachments: true,
     })
@@ -1445,7 +1447,7 @@ update_chat = function (obj) {
         var percent_value = "TRANSMITTED";
       } else {
         var progressbar_bg = "bg-primary";
-        var percent_value = obj.percent;
+        var percent_value = obj.percent + " %";
       }
 
       //Sneak in low graphics mode if so enabled for progress bars
@@ -1487,9 +1489,9 @@ update_chat = function (obj) {
       }%;" aria-valuenow="${
         obj.percent
       }" aria-valuemin="0" aria-valuemax="100"></div>
-                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white ${progressbar_bg}" style="font-size: xx-small" id="msg-${
+                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
         obj._id
-      }-progress-information">${percent_value} % - ${obj.bytesperminute} Bpm</p>
+      }-progress-information">${percent_value} - ${obj.bytesperminute} Bpm</p>
                         </div>
                     </div>
                 </div>
