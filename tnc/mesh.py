@@ -420,10 +420,9 @@ class MeshRouter():
 
         if destination == Station.mycallsign_crc.hex():
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
-            status = "acknowledged"
-            self.add_mesh_ping_ack_to_signalling_table(destination, status)
+            self.add_mesh_ping_ack_to_signalling_table(destination, status="acknowledged")
         else:
-            status = "forwarding"
+            #status = "forwarding"
             #self.add_mesh_ping_ack_to_signalling_table(destination, status)
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
             for _, item in enumerate(MESH_SIGNALLING_TABLE):
@@ -433,8 +432,8 @@ class MeshRouter():
                     break
 
             self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarding")
-            dxcallsign_crc = bytes.fromhex(destination)
-            self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
+            #dxcallsign_crc = bytes.fromhex(destination)
+            #self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
 
         print(MESH_SIGNALLING_TABLE)
 
