@@ -53,6 +53,50 @@ class MeshRouter():
 
         self.log = structlog.get_logger("RF")
 
+        self.transmission_time_list = [
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360,
+            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
+            360, 360, 360, 360, 360, 360
+        ]
+        # for testing only: self.transmission_time_list = [30, 30]
+        self.signalling_max_attempts = len(self.transmission_time_list)
+
+
 
         self.mesh_broadcasting_thread = threading.Thread(
             target=self.broadcast_routing_table, name="worker thread receive", daemon=True
@@ -230,58 +274,7 @@ class MeshRouter():
         #           [timestamp, destination, router, frametype, payload, attempt, status]
         # --------------0------------1---------2---------3--------4---------5--------6 #
 
-        transmission_time_list = [0, 30, 30, 30, 30, 30, 30,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360, 360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-                                  360, 360,
-                                  360, 360, 360, 360,
-                                  ]
+
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
@@ -289,7 +282,7 @@ class MeshRouter():
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
-                if entry[3] in ["PING", "PING-ACK"] and attempt < len(transmission_time_list) and status not in ["acknowledged"]:
+                if entry[3] in ["PING", "PING-ACK"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
 
 
                     # Calculate the transmission time with exponential increase
@@ -298,7 +291,7 @@ class MeshRouter():
                     #correction_factor = 750
                     timestamp = entry[0]
                     #transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
-                    transmission_time = timestamp + sum(transmission_time_list[:attempt])
+                    transmission_time = timestamp + sum(self.transmission_time_list[:attempt])
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
                         entry[5] += 1
@@ -394,17 +387,22 @@ class MeshRouter():
 
             dxcallsign_crc = Station.mycallsign_crc
             self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
-            # use case 2: set status to acknowledged if we are out of retries
-            #self.add_mesh_ping_to_signalling_table(destination, status="acknowledged")
+            # use case 2: set status to failed if we are out of retries
+            #self.add_mesh_ping_to_signalling_table(destination, status="failed")
         else:
             self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
-            # use case 1: set status to forwarding if we are not hte receiver of a PING
-            self.add_mesh_ping_to_signalling_table(destination, status="forwarding")
-            dxcallsign_crc = bytes.fromhex(destination)
+            # lookup if entry is already in database - if so, udpate and exit
+            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+                if item[1] == destination and item[5] >= self.signalling_max_attempts:
+                    # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
+                    self.add_mesh_ping_to_signalling_table(destination, status="forwarded")
+                    return
 
+            print("......................")
+            # use case 1: set status to forwarding if we are not the receiver of a PING and we don't have an entry in our database
+            self.add_mesh_ping_to_signalling_table(destination, status="forwarding")
+            #dxcallsign_crc = bytes.fromhex(destination)
             #self.transmit_mesh_signalling_ping(dxcallsign_crc)
-            # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
-            #self.add_mesh_ping_to_signalling_table(destination, status="forwarded")
 
     def received_mesh_ping_ack(self, data_in):
         # TODO:
@@ -426,8 +424,17 @@ class MeshRouter():
             self.add_mesh_ping_ack_to_signalling_table(destination, status)
         else:
             status = "forwarding"
-            self.add_mesh_ping_ack_to_signalling_table(destination, status)
+            #self.add_mesh_ping_ack_to_signalling_table(destination, status)
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
+            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+                if item[1] == destination and item[5] >= self.signalling_max_attempts:
+                    # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
+                    self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarded")
+                    break
+
+            self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarding")
+            dxcallsign_crc = bytes.fromhex(destination)
+            self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
 
         print(MESH_SIGNALLING_TABLE)
 
@@ -496,36 +503,6 @@ class MeshRouter():
             self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=new_entry)
 
             MESH_SIGNALLING_TABLE.append(new_entry)
-
-        """
-        for _, item in enumerate(MESH_SIGNALLING_TABLE):
-            print(item)
-            # use case 3: PING ACK sets state to processed if we are the initiator of a PING and it is not yet acknowledged
-            if destination == Station.mycallsign_crc.hex() and item[6] not in ["acknowledged"]:
-                update_entry = [time.time(), destination, "", "PING", "", 0, "acknowledged"]
-                print(f"UPDATE AND CHANGE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
-                MESH_SIGNALLING_TABLE[_] = update_entry
-                return
-
-            # use case 1: PING-ACK updates PING-ACK, but stay at attempts
-            if destination in item[1] and "PING-ACK" in item[3]:
-                update_entry = [item[0], destination, "", "PING-ACK", "", item[5], "forwarding"]
-                print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
-                MESH_SIGNALLING_TABLE[_] = update_entry
-                return
-
-            # use case 2: PING-ACK overwrites PING
-            # this avoids possible packet loops
-            if destination in item[1] and "PING" in item[3]:
-                update_entry = [time.time(), destination, "", "PING-ACK", "", 0, "forwarding"]
-                print(f"UPDATE AND CHANGE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
-                MESH_SIGNALLING_TABLE[_] = update_entry
-                return
-
-        if new_entry not in MESH_SIGNALLING_TABLE:
-            print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
-            MESH_SIGNALLING_TABLE.append(new_entry)
-        """
 
     def enqueue_frame_for_tx(
             self,
