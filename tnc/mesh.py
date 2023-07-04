@@ -392,7 +392,7 @@ class MeshRouter():
         else:
             self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
             # lookup if entry is already in database - if so, udpate and exit
-            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+            for item in MESH_SIGNALLING_TABLE:
                 if item[1] == destination and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
                     self.add_mesh_ping_to_signalling_table(destination, status="forwarded")
@@ -425,15 +425,15 @@ class MeshRouter():
             #status = "forwarding"
             #self.add_mesh_ping_ack_to_signalling_table(destination, status)
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
-            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+            for item in MESH_SIGNALLING_TABLE:
                 if item[1] == destination and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
                     self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarded")
                     break
 
             self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarding")
-            #dxcallsign_crc = bytes.fromhex(destination)
-            #self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
+                #dxcallsign_crc = bytes.fromhex(destination)
+                #self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
 
         print(MESH_SIGNALLING_TABLE)
 
@@ -452,11 +452,7 @@ class MeshRouter():
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
                 # reset attempts if entry exists and it failed or is acknowledged
-                if item[6] in ["failed", "acknowledged"]:
-                    attempt = 0
-                else:
-                    attempt = item[5]
-
+                attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
                 update_entry = [item[0], destination, "", "PING", "",attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
 
@@ -485,10 +481,7 @@ class MeshRouter():
             # update entry if exists
             if destination in item[1] and "PING" in item[3]:
                 # reset attempts if entry exists and it failed or is acknowledged
-                if item[6] in ["failed", "acknowledged"]:
-                    attempt = 0
-                else:
-                    attempt = item[5]
+                attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
                 update_entry = [item[0], destination, "", "PING-ACK", "", attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
