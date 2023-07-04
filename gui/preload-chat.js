@@ -1442,6 +1442,8 @@ update_chat = function (obj) {
       if (obj.status == "failed") {
         var progressbar_bg = "bg-danger";
         var percent_value = "TRANSMISSION FAILED";
+        //Set to 100 so progressbar background populates
+        obj.percent=100;
       } else if (obj.status == "transmitted") {
         var progressbar_bg = "bg-success";
         var percent_value = "TRANSMITTED";
