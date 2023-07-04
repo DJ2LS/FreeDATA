@@ -416,6 +416,11 @@ ipcMain.on("request-clear-chat-connected", () => {
   chat.webContents.send("action-clear-reception-status");
 });
 
+ipcMain.on("request-update-dbclean-spinner", () => {
+  //Turn off dbclean spinner
+  win.webContents.send("action-update-dbclean-spinner");
+});
+
 // UPDATE TNC CONNECTION
 ipcMain.on("request-update-tnc-ip", (event, data) => {
   win.webContents.send("action-update-tnc-ip", data);

@@ -2913,4 +2913,5 @@ async function dbClean() {
       itemCount +
       " items removed from database.  It's recommended you now restart the GUI."
   );
+  ipcRenderer.send("request-update-dbclean-spinner");
 }

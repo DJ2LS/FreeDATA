@@ -1657,6 +1657,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // btnCleanDB button clicked
   document.getElementById("btnCleanDB").addEventListener("click", () => {
+    document.getElementById("divCleanDBSpinner").classList.remove("invisible");
     ipcRenderer.send("request-clean-db");
   });
 
@@ -1855,6 +1856,10 @@ function connectedStation(data) {
     prefix + data.dxcallsign;
 }
 
+//Called by chat to turn off db clean spinner
+ipcRenderer.on("action-update-dbclean-spinner",() =>{
+    document.getElementById("divCleanDBSpinner").classList.add("invisible");
+});
 //Listen for events caused by tnc 'tnc-message' rx
 ipcRenderer.on("action-update-reception-status", (event, arg) => {
   var data = arg["data"][0];
