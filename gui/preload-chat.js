@@ -1056,16 +1056,16 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmit" && obj.percent == 0) {
+  if (obj.status == "transmit" && obj.type == "transmit" &&  obj.percent < 100) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
     if (TimeDifference > 3600) {
-      db.upsert(obj._id, function (doc) {
-        if (!doc.status) {
-          doc.status = "failed";
-        }
-        return doc;
-      });
-      obj.status = "failed";
+      console.log("Resetting message to failed as it is in transmit status and older than an hour:")
+      console.log(obj);
+       db.upsert(obj._id, function (doc) {
+           doc.status = "failed";
+         return doc;
+       });
+       obj.status = "failed";
     }
   }
   if (typeof obj.new == "undefined") {
