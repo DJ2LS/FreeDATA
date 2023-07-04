@@ -684,7 +684,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
 
   console.log(data.status);
-  if (data.uuid !== "no-uuid") {
+  if (typeof data.uuid !== "undefined" || data.uuid !== "no-uuid") {
     db.get(data.uuid, {
       attachments: true,
     })
