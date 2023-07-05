@@ -2877,6 +2877,7 @@ async function dbClean() {
     )
   ) {
   } else {
+    ipcRenderer.send("request-update-dbclean-spinner");
     return;
   }
 
