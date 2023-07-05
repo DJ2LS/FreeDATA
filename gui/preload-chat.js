@@ -683,7 +683,9 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
 
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
 
-  console.log(data.status);
+if (typeof data.uuid === undefined) return;
+
+  //console.log(data.status);
   if (data.uuid !== "no-uuid") {
     db.get(data.uuid, {
       attachments: true,
@@ -1054,16 +1056,16 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmit" && obj.percent == 0) {
+  if (obj.status == "transmit" && obj.type == "transmit" &&  obj.percent < 100) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
-    if (TimeDifference > 3600) {
-      db.upsert(obj._id, function (doc) {
-        if (!doc.status) {
-          doc.status = "failed";
-        }
-        return doc;
-      });
-      obj.status = "failed";
+    if (TimeDifference > 21600) { //Six hours
+      console.log("Resetting message to failed state since in transmit status for over 6 hours:")
+      console.log(obj);
+       db.upsert(obj._id, function (doc) {
+           doc.status = "failed";
+         return doc;
+       });
+       obj.status = "failed";
     }
   }
   if (typeof obj.new == "undefined") {
@@ -1440,12 +1442,14 @@ update_chat = function (obj) {
       if (obj.status == "failed") {
         var progressbar_bg = "bg-danger";
         var percent_value = "TRANSMISSION FAILED";
+        //Set to 100 so progressbar background populates
+        obj.percent=100;
       } else if (obj.status == "transmitted") {
         var progressbar_bg = "bg-success";
         var percent_value = "TRANSMITTED";
       } else {
         var progressbar_bg = "bg-primary";
-        var percent_value = obj.percent;
+        var percent_value = obj.percent + " %";
       }
 
       //Sneak in low graphics mode if so enabled for progress bars
@@ -1487,9 +1491,9 @@ update_chat = function (obj) {
       }%;" aria-valuenow="${
         obj.percent
       }" aria-valuemin="0" aria-valuemax="100"></div>
-                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white ${progressbar_bg}" style="font-size: xx-small" id="msg-${
+                            <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
         obj._id
-      }-progress-information">${percent_value} % - ${obj.bytesperminute} Bpm</p>
+      }-progress-information">${percent_value} - ${obj.bytesperminute} Bpm</p>
                         </div>
                     </div>
                 </div>
@@ -1510,8 +1514,8 @@ update_chat = function (obj) {
     //  console.log(obj.attempt)
 
     if (
-      !obj.status == "broadcast_transmit" ||
-      !obj.status == "broadcast_received"
+      obj.status != "broadcast_transmit" ||
+      obj.status != "broadcast_received"
     ) {
       document.getElementById("msg-" + obj._id + "-status").innerHTML =
         get_icon_for_state(obj.status);
@@ -1577,8 +1581,8 @@ update_chat = function (obj) {
         "msg-" + obj._id + "-progress-information"
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
     } else if (
-      !obj.status == "broadcast_transmit" ||
-      !obj.status == "broadcast_received"
+      obj.status != "broadcast_transmit" ||
+      obj.status != "broadcast_received"
     ) {
       document
         .getElementById("msg-" + obj._id + "-progress")
@@ -2909,4 +2913,5 @@ async function dbClean() {
       itemCount +
       " items removed from database.  It's recommended you now restart the GUI."
   );
+  ipcRenderer.send("request-update-dbclean-spinner");
 }

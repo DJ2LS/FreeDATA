@@ -31,7 +31,7 @@ import tci
 # FIXME: used for def transmit_morse
 # import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
-    AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE
+    AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -889,6 +889,7 @@ class RF:
                     audiobuffer.pop(nin)
                     nin = codec2.api.freedv_nin(freedv)
                     if nbytes == bytes_per_frame:
+                        print(bytes(bytes_out))
 
                         # process commands only if TNC.listen = True
                         if TNC.listen:
@@ -905,6 +906,16 @@ class RF:
                                 FRAME_TYPE.ARQ_DC_OPEN_ACK_N.value
                             ]:
                                 print("dropp")
+                            elif int.from_bytes(bytes(bytes_out[:1]), "big") in [
+                                FRAME_TYPE.MESH_BROADCAST.value,
+                                FRAME_TYPE.MESH_SIGNALLING_PING.value,
+                                FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value,
+                            ]:
+                                self.log.debug(
+                                    "[MDM] [demod_audio] moving data to mesh dispatcher", nbytes=nbytes
+                                )
+                                MESH_RECEIVED_QUEUE.put(bytes(bytes_out))
+
                             else:
                                 self.log.debug(
                                     "[MDM] [demod_audio] Pushing received data to received_queue", nbytes=nbytes
@@ -1299,10 +1310,11 @@ class RF:
                                     raise ZeroDivisionError
                                 AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
                             except Exception as e:
-                                self.log.warning(
-                                    "[MDM] fft calculation error - please check your audio setup",
-                                    e=e,
-                                )
+                                # FIXME: Disabled for cli cleanup
+                                #self.log.warning(
+                                #    "[MDM] fft calculation error - please check your audio setup",
+                                #    e=e,
+                                #)
                                 AudioParam.audio_dbfs = -100
 
                             rms_counter = 0

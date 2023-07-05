@@ -28,6 +28,7 @@ var appDataFolder =
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
+
 const contrib = [
   "DK5SM",
   "DL4IAZ",
@@ -343,9 +344,9 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   if (config.low_bandwidth_mode == "True") {
-    document.getElementById("500HzModeSwitch").checked = true;
+    document.getElementById("250HzModeSwitch").checked = true;
   } else {
-    document.getElementById("500HzModeSwitch").checked = false;
+    document.getElementById("250HzModeSwitch").checked = false;
   }
 
   if (config.high_graphics == "True") {
@@ -395,6 +396,21 @@ window.addEventListener("DOMContentLoaded", () => {
   } else {
     document.getElementById("NotificationSwitch").checked = false;
   }
+
+  if(config.enable_mesh_features.toLowerCase() == "true"){
+            document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+    document.getElementById("enableMeshSwitch").checked = true;
+
+
+  } else {
+            document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+        document.getElementById("enableMeshSwitch").checked = false;
+
+  }
+
+
 
   // theme selector
   changeGuiDesign(config.theme);
@@ -1142,8 +1158,8 @@ window.addEventListener("DOMContentLoaded", () => {
   });
 
   // enable 500z Switch clicked
-  document.getElementById("500HzModeSwitch").addEventListener("click", () => {
-    if (document.getElementById("500HzModeSwitch").checked == true) {
+  document.getElementById("250HzModeSwitch").addEventListener("click", () => {
+    if (document.getElementById("250HzModeSwitch").checked == true) {
       config.low_bandwidth_mode = "True";
     } else {
       config.low_bandwidth_mode = "False";
@@ -1242,6 +1258,22 @@ window.addEventListener("DOMContentLoaded", () => {
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
   });
+
+  // enable MESH Switch clicked
+  document.getElementById("enableMeshSwitch").addEventListener("click", () => {
+    if (document.getElementById("enableMeshSwitch").checked == true) {
+      config.enable_mesh_features = "True";
+          document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+    } else {
+      config.enable_mesh_features = "False";
+          document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+    }
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+  });
+
 
   // enable is writing switch clicked
   document.getElementById("enable_is_writing").addEventListener("click", () => {
@@ -1430,6 +1462,16 @@ window.addEventListener("DOMContentLoaded", () => {
     var handshake = document.getElementById("hamlib_handshake").value;
     var tx_delay = document.getElementById("tx_delay").value;
 
+      if (document.getElementById("enableMeshSwitch").checked == true) {
+    var enable_mesh_features = "True";
+              document.getElementById("liMeshTable").style.visibility = "visible";
+    document.getElementById("liMeshTable").style.display = "block";
+  } else {
+        var enable_mesh_features = "False";
+    document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.display = "none";
+  }
+
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
     } else {
@@ -1442,7 +1484,7 @@ window.addEventListener("DOMContentLoaded", () => {
       var enable_fft = "False";
     }
 
-    if (document.getElementById("500HzModeSwitch").checked == true) {
+    if (document.getElementById("250HzModeSwitch").checked == true) {
       var low_bandwidth_mode = "True";
     } else {
       var low_bandwidth_mode = "False";
@@ -1515,7 +1557,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
     var tx_audio_level = document.getElementById("audioLevelTX").value;
     var rx_buffer_size = document.getElementById("rx_buffer_size").value;
-
     config.radiocontrol = radiocontrol;
     config.mycall = callsign_ssid;
     config.mygrid = mygrid;
@@ -1544,6 +1585,7 @@ window.addEventListener("DOMContentLoaded", () => {
     config.tx_delay = tx_delay;
     config.tci_ip = tci_ip;
     config.tci_port = tci_port;
+    config.enable_mesh_features = enable_mesh_features;
 
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1593,12 +1635,17 @@ window.addEventListener("DOMContentLoaded", () => {
       auto_tune,
       tx_delay,
       tci_ip,
-      tci_port
+      tci_port,
+      enable_mesh_features
     );
   });
 
   document.getElementById("tncLog").addEventListener("click", () => {
     ipcRenderer.send("request-open-tnc-log");
+  });
+
+  document.getElementById("meshtable").addEventListener("click", () => {
+    ipcRenderer.send("request-open-mesh-module");
   });
 
   // stopTNC button clicked
@@ -1610,6 +1657,7 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // btnCleanDB button clicked
   document.getElementById("btnCleanDB").addEventListener("click", () => {
+    document.getElementById("divCleanDBSpinner").classList.remove("invisible");
     ipcRenderer.send("request-clean-db");
   });
 
@@ -1755,8 +1803,15 @@ window.addEventListener("DOMContentLoaded", () => {
     resetSortIcon();
   });
 
-  autostart_rigctld();
+
+
+
+    autostart_rigctld();
+
+
+
 });
+//End of domcontentloaded
 
 function resetSortIcon() {
   document.getElementById("hslSort").remove();
@@ -1801,6 +1856,10 @@ function connectedStation(data) {
     prefix + data.dxcallsign;
 }
 
+//Called by chat to turn off db clean spinner
+ipcRenderer.on("action-update-dbclean-spinner",() =>{
+    document.getElementById("divCleanDBSpinner").classList.add("invisible");
+});
 //Listen for events caused by tnc 'tnc-message' rx
 ipcRenderer.on("action-update-reception-status", (event, arg) => {
   var data = arg["data"][0];
@@ -2938,6 +2997,7 @@ ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
 });
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
+
   if (arg.command == "save_my_call") {
     sock.saveMyCall(arg.callsign);
   }
@@ -3017,6 +3077,12 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
   if (arg.command == "responseSharedFile") {
     sock.sendResponseSharedFile(arg.dxcallsign, arg.file, arg.filedata);
   }
+
+    if (arg.command == "mesh_ping") {
+    sock.sendMeshPing(arg.dxcallsign);
+  }
+
+
 });
 
 // IPC ACTION FOR AUTO UPDATER

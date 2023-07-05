@@ -90,7 +90,11 @@ class HamlibParam:
     hamlib_mode: str = ""
     hamlib_rf: int = 0
 
-@dataclass 
+@dataclass
+class MeshParam:
+    routing_table = []
+    enable_protocol = False
+@dataclass
 class ModemParam:
     tuning_range_fmin: float = -50.0
     tuning_range_fmax: float = 50.0
@@ -125,7 +129,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.9.4-alpha.1"
+    version = "0.10.0-alpha.1"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
@@ -157,6 +161,9 @@ class FRAME_TYPE(Enum):
     FR_REPEAT = 62
     FR_NACK = 63
     BURST_NACK = 64
+    MESH_BROADCAST = 100
+    MESH_SIGNALLING_PING = 101
+    MESH_SIGNALLING_PING_ACK = 102
     CQ = 200
     QRV = 201
     PING = 210

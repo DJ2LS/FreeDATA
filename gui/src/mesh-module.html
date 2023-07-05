@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="../node_modules/bootstrap/dist/css/bootstrap.min.css"
+    />
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+    <title>FreeDATA - Mesh Table</title>
+  </head>
+  <body>
+    <!-- bootstrap -->
+    <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- chart.js -->
+
+    <nav class="navbar fixed-top bg-light ms-2 me-2">
+
+
+
+  <div class="input-group">
+<input
+                        type="text"
+                        class="form-control"
+                        style="max-width: 6rem; text-transform: uppercase"
+                        placeholder="DXcall"
+                        pattern="[A-Z]*"
+                        id="dxCallMesh"
+                        maxlength="11"
+                        aria-label="Input group"
+                        aria-describedby="btnGroupAddon"
+                      />
+        <button id="transmit_mesh_ping" type="button" class="btn btn-primary">mesh ping</button>
+</div>
+      </div>
+    </nav>
+
+    <div class="container-fluid h-100 mt-5">
+
+
+      <div class="tableFixHead h-50">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">DXCall</th>
+              <th scope="col">Router</th>
+              <th scope="col">Hops</th>
+              <th scope="col">Score</th>
+              <th scope="col">SNR</th>
+
+            </tr>
+          </thead>
+          <tbody id="mesh-table">
+          <!-- ... -->
+          </tbody>
+        </table>
+      </div>
+
+
+
+
+      <div class="tableFixHead h-50">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Destination</th>
+              <th scope="col">Router</th>
+              <th scope="col">Frametype</th>
+              <th scope="col">Payload</th>
+              <th scope="col">Attempt</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="mesh-signalling-table">
+          </tbody>
+        </table>
+      </div>
+
+
+    </div>
+
+
+
+
+
+    </div>
+  </body>
+</html>

@@ -89,7 +89,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 jsondata = json.loads(command)
 
                 if jsondata.get('command') == "tnc_state":
-                    pass
+                    #pass
+                    print(jsondata.get("routing_table"))
 
                 if jsondata.get('freedata') == "tnc-message":
                     log.info(jsondata)
@@ -107,6 +108,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
                 if jsondata.get('status') == 'received' and jsondata.get('arq') == 'transmission':
                     decode_and_save_data(jsondata["data"])
+
+
 
             # clear data buffer as soon as data has been read
             data = bytes()

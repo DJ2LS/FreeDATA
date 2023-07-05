@@ -29,11 +29,11 @@ import helpers
 import log_handler
 import modem
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
 import structlog
 import explorer
 import json
-
+import mesh
 log = structlog.get_logger("main")
 
 def signal_handler(sig, frame):
@@ -246,6 +246,13 @@ if __name__ == "__main__":
         type=int,
     )
 
+    PARSER.add_argument(
+        "--mesh",
+        dest="enable_mesh",
+        action="store_true",
+        help="Enable mesh protocol",
+    )
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -299,6 +306,7 @@ if __name__ == "__main__":
             TCIParam.ip = ARGS.tci_ip
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
+            MeshParam.enable_protocol = ARGS.enable_mesh
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -349,6 +357,7 @@ if __name__ == "__main__":
             TCIParam.ip = str(conf.get('TCI', 'tci_ip', 'localhost'))
             TCIParam.port = int(conf.get('TCI', 'tci_port', '50001'))
             ModemParam.tx_delay = int(conf.get('TNC', 'tx_delay', '0'))
+            MeshParam.enable_protocol = conf.get('MESH','mesh_enable','False')
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:
@@ -394,6 +403,12 @@ if __name__ == "__main__":
 
     # start modem
     modem = modem.RF()
+
+    # start mesh protocol only if enabled
+    if MeshParam.enable_protocol:
+        log.info("[MESH] loading module")
+        # start mesh module
+        mesh = mesh.MeshRouter()
 
     # optionally start explorer module
     if TNC.enable_explorer:

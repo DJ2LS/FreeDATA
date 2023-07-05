@@ -218,6 +218,8 @@ client.on("data", function (socketdata) {
           total_bytes: data["total_bytes"],
           arq_transmission_percent: data["arq_transmission_percent"],
           stations: data["stations"],
+          routing_table: data["routing_table"],
+          mesh_signalling_table: data["mesh_signalling_table"],
           beacon_state: data["beacon_state"],
           hamlib_status: data["hamlib_status"],
           listen: data["listen"],
@@ -586,6 +588,15 @@ exports.sendPing = function (dxcallsign) {
   writeTncCommand(command);
 };
 
+// Send Mesh Ping
+exports.sendMeshPing = function (dxcallsign) {
+  command =
+    '{"type" : "mesh", "command" : "ping", "dxcallsign" : "' +
+    dxcallsign +
+    '"}';
+  writeTncCommand(command);
+};
+
 // Send CQ
 exports.sendCQ = function () {
   command = '{"type" : "broadcast", "command" : "cqcqcq"}';
@@ -850,6 +861,8 @@ exports.sendFecIsWriting = function (mycallsign) {
     '"}';
   writeTncCommand(command);
 };
+
+
 
 // SEND FEC TO BROADCASTCHANNEL
 exports.sendBroadcastChannel = function (channel, data_out, uuid) {

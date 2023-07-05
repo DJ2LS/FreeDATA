@@ -27,12 +27,12 @@ import time
 import wave
 import helpers
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
 import structlog
 from random import randrange
 import ujson as json
 from exceptions import NoCallsign
-from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE
+from queues import DATA_QUEUE_TRANSMIT, RX_BUFFER, RIGCTLD_COMMAND_QUEUE, MESH_QUEUE_TRANSMIT, MESH_SIGNALLING_TABLE
 
 SOCKET_QUEUE = queue.Queue()
 DAEMON_QUEUE = queue.Queue()
@@ -391,6 +391,16 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 else:
                     self.tnc_set_mode(received_json)
 
+            # GET ROUTING TABLE
+            if received_json["type"] == "get" and received_json["command"] == "routing_table":
+                self.tnc_get_mesh_routing_table(received_json)
+
+
+            # -------------- MESH ---------------- #
+            # MESH PING
+            if received_json["type"] == "mesh" and received_json["command"] == "ping":
+                self.tnc_mesh_ping(received_json)
+
         except Exception as err:
             log.error("[SCK] JSON decoding error", e=err)
 
@@ -405,6 +415,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 # set early disconnecting state so we can interrupt connection attempts
                 ARQ.arq_session_state = "disconnecting"
                 command_response("disconnect", True)
+
+
 
         except Exception as err:
             command_response("listen", False)
@@ -557,6 +569,40 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 "[SCK] Stop beacon command execution error",
                 e=err,
                 command=received_json,
+            )
+
+
+    def tnc_mesh_ping(self, received_json):
+        # send ping frame and wait for ACK
+        try:
+            dxcallsign = received_json["dxcallsign"]
+            if not str(dxcallsign).strip():
+                raise NoCallsign
+
+            # additional step for being sure our callsign is correctly
+            # in case we are not getting a station ssid
+            # then we are forcing a station ssid = 0
+            dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+            dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+
+            # check if specific callsign is set with different SSID than the TNC is initialized
+            try:
+                mycallsign = received_json["mycallsign"]
+                mycallsign = helpers.callsign_to_bytes(mycallsign)
+                mycallsign = helpers.bytes_to_callsign(mycallsign)
+
+            except Exception:
+                mycallsign = Station.mycallsign
+
+            MESH_QUEUE_TRANSMIT.put(["PING", mycallsign, dxcallsign])
+            command_response("ping", True)
+        except NoCallsign:
+            command_response("ping", False)
+            log.warning("[SCK] callsign required for ping", command=received_json)
+        except Exception as err:
+            command_response("ping", False)
+            log.warning(
+                "[SCK] PING command execution error", e=err, command=received_json
             )
 
     def tnc_ping_ping(self, received_json):
@@ -761,6 +807,44 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 "[SCK] STOP command execution error", e=err, command=received_json
             )
 
+    def tnc_get_mesh_routing_table(self, received_json):
+        try:
+            if not RX_BUFFER.empty():
+                output = {
+                    "command": "routing_table",
+                    "routes": [],
+                }
+
+                for _, route in enumerate(MeshParam.routing_table):
+                    if MeshParam.routing_table[_][0].hex() == helpers.get_crc_24(b"direct").hex():
+                        router = "direct"
+                    else:
+                        router = MeshParam.routing_table[_][0].hex()
+                    output["routes"].append(
+                        {
+                            "dxcall": MeshParam.routing_table[_][0].hex(),
+                            "router": router,
+                            "hops": MeshParam.routing_table[_][2],
+                            "snr": MeshParam.routing_table[_][3],
+                            "score": MeshParam.routing_table[_][4],
+                            "timestamp": MeshParam.routing_table[_][5],
+                        }
+                    )
+
+
+                jsondata = json.dumps(output)
+                # self.request.sendall(bytes(jsondata, encoding))
+                SOCKET_QUEUE.put(jsondata)
+                command_response("routing_table", True)
+
+        except Exception as err:
+            command_response("routing_table", False)
+            log.warning(
+                "[SCK] Send RX buffer command execution error",
+                e=err,
+                command=received_json,
+            )
+
     def tnc_get_rx_buffer(self, received_json):
         try:
             if not RX_BUFFER.empty():
@@ -931,6 +1015,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             tx_delay = str(helpers.return_key_from_object("0", startparam, "tx_delay"))
             tci_ip = str(helpers.return_key_from_object("127.0.0.1", startparam, "tci_ip"))
             tci_port = str(helpers.return_key_from_object("50001", startparam, "tci_port"))
+            enable_mesh = str(helpers.return_key_from_object("False", startparam, "enable_mesh"))
             try:
                 # convert ssid list to python list
                 ssid_list = str(helpers.return_key_from_object("0, 1, 2, 3, 4, 5, 6, 7, 8, 9", startparam, "ssid_list"))
@@ -973,7 +1058,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     enable_stats,
                     tx_delay,
                     tci_ip,
-                    tci_port
+                    tci_port,
+                    enable_mesh
                 ]
             )
             command_response("start_tnc", True)
@@ -1086,6 +1172,8 @@ def send_tnc_state():
         "total_bytes": str(ARQ.total_bytes),
         "beacon_state": str(Beacon.beacon_state),
         "stations": [],
+        "routing_table": [],
+        "mesh_signalling_table" : [],
         "mycallsign": str(Station.mycallsign, encoding),
         "mygrid": str(Station.mygrid, encoding),
         "dxcallsign": str(Station.dxcallsign, encoding),
@@ -1108,6 +1196,39 @@ def send_tnc_state():
                 "frequency": heard[6],
             }
         )
+
+    for _, route in enumerate(MeshParam.routing_table):
+        if MeshParam.routing_table[_][1].hex() == helpers.get_crc_24(b"direct").hex():
+            router = "direct"
+        else:
+            router = MeshParam.routing_table[_][1].hex()
+        output["routing_table"].append(
+            {
+                "dxcall": MeshParam.routing_table[_][0].hex(),
+                "router": router,
+                "hops": MeshParam.routing_table[_][2],
+                "snr": MeshParam.routing_table[_][3],
+                "score": MeshParam.routing_table[_][4],
+                "timestamp": MeshParam.routing_table[_][5],
+            }
+        )
+
+    for _, entry in enumerate(MESH_SIGNALLING_TABLE):
+
+        output["mesh_signalling_table"].append(
+            {
+                "timestamp": MESH_SIGNALLING_TABLE[_][0],
+                "destination": MESH_SIGNALLING_TABLE[_][1],
+                "router": MESH_SIGNALLING_TABLE[_][2],
+                "frametype": MESH_SIGNALLING_TABLE[_][3],
+                "payload": MESH_SIGNALLING_TABLE[_][4],
+                "attempt": MESH_SIGNALLING_TABLE[_][5],
+                "status": MESH_SIGNALLING_TABLE[_][6],
+
+            }
+        )
+
+    #print(output)
     return json.dumps(output)
 
 
