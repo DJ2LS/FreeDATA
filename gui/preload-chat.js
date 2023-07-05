@@ -2642,7 +2642,7 @@ function sendUserData(dxcallsign) {
 
   ipcRenderer.send("run-tnc-command", {
     command: "responseUserInfo",
-    dxcallsign: selected_callsign,
+    dxcallsign: dxcallsign,
     userinfo: info,
   });
 }
