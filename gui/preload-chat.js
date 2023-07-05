@@ -1058,8 +1058,8 @@ update_chat = function (obj) {
   // check if wrong status message
   if (obj.status == "transmit" && obj.type == "transmit" &&  obj.percent < 100) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
-    if (TimeDifference > 3600) {
-      console.log("Resetting message to failed as it is in transmit status and older than an hour:")
+    if (TimeDifference > 21600) { //Six hours
+      console.log("Resetting message to failed state since in transmit status for over 6 hours:")
       console.log(obj);
        db.upsert(obj._id, function (doc) {
            doc.status = "failed";
