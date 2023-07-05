@@ -397,7 +397,7 @@ client.on("data", function (socketdata) {
               } else {
                 ipcRenderer.send(
                   "request-show-arq-toast-datachannel-received-opener",
-                  { data: [data] }
+                  { data: [data] },
                 );
                 ipcRenderer.send("request-update-reception-status", {
                   data: [data],
@@ -425,7 +425,7 @@ client.on("data", function (socketdata) {
               if (data["reason"] == "protocol version missmatch") {
                 ipcRenderer.send(
                   "request-show-arq-toast-transmission-failed-ver",
-                  { data: [data] }
+                  { data: [data] },
                 );
               } else {
                 ipcRenderer.send("request-show-arq-toast-transmission-failed", {
@@ -492,7 +492,7 @@ client.on("data", function (socketdata) {
               // ARQ transmitting
               ipcRenderer.send(
                 "request-show-arq-toast-transmission-transmitting",
-                { data: [data] }
+                { data: [data] },
               );
               ipcRenderer.send("request-update-transmission-status", {
                 data: [data],
@@ -503,7 +503,7 @@ client.on("data", function (socketdata) {
               // ARQ transmitted
               ipcRenderer.send(
                 "request-show-arq-toast-transmission-transmitted",
-                { data: [data] }
+                { data: [data] },
               );
               ipcRenderer.send("request-update-transmission-status", {
                 data: [data],
@@ -618,7 +618,7 @@ exports.sendFile = function (
   filename,
   filetype,
   data,
-  checksum
+  checksum,
 ) {
   socketLog.info(data);
   socketLog.info(filetype);
@@ -664,7 +664,7 @@ exports.sendMessage = function (
   data,
   checksum,
   uuid,
-  command
+  command,
 ) {
   data = FD.btoa_FD(
     "m" +
@@ -675,7 +675,7 @@ exports.sendMessage = function (
       split_char +
       uuid +
       split_char +
-      data
+      data,
   );
   command =
     '{"type" : "arq", "command" : "send_raw",  "uuid" : "' +
@@ -776,13 +776,13 @@ exports.sendResponseSharedFolderList = function (dxcallsign, sharedFolderList) {
 exports.sendResponseSharedFile = function (
   dxcallsign,
   sharedFile,
-  sharedFileData
+  sharedFileData,
 ) {
   console.log(
     "In sendResponseSharedFile",
     dxcallsign,
     sharedFile,
-    sharedFileData
+    sharedFileData,
   );
   //Command 0 = user/station information
   //Command 1 = shared folder list
@@ -862,8 +862,6 @@ exports.sendFecIsWriting = function (mycallsign) {
   writeTncCommand(command);
 };
 
-
-
 // SEND FEC TO BROADCASTCHANNEL
 exports.sendBroadcastChannel = function (channel, data_out, uuid) {
   let checksum = "";
@@ -877,7 +875,7 @@ exports.sendBroadcastChannel = function (channel, data_out, uuid) {
       split_char +
       uuid +
       split_char +
-      data_out
+      data_out,
   );
   console.log(data.length);
   let payload = data;

@@ -184,7 +184,7 @@ window.addEventListener("DOMContentLoaded", () => {
         });
       } else {
         console.log(
-          config.mycall + " not found in user db - creating new entry"
+          config.mycall + " not found in user db - creating new entry",
         );
         // add initial entry for own callsign and grid
         let obj = new Object();
@@ -639,10 +639,10 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
     .then(function (compressedFile) {
       console.log(
         "compressedFile instanceof Blob",
-        compressedFile instanceof Blob
+        compressedFile instanceof Blob,
       ); // true
       console.log(
-        `compressedFile size ${compressedFile.size / 1024 / 1024} MB`
+        `compressedFile size ${compressedFile.size / 1024 / 1024} MB`,
       ); // smaller than maxSizeMB
 
       console.log(compressedFile.size);
@@ -683,7 +683,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
 
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
 
-if (typeof data.uuid === undefined) return;
+  if (typeof data.uuid === undefined) return;
 
   //console.log(data.status);
   if (data.uuid !== "no-uuid") {
@@ -1056,16 +1056,19 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmit" && obj.type == "transmit" &&  obj.percent < 100) {
+  if (obj.status == "transmit" && obj.type == "transmit" && obj.percent < 100) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
-    if (TimeDifference > 21600) { //Six hours
-      console.log("Resetting message to failed state since in transmit status for over 6 hours:")
+    if (TimeDifference > 21600) {
+      //Six hours
+      console.log(
+        "Resetting message to failed state since in transmit status for over 6 hours:",
+      );
       console.log(obj);
-       db.upsert(obj._id, function (doc) {
-           doc.status = "failed";
-         return doc;
-       });
-       obj.status = "failed";
+      db.upsert(obj._id, function (doc) {
+        doc.status = "failed";
+        return doc;
+      });
+      obj.status = "failed";
     }
   }
   if (typeof obj.new == "undefined") {
@@ -1114,7 +1117,7 @@ update_chat = function (obj) {
         var fileheader = `
         <div class="card-header border-0 bg-transparent text-end p-0 mb-0 hover-overlay">
         <img class="w-100 rounded-2" src="data:image/png;base64,${FD.atob(
-          obj._attachments[filename]["data"]
+          obj._attachments[filename]["data"],
         )}">
        <p class="text-right mb-0 p-1" style="text-align: right; font-size : 1rem">
                     <span class="p-1" style="text-align: right; font-size : 0.8rem">${filename}</span>
@@ -1246,7 +1249,7 @@ update_chat = function (obj) {
         let clear = selected_callsign;
         clearUnreadMessages(clear);
         document.getElementById(
-          `chat-${selected_callsign}-list-displaydxcall`
+          `chat-${selected_callsign}-list-displaydxcall`,
         ).textContent = selected_callsign;
         document
           .getElementById(`chat-${selected_callsign}-list`)
@@ -1273,7 +1276,7 @@ update_chat = function (obj) {
       shortmsg;
     if (obj.new == 1) {
       document.getElementById(
-        `chat-${obj.dxcallsign}-list-displaydxcall`
+        `chat-${obj.dxcallsign}-list-displaydxcall`,
       ).textContent = "*" + obj.dxcallsign;
       document
         .getElementById(`chat-${dxcallsign}-list`)
@@ -1416,8 +1419,8 @@ update_chat = function (obj) {
                             <span class="text-white" id="msg-${
                               obj._id
                             }-status" style="font-size:0.8rem;">${get_icon_for_state(
-        obj.status
-      )}</span>
+                              obj.status,
+                            )}</span>
                         </p>
                         <span id="msg-${
                           obj._id
@@ -1443,7 +1446,7 @@ update_chat = function (obj) {
         var progressbar_bg = "bg-danger";
         var percent_value = "TRANSMISSION FAILED";
         //Set to 100 so progressbar background populates
-        obj.percent=100;
+        obj.percent = 100;
       } else if (obj.status == "transmitted") {
         var progressbar_bg = "bg-success";
         var percent_value = "TRANSMITTED";
@@ -1471,8 +1474,8 @@ update_chat = function (obj) {
                             <span class="text-white" id="msg-${
                               obj._id
                             }-status" style="font-size:0.8rem;">${get_icon_for_state(
-        obj.status
-      )}</span>
+                              obj.status,
+                            )}</span>
                         </p>
                         <span id="msg-${
                           obj._id
@@ -1485,15 +1488,17 @@ update_chat = function (obj) {
                         </span>
                         <div class="progress p-0 m-0 rounded-0 rounded-bottom bg-secondary" style="height: 10px;">
                             <div class="progress-bar progress-bar-striped ${progressbar_bg} p-0 m-0 rounded-0 force-gpu" id="msg-${
-        obj._id
-      }-progress" role="progressbar" style="width: ${
-        obj.percent
-      }%;" aria-valuenow="${
-        obj.percent
-      }" aria-valuemin="0" aria-valuemax="100"></div>
+                              obj._id
+                            }-progress" role="progressbar" style="width: ${
+                              obj.percent
+                            }%;" aria-valuenow="${
+                              obj.percent
+                            }" aria-valuemin="0" aria-valuemax="100"></div>
                             <p class="justify-content-center d-flex position-absolute m-0 p-0 w-100 text-white" style="font-size: xx-small" id="msg-${
-        obj._id
-      }-progress-information">${percent_value} - ${obj.bytesperminute} Bpm</p>
+                              obj._id
+                            }-progress-information">${percent_value} - ${
+                              obj.bytesperminute
+                            } Bpm</p>
                         </div>
                     </div>
                 </div>
@@ -1527,7 +1532,7 @@ update_chat = function (obj) {
         .getElementById("msg-" + obj._id + "-progress")
         .setAttribute("style", "width:" + obj.percent + "%;");
       document.getElementById(
-        "msg-" + obj._id + "-progress-information"
+        "msg-" + obj._id + "-progress-information",
       ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
 
       document.getElementById("msg-" + obj._id + "-attempts").innerHTML =
@@ -1546,7 +1551,7 @@ update_chat = function (obj) {
           .getElementById("msg-" + obj._id + "-progress")
           .setAttribute("style", "width:" + obj.percent + "%;");
         document.getElementById(
-          "msg-" + obj._id + "-progress-information"
+          "msg-" + obj._id + "-progress-information",
         ).innerHTML = obj.percent + "% - " + obj.bytesperminute + " Bpm";
       } else {
         document
@@ -1556,7 +1561,7 @@ update_chat = function (obj) {
           .getElementById("msg-" + obj._id + "-progress")
           .setAttribute("style", "width:0%;");
         document.getElementById(
-          "msg-" + obj._id + "-progress-information"
+          "msg-" + obj._id + "-progress-information",
         ).innerHTML = "0% - 0 Bpm";
       }
 
@@ -1578,7 +1583,7 @@ update_chat = function (obj) {
 
       document.getElementById("msg-" + obj._id + "-progress").innerHTML = "";
       document.getElementById(
-        "msg-" + obj._id + "-progress-information"
+        "msg-" + obj._id + "-progress-information",
       ).innerHTML = "TRANSMITTED - " + obj.bytesperminute + " Bpm";
     } else if (
       obj.status != "broadcast_transmit" ||
@@ -1605,11 +1610,11 @@ update_chat = function (obj) {
         .classList.add("bg-danger");
 
       console.log(
-        document.getElementById("msg-" + obj._id + "-progress").classList
+        document.getElementById("msg-" + obj._id + "-progress").classList,
       );
 
       document.getElementById(
-        "msg-" + obj._id + "-progress-information"
+        "msg-" + obj._id + "-progress-information",
       ).innerHTML = "TRANSMISSION FAILED - " + obj.bytesperminute + " Bpm";
     }
 
@@ -2461,7 +2466,7 @@ function getSetUserInformation(selected_callsign) {
 
       // Callsign list elements
       document.getElementById(
-        "chat-" + selected_callsign + "-list-dxgrid"
+        "chat-" + selected_callsign + "-list-dxgrid",
       ).innerHTML = "<small>" + data.user_info_gridsquare + "</small>";
       document.getElementById("user-image-" + selected_callsign).className =
         "p-1 rounded-circle";
@@ -2524,7 +2529,7 @@ function getSetUserInformation(selected_callsign) {
       document.getElementById("user-image-" + selected_callsign).style =
         "height:60px";
       document.getElementById(
-        "chat-" + selected_callsign + "-list-dxgrid"
+        "chat-" + selected_callsign + "-list-dxgrid",
       ).innerHTML = "<small>no grid</small>";
 
       // DX Station tab
@@ -2862,13 +2867,13 @@ async function dbClean() {
   let beaconKeep = 7;
   let itemCount = 0;
   let timestampPurge = Math.floor(
-    (Date.now() - beaconKeep * 24 * 60 * 60 * 1000) / 1000
+    (Date.now() - beaconKeep * 24 * 60 * 60 * 1000) / 1000,
   );
   if (
     confirm(
       "Delete beacons and pings older than " +
         beaconKeep +
-        " days and compact database?"
+        " days and compact database?",
     )
   ) {
   } else {
@@ -2911,7 +2916,7 @@ async function dbClean() {
   window.alert(
     "Database maintenance is complete.  " +
       itemCount +
-      " items removed from database.  It's recommended you now restart the GUI."
+      " items removed from database.  It's recommended you now restart the GUI.",
   );
   ipcRenderer.send("request-update-dbclean-spinner");
 }

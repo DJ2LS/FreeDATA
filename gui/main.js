@@ -331,7 +331,7 @@ app.whenReady().then(() => {
       daemonPath = path.join(
         process.resourcesPath,
         "tnc",
-        "freedata-daemon.exe"
+        "freedata-daemon.exe",
       );
       break;
     default:
@@ -433,7 +433,7 @@ ipcMain.on("request-update-daemon-ip", (event, data) => {
 
 ipcMain.on("request-update-tnc-state", (event, arg) => {
   win.webContents.send("action-update-tnc-state", arg);
-  meshViewer.send("action-update-mesh-table", arg)
+  meshViewer.send("action-update-mesh-table", arg);
   //data.webContents.send('action-update-tnc-state', arg);
 });
 
@@ -516,7 +516,6 @@ ipcMain.on("request-open-tnc-log", () => {
 ipcMain.on("request-open-mesh-module", () => {
   meshViewer.show();
 });
-
 
 //file selector
 ipcMain.on("get-file-path", (event, data) => {
@@ -676,7 +675,7 @@ ipcMain.on("save-file-to-folder", (event, data) => {
         filepath.filePath,
         arraybuffer,
         "binary",
-        function (err, data) {}
+        function (err, data) {},
       );
     } catch (err) {
       console.log(err);
@@ -758,9 +757,9 @@ ipcMain.on(
   (event, data) => {
     win.webContents.send(
       "action-show-arq-toast-datachannel-received-opener",
-      data
+      data,
     );
-  }
+  },
 );
 
 // ARQ TRANSMISSION FAILED
@@ -789,9 +788,9 @@ ipcMain.on(
   (event, data) => {
     win.webContents.send(
       "action-show-arq-toast-transmission-transmitting",
-      data
+      data,
     );
-  }
+  },
 );
 
 // ARQ TRANSMISSION TRANSMITTED

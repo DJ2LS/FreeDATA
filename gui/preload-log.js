@@ -73,7 +73,7 @@ ipcRenderer.on("action-update-log", (event, arg) => {
   // https://stackoverflow.com/a/29497680
   entry = entry.replace(
     /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g,
-    ""
+    "",
   );
 
   var tbl = document.getElementById("log");

@@ -201,7 +201,7 @@ window.addEventListener("DOMContentLoaded", () => {
           FD.saveConfig(config, configPath);
 
           //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-        }
+        },
       );
     });
 
@@ -221,7 +221,7 @@ window.addEventListener("DOMContentLoaded", () => {
           config.shared_folder_path = data.path.filePaths[0];
           //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
           FD.saveConfig(config, configPath);
-        }
+        },
       );
     });
 
@@ -245,7 +245,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // ENABLE TOOLTIPS EVERYWHERE
   // https://getbootstrap.com/docs/5.1/components/tooltips/
   var tooltipTriggerList = [].slice.call(
-    document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    document.querySelectorAll('[data-bs-toggle="tooltip"]'),
   );
   var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -397,20 +397,15 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("NotificationSwitch").checked = false;
   }
 
-  if(config.enable_mesh_features.toLowerCase() == "true"){
-            document.getElementById("liMeshTable").style.visibility = "visible";
+  if (config.enable_mesh_features.toLowerCase() == "true") {
+    document.getElementById("liMeshTable").style.visibility = "visible";
     document.getElementById("liMeshTable").style.display = "block";
     document.getElementById("enableMeshSwitch").checked = true;
-
-
   } else {
-            document.getElementById("liMeshTable").style.visibility = "hidden";
+    document.getElementById("liMeshTable").style.visibility = "hidden";
     document.getElementById("liMeshTable").style.display = "none";
-        document.getElementById("enableMeshSwitch").checked = false;
-
+    document.getElementById("enableMeshSwitch").checked = false;
   }
-
-
 
   // theme selector
   changeGuiDesign(config.theme);
@@ -419,7 +414,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("update_channel_selector").value =
     config.update_channel;
   document.getElementById("updater_channel").innerHTML = escape(
-    config.update_channel
+    config.update_channel,
   );
 
   // Update tuning range fmin fmax
@@ -431,10 +426,10 @@ window.addEventListener("DOMContentLoaded", () => {
 
   // Update TX Audio Level
   document.getElementById("audioLevelTXvalue").innerHTML = parseInt(
-    config.tx_audio_level
+    config.tx_audio_level,
   );
   document.getElementById("audioLevelTX").value = parseInt(
-    config.tx_audio_level
+    config.tx_audio_level,
   );
 
   // Update RX Buffer Size
@@ -734,7 +729,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .getElementById("hamlib_rigctld_server_port")
     .addEventListener("change", () => {
       config.hamlib_rigctld_server_port = document.getElementById(
-        "hamlib_rigctld_server_port"
+        "hamlib_rigctld_server_port",
       ).value;
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
@@ -809,7 +804,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("hamlib_handshake").value !== "ignore") {
       var hamlib_handshake = document.getElementById("hamlib_handshake").value;
       paramList = paramList.concat(
-        "--set-conf=serial_handshake=" + hamlib_handshake
+        "--set-conf=serial_handshake=" + hamlib_handshake,
       );
     }
 
@@ -838,13 +833,13 @@ window.addEventListener("DOMContentLoaded", () => {
     }
 
     var hamlib_rigctld_server_port = document.getElementById(
-      "hamlib_rigctld_server_port"
+      "hamlib_rigctld_server_port",
     ).value;
     paramList = paramList.concat("--port=" + hamlib_rigctld_server_port);
 
     //Custom rigctld arguments to pass to rigctld
     var hamlib_rigctld_custom_args = document.getElementById(
-      "hamlib_rigctld_custom_args"
+      "hamlib_rigctld_custom_args",
     ).value;
     paramList = paramList.concat(hamlib_rigctld_custom_args);
 
@@ -1006,7 +1001,7 @@ window.addEventListener("DOMContentLoaded", () => {
   // on change audio TX Level
   document.getElementById("audioLevelTX").addEventListener("change", () => {
     var tx_audio_level = parseInt(
-      document.getElementById("audioLevelTX").value
+      document.getElementById("audioLevelTX").value,
     );
     document.getElementById("audioLevelTXvalue").innerHTML = tx_audio_level;
     config.tx_audio_level = tx_audio_level;
@@ -1263,17 +1258,16 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("enableMeshSwitch").addEventListener("click", () => {
     if (document.getElementById("enableMeshSwitch").checked == true) {
       config.enable_mesh_features = "True";
-          document.getElementById("liMeshTable").style.visibility = "visible";
-    document.getElementById("liMeshTable").style.display = "block";
+      document.getElementById("liMeshTable").style.visibility = "visible";
+      document.getElementById("liMeshTable").style.display = "block";
     } else {
       config.enable_mesh_features = "False";
-          document.getElementById("liMeshTable").style.visibility = "hidden";
-    document.getElementById("liMeshTable").style.display = "none";
+      document.getElementById("liMeshTable").style.visibility = "hidden";
+      document.getElementById("liMeshTable").style.display = "none";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
   });
-
 
   // enable is writing switch clicked
   document.getElementById("enable_is_writing").addEventListener("click", () => {
@@ -1372,7 +1366,7 @@ window.addEventListener("DOMContentLoaded", () => {
     .getElementById("update_channel_selector")
     .addEventListener("change", () => {
       config.update_channel = document.getElementById(
-        "update_channel_selector"
+        "update_channel_selector",
       ).value;
       //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
       FD.saveConfig(config, configPath);
@@ -1399,7 +1393,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("openExplorer").addEventListener("click", () => {
     shell.openExternal(
       "https://explorer.freedata.app/?myCall=" +
-        document.getElementById("myCall").value
+        document.getElementById("myCall").value,
     );
   });
 
@@ -1438,7 +1432,7 @@ window.addEventListener("DOMContentLoaded", () => {
     var tci_port = document.getElementById("tci_port").value;
 
     var hamlib_rigctld_server_port = document.getElementById(
-      "hamlib_rigctld_server_port"
+      "hamlib_rigctld_server_port",
     ).value;
 
     var deviceid = document.getElementById("hamlib_deviceid").value;
@@ -1462,15 +1456,15 @@ window.addEventListener("DOMContentLoaded", () => {
     var handshake = document.getElementById("hamlib_handshake").value;
     var tx_delay = document.getElementById("tx_delay").value;
 
-      if (document.getElementById("enableMeshSwitch").checked == true) {
-    var enable_mesh_features = "True";
-              document.getElementById("liMeshTable").style.visibility = "visible";
-    document.getElementById("liMeshTable").style.display = "block";
-  } else {
-        var enable_mesh_features = "False";
-    document.getElementById("liMeshTable").style.visibility = "hidden";
-    document.getElementById("liMeshTable").style.display = "none";
-  }
+    if (document.getElementById("enableMeshSwitch").checked == true) {
+      var enable_mesh_features = "True";
+      document.getElementById("liMeshTable").style.visibility = "visible";
+      document.getElementById("liMeshTable").style.display = "block";
+    } else {
+      var enable_mesh_features = "False";
+      document.getElementById("liMeshTable").style.visibility = "hidden";
+      document.getElementById("liMeshTable").style.display = "none";
+    }
 
     if (document.getElementById("scatterSwitch").checked == true) {
       var enable_scatter = "True";
@@ -1598,7 +1592,7 @@ window.addEventListener("DOMContentLoaded", () => {
     ) {
       if (
         !window.confirm(
-          "Rig control is set to hamlib/rigctl, but it doesn't appear to be running.\n\nPlease start rigctld (start button in Rig Control area), or use rigctl mode 'none'.  If you're having issues starting rigctld please review the Hamlib tab in settings.\n\nClick OK to continue or cancel to abort."
+          "Rig control is set to hamlib/rigctl, but it doesn't appear to be running.\n\nPlease start rigctld (start button in Rig Control area), or use rigctl mode 'none'.  If you're having issues starting rigctld please review the Hamlib tab in settings.\n\nClick OK to continue or cancel to abort.",
         )
       ) {
         return;
@@ -1636,7 +1630,7 @@ window.addEventListener("DOMContentLoaded", () => {
       tx_delay,
       tci_ip,
       tci_port,
-      enable_mesh_features
+      enable_mesh_features,
     );
   });
 
@@ -1693,7 +1687,7 @@ window.addEventListener("DOMContentLoaded", () => {
       stop_bits,
       handshake,
       rigctld_ip,
-      rigctld_port
+      rigctld_port,
     );
   });
 
@@ -1803,20 +1797,14 @@ window.addEventListener("DOMContentLoaded", () => {
     resetSortIcon();
   });
 
-
-
-
-    autostart_rigctld();
-
-
-
+  autostart_rigctld();
 });
 //End of domcontentloaded
 
 function resetSortIcon() {
   document.getElementById("hslSort").remove();
   let headers = document.querySelectorAll(
-    "#tblHeardStationList > thead > tr > th"
+    "#tblHeardStationList > thead > tr > th",
   );
   if (hslLastSortDir == "desc") text = "bi-sort-up";
   else text = "bi-sort-down";
@@ -1857,8 +1845,8 @@ function connectedStation(data) {
 }
 
 //Called by chat to turn off db clean spinner
-ipcRenderer.on("action-update-dbclean-spinner",() =>{
-    document.getElementById("divCleanDBSpinner").classList.add("invisible");
+ipcRenderer.on("action-update-dbclean-spinner", () => {
+  document.getElementById("divCleanDBSpinner").classList.add("invisible");
 });
 //Listen for events caused by tnc 'tnc-message' rx
 ipcRenderer.on("action-update-reception-status", (event, arg) => {
@@ -1917,7 +1905,7 @@ ipcRenderer.on("action-update-reception-status", (event, arg) => {
     compress = 1;
   }
   var arq_bytes_per_minute_compressed = Math.round(
-    arq_bytes_per_minute * compress
+    arq_bytes_per_minute * compress,
   );
   console.log(arq_bytes_per_minute);
   time_left +=
@@ -1986,7 +1974,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
     compress = 1;
   }
   var arq_bytes_per_minute_compressed = Math.round(
-    arq_bytes_per_minute * compress
+    arq_bytes_per_minute * compress,
   );
 
   time_left +=
@@ -2507,7 +2495,7 @@ function updateHeardStations(arg) {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
-      }
+      },
     );
     //var hours = date.getHours();
     //var minutes = "0" + date.getMinutes();
@@ -2548,8 +2536,8 @@ function updateHeardStations(arg) {
           parseInt(
             distance(
               document.getElementById("myGrid").value,
-              arg.stations[i]["dxgrid"]
-            )
+              arg.stations[i]["dxgrid"],
+            ),
           ) + " km";
       } else {
         gridDistanceText.innerText = "---";
@@ -2807,22 +2795,22 @@ ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
     // collapse settings screen
     var collapseFirstRow = new bootstrap.Collapse(
       document.getElementById("collapseFirstRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseFirstRow.hide();
     var collapseSecondRow = new bootstrap.Collapse(
       document.getElementById("collapseSecondRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseSecondRow.hide();
     var collapseThirdRow = new bootstrap.Collapse(
       document.getElementById("collapseThirdRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseThirdRow.show();
     var collapseFourthRow = new bootstrap.Collapse(
       document.getElementById("collapseFourthRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseFourthRow.show();
 
@@ -2848,22 +2836,22 @@ ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
     // collapse settings screen
     var collapseFirstRow = new bootstrap.Collapse(
       document.getElementById("collapseFirstRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseFirstRow.show();
     var collapseSecondRow = new bootstrap.Collapse(
       document.getElementById("collapseSecondRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseSecondRow.show();
     var collapseThirdRow = new bootstrap.Collapse(
       document.getElementById("collapseThirdRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseThirdRow.hide();
     var collapseFourthRow = new bootstrap.Collapse(
       document.getElementById("collapseFourthRow"),
-      { toggle: false }
+      { toggle: false },
     );
     collapseFourthRow.hide();
   }
@@ -2960,7 +2948,7 @@ ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
       },
       function (err) {
         console.log(err);
-      }
+      },
     );
 
     // write file to data folder
@@ -2997,7 +2985,6 @@ ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
 });
 
 ipcRenderer.on("run-tnc-command", (event, arg) => {
-
   if (arg.command == "save_my_call") {
     sock.saveMyCall(arg.callsign);
   }
@@ -3016,7 +3003,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
       arg.filename,
       arg.filetype,
       arg.data,
-      arg.checksum
+      arg.checksum,
     );
   }
   if (arg.command == "msg") {
@@ -3027,7 +3014,7 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
       arg.data,
       arg.checksum,
       arg.uuid,
-      arg.command
+      arg.command,
     );
   }
   if (arg.command == "broadcast") {
@@ -3078,11 +3065,9 @@ ipcRenderer.on("run-tnc-command", (event, arg) => {
     sock.sendResponseSharedFile(arg.dxcallsign, arg.file, arg.filedata);
   }
 
-    if (arg.command == "mesh_ping") {
+  if (arg.command == "mesh_ping") {
     sock.sendMeshPing(arg.dxcallsign);
   }
-
-
 });
 
 // IPC ACTION FOR AUTO UPDATER
@@ -3113,7 +3098,7 @@ ipcRenderer.on("action-updater", (event, arg) => {
       config.myCall,
       config.tnc_host,
       config.tnc_port,
-      " -v " + arg.version
+      " -v " + arg.version,
     );
     document.getElementById("updater_status").innerHTML =
       '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
@@ -3165,7 +3150,7 @@ ipcRenderer.on("action-show-cq-toast-transmitting", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = "transmitting cq"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 // fec iswriting received
@@ -3176,7 +3161,7 @@ ipcRenderer.on("action-show-fec-toast-iswriting", (event, data) => {
     (type = "success"),
     (icon = "bi-pencil-fill"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 // CQ RECEIVED
@@ -3189,7 +3174,7 @@ ipcRenderer.on("action-show-cq-toast-received", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3199,7 +3184,7 @@ ipcRenderer.on("action-show-qrv-toast-transmitting", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = "transmitting qrv"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3214,7 +3199,7 @@ ipcRenderer.on("action-show-qrv-toast-received", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3224,7 +3209,7 @@ ipcRenderer.on("action-show-beacon-toast-transmitting", (event, data) => {
     (type = "info"),
     (icon = "bi-broadcast"),
     (content = "transmitting beacon"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3238,7 +3223,7 @@ ipcRenderer.on("action-show-beacon-toast-received", (event, data) => {
     (type = "info"),
     (icon = "bi-broadcast"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3248,7 +3233,7 @@ ipcRenderer.on("action-show-ping-toast-transmitting", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = "transmitting ping"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3261,7 +3246,7 @@ ipcRenderer.on("action-show-ping-toast-received", (event, data) => {
     (type = "success"),
     (icon = "bi-broadcast"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3275,7 +3260,7 @@ ipcRenderer.on("action-show-ping-toast-received-ack", (event, data) => {
     (type = "success"),
     (icon = "bi-check"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3288,7 +3273,7 @@ ipcRenderer.on("action-show-arq-toast-datachannel-opening", (event, data) => {
     (type = "secondary"),
     (icon = "bi-arrow-left-right"),
     (content = content),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3298,7 +3283,7 @@ ipcRenderer.on("action-show-arq-toast-datachannel-waiting", (event, data) => {
     (type = "warning"),
     (icon = "bi-smartwatch"),
     (content = "channel busy - waiting..."),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3308,7 +3293,7 @@ ipcRenderer.on("action-show-arq-toast-datachannel-open", (event, data) => {
     (type = "success"),
     (icon = "bi-arrow-left-right"),
     (content = "datachannel open"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3323,9 +3308,9 @@ ipcRenderer.on(
       (type = "success"),
       (icon = "bi-arrow-left-right"),
       (content = content),
-      (duration = 5000)
+      (duration = 5000),
     );
-  }
+  },
 );
 
 // ARQ TRANSMISSION FAILED
@@ -3335,7 +3320,7 @@ ipcRenderer.on("action-show-arq-toast-transmission-failed", (event, data) => {
     (type = "danger"),
     (icon = "bi-arrow-left-right"),
     (content = "transmission failed"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3347,9 +3332,9 @@ ipcRenderer.on(
       (type = "danger"),
       (icon = "bi-broadcast"),
       (content = "protocol version missmatch"),
-      (duration = 5000)
+      (duration = 5000),
     );
-  }
+  },
 );
 
 // ARQ TRANSMISSION STOPPED
@@ -3359,7 +3344,7 @@ ipcRenderer.on("action-show-arq-toast-transmission-stopped", (event, data) => {
     (type = "success"),
     (icon = "bi-arrow-left-right"),
     (content = "transmission stopped"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3370,7 +3355,7 @@ ipcRenderer.on("action-show-arq-toast-transmission-failed", (event, data) => {
     (type = "danger"),
     (icon = "bi-broadcast"),
     (content = "arq transmission failed"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3384,9 +3369,9 @@ ipcRenderer.on(
       (type = "success"),
       (icon = "bi-broadcast"),
       (content = "data transmitted"),
-      (duration = 5000)
+      (duration = 5000),
     );
-  }
+  },
 );
 
 // ARQ TRANSMISSION TRANSMITTING
@@ -3400,21 +3385,21 @@ ipcRenderer.on(
         (type = "warning"),
         (icon = "bi-broadcast"),
         (content = "low link margin: <strong>" + irs_snr + " dB</strong>"),
-        (duration = 5000)
+        (duration = 5000),
       );
     } else if (irs_snr > 0 && irs_snr <= 5) {
       displayToast(
         (type = "warning"),
         (icon = "bi-broadcast"),
         (content = "medium link margin: <strong>" + irs_snr + " dB</strong>"),
-        (duration = 5000)
+        (duration = 5000),
       );
     } else if (irs_snr > 5 && irs_snr < 12.7) {
       displayToast(
         (type = "success"),
         (icon = "bi-broadcast"),
         (content = "high link margin: <strong>" + irs_snr + " dB</strong>"),
-        (duration = 5000)
+        (duration = 5000),
       );
     } else if (irs_snr >= 12.7) {
       displayToast(
@@ -3422,12 +3407,12 @@ ipcRenderer.on(
         (icon = "bi-broadcast"),
         (content =
           "very high link margin: <strong>" + irs_snr + " dB</strong>"),
-        (duration = 5000)
+        (duration = 5000),
       );
     } else {
       //displayToast(type='info', icon='bi-broadcast', content='no snr information', duration=5000);
     }
-  }
+  },
 );
 
 // ARQ TRANSMISSION RECEIVED
@@ -3437,7 +3422,7 @@ ipcRenderer.on("action-show-arq-toast-transmission-received", (event, data) => {
     (type = "success"),
     (icon = "bi-check-circle"),
     (content = "all data received"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3449,9 +3434,9 @@ ipcRenderer.on(
       (type = "primary"),
       (icon = "bi-arrow-left-right"),
       (content = "session receiving"),
-      (duration = 5000)
+      (duration = 5000),
     );
-  }
+  },
 );
 
 // ARQ SESSION CONNECTING
@@ -3460,7 +3445,7 @@ ipcRenderer.on("action-show-arq-toast-session-connecting", (event, data) => {
     (type = "primary"),
     (icon = "bi-arrow-left-right"),
     (content = "connecting..."),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3470,7 +3455,7 @@ ipcRenderer.on("action-show-arq-toast-session-connected", (event, data) => {
     (type = "success"),
     (icon = "bi-arrow-left-right"),
     (content = "session connected"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3480,7 +3465,7 @@ ipcRenderer.on("action-show-arq-toast-session-waiting", (event, data) => {
     (type = "warning"),
     (icon = "bi-smartwatch"),
     (content = "session waiting..."),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3490,7 +3475,7 @@ ipcRenderer.on("action-show-arq-toast-session-close", (event, data) => {
     (type = "warning"),
     (icon = "bi-arrow-left-right"),
     (content = "session close"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3500,7 +3485,7 @@ ipcRenderer.on("action-show-arq-toast-session-failed", (event, data) => {
     (type = "danger"),
     (icon = "bi-arrow-left-right"),
     (content = "session failed"),
-    (duration = 5000)
+    (duration = 5000),
   );
 });
 
@@ -3565,7 +3550,7 @@ function updateTitle(
   mycall = config.mycall,
   tnc = config.tnc_host,
   tncport = config.tnc_port,
-  appender = ""
+  appender = "",
 ) {
   //Multiple consecutive  spaces get converted to a single space
   var title =
@@ -3657,7 +3642,7 @@ function displayToast(
   type = "primary",
   icon = "bi-info",
   content = "default",
-  duration = 5000
+  duration = 5000,
 ) {
   mainToastContainer = document.getElementById("mainToastContainer");
 
