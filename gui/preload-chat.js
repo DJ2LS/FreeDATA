@@ -2642,7 +2642,7 @@ function sendUserData(dxcallsign) {
 
   ipcRenderer.send("run-tnc-command", {
     command: "responseUserInfo",
-    dxcallsign: selected_callsign,
+    dxcallsign: dxcallsign,
     userinfo: info,
   });
 }
@@ -2877,6 +2877,7 @@ async function dbClean() {
     )
   ) {
   } else {
+    ipcRenderer.send("request-update-dbclean-spinner");
     return;
   }
 
