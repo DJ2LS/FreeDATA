@@ -78,7 +78,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
             dxcallText.innerText = routes[i]["dxcall"];
         }
 
-    dxcallText.appendChild(dxcallText);
+    dxcall.appendChild(dxcallText);
 
 
     var router = document.createElement("td");
@@ -95,7 +95,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
             routerText.innerText = routes[i]["router"];
         }
 
-    routerText.appendChild(routerText);
+    router.appendChild(routerText);
 
 
     var hops = document.createElement("td");
