@@ -67,36 +67,29 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
 
     var dxcall = document.createElement("td");
     var dxcallText = document.createElement("span");
+    dxcallText.innerText = routes[i]["dxcall"];
+
     // check for callsign in callsign list, else use checksum
-        try{
-            for (let call in callsigns) {
-                if(callsigns[call] == routes[i]["dxcall"]){
-                    dxcallText.innerText = routes[i]["dxcall"] + ' (' + call + ')';
-               }
-            }
-        } catch(e){
-            dxcallText.innerText = routes[i]["dxcall"];
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["dxcall"]){
+            dxcallText.innerText +=' (' + call + ')';
+            continue;
         }
-
+    }
     dxcall.appendChild(dxcallText);
-
 
     var router = document.createElement("td");
     var routerText = document.createElement("span");
     routerText.innerText = routes[i]["router"];
+    
     // check for callsign in callsign list, else use checksum
-        try{
-            for (let call in callsigns) {
-                if(callsigns[call] == routes[i]["router"]){
-                    routerText.innerText = routes[i]["router"] + ' (' + call + ')';
-               }
-            }
-        } catch(e){
-            routerText.innerText = routes[i]["router"];
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["router"]){
+            routerText.innerText +=  ' (' + call + ')';
+            continue;
         }
-
+    }
     router.appendChild(routerText);
-
 
     var hops = document.createElement("td");
     var hopsText = document.createElement("span");
@@ -158,19 +151,13 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     var destinationText = document.createElement("span");
     destinationText.innerText = routes[i]["destination"];
     // check for callsign in callsign list, else use checksum
-    try{
-        for (let call in callsigns) {
-            if(callsigns[call] == routes[i]["destination"]){
-                destinationText.innerText = routes[i]["destination"] + ' (' + call + ')';
-           }
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["destination"]){
+            destinationText.innerText += ' (' + call + ')';
+            continue;
         }
-    } catch(e){
-        destinationText.innerText = routes[i]["destination"];
     }
-
     destination.appendChild(destinationText);
-
-
 
     var router = document.createElement("td");
     var routerText = document.createElement("span");
@@ -206,11 +193,5 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     row.appendChild(status);
 
     tbl.appendChild(row);
-  }
-
-  if (tbl !== null) {
-    // scroll to bottom of page
-    // https://stackoverflow.com/a/11715670
-    //window.scrollTo(0, document.body.scrollHeight);
   }
 });
