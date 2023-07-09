@@ -159,10 +159,10 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     }
     destination.appendChild(destinationText);
 
-    var router = document.createElement("td");
-    var routerText = document.createElement("span");
-    routerText.innerText = routes[i]["router"];
-    router.appendChild(routerText);
+    var origin = document.createElement("td");
+    var originText = document.createElement("span");
+    originText.innerText = routes[i]["origin"];
+    origin.appendChild(originText);
 
     var frametype = document.createElement("td");
     var frametypeText = document.createElement("span");
@@ -186,7 +186,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
 
     row.appendChild(timestamp);
     row.appendChild(destination);
-    row.appendChild(router);
+    row.appendChild(origin);
     row.appendChild(frametype);
     row.appendChild(payload);
     row.appendChild(attempt);

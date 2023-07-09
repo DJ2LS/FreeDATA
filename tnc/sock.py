@@ -1219,7 +1219,7 @@ def send_tnc_state():
             {
                 "timestamp": MESH_SIGNALLING_TABLE[_][0],
                 "destination": MESH_SIGNALLING_TABLE[_][1],
-                "router": MESH_SIGNALLING_TABLE[_][2],
+                "origin": MESH_SIGNALLING_TABLE[_][2],
                 "frametype": MESH_SIGNALLING_TABLE[_][3],
                 "payload": MESH_SIGNALLING_TABLE[_][4],
                 "attempt": MESH_SIGNALLING_TABLE[_][5],
