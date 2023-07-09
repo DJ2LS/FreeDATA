@@ -264,7 +264,7 @@ class MeshRouter():
             data = MESH_QUEUE_TRANSMIT.get()
             #print(data)
             if data[0] == "PING":
-                self.add_mesh_ping_to_signalling_table(helpers.get_crc_24(data[2]).hex(), status="awaiting_ack")
+                self.add_mesh_ping_to_signalling_table(helpers.get_crc_24(data[2]).hex(), helpers.get_crc_24(data[3]).hex(), status="awaiting_ack")
             else:
                 print("wrong mesh command")
 
