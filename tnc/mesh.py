@@ -442,7 +442,7 @@ class MeshRouter():
         new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
-            if destination in item[1] and "PING" in item[3]:
+            if destination in item[1] and origin in item[2] and "PING" in item[3]:
                 # reset attempts if entry exists and it failed or is acknowledged
                 attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
                 update_entry = [item[0], destination, origin, "PING", "",attempt, status]
@@ -471,7 +471,7 @@ class MeshRouter():
 
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
-            if destination in item[1] and item[3] in ["PING", "PING-ACK"]:
+            if destination in item[1] and origin in item[2] and item[3] in ["PING", "PING-ACK"]:
                 # reset attempts if entry exists and it failed or is acknowledged
                 attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
                 update_entry = [item[0], destination, origin, "PING-ACK", "", attempt, status]
