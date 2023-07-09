@@ -162,6 +162,14 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     var origin = document.createElement("td");
     var originText = document.createElement("span");
     originText.innerText = routes[i]["origin"];
+    // check for callsign in callsign list, else use checksum
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["origin"]){
+            originText.innerText += ' (' + call + ')';
+            continue;
+        }
+    }
+
     origin.appendChild(originText);
 
     var frametype = document.createElement("td");
