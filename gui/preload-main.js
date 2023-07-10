@@ -3865,6 +3865,3 @@ function showOsPopUp(title, message) {
   const NOTIFICATION_BODY = message;
   new Notification(NOTIFICATION_TITLE, { body: NOTIFICATION_BODY });
 }
-
-
-

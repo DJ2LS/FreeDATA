@@ -14,7 +14,6 @@ const config = require(configPath);
 var callsignPath = path.join(configFolder, "callsigns.json");
 const callsigns = require(callsignPath);
 
-
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // startPing button clicked
@@ -71,23 +70,23 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
 
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["dxcall"]){
-            dxcallText.innerText +=' (' + call + ')';
-            continue;
-        }
+      if (callsigns[call] == routes[i]["dxcall"]) {
+        dxcallText.innerText += " (" + call + ")";
+        continue;
+      }
     }
     dxcall.appendChild(dxcallText);
 
     var router = document.createElement("td");
     var routerText = document.createElement("span");
     routerText.innerText = routes[i]["router"];
-    
+
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["router"]){
-            routerText.innerText +=  ' (' + call + ')';
-            continue;
-        }
+      if (callsigns[call] == routes[i]["router"]) {
+        routerText.innerText += " (" + call + ")";
+        continue;
+      }
     }
     router.appendChild(routerText);
 
@@ -152,10 +151,10 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     destinationText.innerText = routes[i]["destination"];
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["destination"]){
-            destinationText.innerText += ' (' + call + ')';
-            continue;
-        }
+      if (callsigns[call] == routes[i]["destination"]) {
+        destinationText.innerText += " (" + call + ")";
+        continue;
+      }
     }
     destination.appendChild(destinationText);
 
