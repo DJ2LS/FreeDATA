@@ -203,8 +203,12 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
         var status_icon = '<i class="bi bi-arrow-left-right"></i>'
         var status_color = 'bg-secondary'
         break;
+      case "awaiting_ack":
+        var status_icon = '<i class="bi bi-clock-history"></i>'
+        var status_color = 'bg-info'
+        break;
       default:
-        var status_icon = '<i class="bi bi-check2-all"></i>'
+        var status_icon = '<i class="bi bi-question-circle-fill"></i>'
         var status_color = 'bg-primary'
         break;
     }
