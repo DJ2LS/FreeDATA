@@ -394,7 +394,8 @@ class MeshRouter():
 
             # dxcallsign_crc = Station.mycallsign_crc
             self.transmit_mesh_signalling_ping_ack(bytes.fromhex(destination), bytes.fromhex(origin))
-
+        elif origin == Station.mycallsign_crc.hex():
+            pass
         else:
             self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             # lookup if entry is already in database - if so, udpate and exit
@@ -424,9 +425,9 @@ class MeshRouter():
 
 
         if destination == Station.mycallsign_crc.hex():
-            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
-            self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="sending_ack")
-
+            #self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
+            #self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="sending_ack")
+            pass
         elif origin == Station.mycallsign_crc.hex():
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="acknowledged")
