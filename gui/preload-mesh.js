@@ -11,6 +11,10 @@ var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
 const config = require(configPath);
 
+var callsignPath = path.join(configFolder, "callsigns.json");
+const callsigns = require(callsignPath);
+
+
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   // startPing button clicked
@@ -64,11 +68,27 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     var dxcall = document.createElement("td");
     var dxcallText = document.createElement("span");
     dxcallText.innerText = routes[i]["dxcall"];
+
+    // check for callsign in callsign list, else use checksum
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["dxcall"]){
+            dxcallText.innerText +=' (' + call + ')';
+            continue;
+        }
+    }
     dxcall.appendChild(dxcallText);
 
     var router = document.createElement("td");
     var routerText = document.createElement("span");
     routerText.innerText = routes[i]["router"];
+    
+    // check for callsign in callsign list, else use checksum
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["router"]){
+            routerText.innerText +=  ' (' + call + ')';
+            continue;
+        }
+    }
     router.appendChild(routerText);
 
     var hops = document.createElement("td");
@@ -98,7 +118,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
   /*-------------------------------------------*/
   var routes = arg.mesh_signalling_table;
 
-  console.log(routes);
+  //console.log(routes);
   if (typeof routes == "undefined") {
     return;
   }
@@ -130,6 +150,13 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     var destination = document.createElement("td");
     var destinationText = document.createElement("span");
     destinationText.innerText = routes[i]["destination"];
+    // check for callsign in callsign list, else use checksum
+    for (let call in callsigns) {
+        if(callsigns[call] == routes[i]["destination"]){
+            destinationText.innerText += ' (' + call + ')';
+            continue;
+        }
+    }
     destination.appendChild(destinationText);
 
     var router = document.createElement("td");
@@ -166,11 +193,5 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     row.appendChild(status);
 
     tbl.appendChild(row);
-  }
-
-  if (tbl !== null) {
-    // scroll to bottom of page
-    // https://stackoverflow.com/a/11715670
-    //window.scrollTo(0, document.body.scrollHeight);
   }
 });
