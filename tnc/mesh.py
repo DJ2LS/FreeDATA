@@ -257,7 +257,7 @@ class MeshRouter():
             if data[0] == "PING":
                 destination = helpers.get_crc_24(data[2]).hex()
                 origin = helpers.get_crc_24(data[1]).hex()
-                self.add_mesh_ping_to_signalling_table(destination, origin, status="awaiting_ack")
+                self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="awaiting_ack")
             else:
                 print("wrong mesh command")
 
@@ -275,9 +275,7 @@ class MeshRouter():
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
-                if entry[3] in ["PING", "PING-ACK"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
-
-
+                if entry[3] in ["PING"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
                     # Calculate the transmission time with exponential increase
                     #transmission_time = timestamp + (2 ** attempt) * 10
                     # Calculate transmission times for attempts 0 to 30 with stronger S-curves in minutes
@@ -294,6 +292,21 @@ class MeshRouter():
                             threading.Event().wait(0.01)
                         self.transmit_mesh_signalling_ping(bytes.fromhex(entry[1]), bytes.fromhex(entry[2]))
                     #print("...")
+                elif entry[3] in ["PING-ACK"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
+                    timestamp = entry[0]
+                    #transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
+                    transmission_time = timestamp + sum(self.transmission_time_list[:attempt])
+                    # check if it is time to transmit
+                    if time.time() >= transmission_time:
+                        entry[5] += 1
+                        self.log.info("[MESH] [TX] Ping ACK", destination=entry[1], origin=entry[2])
+                        channel_busy_timeout = time.time() + 5
+                        while ModemParam.channel_busy and time.time() < channel_busy_timeout:
+                            threading.Event().wait(0.01)
+                        self.transmit_mesh_signalling_ping_ack(bytes.fromhex(entry[1]), bytes.fromhex(entry[2]))
+                else:
+                    pass
+
 
     def received_routing_table(self, data_in):
         try:
@@ -373,7 +386,7 @@ class MeshRouter():
         if destination == Station.mycallsign_crc.hex():
             self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             # use case 1: set status to acknowleding if we are the receiver of a PING
-            self.add_mesh_ping_to_signalling_table(destination, origin, status="acknowledging")
+            self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING-ACK", status="acknowledging")
 
             channel_busy_timeout = time.time() + 5
             while ModemParam.channel_busy and time.time() < channel_busy_timeout:
@@ -388,12 +401,12 @@ class MeshRouter():
             for item in MESH_SIGNALLING_TABLE:
                 if item[1] == destination and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
-                    self.add_mesh_ping_to_signalling_table(destination, origin, status="forwarded")
+                    self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="forwarded")
                     return
 
             print("......................")
             # use case 1: set status to forwarding if we are not the receiver of a PING and we don't have an entry in our database
-            self.add_mesh_ping_to_signalling_table(destination, origin, status="forwarding")
+            self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="forwarding")
 
     def received_mesh_ping_ack(self, data_in):
         # TODO:
@@ -418,7 +431,7 @@ class MeshRouter():
             #self.add_mesh_ping_ack_to_signalling_table(destination, status)
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
             for item in MESH_SIGNALLING_TABLE:
-                if item[1] == destination and item[5] >= self.signalling_max_attempts:
+                if item[1] == destination and item[2] == origin and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
                     self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarded")
                     return
@@ -430,10 +443,10 @@ class MeshRouter():
         print(MESH_SIGNALLING_TABLE)
 
 
-    def add_mesh_ping_to_signalling_table(self, destination, origin, status):
+    def add_mesh_ping_to_signalling_table(self, destination, origin, frametype, status):
         timestamp = time.time()
         #router = ""
-        frametype = "PING"
+        #frametype = "PING"
         payload = ""
         attempt = 0
 
@@ -442,10 +455,10 @@ class MeshRouter():
         new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
-            if destination in item[1] and origin in item[2] and "PING" in item[3]:
+            if destination in item[1] and origin in item[2] and frametype in item[3]:
                 # reset attempts if entry exists and it failed or is acknowledged
                 attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
-                update_entry = [item[0], destination, origin, "PING", "",attempt, status]
+                update_entry = [item[0], destination, origin, frametype, "",attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
 
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
