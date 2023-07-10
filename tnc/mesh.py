@@ -425,6 +425,10 @@ class MeshRouter():
 
         if destination == Station.mycallsign_crc.hex():
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
+            self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="sending_ack")
+
+        elif origin == Station.mycallsign_crc.hex():
+            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="acknowledged")
         else:
             #status = "forwarding"
