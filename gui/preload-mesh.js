@@ -85,7 +85,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
         if(callsigns[call] == routes[i]["router"]){
-            routerText.innerText +=  ' (' + call + ')';
+            routerText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
             continue;
         }
     }
@@ -153,7 +153,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
         if(callsigns[call] == routes[i]["destination"]){
-            destinationText.innerText += ' (' + call + ')';
+            destinationText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
             continue;
         }
     }
@@ -165,7 +165,7 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
         if(callsigns[call] == routes[i]["origin"]){
-            originText.innerText += ' (' + call + ')';
+            originText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
             continue;
         }
     }
@@ -189,8 +189,35 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
 
     var status = document.createElement("td");
     var statusText = document.createElement("span");
-    statusText.innerText = routes[i]["status"];
+    //statusText.innerText = routes[i]["status"];
+    switch (routes[i]["status"]) {
+      case "acknowledged":
+        var status_icon = '<i class="bi bi-check-circle-fill"></i>'
+        var status_color = 'bg-success'
+        break;
+      case "acknowledging":
+        var status_icon = '<i class="bi bi-check-circle"></i>'
+        var status_color = 'bg-warning'
+        break;
+      case "forwarding":
+        var status_icon = '<i class="bi bi-arrow-left-right"></i>'
+        var status_color = 'bg-secondary'
+        break;
+      default:
+        var status_icon = '<i class="bi bi-check2-all"></i>'
+        var status_color = 'bg-primary'
+        break;
+    }
+
+    statusText.innerHTML = `
+        <span class="badge ${status_color}">${status_icon}</span>
+        <span class="badge ${status_color}">${routes[i]["status"]}</span>
+        `
     status.appendChild(statusText);
+
+
+
+
 
     row.appendChild(timestamp);
     row.appendChild(destination);
