@@ -271,6 +271,10 @@ class MeshRouter():
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
+                # if in arq state, interrupt dispatcher
+                if ARQ.arq_state or ARQ.arq_session:
+                    break
+
                 #print(entry)
                 attempt = entry[5]
                 status = entry[6]
