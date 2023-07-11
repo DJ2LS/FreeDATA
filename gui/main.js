@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain, dialog, shell } = require("electron");
-const https = require('https');
+const https = require("https");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const fs = require("fs");
@@ -1050,31 +1050,30 @@ ipcMain.on("request-check-rigctld", (event, data) => {
   }
 });
 
-
-
 function downloadJsonUrlToFile(url, callsignPath) {
-// https://nodejs.org/api/https.html#httpsgetoptions-callback
+  // https://nodejs.org/api/https.html#httpsgetoptions-callback
 
-https.get(url, (res) => {
-  console.log('statusCode:', res.statusCode);
-  console.log('headers:', res.headers);
+  https
+    .get(url, (res) => {
+      console.log("statusCode:", res.statusCode);
+      console.log("headers:", res.headers);
 
-  res.on('data', (d) => {
-    console.log(d);
-    let json = JSON.parse(d);
-    fs.writeFileSync(callsignPath, JSON.stringify(json, null, 2));
-  });
-
-    }).on('error', (e) => {
+      res.on("data", (d) => {
+        console.log(d);
+        let json = JSON.parse(d);
+        fs.writeFileSync(callsignPath, JSON.stringify(json, null, 2));
+      });
+    })
+    .on("error", (e) => {
       console.error(e);
     });
-
-
 }
-function downloadCallsignReverseLookupData(){
-    var callsignPath = path.join(configFolder, "callsigns.json");
-    downloadJsonUrlToFile('https://api.freedata.app/callsign_lookup.php', callsignPath)
+function downloadCallsignReverseLookupData() {
+  var callsignPath = path.join(configFolder, "callsigns.json");
+  downloadJsonUrlToFile(
+    "https://api.freedata.app/callsign_lookup.php",
+    callsignPath,
+  );
 }
 
 downloadCallsignReverseLookupData();
-
