@@ -83,11 +83,10 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
 
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["router"]){
-            routerText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
-            continue;
-        }
-
+      if (callsigns[call] == routes[i]["router"]) {
+        routerText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
+        continue;
+      }
     }
     router.appendChild(routerText);
 
@@ -152,11 +151,10 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     destinationText.innerText = routes[i]["destination"];
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["destination"]){
-            destinationText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
-            continue;
-        }
-
+      if (callsigns[call] == routes[i]["destination"]) {
+        destinationText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
+        continue;
+      }
     }
     destination.appendChild(destinationText);
 
@@ -165,10 +163,10 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     originText.innerText = routes[i]["origin"];
     // check for callsign in callsign list, else use checksum
     for (let call in callsigns) {
-        if(callsigns[call] == routes[i]["origin"]){
-            originText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
-            continue;
-        }
+      if (callsigns[call] == routes[i]["origin"]) {
+        originText.innerHTML += `<span class="badge ms-2 bg-secondary">${call}</span>`;
+        continue;
+      }
     }
 
     origin.appendChild(originText);
@@ -193,36 +191,32 @@ ipcRenderer.on("action-update-mesh-table", (event, arg) => {
     //statusText.innerText = routes[i]["status"];
     switch (routes[i]["status"]) {
       case "acknowledged":
-        var status_icon = '<i class="bi bi-check-circle-fill"></i>'
-        var status_color = 'bg-success'
+        var status_icon = '<i class="bi bi-check-circle-fill"></i>';
+        var status_color = "bg-success";
         break;
       case "acknowledging":
-        var status_icon = '<i class="bi bi-check-circle"></i>'
-        var status_color = 'bg-warning'
+        var status_icon = '<i class="bi bi-check-circle"></i>';
+        var status_color = "bg-warning";
         break;
       case "forwarding":
-        var status_icon = '<i class="bi bi-arrow-left-right"></i>'
-        var status_color = 'bg-secondary'
+        var status_icon = '<i class="bi bi-arrow-left-right"></i>';
+        var status_color = "bg-secondary";
         break;
       case "awaiting_ack":
-        var status_icon = '<i class="bi bi-clock-history"></i>'
-        var status_color = 'bg-info'
+        var status_icon = '<i class="bi bi-clock-history"></i>';
+        var status_color = "bg-info";
         break;
       default:
-        var status_icon = '<i class="bi bi-question-circle-fill"></i>'
-        var status_color = 'bg-primary'
+        var status_icon = '<i class="bi bi-question-circle-fill"></i>';
+        var status_color = "bg-primary";
         break;
     }
 
     statusText.innerHTML = `
         <span class="badge ${status_color}">${status_icon}</span>
         <span class="badge ${status_color}">${routes[i]["status"]}</span>
-        `
+        `;
     status.appendChild(statusText);
-
-
-
-
 
     row.appendChild(timestamp);
     row.appendChild(destination);
