@@ -53,46 +53,37 @@ class MeshRouter():
 
         self.log = structlog.get_logger("RF")
 
-        self.transmission_time_list = [
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360,
-            30, 30, 30, 60, 60, 60, 60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180,
-            360, 360, 360, 360, 360, 360
-        ]
+        self.transmission_time_list = [30, 60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
+                          360, 360, 360, 360,
+                          ]
         # for testing only: self.transmission_time_list = [30, 30]
         self.signalling_max_attempts = len(self.transmission_time_list)
 
@@ -264,27 +255,31 @@ class MeshRouter():
             data = MESH_QUEUE_TRANSMIT.get()
             #print(data)
             if data[0] == "PING":
-                self.add_mesh_ping_to_signalling_table(helpers.get_crc_24(data[2]).hex(), status="awaiting_ack")
+                destination = helpers.get_crc_24(data[2]).hex()
+                origin = helpers.get_crc_24(data[1]).hex()
+                self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="awaiting_ack")
             else:
                 print("wrong mesh command")
 
 
 
     def mesh_signalling_dispatcher(self):
-        #           [timestamp, destination, router, frametype, payload, attempt, status]
+        #           [timestamp, destination, origin, frametype, payload, attempt, status]
         # --------------0------------1---------2---------3--------4---------5--------6 #
 
 
         while True:
             threading.Event().wait(1.0)
             for entry in MESH_SIGNALLING_TABLE:
+                # if in arq state, interrupt dispatcher
+                if ARQ.arq_state or ARQ.arq_session:
+                    break
+
                 #print(entry)
                 attempt = entry[5]
                 status = entry[6]
                 # check for PING cases
-                if entry[3] in ["PING", "PING-ACK"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
-
-
+                if entry[3] in ["PING"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
                     # Calculate the transmission time with exponential increase
                     #transmission_time = timestamp + (2 ** attempt) * 10
                     # Calculate transmission times for attempts 0 to 30 with stronger S-curves in minutes
@@ -295,12 +290,27 @@ class MeshRouter():
                     # check if it is time to transmit
                     if time.time() >= transmission_time:
                         entry[5] += 1
-                        self.log.info("[MESH] [TX] Ping", destination=entry[1])
+                        self.log.info("[MESH] [TX] Ping", destination=entry[1], origin=entry[2])
                         channel_busy_timeout = time.time() + 5
                         while ModemParam.channel_busy and time.time() < channel_busy_timeout:
                             threading.Event().wait(0.01)
-                        self.transmit_mesh_signalling_ping(bytes.fromhex(entry[1]))
+                        self.transmit_mesh_signalling_ping(bytes.fromhex(entry[1]), bytes.fromhex(entry[2]))
                     #print("...")
+                elif entry[3] in ["PING-ACK"] and attempt < len(self.transmission_time_list) and status not in ["acknowledged"]:
+                    timestamp = entry[0]
+                    #transmission_time = timestamp + (4.5 / (1 + np.exp(-1. * (attempt - 5)))) * correction_factor * attempt
+                    transmission_time = timestamp + sum(self.transmission_time_list[:attempt])
+                    # check if it is time to transmit
+                    if time.time() >= transmission_time:
+                        entry[5] += 1
+                        self.log.info("[MESH] [TX] Ping ACK", destination=entry[1], origin=entry[2])
+                        channel_busy_timeout = time.time() + 5
+                        while ModemParam.channel_busy and time.time() < channel_busy_timeout:
+                            threading.Event().wait(0.01)
+                        self.transmit_mesh_signalling_ping_ack(bytes.fromhex(entry[1]), bytes.fromhex(entry[2]))
+                else:
+                    pass
+
 
     def received_routing_table(self, data_in):
         try:
@@ -376,30 +386,32 @@ class MeshRouter():
 
     def received_mesh_ping(self, data_in):
         destination = data_in[1:4].hex()
+        origin = data_in[4:7].hex()
         if destination == Station.mycallsign_crc.hex():
-            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
+            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             # use case 1: set status to acknowleding if we are the receiver of a PING
-            self.add_mesh_ping_to_signalling_table(destination, status="acknowledging")
+            self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING-ACK", status="acknowledging")
 
             channel_busy_timeout = time.time() + 5
             while ModemParam.channel_busy and time.time() < channel_busy_timeout:
                 threading.Event().wait(0.01)
 
-            dxcallsign_crc = Station.mycallsign_crc
-            self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
-
+            # dxcallsign_crc = Station.mycallsign_crc
+            self.transmit_mesh_signalling_ping_ack(bytes.fromhex(destination), bytes.fromhex(origin))
+        elif origin == Station.mycallsign_crc.hex():
+            pass
         else:
-            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, mycall=Station.mycallsign_crc.hex())
+            self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             # lookup if entry is already in database - if so, udpate and exit
             for item in MESH_SIGNALLING_TABLE:
                 if item[1] == destination and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
-                    self.add_mesh_ping_to_signalling_table(destination, status="forwarded")
+                    self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="forwarded")
                     return
 
             print("......................")
             # use case 1: set status to forwarding if we are not the receiver of a PING and we don't have an entry in our database
-            self.add_mesh_ping_to_signalling_table(destination, status="forwarding")
+            self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="forwarding")
 
     def received_mesh_ping_ack(self, data_in):
         # TODO:
@@ -408,49 +420,54 @@ class MeshRouter():
         # if not, then add to table
 
         destination = data_in[1:4].hex()
+        origin = data_in[4:7].hex()
         timestamp = time.time()
-        router = ""
+        #router = ""
         frametype = "PING-ACK"
         payload = ""
         attempt = 0
 
 
         if destination == Station.mycallsign_crc.hex():
-            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
-            self.add_mesh_ping_ack_to_signalling_table(destination, status="acknowledged")
+            #self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
+            #self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="sending_ack")
+            pass
+        elif origin == Station.mycallsign_crc.hex():
+            self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
+            self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="acknowledged")
         else:
             #status = "forwarding"
             #self.add_mesh_ping_ack_to_signalling_table(destination, status)
             self.log.info("[MESH] [RX] [PING] [ACK]", destination=destination, mycall=Station.mycallsign_crc.hex())
             for item in MESH_SIGNALLING_TABLE:
-                if item[1] == destination and item[5] >= self.signalling_max_attempts:
+                if item[1] == destination and item[2] == origin and item[5] >= self.signalling_max_attempts:
                     # use case 2: set status to forwarded if we are not the receiver of a PING and out of retries
                     self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarded")
                     return
 
-            self.add_mesh_ping_ack_to_signalling_table(destination, status="forwarding")
+            self.add_mesh_ping_ack_to_signalling_table(destination, origin, status="forwarding")
                 #dxcallsign_crc = bytes.fromhex(destination)
                 #self.transmit_mesh_signalling_ping_ack(dxcallsign_crc)
 
         print(MESH_SIGNALLING_TABLE)
 
 
-    def add_mesh_ping_to_signalling_table(self, destination, status):
+    def add_mesh_ping_to_signalling_table(self, destination, origin, frametype, status):
         timestamp = time.time()
-        router = ""
-        frametype = "PING"
+        #router = ""
+        #frametype = "PING"
         payload = ""
         attempt = 0
 
-        #           [timestamp, destination, router, frametype, payload, attempt, status]
+        #           [timestamp, destination, origin, frametype, payload, attempt, status]
         # --------------0------------1---------2---------3--------4---------5--------6-----#
-        new_entry = [timestamp, destination, router, frametype, payload, attempt, status]
+        new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
-            if destination in item[1] and "PING" in item[3]:
+            if destination in item[1] and origin in item[2] and frametype in item[3]:
                 # reset attempts if entry exists and it failed or is acknowledged
                 attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
-                update_entry = [item[0], destination, "", "PING", "",attempt, status]
+                update_entry = [item[0], destination, origin, frametype, "",attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
 
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
@@ -465,21 +482,21 @@ class MeshRouter():
 
             MESH_SIGNALLING_TABLE.append(new_entry)
 
-    def add_mesh_ping_ack_to_signalling_table(self, destination, status):
+    def add_mesh_ping_ack_to_signalling_table(self, destination, origin, status):
 
         timestamp = time.time()
-        router = ""
+        #router = ""
         frametype = "PING-ACK"
         payload = ""
         attempt = 0
-        new_entry = [timestamp, destination, router, frametype, payload, attempt, status]
+        new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
 
         for _, item in enumerate(MESH_SIGNALLING_TABLE):
             # update entry if exists
-            if destination in item[1] and item[3] in ["PING", "PING-ACK"]:
+            if destination in item[1] and origin in item[2] and item[3] in ["PING", "PING-ACK"]:
                 # reset attempts if entry exists and it failed or is acknowledged
                 attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
-                update_entry = [item[0], destination, "", "PING-ACK", "", attempt, status]
+                update_entry = [item[0], destination, origin, "PING-ACK", "", attempt, status]
                 #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
                 self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
 
@@ -528,27 +545,27 @@ class MeshRouter():
             threading.Event().wait(0.01)
 
 
-    def transmit_mesh_signalling_ping(self, dxcallsign_crc):
+    def transmit_mesh_signalling_ping(self, destination, origin):
 
         frame_type = bytes([FRAME_TYPE.MESH_SIGNALLING_PING.value])
 
         ping_frame = bytearray(14)
         ping_frame[:1] = frame_type
-        ping_frame[1:4] = dxcallsign_crc
-        ping_frame[4:7] = helpers.get_crc_24(Station.mycallsign)
+        ping_frame[1:4] = destination
+        ping_frame[4:7] = origin
         ping_frame[7:13] = helpers.callsign_to_bytes(Station.mycallsign)
 
         self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
 
-    def transmit_mesh_signalling_ping_ack(self, dxcallsign_crc):
+    def transmit_mesh_signalling_ping_ack(self, destination, origin):
         #dxcallsign_crc = bytes.fromhex(data[1])
 
         frame_type = bytes([FRAME_TYPE.MESH_SIGNALLING_PING_ACK.value])
 
         ping_frame = bytearray(14)
         ping_frame[:1] = frame_type
-        ping_frame[1:4] = dxcallsign_crc
-        #ping_frame[4:7] = helpers.get_crc_24(Station.mycallsign)
+        ping_frame[1:4] = destination
+        ping_frame[4:7] = origin
         #ping_frame[7:13] = helpers.callsign_to_bytes(Station.mycallsign)
 
         self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
