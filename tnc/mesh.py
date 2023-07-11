@@ -308,8 +308,6 @@ class MeshRouter():
                         while ModemParam.channel_busy and time.time() < channel_busy_timeout:
                             threading.Event().wait(0.01)
                         self.transmit_mesh_signalling_ping_ack(bytes.fromhex(entry[1]), bytes.fromhex(entry[2]))
-                else:
-                    pass
 
 
     def received_routing_table(self, data_in):
@@ -398,9 +396,7 @@ class MeshRouter():
 
             # dxcallsign_crc = Station.mycallsign_crc
             self.transmit_mesh_signalling_ping_ack(bytes.fromhex(destination), bytes.fromhex(origin))
-        elif origin == Station.mycallsign_crc.hex():
-            pass
-        else:
+        elif origin != Station.mycallsign_crc.hex():
             self.log.info("[MESH] [RX] [PING] [REQ]", destination=destination, origin=origin, mycall=Station.mycallsign_crc.hex())
             # lookup if entry is already in database - if so, udpate and exit
             for item in MESH_SIGNALLING_TABLE:
