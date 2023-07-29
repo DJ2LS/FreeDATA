@@ -145,10 +145,11 @@ var chatFilter = [
   //{ type: "response" },
 ];
 
-updateAllChat(false);
+
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
+  updateAllChat(false);
   // theme selector
   changeGuiDesign(config.theme);
 
