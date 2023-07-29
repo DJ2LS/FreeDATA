@@ -1072,6 +1072,19 @@ update_chat = function (obj) {
       obj.status = "failed";
     }
   }
+  // check if transmitting and @ 100%
+  if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent == 100) {
+      console.log(
+        "Resetting message to transmitted since in transmit state and at 100%:",
+      );
+      console.log(obj);
+      db.upsert(obj._id, function (doc) {
+        doc.status = "transmitted";
+        return doc;
+      });
+      obj.status = "transmitted";
+  }
+  
   if (typeof obj.new == "undefined") {
     obj.new = 0;
   }
