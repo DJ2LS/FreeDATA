@@ -219,7 +219,7 @@ window.addEventListener("DOMContentLoaded", () => {
     chatFilter.length = 0;
     if (document.getElementById("chkMessage").checked == true) {
       chatFilter = [{ type: "newchat" }];
-      chatFilter.push({ type: "received" }, { type: "transmit" });
+      chatFilter.push({ type: "received" }, { type: "transmit" },  { type: "broadcast_received" },{ type: "broadcast_transmit" });
     }
     if (document.getElementById("chkPing").checked == true)
       chatFilter.push({ type: "ping" });
