@@ -683,7 +683,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
 
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
-
+  if (data.status == "opening") return;
   if (typeof data.uuid === undefined) return;
 
   //console.log(data.status);
