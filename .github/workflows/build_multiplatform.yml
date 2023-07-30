@@ -174,7 +174,7 @@ jobs:
             cd build
             cmake ../
             make
-            mv ./src/libcodec2.so.1.1 /artifacts/${artifact_name}
+            mv ./src/libcodec2.so.1.2 /artifacts/${artifact_name}
 
       - name: Show recursive PWD/artifacts
         # Items placed in /artifacts in the container will be in
