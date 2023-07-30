@@ -1072,9 +1072,12 @@ update_chat = function (obj) {
       obj.status = "failed";
     }
   }
-  // check if transmitting and @ 100%
+  // check if in transmitting status and @ 100%
   if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent == 100) {
-      console.log(
+    var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
+    if (TimeDifference > 21600) {
+      //Six hours  
+    console.log(
         "Resetting message to transmitted since in transmit state and at 100%:",
       );
       console.log(obj);
@@ -1084,7 +1087,7 @@ update_chat = function (obj) {
       });
       obj.status = "transmitted";
   }
-  
+}
   if (typeof obj.new == "undefined") {
     obj.new = 0;
   }
