@@ -230,7 +230,7 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 18.17
+          node-version: '18.17.0'
 
       - name: Create tnc/dist
         working-directory: tnc
