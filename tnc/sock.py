@@ -780,9 +780,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 raise TypeError
 
             binarydata = base64.b64decode(base64data)
-
+            # check if hmac hash is provided
+            try:
+                hmac_salt = helpers.get_hmac_salt(dxcallsign, mycallsign)
+            except Exception:
+                hmac_salt = ''
             DATA_QUEUE_TRANSMIT.put(
-                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts]
+                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts, hmac_salt]
             )
 
         except Exception as err:

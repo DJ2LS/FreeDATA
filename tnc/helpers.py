@@ -489,3 +489,33 @@ def return_key_from_object(default, obj, key):
 
 def bool_to_string(state):
     return "True" if state else "False"
+
+
+
+
+def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
+    filename = f"freedata_hmac_tokens_{int(time.time())}_{dxcallsign}_{mycallsign}.txt"
+    try:
+        with open(filename, "w") as file:
+            line = file.readlines()
+            hmac_salt = line[-1]
+            return hmac_salt if delete_last_line_from_hmac_list(filename) else False
+    except Exception:
+        return False
+
+def delete_last_line_from_hmac_list(filename):
+    try:
+        linearray = []
+        with open(filename, "r") as file:
+            linearray = file.readlines()[:-1]
+            print(linearray)
+
+        with open(filename, "w") as file:
+            print(linearray)
+            for line in linearray:
+                file.write(line)
+
+        return True
+
+    except Exception:
+        return False

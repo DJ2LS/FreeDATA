@@ -15,7 +15,8 @@ import time
 import uuid
 import lzma
 from random import randrange
-
+import hmac
+import hashlib
 import codec2
 import helpers
 import modem
@@ -326,7 +327,8 @@ class DATA:
                 # [3] mycallsign with ssid
                 # [4] dxcallsign with ssid
                 # [5] attempts
-                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5])
+                # [6] hmac salt hash
+                self.open_dc_and_transmit(data[1], data[2], data[3], data[4], data[5], data[6])
 
 
             elif data[0] == "FEC_IS_WRITING":
@@ -915,9 +917,18 @@ class DATA:
             data_frame = payload[9:]
             data_frame_crc_received = helpers.get_crc_32(data_frame)
 
-            # Check if data_frame_crc is equal with received crc
-            if data_frame_crc == data_frame_crc_received:
-                self.arq_process_received_data_frame(data_frame, snr)
+            # check if hmac signing enabled
+            if TNC.enable_hmac:
+                hmac_digest = hmac.new(TNC.hmac_salt, data_frame, hashlib.sha256).digest()[:4]
+                # now check if we have valid hmac signature
+                if hmac_digest == data_frame_crc_received:
+                    # hmac digest received
+                    self.arq_process_received_data_frame(data_frame, snr, signed=True)
+
+                else:
+                    # hmac signature wrong
+                    self.arq_process_received_data_frame(data_frame, snr, signed=False)
+
             else:
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -1018,7 +1029,7 @@ class DATA:
         # Update modes we are listening to
         self.set_listening_modes(False, True, self.mode_list[self.speed_level])
 
-    def arq_process_received_data_frame(self, data_frame, snr):
+    def arq_process_received_data_frame(self, data_frame, snr, signed):
         """
 
 
@@ -1029,7 +1040,7 @@ class DATA:
             self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
         )
         self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
-                      bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration)
+                      bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration, signed=signed)
 
         # Decompress the data frame
         data_frame_decompressed = lzma.decompress(data_frame)
@@ -1124,7 +1135,8 @@ class DATA:
             dxcallsign=str(Station.dxcallsign, "UTF-8"),
             dxgrid=str(Station.dxgrid, "UTF-8"),
             data=base64_data,
-            irs=helpers.bool_to_string(self.is_IRS)
+            irs=helpers.bool_to_string(self.is_IRS),
+            signed=signed
         )
 
         if TNC.enable_stats:
@@ -1149,7 +1161,7 @@ class DATA:
             snr=snr,
         )
 
-    def arq_transmit(self, data_out: bytes):
+    def arq_transmit(self, data_out: bytes, hmac_salt: str):
         """
         Transmit ARQ frame
 
@@ -1203,9 +1215,18 @@ class DATA:
         tx_start_of_transmission = time.time()
         self.calculate_transfer_rate_tx(tx_start_of_transmission, 0, len(data_out))
 
-        # Append a crc at the beginning and end of file indicators
-        frame_payload_crc = helpers.get_crc_32(data_out)
-        self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc.hex())
+        # check if hmac signature is available
+        if hmac_salt not in ['', False]:
+            # create hmac digest
+            hmac_digest = hmac.new(hmac_salt, data_out, hashlib.sha256).digest()
+            # truncate to 32bit
+            frame_payload_crc = hmac_digest[:4]
+            self.log.debug("[TNC] frame payload HMAC:", crc=frame_payload_crc.hex())
+
+        else:
+            # Append a crc at the beginning and end of file indicators
+            frame_payload_crc = helpers.get_crc_32(data_out)
+            self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc.hex())
 
         # Assemble the data frame
         data_out = (
@@ -2060,6 +2081,7 @@ class DATA:
             mycallsign,
             dxcallsign,
             attempts: int,
+            hmac_salt: str
     ) -> bool:
         """
         Open data channel and transmit data
@@ -2108,11 +2130,11 @@ class DATA:
             threading.Event().wait(0.01)
 
         if ARQ.arq_state:
-            self.arq_transmit(data_out)
+            self.arq_transmit(data_out, hmac_salt)
             return True
 
         return False
-
+arq_transmit
     def arq_open_data_channel(
             self, mycallsign
     ) -> bool:
