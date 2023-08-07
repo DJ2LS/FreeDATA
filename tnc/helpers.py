@@ -496,9 +496,10 @@ def bool_to_string(state):
 
 
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
-    filename = f"freedata_hmac_tokens_{dxcallsign}_{mycallsign}.txt"
+    filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
+    print(f"looking for file {filename}")
     try:
-        with open(filename, "w") as file:
+        with open(filename, "r") as file:
             line = file.readlines()
             hmac_salt = line[-1]
             return hmac_salt if delete_last_line_from_hmac_list(filename, -1) else False
@@ -507,7 +508,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
     try:
-        filename = f"freedata_hmac_tokens_{dxcallsign}_{mycallsign}.txt"
+        filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
         with open(filename, "w") as file:
             token_list = file.readlines()
 

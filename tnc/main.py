@@ -256,8 +256,8 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--hmac",
         dest="hmac_salt",
-        type=str,
-        default="False",
+        action="store_true",
+        default=True,
         help="Enable and set hmac message salt",
     )
 
@@ -315,12 +315,8 @@ if __name__ == "__main__":
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
             MeshParam.enable_protocol = ARGS.enable_mesh
-            if ARGS.hmac_salt not in ["False"]:
-                TNC.hmac_salt = ARGS.hmac_salt
-                TNC.enable_hmac = False
-            else:
-                TNC.hmac_salt = ''
-                TNC.enable_hmac = False
+            TNC.enable_hmac = False
+
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)

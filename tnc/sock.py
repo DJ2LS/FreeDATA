@@ -782,8 +782,11 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             binarydata = base64.b64decode(base64data)
             # check if hmac hash is provided
             try:
+                print("looking for hmac salt...")
                 hmac_salt = helpers.get_hmac_salt(dxcallsign, mycallsign)
+                print(f" ... {hmac_salt}")
             except Exception:
+                print("no hmac salt found...")
                 hmac_salt = ''
             DATA_QUEUE_TRANSMIT.put(
                 ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts, hmac_salt]

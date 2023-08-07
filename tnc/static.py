@@ -144,7 +144,6 @@ class TNC:
     heard_stations = []
     listen: bool = True
     enable_hmac: bool = False
-    hmac_salt: str = ''
 
     # ------------
 
