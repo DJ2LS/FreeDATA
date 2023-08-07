@@ -501,7 +501,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
         with open(filename, "w") as file:
             line = file.readlines()
             hmac_salt = line[-1]
-            return hmac_salt if delete_last_line_from_hmac_list(filename) else False
+            return hmac_salt if delete_last_line_from_hmac_list(filename, -1) else False
     except Exception:
         return False
 
@@ -516,6 +516,8 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                 key = token_list[len(token_list) - _][:-1]
                 search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
                 if search_token == search_digest:
+                    token_position = len(token_list) - _
+                    delete_last_line_from_hmac_list(filename, token_position)
                     return True
 
         return False
@@ -524,11 +526,11 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
         return False
 
 
-def delete_last_line_from_hmac_list(filename):
+def delete_last_line_from_hmac_list(filename, position):
     try:
         linearray = []
         with open(filename, "r") as file:
-            linearray = file.readlines()[:-1]
+            linearray = file.readlines()[:position]
             print(linearray)
 
         with open(filename, "w") as file:
