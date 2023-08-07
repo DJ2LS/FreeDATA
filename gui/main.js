@@ -1062,7 +1062,9 @@ function downloadJsonUrlToFile(url, callsignPath) {
         //console.log(d);
         let json = JSON.parse(d);
         fs.writeFileSync(callsignPath, JSON.stringify(json, null, 2));
-        sysInfo.info("Download " + url +" return statuscode: " + res.statusCode);
+        sysInfo.info(
+          "Download " + url + " return statuscode: " + res.statusCode,
+        );
       });
     })
     .on("error", (e) => {

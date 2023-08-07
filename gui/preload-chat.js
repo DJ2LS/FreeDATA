@@ -145,8 +145,6 @@ var chatFilter = [
   //{ type: "response" },
 ];
 
-
-
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
   updateAllChat(false);
@@ -219,7 +217,12 @@ window.addEventListener("DOMContentLoaded", () => {
     chatFilter.length = 0;
     if (document.getElementById("chkMessage").checked == true) {
       chatFilter = [{ type: "newchat" }];
-      chatFilter.push({ type: "received" }, { type: "transmit" },  { type: "broadcast_received" },{ type: "broadcast_transmit" });
+      chatFilter.push(
+        { type: "received" },
+        { type: "transmit" },
+        { type: "broadcast_received" },
+        { type: "broadcast_transmit" },
+      );
     }
     if (document.getElementById("chkPing").checked == true)
       chatFilter.push({ type: "ping" });
@@ -1073,11 +1076,15 @@ update_chat = function (obj) {
     }
   }
   // check if in transmitting status and @ 100%
-  if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent == 100) {
+  if (
+    obj.status == "transmitting" &&
+    obj.type == "transmit" &&
+    obj.percent == 100
+  ) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
     if (TimeDifference > 21600) {
-      //Six hours  
-    console.log(
+      //Six hours
+      console.log(
         "Resetting message to transmitted since in transmit state and at 100%:",
       );
       console.log(obj);
@@ -1086,8 +1093,8 @@ update_chat = function (obj) {
         return doc;
       });
       obj.status = "transmitted";
+    }
   }
-}
   if (typeof obj.new == "undefined") {
     obj.new = 0;
   }
