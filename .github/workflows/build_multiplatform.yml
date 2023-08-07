@@ -14,28 +14,28 @@ jobs:
         include:
 
           - os: ubuntu-20.04
-            libcodec2_name: libcodec2.so.1.1
+            libcodec2_name: libcodec2.so.1.2
             libcodec2_os_name: libcodec2_ubuntu-2004
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: ubuntu-22.04
-            libcodec2_name: libcodec2.so.1.1
+            libcodec2_name: libcodec2.so.1.2
             libcodec2_os_name: libcodec2_ubuntu-2204
             libcodec2_filetype: so
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-11
-            libcodec2_name: libcodec2.1.1.dylib
+            libcodec2_name: libcodec2.1.2.dylib
             libcodec2_os_name: libcodec2_macos-11
             libcodec2_filetype: dylib
             generator: Unix Makefiles
             shell: bash
 
           - os: macos-12
-            libcodec2_name: libcodec2.1.1.dylib
+            libcodec2_name: libcodec2.1.2.dylib
             libcodec2_os_name: libcodec2_macos-12
             libcodec2_filetype: dylib
             generator: Unix Makefiles
@@ -51,7 +51,7 @@ jobs:
           mkdir build
           mkdir tempfiles
           cd build
-          cmake ../
+          cmake -DCMAKE_BUILD_TYPE=Release ../
           make
           mv src/${{ matrix.libcodec2_name }} ../tempfiles/libcodec2_${{ matrix.os }}_${{ matrix.platform.name }}.${{ matrix.libcodec2_filetype }}
 
@@ -84,7 +84,7 @@ jobs:
           echo 'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)' >> toolchain-ubuntu-mingw32.cmake
           echo 'set(CMAKE_SHARED_LINKER_FLAGS "-static-libgcc -static-libstdc++ -static")' >> toolchain-ubuntu-mingw32.cmake
-          cmake -G "Unix Makefiles" -DCMAKE_TOOLCHAIN_FILE=toolchain-ubuntu-mingw32.cmake ..
+          cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=toolchain-ubuntu-mingw32.cmake ..
           make
           mv src/libcodec2.${{ matrix.platform.file }} ../tempfiles/libcodec2_${{ matrix.platform.name }}_${{ matrix.architecture }}.${{ matrix.platform.file }}
 
@@ -169,12 +169,12 @@ jobs:
 
             git clone https://github.com/drowe67/codec2.git
             cd codec2
-            git checkout master
+            git checkout main
             mkdir build
             cd build
             cmake ../
             make
-            mv ./src/libcodec2.so.1.1 /artifacts/${artifact_name}
+            mv ./src/libcodec2.so.1.2 /artifacts/${artifact_name}
 
       - name: Show recursive PWD/artifacts
         # Items placed in /artifacts in the container will be in
@@ -222,15 +222,15 @@ jobs:
         with:
           repository: DJ2LS/FreeDATA
 
-      - name: Set up Python 3.10
+      - name: Set up Python 3.11
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 18.17
 
       - name: Create tnc/dist
         working-directory: tnc
@@ -363,10 +363,11 @@ jobs:
           find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+        uses: coparse-inc/action-electron-builder@v1.0.0
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         with:
           package_root: "./gui/"
           github_token: ${{ secrets.github_token }}

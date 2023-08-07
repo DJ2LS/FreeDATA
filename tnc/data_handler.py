@@ -1003,6 +1003,7 @@ class DATA:
             return True
 
     def arq_calculate_speed_level(self, snr):
+        current_speed_level = self.speed_level
         self.frame_received_counter += 1
         # try increasing speed level only if we had two successful decodes
         if self.frame_received_counter >= 2:
@@ -1023,7 +1024,7 @@ class DATA:
 
             # calculate if speed level fits to busy condition
             if not self.check_if_mode_fits_to_busy_slot():
-                self.speed_level = 0
+                self.speed_level = current_speed_level
 
             ARQ.arq_speed_level = self.speed_level
 

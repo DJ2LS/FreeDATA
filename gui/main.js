@@ -1055,13 +1055,16 @@ function downloadJsonUrlToFile(url, callsignPath) {
 
   https
     .get(url, (res) => {
-      console.log("statusCode:", res.statusCode);
-      console.log("headers:", res.headers);
+      //console.log("statusCode:", res.statusCode);
+      //console.log("headers:", res.headers);
 
       res.on("data", (d) => {
-        console.log(d);
+        //console.log(d);
         let json = JSON.parse(d);
         fs.writeFileSync(callsignPath, JSON.stringify(json, null, 2));
+        sysInfo.info(
+          "Download " + url + " return statuscode: " + res.statusCode,
+        );
       });
     })
     .on("error", (e) => {
@@ -1069,6 +1072,7 @@ function downloadJsonUrlToFile(url, callsignPath) {
     });
 }
 function downloadCallsignReverseLookupData() {
+  sysInfo.info("Downloading callsigns.json");
   var callsignPath = path.join(configFolder, "callsigns.json");
   downloadJsonUrlToFile(
     "https://api.freedata.app/callsign_lookup.php",
