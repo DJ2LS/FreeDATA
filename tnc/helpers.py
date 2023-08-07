@@ -13,6 +13,8 @@ import structlog
 import numpy as np
 import threading
 import mesh
+import hashlib
+import hmac
 
 log = structlog.get_logger("helpers")
 
@@ -494,7 +496,7 @@ def bool_to_string(state):
 
 
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
-    filename = f"freedata_hmac_tokens_{int(time.time())}_{dxcallsign}_{mycallsign}.txt"
+    filename = f"freedata_hmac_tokens_{dxcallsign}_{mycallsign}.txt"
     try:
         with open(filename, "w") as file:
             line = file.readlines()
@@ -502,6 +504,25 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
             return hmac_salt if delete_last_line_from_hmac_list(filename) else False
     except Exception:
         return False
+
+def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
+    try:
+        filename = f"freedata_hmac_tokens_{dxcallsign}_{mycallsign}.txt"
+        with open(filename, "w") as file:
+            token_list = file.readlines()
+
+            token_iters = min(token_iters, len(token_list))
+            for _ in range(1, token_iters + 1):
+                key = token_list[len(token_list) - _][:-1]
+                search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
+                if search_token == search_digest:
+                    return True
+
+        return False
+
+    except Exception:
+        return False
+
 
 def delete_last_line_from_hmac_list(filename):
     try:

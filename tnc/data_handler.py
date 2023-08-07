@@ -919,16 +919,17 @@ class DATA:
 
             # check if hmac signing enabled
             if TNC.enable_hmac:
-                hmac_digest = hmac.new(TNC.hmac_salt, data_frame, hashlib.sha256).digest()[:4]
                 # now check if we have valid hmac signature
-                if hmac_digest == data_frame_crc_received:
+                salt_found = helpers.search_hmac_salt(self.dxcallsign, self.mycallsign, data_frame_crc, token_iters=100)
+                if salt_found:
                     # hmac digest received
                     self.arq_process_received_data_frame(data_frame, snr, signed=True)
 
                 else:
                     # hmac signature wrong
                     self.arq_process_received_data_frame(data_frame, snr, signed=False)
-
+            elif data_frame_crc == data_frame_crc_received:
+                self.arq_process_received_data_frame(data_frame, snr, signed=False)
             else:
                 self.send_data_to_socket_queue(
                     freedata="tnc-message",
@@ -1289,7 +1290,7 @@ class DATA:
                 tempbuffer = []
                 self.rpt_request_buffer = []
                 # Append data frames with n_frames_per_burst to tempbuffer
-                for n_frame in range(0, n_frames_per_burst):
+                for n_frame in range(n_frames_per_burst):
                     arqheader = bytearray()
                     arqheader[:1] = bytes([FR_TYPE.BURST_01.value + n_frame])
                     #####arqheader[:1] = bytes([FR_TYPE.BURST_01.value])
@@ -1663,7 +1664,7 @@ class DATA:
         print(self.rpt_request_buffer)
 
         tempbuffer_rptframes = []
-        for i in range(0, len(missing_area)):
+        for i in range(len(missing_area)):
             print(missing_area[i])
             missing_frames_buffer_position = missing_area[i] - 1
             tempbuffer_rptframes.append(self.rpt_request_buffer[missing_frames_buffer_position])
@@ -2134,7 +2135,7 @@ class DATA:
             return True
 
         return False
-arq_transmit
+
     def arq_open_data_channel(
             self, mycallsign
     ) -> bool:

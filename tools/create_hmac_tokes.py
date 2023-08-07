@@ -17,9 +17,9 @@ def create_hmac_salts(dxcallsign: str, mycallsign: str, num_tokens: int = 10000)
     """
     try:
         # Create and write random strings to a file
-        with open(f"freedata_hmac_tokens_{int(time.time())}_{dxcallsign}_{mycallsign}.txt", "w") as file:
+        with open(f"freedata_hmac_tokens_{dxcallsign}_{mycallsign}.txt", "w") as file:
             for _ in range(num_tokens):
-                random_str = np.random.bytes(16).hex()
+                random_str = np.random.bytes(4).hex()
                 file.write(random_str + '\n')
     except Exception:
         print("error creating hmac file")
