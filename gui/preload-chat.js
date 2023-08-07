@@ -145,10 +145,11 @@ var chatFilter = [
   //{ type: "response" },
 ];
 
-updateAllChat(false);
+
 
 // WINDOW LISTENER
 window.addEventListener("DOMContentLoaded", () => {
+  updateAllChat(false);
   // theme selector
   changeGuiDesign(config.theme);
 
@@ -218,7 +219,7 @@ window.addEventListener("DOMContentLoaded", () => {
     chatFilter.length = 0;
     if (document.getElementById("chkMessage").checked == true) {
       chatFilter = [{ type: "newchat" }];
-      chatFilter.push({ type: "received" }, { type: "transmit" });
+      chatFilter.push({ type: "received" }, { type: "transmit" },  { type: "broadcast_received" },{ type: "broadcast_transmit" });
     }
     if (document.getElementById("chkPing").checked == true)
       chatFilter.push({ type: "ping" });
@@ -682,7 +683,7 @@ ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
 
   document.getElementById("txtConnectedWithChat").textContent = data.dxcallsign;
-
+  if (data.status == "opening") return;
   if (typeof data.uuid === undefined) return;
 
   //console.log(data.status);
@@ -1071,6 +1072,22 @@ update_chat = function (obj) {
       obj.status = "failed";
     }
   }
+  // check if in transmitting status and @ 100%
+  if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent == 100) {
+    var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
+    if (TimeDifference > 21600) {
+      //Six hours  
+    console.log(
+        "Resetting message to transmitted since in transmit state and at 100%:",
+      );
+      console.log(obj);
+      db.upsert(obj._id, function (doc) {
+        doc.status = "transmitted";
+        return doc;
+      });
+      obj.status = "transmitted";
+  }
+}
   if (typeof obj.new == "undefined") {
     obj.new = 0;
   }
@@ -2255,7 +2272,8 @@ async function updateAllChat(clear) {
 
 function getSetUserSharedFolder(selected_callsign) {
   // TODO: This is a dirty hotfix for avoiding, this function is canceld too fast.
-  console.log("get set user information:" + selected_callsign);
+  //Should be fixed
+  //console.log("get set user information:" + selected_callsign);
 
   if (
     selected_callsign == "" ||
@@ -2391,7 +2409,7 @@ function getSetUserSharedFolder(selected_callsign) {
 
 function getSetUserInformation(selected_callsign) {
   //Get user information
-  console.log("get set user information:" + selected_callsign);
+  //console.log("get set user information:" + selected_callsign);
 
   if (
     selected_callsign == "" ||
