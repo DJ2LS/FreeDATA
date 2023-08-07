@@ -363,7 +363,7 @@ jobs:
           find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
-        uses: dj2ls/action-electron-builder@v2
+        uses: dj2ls/action-electron-builder@v1
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
