@@ -363,10 +363,11 @@ jobs:
           find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+        uses: coparse-inc/action-electron-builder@v1.0.0
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         with:
           package_root: "./gui/"
           github_token: ${{ secrets.github_token }}
