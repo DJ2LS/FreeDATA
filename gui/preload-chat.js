@@ -1060,7 +1060,7 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmit" && obj.type == "transmit" && obj.percent < 100) {
+  if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent < 100) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
     if (TimeDifference > 21600) {
       //Six hours
