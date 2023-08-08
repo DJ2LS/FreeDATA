@@ -497,7 +497,8 @@ def bool_to_string(state):
 
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
     filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
-    print(f"looking for file {filename}")
+    log.info("[SCK] [HMAC] File lookup", file=filename)
+
     try:
         with open(filename, "r") as file:
             line = file.readlines()
