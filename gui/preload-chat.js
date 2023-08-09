@@ -1283,6 +1283,17 @@ update_chat = function (obj) {
         //get user information
         getSetUserInformation(selected_callsign);
         getSetUserSharedFolder(selected_callsign);
+        if (selected_callsign.startsWith("BC-")) {
+          document
+              .getElementById("chatModuleMessage")
+              .setAttribute("maxlength", 16);
+              //console.log("Setting max message size to 16")
+        } else {
+          document
+              .getElementById("chatModuleMessage")
+              .setAttribute("maxlength", 524288);
+              //console.log("Setting max message size to big#")
+        }
       });
 
     // if callsign entry already exists - update
@@ -2467,14 +2478,8 @@ function getSetUserInformation(selected_callsign) {
 
           if (selected_callsign.startsWith("BC-")) {
             var userIcon = defaultGroupIcon;
-            document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 16);
           } else {
             var userIcon = defaultUserIcon;
-            document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 524288);
           }
 
           document.getElementById("user-image-" + selected_callsign).src =
@@ -2536,15 +2541,9 @@ function getSetUserInformation(selected_callsign) {
       console.log(err);
 
       if (selected_callsign.startsWith("BC-")) {
-        document
-          .getElementById("chatModuleMessage")
-          .setAttribute("maxlength", 16);
         var userIcon = defaultGroupIcon;
       } else {
         var userIcon = defaultUserIcon;
-        document
-          .getElementById("chatModuleMessage")
-          .setAttribute("maxlength", 524288);
       }
 
       // Callsign list elements
