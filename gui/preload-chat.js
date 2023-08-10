@@ -2776,7 +2776,6 @@ function changeGuiDesign(design) {
 }
 
 function checkForWaitingMessages(dxcall) {
-  console.log(dxcall);
   db.find({
     selector: {
       dxcallsign: dxcall,
@@ -2786,6 +2785,7 @@ function checkForWaitingMessages(dxcall) {
     },
   })
     .then(function (result) {
+      console.log("Found " + result.docs.length + " messages waiting for " + dxcall)
       // handle result
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
@@ -2820,7 +2820,7 @@ function checkForWaitingMessages(dxcall) {
         }
         return;
       } else {
-        console.log("nope");
+        //console.log("nope");
       }
     })
     .catch(function (err) {
