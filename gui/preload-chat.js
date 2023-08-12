@@ -827,6 +827,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
+      // check for messages which failed and try to transmit them
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
 
       // handle ping-ack
     } else if (item.ping == "acknowledge") {
@@ -865,7 +869,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
-
+      // check for messages which failed and try to transmit them
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
       // handle ARQ transmission
     } else if (item.arq == "transmission" && item.status == "received") {
       //var encoded_data = atob(item.data);
@@ -904,6 +911,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
         obj.new = 0;
+        // check for messages which failed and try to transmit them
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
@@ -1322,10 +1330,6 @@ update_chat = function (obj) {
 
   if (!document.getElementById("msg-" + obj._id)) {
     if (obj.type == "ping") {
-      // check for messages which failed and try to transmit them
-      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-        checkForWaitingMessages(obj.dxcallsign);
-      }
       //if (obj.new == 1)
       //{
       // showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
@@ -1344,10 +1348,6 @@ update_chat = function (obj) {
             `;
     }
     if (obj.type == "beacon") {
-      // check for messages which failed and try to transmit them
-      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-        checkForWaitingMessages(obj.dxcallsign);
-      }
       var new_message = `
                 <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
