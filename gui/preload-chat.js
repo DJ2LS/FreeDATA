@@ -911,7 +911,6 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = "null";
         obj.file = "null";
         obj.new = 0;
-        // check for messages which failed and try to transmit them
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
         }
