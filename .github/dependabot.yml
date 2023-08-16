@@ -10,7 +10,7 @@ updates:
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/gui"
     schedule:
       interval: "daily"
    
