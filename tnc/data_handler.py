@@ -919,16 +919,20 @@ class DATA:
 
             # check if hmac signing enabled
             if TNC.enable_hmac:
-                # now check if we have valid hmac signature
-                salt_found = helpers.search_hmac_salt(self.dxcallsign, self.mycallsign, data_frame_crc, token_iters=100)
+                # now check if we have valid hmac signature - returns salt or bool
+                salt_found = helpers.search_hmac_salt(self.dxcallsign, self.mycallsign, data_frame_crc, data_frame, token_iters=100)
                 if salt_found:
                     # hmac digest received
                     self.arq_process_received_data_frame(data_frame, snr, signed=True)
 
                 else:
+
                     # hmac signature wrong
                     self.arq_process_received_data_frame(data_frame, snr, signed=False)
             elif data_frame_crc == data_frame_crc_received:
+                self.log.warning(
+                    "[TNC] [HMAC] Disabled, using CRC",
+                )
                 self.arq_process_received_data_frame(data_frame, snr, signed=False)
             else:
                 self.send_data_to_socket_queue(
@@ -1163,7 +1167,7 @@ class DATA:
             snr=snr,
         )
 
-    def arq_transmit(self, data_out: bytes, hmac_salt: str):
+    def arq_transmit(self, data_out: bytes, hmac_salt: bytes):
         """
         Transmit ARQ frame
 
@@ -1219,6 +1223,7 @@ class DATA:
 
         # check if hmac signature is available
         if hmac_salt not in ['', False]:
+            print(data_out)
             # create hmac digest
             hmac_digest = hmac.new(hmac_salt, data_out, hashlib.sha256).digest()
             # truncate to 32bit

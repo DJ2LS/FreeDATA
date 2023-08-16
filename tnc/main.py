@@ -255,7 +255,7 @@ if __name__ == "__main__":
 
     PARSER.add_argument(
         "--hmac",
-        dest="hmac_salt",
+        dest="enable_hmac",
         action="store_true",
         default=True,
         help="Enable and set hmac message salt",
@@ -315,7 +315,7 @@ if __name__ == "__main__":
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
             MeshParam.enable_protocol = ARGS.enable_mesh
-            TNC.enable_hmac = False
+            TNC.enable_hmac = ARGS.enable_hmac
 
 
         except Exception as e:

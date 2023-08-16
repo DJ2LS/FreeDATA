@@ -502,33 +502,55 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
     try:
         with open(filename, "r") as file:
             line = file.readlines()
-            hmac_salt = line[-1]
+            hmac_salt = bytes(line[-1], "utf-8").split(b'\n')
+            hmac_salt = hmac_salt[0]
             return hmac_salt if delete_last_line_from_hmac_list(filename, -1) else False
     except Exception:
         return False
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
+    print(data_frame)
     try:
         filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
-        with open(filename, "w") as file:
+        with open(filename, "r") as file:
             token_list = file.readlines()
 
             token_iters = min(token_iters, len(token_list))
             for _ in range(1, token_iters + 1):
                 key = token_list[len(token_list) - _][:-1]
+                key = bytes(key, "utf-8")
                 search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
+                print("-----------------------------------------")
+                print(_)
+                print(f" key-------------{key}")
+                print(f" key-------------{token_list[len(token_list) - _][:-1]}")
+                print(f" key-------------{key.hex()}")
+                print(f" search token----{search_token.hex()}")
+                print(f" search digest---{search_digest.hex()}")
                 if search_token == search_digest:
                     token_position = len(token_list) - _
                     delete_last_line_from_hmac_list(filename, token_position)
+                    log.warning(
+                        "[TNC] [HMAC] Signature found", expected=search_token,
+                    )
                     return True
 
+
+        log.warning(
+            "[TNC] [HMAC] Signature not found", expected=search_token,
+        )
         return False
 
-    except Exception:
+    except Exception as e:
+        log.warning(
+            "[TNC] [HMAC] Lookup failed", e=e, expected=search_token,
+        )
         return False
 
 
 def delete_last_line_from_hmac_list(filename, position):
+    # override
+    return True
     try:
         linearray = []
         with open(filename, "r") as file:
