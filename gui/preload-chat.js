@@ -59,7 +59,7 @@ ipcRenderer.send("read-files-in-folder", {
   folder: config.shared_folder_path,
 });
 
-var chatDB = path.join(configFolder, "chatDB");
+var chatDB = path.join(configFolder, "chatDB2");
 var userDB = path.join(configFolder, "userDB");
 // ---- MessageDB
 try {
@@ -80,25 +80,28 @@ PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
 PouchDB.plugin(require("pouchdb-upsert"));
 
-var db = new PouchDB(chatDB);
+
+
+//var db = new PouchDB(chatDB);
 var users = new PouchDB(userDB);
 
 /* -------- CREATE DATABASE INDEXES */
-createChatIndex();
+//createChatIndex();
 createUserIndex();
 
 // REMOTE SYNC ATTEMPTS
 
 //var remoteDB = new PouchDB('http://172.20.10.4:5984/chatDB')
-/*
+
 // we need express packages for running pouchdb sync "express-pouchdb"
 var express = require('express');
 var app = express();
-app.use('/chatDB', require('express-pouchdb')(PouchDB));
+app.use('/', require('express-pouchdb')(PouchDB));
 app.listen(5984);
+var db = new PouchDB(chatDB);
 
 
-
+/*
 
 app.use('/chatDB', require('pouchdb-express-router')(PouchDB));
 app.listen(5984);

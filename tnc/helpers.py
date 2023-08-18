@@ -15,6 +15,8 @@ import threading
 import mesh
 import hashlib
 import hmac
+import os
+import sys
 
 log = structlog.get_logger("helpers")
 
@@ -497,22 +499,59 @@ def bool_to_string(state):
 
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
     filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
-    log.info("[SCK] [HMAC] File lookup", file=filename)
+    if sys.platform == "linux":
+
+        filepath = './hmac/' + filename
+
+    elif sys.platform == "darwin":
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            filepath = './hmac/' + filename
+    elif sys.platform in ["win32", "win64"]:
+        filepath = filename
+        pass
+    else:
+        filepath = filename
+
+
+    # check if file exists else return false
+    if not check_if_file_exists(filepath):
+        return False
+
+    log.info("[SCK] [HMAC] File lookup", file=filepath)
 
     try:
-        with open(filename, "r") as file:
+        with open(filepath, "r") as file:
             line = file.readlines()
             hmac_salt = bytes(line[-1], "utf-8").split(b'\n')
             hmac_salt = hmac_salt[0]
-            return hmac_salt if delete_last_line_from_hmac_list(filename, -1) else False
+            return hmac_salt if delete_last_line_from_hmac_list(filepath, -1) else False
     except Exception:
         return False
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
-    print(data_frame)
+    filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
+    if sys.platform == "linux":
+
+        filepath = './hmac/' + filename
+
+    elif sys.platform == "darwin":
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            filepath = './hmac/' + filename
+    elif sys.platform in ["win32", "win64"]:
+        filepath = filename
+        pass
+    else:
+        filepath = filename
+    # check if file exists else return false
+    if not check_if_file_exists(filename):
+        return False
+
     try:
-        filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
-        with open(filename, "r") as file:
+        with open(filepath, "r") as file:
             token_list = file.readlines()
 
             token_iters = min(token_iters, len(token_list))
@@ -520,16 +559,17 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                 key = token_list[len(token_list) - _][:-1]
                 key = bytes(key, "utf-8")
                 search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
-                print("-----------------------------------------")
-                print(_)
-                print(f" key-------------{key}")
-                print(f" key-------------{token_list[len(token_list) - _][:-1]}")
-                print(f" key-------------{key.hex()}")
-                print(f" search token----{search_token.hex()}")
-                print(f" search digest---{search_digest.hex()}")
+                # TODO: Remove this debugging information if not needed anymore
+                # print("-----------------------------------------")
+                # print(_)
+                # print(f" key-------------{key}")
+                # print(f" key-------------{token_list[len(token_list) - _][:-1]}")
+                # print(f" key-------------{key.hex()}")
+                # print(f" search token----{search_token.hex()}")
+                # print(f" search digest---{search_digest.hex()}")
                 if search_token == search_digest:
                     token_position = len(token_list) - _
-                    delete_last_line_from_hmac_list(filename, token_position)
+                    delete_last_line_from_hmac_list(filepath, token_position)
                     log.warning(
                         "[TNC] [HMAC] Signature found", expected=search_token,
                     )
@@ -548,16 +588,18 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
         return False
 
 
-def delete_last_line_from_hmac_list(filename, position):
-    # override
-    return True
+def delete_last_line_from_hmac_list(filepath, position):
+    # check if file exists else return false
+    if not check_if_file_exists(filepath):
+        return False
+
     try:
         linearray = []
-        with open(filename, "r") as file:
+        with open(filepath, "r") as file:
             linearray = file.readlines()[:position]
             print(linearray)
 
-        with open(filename, "w") as file:
+        with open(filepath, "w") as file:
             print(linearray)
             for line in linearray:
                 file.write(line)
@@ -565,4 +607,13 @@ def delete_last_line_from_hmac_list(filename, position):
         return True
 
     except Exception:
+        return False
+
+def check_if_file_exists(path):
+    try:
+        return os.path.isfile(path)
+    except Exception as e:
+        log.warning(
+            "[TNC] [FILE] Lookup failed", e=e, path=path,
+        )
         return False
