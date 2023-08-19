@@ -1048,7 +1048,7 @@ class DATA:
             self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
         )
         self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
-                      bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration, signed=signed)
+                      bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration, hmac_signed=signed)
 
         # Decompress the data frame
         data_frame_decompressed = lzma.decompress(data_frame)
@@ -1144,7 +1144,7 @@ class DATA:
             dxgrid=str(Station.dxgrid, "UTF-8"),
             data=base64_data,
             irs=helpers.bool_to_string(self.is_IRS),
-            signed=signed
+            hmac_signed=signed
         )
 
         if TNC.enable_stats:

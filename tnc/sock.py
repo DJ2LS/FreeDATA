@@ -784,7 +784,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             try:
                 log.info("[SCK] [HMAC] Looking for salt/token", local=mycallsign, remote=dxcallsign)
                 hmac_salt = helpers.get_hmac_salt(dxcallsign, mycallsign)
-                log.info("[SCK] [HMAC] Salt found", local=mycallsign, remote=dxcallsign, salt=hmac_salt)
+                log.info("[SCK] [HMAC] Salt info", local=mycallsign, remote=dxcallsign, salt=hmac_salt)
             except Exception:
                 log.warning("[SCK] [HMAC] No salt/token found")
                 hmac_salt = ''
