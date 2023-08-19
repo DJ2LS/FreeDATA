@@ -597,10 +597,10 @@ def delete_last_line_from_hmac_list(filepath, position):
         linearray = []
         with open(filepath, "r") as file:
             linearray = file.readlines()[:position]
-            print(linearray)
+            #print(linearray)
 
         with open(filepath, "w") as file:
-            print(linearray)
+            #print(linearray)
             for line in linearray:
                 file.write(line)
 
