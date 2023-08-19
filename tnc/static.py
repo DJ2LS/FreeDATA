@@ -143,7 +143,7 @@ class TNC:
     respond_to_call: bool = True  # respond to cq, ping, connection request, file request if not in session
     heard_stations = []
     listen: bool = True
-    enable_hmac: bool = False
+    enable_hmac: bool = True
 
     # ------------
 
