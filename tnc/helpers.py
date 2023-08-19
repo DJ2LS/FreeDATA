@@ -611,7 +611,15 @@ def delete_last_line_from_hmac_list(filepath, position):
 
 def check_if_file_exists(path):
     try:
-        return os.path.isfile(path)
+        # check if file size is present and filesize > 0
+        if os.path.isfile(path):
+            filesize = os.path.getsize(path)
+            if filesize > 0:
+                return True
+            else:
+                return False
+        else:
+            return False
     except Exception as e:
         log.warning(
             "[TNC] [FILE] Lookup failed", e=e, path=path,
