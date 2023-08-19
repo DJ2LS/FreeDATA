@@ -23,7 +23,12 @@ def create_hmac_salts(dxcallsign: str, mycallsign: str, num_tokens: int = 10000)
             for _ in range(len(token_array)):
                 file.write(token_array[_] + '\n')
 
+        # Create and write random strings to a file
+        with open(f"freedata_hmac_STATION_{dxcallsign}_REMOTE_{mycallsign}.txt", "w") as file:
+            for _ in range(len(token_array)):
+                file.write(token_array[_] + '\n')
 
+        print("files created - place them in tnc/hmac folder and share the file with the remote station")
 
     except Exception:
         print("error creating hmac file")
