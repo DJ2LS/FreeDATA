@@ -820,7 +820,8 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.command = "ping";
       obj.checksum = "null";
       obj.msg = "null";
-      obj.status = item.status;
+      obj.status = item.status;      obj.hmac_signed = item.hmac_signed;
+
       obj.snr = item.snr;
       obj.type = "ping";
       obj.filename = "null";
@@ -893,6 +894,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filetype = splitted_data[7];
         //obj.file = btoa(splitted_data[8]);
         obj.file = FD.btoa_FD(splitted_data[8]);
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 1;
       } else if (splitted_data[1] == "req" && splitted_data[2] == "0") {
         obj.uuid = uuidv4().toString();
@@ -906,6 +908,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
         if (config.enable_request_profile == "True") {
           sendUserData(item.dxcallsign);
@@ -922,6 +925,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderList(item.dxcallsign);
@@ -943,6 +947,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
         if (config.enable_request_shared_folder == "True") {
           sendSharedFolderFile(item.dxcallsign, name);
@@ -959,6 +964,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
         console.log(splitted_data);
         let userData = new Object();
@@ -988,6 +994,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = "null";
         obj.filetype = "null";
         obj.file = "null";
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
         console.log(splitted_data);
 
@@ -1016,6 +1023,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
         obj.filename = sharedFileInfo[0];
         obj.filetype = "application/octet-stream";
         obj.file = FD.btoa_FD(sharedFileInfo[1]);
+        obj.hmac_signed = item.hmac_signed;
         obj.new = 0;
       } else {
         console.log("no rule matched for handling received data!");
@@ -1376,6 +1384,18 @@ update_chat = function (obj) {
         showOsPopUp("Message received from " + obj.dxcallsign, obj.msg);
       }
 
+
+     // check if message is signed or not for adjusting icon
+     if(typeof obj.hmac_signed !== "undefined" && obj.hmac_signed !== "False"){
+         console.log(hmac_signed)
+         var hmac_signed = '<i class="bi bi-shield-fill-check"></i>';
+     } else {
+
+     var hmac_signed = '<i class="bi bi-shield-x"></i>';
+
+     }
+
+
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
@@ -1390,6 +1410,17 @@ update_chat = function (obj) {
                             <span class="badge bg-light text-muted">${timestamp}</span>
 
                         </p>
+
+
+                        <span id="msg-${
+                          obj._id
+                        }-hmac-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
+
+                            <span id="msg-${
+                              obj._id
+                            }-hmac-signed" class="">${hmac_signed}</span>
+                        </span>
+
                       </div>
                     </div>
                 </div>
