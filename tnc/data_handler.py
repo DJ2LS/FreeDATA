@@ -1043,6 +1043,9 @@ class DATA:
 
         """
         # transmittion duration
+
+        signed = "True" if signed else "False"
+
         duration = time.time() - self.rx_start_of_transmission
         self.calculate_transfer_rate_rx(
             self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
