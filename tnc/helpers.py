@@ -501,22 +501,37 @@ def bool_to_string(state):
 
 
 def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
-    filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
-    if sys.platform == "linux":
+    filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
+    if sys.platform in ["linux"]:
 
-        filepath = './hmac/' + filename
-
-    elif sys.platform == "darwin":
         if hasattr(sys, "_MEIPASS"):
             filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
         else:
-            filepath = './hmac/' + filename
-    elif sys.platform in ["win32", "win64"]:
-        filepath = filename
-        pass
-    else:
-        filepath = filename
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
 
+
+    elif sys.platform in ["darwin"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+    elif sys.platform in ["win32", "win64"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+    else:
+        try:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+        except Exception as e:
+            log.error(
+                "[TNC] [HMAC] File lookup error", file=filepath,
+            )
 
     # check if file exists else return false
     if not check_if_file_exists(filepath):
@@ -530,7 +545,8 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
             hmac_salt = bytes(line[-1], "utf-8").split(b'\n')
             hmac_salt = hmac_salt[0]
             return hmac_salt if delete_last_line_from_hmac_list(filepath, -1) else False
-    except Exception:
+    except Exception as e:
+        log.warning("[SCK] [HMAC] File lookup failed", file=filepath, e=e)
         return False
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
@@ -591,17 +607,17 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                 # print(f" key-------------{key.hex()}")
                 # print(f" search token----{search_token.hex()}")
                 # print(f" search digest---{search_digest.hex()}")
-                if search_token == search_digest:
+                if search_token.hex() == search_digest.hex():
                     token_position = len(token_list) - _
                     delete_last_line_from_hmac_list(filepath, token_position)
                     log.info(
-                        "[TNC] [HMAC] Signature found", expected=search_token,
+                        "[TNC] [HMAC] Signature found", expected=search_token.hex(),
                     )
                     return True
 
 
         log.warning(
-            "[TNC] [HMAC] Signature not found", expected=search_token,
+            "[TNC] [HMAC] Signature not found", expected=search_token.hex(), filepath=filepath,
         )
         return False
 
