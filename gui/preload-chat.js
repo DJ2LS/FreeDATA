@@ -820,8 +820,8 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.command = "ping";
       obj.checksum = "null";
       obj.msg = "null";
-      obj.status = item.status;      obj.hmac_signed = item.hmac_signed;
-
+      obj.status = item.status;
+      obj.hmac_signed = item.hmac_signed;
       obj.snr = item.snr;
       obj.type = "ping";
       obj.filename = "null";
@@ -1009,7 +1009,7 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
         //getSetUserInformation(selected_callsign);
       } else if (splitted_data[1] == "res-2") {
-        console.log("In received respons-2");
+        console.log("In received response-2");
         let sharedFileInfo = splitted_data[2].split("/", 2);
 
         obj.uuid = uuidv4().toString();
@@ -1053,15 +1053,12 @@ update_chat = function (obj) {
       }
       return doc;
     });
-    obj.attempt = 1;
-  }
-
-  // define attempts
-  if (typeof obj.attempt == "undefined") {
     var attempt = 1;
+    obj.attempt = attempt;
   } else {
     var attempt = obj.attempt;
   }
+
 
   // add percent and bytes per minute if not existing
   //console.log(obj.percent)
@@ -2194,6 +2191,7 @@ function createChatIndex() {
         "status",
         "percent",
         "attempt",
+        "hmac_signed",
         "bytesperminute",
         "_attachments",
         "new",
