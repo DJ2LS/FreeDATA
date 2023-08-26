@@ -926,9 +926,7 @@ class DATA:
                 )
                 # now check if we have valid hmac signature - returns salt or bool
                 salt_found = helpers.search_hmac_salt(self.dxcallsign, self.mycallsign, data_frame_crc, data_frame, token_iters=100)
-                self.log.info(
-                    "[TNC] [HMAC] Salt found", salt=salt_found
-                )
+
                 if salt_found:
                     # hmac digest received
                     self.arq_process_received_data_frame(data_frame, snr, signed=True)

@@ -549,6 +549,9 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
         filepath = filename
     # check if file exists else return false
     if not check_if_file_exists(filename):
+        log.warning(
+            "[TNC] [HMAC] Token file not found", file=filename,
+        )
         return False
 
     try:
