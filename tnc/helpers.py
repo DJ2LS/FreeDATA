@@ -536,24 +536,41 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
 
     filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
-    if sys.platform == "linux":
-        subfolder = Path('hmac')
-        filepath = subfolder / filename
+    if sys.platform in ["linux"]:
 
-    elif sys.platform == "darwin":
         if hasattr(sys, "_MEIPASS"):
             filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
         else:
-            filepath = './hmac/' + filename
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+
+    elif sys.platform in ["darwin"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
     elif sys.platform in ["win32", "win64"]:
-        filepath = filename
-        pass
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
     else:
-        filepath = filename
+        try:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+        except Exception as e:
+            log.error(
+                "[TNC] [HMAC] File lookup error", file=filepath,
+            )
+
     # check if file exists else return false
-    if not check_if_file_exists(filename):
+    if not check_if_file_exists(filepath):
         log.warning(
-            "[TNC] [HMAC] Token file not found", file=filename,
+            "[TNC] [HMAC] Token file not found", file=filepath,
         )
         return False
 
