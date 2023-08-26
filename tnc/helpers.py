@@ -531,6 +531,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
         return False
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
+
     filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
     if sys.platform == "linux":
 
@@ -570,7 +571,7 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                 if search_token == search_digest:
                     token_position = len(token_list) - _
                     delete_last_line_from_hmac_list(filepath, token_position)
-                    log.warning(
+                    log.info(
                         "[TNC] [HMAC] Signature found", expected=search_token,
                     )
                     return True
