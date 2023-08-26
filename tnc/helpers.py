@@ -532,7 +532,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
 
 def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
 
-    filename = f"freedata_hmac_STATION_{dxcallsign.decode('utf-8')}_REMOTE_{mycallsign.decode('utf-8')}.txt"
+    filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
     if sys.platform == "linux":
 
         filepath = './hmac/' + filename
