@@ -17,6 +17,9 @@ import hashlib
 import hmac
 import os
 import sys
+from pathlib import Path
+
+
 
 log = structlog.get_logger("helpers")
 
@@ -534,8 +537,8 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
 
     filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
     if sys.platform == "linux":
-
-        filepath = './hmac/' + filename
+        subfolder = Path('hmac')
+        filepath = subfolder / filename
 
     elif sys.platform == "darwin":
         if hasattr(sys, "_MEIPASS"):
