@@ -1,7 +1,18 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+"""
+Created on 26.08.23
+
+@author: DJ2LS
+
+tool for generating HMAC tokens
+"""
+
+
 import argparse
 import numpy as np
 
-def create_hmac_salts(dxcallsign: str, mycallsign: str, num_tokens: int = 10000):
+def create_hmac_salts(dxcallsign: str, mycallsign: str, num_tokens: int):
     """
     Creates a file with tokens for hmac signing
 
@@ -40,9 +51,11 @@ if __name__ == "__main__":
 
     parser.add_argument('--dxcallsign', dest="dxcallsign", default='AA0AA', help="Select the destination callsign", type=str)
     parser.add_argument('--mycallsign', dest="mycallsign", default='AA0AA', help="Select the own callsign", type=str)
-    parser.add_argument('--tokens', dest="tokens", default='10000', help="Amount of tokens to create", type=int)
+    parser.add_argument('--tokens', dest="tokens", default=1000, help="Amount of tokens to create", type=int)
 
     args = parser.parse_args()
-
     create_hmac_salts(args.dxcallsign, args.mycallsign, int(args.tokens))
+
+
+
 
