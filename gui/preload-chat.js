@@ -1945,6 +1945,7 @@ add_obj_to_database = function (obj) {
     status: obj.status,
     snr: obj.snr,
     attempt: obj.attempt,
+    hmac_signed: obj.hmac_signed,
     new: obj.new,
     _attachments: {
       [obj.filename]: {
