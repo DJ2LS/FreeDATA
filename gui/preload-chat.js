@@ -1075,7 +1075,11 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmitting" && obj.type == "transmit" && obj.percent < 100) {
+  if (
+    obj.status == "transmitting" &&
+    obj.type == "transmit" &&
+    obj.percent < 100
+  ) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
     if (TimeDifference > 21600) {
       //Six hours
@@ -1300,14 +1304,14 @@ update_chat = function (obj) {
         getSetUserSharedFolder(selected_callsign);
         if (selected_callsign.startsWith("BC-")) {
           document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 16);
-              //console.log("Setting max message size to 16")
+            .getElementById("chatModuleMessage")
+            .setAttribute("maxlength", 16);
+          //console.log("Setting max message size to 16")
         } else {
           document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 524288);
-              //console.log("Setting max message size to big#")
+            .getElementById("chatModuleMessage")
+            .setAttribute("maxlength", 524288);
+          //console.log("Setting max message size to big#")
         }
       });
 
@@ -2817,7 +2821,9 @@ function checkForWaitingMessages(dxcall) {
     },
   })
     .then(function (result) {
-      console.log("Found " + result.docs.length + " messages waiting for " + dxcall)
+      console.log(
+        "Found " + result.docs.length + " messages waiting for " + dxcall,
+      );
       // handle result
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
