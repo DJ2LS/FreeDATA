@@ -1305,17 +1305,7 @@
 
     <div class="container-fluid m-0 p-0">
 
-            <div
-      class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5"
-      style="z-index: 100; display: none"
-      id="emojipickercontainer"
-    >
-      <emoji-picker
-        locale="en"
-        class="position-absolute bottom-0 end-0 p-1 mb-2"
-        data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
-      ></emoji-picker>
-    </div>
+
                 <! ------ chat navbar ---------------------------------------------------------------------->
 
       <nav class="navbar bg-body-tertiary border-bottom">
@@ -1606,12 +1596,32 @@
         </div>
         <div class="col-8 border-start vh-100 p-0">
 
+
+
+                   <div
+      class="position-absolute container bottom-0 end-0 mb-5"
+      style="z-index: 100; display: none"
+      id="emojipickercontainer"
+    >
+      <emoji-picker
+        locale="en"
+        class="position-absolute bottom-0 end-0 p-1 mb-2"
+        data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
+      ></emoji-picker>
+    </div>
+
+
           <! ------messages area ---------------------------------------------------------------------->
           <div
             class="container overflow-auto"
             id="message-container"
             style="height: calc(100% - 200px)"
           >
+
+
+
+
+
             <div class="tab-content" id="nav-tabContent-Chat"></div>
             <!--<div class="container position-absolute bottom-0">-->
           </div>
@@ -2151,6 +2161,7 @@
         </div>
       </div>
     </div>
+
 
 
       </div>

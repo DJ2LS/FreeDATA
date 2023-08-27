@@ -482,11 +482,11 @@ ipcMain.on("request-update-rx-buffer", (event, arg) => {
 
 /*
 ipcMain.on('request-update-rx-msg-buffer', (event, arg) => {
-    //chat.webContents.send('action-update-rx-msg-buffer', arg);
+    win.webContents.send('action-update-rx-msg-buffer', arg);
 });
 */
 ipcMain.on("request-new-msg-received", (event, arg) => {
-  //chat.webContents.send("action-new-msg-received", arg);
+  win.webContents.send("action-new-msg-received", arg);
 });
 ipcMain.on("request-update-transmission-status", (event, arg) => {
   //chat.webContents.send("action-update-transmission-status", arg);
@@ -501,7 +501,7 @@ ipcMain.on("request-update-reception-status", (event, arg) => {
 //Called by main to query chat if there are new messages
 ipcMain.on("request-update-unread-messages", () => {
   //mainLog.info("Got request to check if chat has new messages")
-  //chat.webContents.send("action-update-unread-messages");
+  win.webContents.send("action-update-unread-messages");
 });
 //Called by chat to notify main if there are new messages
 ipcMain.on("request-update-unread-messages-main", (event, arg) => {
@@ -511,7 +511,7 @@ ipcMain.on("request-update-unread-messages-main", (event, arg) => {
 
 //Called by main to notify chat we should clean the DB
 ipcMain.on("request-clean-db", () => {
-  //chat.webContents.send("action-clean-db");
+  win.webContents.send("action-clean-db");
 });
 
 ipcMain.on("request-open-tnc-log", () => {
@@ -583,13 +583,13 @@ ipcMain.on("select-file", (event, data) => {
           if (mimeType == "" || mimeType == null) {
             mimeType = "plain/text";
           }
-          /*
-          chat.webContents.send("return-selected-files", {
+
+          win.webContents.send("return-selected-files", {
             data: data,
             mime: mimeType,
             filename: filename,
           });
-          */
+
         });
       } catch (err) {
         console.log(err);
@@ -617,13 +617,13 @@ ipcMain.on("select-user-image", (event, data) => {
           if (mimeType == "" || mimeType == null) {
             mimeType = "plain/text";
           }
-          /*
-          chat.webContents.send("return-select-user-image", {
+
+          win.webContents.send("return-select-user-image", {
             data: data,
             mime: mimeType,
             filename: filename,
           });
-          */
+
         });
       } catch (err) {
         console.log(err);
@@ -636,11 +636,11 @@ ipcMain.on("read-files-in-folder", (event, data) => {
   let fileList = [];
   if (config["enable_request_shared_folder"].toLowerCase() == "false") {
     //mainLog.info("Shared file folder is disable, not populating fileList");
-    /*
-    chat.webContents.send("return-shared-folder-files", {
+
+    win.webContents.send("return-shared-folder-files", {
       files: fileList,
     });
-    */
+
     return;
   }
   let folder = data.folder;
@@ -663,11 +663,11 @@ ipcMain.on("read-files-in-folder", (event, data) => {
       console.log(err);
     }
   });
-    /*
-  chat.webContents.send("return-shared-folder-files", {
+
+  win.webContents.send("return-shared-folder-files", {
     files: fileList,
   });
-  */
+
 });
 
 //save file to folder
@@ -699,7 +699,7 @@ ipcMain.on("save-file-to-folder", (event, data) => {
 // FEC iswriting received
 ipcMain.on("request-show-fec-toast-iswriting", (event, data) => {
   win.webContents.send("action-show-fec-toast-iswriting", data);
-  //chat.webContents.send("action-show-feciswriting", data);
+  win.webContents.send("action-show-feciswriting", data);
 });
 
 // CQ TRANSMITTING
