@@ -345,7 +345,7 @@ window.addEventListener("DOMContentLoaded", () => {
         lines = 6;
       }
     }
-    var message_container_height_offset = 130 + 20 * lines;
+    var message_container_height_offset = 180 + 20 * lines;
     var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
     document.getElementById("message-container").style.height =
       message_container_height;
