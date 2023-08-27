@@ -6,6 +6,8 @@ const daemon = require("./daemon.js");
 
 
 require("./preload-chat.js");
+require("./preload-mesh.js");
+require("./preload-log.js");
 
 
 
@@ -1640,13 +1642,6 @@ window.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  document.getElementById("list-logger-list").addEventListener("click", () => {
-    ipcRenderer.send("request-open-tnc-log");
-  });
-
-  document.getElementById("list-mesh-list").addEventListener("click", () => {
-    ipcRenderer.send("request-open-mesh-module");
-  });
 
   // stopTNC button clicked
   document.getElementById("stopTNC").addEventListener("click", () => {
@@ -1752,13 +1747,7 @@ window.addEventListener("DOMContentLoaded", () => {
       sock.disconnectARQ();
     });
 
-  // OPEN CHAT MODULE
-  document.getElementById("list-messages-list").addEventListener("click", () => {
-    let Data = {
-      command: "openRFChat",
-    };
-    //ipcRenderer.send("request-show-chat-window", Data);
-  });
+
 
   document.getElementById("thTime").addEventListener("click", () => {
     if (hslLastSort == 0 && hslLastSortDir == "asc") hslLastSortDir = "desc";
