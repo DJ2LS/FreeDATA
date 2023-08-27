@@ -2241,97 +2241,7 @@
             </div>
             <!-- SETTINGS Nav tabs -->
 
-                          <div
-          class="btn-toolbar"
-          role="toolbar"
-          aria-label="Toolbar with button groups"
-        >
-          <div
-            class="btn-group btn-group-sm me-2"
-            role="group"
-            aria-label="local-remote-switch toggle button group"
-            data-bs-placement="bottom"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
-            title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
-          >
-            <input
-              type="radio"
-              class="btn-check"
-              name="local-remote-switch"
-              id="local-remote-switch1"
-              autocomplete="off"
-              checked
-            />
-            <label
-              class="btn btn-sm btn-outline-secondary"
-              for="local-remote-switch1"
-            >
-              <i class="bi bi-pc-display-horizontal"></i>
-              <span class="ms-2 me-2">Local tnc</span>
-            </label>
-            <input
-              type="radio"
-              class="btn-check"
-              name="local-remote-switch"
-              id="local-remote-switch2"
-              autocomplete="off"
-            />
-            <label
-              class="btn btn-sm btn-outline-secondary"
-              for="local-remote-switch2"
-            >
-              <i class="bi bi-ethernet"></i>
-              <span class="ms-2 me-2">Remote tnc</span>
-            </label>
-          </div>
-          <div class="input-group input-group-sm me-2" id="remote-tnc-field">
-            <span class="input-group-text">tnc ip</span>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="ip address"
-              id="tnc_adress"
-              value="192.168.178.163"
-              maxlength="17"
-              style="width: 8rem"
-              aria-label="Username"
-              aria-describedby="basic-addon1"
-            />
-            <span class="input-group-text">:</span>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="port"
-              value="3000"
-              id="tnc_port"
-              maxlength="5"
-              max="65534"
-              min="1025"
-              style="width: 4rem"
-              aria-label="Username"
-              aria-describedby="basic-addon1"
-            />
-            <button
-              class="btn btn-sm btn-danger"
-              id="daemon_connection_state"
-              type="button"
-              disabled
-            >
-              <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
-            </button>
-          </div>
-          <button
-            type="button"
-            id="openHelpModalLocalRemote"
-            data-bs-toggle="modal"
-            data-bs-target="#localRemoteHelpModal"
-            class="btn m-0 p-0 border-0"
-          >
-            <i class="bi bi-question-circle" style="font-size: 1rem"></i>
-          </button>
-        </div>
+
 
 
 
@@ -3169,6 +3079,102 @@
                 aria-labelledby="tnc-tab"
                 tabindex="0"
               >
+
+                                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">TNC IP</label>
+
+                                            <div
+            class="btn-group btn-group-sm me-2"
+            role="group"
+            aria-label="local-remote-switch toggle button group"
+            data-bs-placement="bottom"
+            data-bs-toggle="tooltip"
+            data-bs-trigger="hover"
+            data-bs-html="true"
+            title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
+          >
+            <input
+              type="radio"
+              class="btn-check"
+              name="local-remote-switch"
+              id="local-remote-switch1"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="local-remote-switch1"
+            >
+              <i class="bi bi-pc-display-horizontal"></i>
+              <span class="ms-2 me-2">Local tnc</span>
+            </label>
+            <input
+              type="radio"
+              class="btn-check"
+              name="local-remote-switch"
+              id="local-remote-switch2"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="local-remote-switch2"
+            >
+              <i class="bi bi-ethernet"></i>
+              <span class="ms-2 me-2">Remote tnc</span>
+            </label>
+          </div>
+
+          <div class="input-group input-group-sm me-2" id="remote-tnc-field">
+
+                                  <span class="input-group-text">tnc ip</span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="ip address"
+              id="tnc_adress"
+              value="192.168.178.163"
+              maxlength="17"
+              style="width: 8rem"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+            <span class="input-group-text">:</span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="port"
+              value="3000"
+              id="tnc_port"
+              maxlength="5"
+              max="65534"
+              min="1025"
+              style="width: 4rem"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+            <button
+              class="btn btn-sm btn-danger"
+              id="daemon_connection_state"
+              type="button"
+              disabled
+            >
+              <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
+            </button>
+
+                      </div>
+
+     <button
+            type="button"
+            id="openHelpModalLocalRemote"
+            data-bs-toggle="modal"
+            data-bs-target="#localRemoteHelpModal"
+            class="btn m-0 p-0 border-0"
+          >
+            <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+          </button>
+
+                </div>
+
                 <div class="input-group input-group-sm mb-1">
                   <label class="input-group-text w-50">TX delay in ms</label>
                   <select class="form-select form-select-sm" id="tx_delay">
