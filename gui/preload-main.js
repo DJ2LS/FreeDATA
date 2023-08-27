@@ -398,12 +398,12 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   if (config.enable_mesh_features.toLowerCase() == "true") {
-    document.getElementById("liMeshTable").style.visibility = "visible";
-    document.getElementById("liMeshTable").style.display = "block";
+    document.getElementById("list-mesh-list").style.visibility = "visible";
+    document.getElementById("list-mesh-list").style.display = "block";
     document.getElementById("enableMeshSwitch").checked = true;
   } else {
-    document.getElementById("liMeshTable").style.visibility = "hidden";
-    document.getElementById("liMeshTable").style.display = "none";
+    document.getElementById("list-mesh-list").style.visibility = "hidden";
+    document.getElementById("list-mesh-list").style.display = "none";
     document.getElementById("enableMeshSwitch").checked = false;
   }
 
@@ -560,7 +560,7 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("wftheme_selector").value = config.wftheme;
   spectrum.setColorMap(config.wftheme);
 
-  document.getElementById("btnAbout").addEventListener("click", () => {
+  document.getElementById("list-info-list").addEventListener("click", () => {
     document.getElementById("aboutVersion").innerText = appVer;
     let maxcol = 3;
     let col = 2;
@@ -1258,12 +1258,12 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("enableMeshSwitch").addEventListener("click", () => {
     if (document.getElementById("enableMeshSwitch").checked == true) {
       config.enable_mesh_features = "True";
-      document.getElementById("liMeshTable").style.visibility = "visible";
-      document.getElementById("liMeshTable").style.display = "block";
+      document.getElementById("list-mesh-list").style.visibility = "visible";
+      document.getElementById("list-mesh-list").style.display = "block";
     } else {
       config.enable_mesh_features = "False";
-      document.getElementById("liMeshTable").style.visibility = "hidden";
-      document.getElementById("liMeshTable").style.display = "none";
+      document.getElementById("list-mesh-list").style.visibility = "hidden";
+      document.getElementById("list-mesh-list").style.display = "none";
     }
     //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     FD.saveConfig(config, configPath);
@@ -1458,12 +1458,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
     if (document.getElementById("enableMeshSwitch").checked == true) {
       var enable_mesh_features = "True";
-      document.getElementById("liMeshTable").style.visibility = "visible";
-      document.getElementById("liMeshTable").style.display = "block";
+      document.getElementById("list-mesh-list").style.visibility = "visible";
+      document.getElementById("list-mesh-list").style.display = "block";
     } else {
       var enable_mesh_features = "False";
-      document.getElementById("liMeshTable").style.visibility = "hidden";
-      document.getElementById("liMeshTable").style.display = "none";
+      document.getElementById("list-mesh-list").style.visibility = "hidden";
+      document.getElementById("list-mesh-list").style.display = "none";
     }
 
     if (document.getElementById("scatterSwitch").checked == true) {
@@ -1634,11 +1634,11 @@ window.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-  document.getElementById("tncLog").addEventListener("click", () => {
+  document.getElementById("list-logger-list").addEventListener("click", () => {
     ipcRenderer.send("request-open-tnc-log");
   });
 
-  document.getElementById("meshtable").addEventListener("click", () => {
+  document.getElementById("list-mesh-list").addEventListener("click", () => {
     ipcRenderer.send("request-open-mesh-module");
   });
 
@@ -1747,7 +1747,7 @@ window.addEventListener("DOMContentLoaded", () => {
     });
 
   // OPEN CHAT MODULE
-  document.getElementById("openRFChat").addEventListener("click", () => {
+  document.getElementById("list-messages-list").addEventListener("click", () => {
     let Data = {
       command: "openRFChat",
     };
@@ -2976,11 +2976,11 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
 ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
   //Do something
   if (data == true) {
-    document.getElementById("openRFChat").classList.add("btn-warning");
-    document.getElementById("openRFChat").classList.remove("btn-secondary");
+    document.getElementById("list-messages-list").classList.add("btn-warning");
+    document.getElementById("list-messages-list").classList.remove("btn-secondary");
   } else {
-    document.getElementById("openRFChat").classList.remove("btn-warning");
-    document.getElementById("openRFChat").classList.add("btn-secondary");
+    document.getElementById("list-messages-list").classList.remove("btn-warning");
+    document.getElementById("list-messages-list").classList.add("btn-secondary");
   }
 });
 
