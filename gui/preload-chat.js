@@ -278,7 +278,8 @@ window.addEventListener("DOMContentLoaded", () => {
                 .then(function (doc) {
                   db.remove(doc)
                     .then(function (doc) {
-                      return location.reload();
+                      updateAllChat(true);
+                      return true;
                     })
                     .catch(function (err) {
                       console.log(err);
