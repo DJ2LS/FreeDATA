@@ -2010,9 +2010,8 @@ ipcRenderer.on("action-update-tnc-state", (event, arg) => {
     checkForNewMessageWait = -1;
   }
   checkForNewMessageWait++;
-  // update FFT
-  if (typeof arg.fft !== "undefined") {
-    // FIXME: WE need to fix this when disabled waterfall chart
+  // update FFT only if data available
+  if (typeof arg.fft !== "undefined" && arg.fft !== "[]") {
     try {
       var array = JSON.parse("[" + arg.fft + "]");
       spectrum.addData(array[0]);
