@@ -375,7 +375,7 @@ window.addEventListener("DOMContentLoaded", () => {
         "bi bi-chevron-compact-up";
     }
 
-    var message_container_height_offset = 130 + 20 * lines;
+    var message_container_height_offset = 180 + 20 * lines;
     //var message_container_height_offset = 90 + (23*lines);
     var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
     document.getElementById("message-container").style.height =
@@ -458,7 +458,7 @@ window.addEventListener("DOMContentLoaded", () => {
     //Remove non-printable chars from begining and end of string--should save us a byte here and there
     chatmessage = chatmessage.toString().trim();
     // reset textarea size
-    var message_container_height_offset = 150;
+    var message_container_height_offset = 200;
     var message_container_height = `calc(100% - ${message_container_height_offset}px)`;
     document.getElementById("message-container").style.height =
       message_container_height;

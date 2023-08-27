@@ -28,15 +28,17 @@
 
 <div class="container-fluid">
     <div class="row ">
-        <div class="col-sm-auto bg-light ">
+        <div class="col-sm-auto bg-light border-end">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
 
                   <div class="list-group" id="list-tab" role="tablist" style="margin-top: 100px">
                     <a class="list-group-item list-group-item-action active" id="list-tnc-list" data-bs-toggle="list" href="#list-tnc" role="tab" aria-controls="list-tnc"><i class="bi bi-house-door-fill h3"></i></a>
-                    <a class="list-group-item list-group-item-action" id="list-network-list" data-bs-toggle="list" href="#list-network" role="tab" aria-controls="list-network"><i class="bi bi-hdd-network h3"></i></a>
+                                        <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages"><i class="bi bi-chat-text h3"></i></a>
+
                     <a class="list-group-item list-group-item-action" id="list-mesh-list" data-bs-toggle="list" href="#list-mesh" role="tab" aria-controls="list-mesh"><i class="bi bi-rocket h3"></i></a>
-                    <a class="list-group-item list-group-item-action" id="list-info-list" data-bs-toggle="list" href="#list-info" role="tab" aria-controls="list-info"><i class="bi bi-info h3"></i></a>
-                    <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages"><i class="bi bi-chat-text h3"></i></a>
+                    <a class="list-group-item list-group-item-action mt-2 border" id="list-info-list" data-bs-toggle="list" href="#list-info" role="tab" aria-controls="list-info"><i class="bi bi-info h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-network-list" data-bs-toggle="list" href="#list-network" role="tab" aria-controls="list-network"><i class="bi bi-hdd-network h3"></i></a>
+
                     <a class="list-group-item list-group-item-action" id="list-logger-list" data-bs-toggle="list" href="#list-logger" role="tab" aria-controls="list-logger"><i class="bi bi-activity h3"></i></a>
 
                     <a class="list-group-item list-group-item-action" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings"><i class="bi bi-gear-wide-connected h3"></i></a>
@@ -45,7 +47,7 @@
 
             </div>
         </div>
-        <div class="col-sm p-3 min-vh-100">
+        <div class="col-sm min-vh-100 m-0 p-0">
             <!-- content -->
 
 
@@ -1288,6 +1290,8 @@
       </div>
       <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
 
+    <div class="container-fluid m-0 p-0">
+
             <div
       class="position-absolute container w-100 h-100 bottom-0 end-0 mb-5"
       style="z-index: 100; display: none"
@@ -1299,12 +1303,16 @@
         data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
       ></emoji-picker>
     </div>
-    <div class="container-fluid">
-      <div class="row h-100">
-        <div class="col-4 p-2">
-          <! ------Chats area ---------------------------------------------------------------------->
-          <div class="container-fluid m-0 p-0">
-            <div class="input-group bottom-0 m-0 w-100">
+                <! ------ chat navbar ---------------------------------------------------------------------->
+
+      <nav class="navbar bg-body-tertiary border-bottom">
+
+    <div class="container">
+
+     <div class="row w-100">
+    <div class="col-4 p-0 me-2">
+
+    <div class="input-group bottom-0 m-0">
               <input
                 class="form-control w-50"
                 maxlength="9"
@@ -1342,20 +1350,8 @@
                 <i class="bi bi-files" style="font-size: 1.2rem"></i>
               </button>
             </div>
-          </div>
-          <hr class="m-2" />
-          <div class="overflow-auto vh-100">
-            <div
-              class="list-group overflow-auto"
-              id="list-tab-chat"
-              role="tablist"
-              style="height: calc(100vh - 70px)"
-            ></div>
-          </div>
-        </div>
-        <div class="col-8 border vh-100 p-0">
-          <! ------ chat navbar ---------------------------------------------------------------------->
-          <div class="container-fluid m-2 p-0">
+</div>
+    <div class="col-7 ms-2 p-0">
             <div class="input-group bottom-0">
               <button
                 class="btn btn-sm btn-outline-secondary me"
@@ -1544,14 +1540,71 @@
                 >------</span
               >
             </div>
-          </div>
+    </div>
+       </div>
+</div>
+</nav>
 
-          <hr class="m-0" />
+
+      <div class="row h-100 ms-1 mt-1">
+        <div class="col-4">
+          <! ------Chats area ---------------------------------------------------------------------->
+          <div class="container-fluid m-0 p-0">
+            <!--<div class="input-group bottom-0 m-0 w-100">
+              <input
+                class="form-control w-50"
+                maxlength="9"
+                style="text-transform: uppercase"
+                id="chatModuleNewDxCall"
+                placeholder="DX CALL"
+              />
+              <button
+                class="btn btn-sm btn-success"
+                id="createNewChatButton"
+                type="button"
+                title="Start a new chat (enter dx call sign first)"
+              >
+                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+              </button>
+
+              <button
+                type="button"
+                id="userModalButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModal"
+                class="btn btn-sm btn-primary ms-2"
+                title="My station info"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+              <button
+                type="button"
+                id="sharedFolderButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModal"
+                class="btn btn-sm btn-primary"
+                title="My shared folder"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+            </div>-->
+          </div>
+          <div class="overflow-auto vh-100">
+            <div
+              class="list-group overflow-auto"
+              id="list-tab-chat"
+              role="tablist"
+              style="height: calc(100vh - 70px)"
+            ></div>
+          </div>
+        </div>
+        <div class="col-8 border-start vh-100 p-0">
+
           <! ------messages area ---------------------------------------------------------------------->
           <div
             class="container overflow-auto"
             id="message-container"
-            style="height: calc(100% - 150px)"
+            style="height: calc(100% - 200px)"
           >
             <div class="tab-content" id="nav-tabContent-Chat"></div>
             <!--<div class="container position-absolute bottom-0">-->
@@ -3465,8 +3518,8 @@
 
           <div class="container">
       <nav
-        class="navbar fixed-bottom navbar-expand-xl bg-body-tertiary   p-2"
-        style="margin-left: 80px"
+        class="navbar fixed-bottom navbar-expand-xl bg-body-tertiary border-top p-2"
+        style="margin-left: 87px"
       >
         <div class="col-sm-2">
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
