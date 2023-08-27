@@ -41,6 +41,15 @@
                     <a class="list-group-item list-group-item-action" id="list-logger-list" data-bs-toggle="list" href="#list-logger" role="tab" aria-controls="list-logger"><i class="bi bi-activity h3"></i></a>
 
                     <a class="list-group-item list-group-item-action" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings"><i class="bi bi-gear-wide-connected h3"></i></a>
+
+
+                    <a class="btn border btn-outline-danger list-group-item mt-5" id="stop_transmission_connection"           data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="false" title="Abort session and stop transmissions"><i class="bi bi-sign-stop-fill h3"></i></a>
+
+
+
+
                   </div>
 
 
@@ -61,30 +70,7 @@
       <div style="margin-left: 100px">
 
       </div>
-      <div>
-        <button
-          class="btn btn-sm btn-outline-danger"
-          id="stop_transmission_connection"
-          type="button"
-          data-bs-toggle="tooltip"
-          data-bs-trigger="hover"
-          data-bs-html="false"
-          title="Abort session and stop transmissions"
-        >
-          <i class="bi bi-sign-stop-fill"></i> &nbsp;STOP TRANSMISSION&nbsp;<i
-            class="bi bi-sign-stop-fill"
-          ></i>
-        </button>
-        <button
-          type="button"
-          id="openHelpModalStopTransmission"
-          data-bs-toggle="modal"
-          data-bs-target="#stopTransmissionHelpModal"
-          class="btn m-0 p-0 border-0"
-        >
-          <i class="bi bi-question-circle" style="font-size: 1rem"></i>
-        </button>
-      </div>
+
       <div>
         <div class="btn-group" role="group">
           <button
@@ -4462,53 +4448,7 @@
         </div>
       </div>
     </div>
-    <!-- HELP MODALS STOP TRANSMISSION -->
-    <div
-      class="modal fade"
-      data-bs-backdrop="static"
-      tabindex="-1"
-      id="stopTransmissionHelpModal"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Help</h5>
-            <button
-              type="button"
-              class="btn btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="card mb-3">
-              <div class="card-body">
-                <h5 class="card-title">
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    type="button"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="false"
-                    title="Abort session and stop transmissions"
-                    disabled
-                  >
-                    <i class="bi bi-sign-stop-fill"></i> &nbsp;STOP
-                    TRANSMISSION&nbsp;<i class="bi bi-sign-stop-fill"></i>
-                  </button>
-                </h5>
-                <p class="card-text">
-                  Stop the current transmission or connection. Bursts will be
-                  transmitted so the remote station is informed about our
-                  disconnect attempt and freeing the remote station from any
-                  unnecessary busy state.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+
     <!-- HELP MODALS START STOP TNC -->
     <div
       class="modal fade"
