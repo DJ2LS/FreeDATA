@@ -1258,13 +1258,13 @@ update_chat = function (obj) {
             `;
 
     document
-      .getElementById("list-tab")
+      .getElementById("list-tab-chat")
       .insertAdjacentHTML("beforeend", new_callsign);
     var message_area = `
             <div class="tab-pane fade ${callsign_selected}" id="chat-${dxcallsign}" role="tabpanel" aria-labelledby="chat-${dxcallsign}-list"></div>
             `;
     document
-      .getElementById("nav-tabContent")
+      .getElementById("nav-tabContent-Chat")
       .insertAdjacentHTML("beforeend", message_area);
 
     // finally get and set user information to first selected item
@@ -2246,9 +2246,9 @@ async function updateAllChat(clear) {
     callsign_counter = 0;
     //selected_callsign = "";
     dxcallsigns.clear();
-    document.getElementById("list-tab").innerHTML = "";
-    document.getElementById("nav-tabContent").innerHTML = "";
-    //document.getElementById("list-tab").childNodes.remove();
+    document.getElementById("list-tab-chat").innerHTML = "";
+    document.getElementById("nav-tabContent-Chat").innerHTML = "";
+    //document.getElementById("list-tab-chat").childNodes.remove();
     //document.getElementById("nav-tab-content").childrenNodes.remove();
   }
   //Ensure we create an index before running db.find

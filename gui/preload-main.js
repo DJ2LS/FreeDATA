@@ -3,6 +3,12 @@ const { ipcRenderer, shell, clipboard } = require("electron");
 const exec = require("child_process").spawn;
 const sock = require("./sock.js");
 const daemon = require("./daemon.js");
+
+
+require("./preload-chat.js");
+
+
+
 const fs = require("fs");
 const FD = require("./freedata");
 const {
@@ -1751,7 +1757,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let Data = {
       command: "openRFChat",
     };
-    ipcRenderer.send("request-show-chat-window", Data);
+    //ipcRenderer.send("request-show-chat-window", Data);
   });
 
   document.getElementById("thTime").addEventListener("click", () => {
