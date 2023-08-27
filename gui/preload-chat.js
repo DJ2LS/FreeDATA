@@ -831,6 +831,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
 
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
+      // check for messages which failed and try to transmit them
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
 
       // handle ping-ack
     } else if (item.ping == "acknowledge") {
@@ -869,7 +873,10 @@ ipcRenderer.on("action-new-msg-received", (event, arg) => {
       obj.new = 0;
       add_obj_to_database(obj);
       update_chat_obj_by_uuid(obj.uuid);
-
+      // check for messages which failed and try to transmit them
+      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
+        checkForWaitingMessages(obj.dxcallsign);
+      }
       // handle ARQ transmission
     } else if (item.arq == "transmission" && item.status == "received") {
       //var encoded_data = atob(item.data);
@@ -1068,7 +1075,11 @@ update_chat = function (obj) {
   }
 
   // check if wrong status message
-  if (obj.status == "transmit" && obj.type == "transmit" && obj.percent < 100) {
+  if (
+    obj.status == "transmitting" &&
+    obj.type == "transmit" &&
+    obj.percent < 100
+  ) {
     var TimeDifference = new Date().getTime() / 1000 - obj.timestamp;
     if (TimeDifference > 21600) {
       //Six hours
@@ -1291,6 +1302,17 @@ update_chat = function (obj) {
         //get user information
         getSetUserInformation(selected_callsign);
         getSetUserSharedFolder(selected_callsign);
+        if (selected_callsign.startsWith("BC-")) {
+          document
+            .getElementById("chatModuleMessage")
+            .setAttribute("maxlength", 16);
+          //console.log("Setting max message size to 16")
+        } else {
+          document
+            .getElementById("chatModuleMessage")
+            .setAttribute("maxlength", 524288);
+          //console.log("Setting max message size to big#")
+        }
       });
 
     // if callsign entry already exists - update
@@ -1319,10 +1341,6 @@ update_chat = function (obj) {
 
   if (!document.getElementById("msg-" + obj._id)) {
     if (obj.type == "ping") {
-      // check for messages which failed and try to transmit them
-      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-        checkForWaitingMessages(obj.dxcallsign);
-      }
       //if (obj.new == 1)
       //{
       // showOsPopUp("Ping from " + obj.dxcallsign,"You've been ping'd!");
@@ -1341,10 +1359,6 @@ update_chat = function (obj) {
             `;
     }
     if (obj.type == "beacon") {
-      // check for messages which failed and try to transmit them
-      if (config.enable_auto_retry.toUpperCase() == "TRUE") {
-        checkForWaitingMessages(obj.dxcallsign);
-      }
       var new_message = `
                 <div class="p-0 rounded m-auto mt-1 w-50 bg-info bg-gradient" id="msg-${obj._id}">
                     <p class="text-small text-white text-break" style="font-size: 0.7rem;"><i class="m-3 bi bi-broadcast"></i>snr: ${obj.snr} - ${timestamp}     </p>
@@ -2500,14 +2514,8 @@ function getSetUserInformation(selected_callsign) {
 
           if (selected_callsign.startsWith("BC-")) {
             var userIcon = defaultGroupIcon;
-            document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 16);
           } else {
             var userIcon = defaultUserIcon;
-            document
-              .getElementById("chatModuleMessage")
-              .setAttribute("maxlength", 524288);
           }
 
           document.getElementById("user-image-" + selected_callsign).src =
@@ -2569,15 +2577,9 @@ function getSetUserInformation(selected_callsign) {
       console.log(err);
 
       if (selected_callsign.startsWith("BC-")) {
-        document
-          .getElementById("chatModuleMessage")
-          .setAttribute("maxlength", 16);
         var userIcon = defaultGroupIcon;
       } else {
         var userIcon = defaultUserIcon;
-        document
-          .getElementById("chatModuleMessage")
-          .setAttribute("maxlength", 524288);
       }
 
       // Callsign list elements
@@ -2810,7 +2812,6 @@ function changeGuiDesign(design) {
 }
 
 function checkForWaitingMessages(dxcall) {
-  console.log(dxcall);
   db.find({
     selector: {
       dxcallsign: dxcall,
@@ -2820,6 +2821,9 @@ function checkForWaitingMessages(dxcall) {
     },
   })
     .then(function (result) {
+      console.log(
+        "Found " + result.docs.length + " messages waiting for " + dxcall,
+      );
       // handle result
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
@@ -2854,7 +2858,7 @@ function checkForWaitingMessages(dxcall) {
         }
         return;
       } else {
-        console.log("nope");
+        //console.log("nope");
       }
     })
     .catch(function (err) {

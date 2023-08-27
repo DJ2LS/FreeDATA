@@ -106,6 +106,7 @@ class ModemParam:
     tx_delay: int = 0  # delay in ms before sending modulation for triggering VOX for example or slow PTT radios
     enable_scatter: bool = False
     scatter = []
+    channel_busy_delay = 0
 
 @dataclass
 class Station:
