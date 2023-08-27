@@ -2970,11 +2970,11 @@ ipcRenderer.on("run-tnc-command-fec-iswriting", (event) => {
 ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
   //Do something
   if (data == true) {
-    document.getElementById("list-messages-list").classList.add("btn-warning");
-    document.getElementById("list-messages-list").classList.remove("btn-secondary");
+    document.getElementById("list-messages-list").classList.add("bg-warning");
+    document.getElementById("list-messages-list").classList.remove("bg-secondary");
   } else {
-    document.getElementById("list-messages-list").classList.remove("btn-warning");
-    document.getElementById("list-messages-list").classList.add("btn-secondary");
+    document.getElementById("list-messages-list").classList.remove("bg-warning");
+    document.getElementById("list-messages-list").classList.add("bg-secondary");
   }
 });
 

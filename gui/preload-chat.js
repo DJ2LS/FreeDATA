@@ -2901,6 +2901,8 @@ function clearUnreadMessages(dxcall) {
     .catch(function (err) {
       console.log(err);
     });
+
+
 }
 
 //Have the operating system show a notification popup
