@@ -1400,14 +1400,13 @@ update_chat = function (obj) {
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
 
                     <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
-                    <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
-                    <div class="card border-light bg-light" id="msg-${obj._id}">
+                    <div class="card border-light bg-body-tertiary" id="msg-${obj._id}">
                       ${fileheader}
 
                       <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
-                            <span class="badge bg-light text-muted">${timestamp}</span>
+                            <span class="badge bg-body-tertiary text-muted">${timestamp}</span>
 
                         </p>
 
@@ -1435,11 +1434,11 @@ update_chat = function (obj) {
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
                     <div class="mt-3 rounded-3 mb-0" style="max-width: 75%;" id="msg-${obj._id}">
                     <!--<p class="font-monospace text-small mb-0 text-muted text-break">${timestamp}</p>-->
-                    <div class="card border-light bg-light" id="msg-${obj._id}">
+                    <div class="card border-light bg-body-tertiary" id="msg-${obj._id}">
                       <div class="card-body rounded-3 p-0">
                         <p class="card-text p-2 mb-0 text-break text-wrap">${message_html}</p>
                         <p class="text-right mb-0 p-1 text-white" style="text-align: left; font-size : 0.9rem">
-                            <span class="badge bg-light text-muted">${timestamp}</span>
+                            <span class="badge bg-body-tertiary text-muted">${timestamp}</span>
 
                         </p>
 
