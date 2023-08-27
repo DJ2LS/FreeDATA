@@ -23,9 +23,39 @@
   </head>
 
   <body>
+
+
+
+<div class="container-fluid">
+    <div class="row ">
+        <div class="col-sm-auto bg-light ">
+            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
+
+                  <div class="list-group" id="list-tab" role="tablist" style="margin-top: 100px">
+                    <a class="list-group-item list-group-item-action active" id="list-home-list" data-bs-toggle="list" href="#list-home" role="tab" aria-controls="list-home"><i class="bi bi-house-door-fill h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-profile-list" data-bs-toggle="list" href="#list-profile" role="tab" aria-controls="list-profile"><i class="bi bi-hdd-network h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-mesh" data-bs-toggle="list" href="#list-mesh" role="tab" aria-controls="list-messages"><i class="bi bi-rocket h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-info" data-bs-toggle="list" href="#list-info" role="tab" aria-controls="list-messages"><i class="bi bi-info h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages"><i class="bi bi-chat-text h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings"><i class="bi bi-gear-wide-connected h3"></i></a>
+                  </div>
+
+
+            </div>
+        </div>
+        <div class="col-sm p-3 min-vh-100">
+            <!-- content -->
+
+
+
+
+          <div class="tab-content" id="nav-tabContent">
+      <div class="tab-pane fade show active" id="list-home" role="tabpanel" aria-labelledby="list-home-list">
+
+
     <!-- SECONDARY NAVBAR -->
     <nav class="navbar fixed-top border-bottom rounded-3 mt-0 p-2">
-      <div style="margin-left: 5px">
+      <div style="margin-left: 100px">
         <div
           class="btn-toolbar"
           role="toolbar"
@@ -1230,6 +1260,28 @@
         </div>
       </div>
     </div>
+
+
+
+
+
+
+
+
+
+      </div>
+      <div class="tab-pane fade" id="list-profile" role="tabpanel" aria-labelledby="list-profile-list">...</div>
+      <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">...</div>
+      <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">...</div>
+    </div>
+
+
+
+
+
+
+
+
     <!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
     <div
       class="offcanvas offcanvas-end"
@@ -1455,9 +1507,15 @@
     </div>
     <!--end of blur div -->
     <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
-    <div class="container-fluid">
+
+
+
+
+
+          <div class="container-fluid">
       <nav
         class="navbar fixed-bottom navbar-expand-xl navbar-light border-top rounded-3 p-2"
+        style="margin-left: 100px"
       >
         <div class="col-sm-2">
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
@@ -1763,6 +1821,15 @@
         </div>
       </nav>
     </div>
+
+
+
+                            </div>
+    </div>
+</div>
+
+
+
     <!-- bootstrap -->
     <script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <!-- chart.js -->
@@ -3852,6 +3919,14 @@
         </div>
       </div>
     </div>
+
+
+
+
+
+
+
+
 
     <!-- info modal -->
     <!-- Modal -->
