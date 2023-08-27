@@ -875,7 +875,10 @@ class RF:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
                             ModemParam.is_codec2_traffic = True
-
+                            if not ModemParam.channel_busy:
+                                self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
+                                ModemParam.channel_busy=True
+                                ModemParam.channel_busy_delay+=10
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
