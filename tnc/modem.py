@@ -875,7 +875,10 @@ class RF:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
                             ModemParam.is_codec2_traffic = True
-
+                            if not ModemParam.channel_busy:
+                                self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
+                                ModemParam.channel_busy=True
+                                ModemParam.channel_busy_delay+=10
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
@@ -1261,7 +1264,7 @@ class RF:
         whether the channel is "busy."
         """
         # Initialize channel_busy_delay counter
-        channel_busy_delay = 0
+        #channel_busy_delay = 0
 
         # Initialize dbfs counter
         rms_counter = 0
@@ -1343,6 +1346,9 @@ class RF:
                     slot3 = [120, 176]
                     slot4 = [176, 231]
                     slot5 = [231, len(dfftlist)]
+
+                    # Set to true if we should increment delay count; else false to decrement
+                    addDelay=False
                     for range in [slot1, slot2, slot3, slot4, slot5]:
 
                         range_start = range[0]
@@ -1354,22 +1360,23 @@ class RF:
                         # If we have a signal, increment our channel_busy delay counter
                         # so we have a smoother state toggle
                         if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not TNC.transmitting:
-                            ModemParam.channel_busy = True
+                            addDelay=True
                             ModemParam.channel_busy_slot[slot] = True
-                            # Limit delay counter to a maximum of 200. The higher this value,
-                            # the longer we will wait until releasing state
-                            channel_busy_delay = min(channel_busy_delay + 10, 200)
                         else:
-                            # Decrement channel busy counter if no signal has been detected.
-                            channel_busy_delay = max(channel_busy_delay - 1, 0)
-                            # When our channel busy counter reaches 0, toggle state to False
-                            if channel_busy_delay == 0:
-                                ModemParam.channel_busy = False
-                                ModemParam.channel_busy_slot[slot] = False
-
+                            ModemParam.channel_busy_slot[slot] = False
                         # increment slot
                         slot += 1
-
+                    if (addDelay):
+                        # Limit delay counter to a maximum of 200. The higher this value,
+                        # the longer we will wait until releasing state
+                        ModemParam.channel_busy = True
+                        ModemParam.channel_busy_delay = min(ModemParam.channel_busy_delay + 10, 200)
+                    else:
+                        # Decrement channel busy counter if no signal has been detected.
+                        ModemParam.channel_busy_delay = max(ModemParam.channel_busy_delay - 1, 0)
+                        # When our channel busy counter reaches 0, toggle state to False
+                        if ModemParam.channel_busy_delay == 0:
+                            ModemParam.channel_busy = False
                     AudioParam.fft = dfftlist[:315]  # 315 --> bandwidth 3200
                 except Exception as err:
                     self.log.error(f"[MDM] calculate_fft: Exception: {err}")
