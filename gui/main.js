@@ -212,21 +212,6 @@ function createWindow() {
     })
     */
   win.loadFile("src/index.html");
-/*
-  chat = new BrowserWindow({
-    height: 600,
-    width: 1000,
-    show: false,
-    //parent: win,
-    webPreferences: {
-      preload: require.resolve("./preload-chat.js"),
-      nodeIntegration: true,
-    },
-  });
-
-  chat.loadFile("src/chat-module.html");
-  chat.setMenuBarVisibility(false);
-*/
 
 
   logViewer = new BrowserWindow({
@@ -299,15 +284,7 @@ function createWindow() {
     //autoUpdater.quitAndInstall();
   });
 
-  //chat.on("closed", function () {});
 
-  // https://stackoverflow.com/questions/44258831/only-hide-the-window-when-closing-it-electron
-  /*
-  chat.on("close", function (evt) {
-    evt.preventDefault();
-    chat.hide();
-  });
-  */
 }
 
 app.whenReady().then(() => {
@@ -403,8 +380,7 @@ app.on("window-all-closed", () => {
 ipcMain.on("set-config-global", (event, data) => {
   config = data;
   win.webContents.send("update-config", config);
-  //chat.webContents.send("update-config", config);
-  //console.log("set-config-global called");
+
 });
 
 //Show/update task bar/button progressbar
@@ -412,14 +388,6 @@ ipcMain.on("request-show-electron-progressbar", (event, data) => {
   win.setProgressBar(data / 100);
 });
 
-ipcMain.on("request-show-chat-window", () => {
-  //chat.show();
-});
-
-ipcMain.on("request-clear-chat-connected", () => {
-  //Clear chat window's connected with text
-  //chat.webContents.send("action-clear-reception-status");
-});
 
 ipcMain.on("request-update-dbclean-spinner", () => {
   //Turn off dbclean spinner
@@ -514,13 +482,6 @@ ipcMain.on("request-clean-db", () => {
   win.webContents.send("action-clean-db");
 });
 
-ipcMain.on("request-open-tnc-log", () => {
-  logViewer.show();
-});
-
-ipcMain.on("request-open-mesh-module", () => {
-  meshViewer.show();
-});
 
 //file selector
 ipcMain.on("get-file-path", (event, data) => {
@@ -944,9 +905,7 @@ function close_all() {
   mainLog.warn("quitting app");
 
   win.destroy();
-  //chat.destroy();
-  logViewer.destroy();
-  meshViewer.destroy();
+
 
   app.quit();
 }
