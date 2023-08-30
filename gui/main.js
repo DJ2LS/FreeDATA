@@ -165,9 +165,7 @@ fs.mkdir(receivedFilesFolder, {
 */
 
 let win = null;
-let data = null;
 let logViewer = null;
-let meshViewer = null;
 var daemonProcess = null;
 
 // create a splash screen
@@ -225,7 +223,7 @@ function createWindow() {
     },
   });
 
-  logViewer.loadFile("src/log-module.html");
+  //logViewer.loadFile("src/log-module.html");
   logViewer.setMenuBarVisibility(false);
 
   // Emitted when the window is closed.
@@ -238,29 +236,7 @@ function createWindow() {
     }
   });
 
-  meshViewer = new BrowserWindow({
-    height: 900,
-    width: 600,
-    show: false,
-    //parent: win,
-    webPreferences: {
-      preload: require.resolve("./preload-mesh.js"),
-      nodeIntegration: true,
-    },
-  });
 
-  meshViewer.loadFile("src/mesh-module.html");
-  meshViewer.setMenuBarVisibility(false);
-
-  // Emitted when the window is closed.
-  meshViewer.on("close", function (evt) {
-    if (meshViewer !== null) {
-      evt.preventDefault();
-      meshViewer.hide();
-    } else {
-      this.close();
-    }
-  });
   // Emitted when the window is closed.
   win.on("closed", function () {
     console.log("closing all windows.....");
@@ -406,7 +382,7 @@ ipcMain.on("request-update-daemon-ip", (event, data) => {
 
 ipcMain.on("request-update-tnc-state", (event, arg) => {
   win.webContents.send("action-update-tnc-state", arg);
-  meshViewer.send("action-update-mesh-table", arg);
+  //meshViewer.send("action-update-mesh-table", arg);
   //data.webContents.send('action-update-tnc-state', arg);
 });
 
