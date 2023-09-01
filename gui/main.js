@@ -212,39 +212,9 @@ function createWindow() {
   win.loadFile("src/index.html");
 
 
-  logViewer = new BrowserWindow({
-    height: 900,
-    width: 600,
-    show: false,
-    //parent: win,
-    webPreferences: {
-      preload: require.resolve("./preload-log.js"),
-      nodeIntegration: true,
-    },
-  });
-
-  //logViewer.loadFile("src/log-module.html");
-  logViewer.setMenuBarVisibility(false);
-
-  // Emitted when the window is closed.
-  logViewer.on("close", function (evt) {
-    if (logViewer !== null) {
-      evt.preventDefault();
-      logViewer.hide();
-    } else {
-      this.close();
-    }
-  });
-
-
   // Emitted when the window is closed.
   win.on("closed", function () {
     console.log("closing all windows.....");
-    /*
-        win = null;
-        chat = null;
-        logViewer = null;
-        */
     close_all();
   });
 
@@ -322,7 +292,7 @@ app.whenReady().then(() => {
       // it seems an error occurs when updating
       if (logViewer !== null && logViewer !== "") {
         try {
-          logViewer.webContents.send("action-update-log", arg);
+          //logViewer.webContents.send("action-update-log", arg);
         } catch (e) {
           // empty for keeping error stuff silent
           // this is important to avoid error messages if we are going to close the app while
