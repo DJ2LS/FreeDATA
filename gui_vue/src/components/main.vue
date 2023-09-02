@@ -1,0 +1,5014 @@
+<template>
+<html lang="en" data-bs-theme="light">
+
+
+  <body>
+
+        <!-------------------------------- INFO TOASTS ---------------->
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        class="position-relative"
+        style="z-index: 500"
+      >
+        <div
+          class="toast-container position-absolute top-0 end-0 p-3"
+          id="mainToastContainer"
+        ></div>
+      </div>
+
+
+<div class="container-fluid">
+    <div class="row ">
+        <div class="col-sm-auto bg-body-tertiary border-end">
+            <div class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top">
+
+                  <div class="list-group" id="list-tab" role="tablist" style="margin-top: 100px">
+                    <a class="list-group-item list-group-item-action active" id="list-tnc-list" data-bs-toggle="list" href="#list-tnc" role="tab" aria-controls="list-tnc"><i class="bi bi-house-door-fill h3"></i></a>
+                    <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages"><i class="bi bi-chat-text h3"></i></a>
+
+                    <a class="list-group-item list-group-item-action" id="list-mesh-list" data-bs-toggle="list" href="#list-mesh" role="tab" aria-controls="list-mesh"><i class="bi bi-rocket h3"></i></a>
+                    <a class="list-group-item list-group-item-action mt-2 border" id="list-info-list" data-bs-toggle="list" href="#list-info" role="tab" aria-controls="list-info"><i class="bi bi-info h3"></i></a>
+
+                    <a class="list-group-item list-group-item-action" id="list-logger-list" data-bs-toggle="list" href="#list-logger" role="tab" aria-controls="list-logger"><i class="bi bi-activity h3"></i></a>
+
+                    <a class="list-group-item list-group-item-action rounded-bottom" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings"><i class="bi bi-gear-wide-connected h3"></i></a>
+
+
+                    <a class="btn border btn-outline-danger list-group-item mt-5" id="stop_transmission_connection" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false" title="Abort session and stop transmissions"><i class="bi bi-sign-stop-fill h3"></i></a>
+
+
+
+
+                  </div>
+
+
+            </div>
+        </div>
+        <div class="col-sm min-vh-100 m-0 p-0">
+            <!-- content -->
+
+
+
+
+          <div class="tab-content" id="nav-tabContent">
+      <div class="tab-pane fade show active" id="list-tnc" role="tabpanel" aria-labelledby="list-tnc-list">
+
+
+    <!-- SECONDARY NAVBAR -->
+    <nav class="navbar fixed-top rounded-3 mt-0 p-2">
+      <div style="margin-left: 100px">
+
+      </div>
+
+      <div>
+        <div class="btn-group" role="group">
+          <button
+            type="button"
+            id="startTNC"
+            class="btn btn-sm btn-outline-success"
+            data-bs-toggle="tooltip"
+            data-bs-trigger="hover"
+            data-bs-html="false"
+            title="Start the TNC. Please set your audio and radio settings first!"
+          >
+            <i class="bi bi-play-fill"></i>
+            <span class="ms-2">Start tnc</span>
+          </button>
+          <button
+            type="button"
+            id="stopTNC"
+            class="btn btn-sm btn-outline-danger"
+            data-bs-toggle="tooltip"
+            data-bs-trigger="hover"
+            data-bs-html="false"
+            title="Stop the TNC."
+          >
+            <i class="bi bi-stop-fill"></i>
+            <span class="ms-2">Stop tnc</span>
+          </button>
+        </div>
+        <button
+          type="button"
+          id="openHelpModalStartStopTNC"
+          data-bs-toggle="modal"
+          data-bs-target="#startStopTNCHelpModal"
+          class="btn me-5 p-0 border-0"
+        >
+          <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+        </button>
+
+      </div>
+
+      <!--
+	<div class="btn-toolbar" role="toolbar">
+
+<span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false"
+			title="View the received files. This is currently under development!">
+
+
+	   <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
+	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
+	   <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
+	   </button>
+	   </span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false" title="Send files through HF. This is currently under development!">
+	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
+	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
+	   </button>
+
+		</span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="true"
+			title="Settings and Info">
+
+		</span>
+	</div>
+	 -->
+    </nav>
+
+    <div id="blurdiv" style="-webkit-filter: blur(0px); filter: blur(0px)">
+      <!--beginn of blur div -->
+      <!-------------------------------- MAIN AREA ---------------->
+
+      <!------------------------------------------------------------------------------------------>
+      <div class="container p-3" style="margin-top: 55px">
+        <div class="row collapse multi-collapse show" id="collapseFirstRow">
+          <div class="col">
+            <div class="card mb-0">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Audio devices</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalAudio"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body p-2" style="height: 100px">
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">
+                    <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    id="audio_input_selectbox"
+                    aria-label=".form-select-sm"
+                  >
+                    <!-- 					 					<option selected value="3011">USB Interface</option>-->
+                  </select>
+                </div>
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">
+                    <i class="bi bi-volume-up" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    id="audio_output_selectbox"
+                    aria-label=".form-select-sm"
+                  ></select>
+                </div>
+              </div>
+            </div>
+            <!--Start of TNC rig control pane-->
+          </div>
+          <div class="col">
+            <div class="card mb-0">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-projector" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-4">
+                      <strong class="fs-5">Rig control</strong>
+                    </div>
+                    <div class="col-6">
+                      <div
+                        class="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="radio-control-switch-disabled"
+                      >
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="radio-control-switch"
+                          id="radio-control-switch-disabled"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="radio-control-switch-disabled"
+                        >
+                          None / Vox
+                        </label>
+
+                        <div
+                          class="btn-group btn-group-sm"
+                          role="group"
+                          aria-label="radio-control-switch-rigctld"
+                        >
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="radio-control-switch"
+                            id="radio-control-switch-rigctld"
+                            autocomplete="off"
+                          />
+                          <label
+                            class="btn btn-sm btn-outline-secondary"
+                            for="radio-control-switch-rigctld"
+                          >
+                            Hamlib
+                          </label>
+                        </div>
+                        <div
+                          class="btn-group btn-group-sm"
+                          role="group"
+                          aria-label="radio-control-switch-tci"
+                        >
+                          <input
+                            type="radio"
+                            class="btn-check"
+                            name="radio-control-switch"
+                            id="radio-control-switch-tci"
+                            autocomplete="off"
+                          />
+                          <label
+                            class="btn btn-sm btn-outline-secondary"
+                            for="radio-control-switch-tci"
+                          >
+                            TCI
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalRigControl"
+                        data-bs-toggle="modal"
+                        data-bs-target="#rigcontrolHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-2" style="height: 100px">
+                <!-- RADIO CONTROL DISABLED -->
+                <div id="radio-control-disabled">
+                  <p class="small">
+                    TNC will not utilize rig control and features will be
+                    limited. While functional; it is recommended to configure
+                    hamlib.
+                  </p>
+                </div>
+
+                <!-- RADIO CONTROL RIGCTLD -->
+                <div id="radio-control-rigctld">
+                  <div class="input-group input-group-sm mb-1">
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">Rigctld</span>
+                      <span class="input-group-text">Address</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="rigctld IP"
+                        id="hamlib_rigctld_ip"
+                        aria-label="Device IP"
+                        aria-describedby="basic-addon1"
+                      />
+                      <span class="input-group-text">Port</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="rigctld port"
+                        id="hamlib_rigctld_port"
+                        aria-label="Device Port"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">Rigctld</span>
+                      <button
+                        class="btn btn-outline-success"
+                        type="button"
+                        id="hamlib_rigctld_start"
+                      >
+                        Start
+                      </button>
+                      <button
+                        class="btn btn-outline-danger"
+                        type="button"
+                        id="hamlib_rigctld_stop"
+                      >
+                        Stop
+                      </button>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="Status"
+                        id="hamlib_rigctld_status"
+                        aria-label="State"
+                        aria-describedby="basic-addon1"
+                      />
+
+                      <button
+                        type="button"
+                        id="testHamlib"
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="true"
+                        title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
+                      >
+                        PTT Test
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- RADIO CONTROL TCI-->
+                <div id="radio-control-tci">
+                  <div class="input-group input-group-sm mb-1">
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">TCI</span>
+                      <span class="input-group-text">Address</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="tci IP"
+                        id="tci_ip"
+                        aria-label="Device IP"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+
+                    <div class="input-group input-group-sm mb-1">
+                      <span class="input-group-text">Port</span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        placeholder="tci port"
+                        id="tci_port"
+                        aria-label="Device Port"
+                        aria-describedby="basic-addon1"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <!-- RADIO CONTROL HELP -->
+                <div id="radio-control-help">
+                  <strong>VOX:</strong> Use rig control mode 'none'
+                  <br />
+                  <strong>HAMLIB locally:</strong> configure in settings, then
+                  start/stop service.
+                  <br />
+                  <strong>HAMLIB remotely:</strong> Enter IP/Port, connection
+                  happens automatically.
+                </div>
+              </div>
+              <!--<div class="card-footer text-muted small" id="hamlib_info_field">
+                Define TNC rig control mode (none/hamlib)
+              </div>
+              -->
+            </div>
+          </div>
+        </div>
+        <div
+          class="row collapse multi-collapse show mt-4"
+          id="collapseSecondRow"
+        >
+          <div class="col">
+            <div class="card mb-1">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">My station</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalStation"
+                        data-bs-toggle="modal"
+                        data-bs-target="#stationHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-2">
+                <div class="row">
+                  <div class="col-md-auto">
+                    <div
+                      class="input-group input-group-sm mb-0"
+                      data-bs-placement="bottom"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Enter your callsign and save it"
+                    >
+                      <span class="input-group-text">
+                        <i
+                          class="bi bi-person-bounding-box"
+                          style="font-size: 1rem"
+                        ></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control"
+                        style="width: 5rem; text-transform: uppercase"
+                        placeholder="callsign"
+                        pattern="[A-Z]*"
+                        id="myCall"
+                        maxlength="8"
+                        aria-label="Input group"
+                        aria-describedby="btnGroupAddon"
+                      />
+                      <select
+                        class="form-select form-select-sm"
+                        aria-label=".form-select-sm"
+                        id="myCallSSID"
+                      >
+                        <option selected value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-auto">
+                    <div
+                      class="input-group input-group-sm mb-0"
+                      data-bs-placement="bottom"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Enter your gridsquare and save it"
+                    >
+                      <span class="input-group-text">
+                        <i class="bi bi-house-fill" style="font-size: 1rem"></i>
+                      </span>
+                      <input
+                        type="text"
+                        class="form-control mr-1"
+                        style="max-width: 6rem"
+                        placeholder="locator"
+                        id="myGrid"
+                        maxlength="6"
+                        aria-label="Input group"
+                        aria-describedby="btnGroupAddon"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <!-- end of row-->
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card mb-0">
+              <div class="card-header p-1 d-flex">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i
+                        class="bi bi-cloud-download"
+                        style="font-size: 1.2rem"
+                      ></i>
+                    </div>
+                    <div class="col-3">
+                      <strong class="fs-5">Updater</strong>
+                    </div>
+                    <div class="col-7">
+                      <div class="progress w-100 ms-1 m-1">
+                        <div
+                          class="progress-bar"
+                          style="width: 0%"
+                          role="progressbar"
+                          id="UpdateProgressBar"
+                          aria-valuenow="0"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        >
+                          <span id="UpdateProgressInfo"></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalUpdater"
+                        data-bs-toggle="modal"
+                        data-bs-target="#updaterHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-2 mb-1">
+                <button
+                  class="btn btn-secondary btn-sm"
+                  id="updater_channel"
+                  type="button"
+                  disabled
+                >
+                  ...
+                </button>
+                <button
+                  class="btn btn-secondary btn-sm"
+                  id="updater_status"
+                  type="button"
+                  disabled
+                >
+                  ...
+                </button>
+                <button
+                  class="btn btn-secondary btn-sm"
+                  id="updater_changelog"
+                  type="button"
+                  style="display: none"
+                >
+                  Changelog
+                </button>
+                <button
+                  class="btn btn-primary btn-sm"
+                  id="update_and_install"
+                  type="button"
+                  style="display: none"
+                >
+                  Install & Restart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="row collapse multi-collapse" id="collapseThirdRow">
+          <div class="col-5">
+            <div class="card mb-1">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-5">
+                      <strong class="fs-5">Audio level</strong>
+                    </div>
+                    <div class="col-5">
+                      <button
+                        type="button"
+                        id="audioModalButton"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioModal"
+                        class="btn btn-sm btn-outline-secondary"
+                      >
+                        Tune
+                      </button>
+                      <button
+                        type="button"
+                        id="startStopRecording"
+                        class="btn btn-sm btn-outline-danger"
+                      >
+                        Record audio
+                      </button>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalAudioLevel"
+                        data-bs-toggle="modal"
+                        data-bs-target="#audioLevelHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-2">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-sm">
+                      <div class="progress mb-0" style="height: 22px">
+                        <div
+                          class="progress-bar progress-bar-striped bg-primary force-gpu"
+                          id="noise_level"
+                          role="progressbar"
+                          style="width: 0%"
+                          aria-valuenow="0"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <p
+                          class="justify-content-center d-flex position-absolute w-100"
+                          id="noise_level_value"
+                        >
+                          S-Meter (dB)
+                        </p>
+                      </div>
+                      <div class="progress mb-0" style="height: 8px">
+                        <div
+                          class="progress-bar progress-bar-striped bg-warning"
+                          role="progressbar"
+                          style="width: 1%"
+                          aria-valuenow="1"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar bg-success"
+                          role="progressbar"
+                          style="width: 89%"
+                          aria-valuenow="50"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar progress-bar-striped bg-warning"
+                          role="progressbar"
+                          style="width: 20%"
+                          aria-valuenow="20"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar progress-bar-striped bg-danger"
+                          role="progressbar"
+                          style="width: 29%"
+                          aria-valuenow="29"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                      </div>
+                    </div>
+                    <div class="col-sm">
+                      <div class="progress mb-0" style="height: 22px">
+                        <div
+                          class="progress-bar progress-bar-striped bg-primary force-gpu"
+                          id="dbfs_level"
+                          role="progressbar"
+                          style="width: 0%"
+                          aria-valuenow="0"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <p
+                          class="justify-content-center d-flex position-absolute w-100"
+                          id="dbfs_level_value"
+                        >
+                          dBFS (Audio Level)
+                        </p>
+                      </div>
+                      <div class="progress mb-0" style="height: 8px">
+                        <div
+                          class="progress-bar progress-bar-striped bg-warning"
+                          role="progressbar"
+                          style="width: 1%"
+                          aria-valuenow="1"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar bg-success"
+                          role="progressbar"
+                          style="width: 89%"
+                          aria-valuenow="50"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar progress-bar-striped bg-warning"
+                          role="progressbar"
+                          style="width: 20%"
+                          aria-valuenow="20"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                        <div
+                          class="progress-bar progress-bar-striped bg-danger"
+                          role="progressbar"
+                          style="width: 29%"
+                          aria-valuenow="29"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card mb-1">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-1">
+                      <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Broadcasts</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalBroadcasts"
+                        data-bs-toggle="modal"
+                        data-bs-target="#broadcastsHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-2">
+                <div class="row">
+                  <div class="col-md-auto">
+                    <div class="input-group input-group-sm mb-0">
+                      <input
+                        type="text"
+                        class="form-control"
+                        style="max-width: 6rem; text-transform: uppercase"
+                        placeholder="DXcall"
+                        pattern="[A-Z]*"
+                        id="dxCall"
+                        maxlength="11"
+                        aria-label="Input group"
+                        aria-describedby="btnGroupAddon"
+                      />
+                      <button
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        id="sendPing"
+                        type="button"
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="Send a ping request to a remote station"
+                      >
+                        Ping
+                      </button>
+                      <!-- disabled because it's causing confusion TODO: remove entire code some day
+                      <button
+                        class="btn btn-sm btn-outline-success ms-1"
+                        id="openARQSession"
+                        type="button"
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="connect to a remote station"
+                      >
+                        <i
+                          class="bi bi-arrows-angle-contract"
+                          style="font-size: 0.8rem"
+                        ></i>
+                      </button>
+                      <button
+                        class="btn btn-sm btn-outline-danger"
+                        id="closeARQSession"
+                        type="button"
+                        data-bs-placement="bottom"
+                        data-bs-toggle="tooltip"
+                        data-bs-trigger="hover"
+                        data-bs-html="false"
+                        title="disconnect from a remote station"
+                      >
+
+                        <i
+                          class="bi bi-arrows-angle-expand"
+                          style="font-size: 0.8rem"
+                        ></i>
+                      </button>
+                      -->
+
+                      <button
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        id="sendCQ"
+                        type="button"
+                        title="Send a CQ to the world"
+                      >
+                        Call CQ
+                      </button>
+
+                      <button
+                        type="button"
+                        id="startBeacon"
+                        class="btn btn-sm btn-outline-secondary ms-1"
+                        title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+                      >
+                        <i class="bi bi-soundwave"></i> Toggle beacon
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <!-- end of row-->
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="row collapse multi-collapse mt-3" id="collapseFourthRow">
+          <div class="col-5">
+            <div class="card mb-1">
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-11">
+                      <div
+                        class="btn-group btn-group-sm"
+                        role="group"
+                        aria-label="waterfall-scatter-switch toggle button group"
+                      >
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch1"
+                          autocomplete="off"
+                          checked
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch1"
+                          ><strong><i class="bi bi-water"></i></strong>
+                        </label>
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch2"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch2"
+                          ><strong><i class="bi bi-border-outer"></i></strong>
+                        </label>
+                        <input
+                          type="radio"
+                          class="btn-check"
+                          name="waterfall-scatter-switch"
+                          id="waterfall-scatter-switch3"
+                          autocomplete="off"
+                        />
+                        <label
+                          class="btn btn-sm btn-outline-secondary"
+                          for="waterfall-scatter-switch3"
+                          ><strong><i class="bi bi-graph-up-arrow"></i></strong>
+                        </label>
+                      </div>
+                      <div
+                        class="btn-group"
+                        role="group"
+                        aria-label="Busy indicators"
+                      >
+                        <button
+                          class="btn btn-sm btn-secondary"
+                          id="channel_busy"
+                          type="button"
+                          data-bs-placement="top"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+                        >
+                          busy
+                        </button>
+                        <button
+                          class="btn btn-sm btn-outline-secondary"
+                          id="c2_busy"
+                          type="button"
+                          data-bs-placement="top"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
+                        >
+                          signal
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalWaterfall"
+                        data-bs-toggle="modal"
+                        data-bs-target="#waterfallHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-1" style="height: 200px">
+                <!--278px-->
+                <canvas
+                  id="waterfall"
+                  style="position: relative; z-index: 2"
+                  class="force-gpu"
+                ></canvas>
+                <canvas
+                  id="scatter"
+                  style="position: relative; z-index: 1"
+                  class="force-gpu"
+                ></canvas>
+                <canvas
+                  id="chart"
+                  style="position: relative; z-index: 1"
+                  class="force-gpu"
+                ></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col">
+            <div class="card mb-1" style="height: 240px">
+              <!--325px-->
+              <div class="card-header p-1">
+                <div class="container">
+                  <div class="row">
+                    <div class="col-auto">
+                      <i
+                        class="bi bi-list-columns-reverse"
+                        style="font-size: 1.2rem"
+                      ></i>
+                    </div>
+                    <div class="col-10">
+                      <strong class="fs-5">Heard stations</strong>
+                    </div>
+                    <div class="col-1 text-end">
+                      <button
+                        type="button"
+                        id="openHelpModalHeardStations"
+                        data-bs-toggle="modal"
+                        data-bs-target="#heardStationsHelpModal"
+                        class="btn m-0 p-0 border-0"
+                      >
+                        <i
+                          class="bi bi-question-circle"
+                          style="font-size: 1rem"
+                        ></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body p-0" style="overflow-y: overlay">
+                <div class="table-responsive">
+                  <!-- START OF TABLE FOR HEARD STATIONS -->
+                  <table class="table table-sm" id="tblHeardStationList">
+                    <thead>
+                      <tr>
+                        <th scope="col" id="thTime">
+                          <i id="hslSort" class="bi bi-sort-up"></i>Time
+                        </th>
+                        <th scope="col" id="thFreq">Frequency</th>
+                        <th>&nbsp;</th>
+                        <th scope="col" id="thDxcall">DXCall</th>
+                        <th scope="col" id="thDxgrid">DXGrid</th>
+                        <th scope="col" id="thDist">Distance</th>
+                        <th scope="col" id="thType">Type</th>
+                        <th scope="col" id="thSnr">SNR (rx/dx)</th>
+                        <!--<th scope="col">Off</th>-->
+                      </tr>
+                    </thead>
+                    <tbody id="heardstations"></tbody>
+                  </table>
+                </div>
+                <!-- END OF HEARD STATIONS TABLE -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+
+      </div>
+
+      <div class="tab-pane fade" id="list-mesh" role="tabpanel" aria-labelledby="list-mesh-list">
+<div class="container">
+            <nav>
+      <div class="nav nav-tabs" id="nav-tab-mesh" role="tablist-mesh">
+        <button
+          class="nav-link active"
+          id="nav-route-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nav-route"
+          type="button"
+          role="tab"
+          aria-controls="nav-route"
+          aria-selected="true"
+        >
+          Routes
+        </button>
+        <button
+          class="nav-link"
+          id="nav-signaling-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nav-signaling"
+          type="button"
+          role="tab"
+          aria-controls="nav-signaling"
+          aria-selected="false"
+        >
+          Signaling
+        </button>
+        <button
+          class="nav-link"
+          id="nav-actions-tab"
+          data-bs-toggle="tab"
+          data-bs-target="#nav-actions"
+          type="button"
+          role="tab"
+          aria-controls="nav-actions"
+          aria-selected="false"
+        >
+          Actions
+        </button>
+      </div>
+    </nav>
+
+            <div class="tab-content" id="nav-tabContent-Mesh">
+      <div
+        class="tab-pane fade show active vw-100 vh-90 overflow-auto"
+        id="nav-route"
+        role="tabpanel"
+        aria-labelledby="nav-route-tab"
+      >
+        <div class="container-fluid">
+          <div
+            class="table-responsive overflow-auto"
+            style="max-width: 99vw; max-height: 99vh"
+          >
+            <table class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">Timestamp</th>
+                  <th scope="col">DXCall</th>
+                  <th scope="col">Router</th>
+                  <th scope="col">Hops</th>
+                  <th scope="col">Score</th>
+                  <th scope="col">SNR</th>
+                </tr>
+              </thead>
+              <tbody id="mesh-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="nav-signaling"
+        role="tabpanel"
+        aria-labelledby="nav-signaling-tab"
+      >
+        <div class="container-fluid">
+          <div
+            class="table-responsive overflow-auto"
+            style="max-width: 99vw; max-height: 99vh"
+          >
+            <table class="table table-hover table-sm">
+              <thead>
+                <tr>
+                  <th scope="col">Timestamp</th>
+                  <th scope="col">Destination</th>
+                  <th scope="col">Origin</th>
+                  <th scope="col">Frametype</th>
+                  <th scope="col">Payload</th>
+                  <th scope="col">Attempt</th>
+                  <th scope="col">Status</th>
+                </tr>
+              </thead>
+              <tbody id="mesh-signalling-table"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div
+        class="tab-pane fade"
+        id="nav-actions"
+        role="tabpanel-mesh"
+        aria-labelledby="nav-actions-tab"
+      >
+        <div class="input-group mt-1">
+          <input
+            type="text"
+            class="form-control"
+            style="max-width: 6rem; text-transform: uppercase"
+            placeholder="DXcall"
+            pattern="[A-Z]*"
+            id="dxCallMesh"
+            maxlength="11"
+            aria-label="Input group"
+            aria-describedby="btnGroupAddon"
+          />
+          <button id="transmit_mesh_ping" type="button" class="btn btn-primary">
+            mesh ping
+          </button>
+        </div>
+      </div>
+    </div>
+
+</div>
+
+      </div>
+      <div class="tab-pane fade" id="list-info" role="tabpanel" aria-labelledby="list-info-list">
+
+
+
+
+        <h1 class="modal-title fs-5" id="aboutModalLabel">FreeDATA -  <span id="aboutVersion"></span></h1>
+
+<div class="container-fluid">
+              <div class="row mt-2">
+                <div
+                  class="btn-toolbar mx-auto"
+                  role="toolbar"
+                  aria-label="Toolbar with button groups"
+                >
+                  <div class="btn-group">
+
+              <button
+                class="btn btn-sm bi bi-geo-alt btn-secondary me-2"
+                id="openExplorer"
+                type="button"
+                data-bs-placement="bottom"
+              >
+                Explorer map
+              </button>
+</div>
+                                    <div class="btn-group">
+
+              <button
+                class="btn btn-sm btn-secondary me-2 bi bi-graph-up"
+                id="btnStats"
+                type="button"
+                data-bs-placement="bottom"
+              >
+                Statistics
+              </button>
+</div>
+                                    <div class="btn-group">
+
+                    <button
+                      class="btn btn-secondary bi bi-bookmarks me-2"
+                      id="fdWww"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      title="FreeDATA website"
+                      role="button"
+                    >Website</button>
+                  </div>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-secondary bi bi-github me-2"
+                      id="ghUrl"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      title="Github"
+                      role="button"
+                    >Github</button>
+                  </div>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-secondary bi bi-wikipedia me-2"
+                      id="wikiUrl"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      title="Wiki"
+                      role="button"
+                    >Wiki</button>
+                  </div>
+                  <div class="btn-group">
+                    <button
+                      class="btn btn-secondary bi bi-discord"
+                      id="discordUrl"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      title="Discord"
+                      role="button"
+                    >Discord</button>
+                  </div>
+                </div>
+              </div>
+              <div class="row mt-5">
+                <h6>Special thanks to</h6>
+                <hr />
+              </div>
+              <div class="row">
+                <div class="col-4" id="divContrib"></div>
+                <div class="col-4" id="divContrib2"></div>
+                <div class="col-4" id="divContrib3"></div>
+              </div>
+            </div>
+
+      </div>
+      <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
+
+    <div class="container-fluid m-0 p-0">
+
+
+                <!------ chat navbar ---------------------------------------------------------------------->
+
+      <nav class="navbar bg-body-tertiary border-bottom">
+
+    <div class="container">
+
+     <div class="row w-100">
+    <div class="col-4 p-0 me-2">
+
+    <div class="input-group bottom-0 m-0">
+              <input
+                class="form-control w-50"
+                maxlength="9"
+                style="text-transform: uppercase"
+                id="chatModuleNewDxCall"
+                placeholder="DX CALL"
+              />
+              <button
+                class="btn btn-sm btn-success"
+                id="createNewChatButton"
+                type="button"
+                title="Start a new chat (enter dx call sign first)"
+              >
+                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+              </button>
+
+              <button
+                type="button"
+                id="userModalButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModal"
+                class="btn btn-sm btn-primary ms-2"
+                title="My station info"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+              <button
+                type="button"
+                id="sharedFolderButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModal"
+                class="btn btn-sm btn-primary"
+                title="My shared folder"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+            </div>
+</div>
+    <div class="col-7 ms-2 p-0">
+            <div class="input-group bottom-0">
+              <button
+                class="btn btn-sm btn-outline-secondary me"
+                id="ping"
+                type="button"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="false"
+                title="Ping remote station"
+              >
+                Ping
+              </button>
+
+              <button
+                type="button"
+                id="userModalDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModalDX"
+                class="btn btn-sm btn-outline-secondary"
+                title="Request remote station's information"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+
+              <button
+                type="button"
+                id="sharedFolderDXButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModalDX"
+                class="btn btn-sm btn-outline-secondary me-2"
+                title="Request remote station's shared files"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+
+              <button
+                type="button"
+                class="btn btn-small btn-outline-primary dropdown-toggle me-2"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                data-bs-auto-close="outside"
+                data-bs-trigger="hover"
+                data-bs-html="false"
+                title="Message filter"
+              >
+                <i class="bi bi-funnel-fill"></i>
+              </button>
+              <form class="dropdown-menu p-4" id="frmFilter">
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      checked="true"
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkMessage"
+                    />
+                    <label class="form-check-label" for="chkMessage">
+                      All Messages
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      checked="false"
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkNewMessage"
+                    />
+
+                    <label class="form-check-label" for="chkNewMessage">
+                      Unread Messages
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkPing"
+                    />
+                    <label class="form-check-label" for="chkPing">
+                      Pings
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      checked="true"
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkPingAck"
+                    />
+                    <label class="form-check-label" for="chkPingAck">
+                      Ping-Acks
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkBeacon"
+                    />
+                    <label class="form-check-label" for="chkBeacon">
+                      Beacons
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkRequest"
+                    />
+                    <label class="form-check-label" for="chkRequest">
+                      Requests
+                    </label>
+                  </div>
+                </div>
+                <div class="mb-1">
+                  <div class="form-check">
+                    <input
+                      type="checkbox"
+                      class="form-check-input"
+                      id="chkResponse"
+                    />
+                    <label class="form-check-label" for="chkResponse">
+                      Responses
+                    </label>
+                  </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="btnFilter">
+                  Refresh
+                </button>
+              </form>
+
+              <button
+                id="chatSettingsDropDown"
+                type="button"
+                class="btn btn-outline-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                title="More options...."
+              >
+                <i class="bi bi-three-dots-vertical"></i>
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
+                <li>
+                  <a
+                    class="dropdown-item bg-danger text-white"
+                    id="delete_selected_chat"
+                    href="#"
+                    ><i class="bi bi-person-x" style="font-size: 1rem"></i>
+                    Delete chat</a
+                  >
+                </li>
+                <div class="dropdown-divider"></div>
+                <li>
+                  <button
+                    class="dropdown-item"
+                    id="openHelpModalchat"
+                    data-bs-toggle="modal"
+                    data-bs-target="#chatHelpModal"
+                  >
+                    <i
+                      class="bi bi-question-circle"
+                      style="font-size: 1rem"
+                    ></i>
+                    Help
+                  </button>
+                </li>
+              </ul>
+
+
+            </div>
+    </div>
+       </div>
+</div>
+</nav>
+
+
+      <div class="row h-100 ms-1 mt-1 me-1">
+        <div class="col-4">
+          <!------Chats area ---------------------------------------------------------------------->
+          <div class="container-fluid m-0 p-0">
+            <!--<div class="input-group bottom-0 m-0 w-100">
+              <input
+                class="form-control w-50"
+                maxlength="9"
+                style="text-transform: uppercase"
+                id="chatModuleNewDxCall"
+                placeholder="DX CALL"
+              />
+              <button
+                class="btn btn-sm btn-success"
+                id="createNewChatButton"
+                type="button"
+                title="Start a new chat (enter dx call sign first)"
+              >
+                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+              </button>
+
+              <button
+                type="button"
+                id="userModalButton"
+                data-bs-toggle="modal"
+                data-bs-target="#userModal"
+                class="btn btn-sm btn-primary ms-2"
+                title="My station info"
+              >
+                <i class="bi bi-person" style="font-size: 1.2rem"></i>
+              </button>
+              <button
+                type="button"
+                id="sharedFolderButton"
+                data-bs-toggle="modal"
+                data-bs-target="#sharedFolderModal"
+                class="btn btn-sm btn-primary"
+                title="My shared folder"
+              >
+                <i class="bi bi-files" style="font-size: 1.2rem"></i>
+              </button>
+            </div>-->
+          </div>
+          <div class="overflow-auto vh-100">
+            <div
+              class="list-group overflow-auto"
+              id="list-tab-chat"
+              role="tablist"
+              style="height: calc(100vh - 70px)"
+            ></div>
+          </div>
+        </div>
+        <div class="col-8 border-start vh-100 p-0">
+
+
+
+                   <div
+      class="position-absolute container bottom-0 end-0 mb-5"
+      style="z-index: 100; display: none"
+      id="emojipickercontainer"
+    >
+      <emoji-picker
+        locale="en"
+        class="position-absolute bottom-0 end-0 p-1 mb-2"
+        data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
+      ></emoji-picker>
+    </div>
+
+
+          <!------messages area ---------------------------------------------------------------------->
+          <div
+            class="container overflow-auto"
+            id="message-container"
+            style="height: calc(100% - 200px)"
+          >
+
+
+
+
+
+            <div class="tab-content" id="nav-tabContent-Chat"></div>
+            <!--<div class="container position-absolute bottom-0">-->
+          </div>
+          <!-- </div>-->
+          <div class="container-fluid mt-2 p-0">
+            <input
+              type="checkbox"
+              id="expand_textarea"
+              class="btn-check"
+              autocomplete="off"
+            />
+            <label
+              class="btn d-flex justify-content-center"
+              id="expand_textarea_label"
+              for="expand_textarea"
+              ><i
+                id="expand_textarea_button"
+                class="bi bi-chevron-compact-up"
+              ></i
+            ></label>
+
+            <div class="input-group bottom-0 ms-2">
+              <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
+              <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
+              <div class="input-group-text">
+                <i
+                  id="emojipickerbutton"
+                  class="bi bi-emoji-smile p-0"
+                  style="font-size: 1rem"
+                ></i>
+              </div>
+
+              <textarea
+                class="form-control"
+                rows="1"
+                id="chatModuleMessage"
+                placeholder="Message - Send with [Enter]"
+              ></textarea>
+
+              <div class="input-group-text me-3">
+                <i
+                  class="bi bi-paperclip"
+                  style="font-size: 1rem"
+                  id="selectFilesButton"
+                ></i>
+
+                <button
+                  class="btn btn-sm btn-secondary d-none invisible"
+                  id="sendMessage"
+                  type="button"
+                >
+                  <i class="bi bi-send" style="font-size: 1.2rem"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- user modal -->
+
+    <div
+      class="modal fade"
+      id="userModal"
+      tabindex="-1"
+      aria-labelledby="userModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" style="max-width: 600px">
+        <div class="modal-content">
+          <div class="card mb-1 border-0">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <div class="row position-relative p-0 m-0">
+                  <div class="col p-0 m-0">
+                    <img
+                      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
+                      class="img-fluid rounded-start w-100"
+                      alt="..."
+                      id="user_info_image"
+                    />
+                  </div>
+                  <div
+                    class="col position-absolute image-overlay text-white justify-content-center align-items-center d-flex align-middle h-100 opacity-0"
+                    id="userImageSelector"
+                  >
+                    <i class="bi bi-upload" style="font-size: 2.2rem"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"
+                      ><i class="bi bi-pass"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Callsign"
+                      id="user_info_callsign"
+                      aria-label="Call"
+                      aria-describedby="basic-addon1"
+                    />
+                    <span class="input-group-text"
+                      ><i class="bi bi-person-vcard"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="name"
+                      id="user_info_name"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+                    <span class="input-group-text"
+                      ><i class="bi bi-sunrise"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="age"
+                      id="user_info_age"
+                      aria-label="age"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"
+                      ><i class="bi bi-house"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Location"
+                      id="user_info_location"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+                    <span class="input-group-text"
+                      ><i class="bi bi-pin-map"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Grid"
+                      id="user_info_gridsquare"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"
+                      ><i class="bi bi-projector"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Radio"
+                      id="user_info_radio"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+
+                    <span class="input-group-text"
+                      ><i class="bi bi-broadcast-pin"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Antenna"
+                      id="user_info_antenna"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"
+                      ><i class="bi bi-envelope"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Email"
+                      id="user_info_email"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+
+                    <span class="input-group-text"
+                      ><i class="bi bi-globe"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Website"
+                      id="user_info_website"
+                      aria-label="Name"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+                  <div class="input-group input-group-sm mb-1">
+                    <span class="input-group-text"
+                      ><i class="bi bi-info-circle"></i
+                    ></span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Comments"
+                      id="user_info_comments"
+                      aria-label="Comments"
+                      aria-describedby="basic-addon1"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn btn-primary"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+            id="userInfoSave"
+          >
+            Save & Close
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- dx user modal -->
+    <div
+      class="modal fade"
+      id="userModalDX"
+      tabindex="-1"
+      aria-labelledby="userModalDXLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog" style="max-width: 600px">
+        <div class="modal-content">
+          <div class="card mb-1 border-0">
+            <div class="row g-0">
+              <div class="col-md-4">
+                <img
+                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
+                  class="img-fluid rounded-start w-100"
+                  alt="..."
+                  id="dx_user_info_image"
+                />
+              </div>
+              <div class="col-md-8">
+                <div class="card-body">
+                  <h5>
+                    <span
+                      class="badge bg-secondary"
+                      id="dx_user_info_callsign"
+                    ></span>
+                    -
+                    <span
+                      class="badge bg-secondary"
+                      id="dx_user_info_name"
+                    ></span>
+                    <span
+                      class="badge bg-secondary"
+                      id="dx_user_info_age"
+                    ></span>
+                  </h5>
+
+                  <ul class="card-text list-unstyled">
+                    <li>
+                      <strong class="col"><i class="bi bi-house"></i> </strong
+                      ><span id="dx_user_info_location"></span> (<span
+                        id="dx_user_info_gridsquare"
+                      ></span
+                      >)
+                    </li>
+                    <li>
+                      <strong class="col"
+                        ><i class="bi bi-envelope"></i> </strong
+                      ><span id="dx_user_info_email"></span>
+                    </li>
+                    <li>
+                      <strong class="col"><i class="bi bi-globe"></i> </strong
+                      ><span id="dx_user_info_website"></span>
+                    </li>
+                    <li>
+                      <strong class="col"
+                        ><i class="bi bi-broadcast-pin"></i> </strong
+                      ><span id="dx_user_info_antenna"></span>
+                    </li>
+                    <li>
+                      <strong class="col"
+                        ><i class="bi bi-projector"></i> </strong
+                      ><span id="dx_user_info_radio"></span>
+                    </li>
+                    <li>
+                      <strong class="col"
+                        ><i class="bi bi-info-circle"></i> </strong
+                      ><span id="dx_user_info_comments"></span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group input-group-sm m-0 p-0">
+            <button
+              type="button"
+              class="btn btn-warning w-75"
+              aria-label="Request"
+              id="requestUserInfo"
+            >
+              Request user data (about 20kBytes!)
+            </button>
+
+            <button
+              type="button"
+              class="btn btn-primary w-25"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- user shared folder -->
+    <div
+      class="modal fade"
+      id="sharedFolderModal"
+      tabindex="-1"
+      aria-labelledby="sharedFolderModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
+              My Shared folder
+              <button
+                type="button"
+                class="btn btn-primary"
+                id="openSharedFilesFolder"
+              >
+                <i class="bi bi-archive"></i>
+              </button>
+            </h1>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <div class="container-fluid p-0">
+              <div class="center mb-1">
+                <div class="badge text-bg-info">
+                  <i class="bi bi-info"></i> Change folder in settings!
+                </div>
+              </div>
+              <div class="table-responsive">
+                <!-- START OF TABLE FOR SHARED FOLDER -->
+                <table
+                  class="table table-sm table-hover table-bordered align-middle"
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sharedFolderTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODAL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="chatHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Chat Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <p class="card-text">
+                  Welcome to the chat window. Heard stations are listed in the
+                  list on the left. Clicking on a station will show messages
+                  sent and/or received from the selected station. Additional
+                  help is available on various extra features below.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button type="button" class="btn btn-sm btn-primary ms-2">
+                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
+                </button>
+                <p class="card-text">
+                  Set your station information and picture. This information can
+                  be requested by a remote station and can be enabled/disabled
+                  via settings.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary ms-2"
+                >
+                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
+                </button>
+                <p class="card-text">
+                  Request the selected station's information.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary ms-2"
+                >
+                  <i class="bi bi-files" style="font-size: 1.2rem"></i>
+                </button>
+                <p class="card-text">
+                  Request the selected station's shared file(s) list. Clicking
+                  <button type="button" class="btn btn-sm btn-primary ms-2">
+                    <i class="bi bi-files" style="font-size: 1.2rem"></i>
+                  </button>
+                  will allow you to preview your shared files. Shared file can
+                  be enabled/disabled in settings.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  type="button"
+                  class="btn btn-small btn-outline-primary dropdown-toggle me-2"
+                >
+                  <i class="bi bi-funnel-fill"></i>
+                </button>
+                <p class="card-text">
+                  The filter button allows you to show or hide certain types of
+                  messages. A lot of data is logged and this allows you to
+                  modify what is shown. By default sent and received messages
+                  and ping acknowlegements are displayed.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- dx user shared folder -->
+    <div
+      class="modal fade"
+      id="sharedFolderModalDX"
+      tabindex="-1"
+      aria-labelledby="sharedFolderModalDXLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
+              Shared folder
+            </h1>
+            <button
+              type="button"
+              class="btn btn-primary m-2"
+              aria-label="Request"
+              id="requestSharedFolderList"
+            >
+              <i class="bi bi-arrow-repeat"></i>
+            </button>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+              <div class="table-responsive">
+                <!-- START OF TABLE FOR SHARED FOLDER DX -->
+                <table
+                  class="table table-sm table-hover table-bordered align-middle"
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col">#</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Type</th>
+                      <th scope="col">Size</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sharedFolderTableDX"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <div class="input-group input-group-sm m-0 p-0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+      </div>
+      <div class="tab-pane fade" id="list-logger" role="tabpanel" aria-labelledby="list-logger-list">
+        <div class="container">
+              <nav class="navbar fixed-top bg-body-tertiary border-bottom" style="margin-left: 87px">
+      <div class="container-fluid">
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="enable_filter_info"
+          autocomplete="off"
+          checked
+        />
+        <label class="btn btn-outline-info" for="enable_filter_info"
+          >info</label
+        >
+
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="enable_filter_debug"
+          autocomplete="off"
+        />
+        <label class="btn btn-outline-primary" for="enable_filter_debug"
+          >debug</label
+        >
+
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="enable_filter_warning"
+          autocomplete="off"
+        />
+        <label class="btn btn-outline-warning" for="enable_filter_warning"
+          >warning</label
+        >
+
+        <input
+          type="checkbox"
+          class="btn-check"
+          id="enable_filter_error"
+          autocomplete="off"
+        />
+        <label class="btn btn-outline-danger" for="enable_filter_error"
+          >error</label
+        >
+      </div>
+    </nav >
+
+    <div class="container-fluid mt-5">
+      <div class="tableFixHead">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Timestamp</th>
+              <th scope="col">Type</th>
+              <th scope="col">Area</th>
+              <th scope="col">Log entry</th>
+            </tr>
+          </thead>
+          <tbody id="log">
+            <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+
+        </div>
+
+
+      </div>
+      <div class="tab-pane fade" id="list-settings" role="tabpanel" aria-labelledby="list-settings-list">
+
+        <div class="container">
+
+          <div class="badge text-bg-warning ms-3">
+              <i class="bi bi-exclamation-triangle"></i> Please restart the TNC
+              after changing settings!
+            </div>
+            <!-- SETTINGS Nav tabs -->
+
+
+
+
+
+
+            <ul class="nav nav-tabs" id="myTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link active"
+                  id="gui-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#gui"
+                  type="button"
+                  role="tab"
+                  aria-controls="home"
+                  aria-selected="true"
+                >
+                  GUI
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="chat-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#chat"
+                  type="button"
+                  role="tab"
+                  aria-controls="home"
+                  aria-selected="true"
+                >
+                  Chat
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="hamlib-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#hamlib"
+                  type="button"
+                  role="tab"
+                  aria-controls="profile"
+                  aria-selected="false"
+                >
+                  Hamlib
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="tnc-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#tnc"
+                  type="button"
+                  role="tab"
+                  aria-controls="profile"
+                  aria-selected="false"
+                >
+                  TNC
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="web-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#web"
+                  type="button"
+                  role="tab"
+                  aria-controls="messages"
+                  aria-selected="false"
+                >
+                  Web
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button
+                  class="nav-link"
+                  id="experiments-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#experiments"
+                  type="button"
+                  role="tab"
+                  aria-controls="settings"
+                  aria-selected="false"
+                >
+                  Exp
+                </button>
+              </li>
+            </ul>
+            <!-- SETTINGS Nav Tab panes -->
+            <div class="tab-content mt-1">
+              <!-- GUI tab contents-->
+              <div
+                class="tab-pane active"
+                id="gui"
+                role="tabpanel"
+                aria-labelledby="gui-tab"
+                tabindex="0"
+              >
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50">GUI theme</span>
+                  <select
+                    class="form-select form-select-sm w-50"
+                    id="theme_selector"
+                    @click="testfunction"
+                  >
+                    <option value="default_light">Default (light)</option>
+                    <option value="default_dark">Default (dark)</option>
+                    <option value="default_auto">Default (auto)</option>
+                    <option value="cerulean">Cerulean</option>
+                    <option value="cosmo">Cosmo</option>
+                    <option value="cyborg">Cyborg</option>
+                    <option value="darkly">Darkly</option>
+                    <option value="flatly">Flatly</option>
+                    <option value="journal">Journal</option>
+                    <option value="litera">Litera</option>
+                    <option value="lumen">Lumen</option>
+                    <option value="lux">Lux</option>
+                    <option value="materia">Materia</option>
+                    <option value="minty">Minty</option>
+                    <option value="morph">Morhp</option>
+                    <option value="pulse">Pulse</option>
+                    <option value="quartz">Quartz</option>
+                    <option value="sandstone">Sandstone</option>
+                    <option value="simplex">Simplex</option>
+                    <option value="sketchy">Sketchy</option>
+                    <option value="slate">Slate</option>
+                    <option value="solar">Solar</option>
+                    <option value="spacelab">Spacelab</option>
+                    <option value="superhero">Superhero</option>
+                    <option value="united">United</option>
+                    <option value="vapor">Vapor</option>
+                    <option value="yeti">Yeti</option>
+                    <option value="zephyr">Zephyr</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50">Waterfall theme</span>
+                  <select
+                    class="form-select form-select-sm w-50"
+                    id="wftheme_selector"
+                  >
+                    <option value="2">Default</option>
+                    <option value="0">Turbo</option>
+                    <option value="1">Fosphor</option>
+                    <option value="3">Inferno</option>
+                    <option value="4">Magma</option>
+                    <option value="5">Jet</option>
+                    <option value="6">Binary</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">Enable fancy GUI</label>
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="GraphicsSwitch"
+                      />
+                      <label class="form-check-label" for="GraphicsSwitch"
+                        >Higher CPU Usage</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50" for="inputGroupFile02"
+                    >Received files folder</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control w-50"
+                    id="received_files_folder"
+                  />
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50">Update channel</span>
+                  <select
+                    class="form-select form-select-sm w-50"
+                    id="update_channel_selector"
+                  >
+                    <option value="latest">stable</option>
+                    <option value="beta">beta</option>
+                    <option value="alpha">alpha</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable notifications</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="NotificationSwitch"
+                      />
+                      <label class="form-check-label" for="NotificationSwitch"
+                        >Show system pop-ups</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Auto-start TNC/rigctld</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="AutoStartSwitch"
+                      />
+                      <label class="form-check-label" for="AutoStartSwitch"
+                        >Start on app launch</label
+                      >
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div
+                class="tab-pane"
+                id="chat"
+                role="tabpanel"
+                aria-labelledby="chat-tab"
+                tabindex="0"
+              >
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable "is typing"</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enable_is_writing"
+                      />
+                      <label class="form-check-label" for="GraphicsSwitch"
+                        >Additional broadcast burst</label
+                      >
+                    </div>
+                  </label>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Allow requesting "user profile"</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enable_request_profile"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Allow requesting "shared folder"</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enable_request_shared_folder"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Shared folder path</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control w-50"
+                    id="shared_folder_path"
+                  />
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable auto retry on Beacon or Ping
+                  </label>
+
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enable_auto_retry"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50"
+                    >message retry attempts</span
+                  >
+                  <select
+                    class="form-select form-select-sm w-50"
+                    id="max_retry_attempts"
+                  >
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                  </select>
+                </div>
+              </div>
+
+              <!--Rigctl tab contents-->
+              <div
+                class="tab-pane"
+                id="hamlib"
+                role="tabpanel"
+                aria-labelledby="hamlib-tab"
+                tabindex="0"
+              >
+                <hr class="m-2" />
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Rigctld path</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="rigctld Path"
+                    id="hamlib_rigctld_path"
+                    aria-label="Device IP"
+                    aria-describedby="basic-addon1"
+                  />
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Rigctld server port</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="rigctld port"
+                    id="hamlib_rigctld_server_port"
+                    aria-label="Device Port"
+                    aria-describedby="basic-addon1"
+                  />
+                </div>
+                <hr class="m-2" />
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px">
+                    Radio model
+                  </span>
+                  <input
+                    class="form-control"
+                    list="datalistOptions"
+                    id="hamlib_deviceid"
+                    placeholder="Search radio..."
+                    style="width: 7rem"
+                  />
+                  <datalist id="datalistOptions">
+                    <option selected value="-- ignore --">-- ignore --</option>
+                    <option value="2028">Kenwood TS480</option>
+                    <option value="1">Hamlib Dummy</option>
+                    <option value="2">Hamlib NET rigctl</option>
+                    <option value="4">FLRig FLRig</option>
+                    <option value="5">TRXManager TRXManager 5.7.630+</option>
+                    <option value="6">Hamlib Dummy No VFO</option>
+                    <option value="1001">Yaesu FT-847</option>
+                    <option value="1003">Yaesu FT-1000D</option>
+                    <option value="1004">Yaesu MARK-V FT-1000MP</option>
+                    <option value="1005">Yaesu FT-747GX</option>
+                    <option value="1006">Yaesu FT-757GX</option>
+                    <option value="1007">Yaesu FT-757GXII</option>
+                    <option value="1009">Yaesu FT-767GX</option>
+                    <option value="1010">Yaesu FT-736R</option>
+                    <option value="1011">Yaesu FT-840</option>
+                    <option value="1013">Yaesu FT-900</option>
+                    <option value="1014">Yaesu FT-920</option>
+                    <option value="1015">Yaesu FT-890</option>
+                    <option value="1016">Yaesu FT-990</option>
+                    <option value="1017">Yaesu FRG-100</option>
+                    <option value="1018">Yaesu FRG-9600</option>
+                    <option value="1019">Yaesu FRG-8800</option>
+                    <option value="1020">Yaesu FT-817</option>
+                    <option value="1021">Yaesu FT-100</option>
+                    <option value="1022">Yaesu FT-857</option>
+                    <option value="1023">Yaesu FT-897</option>
+                    <option value="1024">Yaesu FT-1000MP</option>
+                    <option value="1025">Yaesu MARK-V Field FT-1000MP</option>
+                    <option value="1026">Yaesu VR-5000</option>
+                    <option value="1027">Yaesu FT-450</option>
+                    <option value="1028">Yaesu FT-950</option>
+                    <option value="1029">Yaesu FT-2000</option>
+                    <option value="1030">Yaesu FTDX-9000</option>
+                    <option value="1031">Yaesu FT-980</option>
+                    <option value="1032">Yaesu FTDX-5000</option>
+                    <option value="1033">Vertex Standard VX-1700</option>
+                    <option value="1034">Yaesu FTDX-1200</option>
+                    <option value="1035">Yaesu FT-991</option>
+                    <option value="1036">Yaesu FT-891</option>
+                    <option value="1037">Yaesu FTDX-3000</option>
+                    <option value="1038">Yaesu FT-847UNI</option>
+                    <option value="1039">Yaesu FT-600</option>
+                    <option value="1040">Yaesu FTDX-101D</option>
+                    <option value="1041">Yaesu FT-818</option>
+                    <option value="1042">Yaesu FTDX-10</option>
+                    <option value="1043">Yaesu FT-897D</option>
+                    <option value="1044">Yaesu FTDX-101MP</option>
+                    <option value="2001">Kenwood TS-50S</option>
+                    <option value="2002">Kenwood TS-440S</option>
+                    <option value="2003">Kenwood TS-450S</option>
+                    <option value="2004">Kenwood TS-570D</option>
+                    <option value="2005">Kenwood TS-690S</option>
+                    <option value="2006">Kenwood TS-711</option>
+                    <option value="2007">Kenwood TS-790</option>
+                    <option value="2008">Kenwood TS-811</option>
+                    <option value="2009">Kenwood TS-850</option>
+                    <option value="2010">Kenwood TS-870S</option>
+                    <option value="2011">Kenwood TS-940S</option>
+                    <option value="2012">Kenwood TS-950S</option>
+                    <option value="2013">Kenwood TS-950SDX</option>
+                    <option value="2014">Kenwood TS-2000</option>
+                    <option value="2015">Kenwood R-5000</option>
+                    <option value="2016">Kenwood TS-570S</option>
+                    <option value="2017">Kenwood TH-D7A</option>
+                    <option value="2019">Kenwood TH-F6A</option>
+                    <option value="2020">Kenwood TH-F7E</option>
+                    <option value="2021">Elecraft K2</option>
+                    <option value="2022">Kenwood TS-930</option>
+                    <option value="2023">Kenwood TH-G71</option>
+                    <option value="2024">Kenwood TS-680S</option>
+                    <option value="2025">Kenwood TS-140S</option>
+                    <option value="2026">Kenwood TM-D700</option>
+                    <option value="2027">Kenwood TM-V7</option>
+                    <option value="2028">Kenwood TS-480</option>
+                    <option value="2029">Elecraft K3</option>
+                    <option value="2030">Kenwood TRC-80</option>
+                    <option value="2031">Kenwood TS-590S</option>
+                    <option value="2032">SigFox Transfox</option>
+                    <option value="2033">Kenwood TH-D72A</option>
+                    <option value="2034">Kenwood TM-D710(G)</option>
+                    <option value="2036">FlexRadio 6xxx</option>
+                    <option value="2037">Kenwood TS-590SG</option>
+                    <option value="2038">Elecraft XG3</option>
+                    <option value="2039">Kenwood TS-990s</option>
+                    <option value="2040">OpenHPSDR PiHPSDR</option>
+                    <option value="2041">Kenwood TS-890S</option>
+                    <option value="2042">Kenwood TH-D74</option>
+                    <option value="2043">Elecraft K3S</option>
+                    <option value="2044">Elecraft KX2</option>
+                    <option value="2045">Elecraft KX3</option>
+                    <option value="2046">Hilberling PT-8000A</option>
+                    <option value="2047">Elecraft K4</option>
+                    <option value="2048">FlexRadio/ANAN PowerSDR/Thetis</option>
+                    <option value="2049">Malachite DSP</option>
+                    <option value="3002">Icom IC-1275</option>
+                    <option value="3003">Icom IC-271</option>
+                    <option value="3004">Icom IC-275</option>
+                    <option value="3006">Icom IC-471</option>
+                    <option value="3007">Icom IC-475</option>
+                    <option value="3009">Icom IC-706</option>
+                    <option value="3010">Icom IC-706MkII</option>
+                    <option value="3011">Icom IC-706MkIIG</option>
+                    <option value="3012">Icom IC-707</option>
+                    <option value="3013">Icom IC-718</option>
+                    <option value="3014">Icom IC-725</option>
+                    <option value="3015">Icom IC-726</option>
+                    <option value="3016">Icom IC-728</option>
+                    <option value="3017">Icom IC-729</option>
+                    <option value="3019">Icom IC-735</option>
+                    <option value="3020">Icom IC-736</option>
+                    <option value="3021">Icom IC-737</option>
+                    <option value="3022">Icom IC-738</option>
+                    <option value="3023">Icom IC-746</option>
+                    <option value="3024">Icom IC-751</option>
+                    <option value="3026">Icom IC-756</option>
+                    <option value="3027">Icom IC-756PRO</option>
+                    <option value="3028">Icom IC-761</option>
+                    <option value="3029">Icom IC-765</option>
+                    <option value="3030">Icom IC-775</option>
+                    <option value="3031">Icom IC-781</option>
+                    <option value="3032">Icom IC-820H</option>
+                    <option value="3034">Icom IC-821H</option>
+                    <option value="3035">Icom IC-970</option>
+                    <option value="3036">Icom IC-R10</option>
+                    <option value="3037">Icom IC-R71</option>
+                    <option value="3038">Icom IC-R72</option>
+                    <option value="3039">Icom IC-R75</option>
+                    <option value="3040">Icom IC-R7000</option>
+                    <option value="3041">Icom IC-R7100</option>
+                    <option value="3042">Icom ICR-8500</option>
+                    <option value="3043">Icom IC-R9000</option>
+                    <option value="3044">Icom IC-910</option>
+                    <option value="3045">Icom IC-78</option>
+                    <option value="3046">Icom IC-746PRO</option>
+                    <option value="3047">Icom IC-756PROII</option>
+                    <option value="3051">Ten-Tec Omni VI Plus</option>
+                    <option value="3052">Optoelectronics OptoScan535</option>
+                    <option value="3053">Optoelectronics OptoScan456</option>
+                    <option value="3054">Icom IC ID-1</option>
+                    <option value="3055">Icom IC-703</option>
+                    <option value="3056">Icom IC-7800</option>
+                    <option value="3057">Icom IC-756PROIII</option>
+                    <option value="3058">Icom IC-R20</option>
+                    <option value="3060">Icom IC-7000</option>
+                    <option value="3061">Icom IC-7200</option>
+                    <option value="3062">Icom IC-7700</option>
+                    <option value="3063">Icom IC-7600</option>
+                    <option value="3064">Ten-Tec Delta II</option>
+                    <option value="3065">Icom IC-92D</option>
+                    <option value="3066">Icom IC-R9500</option>
+                    <option value="3067">Icom IC-7410</option>
+                    <option value="3068">Icom IC-9100</option>
+                    <option value="3069">Icom IC-RX7</option>
+                    <option value="3070">Icom IC-7100</option>
+                    <option value="3071">Icom ID-5100</option>
+                    <option value="3072">Icom IC-2730</option>
+                    <option value="3073">Icom IC-7300</option>
+                    <option value="3074">Microtelecom Perseus</option>
+                    <option value="3075">Icom IC-785x</option>
+                    <option value="3076">Xeigu X108G</option>
+                    <option value="3077">Icom IC-R6</option>
+                    <option value="3078">Icom IC-7610</option>
+                    <option value="3079">Icom IC-R8600</option>
+                    <option value="3080">Icom IC-R30</option>
+                    <option value="3081">Icom IC-9700</option>
+                    <option value="3082">Icom ID-4100</option>
+                    <option value="3083">Icom ID-31</option>
+                    <option value="3084">Icom ID-51</option>
+                    <option value="3085">Icom IC-705</option>
+                    <option value="4001">Icom IC-PCR1000</option>
+                    <option value="4002">Icom IC-PCR100</option>
+                    <option value="4003">Icom IC-PCR1500</option>
+                    <option value="4004">Icom IC-PCR2500</option>
+                    <option value="5001">AOR AR8200</option>
+                    <option value="5002">AOR AR8000</option>
+                    <option value="5003">AOR AR7030</option>
+                    <option value="5004">AOR AR5000</option>
+                    <option value="5005">AOR AR3030</option>
+                    <option value="5006">AOR AR3000A</option>
+                    <option value="5008">AOR AR2700</option>
+                    <option value="5013">AOR AR8600</option>
+                    <option value="5014">AOR AR5000A</option>
+                    <option value="5015">AOR AR7030 Plus</option>
+                    <option value="5016">AOR SR2200</option>
+                    <option value="6005">JRC NRD-525</option>
+                    <option value="6006">JRC NRD-535D</option>
+                    <option value="6007">JRC NRD-545 DSP</option>
+                    <option value="8001">Uniden BC780xlt</option>
+                    <option value="8002">Uniden BC245xlt</option>
+                    <option value="8003">Uniden BC895xlt</option>
+                    <option value="8004">Radio Shack PRO-2052</option>
+                    <option value="8006">Uniden BC250D</option>
+                    <option value="8010">Uniden BCD-396T</option>
+                    <option value="8011">Uniden BCD-996T</option>
+                    <option value="8012">Uniden BC898T</option>
+                    <option value="9002">Drake R-8A</option>
+                    <option value="9003">Drake R-8B</option>
+                    <option value="10004">Lowe HF-235</option>
+                    <option value="11003">Racal RA6790/GM</option>
+                    <option value="11005">Racal RA3702</option>
+                    <option value="12004">Watkins-Johnson WJ-8888</option>
+                    <option value="14002">Skanti TRP8000</option>
+                    <option value="14004">Skanti TRP 8255 S R</option>
+                    <option value="15001">Winradio WR-1000</option>
+                    <option value="15002">Winradio WR-1500</option>
+                    <option value="15003">Winradio WR-1550</option>
+                    <option value="15004">Winradio WR-3100</option>
+                    <option value="15005">Winradio WR-3150</option>
+                    <option value="15006">Winradio WR-3500</option>
+                    <option value="15007">Winradio WR-3700</option>
+                    <option value="15009">Winradio WR-G313</option>
+                    <option value="16001">Ten-Tec TT-550</option>
+                    <option value="16002">Ten-Tec TT-538 Jupiter</option>
+                    <option value="16003">Ten-Tec RX-320</option>
+                    <option value="16004">Ten-Tec RX-340</option>
+                    <option value="16005">Ten-Tec RX-350</option>
+                    <option value="16007">Ten-Tec TT-516 Argonaut V</option>
+                    <option value="16008">Ten-Tec TT-565 Orion</option>
+                    <option value="16009">Ten-Tec TT-585 Paragon</option>
+                    <option value="16011">Ten-Tec TT-588 Omni VII</option>
+                    <option value="16012">Ten-Tec RX-331</option>
+                    <option value="16013">Ten-Tec TT-599 Eagle</option>
+                    <option value="17001">Alinco DX-77</option>
+                    <option value="17002">Alinco DX-SR8</option>
+                    <option value="18001">Kachina 505DSP</option>
+                    <option value="22001">TAPR DSP-10</option>
+                    <option value="23001">Flex-radio SDR-1000</option>
+                    <option value="23003">
+                      DTTS Microwave Society DttSP IPC
+                    </option>
+                    <option value="23004">
+                      DTTS Microwave Society DttSP UDP
+                    </option>
+                    <option value="24001">RFT EKD-500</option>
+                    <option value="25001">Elektor Elektor 3/04</option>
+                    <option value="25002">SAT-Schneider DRT1</option>
+                    <option value="25003">
+                      Coding Technologies Digital World Traveller
+                    </option>
+                    <option value="25006">AmQRP DDS-60</option>
+                    <option value="25007">Elektor Elektor SDR-USB</option>
+                    <option value="25008">mRS miniVNA</option>
+                    <option value="25009">SoftRock Si570 AVR-USB</option>
+                    <option value="25011">KTH-SDR kit Si570 PIC-USB</option>
+                    <option value="25012">FiFi FiFi-SDR</option>
+                    <option value="25013">AMSAT-UK FUNcube Dongle</option>
+                    <option value="25014">N2ADR HiQSDR</option>
+                    <option value="25015">Funkamateur FA-SDR</option>
+                    <option value="25016">AE9RB Si570 Peaberry V1</option>
+                    <option value="25017">AE9RB Si570 Peaberry V2</option>
+                    <option value="25018">AMSAT-UK FUNcube Dongle Pro+</option>
+                    <option value="25019">HobbyPCB RS-HFIQ</option>
+                    <option value="26001">Video4Linux SW/FM radio</option>
+                    <option value="26002">Video4Linux2 SW/FM radio</option>
+                    <option value="27001">Rohde&Schwarz ESMC</option>
+                    <option value="27002">Rohde&Schwarz EB200</option>
+                    <option value="27003">Rohde&Schwarz XK2100</option>
+                    <option value="28001">Philips/Simoco PRM8060</option>
+                    <option value="29001">ADAT www.adat.ch ADT-200A</option>
+                    <option value="30001">Icom IC-M700PRO</option>
+                    <option value="30002">Icom IC-M802</option>
+                    <option value="30003">Icom IC-M710</option>
+                    <option value="30004">Icom IC-M803</option>
+                    <option value="31001">Dorji DRA818V</option>
+                    <option value="31002">Dorji DRA818U</option>
+                    <option value="32001">Barrett 2050</option>
+                    <option value="32002">Barrett 950</option>
+                    <option value="33001">ELAD FDM-DUO</option>
+                  </datalist>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px">
+                    Device port
+                  </span>
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_deviceport"
+                    style="width: 7rem"
+                  >
+                    <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+                                    <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Serial speed</span
+                  >
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_serialspeed"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="1200">1200</option>
+                    <option value="2400">2400</option>
+                    <option value="4800">4800</option>
+                    <option value="9600">9600</option>
+                    <option value="14400">14400</option>
+                    <option value="19200">19200</option>
+                    <option value="28800">28800</option>
+                    <option value="38400">38400</option>
+                    <option value="57600">57600</option>
+                    <option value="115200">115200</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Data bits</span
+                  >
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_data_bits"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Stop bits</span
+                  >
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_stop_bits"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Serial handshake</span
+                  >
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_handshake"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="None">None (Default)</option>
+                  </select>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >PTT device port</span
+                  >
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_ptt_port"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >PTT type</span
+                  >
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_pttprotocol"
+                    style="width: 0.5rem"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="NONE">NONE</option>
+                    <option value="RIG">RIG</option>
+                    <option value="USB">USB</option>
+                    <option value="RTS">Serial RTS</option>
+                    <option value="PARALLEL">Rig PARALLEL</option>
+                    <option value="MICDATA">Rig MICDATA</option>
+                    <option value="CM108">Rig CM108</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px">DCD</span>
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_dcd"
+                    style="width: 0.5rem"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="NONE">NONE</option>
+                    <option value="RIG">RIG/CAT</option>
+                    <option value="DSR">DSR</option>
+                    <option value="CTS">CTS</option>
+                    <option value="CD">CD</option>
+                    <option value="PARALLEL">PARALLEL</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px">DTR</span>
+
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="hamlib_dtrstate"
+                    style="width: 0.5rem"
+                  >
+                    <option selected value="ignore">-- ignore --</option>
+                    <option value="OFF">OFF</option>
+                    <option value="ON">ON</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Rigctld command</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="hamlib_rigctld_command"
+                    aria-label="Device Port"
+                    aria-describedby="basic-addon1"
+                    disabled
+                    placeholder="auto populated from above settings"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    id="btnHamlibCopyCommand"
+                  >
+                    <i id="btnHamlibCopyCommandBi" class="bi bi-clipboard"></i>
+                  </button>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text" style="width: 180px"
+                    >Rigctld custom arguments</span
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="not typically needed"
+                    id="hamlib_rigctld_custom_args"
+                    aria-label="Custom arguments"
+                    aria-describedby="basic-addon1"
+                  />
+                </div>
+              </div>
+
+              <!-- TNC Tab contents-->
+              <div
+                class="tab-pane"
+                id="tnc"
+                role="tabpanel"
+                aria-labelledby="tnc-tab"
+                tabindex="0"
+              >
+
+                                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">TNC IP</label>
+
+                                            <div
+            class="btn-group btn-group-sm me-2"
+            role="group"
+            aria-label="local-remote-switch toggle button group"
+            data-bs-placement="bottom"
+            data-bs-toggle="tooltip"
+            data-bs-trigger="hover"
+            data-bs-html="true"
+            title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
+          >
+            <input
+              type="radio"
+              class="btn-check"
+              name="local-remote-switch"
+              id="local-remote-switch1"
+              autocomplete="off"
+              checked
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="local-remote-switch1"
+            >
+              <i class="bi bi-pc-display-horizontal"></i>
+              <span class="ms-2 me-2">Local tnc</span>
+            </label>
+            <input
+              type="radio"
+              class="btn-check"
+              name="local-remote-switch"
+              id="local-remote-switch2"
+              autocomplete="off"
+            />
+            <label
+              class="btn btn-sm btn-outline-secondary"
+              for="local-remote-switch2"
+            >
+              <i class="bi bi-ethernet"></i>
+              <span class="ms-2 me-2">Remote tnc</span>
+            </label>
+          </div>
+
+          <div class="input-group input-group-sm me-2" id="remote-tnc-field">
+
+                                  <span class="input-group-text">tnc ip</span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="ip address"
+              id="tnc_adress"
+              value="192.168.178.163"
+              maxlength="17"
+              style="width: 8rem"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+            <span class="input-group-text">:</span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="port"
+              value="3000"
+              id="tnc_port"
+              maxlength="5"
+              max="65534"
+              min="1025"
+              style="width: 4rem"
+              aria-label="Username"
+              aria-describedby="basic-addon1"
+            />
+            <button
+              class="btn btn-sm btn-danger"
+              id="daemon_connection_state"
+              type="button"
+              disabled
+            >
+              <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
+            </button>
+
+                      </div>
+
+     <button
+            type="button"
+            id="openHelpModalLocalRemote"
+            data-bs-toggle="modal"
+            data-bs-target="#localRemoteHelpModal"
+            class="btn m-0 p-0 border-0"
+          >
+            <i class="bi bi-question-circle" style="font-size: 1rem"></i>
+          </button>
+
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">TX delay in ms</label>
+                  <select class="form-select form-select-sm" id="tx_delay">
+                    <option value="0">0</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="150">150</option>
+                    <option value="200">200</option>
+                    <option value="250">250</option>
+                    <option value="300">300</option>
+                    <option value="350">350</option>
+                    <option value="400">400</option>
+                    <option value="450">450</option>
+                    <option value="500">500</option>
+                    <option value="550">550</option>
+                    <option value="600">600</option>
+                    <option value="650">650</option>
+                    <option value="700">700</option>
+                    <option value="750">750</option>
+                    <option value="800">800</option>
+                    <option value="850">850</option>
+                    <option value="900">900</option>
+                    <option value="950">950</option>
+                    <option value="1000">1000</option>
+                  </select>
+                </div>
+
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-25">Tuning range</label>
+                  <label class="input-group-text">fmin</label>
+                  <select
+                    class="form-select form-select-sm"
+                    id="tuning_range_fmin"
+                  >
+                    <option value="-50.0">-50.0</option>
+                    <option value="-100.0">-100.0</option>
+                    <option value="-150.0">-150.0</option>
+                    <option value="-200.0">-200.0</option>
+                    <option value="-250.0">-250.0</option>
+                  </select>
+                  <label class="input-group-text">fmax</label>
+                  <select
+                    class="form-select form-select-sm"
+                    id="tuning_range_fmax"
+                  >
+                    <option value="50.0">50.0</option>
+                    <option value="100.0">100.0</option>
+                    <option value="150.0">150.0</option>
+                    <option value="200.0">200.0</option>
+                    <option value="250.0">250.0</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text w-50">Beacon interval</span>
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    id="beaconInterval"
+                    style="width: 6rem"
+                  >
+                    <option value="60">60 secs</option>
+                    <option value="90">90 secs</option>
+                    <option value="120">2 mins</option>
+                    <option selected value="300">5 mins</option>
+                    <option value="600">10 mins</option>
+                    <option value="900">15 mins</option>
+                    <option value="1800">30 mins</option>
+                    <option value="3600">60 mins</option>
+                  </select>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable waterfall data</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="fftSwitch"
+                      />
+                      <label class="form-check-label" for="fftSwitch"
+                        >Waterfall</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable scatter diagram data</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="scatterSwitch"
+                      />
+                      <label class="form-check-label" for="scatterSwitch"
+                        >Scatter</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable 250Hz only mode</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="250HzModeSwitch"
+                      />
+                      <label class="form-check-label" for="250HzModeSwitch"
+                        >250Hz</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">Respond to CQ</label>
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="respondCQSwitch"
+                      />
+                      <label class="form-check-label" for="respondCQSwitch"
+                        >QRV</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">RX buffer size</label>
+                  <label class="input-group-text w-50">
+                    <select
+                      class="form-select form-select-sm"
+                      id="rx_buffer_size"
+                    >
+                      <option value="1">1</option>
+                      <option value="2">2</option>
+                      <option value="4">4</option>
+                      <option value="8">8</option>
+                      <option value="16">16</option>
+                      <option value="32">32</option>
+                      <option value="64">64</option>
+                      <option value="128">128</option>
+                      <option value="256">256</option>
+                      <option value="512">512</option>
+                      <option value="1024">1024</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <!-- Stats Tab content-->
+              <div
+                class="tab-pane"
+                id="web"
+                role="tabpanel"
+                aria-labelledby="web-tab"
+                tabindex="0"
+              >
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Explorer publishing</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="ExplorerSwitch"
+                      />
+                      <label class="form-check-label" for="ExplorerSwitch"
+                        >Publish</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Explorer stats publishing</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="ExplorerStatsSwitch"
+                      />
+                      <label class="form-check-label" for="ExplorerStatsSwitch"
+                        >Publish stats</label
+                      >
+                    </div>
+                  </label>
+                </div>
+              </div>
+              <!-- Experimental Tab contents-->
+              <div
+                class="tab-pane"
+                id="experiments"
+                role="tabpanel"
+                aria-labelledby="experiments-tab"
+                tabindex="0"
+              >
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">Enable autotune</label>
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline ms-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="autoTuneSwitch"
+                      />
+                      <label class="form-check-label" for="autoTuneSwitch"
+                        >adjust ALC on TX</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50">Enable FSK mode</label>
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline ms-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="fskModeSwitch"
+                      />
+                      <label class="form-check-label" for="fskModeSwitch"
+                        >not available, yet</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Enable MESH protocol</label
+                  >
+                  <label class="input-group-text w-50">
+                    <div class="form-check form-switch form-check-inline ms-2">
+                      <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="enableMeshSwitch"
+                      />
+                      <label class="form-check-label" for="enableMeshSwitch"
+                        >experimental! REALLY!</label
+                      >
+                    </div>
+                  </label>
+                </div>
+                <div class="input-group input-group-sm mb-1">
+                  <label class="input-group-text w-50"
+                    >Database maintenance</label
+                  >
+                  <label class="input-group-text w-50">
+                    <button
+                      class="btn btn-outline-secondary btn-sm w-50"
+                      id="btnCleanDB"
+                      type="button"
+                    >
+                      Clean</button
+                    >&nbsp;
+                    <div
+                      class="spinner-border text-warning invisible"
+                      role="status"
+                      id="divCleanDBSpinner"
+                    ></div>
+                  </label>
+                </div>
+                <div class="center">
+                  <div class="badge text-bg-danger">
+                    <i class="bi bi-shield-exclamation"></i> These options may
+                    not work and are for experienced users only!
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+      </div>
+    </div>
+
+
+
+
+
+
+
+
+    <!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="receivedFilesSidebar"
+      aria-labelledby="receivedFilesSidebarLabel"
+    >
+      <div class="offcanvas-header p-2">
+        <button
+          class="btn btn-sm btn-primary me-2"
+          id="openReceivedFilesFolder"
+          type="button"
+        >
+          <i class="bi bi-folder2-open" style="font-size: 1rem"></i>
+        </button>
+        <h5 id="receivedFilesSidebarLabel">Filetransfer</h5>
+        <button
+          type="button"
+          class="btn-close text-reset"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="input-group input-group-sm p-1">
+        <input type="file" class="form-control" id="dataModalFile" />
+        <input
+          type="text"
+          class="form-control"
+          style="max-width: 6rem; text-transform: uppercase"
+          pattern="[A-Z]"
+          placeholder="DXcall"
+          id="dataModalDxCall"
+          maxlength="11"
+          aria-label="Input group"
+          aria-describedby="btnGroupAddon"
+        />
+        <button
+          type="button"
+          id="startTransmission"
+          data-bs-dismiss="offcanvas"
+          class="btn btn-success"
+        >
+          Send
+        </button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <!-- START OF TABLE FOR RECEIVED FILES-->
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Time</th>
+              <th scope="col">DXCall</th>
+              <!--<th scope="col">DXGrid</th>
+                        <th scope="col">Distance</th>-->
+              <th scope="col">Filename</th>
+              <!--<th scope="col">SNR</th>-->
+            </tr>
+          </thead>
+          <tbody id="rx-data">
+            <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+          </tbody>
+        </table>
+        <!-- END OF  RECEIVED FILES-->
+      </div>
+    </div>
+    <!------------------------------- DATA SIDEBAR ----------------------->
+    <div
+      class="offcanvas offcanvas-end"
+      tabindex="-1"
+      id="transmitFileSidebar"
+      aria-labelledby="transmitFileSidebarLabel"
+    >
+      <div class="offcanvas-header p-2">
+        <h5 id="transmitFileSidebarLabel">Transmit Files</h5>
+        <button
+          type="button"
+          class="btn-close text-reset"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
+      </div>
+      <div class="offcanvas-body p-0">
+        <!--<div id="transmitFileSidebar" class="sidebar shadow-lg rounded">-->
+        <div class="container-fluid">
+          <div class="container mt-1">
+            <div class="row mb-1">
+              <div class="col">
+                <div class="card mb-0">
+                  <div class="card-header p-1"><strong>DX Station</strong></div>
+                  <div class="card-body p-2">
+                    <div class="row">
+                      <div class="col-auto">
+                        <!--
+                                       <div class="input-group input-group-sm mb-0">
+
+                                       	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
+                                       </div>
+                                       -->
+                      </div>
+                      <div class="col-auto">
+                        <div class="input-group input-group-sm mb-0">
+                          <button
+                            class="btn btn-success"
+                            id="dataModalSendPing"
+                            type="button"
+                          >
+                            Ping
+                          </button>
+                          <span
+                            class="input-group-text text-secondary"
+                            id="dataModalPingACK"
+                            >ACK</span
+                          >
+                          <span
+                            class="input-group-text"
+                            id="dataModalPingDistance"
+                            >0000 km</span
+                          >
+                          <span class="input-group-text" id="dataModalPingDB"
+                            >0 dB</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!--col-->
+            </div>
+            <!--row-->
+            <div class="row mb-1">
+              <div class="col">
+                <div class="card mb-0">
+                  <!--
+                              <div class="card-header p-1"> <strong>Data</strong>
+                              </div>
+                              <div class="card-body p-2">
+                              	<div class="input-group input-group-sm mb-0">
+                              		<input type="file" class="form-control" id="dataModalFile">
+                              		<label class="input-group-text" for="inputGroupFile02">kB</label>
+                              	</div>
+                              </div>
+                              -->
+                </div>
+              </div>
+              <!--col-->
+            </div>
+            <!--row-->
+            <div class="row mb-1">
+              <div class="col">
+                <div class="card mb-0">
+                  <div class="card-header p-1"><strong>Mode</strong></div>
+                  <div class="card-body p-2">
+                    <div class="row">
+                      <div class="col">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Mode</span>
+                          <select
+                            class="form-select form-select-sm"
+                            aria-label=".form-select-sm"
+                            id="datamode"
+                            disabled
+                          >
+                            <option selected value="255">AUTO</option>
+                            <!--<option value="232">HIGH SNR (DC1)</option>-->
+                            <!--<option value="231">MED SNR (DC3)</option>-->
+                            <!--<option value="230">LOW SNR (DC0)</option>-->
+                          </select>
+                        </div>
+                      </div>
+                      <div class="col-auto">
+                        <div class="input-group input-group-sm">
+                          <span class="input-group-text">Frames</span>
+                          <select
+                            class="form-select form-select-sm"
+                            aria-label=".form-select-sm"
+                            id="framesperburst"
+                            disabled
+                          >
+                            <option selected value="1">1</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!--col-->
+              </div>
+              <!--row-->
+            </div>
+            <div class="row mb-1">
+              <div class="col">
+                <!--
+                           <button type="button" id="startTransmission" data-bs-dismiss="offcanvas" class="btn btn-success" style="width:100%">START TRANSMISSION</button>-->
+              </div>
+              <div class="col-md-auto">
+                <button
+                  type="button"
+                  id="stopTransmission"
+                  class="btn btn-danger"
+                  style="width: 100%"
+                >
+                  STOP
+                </button>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col"></div>
+            </div>
+            <!--row-->
+          </div>
+          <!--container-->
+          <!--</div>-->
+        </div>
+      </div>
+    </div>
+    <!--end of blur div -->
+    <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
+
+
+
+
+
+          <div class="container">
+      <nav
+        class="navbar fixed-bottom navbar-expand-xl bg-body-tertiary border-top p-2"
+        style="margin-left: 87px"
+      >
+        <div class="col-sm-2">
+          <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
+            <div class="btn-group btn-group-sm me-1" role="group">
+              <button
+                class="btn btn-sm btn-secondary me-1"
+                id="ptt_state"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"
+              >
+                <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
+              </button>
+
+              <button
+                class="btn btn-sm btn-secondary me-1"
+                id="busy_state"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
+              >
+                <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
+              </button>
+
+              <button
+                class="btn btn-sm btn-secondary me-1"
+                id="arq_session"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
+              >
+                <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
+              </button>
+
+              <button
+                class="btn btn-sm btn-secondary me-1"
+                id="arq_state"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"
+              >
+                <i
+                  class="bi bi-file-earmark-binary"
+                  style="font-size: 0.8rem"
+                ></i>
+              </button>
+
+              <button
+                class="btn btn-sm btn-secondary me-1"
+                id="rigctld_state"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                title="rigctld state: <strong class='text-success'>CONNECTED</strong> / <strong class='text-secondary'>UNKNOWN</strong>"
+              >
+                <i class="bi bi-usb-symbol" style="font-size: 0.8rem"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="input-group input-group-sm">
+            <div class="btn-group dropup me-1">
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                id="frequency"
+              >
+                ---
+              </button>
+              <form class="dropdown-menu p-2">
+                <div class="input-group input-group-sm">
+                  <input
+                    type="text"
+                    class="form-control"
+                    style="max-width: 6rem"
+                    placeholder="7053000"
+                    pattern="[0-9]*"
+                    id="newFrequency"
+                    maxlength="11"
+                    aria-label="Input group"
+                    aria-describedby="btnGroupAddon"
+                  />
+                  <span class="input-group-text">Hz</span>
+                  <button
+                    class="btn btn-sm btn-success"
+                    id="saveFrequency"
+                    type="button"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="save frequency"
+                  >
+                    <i class="bi bi-check-lg" style="font-size: 0.8rem"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+            <div class="btn-group dropup me-1">
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                id="mode"
+              >
+                ---
+              </button>
+              <form class="dropdown-menu p-2">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set FM"
+                  id="saveModeFM"
+                >
+                  FM
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set AM"
+                  id="saveModeAM"
+                >
+                  AM
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set LSB"
+                  id="saveModeLSB"
+                >
+                  LSB
+                </button>
+                <hr />
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set USB"
+                  id="saveModeUSB"
+                >
+                  USB
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set PKTUSB"
+                  id="saveModePKTUSB"
+                >
+                  PKTUSB
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set DIGU"
+                  id="saveModeDIGU"
+                >
+                  DIGU
+                </button>
+
+                <button
+                  type="button"
+                  class="btn btn-sm btn-secondary"
+                  data-bs-placement="bottom"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="set DIGL"
+                  id="saveModeDIGL"
+                >
+                  DIGL
+                </button>
+              </form>
+            </div>
+
+            <div class="btn-group dropup">
+              <button
+                type="button"
+                class="btn btn-sm btn-secondary dropdown-toggle"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+                id="bandwidth"
+              >
+                ---
+              </button>
+              <form class="dropdown-menu p-2">
+                <div class="input-group input-group-sm">...soon...</div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">
+              <i class="bi bi-speedometer2" style="font-size: 1rem"></i>
+            </span>
+            <span
+              class="input-group-text"
+              data-bs-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-trigger="hover"
+              data-bs-html="false"
+              title="actual speed level"
+            >
+              <i
+                id="speed_level"
+                class="bi bi-reception-0"
+                style="font-size: 1rem"
+              ></i>
+            </span>
+            <span class="input-group-text">
+              <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
+            </span>
+            <span
+              class="input-group-text"
+              id="total_bytes"
+              data-bs-placement="bottom"
+              data-bs-toggle="tooltip"
+              data-bs-trigger="hover"
+              data-bs-html="false"
+              title="total bytes processed"
+              >---</span
+            >
+            <span
+              class="input-group-text"
+              data-bs-toggle="tooltip"
+              data-bs-trigger="hover"
+              title="Indicates if a session is active"
+              ><span class="bi bi-chat-fill" id="spnConnectedWith"></span
+            ></span>
+            <span
+              class="input-group-text"
+              id="txtConnectedWith"
+              data-bs-toggle="tooltip"
+              data-bs-trigger="hover"
+              title="Connected with"
+              >------</span
+            >
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div style="margin-right: 2px">
+            <div class="progress w-100" style="height: 30px; min-width: 200px">
+              <div
+                class="progress-bar progress-bar-striped bg-primary force-gpu"
+                id="transmission_progress"
+                role="progressbar"
+                style="width: 0%"
+                aria-valuenow="0"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              ></div>
+              <!--<p class="justify-content-center d-flex position-absolute w-100">PROGRESS</p>-->
+              <p
+                class="justify-content-center mt-2 d-flex position-absolute w-100"
+                id="transmission_timeleft"
+              >
+                ---
+              </p>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+
+
+
+                            </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+    <!-- bootstrap -->
+
+    <!--<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
+    <!-- chart.js -->
+    <!--<script src="../node_modules/chart.js/dist/chart.umd.js"></script>-->
+<!--<script
+      type="module"
+      src="../node_modules/emoji-picker-element/picker.js"
+    ></script>-->
+<!--<script
+      type="module"
+      src="../node_modules/emoji-picker-element/database.js"
+    ></script>-->
+
+    <!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
+    <!-- WATERFALL -->
+    <!--<script src="waterfall/colormap.js"></script>-->
+    <!--<script src="waterfall/spectrum.js"></script>-->
+    <!--<script src="waterfall/spectrogram.js"></script>-->
+    <!--<script src="waterfall/script.js"></script>-->
+
+    <!-- HELP MODALS AUDIO -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="input-group input-group-sm mb-1">
+                  <span class="input-group-text">
+                    <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    disabled
+                  >
+                    <!-- 					 					<option selected value="3011">USB Interface</option>-->
+                  </select>
+                </div>
+                <p class="card-text">
+                  Select your audio device for transmitting. It
+                  <strong>must</strong> be using a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-body">
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text">
+                    <i class="bi bi-volume-up" style="font-size: 1rem"></i>
+                  </span>
+                  <select
+                    class="form-select form-select-sm"
+                    aria-label=".form-select-sm"
+                    disabled
+                  ></select>
+                </div>
+                <p class="card-text">
+                  Select your audio device for receiving. It
+                  <strong>must</strong> be using a sample rate of
+                  <strong>48000Hz</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS RIGCONTROL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="rigcontrolHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Rig Control</h5>
+                <p class="card-text">
+                  This section is where you configure rig control method (none
+                  (VOX) or hamlib) for both GUI and TNC. For the best experience
+                  hamlib control is recommended.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">None/Vox</h5>
+                <p class="card-text">
+                  Select "None/Vox" if you want to use Vox for triggering PTT.
+                  No connection to rigctld will be established. No frequency
+                  information is availble.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Hamlib</h5>
+                <p class="card-text">
+                  Select "Hamlib" if you want to have more control over your
+                  radio. Define your hamlib settings in settings, and click the
+                  start button to start rigctld. You may use the 'PTT test'
+                  button to ensure rig control is working.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS STATION -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="stationHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="alert alert-info" role="alert">
+              These settings will be saved automatically when changing.
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your callsign and save it"
+                  >
+                    <span class="input-group-text">
+                      <i
+                        class="bi bi-person-bounding-box"
+                        style="font-size: 1rem"
+                      ></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="callsign"
+                      pattern="[A-Z]*"
+                      maxlength="8"
+                      style="max-width: 8rem"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                    <select
+                      class="form-select form-select-sm"
+                      aria-label=".form-select-sm"
+                      style="max-width: 6rem"
+                      disabled
+                    >
+                      <option selected value="SSID">SSID</option>
+                    </select>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your callsign and SSID. Your callsign can have a maximum
+                  length of 7 characters
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="input-group input-group-sm mb-0"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="false"
+                    title="Enter your gridsquare and save it"
+                  >
+                    <span class="input-group-text">
+                      <i class="bi bi-house-fill" style="font-size: 1rem"></i>
+                    </span>
+                    <input
+                      type="text"
+                      class="form-control mr-1"
+                      style="max-width: 6rem"
+                      placeholder="locator"
+                      maxlength="6"
+                      aria-label="Input group"
+                      aria-describedby="btnGroupAddon"
+                      disabled
+                    />
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Enter your position as a 4 or 6 digit grid square, also known
+                  as a maidenhead locator. Six digits are recommended.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS UPDATER -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="updaterHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Auto-Updater</h5>
+                <p class="card-text">
+                  The auto updater loads the latest version from Github and
+                  installs it automatically. You can select the update channel
+                  in settings. Once an update has been downlaoded, you need to
+                  confirm the auto-installation and restart.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Alpha</h5>
+                <p class="card-text">
+                  Alpha releases are more frequent and contain the latest
+                  features, but are likely to be unstable and introduce bugs.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Beta</h5>
+                <p class="card-text">
+                  Beta releases are more stable than Alpha releases. They are a
+                  good tradeoff between latest features and stability. They will
+                  be updated less often. A beta release has not been released
+                  yet.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">Stable</h5>
+                <p class="card-text">
+                  Stable releases are the most stable versions with no known
+                  major issues. A stable release has not been released yet.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS LOCAL REMOTE -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="localRemoteHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div
+                    class="btn-group btn-group-sm me-2"
+                    role="group"
+                    aria-label="local-remote-switch toggle button group"
+                    data-bs-placement="bottom"
+                    data-bs-toggle="tooltip"
+                    data-bs-trigger="hover"
+                    data-bs-html="true"
+                    title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
+                  >
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="local-remote-switch"
+                      autocomplete="off"
+                      checked
+                      disabled
+                    />
+                    <label
+                      class="btn btn-sm btn-outline-secondary"
+                      for="local-remote-switch1"
+                    >
+                      <i class="bi bi-pc-display-horizontal"></i>
+                      <span class="ms-2 me-2">Local tnc</span>
+                    </label>
+                    <input
+                      type="radio"
+                      class="btn-check"
+                      name="local-remote-switch"
+                      autocomplete="off"
+                      disabled
+                    />
+                    <label
+                      class="btn btn-sm btn-outline-secondary"
+                      for="local-remote-switch2"
+                    >
+                      <i class="bi bi-ethernet"></i>
+                      <span class="ms-2 me-2">Remote tnc</span>
+                    </label>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Local / Remote switch. If the TNC is running on the same
+                  computer as the GUI, select local. Otherwise choose remote and
+                  enter the IP/Port of where the TNC is running.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="input-group input-group-sm me-2">
+                    <span class="input-group-text">tnc ip</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="ip address"
+                      value="192.168.178.163"
+                      maxlength="17"
+                      style="width: 8rem"
+                      aria-label="Username"
+                      aria-describedby="basic-addon1"
+                      disabled
+                    />
+                    <span class="input-group-text">:</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="port"
+                      value="3000"
+                      maxlength="5"
+                      max="65534"
+                      min="1025"
+                      style="width: 4rem"
+                      aria-label="Username"
+                      aria-describedby="basic-addon1"
+                      disabled
+                    />
+                    <button
+                      class="btn btn-sm btn-danger"
+                      type="button"
+                      disabled
+                    >
+                      <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
+                    </button>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Remote IP of TNC. Port is port of daemon. The tnc port will
+                  automatically adjusted. ( daemon port - 1 )
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP MODALS START STOP TNC -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="startStopTNCHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="btn-group" role="group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-success"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Start the TNC. Please set your audio and radio settings first!"
+                      disabled
+                    >
+                      <i class="bi bi-play-fill"></i>
+                      <span class="ms-2">Start tnc</span>
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-danger"
+                      data-bs-toggle="tooltip"
+                      data-bs-trigger="hover"
+                      data-bs-html="false"
+                      title="Stop the TNC."
+                      disabled
+                    >
+                      <i class="bi bi-stop-fill"></i>
+                      <span class="ms-2">Stop tnc</span>
+                    </button>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Start or stop the TNC service. The TNC daemon must be running
+                  and will work whether the TNC is local or remote.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS AUDIO LEVEL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioLevelHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="progress mb-0" style="height: 22px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-primary force-gpu"
+                      role="progressbar"
+                      style="width: 5%"
+                      aria-valuenow="5"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <p
+                      class="justify-content-center d-flex position-absolute w-100"
+                    >
+                      -38 dBFS (Audio Level)
+                    </p>
+                  </div>
+                  <div class="progress mb-0" style="height: 8px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 1%"
+                      aria-valuenow="1"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 89%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 20%"
+                      aria-valuenow="20"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-danger"
+                      role="progressbar"
+                      style="width: 29%"
+                      aria-valuenow="29"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Represents the level of audio from transceiver. Excessively
+                  high levels will affect decoding performance negatively.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <div class="progress mb-0" style="height: 22px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-primary force-gpu"
+                      role="progressbar"
+                      style="width: 30%"
+                      aria-valuenow="0"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <p
+                      class="justify-content-center d-flex position-absolute w-100"
+                      id="noise_level_value"
+                    >
+                      -24 S-Meter (dBm)
+                    </p>
+                  </div>
+                  <div class="progress mb-0" style="height: 8px">
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 1%"
+                      aria-valuenow="1"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar bg-success"
+                      role="progressbar"
+                      style="width: 89%"
+                      aria-valuenow="50"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-warning"
+                      role="progressbar"
+                      style="width: 20%"
+                      aria-valuenow="20"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                    <div
+                      class="progress-bar progress-bar-striped bg-danger"
+                      role="progressbar"
+                      style="width: 29%"
+                      aria-valuenow="29"
+                      aria-valuemin="0"
+                      aria-valuemax="100"
+                    ></div>
+                  </div>
+                </h5>
+                <p class="card-text">
+                  Represents noise level of the channel from the transceiver.
+                  Requires hamlib rig control.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-secondary"
+                  >
+                    Tune
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Adjust volume level of outgoing audio to transceiver. For best
+                  results lower the level so that a minimum amount of ALC is
+                  used. Can be used in combination with rig's mic/input gain for
+                  furthrer refinement.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  <button type="button" class="btn btn-sm btn-outline-danger">
+                    Record audio
+                  </button>
+                </h5>
+                <p class="card-text">Create a recording of current channel</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS BROADCASTS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="broadcastsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  class="btn btn-sm btn-outline-secondary ms-1"
+                  type="button"
+                  disabled
+                >
+                  Ping
+                </button>
+                <p class="card-text">
+                  Send a ping to a remote station by entering a callsign and
+                  optional SSID (-0 will be used if not specified.)
+                  Alternatively click on a station in the heard station list to
+                  populate the call sign field. If the remote station decodes
+                  the ping it will transmit a reply. If able to decode the
+                  reply, a signal report will be listed in the heard station
+                  list.
+                </p>
+              </div>
+            </div>
+
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  class="btn btn-sm btn-outline-secondary"
+                  type="button"
+                  disabled
+                >
+                  Call CQ
+                </button>
+                <p class="card-text">Sending out a CQ CQ CQ to the world.</p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  disabled
+                >
+                  <i class="bi bi-soundwave"></i>Toggle beacon
+                </button>
+                <p class="card-text">
+                  Sends a periodic broadcast (duration is definable in settings)
+                  that announces you are available. Check explorer to see other
+                  active stations that may have decoded your beacon.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- HELP MODALS WATERFALL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="waterfallHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Waterfall
+                  <input
+                    type="radio"
+                    class="btn-check"
+                    name="waterfall-scatter-switch"
+                    autocomplete="off"
+                    checked
+                  />
+                  <label
+                    class="btn btn-sm btn-outline-secondary"
+                    for="waterfall-scatter-switch1"
+                    ><strong><i class="bi bi-water"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Displays a waterfall for activity of current channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Busy Indicator
+
+                  <button class="btn btn-sm btn-success" type="button">
+                    busy
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Green when channel is open and changes to red to indicate
+                  there is activity on the channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Signal Indicator
+                  <button class="btn btn-sm btn-success" type="button">
+                    signal
+                  </button>
+                </h5>
+                <p class="card-text">
+                  Changes to green when Codec2 data is detected on channel.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Constellation Plot
+                  <input type="radio" class="btn-check" autocomplete="off" />
+                  <label class="btn btn-sm btn-outline-secondary"
+                    ><strong><i class="bi bi-border-outer"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Displays a plot of last decoded message. A constellation plot
+                  is a simple way to represent signal quality.
+                </p>
+              </div>
+            </div>
+            <div class="card mb-3">
+              <div class="card-body">
+                <h5 class="card-title">
+                  Speed Chart
+
+                  <input type="radio" class="btn-check" autocomplete="off" />
+                  <label class="btn btn-sm btn-outline-secondary"
+                    ><strong><i class="bi bi-graph-up-arrow"></i></strong>
+                  </label>
+                </h5>
+                <p class="card-text">
+                  Shows history of SNR and bit rate of messages.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HELP MODALS HEARD STATIONS -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="heardStationsHelpModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Station List Help</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="card mb-3">
+              <div class="card-body">
+                <p class="card-text">
+                  Stations that you've been able to decode will be listed here.
+                  Details such as time, frequency, message type, call sign,
+                  location and SNR will be listed. Existing entries are updated
+                  if they already exist and more detailed history can be viewed
+                  in chat window for each station.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AUDIO MODAL -->
+    <div
+      class="modal fade"
+      data-bs-backdrop="static"
+      tabindex="-1"
+      id="audioModal"
+    >
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Audio tuning</h5>
+            <button
+              type="button"
+              class="btn btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text">Test-Frame</span>
+              <button type="button" id="sendTestFrame" class="btn btn-danger">
+                Transmit
+              </button>
+            </div>
+            <div class="input-group input-group-sm mb-1">
+              <span class="input-group-text">TX Level</span>
+              <span class="input-group-text" id="audioLevelTXvalue">---</span>
+              <span class="input-group-text w-75">
+                <input
+                  type="range"
+                  class="form-range"
+                  min="0"
+                  max="250"
+                  step="1"
+                  id="audioLevelTX"
+              /></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+ </html>
+</template>
+
+
+
+
+
+<script setup lang="ts">
+
+function testfunction(){
+
+    
+    var theme = document.getElementById("theme_selector").value;
+    changeGuiDesign(theme);
+    config.theme = theme;
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+
+}
+
+
+  
+  
+  
+function changeGuiDesign(design) {
+  if (
+    design != "default" &&
+    design != "default_light" &&
+    design != "default_dark" &&
+    design != "default_auto"
+  ) {
+    var theme_path =
+      "../node_modules/bootswatch/dist/" + design + "/bootstrap.min.css";
+    document.getElementById("theme_selector").value = design;
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+  } else if (design == "default" || design == "default_light") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_light";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  } else if (design == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_dark";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.querySelector("html").setAttribute("data-bs-theme", "dark");
+  } else if (design == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_auto";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    // https://stackoverflow.com/a/57795495
+    // check if dark mode or light mode used in OS
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      // dark mode
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", "light");
+    }
+
+    // also register event listener for automatic change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        let newColorScheme = event.matches ? "dark" : "light";
+        if (newColorScheme == "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        } else {
+          document.documentElement.setAttribute("data-bs-theme", "light");
+        }
+      });
+  } else {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_light";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  }
+
+  //update path to css file
+  document.getElementById("bootstrap_theme").href = escape(theme_path);
+}
+  
+
+</script>

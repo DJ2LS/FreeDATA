@@ -1,0 +1,38 @@
+{
+  "name": "electron-vite-project",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build && electron-builder",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "blob-util": "^2.0.2",
+    "bootstrap": "^5.3.1",
+    "bootstrap-icons": "^1.10.5",
+    "browser-image-compression": "^2.0.2",
+    "chartjs": "^0.3.24",
+    "electron-log": "^4.4.8",
+    "emoji-picker": "^0.0.7",
+    "emoji-picker-element": "^1.18.3",
+    "pouchdb": "^8.0.1",
+    "pouchdb-find": "^8.0.1",
+    "pouchdb-upsert": "^2.2.0",
+    "qth-locator": "^2.1.0",
+    "sass": "^1.66.1",
+    "uuid": "^9.0.0",
+    "vue": "^3.2.47"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.1.0",
+    "electron": "^24.4.0",
+    "electron-builder": "^23.6.0",
+    "typescript": "^5.0.2",
+    "vite": "^4.3.2",
+    "vite-plugin-electron": "^0.11.2",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue-tsc": "^1.4.2"
+  },
+  "main": "dist-electron/main.js"
+}
