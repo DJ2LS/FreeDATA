@@ -1,3 +1,97 @@
+<script setup lang="ts">
+
+
+import main_audio from './main_audio.vue'
+import main_rig_control from './main_rig_control.vue'
+import main_my_station from './main_my_station.vue'
+import main_updater from './main_updater.vue'
+
+function testfunction(){
+
+
+    var theme = document.getElementById("theme_selector").value;
+    changeGuiDesign(theme);
+    config.theme = theme;
+    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+    FD.saveConfig(config, configPath);
+
+}
+
+
+
+
+
+function changeGuiDesign(design) {
+  if (
+    design != "default" &&
+    design != "default_light" &&
+    design != "default_dark" &&
+    design != "default_auto"
+  ) {
+    var theme_path =
+      "../node_modules/bootswatch/dist/" + design + "/bootstrap.min.css";
+    document.getElementById("theme_selector").value = design;
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+  } else if (design == "default" || design == "default_light") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_light";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  } else if (design == "default_dark") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_dark";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.querySelector("html").setAttribute("data-bs-theme", "dark");
+  } else if (design == "default_auto") {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_auto";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    // https://stackoverflow.com/a/57795495
+    // check if dark mode or light mode used in OS
+    if (
+      window.matchMedia &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    ) {
+      // dark mode
+      document.documentElement.setAttribute("data-bs-theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", "light");
+    }
+
+    // also register event listener for automatic change
+    window
+      .matchMedia("(prefers-color-scheme: dark)")
+      .addEventListener("change", (event) => {
+        let newColorScheme = event.matches ? "dark" : "light";
+        if (newColorScheme == "dark") {
+          document.documentElement.setAttribute("data-bs-theme", "dark");
+        } else {
+          document.documentElement.setAttribute("data-bs-theme", "light");
+        }
+      });
+  } else {
+    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
+    document.getElementById("theme_selector").value = "default_light";
+    document.getElementById("bootstrap_theme").href = escape(theme_path);
+
+    document.documentElement.setAttribute("data-bs-theme", "light");
+  }
+
+  //update path to css file
+  document.getElementById("bootstrap_theme").href = escape(theme_path);
+}
+
+
+
+
+</script>
+
+
+
+
 <template>
 <html lang="en" data-bs-theme="light">
 
@@ -132,270 +226,10 @@
       <div class="container p-3" style="margin-top: 55px">
         <div class="row collapse multi-collapse show" id="collapseFirstRow">
           <div class="col">
-            <div class="card mb-0">
-              <div class="card-header p-1">
-                <div class="container">
-                  <div class="row">
-                    <div class="col-1">
-                      <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
-                    </div>
-                    <div class="col-10">
-                      <strong class="fs-5">Audio devices</strong>
-                    </div>
-                    <div class="col-1 text-end">
-                      <button
-                        type="button"
-                        id="openHelpModalAudio"
-                        data-bs-toggle="modal"
-                        data-bs-target="#audioHelpModal"
-                        class="btn m-0 p-0 border-0"
-                      >
-                        <i
-                          class="bi bi-question-circle"
-                          style="font-size: 1rem"
-                        ></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="card-body p-2" style="height: 100px">
-                <div class="input-group input-group-sm mb-1">
-                  <span class="input-group-text">
-                    <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
-                  </span>
-                  <select
-                    class="form-select form-select-sm"
-                    id="audio_input_selectbox"
-                    aria-label=".form-select-sm"
-                  >
-                    <!-- 					 					<option selected value="3011">USB Interface</option>-->
-                  </select>
-                </div>
-                <div class="input-group input-group-sm">
-                  <span class="input-group-text">
-                    <i class="bi bi-volume-up" style="font-size: 1rem"></i>
-                  </span>
-                  <select
-                    class="form-select form-select-sm"
-                    id="audio_output_selectbox"
-                    aria-label=".form-select-sm"
-                  ></select>
-                </div>
-              </div>
-            </div>
-            <!--Start of TNC rig control pane-->
+              <main_audio/>
           </div>
           <div class="col">
-            <div class="card mb-0">
-              <div class="card-header p-1">
-                <div class="container">
-                  <div class="row">
-                    <div class="col-1">
-                      <i class="bi bi-projector" style="font-size: 1.2rem"></i>
-                    </div>
-                    <div class="col-4">
-                      <strong class="fs-5">Rig control</strong>
-                    </div>
-                    <div class="col-6">
-                      <div
-                        class="btn-group btn-group-sm"
-                        role="group"
-                        aria-label="radio-control-switch-disabled"
-                      >
-                        <input
-                          type="radio"
-                          class="btn-check"
-                          name="radio-control-switch"
-                          id="radio-control-switch-disabled"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn btn-sm btn-outline-secondary"
-                          for="radio-control-switch-disabled"
-                        >
-                          None / Vox
-                        </label>
-
-                        <div
-                          class="btn-group btn-group-sm"
-                          role="group"
-                          aria-label="radio-control-switch-rigctld"
-                        >
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="radio-control-switch"
-                            id="radio-control-switch-rigctld"
-                            autocomplete="off"
-                          />
-                          <label
-                            class="btn btn-sm btn-outline-secondary"
-                            for="radio-control-switch-rigctld"
-                          >
-                            Hamlib
-                          </label>
-                        </div>
-                        <div
-                          class="btn-group btn-group-sm"
-                          role="group"
-                          aria-label="radio-control-switch-tci"
-                        >
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="radio-control-switch"
-                            id="radio-control-switch-tci"
-                            autocomplete="off"
-                          />
-                          <label
-                            class="btn btn-sm btn-outline-secondary"
-                            for="radio-control-switch-tci"
-                          >
-                            TCI
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-1 text-end">
-                      <button
-                        type="button"
-                        id="openHelpModalRigControl"
-                        data-bs-toggle="modal"
-                        data-bs-target="#rigcontrolHelpModal"
-                        class="btn m-0 p-0 border-0"
-                      >
-                        <i
-                          class="bi bi-question-circle"
-                          style="font-size: 1rem"
-                        ></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-body p-2" style="height: 100px">
-                <!-- RADIO CONTROL DISABLED -->
-                <div id="radio-control-disabled">
-                  <p class="small">
-                    TNC will not utilize rig control and features will be
-                    limited. While functional; it is recommended to configure
-                    hamlib.
-                  </p>
-                </div>
-
-                <!-- RADIO CONTROL RIGCTLD -->
-                <div id="radio-control-rigctld">
-                  <div class="input-group input-group-sm mb-1">
-                    <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">Rigctld</span>
-                      <span class="input-group-text">Address</span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="rigctld IP"
-                        id="hamlib_rigctld_ip"
-                        aria-label="Device IP"
-                        aria-describedby="basic-addon1"
-                      />
-                      <span class="input-group-text">Port</span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="rigctld port"
-                        id="hamlib_rigctld_port"
-                        aria-label="Device Port"
-                        aria-describedby="basic-addon1"
-                      />
-                    </div>
-
-                    <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">Rigctld</span>
-                      <button
-                        class="btn btn-outline-success"
-                        type="button"
-                        id="hamlib_rigctld_start"
-                      >
-                        Start
-                      </button>
-                      <button
-                        class="btn btn-outline-danger"
-                        type="button"
-                        id="hamlib_rigctld_stop"
-                      >
-                        Stop
-                      </button>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="Status"
-                        id="hamlib_rigctld_status"
-                        aria-label="State"
-                        aria-describedby="basic-addon1"
-                      />
-
-                      <button
-                        type="button"
-                        id="testHamlib"
-                        class="btn btn-sm btn-outline-secondary ms-1"
-                        data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="true"
-                        title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
-                      >
-                        PTT Test
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <!-- RADIO CONTROL TCI-->
-                <div id="radio-control-tci">
-                  <div class="input-group input-group-sm mb-1">
-                    <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">TCI</span>
-                      <span class="input-group-text">Address</span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="tci IP"
-                        id="tci_ip"
-                        aria-label="Device IP"
-                        aria-describedby="basic-addon1"
-                      />
-                    </div>
-
-                    <div class="input-group input-group-sm mb-1">
-                      <span class="input-group-text">Port</span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        placeholder="tci port"
-                        id="tci_port"
-                        aria-label="Device Port"
-                        aria-describedby="basic-addon1"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <!-- RADIO CONTROL HELP -->
-                <div id="radio-control-help">
-                  <strong>VOX:</strong> Use rig control mode 'none'
-                  <br />
-                  <strong>HAMLIB locally:</strong> configure in settings, then
-                  start/stop service.
-                  <br />
-                  <strong>HAMLIB remotely:</strong> Enter IP/Port, connection
-                  happens automatically.
-                </div>
-              </div>
-              <!--<div class="card-footer text-muted small" id="hamlib_info_field">
-                Define TNC rig control mode (none/hamlib)
-              </div>
-              -->
-            </div>
+            <main_rig_control/>
           </div>
         </div>
         <div
@@ -403,198 +237,13 @@
           id="collapseSecondRow"
         >
           <div class="col">
-            <div class="card mb-1">
-              <div class="card-header p-1">
-                <div class="container">
-                  <div class="row">
-                    <div class="col-1">
-                      <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
-                    </div>
-                    <div class="col-10">
-                      <strong class="fs-5">My station</strong>
-                    </div>
-                    <div class="col-1 text-end">
-                      <button
-                        type="button"
-                        id="openHelpModalStation"
-                        data-bs-toggle="modal"
-                        data-bs-target="#stationHelpModal"
-                        class="btn m-0 p-0 border-0"
-                      >
-                        <i
-                          class="bi bi-question-circle"
-                          style="font-size: 1rem"
-                        ></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-body p-2">
-                <div class="row">
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Enter your callsign and save it"
-                    >
-                      <span class="input-group-text">
-                        <i
-                          class="bi bi-person-bounding-box"
-                          style="font-size: 1rem"
-                        ></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control"
-                        style="width: 5rem; text-transform: uppercase"
-                        placeholder="callsign"
-                        pattern="[A-Z]*"
-                        id="myCall"
-                        maxlength="8"
-                        aria-label="Input group"
-                        aria-describedby="btnGroupAddon"
-                      />
-                      <select
-                        class="form-select form-select-sm"
-                        aria-label=".form-select-sm"
-                        id="myCallSSID"
-                      >
-                        <option selected value="0">0</option>
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        <option value="7">7</option>
-                        <option value="8">8</option>
-                        <option value="9">9</option>
-                        <option value="10">10</option>
-                        <option value="11">11</option>
-                        <option value="12">12</option>
-                        <option value="13">13</option>
-                        <option value="14">14</option>
-                        <option value="15">15</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="col-md-auto">
-                    <div
-                      class="input-group input-group-sm mb-0"
-                      data-bs-placement="bottom"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      data-bs-html="false"
-                      title="Enter your gridsquare and save it"
-                    >
-                      <span class="input-group-text">
-                        <i class="bi bi-house-fill" style="font-size: 1rem"></i>
-                      </span>
-                      <input
-                        type="text"
-                        class="form-control mr-1"
-                        style="max-width: 6rem"
-                        placeholder="locator"
-                        id="myGrid"
-                        maxlength="6"
-                        aria-label="Input group"
-                        aria-describedby="btnGroupAddon"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <!-- end of row-->
-              </div>
-            </div>
+            <main_my_station/>
           </div>
           <div class="col">
-            <div class="card mb-0">
-              <div class="card-header p-1 d-flex">
-                <div class="container">
-                  <div class="row">
-                    <div class="col-1">
-                      <i
-                        class="bi bi-cloud-download"
-                        style="font-size: 1.2rem"
-                      ></i>
-                    </div>
-                    <div class="col-3">
-                      <strong class="fs-5">Updater</strong>
-                    </div>
-                    <div class="col-7">
-                      <div class="progress w-100 ms-1 m-1">
-                        <div
-                          class="progress-bar"
-                          style="width: 0%"
-                          role="progressbar"
-                          id="UpdateProgressBar"
-                          aria-valuenow="0"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                        >
-                          <span id="UpdateProgressInfo"></span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="col-1 text-end">
-                      <button
-                        type="button"
-                        id="openHelpModalUpdater"
-                        data-bs-toggle="modal"
-                        data-bs-target="#updaterHelpModal"
-                        class="btn m-0 p-0 border-0"
-                      >
-                        <i
-                          class="bi bi-question-circle"
-                          style="font-size: 1rem"
-                        ></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="card-body p-2 mb-1">
-                <button
-                  class="btn btn-secondary btn-sm"
-                  id="updater_channel"
-                  type="button"
-                  disabled
-                >
-                  ...
-                </button>
-                <button
-                  class="btn btn-secondary btn-sm"
-                  id="updater_status"
-                  type="button"
-                  disabled
-                >
-                  ...
-                </button>
-                <button
-                  class="btn btn-secondary btn-sm"
-                  id="updater_changelog"
-                  type="button"
-                  style="display: none"
-                >
-                  Changelog
-                </button>
-                <button
-                  class="btn btn-primary btn-sm"
-                  id="update_and_install"
-                  type="button"
-                  style="display: none"
-                >
-                  Install & Restart
-                </button>
-              </div>
-            </div>
-          </div>
+          <main_updater/>
         </div>
+        </div>
+
       </div>
       <div class="container">
         <div class="row collapse multi-collapse" id="collapseThirdRow">
@@ -4012,28 +3661,6 @@
 
 
 
-
-    <!-- bootstrap -->
-
-    <!--<script src="../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>-->
-    <!-- chart.js -->
-    <!--<script src="../node_modules/chart.js/dist/chart.umd.js"></script>-->
-<!--<script
-      type="module"
-      src="../node_modules/emoji-picker-element/picker.js"
-    ></script>-->
-<!--<script
-      type="module"
-      src="../node_modules/emoji-picker-element/database.js"
-    ></script>-->
-
-    <!--<script src="../node_modules/chartjs-plugin-annotation/dist/chartjs-plugin-annotation.min.js"></script>-->
-    <!-- WATERFALL -->
-    <!--<script src="waterfall/colormap.js"></script>-->
-    <!--<script src="waterfall/spectrum.js"></script>-->
-    <!--<script src="waterfall/spectrogram.js"></script>-->
-    <!--<script src="waterfall/script.js"></script>-->
-
     <!-- HELP MODALS AUDIO -->
     <div
       class="modal fade"
@@ -4927,88 +4554,3 @@
 </template>
 
 
-
-
-
-<script setup lang="ts">
-
-function testfunction(){
-
-    
-    var theme = document.getElementById("theme_selector").value;
-    changeGuiDesign(theme);
-    config.theme = theme;
-    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config, configPath);
-
-}
-
-
-  
-  
-  
-function changeGuiDesign(design) {
-  if (
-    design != "default" &&
-    design != "default_light" &&
-    design != "default_dark" &&
-    design != "default_auto"
-  ) {
-    var theme_path =
-      "../node_modules/bootswatch/dist/" + design + "/bootstrap.min.css";
-    document.getElementById("theme_selector").value = design;
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-  } else if (design == "default" || design == "default_light") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("theme_selector").value = "default_light";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-    document.documentElement.setAttribute("data-bs-theme", "light");
-  } else if (design == "default_dark") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("theme_selector").value = "default_dark";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-    document.querySelector("html").setAttribute("data-bs-theme", "dark");
-  } else if (design == "default_auto") {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("theme_selector").value = "default_auto";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-    // https://stackoverflow.com/a/57795495
-    // check if dark mode or light mode used in OS
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      // dark mode
-      document.documentElement.setAttribute("data-bs-theme", "dark");
-    } else {
-      document.documentElement.setAttribute("data-bs-theme", "light");
-    }
-
-    // also register event listener for automatic change
-    window
-      .matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change", (event) => {
-        let newColorScheme = event.matches ? "dark" : "light";
-        if (newColorScheme == "dark") {
-          document.documentElement.setAttribute("data-bs-theme", "dark");
-        } else {
-          document.documentElement.setAttribute("data-bs-theme", "light");
-        }
-      });
-  } else {
-    var theme_path = "../node_modules/bootstrap/dist/css/bootstrap.min.css";
-    document.getElementById("theme_selector").value = "default_light";
-    document.getElementById("bootstrap_theme").href = escape(theme_path);
-
-    document.documentElement.setAttribute("data-bs-theme", "light");
-  }
-
-  //update path to css file
-  document.getElementById("bootstrap_theme").href = escape(theme_path);
-}
-  
-
-</script>
