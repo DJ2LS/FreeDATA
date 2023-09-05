@@ -30,3 +30,4 @@ app.use(pinia)
 
 
 import './js/daemon.js'
+import './js/sock.js'
