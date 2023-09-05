@@ -1,3 +1,14 @@
+<script setup lang="ts">
+
+
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useSettingsStore } from '../store/settingsStore.js';
+const settings = useSettingsStore(pinia);
+</script>
+
 <template>
 
 
@@ -56,6 +67,7 @@
                         maxlength="8"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
+                        v-model="settings.mycall"
                       />
                       <select
                         class="form-select form-select-sm"
@@ -102,6 +114,7 @@
                         maxlength="6"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
+                        v-model="settings.mygrid"
                       />
                     </div>
                   </div>

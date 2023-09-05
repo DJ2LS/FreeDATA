@@ -1,6 +1,18 @@
 <script setup lang="ts">
 
 
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useSettingsStore } from '../store/settingsStore.js';
+const settings = useSettingsStore(pinia);
+
+
+
+
+
+
   // TEST HAMLIB
 function testHamlib(){
     var data_bits = document.getElementById("hamlib_data_bits").value;
@@ -58,9 +70,9 @@ function testHamlib(){
 
 
     <div class="list-group list-group-horizontal" id="rig-control-list-tab" role="rig-control-tablist">
-      <a class="list-group-item list-group-item-action active" id="list-rig-control-none-list" data-bs-toggle="list" href="#list-rig-control-none" role="tab" aria-controls="list-rig-control-none">None/Vox</a>
-      <a class="list-group-item list-group-item-action" id="list-rig-control-rigctld-list" data-bs-toggle="list" href="#list-rig-control-rigctld" role="tab" aria-controls="list-rig-control-rigctld">Rigctld</a>
-      <a class="list-group-item list-group-item-action" id="list-rig-control-tci-list" data-bs-toggle="list" href="#list-rig-control-tci" role="tab" aria-controls="list-rig-control-tci">TCI</a>
+      <a class="py-1 list-group-item list-group-item-action active" id="list-rig-control-none-list" data-bs-toggle="list" href="#list-rig-control-none" role="tab" aria-controls="list-rig-control-none">None/Vox</a>
+      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-rigctld-list" data-bs-toggle="list" href="#list-rig-control-rigctld" role="tab" aria-controls="list-rig-control-rigctld">Rigctld</a>
+      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-tci-list" data-bs-toggle="list" href="#list-rig-control-tci" role="tab" aria-controls="list-rig-control-tci">TCI</a>
     </div>
 
 
@@ -103,7 +115,7 @@ function testHamlib(){
                         placeholder="rigctld IP"
                         id="hamlib_rigctld_ip"
                         aria-label="Device IP"
-                        aria-describedby="basic-addon1"
+                        v-model="settings.hamlib_rigctld_ip"
                       />
                       <span class="input-group-text">Port</span>
                       <input
@@ -112,8 +124,8 @@ function testHamlib(){
                         placeholder="rigctld port"
                         id="hamlib_rigctld_port"
                         aria-label="Device Port"
-                        aria-describedby="basic-addon1"
-                      />
+                        v-model="settings.hamlib_rigctld_port"
+                        />
                     </div>
 
                     <div class="input-group input-group-sm mb-1">
@@ -166,7 +178,7 @@ function testHamlib(){
                         placeholder="tci IP"
                         id="tci_ip"
                         aria-label="Device IP"
-                        aria-describedby="basic-addon1"
+                        v-model="settings.tci_ip"
                       />
                     </div>
 
@@ -178,7 +190,7 @@ function testHamlib(){
                         placeholder="tci port"
                         id="tci_port"
                         aria-label="Device Port"
-                        aria-describedby="basic-addon1"
+                        v-model="settings.tci_port"
                       />
                     </div>
                   </div></div>
