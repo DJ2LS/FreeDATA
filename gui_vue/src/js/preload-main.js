@@ -1,14 +1,21 @@
 const path = require("path");
-const { ipcRenderer, shell, clipboard } = require("electron");
+const { shell, clipboard } = require("electron");
 const exec = require("child_process").spawn;
-const sock = require("./sock.js");
-const daemon = require("./daemon.js");
 
 
-require("./preload-chat.js");
-require("./preload-mesh.js");
-require("./preload-log.js");
+//import { useIpcRenderer } from '@vueuse/electron'
+//const ipcRenderer = useIpcRenderer()
 
+
+//import * as bootstrap from 'bootstrap'
+
+
+//require("./preload-chat.js");
+//require("./preload-mesh.js");
+//require("./preload-log.js");
+
+//const daemon = require("./daemon.js");
+//const sock = require("./sock.js");
 
 
 const fs = require("fs");

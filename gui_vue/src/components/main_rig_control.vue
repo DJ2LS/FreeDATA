@@ -52,65 +52,19 @@ function testHamlib(){
                     <div class="col-4">
                       <strong class="fs-5">Rig control</strong>
                     </div>
-                    <div class="col-6">
-                      <div
-                        class="btn-group btn-group-sm"
-                        role="group"
-                        aria-label="radio-control-switch-disabled"
-                      >
-                        <input
-                          type="radio"
-                          class="btn-check"
-                          name="radio-control-switch"
-                          id="radio-control-switch-disabled"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn btn-sm btn-outline-secondary"
-                          for="radio-control-switch-disabled"
-                        >
-                          None / Vox
-                        </label>
 
-                        <div
-                          class="btn-group btn-group-sm"
-                          role="group"
-                          aria-label="radio-control-switch-rigctld"
-                        >
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="radio-control-switch"
-                            id="radio-control-switch-rigctld"
-                            autocomplete="off"
-                          />
-                          <label
-                            class="btn btn-sm btn-outline-secondary"
-                            for="radio-control-switch-rigctld"
-                          >
-                            Hamlib
-                          </label>
-                        </div>
-                        <div
-                          class="btn-group btn-group-sm"
-                          role="group"
-                          aria-label="radio-control-switch-tci"
-                        >
-                          <input
-                            type="radio"
-                            class="btn-check"
-                            name="radio-control-switch"
-                            id="radio-control-switch-tci"
-                            autocomplete="off"
-                          />
-                          <label
-                            class="btn btn-sm btn-outline-secondary"
-                            for="radio-control-switch-tci"
-                          >
-                            TCI
-                          </label>
-                        </div>
-                      </div>
+
+                    <div class="col-6">
+
+
+    <div class="list-group list-group-horizontal" id="rig-control-list-tab" role="rig-control-tablist">
+      <a class="list-group-item list-group-item-action active" id="list-rig-control-none-list" data-bs-toggle="list" href="#list-rig-control-none" role="tab" aria-controls="list-rig-control-none">None/Vox</a>
+      <a class="list-group-item list-group-item-action" id="list-rig-control-rigctld-list" data-bs-toggle="list" href="#list-rig-control-rigctld" role="tab" aria-controls="list-rig-control-rigctld">Rigctld</a>
+      <a class="list-group-item list-group-item-action" id="list-rig-control-tci-list" data-bs-toggle="list" href="#list-rig-control-tci" role="tab" aria-controls="list-rig-control-tci">TCI</a>
+    </div>
+
+
+
                     </div>
 
                     <div class="col-1 text-end">
@@ -131,18 +85,15 @@ function testHamlib(){
                 </div>
               </div>
               <div class="card-body p-2" style="height: 100px">
-                <!-- RADIO CONTROL DISABLED -->
-                <div id="radio-control-disabled">
-                  <p class="small">
+
+
+                  <div class="tab-content" id="rig-control-nav-tabContent">
+      <div class="tab-pane fade show active" id="list-rig-control-none" role="tabpanel" aria-labelledby="list-rig-control-none-list"><p class="small">
                     TNC will not utilize rig control and features will be
                     limited. While functional; it is recommended to configure
                     hamlib.
-                  </p>
-                </div>
-
-                <!-- RADIO CONTROL RIGCTLD -->
-                <div id="radio-control-rigctld">
-                  <div class="input-group input-group-sm mb-1">
+                  </p></div>
+      <div class="tab-pane fade" id="list-rig-control-rigctld" role="tabpanel" aria-labelledby="list-rig-control-rigctld-list"><div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text">Rigctld</span>
                       <span class="input-group-text">Address</span>
@@ -204,11 +155,8 @@ function testHamlib(){
                         PTT Test
                       </button>
                     </div>
-                  </div>
-                </div>
-                <!-- RADIO CONTROL TCI-->
-                <div id="radio-control-tci">
-                  <div class="input-group input-group-sm mb-1">
+                  </div></div>
+      <div class="tab-pane fade" id="list-rig-control-tci" role="tabpanel" aria-labelledby="list-rig-control-tci-list"><div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text">TCI</span>
                       <span class="input-group-text">Address</span>
@@ -233,10 +181,30 @@ function testHamlib(){
                         aria-describedby="basic-addon1"
                       />
                     </div>
-                  </div>
+                  </div></div>
+    </div>
+
+
+
+
+
+
+                <!-- RADIO CONTROL DISABLED -->
+                <div id="radio-control-disabled">
+
+                </div>
+
+                <!-- RADIO CONTROL RIGCTLD -->
+                <div id="radio-control-rigctld">
+
+                </div>
+                <!-- RADIO CONTROL TCI-->
+                <div id="radio-control-tci">
+
                 </div>
                 <!-- RADIO CONTROL HELP -->
                 <div id="radio-control-help">
+                <!--
                   <strong>VOX:</strong> Use rig control mode 'none'
                   <br />
                   <strong>HAMLIB locally:</strong> configure in settings, then
@@ -244,7 +212,9 @@ function testHamlib(){
                   <br />
                   <strong>HAMLIB remotely:</strong> Enter IP/Port, connection
                   happens automatically.
+                -->
                 </div>
+
               </div>
               <!--<div class="card-footer text-muted small" id="hamlib_info_field">
                 Define TNC rig control mode (none/hamlib)

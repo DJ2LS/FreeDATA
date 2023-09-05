@@ -33,7 +33,8 @@ function createWindow() {
     //  preload: path.join(__dirname, 'preload.js'),
     //},
     webPreferences: {
-      preload: path.join(__dirname, 'preload-main.js'),
+      preload: path.join(__dirname, 'preload.js'),
+      //preload: path.join(__dirname, 'preload-main.js'),
       backgroundThrottle: false,
       //preload: require.resolve("preload-main.js"),
       nodeIntegration: true,
