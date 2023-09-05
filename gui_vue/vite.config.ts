@@ -5,6 +5,12 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+
+build: {
+        minify: false
+    },
+    useEslint: false,
+
   plugins: [
     vue(),
     electron([
@@ -13,14 +19,37 @@ export default defineConfig({
         entry: 'electron/main.ts',
       },
       {
-        entry: 'electron/preload.ts',
+        // Daemon-Process entry file of the Electron App.
+        entry: 'electron/sock.js',
+      },
+      {
+        // Daemon-Process entry file of the Electron App.
+        entry: 'electron/daemon.js',
+      },
+            {
+        // Daemon-Process entry file of the Electron App.
+        entry: 'electron/freedata.js',
+      },
+      {
+        entry: 'electron/preload-main.js',
         onstart(options) {
-          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete, 
+          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
           // instead of restarting the entire Electron App.
           options.reload()
         },
       },
-    ]),
+      {
+        entry: 'electron/preload-chat.js',
+        onstart(options) {
+          // Notify the Renderer-Process to reload the page when the Preload-Scripts build is complete,
+          // instead of restarting the entire Electron App.
+          options.reload()
+        },
+      },
+    ],
+
+
+    ),
     renderer(),
   ],
 })

@@ -1,6 +1,19 @@
+<script setup>
 
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useAudioStore } from '../store/audioStore.js';
+const audio = useAudioStore(pinia);
+
+
+
+
+</script>
 
 <template>
+
 
             <div class="card mb-0">
               <div class="card-header p-1">
@@ -39,8 +52,8 @@
                     class="form-select form-select-sm"
                     id="audio_input_selectbox"
                     aria-label=".form-select-sm"
+                    v-html="audio.getInputDevices()"
                   >
-                    <!-- 					 					<option selected value="3011">USB Interface</option>-->
                   </select>
                 </div>
                 <div class="input-group input-group-sm">
@@ -51,7 +64,9 @@
                     class="form-select form-select-sm"
                     id="audio_output_selectbox"
                     aria-label=".form-select-sm"
-                  ></select>
+                    v-html="audio.getOutputDevices()"
+                  >
+                  </select>
                 </div>
               </div>
             </div>

@@ -1,3 +1,46 @@
+<script setup lang="ts">
+
+
+  // TEST HAMLIB
+function testHamlib(){
+    var data_bits = document.getElementById("hamlib_data_bits").value;
+    var stop_bits = document.getElementById("hamlib_stop_bits").value;
+    var handshake = document.getElementById("hamlib_handshake").value;
+    var pttport = document.getElementById("hamlib_ptt_port").value;
+
+    var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
+    var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
+
+    var deviceid = document.getElementById("hamlib_deviceid").value;
+    var deviceport = document.getElementById("hamlib_deviceport").value;
+    var serialspeed = document.getElementById("hamlib_serialspeed").value;
+    var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
+
+    if (document.getElementById("radio-control-switch-disabled").checked) {
+      var radiocontrol = "disabled";
+    } else {
+      var radiocontrol = "rigctld";
+    }
+
+    daemon.testHamlib(
+      radiocontrol,
+      deviceid,
+      deviceport,
+      serialspeed,
+      pttprotocol,
+      pttport,
+      data_bits,
+      stop_bits,
+      handshake,
+      rigctld_ip,
+      rigctld_port,
+    );
+  };
+
+
+</script>
+
+
 <template>
 <div class="card mb-0">
               <div class="card-header p-1">
@@ -155,6 +198,7 @@
                         data-bs-toggle="tooltip"
                         data-bs-trigger="hover"
                         data-bs-html="true"
+                        @click="testHamlib"
                         title="Test your hamlib settings and toggle PTT once. Button will become <strong class='text-success'>green</strong> on success and <strong class='text-danger'>red</strong> if fails."
                       >
                         PTT Test

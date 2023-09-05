@@ -1,4 +1,7 @@
-import { createApp } from 'vue'
+import { createApp, Vue } from 'vue'
+import { createPinia } from 'pinia'
+
+
 import './styles.css'
 
 
@@ -12,14 +15,18 @@ import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 
 
+
+
 // Import our custom CSS
 //import './scss/styles.scss'
 
-
-
-
-
-
 import App from './App.vue'
+const app = createApp(App)//.mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
 
-createApp(App).mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
+const pinia = createPinia()
+app.mount('#app')
+console.log("init...")
+app.use(pinia)
+
+
+import './js/daemon.js'
