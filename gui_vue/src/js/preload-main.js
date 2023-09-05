@@ -2758,7 +2758,6 @@ ipcRenderer.on("action-update-hamlib-test", (event, arg) => {
     //document.getElementById("testHamlibAdvanced").className = "btn btn-sm btn-danger";
   }
 });
-
 ipcRenderer.on("action-update-daemon-connection", (event, arg) => {
   if (arg.daemon_connection == "open") {
     document.getElementById("daemon_connection_state").className =
@@ -2776,88 +2775,6 @@ ipcRenderer.on("action-update-daemon-connection", (event, arg) => {
     //document.getElementById("blurdiv").style.webkitFilter = "blur(10px)";
   }
 });
-
-ipcRenderer.on("action-update-tnc-connection", (event, arg) => {
-  if (arg.tnc_connection == "open") {
-    /*
-        document.getElementById('hamlib_deviceid').disabled = true;
-        document.getElementById('hamlib_deviceport').disabled = true;
-        document.getElementById('testHamlib').disabled = true;
-        document.getElementById('hamlib_ptt_protocol').disabled = true;
-        document.getElementById('audio_input_selectbox').disabled = true;
-        document.getElementById('audio_output_selectbox').disabled = true;
-        //document.getElementById('stopTNC').disabled = false;
-        document.getElementById('startTNC').disabled = true;
-        document.getElementById('dxCall').disabled = false;
-        document.getElementById("hamlib_serialspeed").disabled = true;
-        document.getElementById("openDataModule").disabled = false;
-        */
-
-    // collapse settings screen
-    var collapseFirstRow = new bootstrap.Collapse(
-      document.getElementById("collapseFirstRow"),
-      { toggle: false },
-    );
-    collapseFirstRow.hide();
-    var collapseSecondRow = new bootstrap.Collapse(
-      document.getElementById("collapseSecondRow"),
-      { toggle: false },
-    );
-    collapseSecondRow.hide();
-    var collapseThirdRow = new bootstrap.Collapse(
-      document.getElementById("collapseThirdRow"),
-      { toggle: false },
-    );
-    collapseThirdRow.show();
-    var collapseFourthRow = new bootstrap.Collapse(
-      document.getElementById("collapseFourthRow"),
-      { toggle: false },
-    );
-    collapseFourthRow.show();
-
-    //Set tuning for fancy graphics mode (high/low CPU)
-    set_CPU_mode();
-
-    //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
-    if (tncStartCount == 0) tncStartCount++;
-  } else {
-    /*
-        document.getElementById('hamlib_deviceid').disabled = false;
-        document.getElementById('hamlib_deviceport').disabled = false;
-        document.getElementById('testHamlib').disabled = false;
-        document.getElementById('hamlib_ptt_protocol').disabled = false;
-        document.getElementById('audio_input_selectbox').disabled = false;
-        document.getElementById('audio_output_selectbox').disabled = false;
-        //document.getElementById('stopTNC').disabled = true;
-        document.getElementById('startTNC').disabled = false;
-        document.getElementById('dxCall').disabled = true;
-        document.getElementById("hamlib_serialspeed").disabled = false;
-        document.getElementById("openDataModule").disabled = true;
-        */
-    // collapse settings screen
-    var collapseFirstRow = new bootstrap.Collapse(
-      document.getElementById("collapseFirstRow"),
-      { toggle: false },
-    );
-    collapseFirstRow.show();
-    var collapseSecondRow = new bootstrap.Collapse(
-      document.getElementById("collapseSecondRow"),
-      { toggle: false },
-    );
-    collapseSecondRow.show();
-    var collapseThirdRow = new bootstrap.Collapse(
-      document.getElementById("collapseThirdRow"),
-      { toggle: false },
-    );
-    collapseThirdRow.hide();
-    var collapseFourthRow = new bootstrap.Collapse(
-      document.getElementById("collapseFourthRow"),
-      { toggle: false },
-    );
-    collapseFourthRow.hide();
-  }
-});
-
 ipcRenderer.on("action-update-rx-buffer", (event, arg) => {
   var data = arg.data["data"];
 
@@ -3144,7 +3061,6 @@ ipcRenderer.on("action-updater", (event, arg) => {
 });
 
 // ----------- INFO MODAL ACTIONS -------------------------------
-
 // CQ TRANSMITTING
 ipcRenderer.on("action-show-cq-toast-transmitting", (event, data) => {
   displayToast(

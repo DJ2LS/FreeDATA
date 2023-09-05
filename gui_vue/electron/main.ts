@@ -28,7 +28,7 @@ const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow() {
   win = new BrowserWindow({
-    icon: path.join(process.env.PUBLIC, 'electron-vite.svg'),
+    icon: path.join(process.env.PUBLIC, 'icon_cube_border.png'),
     //webPreferences: {
     //  preload: path.join(__dirname, 'preload.js'),
     //},
@@ -45,6 +45,9 @@ function createWindow() {
       //https://github.com/electron/remote
     },
   })
+
+  win.setMenuBarVisibility(false);
+
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -64,7 +67,3 @@ app.on('window-all-closed', () => {
 })
 
 app.whenReady().then(createWindow)
-
-ipcMain.on("request-update-daemon-state", (event, arg) => {
-  win.webContents.send("action-update-daemon-state", arg);
-});
