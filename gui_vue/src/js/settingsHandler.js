@@ -1,0 +1,118 @@
+const path = require("path");
+const fs = require("fs");
+const os = require("os");
+const logger = require("winston")
+
+// pinia store setup
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useSettingsStore } from '../store/settingsStore.js';
+const settings = useSettingsStore(pinia);
+// ---------------------------------
+
+var appDataFolder =
+  process.env.APPDATA ||
+  (process.platform == "darwin"
+    ? process.env.HOME + "/Library/Application Support"
+    : process.env.HOME + "/.config");
+var configFolder = path.join(appDataFolder, "FreeDATA");
+var configPath = path.join(configFolder, "config.json");
+
+// create config folder if not exists
+if (!fs.existsSync(configFolder)) {
+  fs.mkdirSync(configFolder);
+}
+
+// create config file if not exists with defaults
+const configDefaultSettings =
+  '{\
+                  "tnc_host": "127.0.0.1",\
+                  "tnc_port": "3000",\
+                  "daemon_host": "127.0.0.1",\
+                  "daemon_port": "3001",\
+                  "mycall": "AA0AA-0",\
+                  "mygrid": "JN40aa",\
+                  "radiocontrol" : "disabled",\
+                  "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
+                  "hamlib_deviceport": "ignore",\
+                  "hamlib_stop_bits": "ignore",\
+                  "hamlib_data_bits": "ignore",\
+                  "hamlib_handshake": "ignore",\
+                  "hamlib_serialspeed": "ignore",\
+                  "hamlib_dtrstate": "ignore",\
+                  "hamlib_pttprotocol": "ignore",\
+                  "hamlib_ptt_port": "ignore",\
+                  "hamlib_dcd": "ignore",\
+                  "hamlbib_serialspeed_ptt": "9600",\
+                  "hamlib_rigctld_port" : "4532",\
+                  "hamlib_rigctld_ip" : "127.0.0.1",\
+                  "hamlib_rigctld_path" : "",\
+                  "hamlib_rigctld_server_port" : "4532",\
+                  "hamlib_rigctld_custom_args": "",\
+                  "tci_port" : "50001",\
+                  "tci_ip" : "127.0.0.1",\
+                  "spectrum": "waterfall",\
+                  "tnclocation": "localhost",\
+                  "enable_scatter" : "False",\
+                  "enable_fft" : "False",\
+                  "enable_fsk" : "False",\
+                  "low_bandwidth_mode" : "False",\
+                  "theme" : "default",\
+                  "screen_height" : 430,\
+                  "screen_width" : 1050,\
+                  "update_channel" : "latest",\
+                  "beacon_interval" : 300,\
+                  "received_files_folder" : "None",\
+                  "tuning_range_fmin" : "-50.0",\
+                  "tuning_range_fmax" : "50.0",\
+                  "respond_to_cq" : "True",\
+                  "rx_buffer_size" : "16", \
+                  "enable_explorer" : "False", \
+                  "wftheme": 2, \
+                  "high_graphics" : "True",\
+                  "explorer_stats" : "False", \
+                  "auto_tune" : "False", \
+                  "enable_is_writing" : "True", \
+                  "shared_folder_path" : ".", \
+                  "enable_request_profile" : "True", \
+                  "enable_request_shared_folder" : "False", \
+                  "max_retry_attempts" : 5, \
+                  "enable_auto_retry" : "False", \
+                  "tx_delay" : 0, \
+                  "auto_start": 0, \
+                  "enable_sys_notification": 1, \
+                  "enable_mesh_features": "False" \
+                  }';
+
+if (!fs.existsSync(configPath)) {
+  fs.writeFileSync(configPath, configDefaultSettings);
+}
+
+// load settings
+var config = require(configPath);
+
+//config validation
+// check running config against default config.
+// if parameter not exists, add it to running config to prevent errors
+console.log("CONFIG VALIDATION  -----------------------------  ");
+
+var parsedConfig = JSON.parse(configDefaultSettings);
+for (var key in parsedConfig) {
+  if (config.hasOwnProperty(key)) {
+    console.log("FOUND SETTTING [" + key + "]: " + config[key]);
+  } else {
+    console.log("MISSING SETTTING [" + key + "] : " + parsedConfig[key]);
+    config[key] = parsedConfig[key];
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  }
+  try{
+    settings[key] = parsedConfig[key];
+  } catch(e){
+  console.log(e)
+  }
+
+
+}
+

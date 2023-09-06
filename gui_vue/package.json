@@ -31,7 +31,8 @@
     "sass": "^1.66.1",
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0",
-    "vue": "^3.2.47"
+    "vue": "^3.2.47",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.1.0",

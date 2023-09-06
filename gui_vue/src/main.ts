@@ -29,5 +29,7 @@ console.log("init...")
 app.use(pinia)
 
 
+
+import './js/settingsHandler.js'
 import './js/daemon.js'
 import './js/sock.js'
