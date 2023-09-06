@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -9,46 +10,26 @@ import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
 
+function selectRadioControl(obj){
+switch (event.target.id) {
+  case 'list-rig-control-none-list':
+    settings.radiocontrol = "disabled"
+    break;
+  case 'list-rig-control-rigctld-list':
+    settings.radiocontrol = "rigctld"
+    break;
+  case 'list-rig-control-tci-list':
+    settings.radiocontrol = "tci"
+    break;
+  default:
+    console.log("default=!==")
+    settings.radiocontrol = "disabled"
+
+}
+    saveSettingsToFile()
 
 
-
-
-  // TEST HAMLIB
-function testHamlib(){
-    var data_bits = document.getElementById("hamlib_data_bits").value;
-    var stop_bits = document.getElementById("hamlib_stop_bits").value;
-    var handshake = document.getElementById("hamlib_handshake").value;
-    var pttport = document.getElementById("hamlib_ptt_port").value;
-
-    var rigctld_ip = document.getElementById("hamlib_rigctld_ip").value;
-    var rigctld_port = document.getElementById("hamlib_rigctld_port").value;
-
-    var deviceid = document.getElementById("hamlib_deviceid").value;
-    var deviceport = document.getElementById("hamlib_deviceport").value;
-    var serialspeed = document.getElementById("hamlib_serialspeed").value;
-    var pttprotocol = document.getElementById("hamlib_pttprotocol").value;
-
-    if (document.getElementById("radio-control-switch-disabled").checked) {
-      var radiocontrol = "disabled";
-    } else {
-      var radiocontrol = "rigctld";
-    }
-
-    daemon.testHamlib(
-      radiocontrol,
-      deviceid,
-      deviceport,
-      serialspeed,
-      pttprotocol,
-      pttport,
-      data_bits,
-      stop_bits,
-      handshake,
-      rigctld_ip,
-      rigctld_port,
-    );
-  };
-
+}
 
 </script>
 
@@ -70,9 +51,9 @@ function testHamlib(){
 
 
     <div class="list-group list-group-horizontal" id="rig-control-list-tab" role="rig-control-tablist">
-      <a class="py-1 list-group-item list-group-item-action active" id="list-rig-control-none-list" data-bs-toggle="list" href="#list-rig-control-none" role="tab" aria-controls="list-rig-control-none">None/Vox</a>
-      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-rigctld-list" data-bs-toggle="list" href="#list-rig-control-rigctld" role="tab" aria-controls="list-rig-control-rigctld">Rigctld</a>
-      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-tci-list" data-bs-toggle="list" href="#list-rig-control-tci" role="tab" aria-controls="list-rig-control-tci">TCI</a>
+      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-none-list" data-bs-toggle="list" href="#list-rig-control-none" role="tab" aria-controls="list-rig-control-none" v-bind:class="{ 'active' : settings.radiocontrol === 'disabled'}" @click="selectRadioControl()">None/Vox</a>
+      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-rigctld-list" data-bs-toggle="list" href="#list-rig-control-rigctld" role="tab" aria-controls="list-rig-control-rigctld" v-bind:class="{ 'active' : settings.radiocontrol === 'rigctld'}" @click="selectRadioControl()">Rigctld</a>
+      <a class="py-1 list-group-item list-group-item-action" id="list-rig-control-tci-list" data-bs-toggle="list" href="#list-rig-control-tci" role="tab" aria-controls="list-rig-control-tci" v-bind:class="{ 'active' : settings.radiocontrol === 'tci'}" @click="selectRadioControl()">TCI</a>
     </div>
 
 
@@ -100,12 +81,12 @@ function testHamlib(){
 
 
                   <div class="tab-content" id="rig-control-nav-tabContent">
-      <div class="tab-pane fade show active" id="list-rig-control-none" role="tabpanel" aria-labelledby="list-rig-control-none-list"><p class="small">
+      <div class="tab-pane fade" v-bind:class="{ 'show active' : settings.radiocontrol === 'disabled'}" id="list-rig-control-none" role="tabpanel" aria-labelledby="list-rig-control-none-list"><p class="small">
                     TNC will not utilize rig control and features will be
                     limited. While functional; it is recommended to configure
                     hamlib.
                   </p></div>
-      <div class="tab-pane fade" id="list-rig-control-rigctld" role="tabpanel" aria-labelledby="list-rig-control-rigctld-list"><div class="input-group input-group-sm mb-1">
+      <div class="tab-pane fade" id="list-rig-control-rigctld" v-bind:class="{ 'show active' : settings.radiocontrol === 'rigctld'}" role="tabpanel" aria-labelledby="list-rig-control-rigctld-list"><div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text">Rigctld</span>
                       <span class="input-group-text">Address</span>
@@ -168,7 +149,7 @@ function testHamlib(){
                       </button>
                     </div>
                   </div></div>
-      <div class="tab-pane fade" id="list-rig-control-tci" role="tabpanel" aria-labelledby="list-rig-control-tci-list"><div class="input-group input-group-sm mb-1">
+      <div class="tab-pane fade" id="list-rig-control-tci" v-bind:class="{ 'show active' : settings.radiocontrol === 'tci'}" role="tabpanel" aria-labelledby="list-rig-control-tci-list"><div class="input-group input-group-sm mb-1">
                     <div class="input-group input-group-sm mb-1">
                       <span class="input-group-text">TCI</span>
                       <span class="input-group-text">Address</span>

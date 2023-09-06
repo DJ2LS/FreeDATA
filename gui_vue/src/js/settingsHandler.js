@@ -32,7 +32,8 @@ const configDefaultSettings =
                   "tnc_port": "3000",\
                   "daemon_host": "127.0.0.1",\
                   "daemon_port": "3001",\
-                  "mycall": "AA0AA-0",\
+                  "mycall": "AA0AA",\
+                  "myssid": "0",\
                   "mygrid": "JN40aa",\
                   "radiocontrol" : "disabled",\
                   "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
@@ -110,7 +111,15 @@ for (var key in parsedConfig) {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   }
   try{
+    if (key == "mycall"){
+    settings.mycall = config[key].split("-")[0]
+    settings.myssid = config[key].split("-")[1]
+
+    } else {
     settings[key] = config[key];
+    }
+
+
   } catch(e){
   console.log(e)
   }

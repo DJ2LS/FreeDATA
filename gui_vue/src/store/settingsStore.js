@@ -29,6 +29,7 @@ export const useSettingsStore = defineStore('settingsStore', () => {
 
     // station
     var mycall = ref("AA0AA-5")
+    var myssid = ref(0)
     var mygrid = ref("JN20aa")
 
     // rigctld
@@ -76,12 +77,7 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     var tx_delay = ref(0)
     var enable_mesh_features = ref("False")
 
-function getCallsign(){
-    return mycall.value.split("-")[0]
-}
-function getSSID(){
-    return mycall.value.split("-")[1]
-}
+
 function getJSON(){
 var config_export = {
                   "tnc_host": tnc_host.value,
@@ -89,6 +85,7 @@ var config_export = {
                   "daemon_host": daemon_host.value,
                   "daemon_port": daemon_port.value,
                   "mycall": mycall.value,
+                  "myssid": myssid.value,
                   "mygrid": mygrid.value,
                   "radiocontrol" : radiocontrol.value,
                   "hamlib_deviceid": hamlib_deviceid.value,
@@ -167,6 +164,7 @@ var config_export = {
     max_retry_attempts,
     enable_auto_retry,
     mycall,
+    myssid,
     mygrid,
     hamlib_rigctld_port,
     hamlib_rigctld_ip,
@@ -208,8 +206,6 @@ var config_export = {
     tx_delay,
     enable_mesh_features,
     getJSON,
-    getCallsign,
-    getSSID,
 
    }
 

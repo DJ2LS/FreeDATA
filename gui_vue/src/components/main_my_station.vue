@@ -8,11 +8,11 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
-</script>
 
 function saveSettings(){
     saveSettingsToFile()
 }
+</script>
 
 <template>
 
@@ -72,14 +72,14 @@ function saveSettings(){
                         maxlength="8"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
-                        :value="settings.getCallsign()"
-                        @change="saveSettings"
+                        v-model="settings.mycall"
+                        @input="saveSettings"
                       />
                       <select
                         class="form-select form-select-sm"
                         aria-label=".form-select-sm"
                         id="myCallSSID"
-                        :value="settings.getSSID()"
+                        v-model="settings.myssid"
                         @change="saveSettings"
                       >
                         <option selected value="0">0</option>
@@ -123,7 +123,7 @@ function saveSettings(){
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
                         v-model="settings.mygrid"
-                        @change="saveSettings"
+                        @input="saveSettings"
                       />
                     </div>
                   </div>
