@@ -1,23 +1,45 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
+
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useStateStore } from '../store/stateStore.js';
+const state = useStateStore(pinia);
+
+import { useSettingsStore } from '../store/settingsStore.js';
+const settings = useSettingsStore(pinia);
+
 
 import main_audio from './main_audio.vue'
 import main_rig_control from './main_rig_control.vue'
 import main_my_station from './main_my_station.vue'
 import main_updater from './main_updater.vue'
-import settings from './settings.vue'
+import settings_view from './settings.vue'
 
 
 
 
-function testfunction(){
+import {startTNC, stopTNC} from '../js/daemon.js'
+
+function startStopTNC(){
 
 
-    var theme = document.getElementById("theme_selector").value;
-    changeGuiDesign(theme);
-    config.theme = theme;
-    //fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-    FD.saveConfig(config, configPath);
+switch (state.tnc_running_state) {
+  case 'stopped':
+        startTNC()
+
+    break;
+  case 'running':
+      stopTNC()
+
+    break;
+  default:
+
+}
+
 
 }
 
@@ -97,6 +119,9 @@ function changeGuiDesign(design) {
 
 
 <template>
+
+{{state.tnc_running_state}}
+
 <html lang="en" data-bs-theme="light">
 
 
@@ -169,6 +194,7 @@ function changeGuiDesign(design) {
             data-bs-trigger="hover"
             data-bs-html="false"
             title="Start the TNC. Please set your audio and radio settings first!"
+            @click="startStopTNC()"
           >
             <i class="bi bi-play-fill"></i>
             <span class="ms-2">Start tnc</span>
@@ -181,6 +207,7 @@ function changeGuiDesign(design) {
             data-bs-trigger="hover"
             data-bs-html="false"
             title="Stop the TNC."
+            @click="startStopTNC()"
           >
             <i class="bi bi-stop-fill"></i>
             <span class="ms-2">Stop tnc</span>
@@ -1882,7 +1909,7 @@ function changeGuiDesign(design) {
 
 
 
-    <settings/>
+    <settings_view/>
 
 
 

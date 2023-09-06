@@ -13,6 +13,8 @@ const audioStore = useAudioStore(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
+import { useStateStore } from '../store/stateStore.js';
+const state = useStateStore(pinia);
 
 var daemon = new net.Socket();
 var socketchunk = ""; // Current message, per connection.
@@ -168,6 +170,7 @@ daemon.on("data", function (socketdata) {
         // update audio devices by putting them to audio store
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
+        state.tnc_running_state = data["daemon_state"][0]["status"];
 
 
       }
@@ -201,89 +204,56 @@ function getDaemonState() {
 
 // START TNC
 // ` `== multi line string
-function startTNC(
-//exports.startTNC = function (
-  mycall,
-  mygrid,
-  rx_audio,
-  tx_audio,
-  radiocontrol,
-  devicename,
-  deviceport,
-  pttprotocol,
-  pttport,
-  serialspeed,
-  data_bits,
-  stop_bits,
-  handshake,
-  rigctld_ip,
-  rigctld_port,
-  enable_fft,
-  enable_scatter,
-  low_bandwidth_mode,
-  tuning_range_fmin,
-  tuning_range_fmax,
-  enable_fsk,
-  tx_audio_level,
-  respond_to_cq,
-  rx_buffer_size,
-  enable_explorer,
-  explorer_stats,
-  auto_tune,
-  tx_delay,
-  tci_ip,
-  tci_port,
-  enable_mesh,
-) {
+export function startTNC() {
   var json_command = JSON.stringify({
     type: "set",
     command: "start_tnc",
     parameter: [
       {
-        mycall: mycall,
-        mygrid: mygrid,
-        rx_audio: rx_audio,
-        tx_audio: tx_audio,
-        radiocontrol: radiocontrol,
-        devicename: devicename,
-        deviceport: deviceport,
-        pttprotocol: pttprotocol,
-        pttport: pttport,
-        serialspeed: serialspeed,
-        data_bits: data_bits,
-        stop_bits: stop_bits,
-        handshake: handshake,
-        rigctld_port: rigctld_port,
-        rigctld_ip: rigctld_ip,
-        enable_scatter: enable_scatter,
-        enable_fft: enable_fft,
-        enable_fsk: enable_fsk,
-        low_bandwidth_mode: low_bandwidth_mode,
-        tuning_range_fmin: tuning_range_fmin,
-        tuning_range_fmax: tuning_range_fmax,
-        tx_audio_level: tx_audio_level,
-        respond_to_cq: respond_to_cq,
-        rx_buffer_size: rx_buffer_size,
-        enable_explorer: enable_explorer,
-        enable_stats: explorer_stats,
-        enable_auto_tune: auto_tune,
-        tx_delay: tx_delay,
-        tci_ip: tci_ip,
-        tci_port: tci_port,
-        enable_mesh: enable_mesh,
+        mycall: settings.mycall,
+        mygrid: settings.mygrid,
+        rx_audio: settings.rx_audio,
+        tx_audio: settings.tx_audio,
+        radiocontrol: settings.radiocontrol,
+        devicename: settings.devicename,
+        deviceport: settings.deviceport,
+        pttprotocol: settings.pttprotocol,
+        pttport: settings.pttport,
+        serialspeed: settings.serialspeed,
+        data_bits: settings.data_bits,
+        stop_bits: settings.stop_bits,
+        handshake: settings.handshake,
+        rigctld_port: settings.rigctld_port,
+        rigctld_ip: settings.rigctld_ip,
+        enable_scatter: settings.enable_scatter,
+        enable_fft: settings.enable_fft,
+        enable_fsk: settings.enable_fsk,
+        low_bandwidth_mode: settings.low_bandwidth_mode,
+        tuning_range_fmin: settings.tuning_range_fmin,
+        tuning_range_fmax: settings.tuning_range_fmax,
+        tx_audio_level: settings.tx_audio_level,
+        respond_to_cq: settings.respond_to_cq,
+        rx_buffer_size: settings.rx_buffer_size,
+        enable_explorer: settings.enable_explorer,
+        enable_stats: settings.explorer_stats,
+        enable_auto_tune: settings.auto_tune,
+        tx_delay: settings.tx_delay,
+        tci_ip: settings.tci_ip,
+        tci_port: settings.tci_port,
+        enable_mesh: settings.enable_mesh,
       },
     ],
   });
 
-  daemonLog.debug(json_command);
+  console.log(json_command);
   writeDaemonCommand(json_command);
 };
 
 // STOP TNC
 //exports.stopTNC = function () {
-function stopTNC() {
+export function stopTNC() {
 
-  command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }';
+  var command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }';
   writeDaemonCommand(command);
 };
 
@@ -322,7 +292,7 @@ function testHamlib(
       },
     ],
   });
-  daemonLog.debug(json_command);
+  console.log(json_command);
   writeDaemonCommand(json_command);
 };
 

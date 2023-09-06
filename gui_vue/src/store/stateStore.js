@@ -13,6 +13,9 @@ export const useStateStore = defineStore('stateStore', () => {
     var tnc_connection = ref("disconnected")
     var tncStartCount = ref(0)
 
+    var tnc_running_state = ref(0)
+
+
     function updateTncState(state){
 
     tnc_connection.value = state;

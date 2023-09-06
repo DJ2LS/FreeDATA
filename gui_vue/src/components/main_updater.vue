@@ -1,3 +1,16 @@
+<script setup lang="ts">
+
+
+import { setActivePinia } from 'pinia';
+import pinia from '../store/index';
+setActivePinia(pinia);
+
+import { useSettingsStore } from '../store/settingsStore.js';
+const settings = useSettingsStore(pinia);
+
+
+</script>
+
 <template>
 <div class="card mb-0">
               <div class="card-header p-1 d-flex">
@@ -51,8 +64,9 @@
                   id="updater_channel"
                   type="button"
                   disabled
+
                 >
-                  ...
+                  {{settings.update_channel}}
                 </button>
                 <button
                   class="btn btn-secondary btn-sm"
