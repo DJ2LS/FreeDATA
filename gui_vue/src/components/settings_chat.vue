@@ -20,7 +20,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="enable_is_writing"
-            v-model="settings.enable_is_writing" true-value="True" false-value="False"
+            @change="saveSettings" v-model="settings.enable_is_writing" true-value="True" false-value="False"
           />
           <label class="form-check-label" for="GraphicsSwitch"
             >Additional broadcast burst</label
@@ -39,7 +39,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="enable_request_profile"
-            v-model="settings.enable_request_profile" true-value="True" false-value="False"
+            @change="saveSettings" v-model="settings.enable_request_profile" true-value="True" false-value="False"
           />
         </div>
       </label>
@@ -55,7 +55,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="enable_request_shared_folder"
-            v-model="settings.enable_request_shared_folder" true-value="True" false-value="False"
+            @change="saveSettings" v-model="settings.enable_request_shared_folder" true-value="True" false-value="False"
           />
         </div>
       </label>
@@ -77,7 +77,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="enable_auto_retry"
-            v-model="settings.enable_auto_retry" true-value="True" false-value="False"
+            @change="saveSettings" v-model="settings.enable_auto_retry" true-value="True" false-value="False"
           />
         </div>
       </label>

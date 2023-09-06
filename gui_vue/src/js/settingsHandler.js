@@ -90,6 +90,8 @@ if (!fs.existsSync(configPath)) {
   fs.writeFileSync(configPath, configDefaultSettings);
 }
 
+
+export function loadSettings(){
 // load settings
 var config = require(configPath);
 
@@ -115,4 +117,13 @@ for (var key in parsedConfig) {
 
 
 }
+}
 
+
+export function saveSettingsToFile(){
+    console.log("save settings to file...")
+    let config = settings.getJSON()
+    console.log(config)
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+
+}

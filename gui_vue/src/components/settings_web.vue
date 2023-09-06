@@ -16,7 +16,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Explorer publishing</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline">
-          <input class="form-check-input" type="checkbox" id="ExplorerSwitch" v-model="settings.enable_explorer" true-value="True" false-value="False"/>
+          <input class="form-check-input" type="checkbox" id="ExplorerSwitch" @change="saveSettings" v-model="settings.enable_explorer" true-value="True" false-value="False"/>
           <label class="form-check-label" for="ExplorerSwitch">Publish</label>
         </div>
       </label>
@@ -29,7 +29,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="ExplorerStatsSwitch"
-            v-model="settings.enable_stats" true-value="True" false-value="False"
+            @change="saveSettings" v-model="settings.enable_stats" true-value="True" false-value="False"
           />
           <label class="form-check-label" for="ExplorerStatsSwitch"
             >Publish stats</label

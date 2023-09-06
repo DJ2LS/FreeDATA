@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -7,6 +8,12 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
+
+
+function saveSettings(){
+    saveSettingsToFile()
+}
+
 
 </script>
 <template>
@@ -65,7 +72,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Enable fancy GUI</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline">
-          <input class="form-check-input" type="checkbox" id="GraphicsSwitch" v-model="settings.high_graphics" true-value="True" false-value="False"/>
+          <input class="form-check-input" type="checkbox" id="GraphicsSwitch" @change="saveSettings" v-model="settings.high_graphics" true-value="True" false-value="False"/>
           <label class="form-check-label" for="GraphicsSwitch"
             >Higher CPU Usage</label
           >
@@ -97,7 +104,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="NotificationSwitch"
-             v-model="settings.enable_sys_notification" true-value="True" false-value="False"
+             @change="saveSettings" v-model="settings.enable_sys_notification" true-value="True" false-value="False"
           />
           <label class="form-check-label" for="NotificationSwitch"
             >Show system pop-ups</label
@@ -113,7 +120,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="AutoStartSwitch"
-             v-model="settings.auto_start" true-value="True" false-value="False"
+             @change="saveSettings" v-model="settings.auto_start" true-value="True" false-value="False"
           />
           <label class="form-check-label" for="AutoStartSwitch"
             >Start on app launch</label

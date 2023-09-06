@@ -1,6 +1,6 @@
 import { createApp, Vue } from 'vue'
 import { createPinia } from 'pinia'
-
+import {loadSettings} from './js/settingsHandler'
 
 import './styles.css'
 
@@ -25,11 +25,11 @@ const app = createApp(App)//.mount('#app').$nextTick(() => postMessage({ payload
 
 const pinia = createPinia()
 app.mount('#app')
+
 console.log("init...")
 app.use(pinia)
+loadSettings()
 
-
-
-import './js/settingsHandler.js'
+//import './js/settingsHandler.js'
 import './js/daemon.js'
 import './js/sock.js'

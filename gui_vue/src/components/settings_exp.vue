@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -7,6 +8,10 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
+
+function saveSettings(){
+    saveSettingsToFile()
+}
 
 </script>
 
@@ -16,7 +21,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Enable autotune</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline ms-2">
-          <input class="form-check-input" type="checkbox" id="autoTuneSwitch" v-model="settings.auto_tune" true-value="True" false-value="False" />
+          <input class="form-check-input" type="checkbox" id="autoTuneSwitch" @change="saveSettings" v-model="settings.auto_tune" true-value="True" false-value="False" />
           <label class="form-check-label" for="autoTuneSwitch"
             >adjust ALC on TX</label
           >
@@ -27,7 +32,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Enable FSK mode</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline ms-2">
-          <input class="form-check-input" type="checkbox" id="fskModeSwitch" v-model="settings.enable_fsk" true-value="True" false-value="False"/>
+          <input class="form-check-input" type="checkbox" id="fskModeSwitch" @change="saveSettings" v-model="settings.enable_fsk" true-value="True" false-value="False"/>
           <label class="form-check-label" for="fskModeSwitch"
             >not available, yet</label
           >
@@ -42,6 +47,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="enableMeshSwitch"
+            @change="saveSettings"
             v-model="settings.enable_mesh_features" true-value="True" false-value="False"
           />
           <label class="form-check-label" for="enableMeshSwitch"

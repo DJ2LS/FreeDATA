@@ -1,7 +1,8 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 
 export const useSettingsStore = defineStore('settingsStore', () => {
+
 
     // network
     var tnc_host = ref("127.0.0.1");
@@ -75,6 +76,71 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     var tx_delay = ref(0);
     var enable_mesh_features = ref("False");
 
+function getJSON(){
+var config_export = {
+                  "tnc_host": tnc_host.value,
+                  "tnc_port": tnc_port.value,
+                  "daemon_host": daemon_host.value,
+                  "daemon_port": daemon_port.value,
+                  "mycall": mycall.value,
+                  "mygrid": mygrid.value,
+                  "radiocontrol" : radiocontrol.value,
+                  "hamlib_deviceid": hamlib_deviceid.value,
+                  "hamlib_deviceport": hamlib_deviceport.value,
+                  "hamlib_stop_bits": hamlib_stop_bits.value,
+                  "hamlib_data_bits": hamlib_data_bits.value,
+                  "hamlib_handshake": hamlib_handshake.value,
+                  "hamlib_serialspeed": hamlib_serialspeed.value,
+                  "hamlib_dtrstate": hamlib_dtrstate.value,
+                  "hamlib_pttprotocol": hamlib_pttprotocol.value,
+                  "hamlib_ptt_port": hamlib_ptt_port.value,
+                  "hamlib_dcd": hamlib_dcd.value,
+                  "hamlbib_serialspeed_ptt": hamlib_serialspeed.value,
+                  "hamlib_rigctld_port" : hamlib_rigctld_port.value,
+                  "hamlib_rigctld_ip" : hamlib_rigctld_ip.value,
+                  "hamlib_rigctld_path" : hamlib_rigctld_path.value,
+                  "hamlib_rigctld_server_port" : hamlib_rigctld_server_port.value,
+                  "hamlib_rigctld_custom_args": hamlib_rigctld_custom_args.value,
+                  "tci_port" : tci_port.value,
+                  "tci_ip" : tci_ip.value,
+                  "spectrum": spectrum.value,
+                  "tnclocation": tnclocation.value,
+                  "enable_scatter" : enable_scatter.value,
+                  "enable_fft" : enable_fft.value,
+                  "enable_fsk" : enable_fsk.value,
+                  "low_bandwidth_mode" : low_bandwidth_mode.value,
+                  "theme" : theme.value,
+                  "screen_height" : screen_height.value,
+                  "screen_width" : screen_width.value,
+                  "update_channel" : update_channel.value,
+                  "beacon_interval" : beacon_interval.value,
+                  "received_files_folder" : received_files_folder.value,
+                  "tuning_range_fmin" : tuning_range_fmin.value,
+                  "tuning_range_fmax" : tuning_range_fmax.value,
+                  "respond_to_cq" : respond_to_cq.value,
+                  "rx_buffer_size" : rx_buffer_size.value,
+                  "enable_explorer" : enable_explorer.value,
+                  "wftheme": wftheme.value,
+                  "high_graphics" : high_graphics.value,
+                  "explorer_stats" : explorer_stats.value,
+                  "auto_tune" : auto_tune.value,
+                  "enable_is_writing" : enable_is_writing.value,
+                  "shared_folder_path" : shared_folder_path.value,
+                  "enable_request_profile" : enable_request_profile.value,
+                  "enable_request_shared_folder" : enable_request_shared_folder.value,
+                  "max_retry_attempts" : max_retry_attempts.value,
+                  "enable_auto_retry" : enable_auto_retry.value,
+                  "tx_delay" : tx_delay.value,
+                  "auto_start": auto_start.value,
+                  "enable_sys_notification": enable_sys_notification.value,
+                  "enable_mesh_features": enable_mesh_features.value
+                  };
+
+ return config_export
+}
+
+
+
 
   return {
     tnc_host,
@@ -134,7 +200,8 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     auto_tune,
     enable_is_writing,
     tx_delay,
-    enable_mesh_features
+    enable_mesh_features,
+    getJSON
    };
 
 });
