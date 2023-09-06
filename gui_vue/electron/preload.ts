@@ -37,24 +37,24 @@ function useLoading() {
 @keyframes square-spin {
   0% {
     transform: rotate(0deg);
-    background-image: url('../public/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-image: url('icon_cube_border.png'); /* Replace with the URL of your image */
     background-size: cover; /* Scale the image to cover the entire container */
   }
   25% { transform: perspective(100px) rotateX(180deg) rotateY(0);
-    background-image: url('../public/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-image: url('icon_cube_border.png'); /* Replace with the URL of your image */
     background-size: cover; /* Scale the image to cover the entire container */
    }
 
   50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg);
-    background-image: url('../public/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-image: url('icon_cube_border.png'); /* Replace with the URL of your image */
     background-size: cover; /* Scale the image to cover the entire container */
   }
   75% { transform: perspective(100px) rotateX(0) rotateY(180deg);
-    background-image: url('../public/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-image: url('icon_cube_border.png'); /* Replace with the URL of your image */
     background-size: cover; /* Scale the image to cover the entire container */
   }
   100% { transform: perspective(100px) rotateX(0) rotateY(0);
-    background-image: url('../public/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-image: url('icon_cube_border.png'); /* Replace with the URL of your image */
     background-size: cover; /* Scale the image to cover the entire container */
   }
 }
@@ -63,7 +63,7 @@ function useLoading() {
   width: 50px;
   height: 50px;
   background: #fff;
-  animation: square-spin 6s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+  animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
 }
 .app-loading-wrap {
   position: fixed;
@@ -107,4 +107,4 @@ window.onmessage = ev => {
   ev.data.payload === 'removeLoading' && removeLoading()
 }
 
-setTimeout(removeLoading, 4999)
+setTimeout(removeLoading, 3000)
