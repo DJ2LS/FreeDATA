@@ -28,7 +28,7 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     var enable_auto_retry = ref("False")
 
     // station
-    var mycall = ref("AA0AA-0")
+    var mycall = ref("AA0AA-5")
     var mygrid = ref("JN20aa")
 
     // rigctld
@@ -76,6 +76,12 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     var tx_delay = ref(0)
     var enable_mesh_features = ref("False")
 
+function getCallsign(){
+    return mycall.value.split("-")[0]
+}
+function getSSID(){
+    return mycall.value.split("-")[1]
+}
 function getJSON(){
 var config_export = {
                   "tnc_host": tnc_host.value,
@@ -201,7 +207,10 @@ var config_export = {
     enable_is_writing,
     tx_delay,
     enable_mesh_features,
-    getJSON
+    getJSON,
+    getCallsign,
+    getSSID,
+
    }
 
 })

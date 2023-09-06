@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -8,6 +9,10 @@ setActivePinia(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 </script>
+
+function saveSettings(){
+    saveSettingsToFile()
+}
 
 <template>
 
@@ -67,12 +72,15 @@ const settings = useSettingsStore(pinia);
                         maxlength="8"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
-                        v-model="settings.mycall"
+                        :value="settings.getCallsign()"
+                        @change="saveSettings"
                       />
                       <select
                         class="form-select form-select-sm"
                         aria-label=".form-select-sm"
                         id="myCallSSID"
+                        :value="settings.getSSID()"
+                        @change="saveSettings"
                       >
                         <option selected value="0">0</option>
                         <option value="1">1</option>
@@ -115,6 +123,7 @@ const settings = useSettingsStore(pinia);
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
                         v-model="settings.mygrid"
+                        @change="saveSettings"
                       />
                     </div>
                   </div>

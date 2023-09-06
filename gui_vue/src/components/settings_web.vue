@@ -8,6 +8,10 @@ setActivePinia(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
+function saveSettings(){
+    saveSettingsToFile()
+}
+
 </script>
 
 <template>

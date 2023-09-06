@@ -24,7 +24,8 @@ function saveSettings(){
       <select
         class="form-select form-select-sm w-50"
         id="theme_selector"
-        @click="testfunction"
+        @change="saveSettings"
+        v-model="settings.theme"
       >
         <option value="default_light">Default (light)</option>
         <option value="default_dark">Default (dark)</option>
@@ -58,7 +59,8 @@ function saveSettings(){
     </div>
     <div class="input-group input-group-sm mb-1">
       <span class="input-group-text w-50">Waterfall theme</span>
-      <select class="form-select form-select-sm w-50" id="wftheme_selector">
+      <select class="form-select form-select-sm w-50" id="wftheme_selector"         @change="saveSettings"
+        v-model="settings.wftheme">
         <option value="2">Default</option>
         <option value="0">Turbo</option>
         <option value="1">Fosphor</option>
@@ -83,13 +85,15 @@ function saveSettings(){
       <label class="input-group-text w-50" for="inputGroupFile02"
         >Received files folder</label
       >
-      <input type="text" class="form-control w-50" id="received_files_folder" />
+      <input type="text" class="form-control w-50" id="received_files_folder"/>
     </div>
     <div class="input-group input-group-sm mb-1">
       <span class="input-group-text w-50">Update channel</span>
       <select
         class="form-select form-select-sm w-50"
         id="update_channel_selector"
+                @change="saveSettings"
+        v-model="settings.update_channel"
       >
         <option value="latest">stable</option>
         <option value="beta">beta</option>

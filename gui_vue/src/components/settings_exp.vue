@@ -63,6 +63,7 @@ function saveSettings(){
           class="btn btn-outline-secondary btn-sm w-50"
           id="btnCleanDB"
           type="button"
+
         >
           Clean</button
         >&nbsp;

@@ -110,7 +110,7 @@ for (var key in parsedConfig) {
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
   }
   try{
-    settings[key] = parsedConfig[key];
+    settings[key] = config[key];
   } catch(e){
   console.log(e)
   }

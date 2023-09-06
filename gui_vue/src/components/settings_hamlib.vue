@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -7,7 +8,9 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
-
+function saveSettings(){
+    saveSettingsToFile()
+}
 </script>
 
 
@@ -23,6 +26,8 @@ const settings = useSettingsStore(pinia);
         id="hamlib_rigctld_path"
         aria-label="Device IP"
         aria-describedby="basic-addon1"
+                @change="saveSettings"
+        v-model="settings.hamlib_rigctld_path"
       />
     </div>
     <div class="input-group input-group-sm mb-1">
@@ -36,6 +41,8 @@ const settings = useSettingsStore(pinia);
         id="hamlib_rigctld_server_port"
         aria-label="Device Port"
         aria-describedby="basic-addon1"
+                @change="saveSettings"
+        v-model="settings.hamlib_rigctld_server_port"
       />
     </div>
     <hr class="m-2" />
@@ -47,6 +54,8 @@ const settings = useSettingsStore(pinia);
         id="hamlib_deviceid"
         placeholder="Search radio..."
         style="width: 7rem"
+                @change="saveSettings"
+        v-model="settings.hamlib_deviceid"
       />
       <datalist id="datalistOptions">
         <option selected value="-- ignore --">-- ignore --</option>
@@ -324,6 +333,8 @@ const settings = useSettingsStore(pinia);
         aria-label=".form-select-sm"
         id="hamlib_deviceport"
         style="width: 7rem"
+                @change="saveSettings"
+        v-model="settings.hamlib_deviceport"
       >
         <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
                                     <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
@@ -336,6 +347,8 @@ const settings = useSettingsStore(pinia);
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_serialspeed"
+                @change="saveSettings"
+        v-model="settings.hamlib_serialspeed"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="1200">1200</option>
@@ -357,6 +370,8 @@ const settings = useSettingsStore(pinia);
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_data_bits"
+                @change="saveSettings"
+        v-model="settings.hamlib_data_bits"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="7">7</option>
@@ -370,6 +385,8 @@ const settings = useSettingsStore(pinia);
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_stop_bits"
+                @change="saveSettings"
+        v-model="settings.hamlib_stop_bits"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="1">1</option>
@@ -385,6 +402,8 @@ const settings = useSettingsStore(pinia);
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_handshake"
+                @change="saveSettings"
+        v-model="settings.hamlib_handshake"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="None">None (Default)</option>
@@ -397,6 +416,8 @@ const settings = useSettingsStore(pinia);
         class="form-select form-select-sm"
         aria-label=".form-select-sm"
         id="hamlib_ptt_port"
+                @change="saveSettings"
+        v-model="settings.hamlib_ptt_port"
       >
         <option selected value="ignore">-- ignore --</option>
       </select>
@@ -409,6 +430,8 @@ const settings = useSettingsStore(pinia);
         aria-label=".form-select-sm"
         id="hamlib_pttprotocol"
         style="width: 0.5rem"
+                @change="saveSettings"
+        v-model="settings.hamlib_pttprotocol"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="NONE">NONE</option>
@@ -428,6 +451,8 @@ const settings = useSettingsStore(pinia);
         aria-label=".form-select-sm"
         id="hamlib_dcd"
         style="width: 0.5rem"
+                @change="saveSettings"
+        v-model="settings.hamlib_dcd"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="NONE">NONE</option>
@@ -446,6 +471,8 @@ const settings = useSettingsStore(pinia);
         aria-label=".form-select-sm"
         id="hamlib_dtrstate"
         style="width: 0.5rem"
+                @change="saveSettings"
+        v-model="settings.hamlib_dtrstate"
       >
         <option selected value="ignore">-- ignore --</option>
         <option value="OFF">OFF</option>
@@ -462,6 +489,7 @@ const settings = useSettingsStore(pinia);
         aria-describedby="basic-addon1"
         disabled
         placeholder="auto populated from above settings"
+
       />
       <button
         class="btn btn-outline-secondary"
@@ -482,6 +510,8 @@ const settings = useSettingsStore(pinia);
         id="hamlib_rigctld_custom_args"
         aria-label="Custom arguments"
         aria-describedby="basic-addon1"
+                @change="saveSettings"
+        v-model="settings.hamlib_rigctld_custom_args"
       />
     </div>
 </template>

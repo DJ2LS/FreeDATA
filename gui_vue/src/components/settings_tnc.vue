@@ -1,5 +1,6 @@
 <script setup lang="ts">
 
+import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -7,6 +8,10 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
+
+function saveSettings(){
+    saveSettingsToFile()
+}
 
 </script>
 
@@ -31,7 +36,7 @@ const settings = useSettingsStore(pinia);
           name="local-remote-switch"
           id="local-remote-switch1"
           autocomplete="off"
-          checked
+                  @change="saveSettings"
         />
         <label
           class="btn btn-sm btn-outline-secondary"
@@ -46,6 +51,7 @@ const settings = useSettingsStore(pinia);
           name="local-remote-switch"
           id="local-remote-switch2"
           autocomplete="off"
+                  @change="saveSettings"
         />
         <label
           class="btn btn-sm btn-outline-secondary"
@@ -63,18 +69,18 @@ const settings = useSettingsStore(pinia);
           class="form-control"
           placeholder="ip address"
           id="tnc_adress"
-          value="192.168.178.163"
           maxlength="17"
           style="width: 8rem"
           aria-label="Username"
           aria-describedby="basic-addon1"
+                  @change="saveSettings"
+        v-model="settings.tnc_host"
         />
         <span class="input-group-text">:</span>
         <input
           type="text"
           class="form-control"
           placeholder="port"
-          value="3000"
           id="tnc_port"
           maxlength="5"
           max="65534"
@@ -82,6 +88,8 @@ const settings = useSettingsStore(pinia);
           style="width: 4rem"
           aria-label="Username"
           aria-describedby="basic-addon1"
+                  @change="saveSettings"
+        v-model="settings.tnc_port"
         />
         <button
           class="btn btn-sm btn-danger"
@@ -106,7 +114,8 @@ const settings = useSettingsStore(pinia);
 
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50">TX delay in ms</label>
-      <select class="form-select form-select-sm" id="tx_delay">
+      <select class="form-select form-select-sm" id="tx_delay"         @change="saveSettings"
+        v-model="settings.tx_delay">
         <option value="0">0</option>
         <option value="50">50</option>
         <option value="100">100</option>
@@ -134,7 +143,8 @@ const settings = useSettingsStore(pinia);
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-25">Tuning range</label>
       <label class="input-group-text">fmin</label>
-      <select class="form-select form-select-sm" id="tuning_range_fmin">
+      <select class="form-select form-select-sm" id="tuning_range_fmin"         @change="saveSettings"
+        v-model="settings.tuning_range_fmin">
         <option value="-50.0">-50.0</option>
         <option value="-100.0">-100.0</option>
         <option value="-150.0">-150.0</option>
@@ -142,7 +152,8 @@ const settings = useSettingsStore(pinia);
         <option value="-250.0">-250.0</option>
       </select>
       <label class="input-group-text">fmax</label>
-      <select class="form-select form-select-sm" id="tuning_range_fmax">
+      <select class="form-select form-select-sm" id="tuning_range_fmax"         @change="saveSettings"
+        v-model="settings.tuning_range_fmax">
         <option value="50.0">50.0</option>
         <option value="100.0">100.0</option>
         <option value="150.0">150.0</option>
@@ -157,6 +168,8 @@ const settings = useSettingsStore(pinia);
         aria-label=".form-select-sm"
         id="beaconInterval"
         style="width: 6rem"
+                @change="saveSettings"
+        v-model="settings.beacon_interval"
       >
         <option value="60">60 secs</option>
         <option value="90">90 secs</option>
@@ -172,7 +185,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Enable waterfall data</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline">
-          <input class="form-check-input" type="checkbox" id="fftSwitch" v-model="settings.enable_fft" true-value="True" false-value="False"/>
+          <input class="form-check-input" type="checkbox" id="fftSwitch"         @change="saveSettings" v-model="settings.enable_fft" true-value="True" false-value="False"/>
           <label class="form-check-label" for="fftSwitch">Waterfall</label>
         </div>
       </label>
@@ -181,7 +194,7 @@ const settings = useSettingsStore(pinia);
       <label class="input-group-text w-50">Enable scatter diagram data</label>
       <label class="input-group-text w-50">
         <div class="form-check form-switch form-check-inline">
-          <input class="form-check-input" type="checkbox" id="scatterSwitch" v-model="settings.enable_scatter" true-value="True" false-value="False"/>
+          <input class="form-check-input" type="checkbox" id="scatterSwitch" @change="saveSettings" v-model="settings.enable_scatter" true-value="True" false-value="False"/>
           <label class="form-check-label" for="scatterSwitch">Scatter</label>
         </div>
       </label>
@@ -194,7 +207,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="250HzModeSwitch"
-            v-model="settings.low_bandwidth_mode" true-value="True" false-value="False"
+            v-model="settings.low_bandwidth_mode" true-value="True" false-value="False" @change="saveSettings"
           />
           <label class="form-check-label" for="250HzModeSwitch">250Hz</label>
         </div>
@@ -208,7 +221,7 @@ const settings = useSettingsStore(pinia);
             class="form-check-input"
             type="checkbox"
             id="respondCQSwitch"
-            v-model="settings.respond_to_cq" true-value="True" false-value="False"
+            v-model="settings.respond_to_cq" true-value="True" false-value="False" @change="saveSettings"
           />
           <label class="form-check-label" for="respondCQSwitch">QRV</label>
         </div>
@@ -217,7 +230,8 @@ const settings = useSettingsStore(pinia);
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50">RX buffer size</label>
       <label class="input-group-text w-50">
-        <select class="form-select form-select-sm" id="rx_buffer_size">
+        <select class="form-select form-select-sm" id="rx_buffer_size"         @change="saveSettings"
+        v-model="settings.rx_buffer_size">
           <option value="1">1</option>
           <option value="2">2</option>
           <option value="4">4</option>
