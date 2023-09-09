@@ -189,7 +189,7 @@ client.on("data", function (socketdata) {
         stateStore.s_meter_strength_percent = noise_level
 
         stateStore.arq_total_bytes = data["total_bytes"]
-
+        stateStore.heard_stations = data["stations"]
 
         // TODO: Remove ported objects
         let Data = {
@@ -213,9 +213,7 @@ client.on("data", function (socketdata) {
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
           arq_seconds_until_finish: data["arq_seconds_until_finish"],
           arq_compression_factor: data["arq_compression_factor"],
-          total_bytes: data["total_bytes"],
           arq_transmission_percent: data["arq_transmission_percent"],
-          stations: data["stations"],
           routing_table: data["routing_table"],
           mesh_signalling_table: data["mesh_signalling_table"],
           beacon_state: data["beacon_state"],

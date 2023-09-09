@@ -732,7 +732,20 @@ function changeGuiDesign(design) {
                         <!--<th scope="col">Off</th>-->
                       </tr>
                     </thead>
-                    <tbody id="heardstations"></tbody>
+                    <tbody id="heardstations">
+
+                     <tr v-for="item in state.heard_stations" :key="item.timestamp">
+                        <td>{{ item.timestamp }}</td>
+                        <td>{{ item.frequency }}</td>
+                        <td>&nbsp;</td>
+                        <td>{{ item.dxcallsign }}</td>
+                        <td>{{ item.dxgrid }}</td>
+                        <td>{{ item.distance }}</td>
+                        <td>{{ item.datatype }}</td>
+                        <td>{{ item.snr }}</td>
+                        <!--<td>{{ item.offset }}</td>-->
+                    </tr>
+                    </tbody>
                   </table>
                 </div>
                 <!-- END OF HEARD STATIONS TABLE -->
