@@ -190,12 +190,13 @@ client.on("data", function (socketdata) {
 
         stateStore.arq_total_bytes = data["total_bytes"]
         stateStore.heard_stations = data["stations"]
-
+        stateStore.dxcallsign = data["dxcallsign"]
+        stateStore.arq_session_state = data["arq_session"]
+        stateStore.arq_state = data["arq_state"]
         // TODO: Remove ported objects
         let Data = {
           mycallsign: data["mycallsign"],
           mygrid: data["mygrid"],
-          arq_session: data["arq_session"],
           //channel_state: data['CHANNEL_STATE'],
 
           info: data["info"],

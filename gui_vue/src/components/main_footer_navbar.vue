@@ -61,6 +61,7 @@ const settings = useSettingsStore(pinia);
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
+                v-bind:class="{ 'bg-secondary' : state.arq_session_state === 'disconnected', 'bg-success' : state.arq_session_state === 'connected'}"
               >
                 <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
               </button>
@@ -74,6 +75,8 @@ const settings = useSettingsStore(pinia);
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"
+                v-bind:class="{ 'bg-secondary' : state.arq_state === 'False', 'bg-success' : state.arq_state === 'True'}"
+
               >
                 <i
                   class="bi bi-file-earmark-binary"
@@ -201,7 +204,7 @@ const settings = useSettingsStore(pinia);
                 data-bs-trigger="hover"
                 data-bs-html="true"
               >
-                ------
+                {{state.dxcallsign}}
               </button>
 
      </div>

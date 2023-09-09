@@ -26,9 +26,10 @@ export const useStateStore = defineStore('stateStore', () => {
     var arq_total_bytes = ref(0)
     
     var heard_stations = ref("")
+    var dxcallsign = ref("")
 
-
-
+    var arq_session_state = ref("")
+    var arq_state = ref("")
 
 
 
@@ -101,5 +102,5 @@ export const useStateStore = defineStore('stateStore', () => {
 
 
 
-  return { busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, updateTncState };
+  return { dxcallsign, busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, updateTncState };
 });

@@ -20,7 +20,7 @@ function saveSettings(){
 
 <div class="input-group input-group-sm mb-1">
       <span class="input-group-text" style="width: 180px"
-        >TNC address</span
+        >TNC port</span
       >
       <input
         type="text"
@@ -37,7 +37,7 @@ function saveSettings(){
 
 <div class="input-group input-group-sm mb-1">
       <span class="input-group-text" style="width: 180px"
-        >TNC port</span
+        >TNC host</span
       >
       <input
         type="text"
