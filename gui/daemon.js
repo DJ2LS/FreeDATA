@@ -34,11 +34,7 @@ function connectDAEMON() {
   //clear message buffer after reconnecting or initial connection
   socketchunk = "";
 
-  if (config.tnclocation == "localhost") {
-    daemon.connect(3001, "127.0.0.1");
-  } else {
-    daemon.connect(daemon_port, daemon_host);
-  }
+    daemon.connect(config.daemon_port, config.daemon_host);
 
   //client.setTimeout(5000);
 }

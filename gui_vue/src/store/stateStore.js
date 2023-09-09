@@ -9,11 +9,21 @@ export const useStateStore = defineStore('stateStore', () => {
     var mode = ref("-")
     var bandwidth = ref("-")
     var dbfs_level = ref(0)
+    var ptt_state = ref("False")
+
+    var speed_level = ref(0)
+    var fft = ref()
+    var channel_busy = ref("False")
+    var channel_busy_slot = ref()
+    var scatter = ref()
+    var s_meter_strength_percent = ref(0)
+    var s_meter_strength_raw = ref(0)
 
     var tnc_connection = ref("disconnected")
     var tncStartCount = ref(0)
-
     var tnc_running_state = ref(0)
+
+    var arq_total_bytes = ref(0)
 
 
     function updateTncState(state){
@@ -82,5 +92,5 @@ export const useStateStore = defineStore('stateStore', () => {
 
 
 
-  return { busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, updateTncState };
+  return { busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, updateTncState };
 });

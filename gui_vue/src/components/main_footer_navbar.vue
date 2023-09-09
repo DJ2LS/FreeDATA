@@ -6,6 +6,9 @@ import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 setActivePinia(pinia);
 
+import { useStateStore } from '../store/stateStore.js';
+const state = useStateStore(pinia);
+
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
@@ -18,11 +21,12 @@ const settings = useSettingsStore(pinia);
         style="margin-left: 87px"
       >
 
-        <div class="col-sm-2">
+        <div class="col">
           <div class="btn-toolbar" role="toolbar" style="margin-left: 2px">
             <div class="btn-group btn-group-sm me-1" role="group">
               <button
                 class="btn btn-sm btn-secondary me-1"
+                v-bind:class="{ 'bg-danger' : state.ptt_state === 'True', 'bg-success' : state.ptt_state === 'False'}"
                 id="ptt_state"
                 type="button"
                 data-bs-placement="top"
@@ -42,6 +46,7 @@ const settings = useSettingsStore(pinia);
                 data-bs-toggle="tooltip"
                 data-bs-trigger="hover"
                 data-bs-html="true"
+                v-bind:class="{ 'bg-danger' : state.busy_state === 'IDLE', 'bg-success' : state.busy_state === 'BUSY'}"
                 title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
               >
                 <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
@@ -61,7 +66,7 @@ const settings = useSettingsStore(pinia);
               </button>
 
               <button
-                class="btn btn-sm btn-secondary me-1"
+                class="btn btn-sm btn-secondary me-4"
                 id="arq_state"
                 type="button"
                 data-bs-placement="top"
@@ -90,218 +95,116 @@ const settings = useSettingsStore(pinia);
               </button>
 -->
             </div>
+
+
+
+
+          <div class="btn-group btn-group-sm me-1" role="group">
+                <button
+                class="btn btn-sm btn-secondary me-4"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
+                {{state.frequency}} Hz
+              </button>
+
+
           </div>
-        </div>
-        <div class="col-sm-3">
-          <div class="input-group input-group-sm">
-            <div class="btn-group dropup me-1">
-              <button
+
+          <div class="btn-group btn-group-sm me-1" role="group">
+
+
+
+            <button
+                class="btn btn-sm btn-secondary me-0"
                 type="button"
-                class="btn btn-sm btn-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                id="frequency"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
               >
-                ---
-              </button>
-              <form class="dropdown-menu p-2">
-                <div class="input-group input-group-sm">
-                  <input
-                    type="text"
-                    class="form-control"
-                    style="max-width: 6rem"
-                    placeholder="7053000"
-                    pattern="[0-9]*"
-                    id="newFrequency"
-                    maxlength="11"
-                    aria-label="Input group"
-                    aria-describedby="btnGroupAddon"
-                  />
-                  <span class="input-group-text">Hz</span>
-                  <button
-                    class="btn btn-sm btn-success"
-                    id="saveFrequency"
-                    type="button"
-                    data-bs-placement="bottom"
-                    data-bs-toggle="tooltip"
-                    data-bs-trigger="hover"
-                    data-bs-html="false"
-                    title="save frequency"
-                  >
-                    <i class="bi bi-check-lg" style="font-size: 0.8rem"></i>
-                  </button>
-                </div>
-              </form>
-            </div>
-<!--
-            <div class="btn-group dropup me-1">
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                id="mode"
-              >
-                ---
-              </button>
-
-
-              <form class="dropdown-menu p-2">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set FM"
-                  id="saveModeFM"
-                >
-                  FM
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set AM"
-                  id="saveModeAM"
-                >
-                  AM
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set LSB"
-                  id="saveModeLSB"
-                >
-                  LSB
-                </button>
-                <hr />
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set USB"
-                  id="saveModeUSB"
-                >
-                  USB
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set PKTUSB"
-                  id="saveModePKTUSB"
-                >
-                  PKTUSB
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set DIGU"
-                  id="saveModeDIGU"
-                >
-                  DIGU
-                </button>
-
-                <button
-                  type="button"
-                  class="btn btn-sm btn-secondary"
-                  data-bs-placement="bottom"
-                  data-bs-toggle="tooltip"
-                  data-bs-trigger="hover"
-                  data-bs-html="false"
-                  title="set DIGL"
-                  id="saveModeDIGL"
-                >
-                  DIGL
-                </button>
-              </form>
-            </div>
--->
-
-<!--
-            <div class="btn-group dropup">
-              <button
-                type="button"
-                class="btn btn-sm btn-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                id="bandwidth"
-              >
-                ---
-              </button>
-              <form class="dropdown-menu p-2">
-                <div class="input-group input-group-sm">...soon...</div>
-              </form>
-            </div>
-            -->
-          </div>
-        </div>
-        <div class="col-sm-3">
-          <div class="input-group input-group-sm">
-            <span class="input-group-text">
               <i class="bi bi-speedometer2" style="font-size: 1rem"></i>
-            </span>
-            <span
-              class="input-group-text"
-              data-bs-placement="bottom"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              data-bs-html="false"
-              title="actual speed level"
-            >
-              <i
-                id="speed_level"
-                class="bi bi-reception-0"
-                style="font-size: 1rem"
-              ></i>
-            </span>
-            <span class="input-group-text">
+              </button>
+
+
+            <button
+                class="btn btn-sm btn-secondary me-4"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
+
+
+                <i class="bi " style="font-size: 1rem"
+                v-bind:class="{ 'bi-reception-0' : state.speed_level === '0',
+                                'bi-reception-1' : state.speed_level === '1',
+                                'bi-reception-2' : state.speed_level === '2',
+                                'bi-reception-3' : state.speed_level === '3',
+                                'bi-reception-4' : state.speed_level === '4',
+                                }"
+
+
+
+                ></i>
+              </button>
+
+
+</div>
+   <div class="btn-group btn-group-sm me-1" role="group">
+
+                          <button
+                class="btn btn-sm btn-secondary me-0"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
               <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
-            </span>
-            <span
-              class="input-group-text"
-              id="total_bytes"
-              data-bs-placement="bottom"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              data-bs-html="false"
-              title="total bytes processed"
-              >---</span
-            >
-            <span
-              class="input-group-text"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              title="Indicates if a session is active"
-              ><span class="bi bi-chat-fill" id="spnConnectedWith"></span
-            ></span>
-            <span
-              class="input-group-text"
-              id="txtConnectedWith"
-              data-bs-toggle="tooltip"
-              data-bs-trigger="hover"
-              title="Connected with"
-              >------</span
-            >
+              </button>
+
+
+                          <button
+                class="btn btn-sm btn-secondary me-4"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
+                {{state.arq_total_bytes}}
+              </button>
+</div>
+   <div class="btn-group btn-group-sm me-1" role="group">
+                                <button
+                class="btn btn-sm btn-secondary me-0"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
+              <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
+              </button>
+
+
+                          <button
+                class="btn btn-sm btn-secondary me-1"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+              >
+                ------
+              </button>
+
+     </div>
           </div>
         </div>
         <div class="col-lg-4">

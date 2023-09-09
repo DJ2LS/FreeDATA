@@ -343,8 +343,8 @@ function changeGuiDesign(design) {
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="noise_level"
                           role="progressbar"
-                          style="width: 0%"
-                          aria-valuenow="0"
+                          style="width: {{state.s_meter_strength_percent}}%;"
+                          aria-valuenow="{{state.s_meter_strength_percent}}"
                           aria-valuemin="0"
                           aria-valuemax="100"
                         ></div>
@@ -352,7 +352,7 @@ function changeGuiDesign(design) {
                           class="justify-content-center d-flex position-absolute w-100"
                           id="noise_level_value"
                         >
-                          S-Meter (dB)
+                          S-Meter: {{state.s_meter_strength_raw}} dB
                         </p>
                       </div>
                       <div class="progress mb-0" style="height: 8px">

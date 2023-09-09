@@ -9,6 +9,8 @@ setActivePinia(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
+import { useStateStore } from '../store/stateStore.js';
+const state = useStateStore(pinia);
 
 </script>
 
@@ -63,7 +65,7 @@ const settings = useSettingsStore(pinia);
                 <div class="me-2">
   <div class="input-group">
     <span class="input-group-text" id="basic-addon3">Frequency</span>
-    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4">
+    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4" v-model="state.frequency">
         <span class="input-group-text" id="basic-addon3">Hz</span>
 
   </div>
@@ -73,11 +75,11 @@ const settings = useSettingsStore(pinia);
                 <div class="me-2">
   <div class="input-group">
     <span class="input-group-text" id="basic-addon3">Mode</span>
-<select class="form-control">
-  <option>USB</option>
-  <option>LSB</option>
-  <option>AM</option>
-  <option>FM</option>
+<select class="form-control"  v-model="settings.hamlib_rigctld_ip">
+  <option value="USB">USB</option>
+  <option value="LSB">LSB</option>
+  <option value="AM">AM</option>
+  <option value="FM">FM</option>
 </select>
 
   </div>
