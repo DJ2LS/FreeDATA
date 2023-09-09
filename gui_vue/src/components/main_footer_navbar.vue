@@ -46,7 +46,7 @@ const settings = useSettingsStore(pinia);
                 data-bs-toggle="tooltip"
                 data-bs-trigger="hover"
                 data-bs-html="true"
-                v-bind:class="{ 'bg-danger' : state.busy_state === 'IDLE', 'bg-success' : state.busy_state === 'BUSY'}"
+                v-bind:class="{ 'bg-danger' : state.busy_state === 'BUSY', 'bg-success' : state.busy_state === 'IDLE'}"
                 title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
               >
                 <i class="bi bi-cpu" style="font-size: 0.8rem"></i>

@@ -17,6 +17,10 @@ const settings = useSettingsStore(pinia);
 var client = new net.Socket();
 var socketchunk = ""; // Current message, per connection.
 
+
+
+
+
 // split character
 //const split_char = "\0;\1;";
 const split_char = "0;1;";
@@ -193,6 +197,17 @@ client.on("data", function (socketdata) {
         stateStore.dxcallsign = data["dxcallsign"]
         stateStore.arq_session_state = data["arq_session"]
         stateStore.arq_state = data["arq_state"]
+
+
+
+
+
+
+
+
+
+
+
         // TODO: Remove ported objects
         let Data = {
           mycallsign: data["mycallsign"],
