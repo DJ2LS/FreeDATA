@@ -24,6 +24,15 @@ export const useStateStore = defineStore('stateStore', () => {
     var tnc_running_state = ref(0)
 
     var arq_total_bytes = ref(0)
+    
+    var heard_stations = ref("")
+
+
+
+
+
+
+
 
 
     function updateTncState(state){
