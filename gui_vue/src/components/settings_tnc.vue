@@ -17,100 +17,38 @@ function saveSettings(){
 
 <template>
 
-    <div class="input-group input-group-sm mb-1">
-      <label class="input-group-text w-50">TNC IP</label>
 
-      <div
-        class="btn-group btn-group-sm me-2"
-        role="group"
-        aria-label="local-remote-switch toggle button group"
-        data-bs-placement="bottom"
-        data-bs-toggle="tooltip"
-        data-bs-trigger="hover"
-        data-bs-html="true"
-        title="Select a local or a remote location of your TNC daemon. Normally local is the preferred option."
+<div class="input-group input-group-sm mb-1">
+      <span class="input-group-text" style="width: 180px"
+        >TNC address</span
       >
-        <input
-          type="radio"
-          class="btn-check"
-          name="local-remote-switch"
-          id="local-remote-switch1"
-          autocomplete="off"
-                  @change="saveSettings"
-        />
-        <label
-          class="btn btn-sm btn-outline-secondary"
-          for="local-remote-switch1"
-        >
-          <i class="bi bi-pc-display-horizontal"></i>
-          <span class="ms-2 me-2">Local tnc</span>
-        </label>
-        <input
-          type="radio"
-          class="btn-check"
-          name="local-remote-switch"
-          id="local-remote-switch2"
-          autocomplete="off"
-                  @change="saveSettings"
-        />
-        <label
-          class="btn btn-sm btn-outline-secondary"
-          for="local-remote-switch2"
-        >
-          <i class="bi bi-ethernet"></i>
-          <span class="ms-2 me-2">Remote tnc</span>
-        </label>
-      </div>
-
-      <div class="input-group input-group-sm me-2" id="remote-tnc-field">
-        <span class="input-group-text">tnc ip</span>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="ip address"
-          id="tnc_adress"
-          maxlength="17"
-          style="width: 8rem"
-          aria-label="Username"
-          aria-describedby="basic-addon1"
-                  @change="saveSettings"
-        v-model="settings.tnc_host"
-        />
-        <span class="input-group-text">:</span>
-        <input
-          type="text"
-          class="form-control"
-          placeholder="port"
-          id="tnc_port"
+      <input
+        type="text"
+        class="form-control"
+        placeholder="tnc port"
+        id="tnc_port"
           maxlength="5"
           max="65534"
           min="1025"
-          style="width: 4rem"
-          aria-label="Username"
-          aria-describedby="basic-addon1"
-                  @change="saveSettings"
+        @change="saveSettings"
         v-model="settings.tnc_port"
-        />
-        <button
-          class="btn btn-sm btn-danger"
-          id="daemon_connection_state"
-          type="button"
-          disabled
-        >
-          <i class="bi bi-diagram-3" style="font-size: 1rem"></i>
-        </button>
-      </div>
-
-      <button
-        type="button"
-        id="openHelpModalLocalRemote"
-        data-bs-toggle="modal"
-        data-bs-target="#localRemoteHelpModal"
-        class="btn m-0 p-0 border-0"
-      >
-        <i class="bi bi-question-circle" style="font-size: 1rem"></i>
-      </button>
+      />
     </div>
+
+<div class="input-group input-group-sm mb-1">
+      <span class="input-group-text" style="width: 180px"
+        >TNC port</span
+      >
+      <input
+        type="text"
+        class="form-control"
+        placeholder="tnc host"
+        id="tnc_port"
+        @change="saveSettings"
+        v-model="settings.tnc_host"
+      />
+    </div>
+
 
     <div class="input-group input-group-sm mb-1">
       <label class="input-group-text w-50">TX delay in ms</label>

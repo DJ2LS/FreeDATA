@@ -7,9 +7,8 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     // network
     var tnc_host = ref("127.0.0.1")
     var tnc_port = ref(3000)
-    var daemon_host = ref("127.0.0.1")
-    var daemon_port = ref(3001)
-    var tnclocation = ref("localhost")
+    var daemon_host = ref(tnc_host.value)
+    var daemon_port = ref(tnc_port.value + 1)
 
     // app
     var screen_height = ref(430)
@@ -78,12 +77,16 @@ export const useSettingsStore = defineStore('settingsStore', () => {
     var enable_mesh_features = ref("False")
 
 
+
+
+
 function getJSON(){
+
 var config_export = {
                   "tnc_host": tnc_host.value,
                   "tnc_port": tnc_port.value,
-                  "daemon_host": daemon_host.value,
-                  "daemon_port": daemon_port.value,
+                  "daemon_host": tnc_host.value,
+                  "daemon_port": tnc_port.value + 1,
                   "mycall": mycall.value,
                   "myssid": myssid.value,
                   "mygrid": mygrid.value,
@@ -107,7 +110,6 @@ var config_export = {
                   "tci_port" : tci_port.value,
                   "tci_ip" : tci_ip.value,
                   "spectrum": spectrum.value,
-                  "tnclocation": tnclocation.value,
                   "enable_scatter" : enable_scatter.value,
                   "enable_fft" : enable_fft.value,
                   "enable_fsk" : enable_fsk.value,
@@ -150,7 +152,6 @@ var config_export = {
     tnc_port,
     daemon_host,
     daemon_port,
-    tnclocation,
     screen_height,
     screen_width,
     theme,

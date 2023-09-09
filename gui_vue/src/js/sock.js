@@ -43,11 +43,9 @@ function connectTNC() {
   //clear message buffer after reconnecting or initial connection
   socketchunk = "";
 
-  if (settings.tnclocation == "localhost") {
-    client.connect(3000, "127.0.0.1");
-  } else {
-    client.connect(settings.tnc_port, settings.tnc_host);
-  }
+
+  client.connect(settings.tnc_port, settings.tnc_host);
+
 }
 
 client.on("connect", function (data) {

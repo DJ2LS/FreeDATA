@@ -55,7 +55,6 @@ const configDefaultSettings =
                   "tci_port" : "50001",\
                   "tci_ip" : "127.0.0.1",\
                   "spectrum": "waterfall",\
-                  "tnclocation": "localhost",\
                   "enable_scatter" : "False",\
                   "enable_fft" : "False",\
                   "enable_fsk" : "False",\
