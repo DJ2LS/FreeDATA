@@ -66,7 +66,7 @@ function startStopBeacon(){
                           style="font-size: 1rem"
                         ></i>
                       </button>
-                    s</div>
+                    </div>
                   </div>
                 </div>
               </div>
