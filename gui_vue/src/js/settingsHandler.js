@@ -1,7 +1,11 @@
-const path = require("path");
-const fs = require("fs");
-const os = require("os");
-const logger = require("winston")
+//const path = require("path");
+//const fs = require("fs");
+//const os = require("os");
+
+import path from 'path'
+import fs from 'fs'
+import os from 'os'
+
 
 // pinia store setup
 import { setActivePinia } from 'pinia';
@@ -29,9 +33,9 @@ if (!fs.existsSync(configFolder)) {
 const configDefaultSettings =
   '{\
                   "tnc_host": "127.0.0.1",\
-                  "tnc_port": "3000",\
+                  "tnc_port": 3000,\
                   "daemon_host": "127.0.0.1",\
-                  "daemon_port": "3001",\
+                  "daemon_port": 3001,\
                   "mycall": "AA0AA",\
                   "myssid": "0",\
                   "mygrid": "JN40aa",\
@@ -46,13 +50,13 @@ const configDefaultSettings =
                   "hamlib_pttprotocol": "ignore",\
                   "hamlib_ptt_port": "ignore",\
                   "hamlib_dcd": "ignore",\
-                  "hamlbib_serialspeed_ptt": "9600",\
-                  "hamlib_rigctld_port" : "4532",\
+                  "hamlbib_serialspeed_ptt": 9600,\
+                  "hamlib_rigctld_port" : 4532,\
                   "hamlib_rigctld_ip" : "127.0.0.1",\
                   "hamlib_rigctld_path" : "",\
-                  "hamlib_rigctld_server_port" : "4532",\
+                  "hamlib_rigctld_server_port" : 4532,\
                   "hamlib_rigctld_custom_args": "",\
-                  "tci_port" : "50001",\
+                  "tci_port" : 50001,\
                   "tci_ip" : "127.0.0.1",\
                   "spectrum": "waterfall",\
                   "enable_scatter" : "False",\
@@ -68,7 +72,7 @@ const configDefaultSettings =
                   "tuning_range_fmin" : "-50.0",\
                   "tuning_range_fmax" : "50.0",\
                   "respond_to_cq" : "True",\
-                  "rx_buffer_size" : "16", \
+                  "rx_buffer_size" : 16, \
                   "enable_explorer" : "False", \
                   "wftheme": 2, \
                   "high_graphics" : "True",\

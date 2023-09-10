@@ -86,7 +86,7 @@ var config_export = {
                   "tnc_host": tnc_host.value,
                   "tnc_port": tnc_port.value,
                   "daemon_host": tnc_host.value,
-                  "daemon_port": tnc_port.value + 1,
+                  "daemon_port": (parseInt(tnc_port.value) + 1).toString(),
                   "mycall": mycall.value,
                   "myssid": myssid.value,
                   "mygrid": mygrid.value,
