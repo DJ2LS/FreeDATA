@@ -12,7 +12,7 @@ const state = useStateStore(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
-
+import main_top_navbar from './main_top_navbar.vue'
 import main_audio from './main_audio.vue'
 import main_rig_control from './main_rig_control.vue'
 import main_my_station from './main_my_station.vue'
@@ -183,78 +183,9 @@ function changeGuiDesign(design) {
           <div class="tab-content" id="nav-tabContent">
       <div class="tab-pane fade show active" id="list-tnc" role="tabpanel" aria-labelledby="list-tnc-list">
 
+    <!-- TOP NAVBAR -->
+    <main_top_navbar/>
 
-    <!-- SECONDARY NAVBAR -->
-    <nav class="navbar bg-body-tertiary border-bottom">
-      <div style="margin-left: 100px">
-
-      </div>
-
-      <div>{{state.tnc_running_state}}
-
-        <div class="btn-group" role="group">
-          <button
-            type="button"
-            id="startTNC"
-            class="btn btn-sm btn-outline-success"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="false"
-            title="Start the TNC. Please set your audio and radio settings first!"
-            @click="startStopTNC()"
-          >
-            <i class="bi bi-play-fill"></i>
-            <span class="ms-2">Start tnc</span>
-          </button>
-          <button
-            type="button"
-            id="stopTNC"
-            class="btn btn-sm btn-outline-danger"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="false"
-            title="Stop the TNC."
-            @click="startStopTNC()"
-          >
-            <i class="bi bi-stop-fill"></i>
-            <span class="ms-2">Stop tnc</span>
-          </button>
-        </div>
-        <button
-          type="button"
-          id="openHelpModalStartStopTNC"
-          data-bs-toggle="modal"
-          data-bs-target="#startStopTNCHelpModal"
-          class="btn me-5 p-0 border-0"
-        >
-          <i class="bi bi-question-circle" style="font-size: 1rem"></i>
-        </button>
-
-      </div>
-
-      <!--
-	<div class="btn-toolbar" role="toolbar">
-
-<span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false"
-			title="View the received files. This is currently under development!">
-
-
-	   <button class="btn btn-sm btn-primary me-2" data-bs-toggle="offcanvas" data-bs-target="#receivedFilesSidebar" id="openReceivedFiles" type="button" > <strong>Files </strong>
-	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-	   <i class="bi bi-file-earmark-arrow-down-fill" style="font-size: 1rem; color: white;"></i>
-	   </button>
-	   </span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false" title="Send files through HF. This is currently under development!">
-	   <button class="btn btn-sm btn-primary me-2" id="openDataModule" data-bs-toggle="offcanvas" data-bs-target="#transmitFileSidebar" type="button" style="display: None;"> <strong>TX File </strong>
-	   <i class="bi bi-file-earmark-arrow-up-fill" style="font-size: 1rem; color: white;"></i>
-	   </button>
-
-		</span> <span data-bs-placement="bottom"  data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="true"
-			title="Settings and Info">
-
-		</span>
-	</div>
-	 -->
-    </nav>
 
     <div id="blurdiv" style="-webkit-filter: blur(0px); filter: blur(0px)">
       <!--beginn of blur div -->

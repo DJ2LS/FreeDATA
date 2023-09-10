@@ -21,7 +21,7 @@ export const useStateStore = defineStore('stateStore', () => {
 
     var tnc_connection = ref("disconnected")
     var tncStartCount = ref(0)
-    var tnc_running_state = ref(0)
+    var tnc_running_state = ref("--------")
 
     var arq_total_bytes = ref(0)
     

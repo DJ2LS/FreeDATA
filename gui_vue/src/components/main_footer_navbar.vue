@@ -104,7 +104,7 @@ const settings = useSettingsStore(pinia);
 
           <div class="btn-group btn-group-sm me-1" role="group">
                 <button
-                class="btn btn-sm btn-secondary me-4"
+                class="btn btn-sm btn-secondary me-4 disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"
@@ -134,7 +134,7 @@ const settings = useSettingsStore(pinia);
 
 
             <button
-                class="btn btn-sm btn-secondary me-4"
+                class="btn btn-sm btn-secondary me-4  disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"
@@ -173,7 +173,7 @@ const settings = useSettingsStore(pinia);
 
 
                           <button
-                class="btn btn-sm btn-secondary me-4"
+                class="btn btn-sm btn-secondary me-4  disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"
@@ -197,7 +197,7 @@ const settings = useSettingsStore(pinia);
 
 
                           <button
-                class="btn btn-sm btn-secondary me-1"
+                class="btn btn-sm btn-secondary disabled me-1"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"
