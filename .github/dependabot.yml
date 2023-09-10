@@ -13,7 +13,15 @@ updates:
     directory: "/gui"
     schedule:
       interval: "daily"
-   
+
+  # Maintain dependencies for npm
+  - package-ecosystem: "npm"
+    directory: "/gui_vue"
+    schedule:
+      interval: "daily"
+
+
+
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
     directory: "/"
