@@ -106,7 +106,7 @@ client.on("end", function (data) {
 //exports.writeTncCommand = function (command) {
 //writeTncCommand = function (command) {
 function writeTncCommand(command) {
-  //console.log(command)
+  console.log(command)
   // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
   // if socket opened, we are able to run commands
 
@@ -197,7 +197,7 @@ client.on("data", function (socketdata) {
         stateStore.dxcallsign = data["dxcallsign"]
         stateStore.arq_session_state = data["arq_session"]
         stateStore.arq_state = data["arq_state"]
-
+        stateStore.beacon_state = data["beacon_state"]
 
 
 
@@ -232,7 +232,6 @@ client.on("data", function (socketdata) {
           arq_transmission_percent: data["arq_transmission_percent"],
           routing_table: data["routing_table"],
           mesh_signalling_table: data["mesh_signalling_table"],
-          beacon_state: data["beacon_state"],
           hamlib_status: data["hamlib_status"],
           listen: data["listen"],
           audio_recording: data["audio_recording"],
@@ -588,21 +587,21 @@ function hexToBytes(hex) {
 //Get TNC State
 //exports.getTncState = function () {
 function getTncState(){
-  command = '{"type" : "get", "command" : "tnc_state"}';
+  var command = '{"type" : "get", "command" : "tnc_state"}';
   writeTncCommand(command);
 };
 
 //Get DATA State
 //exports.getDataState = function () {
 function getDataState(){
-  command = '{"type" : "get", "command" : "data_state"}';
+  var command = '{"type" : "get", "command" : "data_state"}';
   //writeTncCommand(command)
 };
 
 // Send Ping
 //exports.sendPing = function (dxcallsign) {
-function sendPing(dxcallsign){
-  command =
+export function sendPing(dxcallsign){
+  var command =
     '{"type" : "ping", "command" : "ping", "dxcallsign" : "' +
     dxcallsign +
     '"}';
@@ -621,15 +620,16 @@ function sendMeshPing(dxcallsign){
 
 // Send CQ
 //exports.sendCQ = function () {
-function sendCQ(){
-  command = '{"type" : "broadcast", "command" : "cqcqcq"}';
+export function sendCQ(){
+
+  var command = '{"type" : "broadcast", "command" : "cqcqcq"}';
   writeTncCommand(command);
 };
 
 // Set AUDIO Level
 //exports.setTxAudioLevel = function (value) {
 function setTxAudioLevel(value){
-  command =
+  var command =
     '{"type" : "set", "command" : "tx_audio_level", "value" : "' + value + '"}';
   writeTncCommand(command);
 };
@@ -826,14 +826,14 @@ function sendResponseSharedFile(
 //STOP TRANSMISSION
 //exports.stopTransmission = function () {
 function stopTransmission(){
-  command = '{"type" : "arq", "command": "stop_transmission"}';
+  var command = '{"type" : "arq", "command": "stop_transmission"}';
   writeTncCommand(command);
 };
 
 // Get RX BUffer
 //exports.getRxBuffer = function () {
 function getRxBuffer(){
-  command = '{"type" : "get", "command" : "rx_buffer"}';
+  var command = '{"type" : "get", "command" : "rx_buffer"}';
 
   // call command only if new data arrived
   if (rxBufferLengthGui != rxBufferLengthTnc) {
@@ -843,8 +843,8 @@ function getRxBuffer(){
 
 // START BEACON
 //exports.startBeacon = function (interval) {
-function startBeacon(interval){
-  command =
+export function startBeacon(interval){
+  var command =
     '{"type" : "broadcast", "command" : "start_beacon", "parameter": "' +
     interval +
     '"}';
@@ -853,8 +853,8 @@ function startBeacon(interval){
 
 // STOP BEACON
 //exports.stopBeacon = function () {
-function stopBeacon(){
-  command = '{"type" : "broadcast", "command" : "stop_beacon"}';
+export function stopBeacon(){
+  var command = '{"type" : "broadcast", "command" : "stop_beacon"}';
   writeTncCommand(command);
 };
 
@@ -871,21 +871,21 @@ function connectARQ(dxcallsign){
 // CLOSE ARQ SESSION
 //exports.disconnectARQ = function () {
 function disconnectARQ(){
-  command = '{"type" : "arq", "command" : "disconnect"}';
+  var command = '{"type" : "arq", "command" : "disconnect"}';
   writeTncCommand(command);
 };
 
 // SEND TEST FRAME
 //exports.sendTestFrame = function () {
 function sendTestFrame(){
-  command = '{"type" : "set", "command" : "send_test_frame"}';
+  var command = '{"type" : "set", "command" : "send_test_frame"}';
   writeTncCommand(command);
 };
 
 // SEND FEC
 //exports.sendFEC = function (mode, payload) {
 function sendFEC(mode, payload){
-  command =
+  var command =
     '{"type" : "fec", "command" : "transmit", "mode" : "' +
     mode +
     '", "payload" : "' +
@@ -897,7 +897,7 @@ function sendFEC(mode, payload){
 // SEND FEC IS WRITING
 //exports.sendFecIsWriting = function (mycallsign) {
 function sendFecIsWriting(mycallsign){
-  command =
+  var command =
     '{"type" : "fec", "command" : "transmit_is_writing", "mycallsign" : "' +
     mycallsign +
     '"}';
@@ -932,7 +932,7 @@ function sendBroadcastChannel(channel, data_out, uuid){
 // RECORD AUDIO
 //exports.record_audio = function () {
 function record_audio(){
-  command = '{"type" : "set", "command" : "record_audio"}';
+  var command = '{"type" : "set", "command" : "record_audio"}';
   writeTncCommand(command);
 };
 
@@ -947,7 +947,7 @@ function set_frequency(frequency){
 // SET MODE
 //exports.set_mode = function (mode) {
 function set_mode(mode){
-  command = '{"type" : "set", "command" : "mode", "mode": "' + mode + '"}';
+  var command = '{"type" : "set", "command" : "mode", "mode": "' + mode + '"}';
   console.log(command);
   writeTncCommand(command);
 };

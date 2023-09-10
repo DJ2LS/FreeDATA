@@ -12,6 +12,28 @@ const state = useStateStore(pinia);
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
 
+import {startTNC, stopTNC} from '../js/daemon.js'
+
+function startStopTNC(){
+
+
+switch (state.tnc_running_state) {
+  case 'stopped':
+        startTNC()
+
+    break;
+  case 'running':
+      stopTNC()
+
+    break;
+  default:
+
+}
+
+
+}
+
+
 </script>
 
 
@@ -44,6 +66,7 @@ const settings = useSettingsStore(pinia);
             data-bs-html="false"
             title="Start the TNC. Please set your audio and radio settings first!"
             @click="startStopTNC()"
+            v-bind:class="{ 'disabled' : state.tnc_running_state === 'running'}"
           >
             <i class="bi bi-play-fill"></i>
             <span class="ms-2">Start tnc</span>
@@ -57,6 +80,7 @@ const settings = useSettingsStore(pinia);
             data-bs-html="false"
             title="Stop the TNC."
             @click="startStopTNC()"
+            v-bind:class="{ 'disabled' : state.tnc_running_state === 'stopped'}"
           >
             <i class="bi bi-stop-fill"></i>
             <span class="ms-2">Stop tnc</span>
@@ -71,7 +95,7 @@ const settings = useSettingsStore(pinia);
             id="startTNC"
             class="btn btn-sm btn-outline-secondary disabled"
 
-          >TNC state:{{settings.tnc_running_state}}
+          >TNC state:{{state.tnc_running_state}}
           </button>
 
             </div>

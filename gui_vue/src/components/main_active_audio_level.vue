@@ -22,16 +22,16 @@ const state = useStateStore(pinia);
                     <div class="col-1">
                       <i class="bi bi-volume-up" style="font-size: 1.2rem"></i>
                     </div>
-                    <div class="col-5">
-                      <strong class="fs-5">Audio level</strong>
+                    <div class="col-3">
+                      <strong class="fs-5">Audio</strong>
                     </div>
-                    <div class="col-5">
+                    <div class="col-7">
                       <button
                         type="button"
                         id="audioModalButton"
                         data-bs-toggle="modal"
                         data-bs-target="#audioModal"
-                        class="btn btn-sm btn-outline-secondary"
+                        class="btn btn-sm btn-outline-secondary me-1"
                       >
                         Tune
                       </button>

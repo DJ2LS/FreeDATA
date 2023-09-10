@@ -12,6 +12,35 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
 
+import {sendCQ, sendPing, startBeacon, stopBeacon} from '../js/sock.js'
+
+function transmitCQ(){
+    sendCQ()
+}
+
+function transmitPing(){
+   sendPing(document.getElementById("dxCall").value)
+}
+
+function startStopBeacon(){
+
+    switch (state.beacon_state) {
+      case 'False':
+            startBeacon(settings.beacon_interval)
+
+        break;
+      case 'True':
+          stopBeacon()
+
+        break;
+      default:
+
+    }
+
+
+}
+
+
 </script>
 <template>
 <div class="card mb-1">
@@ -37,7 +66,7 @@ const state = useStateStore(pinia);
                           style="font-size: 1rem"
                         ></i>
                       </button>
-                    </div>
+                    s</div>
                   </div>
                 </div>
               </div>
@@ -55,6 +84,7 @@ const state = useStateStore(pinia);
                         maxlength="11"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
+                        v-model="text"
                       />
                       <button
                         class="btn btn-sm btn-outline-secondary ms-1"
@@ -65,48 +95,18 @@ const state = useStateStore(pinia);
                         data-bs-trigger="hover"
                         data-bs-html="false"
                         title="Send a ping request to a remote station"
+                        @click="transmitPing()"
                       >
                         Ping
                       </button>
-                      <!-- disabled because it's causing confusion TODO: remove entire code some day
-                      <button
-                        class="btn btn-sm btn-outline-success ms-1"
-                        id="openARQSession"
-                        type="button"
-                        data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="connect to a remote station"
-                      >
-                        <i
-                          class="bi bi-arrows-angle-contract"
-                          style="font-size: 0.8rem"
-                        ></i>
-                      </button>
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        id="closeARQSession"
-                        type="button"
-                        data-bs-placement="bottom"
-                        data-bs-toggle="tooltip"
-                        data-bs-trigger="hover"
-                        data-bs-html="false"
-                        title="disconnect from a remote station"
-                      >
 
-                        <i
-                          class="bi bi-arrows-angle-expand"
-                          style="font-size: 0.8rem"
-                        ></i>
-                      </button>
-                      -->
 
                       <button
                         class="btn btn-sm btn-outline-secondary ms-1"
                         id="sendCQ"
                         type="button"
                         title="Send a CQ to the world"
+                        @click="transmitCQ()"
                       >
                         Call CQ
                       </button>
@@ -114,7 +114,10 @@ const state = useStateStore(pinia);
                       <button
                         type="button"
                         id="startBeacon"
-                        class="btn btn-sm btn-outline-secondary ms-1"
+                        class="btn btn-sm ms-1"
+                        @click="startStopBeacon()"
+                        v-bind:class="{ 'btn-success' : state.beacon_state === 'True',
+                                'btn-outline-secondary' : state.beacon_state === 'False'}"
                         title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
                       >
                         <i class="bi bi-soundwave"></i> Toggle beacon

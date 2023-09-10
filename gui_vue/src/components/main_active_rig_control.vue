@@ -64,17 +64,17 @@ const state = useStateStore(pinia);
 
                 <div class="me-2">
   <div class="input-group">
-    <span class="input-group-text" id="basic-addon3">Frequency</span>
-    <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3 basic-addon4" v-model="state.frequency">
-        <span class="input-group-text" id="basic-addon3">Hz</span>
+    <span class="input-group-text">Frequency</span>
+    <input type="text" class="form-control" v-model="state.frequency" style="max-width: 8rem;"
+                        pattern="[0-9]*">
+        <span class="input-group-text" >Hz</span>
 
   </div>
-  <div class="form-text" id="basic-addon4">Select a frequency</div>
 </div>
 
                 <div class="me-2">
   <div class="input-group">
-    <span class="input-group-text" id="basic-addon3">Mode</span>
+    <span class="input-group-text" >Mode</span>
 <select class="form-control"  v-model="settings.hamlib_rigctld_ip">
   <option value="USB">USB</option>
   <option value="LSB">LSB</option>
@@ -83,29 +83,27 @@ const state = useStateStore(pinia);
 </select>
 
   </div>
-  <div class="form-text" id="basic-addon4">Select a mode</div>
 </div>
 
 
 
                 <div class="me-2">
   <div class="input-group">
-    <span class="input-group-text" id="basic-addon3">Bandwidth</span>
+    <span class="input-group-text" >Bandwidth</span>
 <select class="form-control">
   <option>500</option>
   <option>1000</option>
   <option>1500</option>
   <option>2000</option>
 </select>
-    <span class="input-group-text" id="basic-addon3">Hz</span>
+    <span class="input-group-text" >Hz</span>
 
   </div>
-  <div class="form-text" id="basic-addon4">Select a mode</div>
 </div>
 
                 <div class="me-2">
   <div class="input-group">
-    <span class="input-group-text" id="basic-addon3">Power</span>
+    <span class="input-group-text" >Power</span>
 <select class="form-control">
   <option>10</option>
   <option>20</option>
@@ -122,11 +120,10 @@ const state = useStateStore(pinia);
 
 
 </select>
-    <span class="input-group-text" id="basic-addon3">%</span>
+    <span class="input-group-text" >%</span>
 
 
   </div>
-  <div class="form-text" id="basic-addon4">Select a mode</div>
 </div>
 
 
