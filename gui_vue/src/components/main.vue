@@ -29,26 +29,7 @@ import main_active_audio_level from './main_active_audio_level.vue'
 
 
 
-import {startTNC, stopTNC} from '../js/daemon.js'
 
-function startStopTNC(){
-
-
-switch (state.tnc_running_state) {
-  case 'stopped':
-        startTNC()
-
-    break;
-  case 'running':
-      stopTNC()
-
-    break;
-  default:
-
-}
-
-
-}
 
 
 

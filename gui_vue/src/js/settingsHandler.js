@@ -2,7 +2,7 @@
 //const fs = require("fs");
 //const os = require("os");
 
-import path from 'path'
+import path from 'node:path'
 import fs from 'fs'
 import os from 'os'
 
