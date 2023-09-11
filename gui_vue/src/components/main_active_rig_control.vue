@@ -12,6 +12,21 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
 
+import {set_frequency, set_mode} from '../js/sock.js'
+
+
+function set_hamlib_frequency(){
+    set_frequency(state.new_frequency)
+}
+
+function set_hamlib_mode(){
+    set_mode(state.mode)
+}
+
+function set_hamlib_rf_level(){
+    set_rf_level(state.rf_level)
+}
+
 </script>
 
 
@@ -28,7 +43,8 @@ const state = useStateStore(pinia);
                       <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
                     </div>
                     <div class="col-10">
-              <strong class="fs-5">Radio control</strong>
+              <strong class="fs-5 me-2">Radio control</strong> <span class="badge" v-bind:class="{ 'text-bg-success' : state.hamlib_status === 'connected',
+                                'text-bg-danger disabled' : state.hamlib_status === 'disconnected'}">{{state.hamlib_status}}</span>
                     </div>
                     <div class="col-1 text-end">
                       <button
@@ -64,18 +80,29 @@ const state = useStateStore(pinia);
 
                 <div class="me-2">
   <div class="input-group">
-    <span class="input-group-text">Frequency</span>
-    <input type="text" class="form-control" v-model="state.frequency" style="max-width: 8rem;"
-                        pattern="[0-9]*">
-        <span class="input-group-text" >Hz</span>
+    <span class="input-group-text">QRG</span>
+    <span class="input-group-text">{{state.frequency}} Hz</span>
+    <span class="input-group-text">QSY</span>
+    <input type="text" class="form-control" v-model="state.new_frequency" style="max-width: 8rem;"
+                        pattern="[0-9]*" list="frequencyDataList" v-bind:class="{ 'disabled' : state.hamlib_status === 'disconnected'}">
 
+                  <datalist id="frequencyDataList">
+                    <option selected value="7053000">40m | USB | EU, US</option>
+                    <option value="14093000">20m | USB | EU, US</option>
+                    <option value="21093000">15m | USB | EU, US</option>
+                    <option value="24908000">12m | USB | EU, US</option>
+                    <option value="28093000">10m | USB | EU, US</option>
+                    <option value="50308000">6m | USB | US</option>
+                    <option value="50616000">6m | USB | EU, US</option>
+                   </datalist>
+    <button class="btn btn-sm btn-outline-success" type="button" @click="set_hamlib_frequency" v-bind:class="{ 'disabled' : state.hamlib_status === 'disconnected'}">Apply</button>
   </div>
 </div>
 
                 <div class="me-2">
   <div class="input-group">
     <span class="input-group-text" >Mode</span>
-<select class="form-control"  v-model="settings.hamlib_rigctld_ip">
+<select class="form-control"  v-model="state.mode" @click="set_hamlib_mode()" v-bind:class="{ 'disabled' : state.hamlib_status === 'disconnected'}">
   <option value="USB">USB</option>
   <option value="LSB">LSB</option>
   <option value="AM">AM</option>
@@ -87,39 +114,23 @@ const state = useStateStore(pinia);
 
 
 
-                <div class="me-2">
-  <div class="input-group">
-    <span class="input-group-text" >Bandwidth</span>
-<select class="form-control">
-  <option>500</option>
-  <option>1000</option>
-  <option>1500</option>
-  <option>2000</option>
-</select>
-    <span class="input-group-text" >Hz</span>
-
-  </div>
-</div>
 
                 <div class="me-2">
   <div class="input-group">
     <span class="input-group-text" >Power</span>
-<select class="form-control">
-  <option>10</option>
-  <option>20</option>
-  <option>30</option>
-  <option>40</option>
-  <option>50</option>
-  <option>60</option>
-  <option>70</option>
-  <option>80</option>
-  <option>90</option>
-  <option>100</option>
-
-
-
-
-</select>
+        <select class="form-control" v-model="state.rf_level" @click="set_hamlib_rf_level()" v-bind:class="{ 'disabled' : state.hamlib_status === 'disconnected'}">
+          <option value="0">-</option>
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="40">40</option>
+          <option value="50">50</option>
+          <option value="60">60</option>
+          <option value="70">70</option>
+          <option value="80">80</option>
+          <option value="90">90</option>
+          <option value="100">100</option>
+        </select>
     <span class="input-group-text" >%</span>
 
 

@@ -203,6 +203,7 @@ client.on("data", function (socketdata) {
         stateStore.hamlib_status = data["hamlib_status"]
         stateStore.audio_level = data["audio_level"]
         stateStore.alc = data["alc"]
+        stateStore.rf_level = data["rf_level"]
 
 
 
@@ -936,6 +937,13 @@ export function set_mode(mode){
   var command = '{"type" : "set", "command" : "mode", "mode": "' + mode + '"}';
   writeTncCommand(command);
 };
+
+// SET rf_level
+export function set_rf_level(rf_level){
+  var command = '{"type" : "set", "command" : "rf_level", "rf_level": "' + rf_level + '"}';
+  writeTncCommand(command);
+};
+
 
 // https://stackoverflow.com/a/50579690
 // crc32 calculation
