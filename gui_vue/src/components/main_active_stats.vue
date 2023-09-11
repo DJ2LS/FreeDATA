@@ -72,26 +72,26 @@ switch (event.target.id) {
                         aria-label="Busy indicators"
                       >
                         <button
-                          class="btn btn-sm btn-outline-secondary ms-2 disabled"
+                          class="btn btn-sm ms-2 disabled"
                           type="button"
                           data-bs-placement="top"
                           data-bs-toggle="tooltip"
                           data-bs-trigger="hover"
                           data-bs-html="true"
-                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False', }"
+                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False'}"
                           title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
                         >
                           busy
                         </button>
                         <button
-                          class="btn btn-sm btn-outline-secondary disabled"
+                          class="btn btn-sm disabled"
                           type="button"
                           data-bs-placement="top"
                           data-bs-toggle="tooltip"
                           data-bs-trigger="hover"
                           data-bs-html="true"
                           title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
-                          v-bind:class="{ 'btn-success' : state.is_codec2_traffic === 'True', 'btn-outline-secondary' : state.is_codec2_traffic === 'False', }"
+                          v-bind:class="{ 'btn-success' : state.is_codec2_traffic === 'True', 'btn-outline-secondary' : state.is_codec2_traffic === 'False'}"
                         >
                           signal
                         </button>
