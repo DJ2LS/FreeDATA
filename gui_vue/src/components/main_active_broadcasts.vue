@@ -84,7 +84,6 @@ function startStopBeacon(){
                         maxlength="11"
                         aria-label="Input group"
                         aria-describedby="btnGroupAddon"
-                        v-model="text"
                       />
                       <button
                         class="btn btn-sm btn-outline-secondary ms-1"

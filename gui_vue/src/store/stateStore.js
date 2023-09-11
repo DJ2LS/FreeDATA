@@ -32,6 +32,11 @@ export const useStateStore = defineStore('stateStore', () => {
     var arq_state = ref("")
     var beacon_state = ref("False")
 
+    var audio_recording = ref("")
+
+    var hamlib_status = ref("")
+    var audio_level = ref("")
+        var alc = ref("")
 
 
 
@@ -102,5 +107,5 @@ export const useStateStore = defineStore('stateStore', () => {
 
 
 
-  return { dxcallsign, busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, updateTncState };
+  return { dxcallsign, busy_state, arq_state, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, audio_recording, hamlib_status, audio_level, alc, updateTncState };
 });

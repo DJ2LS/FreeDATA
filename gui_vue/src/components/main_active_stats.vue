@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
-import {saveSettingsToFile} from '../js/settingsHandler'
+
+import {saveSettingsToFile} from '../js/settingsHandler';
 
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -34,7 +35,15 @@ switch (event.target.id) {
 }
 
 
+
+
+
 </script>
+
+
+
+
+
 <template>
 <div class="card mb-1">
               <div class="card-header p-1">
