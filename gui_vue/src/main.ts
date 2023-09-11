@@ -21,10 +21,15 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 //import './scss/styles.scss'
 
 import App from './App.vue'
-const app = createApp(App)//.mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
+const app = createApp(App)
+
+
+//.mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))
 
 const pinia = createPinia()
 app.mount('#app')
+
+
 
 console.log("init...")
 app.use(pinia)

@@ -57,7 +57,6 @@ switch (event.target.id) {
                     <div
                         class="btn-group"
                         role="group"
-                        aria-label="Busy indicators"
                       >
 
                        <div class="list-group list-group-horizontal" id="list-tab" role="tablist">
@@ -66,27 +65,33 @@ switch (event.target.id) {
       <a class="py-1 list-group-item list-group-item-action" id="list-chart-list" data-bs-toggle="list" href="#list-chart" role="tab" aria-controls="list-messages" v-bind:class="{ 'active' : settings.spectrum === 'chart'}" @click="selectStatsControl()"><strong><i class="bi bi-graph-up-arrow" ></i></strong></a>
     </div>
 
+    </div>
+<div
+                        class="btn-group"
+                        role="group"
+                        aria-label="Busy indicators"
+                      >
                         <button
-                          class="btn btn-sm btn-secondary ms-2 "
-                          id="channel_busy"
+                          class="btn btn-sm btn-outline-secondary ms-2 disabled"
                           type="button"
                           data-bs-placement="top"
                           data-bs-toggle="tooltip"
                           data-bs-trigger="hover"
                           data-bs-html="true"
+                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False', }"
                           title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
                         >
                           busy
                         </button>
                         <button
-                          class="btn btn-sm btn-outline-secondary"
-                          id="c2_busy"
+                          class="btn btn-sm btn-outline-secondary disabled"
                           type="button"
                           data-bs-placement="top"
                           data-bs-toggle="tooltip"
                           data-bs-trigger="hover"
                           data-bs-html="true"
                           title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
+                          v-bind:class="{ 'btn-success' : state.is_codec2_traffic === 'True', 'btn-outline-secondary' : state.is_codec2_traffic === 'False', }"
                         >
                           signal
                         </button>

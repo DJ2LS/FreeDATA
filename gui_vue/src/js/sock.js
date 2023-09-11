@@ -205,6 +205,7 @@ client.on("data", function (socketdata) {
         stateStore.alc = data["alc"]
         stateStore.rf_level = data["rf_level"]
 
+        stateStore.is_codec2_traffic = data["is_codec2_traffic"]
 
 
 

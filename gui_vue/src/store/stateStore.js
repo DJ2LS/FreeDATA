@@ -15,7 +15,7 @@ export const useStateStore = defineStore('stateStore', () => {
 
     var speed_level = ref(0)
     var fft = ref()
-    var channel_busy = ref("False")
+    var channel_busy = ref("")
     var channel_busy_slot = ref()
     var scatter = ref()
     var s_meter_strength_percent = ref(0)
@@ -39,6 +39,8 @@ export const useStateStore = defineStore('stateStore', () => {
     var hamlib_status = ref("")
     var audio_level = ref("")
     var alc = ref("")
+
+    var is_codec2_traffic = ref("")
 
 
 
