@@ -38,3 +38,4 @@ loadSettings()
 //import './js/settingsHandler.js'
 import './js/daemon.js'
 import './js/sock.js'
+//import './js/settingsHandler.js'

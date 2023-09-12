@@ -39,7 +39,13 @@ return datetime
 }
 
 function getMaidenheadDistance(dxGrid){
+try{
     return parseInt(distance(settings.mygrid, dxGrid));
+}catch(e){
+//
+}
+
+
 }
 
 

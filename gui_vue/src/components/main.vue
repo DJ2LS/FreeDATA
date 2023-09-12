@@ -27,6 +27,7 @@ import main_active_broadcasts from './main_active_broadcasts.vue'
 import main_active_heard_stations from './main_active_heard_stations.vue'
 import main_active_audio_level from './main_active_audio_level.vue'
 
+import chat from './chat.vue'
 
 
 
@@ -98,24 +99,12 @@ function changeGuiDesign(design) {
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
 }
-
-
-
-
 </script>
 
-
-
-
 <template>
-
-
-<html lang="en" data-bs-theme="light">
-
-
-  <body>
-
-        <!-------------------------------- INFO TOASTS ---------------->
+  <html lang="en" data-bs-theme="light">
+    <body>
+      <!-------------------------------- INFO TOASTS ---------------->
       <div
         aria-live="polite"
         aria-atomic="true"
@@ -128,1432 +117,647 @@ function changeGuiDesign(design) {
         ></div>
       </div>
 
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-sm-auto bg-body-tertiary border-end">
+            <div
+              class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top"
+            >
+              <div
+                class="list-group"
+                id="main-list-tab"
+                role="tablist"
+                style="margin-top: 100px"
+              >
+                <a
+                  class="list-group-item list-group-item-action active"
+                  id="list-tnc-list"
+                  data-bs-toggle="list"
+                  href="#list-tnc"
+                  role="tab"
+                  aria-controls="list-tnc"
+                  ><i class="bi bi-house-door-fill h3"></i
+                ></a>
+                <a
+                  class="list-group-item list-group-item-action"
+                  id="list-chat-list"
+                  data-bs-toggle="list"
+                  href="#list-chat"
+                  role="tab"
+                  aria-controls="list-chat"
+                  ><i class="bi bi-chat-text h3"></i
+                ></a>
 
-<div class="container-fluid">
-    <div class="row ">
-        <div class="col-sm-auto bg-body-tertiary border-end">
-            <div class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top">
+                <a
+                  class="list-group-item list-group-item-action"
+                  id="list-mesh-list"
+                  data-bs-toggle="list"
+                  href="#list-mesh"
+                  role="tab"
+                  aria-controls="list-mesh"
+                  ><i class="bi bi-rocket h3"></i
+                ></a>
+                <a
+                  class="list-group-item list-group-item-action mt-2 border"
+                  id="list-info-list"
+                  data-bs-toggle="list"
+                  href="#list-info"
+                  role="tab"
+                  aria-controls="list-info"
+                  ><i class="bi bi-info h3"></i
+                ></a>
 
-                  <div class="list-group" id="list-tab" role="tablist" style="margin-top: 100px">
-                    <a class="list-group-item list-group-item-action active" id="list-tnc-list" data-bs-toggle="list" href="#list-tnc" role="tab" aria-controls="list-tnc"><i class="bi bi-house-door-fill h3"></i></a>
-                    <a class="list-group-item list-group-item-action" id="list-messages-list" data-bs-toggle="list" href="#list-messages" role="tab" aria-controls="list-messages"><i class="bi bi-chat-text h3"></i></a>
+                <a
+                  class="list-group-item list-group-item-action"
+                  id="list-logger-list"
+                  data-bs-toggle="list"
+                  href="#list-logger"
+                  role="tab"
+                  aria-controls="list-logger"
+                  ><i class="bi bi-activity h3"></i
+                ></a>
 
-                    <a class="list-group-item list-group-item-action" id="list-mesh-list" data-bs-toggle="list" href="#list-mesh" role="tab" aria-controls="list-mesh"><i class="bi bi-rocket h3"></i></a>
-                    <a class="list-group-item list-group-item-action mt-2 border" id="list-info-list" data-bs-toggle="list" href="#list-info" role="tab" aria-controls="list-info"><i class="bi bi-info h3"></i></a>
+                <a
+                  class="list-group-item list-group-item-action rounded-bottom"
+                  id="list-settings-list"
+                  data-bs-toggle="list"
+                  href="#list-settings"
+                  role="tab"
+                  aria-controls="list-settings"
+                  ><i class="bi bi-gear-wide-connected h3"></i
+                ></a>
 
-                    <a class="list-group-item list-group-item-action" id="list-logger-list" data-bs-toggle="list" href="#list-logger" role="tab" aria-controls="list-logger"><i class="bi bi-activity h3"></i></a>
-
-                    <a class="list-group-item list-group-item-action rounded-bottom" id="list-settings-list" data-bs-toggle="list" href="#list-settings" role="tab" aria-controls="list-settings"><i class="bi bi-gear-wide-connected h3"></i></a>
-
-
-                    <a class="btn border btn-outline-danger list-group-item mt-5" id="stop_transmission_connection" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-html="false" title="Abort session and stop transmissions"><i class="bi bi-sign-stop-fill h3"></i></a>
-
-
-
-
-                  </div>
-
-
+                <a
+                  class="btn border btn-outline-danger list-group-item mt-5"
+                  id="stop_transmission_connection"
+                  data-bs-toggle="tooltip"
+                  data-bs-trigger="hover"
+                  data-bs-html="false"
+                  title="Abort session and stop transmissions"
+                  ><i class="bi bi-sign-stop-fill h3"></i
+                ></a>
+              </div>
             </div>
-        </div>
-        <div class="col-sm min-vh-100 m-0 p-0">
+          </div>
+          <div class="col-sm min-vh-100 m-0 p-0">
             <!-- content -->
 
+            <div class="tab-content" id="nav-tabContent-settings">
+              <div
+                class="tab-pane fade show active"
+                id="list-tnc"
+                role="tabpanel"
+                aria-labelledby="list-tnc-list"
+              >
+                <!-- TOP NAVBAR -->
+                <main_top_navbar />
 
-
-
-          <div class="tab-content" id="nav-tabContent">
-      <div class="tab-pane fade show active" id="list-tnc" role="tabpanel" aria-labelledby="list-tnc-list">
-
-    <!-- TOP NAVBAR -->
-    <main_top_navbar/>
-
-
-    <div id="blurdiv" style="-webkit-filter: blur(0px); filter: blur(0px)">
-      <!--beginn of blur div -->
-      <!-------------------------------- MAIN AREA ---------------->
-
-      <!------------------------------------------------------------------------------------------>
-      <div class="container p-3">
-        <div class="row collapse multi-collapse show mt-4" id="collapseFirstRow">
-          <div class="col">
-              <main_audio/>
-          </div>
-          <div class="col">
-            <main_rig_control/>
-          </div>
-        </div>
-        <div
-          class="row collapse multi-collapse show mt-4"
-          id="collapseSecondRow"
-        >
-          <div class="col">
-            <main_my_station/>
-          </div>
-          <div class="col">
-          <main_updater/>
-        </div>
-        </div>
-
-      </div>
-      <div class="container">
-        <div class="row collapse multi-collapse" id="collapseThirdRow">
-
-
-         <main_active_rig_control/>
-
-
-
-          <div class="col-5">
-
-           <main_active_audio_level/>
-
-
-          </div>
-          <div class="col">
-           <main_active_broadcasts/>
-
-          </div>
-        </div>
-        <div class="row collapse multi-collapse mt-3" id="collapseFourthRow">
-          <div class="col-5">
-
-          <main_active_stats/>
-
-          </div>
-          <div class="col">
-
-          <main_active_heard_stations/>
-
-
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-
-
-
-
-
-
-
-      </div>
-
-      <div class="tab-pane fade" id="list-mesh" role="tabpanel" aria-labelledby="list-mesh-list">
-<div class="container">
-            <nav>
-      <div class="nav nav-tabs" id="nav-tab-mesh" role="tablist-mesh">
-        <button
-          class="nav-link active"
-          id="nav-route-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#nav-route"
-          type="button"
-          role="tab"
-          aria-controls="nav-route"
-          aria-selected="true"
-        >
-          Routes
-        </button>
-        <button
-          class="nav-link"
-          id="nav-signaling-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#nav-signaling"
-          type="button"
-          role="tab"
-          aria-controls="nav-signaling"
-          aria-selected="false"
-        >
-          Signaling
-        </button>
-        <button
-          class="nav-link"
-          id="nav-actions-tab"
-          data-bs-toggle="tab"
-          data-bs-target="#nav-actions"
-          type="button"
-          role="tab"
-          aria-controls="nav-actions"
-          aria-selected="false"
-        >
-          Actions
-        </button>
-      </div>
-    </nav>
-
-            <div class="tab-content" id="nav-tabContent-Mesh">
-      <div
-        class="tab-pane fade show active vw-100 vh-90 overflow-auto"
-        id="nav-route"
-        role="tabpanel"
-        aria-labelledby="nav-route-tab"
-      >
-        <div class="container-fluid">
-          <div
-            class="table-responsive overflow-auto"
-            style="max-width: 99vw; max-height: 99vh"
-          >
-            <table class="table table-hover table-sm">
-              <thead>
-                <tr>
-                  <th scope="col">Timestamp</th>
-                  <th scope="col">DXCall</th>
-                  <th scope="col">Router</th>
-                  <th scope="col">Hops</th>
-                  <th scope="col">Score</th>
-                  <th scope="col">SNR</th>
-                </tr>
-              </thead>
-              <tbody id="mesh-table"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div
-        class="tab-pane fade"
-        id="nav-signaling"
-        role="tabpanel"
-        aria-labelledby="nav-signaling-tab"
-      >
-        <div class="container-fluid">
-          <div
-            class="table-responsive overflow-auto"
-            style="max-width: 99vw; max-height: 99vh"
-          >
-            <table class="table table-hover table-sm">
-              <thead>
-                <tr>
-                  <th scope="col">Timestamp</th>
-                  <th scope="col">Destination</th>
-                  <th scope="col">Origin</th>
-                  <th scope="col">Frametype</th>
-                  <th scope="col">Payload</th>
-                  <th scope="col">Attempt</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody id="mesh-signalling-table"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-      <div
-        class="tab-pane fade"
-        id="nav-actions"
-        role="tabpanel-mesh"
-        aria-labelledby="nav-actions-tab"
-      >
-        <div class="input-group mt-1">
-          <input
-            type="text"
-            class="form-control"
-            style="max-width: 6rem; text-transform: uppercase"
-            placeholder="DXcall"
-            pattern="[A-Z]*"
-            id="dxCallMesh"
-            maxlength="11"
-            aria-label="Input group"
-            aria-describedby="btnGroupAddon"
-          />
-          <button id="transmit_mesh_ping" type="button" class="btn btn-primary">
-            mesh ping
-          </button>
-        </div>
-      </div>
-    </div>
-
-</div>
-
-      </div>
-      <div class="tab-pane fade" id="list-info" role="tabpanel" aria-labelledby="list-info-list">
-
-
-
-
-        <h1 class="modal-title fs-5" id="aboutModalLabel">FreeDATA -  <span id="aboutVersion"></span></h1>
-
-<div class="container-fluid">
-              <div class="row mt-2">
                 <div
-                  class="btn-toolbar mx-auto"
-                  role="toolbar"
-                  aria-label="Toolbar with button groups"
+                  id="blurdiv"
+                  style="-webkit-filter: blur(0px); filter: blur(0px)"
                 >
-                  <div class="btn-group">
-
-              <button
-                class="btn btn-sm bi bi-geo-alt btn-secondary me-2"
-                id="openExplorer"
-                type="button"
-                data-bs-placement="bottom"
-              >
-                Explorer map
-              </button>
-</div>
-                                    <div class="btn-group">
-
-              <button
-                class="btn btn-sm btn-secondary me-2 bi bi-graph-up"
-                id="btnStats"
-                type="button"
-                data-bs-placement="bottom"
-              >
-                Statistics
-              </button>
-</div>
-                                    <div class="btn-group">
-
-                    <button
-                      class="btn btn-secondary bi bi-bookmarks me-2"
-                      id="fdWww"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="FreeDATA website"
-                      role="button"
-                    >Website</button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-github me-2"
-                      id="ghUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Github"
-                      role="button"
-                    >Github</button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-wikipedia me-2"
-                      id="wikiUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Wiki"
-                      role="button"
-                    >Wiki</button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-discord"
-                      id="discordUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Discord"
-                      role="button"
-                    >Discord</button>
-                  </div>
-                </div>
-              </div>
-              <div class="row mt-5">
-                <h6>Special thanks to</h6>
-                <hr />
-              </div>
-              <div class="row">
-                <div class="col-4" id="divContrib"></div>
-                <div class="col-4" id="divContrib2"></div>
-                <div class="col-4" id="divContrib3"></div>
-              </div>
-            </div>
-
-      </div>
-      <div class="tab-pane fade" id="list-messages" role="tabpanel" aria-labelledby="list-messages-list">
-
-    <div class="container-fluid m-0 p-0">
-
-
-                <!------ chat navbar ---------------------------------------------------------------------->
-
-      <nav class="navbar bg-body-tertiary border-bottom">
-
-    <div class="container">
-
-     <div class="row w-100">
-    <div class="col-4 p-0 me-2">
-
-    <div class="input-group bottom-0 m-0">
-              <input
-                class="form-control w-50"
-                maxlength="9"
-                style="text-transform: uppercase"
-                id="chatModuleNewDxCall"
-                placeholder="DX CALL"
-              />
-              <button
-                class="btn btn-sm btn-success"
-                id="createNewChatButton"
-                type="button"
-                title="Start a new chat (enter dx call sign first)"
-              >
-                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                id="userModalButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModal"
-                class="btn btn-sm btn-primary ms-2"
-                title="My station info"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
-              <button
-                type="button"
-                id="sharedFolderButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModal"
-                class="btn btn-sm btn-primary"
-                title="My shared folder"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-            </div>
-</div>
-    <div class="col-7 ms-2 p-0">
-            <div class="input-group bottom-0">
-              <button
-                class="btn btn-sm btn-outline-secondary me"
-                id="ping"
-                type="button"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="false"
-                title="Ping remote station"
-              >
-                Ping
-              </button>
-
-              <button
-                type="button"
-                id="userModalDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModalDX"
-                class="btn btn-sm btn-outline-secondary"
-                title="Request remote station's information"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                id="sharedFolderDXButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModalDX"
-                class="btn btn-sm btn-outline-secondary me-2"
-                title="Request remote station's shared files"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                class="btn btn-small btn-outline-primary dropdown-toggle me-2"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                data-bs-auto-close="outside"
-                data-bs-trigger="hover"
-                data-bs-html="false"
-                title="Message filter"
-              >
-                <i class="bi bi-funnel-fill"></i>
-              </button>
-              <form class="dropdown-menu p-4" id="frmFilter">
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      checked="true"
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkMessage"
-                    />
-                    <label class="form-check-label" for="chkMessage">
-                      All Messages
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      checked="false"
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkNewMessage"
-                    />
-
-                    <label class="form-check-label" for="chkNewMessage">
-                      Unread Messages
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkPing"
-                    />
-                    <label class="form-check-label" for="chkPing">
-                      Pings
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      checked="true"
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkPingAck"
-                    />
-                    <label class="form-check-label" for="chkPingAck">
-                      Ping-Acks
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkBeacon"
-                    />
-                    <label class="form-check-label" for="chkBeacon">
-                      Beacons
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkRequest"
-                    />
-                    <label class="form-check-label" for="chkRequest">
-                      Requests
-                    </label>
-                  </div>
-                </div>
-                <div class="mb-1">
-                  <div class="form-check">
-                    <input
-                      type="checkbox"
-                      class="form-check-input"
-                      id="chkResponse"
-                    />
-                    <label class="form-check-label" for="chkResponse">
-                      Responses
-                    </label>
-                  </div>
-                </div>
-                <button type="button" class="btn btn-primary" id="btnFilter">
-                  Refresh
-                </button>
-              </form>
-
-              <button
-                id="chatSettingsDropDown"
-                type="button"
-                class="btn btn-outline-secondary dropdown-toggle"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-                title="More options...."
-              >
-                <i class="bi bi-three-dots-vertical"></i>
-              </button>
-              <ul class="dropdown-menu" aria-labelledby="chatSettingsDropDown">
-                <li>
-                  <a
-                    class="dropdown-item bg-danger text-white"
-                    id="delete_selected_chat"
-                    href="#"
-                    ><i class="bi bi-person-x" style="font-size: 1rem"></i>
-                    Delete chat</a
-                  >
-                </li>
-                <div class="dropdown-divider"></div>
-                <li>
-                  <button
-                    class="dropdown-item"
-                    id="openHelpModalchat"
-                    data-bs-toggle="modal"
-                    data-bs-target="#chatHelpModal"
-                  >
-                    <i
-                      class="bi bi-question-circle"
-                      style="font-size: 1rem"
-                    ></i>
-                    Help
-                  </button>
-                </li>
-              </ul>
-
-
-            </div>
-    </div>
-       </div>
-</div>
-</nav>
-
-
-      <div class="row h-100 ms-1 mt-1 me-1">
-        <div class="col-4">
-          <!------Chats area ---------------------------------------------------------------------->
-          <div class="container-fluid m-0 p-0">
-            <!--<div class="input-group bottom-0 m-0 w-100">
-              <input
-                class="form-control w-50"
-                maxlength="9"
-                style="text-transform: uppercase"
-                id="chatModuleNewDxCall"
-                placeholder="DX CALL"
-              />
-              <button
-                class="btn btn-sm btn-success"
-                id="createNewChatButton"
-                type="button"
-                title="Start a new chat (enter dx call sign first)"
-              >
-                <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
-              </button>
-
-              <button
-                type="button"
-                id="userModalButton"
-                data-bs-toggle="modal"
-                data-bs-target="#userModal"
-                class="btn btn-sm btn-primary ms-2"
-                title="My station info"
-              >
-                <i class="bi bi-person" style="font-size: 1.2rem"></i>
-              </button>
-              <button
-                type="button"
-                id="sharedFolderButton"
-                data-bs-toggle="modal"
-                data-bs-target="#sharedFolderModal"
-                class="btn btn-sm btn-primary"
-                title="My shared folder"
-              >
-                <i class="bi bi-files" style="font-size: 1.2rem"></i>
-              </button>
-            </div>-->
-          </div>
-          <div class="overflow-auto vh-100">
-            <div
-              class="list-group overflow-auto"
-              id="list-tab-chat"
-              role="tablist"
-              style="height: calc(100vh - 70px)"
-            ></div>
-          </div>
-        </div>
-        <div class="col-8 border-start vh-100 p-0">
-
-
-
-                   <div
-      class="position-absolute container bottom-0 end-0 mb-5"
-      style="z-index: 100; display: none"
-      id="emojipickercontainer"
-    >
-      <emoji-picker
-        locale="en"
-        class="position-absolute bottom-0 end-0 p-1 mb-2"
-        data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
-      ></emoji-picker>
-    </div>
-
-
-          <!------messages area ---------------------------------------------------------------------->
-          <div
-            class="container overflow-auto"
-            id="message-container"
-            style="height: calc(100% - 200px)"
-          >
-
-
-
-
-
-            <div class="tab-content" id="nav-tabContent-Chat"></div>
-            <!--<div class="container position-absolute bottom-0">-->
-          </div>
-          <!-- </div>-->
-          <div class="container-fluid mt-2 p-0">
-            <input
-              type="checkbox"
-              id="expand_textarea"
-              class="btn-check"
-              autocomplete="off"
-            />
-            <label
-              class="btn d-flex justify-content-center"
-              id="expand_textarea_label"
-              for="expand_textarea"
-              ><i
-                id="expand_textarea_button"
-                class="bi bi-chevron-compact-up"
-              ></i
-            ></label>
-
-            <div class="input-group bottom-0 ms-2">
-              <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
-              <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
-              <div class="input-group-text">
-                <i
-                  id="emojipickerbutton"
-                  class="bi bi-emoji-smile p-0"
-                  style="font-size: 1rem"
-                ></i>
-              </div>
-
-              <textarea
-                class="form-control"
-                rows="1"
-                id="chatModuleMessage"
-                placeholder="Message - Send with [Enter]"
-              ></textarea>
-
-              <div class="input-group-text me-3">
-                <i
-                  class="bi bi-paperclip"
-                  style="font-size: 1rem"
-                  id="selectFilesButton"
-                ></i>
-
-                <button
-                  class="btn btn-sm btn-secondary d-none invisible"
-                  id="sendMessage"
-                  type="button"
-                >
-                  <i class="bi bi-send" style="font-size: 1.2rem"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- user modal -->
-
-    <div
-      class="modal fade"
-      id="userModal"
-      tabindex="-1"
-      aria-labelledby="userModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" style="max-width: 600px">
-        <div class="modal-content">
-          <div class="card mb-1 border-0">
-            <div class="row g-0">
-              <div class="col-md-4">
-                <div class="row position-relative p-0 m-0">
-                  <div class="col p-0 m-0">
-                    <img
-                      src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
-                      class="img-fluid rounded-start w-100"
-                      alt="..."
-                      id="user_info_image"
-                    />
-                  </div>
-                  <div
-                    class="col position-absolute image-overlay text-white justify-content-center align-items-center d-flex align-middle h-100 opacity-0"
-                    id="userImageSelector"
-                  >
-                    <i class="bi bi-upload" style="font-size: 2.2rem"></i>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-8">
-                <div class="card-body">
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-pass"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Callsign"
-                      id="user_info_callsign"
-                      aria-label="Call"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-person-vcard"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="name"
-                      id="user_info_name"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-sunrise"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="age"
-                      id="user_info_age"
-                      aria-label="age"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-house"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Location"
-                      id="user_info_location"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                    <span class="input-group-text"
-                      ><i class="bi bi-pin-map"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Grid"
-                      id="user_info_gridsquare"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-projector"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Radio"
-                      id="user_info_radio"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-
-                    <span class="input-group-text"
-                      ><i class="bi bi-broadcast-pin"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Antenna"
-                      id="user_info_antenna"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-envelope"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Email"
-                      id="user_info_email"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-
-                    <span class="input-group-text"
-                      ><i class="bi bi-globe"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Website"
-                      id="user_info_website"
-                      aria-label="Name"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                  <div class="input-group input-group-sm mb-1">
-                    <span class="input-group-text"
-                      ><i class="bi bi-info-circle"></i
-                    ></span>
-                    <input
-                      type="text"
-                      class="form-control"
-                      placeholder="Comments"
-                      id="user_info_comments"
-                      aria-label="Comments"
-                      aria-describedby="basic-addon1"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-            aria-label="Close"
-            id="userInfoSave"
-          >
-            Save & Close
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- dx user modal -->
-    <div
-      class="modal fade"
-      id="userModalDX"
-      tabindex="-1"
-      aria-labelledby="userModalDXLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog" style="max-width: 600px">
-        <div class="modal-content">
-          <div class="card mb-1 border-0">
-            <div class="row g-0">
-              <div class="col-md-4">
-                <img
-                  src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNiIgaGVpZ2h0PSIxNiIgZmlsbD0iY3VycmVudENvbG9yIiBjbGFzcz0iYmkgYmktcGVyc29uLWJvdW5kaW5nLWJveCIgdmlld0JveD0iMCAwIDE2IDE2Ij4KICA8cGF0aCBkPSJNMS41IDFhLjUuNSAwIDAgMC0uNS41djNhLjUuNSAwIDAgMS0xIDB2LTNBMS41IDEuNSAwIDAgMSAxLjUgMGgzYS41LjUgMCAwIDEgMCAxaC0zek0xMSAuNWEuNS41IDAgMCAxIC41LS41aDNBMS41IDEuNSAwIDAgMSAxNiAxLjV2M2EuNS41IDAgMCAxLTEgMHYtM2EuNS41IDAgMCAwLS41LS41aC0zYS41LjUgMCAwIDEtLjUtLjV6TS41IDExYS41LjUgMCAwIDEgLjUuNXYzYS41LjUgMCAwIDAgLjUuNWgzYS41LjUgMCAwIDEgMCAxaC0zQTEuNSAxLjUgMCAwIDEgMCAxNC41di0zYS41LjUgMCAwIDEgLjUtLjV6bTE1IDBhLjUuNSAwIDAgMSAuNS41djNhMS41IDEuNSAwIDAgMS0xLjUgMS41aC0zYS41LjUgMCAwIDEgMC0xaDNhLjUuNSAwIDAgMCAuNS0uNXYtM2EuNS41IDAgMCAxIC41LS41eiIvPgogIDxwYXRoIGQ9Ik0zIDE0cy0xIDAtMS0xIDEtNCA2LTQgNiAzIDYgNC0xIDEtMSAxSDN6bTgtOWEzIDMgMCAxIDEtNiAwIDMgMyAwIDAgMSA2IDB6Ii8+Cjwvc3ZnPg=="
-                  class="img-fluid rounded-start w-100"
-                  alt="..."
-                  id="dx_user_info_image"
-                />
-              </div>
-              <div class="col-md-8">
-                <div class="card-body">
-                  <h5>
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_callsign"
-                    ></span>
-                    -
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_name"
-                    ></span>
-                    <span
-                      class="badge bg-secondary"
-                      id="dx_user_info_age"
-                    ></span>
-                  </h5>
-
-                  <ul class="card-text list-unstyled">
-                    <li>
-                      <strong class="col"><i class="bi bi-house"></i> </strong
-                      ><span id="dx_user_info_location"></span> (<span
-                        id="dx_user_info_gridsquare"
-                      ></span
-                      >)
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-envelope"></i> </strong
-                      ><span id="dx_user_info_email"></span>
-                    </li>
-                    <li>
-                      <strong class="col"><i class="bi bi-globe"></i> </strong
-                      ><span id="dx_user_info_website"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-broadcast-pin"></i> </strong
-                      ><span id="dx_user_info_antenna"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-projector"></i> </strong
-                      ><span id="dx_user_info_radio"></span>
-                    </li>
-                    <li>
-                      <strong class="col"
-                        ><i class="bi bi-info-circle"></i> </strong
-                      ><span id="dx_user_info_comments"></span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="input-group input-group-sm m-0 p-0">
-            <button
-              type="button"
-              class="btn btn-warning w-75"
-              aria-label="Request"
-              id="requestUserInfo"
-            >
-              Request user data (about 20kBytes!)
-            </button>
-
-            <button
-              type="button"
-              class="btn btn-primary w-25"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- user shared folder -->
-    <div
-      class="modal fade"
-      id="sharedFolderModal"
-      tabindex="-1"
-      aria-labelledby="sharedFolderModalLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalLabel">
-              My Shared folder
-              <button
-                type="button"
-                class="btn btn-primary"
-                id="openSharedFilesFolder"
-              >
-                <i class="bi bi-archive"></i>
-              </button>
-            </h1>
-
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-
-          <div class="modal-body">
-            <div class="container-fluid p-0">
-              <div class="center mb-1">
-                <div class="badge text-bg-info">
-                  <i class="bi bi-info"></i> Change folder in settings!
-                </div>
-              </div>
-              <div class="table-responsive">
-                <!-- START OF TABLE FOR SHARED FOLDER -->
-                <table
-                  class="table table-sm table-hover table-bordered align-middle"
-                >
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Size</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sharedFolderTable"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- HELP MODAL -->
-    <div
-      class="modal fade"
-      data-bs-backdrop="static"
-      tabindex="-1"
-      id="chatHelpModal"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Chat Help</h5>
-            <button
-              type="button"
-              class="btn btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="card mb-3">
-              <div class="card-body">
-                <p class="card-text">
-                  Welcome to the chat window. Heard stations are listed in the
-                  list on the left. Clicking on a station will show messages
-                  sent and/or received from the selected station. Additional
-                  help is available on various extra features below.
-                </p>
-              </div>
-            </div>
-            <div class="card mb-3">
-              <div class="card-body">
-                <button type="button" class="btn btn-sm btn-primary ms-2">
-                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
-                </button>
-                <p class="card-text">
-                  Set your station information and picture. This information can
-                  be requested by a remote station and can be enabled/disabled
-                  via settings.
-                </p>
-              </div>
-            </div>
-            <div class="card mb-3">
-              <div class="card-body">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary ms-2"
-                >
-                  <i class="bi bi-person" style="font-size: 1.2rem"></i>
-                </button>
-                <p class="card-text">
-                  Request the selected station's information.
-                </p>
-              </div>
-            </div>
-            <div class="card mb-3">
-              <div class="card-body">
-                <button
-                  type="button"
-                  class="btn btn-sm btn-outline-secondary ms-2"
-                >
-                  <i class="bi bi-files" style="font-size: 1.2rem"></i>
-                </button>
-                <p class="card-text">
-                  Request the selected station's shared file(s) list. Clicking
-                  <button type="button" class="btn btn-sm btn-primary ms-2">
-                    <i class="bi bi-files" style="font-size: 1.2rem"></i>
-                  </button>
-                  will allow you to preview your shared files. Shared file can
-                  be enabled/disabled in settings.
-                </p>
-              </div>
-            </div>
-            <div class="card mb-3">
-              <div class="card-body">
-                <button
-                  type="button"
-                  class="btn btn-small btn-outline-primary dropdown-toggle me-2"
-                >
-                  <i class="bi bi-funnel-fill"></i>
-                </button>
-                <p class="card-text">
-                  The filter button allows you to show or hide certain types of
-                  messages. A lot of data is logged and this allows you to
-                  modify what is shown. By default sent and received messages
-                  and ping acknowlegements are displayed.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- dx user shared folder -->
-    <div
-      class="modal fade"
-      id="sharedFolderModalDX"
-      tabindex="-1"
-      aria-labelledby="sharedFolderModalDXLabel"
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="sharedFolderModalDXLabel">
-              Shared folder
-            </h1>
-            <button
-              type="button"
-              class="btn btn-primary m-2"
-              aria-label="Request"
-              id="requestSharedFolderList"
-            >
-              <i class="bi bi-arrow-repeat"></i>
-            </button>
-
-            <button
-              type="button"
-              class="btn-close"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body">
-            <div class="container-fluid">
-              <div class="table-responsive">
-                <!-- START OF TABLE FOR SHARED FOLDER DX -->
-                <table
-                  class="table table-sm table-hover table-bordered align-middle"
-                >
-                  <thead>
-                    <tr>
-                      <th scope="col">#</th>
-                      <th scope="col">Name</th>
-                      <th scope="col">Type</th>
-                      <th scope="col">Size</th>
-                    </tr>
-                  </thead>
-                  <tbody id="sharedFolderTableDX"></tbody>
-                </table>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <div class="input-group input-group-sm m-0 p-0"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-
-
-      </div>
-      <div class="tab-pane fade" id="list-logger" role="tabpanel" aria-labelledby="list-logger-list">
-        <div class="container">
-              <nav class="navbar fixed-top bg-body-tertiary border-bottom" style="margin-left: 87px">
-      <div class="container-fluid">
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="enable_filter_info"
-          autocomplete="off"
-          checked
-        />
-        <label class="btn btn-outline-info" for="enable_filter_info"
-          >info</label
-        >
-
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="enable_filter_debug"
-          autocomplete="off"
-        />
-        <label class="btn btn-outline-primary" for="enable_filter_debug"
-          >debug</label
-        >
-
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="enable_filter_warning"
-          autocomplete="off"
-        />
-        <label class="btn btn-outline-warning" for="enable_filter_warning"
-          >warning</label
-        >
-
-        <input
-          type="checkbox"
-          class="btn-check"
-          id="enable_filter_error"
-          autocomplete="off"
-        />
-        <label class="btn btn-outline-danger" for="enable_filter_error"
-          >error</label
-        >
-      </div>
-    </nav >
-
-    <div class="container-fluid mt-5">
-      <div class="tableFixHead">
-        <table class="table table-hover">
-          <thead>
-            <tr>
-              <th scope="col">Timestamp</th>
-              <th scope="col">Type</th>
-              <th scope="col">Area</th>
-              <th scope="col">Log entry</th>
-            </tr>
-          </thead>
-          <tbody id="log">
-            <!--
-                     <tr>
-                       <th scope="row">1</th>
-                       <td>Mark</td>
-                       <td>Otto</td>
-                       <td>@mdo</td>
-                     </tr>
-                         -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-
-        </div>
-
-
-      </div>
-
-
-
-
-    </div>
-
-
-
-    <settings_view/>
-
-
-
-
-
-    <!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
-    <div
-      class="offcanvas offcanvas-end"
-      tabindex="-1"
-      id="receivedFilesSidebar"
-      aria-labelledby="receivedFilesSidebarLabel"
-    >
-      <div class="offcanvas-header p-2">
-        <button
-          class="btn btn-sm btn-primary me-2"
-          id="openReceivedFilesFolder"
-          type="button"
-        >
-          <i class="bi bi-folder2-open" style="font-size: 1rem"></i>
-        </button>
-        <h5 id="receivedFilesSidebarLabel">Filetransfer</h5>
-        <button
-          type="button"
-          class="btn-close text-reset"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="input-group input-group-sm p-1">
-        <input type="file" class="form-control" id="dataModalFile" />
-        <input
-          type="text"
-          class="form-control"
-          style="max-width: 6rem; text-transform: uppercase"
-          pattern="[A-Z]"
-          placeholder="DXcall"
-          id="dataModalDxCall"
-          maxlength="11"
-          aria-label="Input group"
-          aria-describedby="btnGroupAddon"
-        />
-        <button
-          type="button"
-          id="startTransmission"
-          data-bs-dismiss="offcanvas"
-          class="btn btn-success"
-        >
-          Send
-        </button>
-      </div>
-      <div class="offcanvas-body p-0">
-        <!-- START OF TABLE FOR RECEIVED FILES-->
-        <table class="table">
-          <thead>
-            <tr>
-              <th scope="col">Time</th>
-              <th scope="col">DXCall</th>
-              <!--<th scope="col">DXGrid</th>
-                        <th scope="col">Distance</th>-->
-              <th scope="col">Filename</th>
-              <!--<th scope="col">SNR</th>-->
-            </tr>
-          </thead>
-          <tbody id="rx-data">
-            <!--
-                     <tr>
-                       <th scope="row">1</th>
-                       <td>Mark</td>
-                       <td>Otto</td>
-                       <td>@mdo</td>
-                     </tr>
-                         -->
-          </tbody>
-        </table>
-        <!-- END OF  RECEIVED FILES-->
-      </div>
-    </div>
-    <!------------------------------- DATA SIDEBAR ----------------------->
-    <div
-      class="offcanvas offcanvas-end"
-      tabindex="-1"
-      id="transmitFileSidebar"
-      aria-labelledby="transmitFileSidebarLabel"
-    >
-      <div class="offcanvas-header p-2">
-        <h5 id="transmitFileSidebarLabel">Transmit Files</h5>
-        <button
-          type="button"
-          class="btn-close text-reset"
-          data-bs-dismiss="offcanvas"
-          aria-label="Close"
-        ></button>
-      </div>
-      <div class="offcanvas-body p-0">
-        <!--<div id="transmitFileSidebar" class="sidebar shadow-lg rounded">-->
-        <div class="container-fluid">
-          <div class="container mt-1">
-            <div class="row mb-1">
-              <div class="col">
-                <div class="card mb-0">
-                  <div class="card-header p-1"><strong>DX Station</strong></div>
-                  <div class="card-body p-2">
-                    <div class="row">
-                      <div class="col-auto">
-                        <!--
-                                       <div class="input-group input-group-sm mb-0">
-
-                                       	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
-                                       </div>
-                                       -->
+                  <!--beginn of blur div -->
+                  <!-------------------------------- MAIN AREA ---------------->
+
+                  <!------------------------------------------------------------------------------------------>
+                  <div class="container p-3">
+                    <div
+                      class="row collapse multi-collapse show mt-4"
+                      id="collapseFirstRow"
+                    >
+                      <div class="col">
+                        <main_audio />
                       </div>
-                      <div class="col-auto">
-                        <div class="input-group input-group-sm mb-0">
-                          <button
-                            class="btn btn-success"
-                            id="dataModalSendPing"
-                            type="button"
-                          >
-                            Ping
-                          </button>
-                          <span
-                            class="input-group-text text-secondary"
-                            id="dataModalPingACK"
-                            >ACK</span
-                          >
-                          <span
-                            class="input-group-text"
-                            id="dataModalPingDistance"
-                            >0000 km</span
-                          >
-                          <span class="input-group-text" id="dataModalPingDB"
-                            >0 dB</span
-                          >
-                        </div>
+                      <div class="col">
+                        <main_rig_control />
+                      </div>
+                    </div>
+                    <div
+                      class="row collapse multi-collapse show mt-4"
+                      id="collapseSecondRow"
+                    >
+                      <div class="col">
+                        <main_my_station />
+                      </div>
+                      <div class="col">
+                        <main_updater />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="container">
+                    <div
+                      class="row collapse multi-collapse"
+                      id="collapseThirdRow"
+                    >
+                      <main_active_rig_control />
+
+                      <div class="col-5">
+                        <main_active_audio_level />
+                      </div>
+                      <div class="col">
+                        <main_active_broadcasts />
+                      </div>
+                    </div>
+                    <div
+                      class="row collapse multi-collapse mt-3"
+                      id="collapseFourthRow"
+                    >
+                      <div class="col-5">
+                        <main_active_stats />
+                      </div>
+                      <div class="col">
+                        <main_active_heard_stations />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <!--col-->
+
+              <div
+                class="tab-pane fade"
+                id="list-mesh"
+                role="tabpanel"
+                aria-labelledby="list-mesh-list"
+              >
+                <div class="container">
+                  <nav>
+                    <div
+                      class="nav nav-tabs"
+                      id="nav-tab-mesh"
+                      role="tablist-mesh"
+                    >
+                      <button
+                        class="nav-link active"
+                        id="nav-route-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-route"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-route"
+                        aria-selected="true"
+                      >
+                        Routes
+                      </button>
+                      <button
+                        class="nav-link"
+                        id="nav-signaling-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-signaling"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-signaling"
+                        aria-selected="false"
+                      >
+                        Signaling
+                      </button>
+                      <button
+                        class="nav-link"
+                        id="nav-actions-tab"
+                        data-bs-toggle="tab"
+                        data-bs-target="#nav-actions"
+                        type="button"
+                        role="tab"
+                        aria-controls="nav-actions"
+                        aria-selected="false"
+                      >
+                        Actions
+                      </button>
+                    </div>
+                  </nav>
+
+                  <div class="tab-content" id="nav-tabContent-Mesh">
+                    <div
+                      class="tab-pane fade show active vw-100 vh-90 overflow-auto"
+                      id="nav-route"
+                      role="tabpanel"
+                      aria-labelledby="nav-route-tab"
+                    >
+                      <div class="container-fluid">
+                        <div
+                          class="table-responsive overflow-auto"
+                          style="max-width: 99vw; max-height: 99vh"
+                        >
+                          <table class="table table-hover table-sm">
+                            <thead>
+                              <tr>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col">DXCall</th>
+                                <th scope="col">Router</th>
+                                <th scope="col">Hops</th>
+                                <th scope="col">Score</th>
+                                <th scope="col">SNR</th>
+                              </tr>
+                            </thead>
+                            <tbody id="mesh-table"></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="tab-pane fade"
+                      id="nav-signaling"
+                      role="tabpanel"
+                      aria-labelledby="nav-signaling-tab"
+                    >
+                      <div class="container-fluid">
+                        <div
+                          class="table-responsive overflow-auto"
+                          style="max-width: 99vw; max-height: 99vh"
+                        >
+                          <table class="table table-hover table-sm">
+                            <thead>
+                              <tr>
+                                <th scope="col">Timestamp</th>
+                                <th scope="col">Destination</th>
+                                <th scope="col">Origin</th>
+                                <th scope="col">Frametype</th>
+                                <th scope="col">Payload</th>
+                                <th scope="col">Attempt</th>
+                                <th scope="col">Status</th>
+                              </tr>
+                            </thead>
+                            <tbody id="mesh-signalling-table"></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div
+                      class="tab-pane fade"
+                      id="nav-actions"
+                      role="tabpanel-mesh"
+                      aria-labelledby="nav-actions-tab"
+                    >
+                      <div class="input-group mt-1">
+                        <input
+                          type="text"
+                          class="form-control"
+                          style="max-width: 6rem; text-transform: uppercase"
+                          placeholder="DXcall"
+                          pattern="[A-Z]*"
+                          id="dxCallMesh"
+                          maxlength="11"
+                          aria-label="Input group"
+                          aria-describedby="btnGroupAddon"
+                        />
+                        <button
+                          id="transmit_mesh_ping"
+                          type="button"
+                          class="btn btn-primary"
+                        >
+                          mesh ping
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="list-info"
+                role="tabpanel"
+                aria-labelledby="list-info-list"
+              >
+                <h1 class="modal-title fs-5" id="aboutModalLabel">
+                  FreeDATA - <span id="aboutVersion"></span>
+                </h1>
+
+                <div class="container-fluid">
+                  <div class="row mt-2">
+                    <div
+                      class="btn-toolbar mx-auto"
+                      role="toolbar"
+                      aria-label="Toolbar with button groups"
+                    >
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-sm bi bi-geo-alt btn-secondary me-2"
+                          id="openExplorer"
+                          type="button"
+                          data-bs-placement="bottom"
+                        >
+                          Explorer map
+                        </button>
+                      </div>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-sm btn-secondary me-2 bi bi-graph-up"
+                          id="btnStats"
+                          type="button"
+                          data-bs-placement="bottom"
+                        >
+                          Statistics
+                        </button>
+                      </div>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-secondary bi bi-bookmarks me-2"
+                          id="fdWww"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          title="FreeDATA website"
+                          role="button"
+                        >
+                          Website
+                        </button>
+                      </div>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-secondary bi bi-github me-2"
+                          id="ghUrl"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          title="Github"
+                          role="button"
+                        >
+                          Github
+                        </button>
+                      </div>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-secondary bi bi-wikipedia me-2"
+                          id="wikiUrl"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          title="Wiki"
+                          role="button"
+                        >
+                          Wiki
+                        </button>
+                      </div>
+                      <div class="btn-group">
+                        <button
+                          class="btn btn-secondary bi bi-discord"
+                          id="discordUrl"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          title="Discord"
+                          role="button"
+                        >
+                          Discord
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row mt-5">
+                    <h6>Special thanks to</h6>
+                    <hr />
+                  </div>
+                  <div class="row">
+                    <div class="col-4" id="divContrib"></div>
+                    <div class="col-4" id="divContrib2"></div>
+                    <div class="col-4" id="divContrib3"></div>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="tab-pane fade"
+                id="list-chat"
+                role="tabpanel"
+                aria-labelledby="list-chat-list"
+              >
+                <chat/>
+
+
+
+              </div>
+              <div
+                class="tab-pane fade"
+                id="list-logger"
+                role="tabpanel"
+                aria-labelledby="list-logger-list"
+              >
+                <div class="container">
+                  <nav
+                    class="navbar fixed-top bg-body-tertiary border-bottom"
+                    style="margin-left: 87px"
+                  >
+                    <div class="container-fluid">
+                      <input
+                        type="checkbox"
+                        class="btn-check"
+                        id="enable_filter_info"
+                        autocomplete="off"
+                        checked
+                      />
+                      <label
+                        class="btn btn-outline-info"
+                        for="enable_filter_info"
+                        >info</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check"
+                        id="enable_filter_debug"
+                        autocomplete="off"
+                      />
+                      <label
+                        class="btn btn-outline-primary"
+                        for="enable_filter_debug"
+                        >debug</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check"
+                        id="enable_filter_warning"
+                        autocomplete="off"
+                      />
+                      <label
+                        class="btn btn-outline-warning"
+                        for="enable_filter_warning"
+                        >warning</label
+                      >
+
+                      <input
+                        type="checkbox"
+                        class="btn-check"
+                        id="enable_filter_error"
+                        autocomplete="off"
+                      />
+                      <label
+                        class="btn btn-outline-danger"
+                        for="enable_filter_error"
+                        >error</label
+                      >
+                    </div>
+                  </nav>
+
+                  <div class="container-fluid mt-5">
+                    <div class="tableFixHead">
+                      <table class="table table-hover">
+                        <thead>
+                          <tr>
+                            <th scope="col">Timestamp</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Area</th>
+                            <th scope="col">Log entry</th>
+                          </tr>
+                        </thead>
+                        <tbody id="log">
+                          <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <!--row-->
-            <div class="row mb-1">
-              <div class="col">
-                <div class="card mb-0">
-                  <!--
+
+            <settings_view />
+
+            <!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
+            <div
+              class="offcanvas offcanvas-end"
+              tabindex="-1"
+              id="receivedFilesSidebar"
+              aria-labelledby="receivedFilesSidebarLabel"
+            >
+              <div class="offcanvas-header p-2">
+                <button
+                  class="btn btn-sm btn-primary me-2"
+                  id="openReceivedFilesFolder"
+                  type="button"
+                >
+                  <i class="bi bi-folder2-open" style="font-size: 1rem"></i>
+                </button>
+                <h5 id="receivedFilesSidebarLabel">Filetransfer</h5>
+                <button
+                  type="button"
+                  class="btn-close text-reset"
+                  data-bs-dismiss="offcanvas"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="input-group input-group-sm p-1">
+                <input type="file" class="form-control" id="dataModalFile" />
+                <input
+                  type="text"
+                  class="form-control"
+                  style="max-width: 6rem; text-transform: uppercase"
+                  pattern="[A-Z]"
+                  placeholder="DXcall"
+                  id="dataModalDxCall"
+                  maxlength="11"
+                  aria-label="Input group"
+                  aria-describedby="btnGroupAddon"
+                />
+                <button
+                  type="button"
+                  id="startTransmission"
+                  data-bs-dismiss="offcanvas"
+                  class="btn btn-success"
+                >
+                  Send
+                </button>
+              </div>
+              <div class="offcanvas-body p-0">
+                <!-- START OF TABLE FOR RECEIVED FILES-->
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Time</th>
+                      <th scope="col">DXCall</th>
+                      <!--<th scope="col">DXGrid</th>
+                        <th scope="col">Distance</th>-->
+                      <th scope="col">Filename</th>
+                      <!--<th scope="col">SNR</th>-->
+                    </tr>
+                  </thead>
+                  <tbody id="rx-data">
+                    <!--
+                     <tr>
+                       <th scope="row">1</th>
+                       <td>Mark</td>
+                       <td>Otto</td>
+                       <td>@mdo</td>
+                     </tr>
+                         -->
+                  </tbody>
+                </table>
+                <!-- END OF  RECEIVED FILES-->
+              </div>
+            </div>
+            <!------------------------------- DATA SIDEBAR ----------------------->
+            <div
+              class="offcanvas offcanvas-end"
+              tabindex="-1"
+              id="transmitFileSidebar"
+              aria-labelledby="transmitFileSidebarLabel"
+            >
+              <div class="offcanvas-header p-2">
+                <h5 id="transmitFileSidebarLabel">Transmit Files</h5>
+                <button
+                  type="button"
+                  class="btn-close text-reset"
+                  data-bs-dismiss="offcanvas"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="offcanvas-body p-0">
+                <!--<div id="transmitFileSidebar" class="sidebar shadow-lg rounded">-->
+                <div class="container-fluid">
+                  <div class="container mt-1">
+                    <div class="row mb-1">
+                      <div class="col">
+                        <div class="card mb-0">
+                          <div class="card-header p-1">
+                            <strong>DX Station</strong>
+                          </div>
+                          <div class="card-body p-2">
+                            <div class="row">
+                              <div class="col-auto">
+                                <!--
+                                       <div class="input-group input-group-sm mb-0">
+
+                                       	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
+                                       </div>
+                                       -->
+                              </div>
+                              <div class="col-auto">
+                                <div class="input-group input-group-sm mb-0">
+                                  <button
+                                    class="btn btn-success"
+                                    id="dataModalSendPing"
+                                    type="button"
+                                  >
+                                    Ping
+                                  </button>
+                                  <span
+                                    class="input-group-text text-secondary"
+                                    id="dataModalPingACK"
+                                    >ACK</span
+                                  >
+                                  <span
+                                    class="input-group-text"
+                                    id="dataModalPingDistance"
+                                    >0000 km</span
+                                  >
+                                  <span
+                                    class="input-group-text"
+                                    id="dataModalPingDB"
+                                    >0 dB</span
+                                  >
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <!--col-->
+                    </div>
+                    <!--row-->
+                    <div class="row mb-1">
+                      <div class="col">
+                        <div class="card mb-0">
+                          <!--
                               <div class="card-header p-1"> <strong>Data</strong>
                               </div>
                               <div class="card-body p-2">
@@ -1563,105 +767,92 @@ function changeGuiDesign(design) {
                               	</div>
                               </div>
                               -->
-                </div>
-              </div>
-              <!--col-->
-            </div>
-            <!--row-->
-            <div class="row mb-1">
-              <div class="col">
-                <div class="card mb-0">
-                  <div class="card-header p-1"><strong>Mode</strong></div>
-                  <div class="card-body p-2">
-                    <div class="row">
-                      <div class="col">
-                        <div class="input-group input-group-sm">
-                          <span class="input-group-text">Mode</span>
-                          <select
-                            class="form-select form-select-sm"
-                            aria-label=".form-select-sm"
-                            id="datamode"
-                            disabled
-                          >
-                            <option selected value="255">AUTO</option>
-                            <!--<option value="232">HIGH SNR (DC1)</option>-->
-                            <!--<option value="231">MED SNR (DC3)</option>-->
-                            <!--<option value="230">LOW SNR (DC0)</option>-->
-                          </select>
                         </div>
                       </div>
-                      <div class="col-auto">
-                        <div class="input-group input-group-sm">
-                          <span class="input-group-text">Frames</span>
-                          <select
-                            class="form-select form-select-sm"
-                            aria-label=".form-select-sm"
-                            id="framesperburst"
-                            disabled
-                          >
-                            <option selected value="1">1</option>
-                          </select>
+                      <!--col-->
+                    </div>
+                    <!--row-->
+                    <div class="row mb-1">
+                      <div class="col">
+                        <div class="card mb-0">
+                          <div class="card-header p-1">
+                            <strong>Mode</strong>
+                          </div>
+                          <div class="card-body p-2">
+                            <div class="row">
+                              <div class="col">
+                                <div class="input-group input-group-sm">
+                                  <span class="input-group-text">Mode</span>
+                                  <select
+                                    class="form-select form-select-sm"
+                                    aria-label=".form-select-sm"
+                                    id="datamode"
+                                    disabled
+                                  >
+                                    <option selected value="255">AUTO</option>
+                                    <!--<option value="232">HIGH SNR (DC1)</option>-->
+                                    <!--<option value="231">MED SNR (DC3)</option>-->
+                                    <!--<option value="230">LOW SNR (DC0)</option>-->
+                                  </select>
+                                </div>
+                              </div>
+                              <div class="col-auto">
+                                <div class="input-group input-group-sm">
+                                  <span class="input-group-text">Frames</span>
+                                  <select
+                                    class="form-select form-select-sm"
+                                    aria-label=".form-select-sm"
+                                    id="framesperburst"
+                                    disabled
+                                  >
+                                    <option selected value="1">1</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
+                        <!--col-->
+                      </div>
+                      <!--row-->
+                    </div>
+                    <div class="row mb-1">
+                      <div class="col">
+                        <!--
+                           <button type="button" id="startTransmission" data-bs-dismiss="offcanvas" class="btn btn-success" style="width:100%">START TRANSMISSION</button>-->
+                      </div>
+                      <div class="col-md-auto">
+                        <button
+                          type="button"
+                          id="stopTransmission"
+                          class="btn btn-danger"
+                          style="width: 100%"
+                        >
+                          STOP
+                        </button>
                       </div>
                     </div>
+                    <div class="row">
+                      <div class="col"></div>
+                    </div>
+                    <!--row-->
                   </div>
+                  <!--container-->
+                  <!--</div>-->
                 </div>
-                <!--col-->
-              </div>
-              <!--row-->
-            </div>
-            <div class="row mb-1">
-              <div class="col">
-                <!--
-                           <button type="button" id="startTransmission" data-bs-dismiss="offcanvas" class="btn btn-success" style="width:100%">START TRANSMISSION</button>-->
-              </div>
-              <div class="col-md-auto">
-                <button
-                  type="button"
-                  id="stopTransmission"
-                  class="btn btn-danger"
-                  style="width: 100%"
-                >
-                  STOP
-                </button>
               </div>
             </div>
-            <div class="row">
-              <div class="col"></div>
+            <!--end of blur div -->
+            <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
+
+            <div class="container">
+              <main_footer_navbar />
             </div>
-            <!--row-->
           </div>
-          <!--container-->
-          <!--</div>-->
         </div>
       </div>
-    </div>
-    <!--end of blur div -->
-    <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
 
-
-
-
-
-          <div class="container">
-     <main_footer_navbar/>
-    </div>
-
-
-
-                            </div>
-    </div>
-</div>
-
-
-
-
-
-
-<main_modals/>
-
-  </body>
- </html>
+      <main_modals />
+    </body>
+  </html>
 </template>
-
-
