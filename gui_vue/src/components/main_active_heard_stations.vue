@@ -1,5 +1,14 @@
 <script setup lang="ts">
 
+const {
+  locatorToLatLng,
+  distance,
+  bearingDistance,
+  latLngToLocator,
+} = require("qth-locator");
+
+
+
 import {saveSettingsToFile} from '../js/settingsHandler'
 
 import { setActivePinia } from 'pinia';
@@ -11,6 +20,28 @@ const settings = useSettingsStore(pinia);
 
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
+
+
+function getDateTime(timestampRaw){
+    var datetime = new Date(timestampRaw * 1000).toLocaleString(
+          navigator.language,
+          {
+            hourCycle: "h23",
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          },
+        );
+return datetime
+}
+
+function getMaidenheadDistance(dxGrid){
+    return parseInt(distance(settings.mygrid, dxGrid));
+}
+
 
 </script>
 <template>
@@ -68,12 +99,12 @@ const state = useStateStore(pinia);
                     <tbody id="heardstations">
                     <!--https://vuejs.org/guide/essentials/list.html-->
                      <tr v-for="item in state.heard_stations" :key="item.timestamp">
-                        <td>{{ item.timestamp }}</td>
+                        <td>{{ getDateTime(item.timestamp) }}</td>
                         <td>{{ item.frequency }}</td>
                         <td>&nbsp;</td>
                         <td>{{ item.dxcallsign }}</td>
                         <td>{{ item.dxgrid }}</td>
-                        <td>{{ item.distance }}</td>
+                        <td>{{ getMaidenheadDistance(item.dxgrid)}} km</td>
                         <td>{{ item.datatype }}</td>
                         <td>{{ item.snr }}</td>
                         <!--<td>{{ item.offset }}</td>-->
