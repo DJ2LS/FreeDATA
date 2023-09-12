@@ -20,16 +20,12 @@ const chat = useChatStore(pinia);
 
 
 import chat_conversations_entry from './chat_conversations_entry.vue'
-
 </script>
-
 <template>
 
 <div class="list-group" id="chat-list-tab" role="chat-tablist">
-
-       <template v-for="(item) in chat.callsign_list" :key="item.timestamp">
+       <template  v-for="item in chat.callsign_list" :key="item.dxcallsign">
           <a class="list-group-item list-group-item-action" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages">{{item}}</a>
-
         </template>
 
 

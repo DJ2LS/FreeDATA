@@ -20,8 +20,24 @@ const chat = useChatStore(pinia);
 
 <template>
  <div class="tab-content" id="nav-tabContent-chat-messages">
-     <template v-for="item in chat.callsign_list" :key="item.timestamp">
-          <div class="tab-pane fade" :id="`list-${item}-messages`" role="tabpanel" :aria-labelledby="`list-chat-list-${item}`">{{item}}...</div>
+     <template v-for="callsign in chat.callsign_list">
+
+
+          <div class="tab-pane fade" :id="`list-${callsign}-messages`" role="tabpanel" :aria-labelledby="`list-chat-list-${callsign}`">{{callsign}}...
+
+          <template v-for="item in chat.sorted_chat_list[callsign]" :key="item._id">
+            {{item}}<br>
+
+    </template>
+
+
+
+
+
+
+
+
+          </div>
     </template>
 
   </div>

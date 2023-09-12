@@ -13,6 +13,12 @@ export const useChatStore = defineStore('chatStore', () => {
       //{ type: "response" },
     ])
 
+
+
     var callsign_list = ref()
-  return {chat_filter, callsign_list  };
+    var sorted_chat_list = ref()
+    var unsorted_chat_list = ref([])
+
+
+  return {chat_filter, callsign_list, sorted_chat_list, unsorted_chat_list  };
 });

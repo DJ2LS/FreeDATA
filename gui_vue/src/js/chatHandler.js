@@ -59,7 +59,24 @@ chat.callsign_list = new Set()
 
 
 
+function sortChatList(){
 
+    // Create an empty object to store the reordered data dynamically
+    const reorderedData = {};
+    var jsonObjects = chat.unsorted_chat_list
+    // Iterate through the list of JSON objects and reorder them dynamically
+    jsonObjects.forEach(obj => {
+        var dxcallsign = obj.dxcallsign;
+        if (dxcallsign) {
+            if (!reorderedData[dxcallsign]) {
+                reorderedData[dxcallsign] = [];
+            }
+            reorderedData[dxcallsign].push(obj);
+        }
+    });
+    //console.log(reorderedData["DJ2LS-0"])
+    return reorderedData
+}
 
 
 export async function updateAllChat() {
@@ -89,10 +106,19 @@ export async function updateAllChat() {
         .then(async function (result) {
           console.log(result);
           for (var item of result.docs) {
-           console.log(item)
             chat.callsign_list.add(item.dxcallsign)
+            chat.unsorted_chat_list.push(item)
+
+
+
 
           }
+
+
+
+
+            chat.sorted_chat_list = sortChatList()
+
 
           // handle result async
         
