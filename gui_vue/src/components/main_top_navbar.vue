@@ -18,8 +18,14 @@ function startStopTNC(){
 
 
 switch (state.tnc_running_state) {
+
   case 'stopped':
-        startTNC()
+
+        // todo: is there another way of doing this, maybe more VueJS like?
+        settings.rx_audio = document.getElementById("audio_input_selectbox").value
+        settings.tx_audio = document.getElementById("audio_output_selectbox").value
+
+          startTNC()
 
     break;
   case 'running':
