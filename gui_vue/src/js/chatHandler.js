@@ -62,7 +62,7 @@ chat.callsign_list = new Set()
 function sortChatList(){
 
     // Create an empty object to store the reordered data dynamically
-    const reorderedData = {};
+    var reorderedData = {};
     var jsonObjects = chat.unsorted_chat_list
     // Iterate through the list of JSON objects and reorder them dynamically
     jsonObjects.forEach(obj => {
@@ -108,10 +108,6 @@ export async function updateAllChat() {
           for (var item of result.docs) {
             chat.callsign_list.add(item.dxcallsign)
             chat.unsorted_chat_list.push(item)
-
-
-
-
           }
 
 
