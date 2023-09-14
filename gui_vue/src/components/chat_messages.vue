@@ -41,8 +41,8 @@ return datetime
 
 <template>
  <div class="tab-content" id="nav-tabContent-chat-messages">
-     <template v-for="callsign in chat.callsign_list">
-          <div class="tab-pane fade" :id="`list-${callsign}-messages`" role="tabpanel" :aria-labelledby="`list-chat-list-${callsign}`">
+     <template v-for="(callsign, key) in chat.callsign_list">
+          <div class="tab-pane fade show" :class="{ active: key==0 }" :id="`list-${callsign}-messages`" role="tabpanel" :aria-labelledby="`list-chat-list-${callsign}`">
           <template v-for="item in chat.sorted_chat_list[callsign]" :key="item._id">
 
           <div v-if="prevChatMessageDay !== getDateTime(item.timestamp)">

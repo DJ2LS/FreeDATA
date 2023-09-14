@@ -27,8 +27,8 @@ import chat_conversations_entry from './chat_conversations_entry.vue'
 <template>
 
 <div class="list-group" id="chat-list-tab" role="chat-tablist">
-       <template  v-for="item in chat.callsign_list" :key="item.dxcallsign">
-           <a class="list-group-item list-group-item-action" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages">
+       <template  v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
+           <a class="list-group-item list-group-item-action" :class="{ active: key==0 }" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages">
                 <div class="row">
                     <div class="col-9">{{item}}</div>
                     <div class="col-3">

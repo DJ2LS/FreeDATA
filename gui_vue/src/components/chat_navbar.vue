@@ -13,6 +13,15 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
 
+import { useChatStore } from '../store/chatStore.js';
+const chat = useChatStore(pinia);
+
+
+function newChat(obj){
+            chat.callsign_list.add(document.getElementById("chatModuleNewDxCall").value)
+
+
+}
 
 </script>
 
@@ -34,6 +43,7 @@ const state = useStateStore(pinia);
                               id="createNewChatButton"
                               type="button"
                               title="Start a new chat (enter dx call sign first)"
+                              @click="newChat()"
                             >
                               <i
                                 class="bi bi-pencil-square"
@@ -253,19 +263,7 @@ const state = useStateStore(pinia);
                               class="dropdown-menu"
                               aria-labelledby="chatSettingsDropDown"
                             >
-                              <li>
-                                <a
-                                  class="dropdown-item bg-danger text-white"
-                                  id="delete_selected_chat"
-                                  href="#"
-                                  ><i
-                                    class="bi bi-person-x"
-                                    style="font-size: 1rem"
-                                  ></i>
-                                  Delete chat</a
-                                >
-                              </li>
-                              <div class="dropdown-divider"></div>
+
                               <li>
                                 <button
                                   class="dropdown-item"
