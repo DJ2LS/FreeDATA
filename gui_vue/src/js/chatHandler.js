@@ -110,14 +110,7 @@ export async function updateAllChat() {
             chat.unsorted_chat_list.push(item)
           }
 
-
-
-
             chat.sorted_chat_list = sortChatList()
-
-
-          // handle result async
-        
 
           /*
 
@@ -146,10 +139,6 @@ export async function updateAllChat() {
     });
 
 }
-
-
-
-
 
 
 function createChatIndex() {
@@ -181,4 +170,48 @@ function createChatIndex() {
     .catch(function (err) {
       console.log(err);
     });
+}
+
+
+export function deleteChatByCallsign(callsign){
+   chat.callsign_list.delete(callsign)
+   delete chat.unsorted_chat_list.callsign
+   delete chat.sorted_chat_list.callsign
+
+   deleteFromDatabaseByCallsign(callsign)
+
+
+}
+
+function deleteFromDatabaseByCallsign(callsign){
+db.find({
+        selector: {
+          dxcallsign: callsign,
+        },
+      })
+        .then(function (result) {
+          // handle result
+          if (typeof result !== "undefined") {
+            result.docs.forEach(function (item) {
+              console.log(item);
+              db.get(item._id)
+                .then(function (doc) {
+                  db.remove(doc)
+                    .then(function (doc) {
+                      updateAllChat(true);
+                      return true;
+                    })
+                    .catch(function (err) {
+                      console.log(err);
+                    });
+                })
+                .catch(function (err) {
+                  console.log(err);
+                });
+            });
+          }
+        })
+        .catch(function (err) {
+          console.log(err);
+        });
 }

@@ -6,6 +6,7 @@ import {saveSettingsToFile} from '../js/settingsHandler';
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
 setActivePinia(pinia);
+import {deleteChatByCallsign} from '../js/chatHandler'
 
 import { useSettingsStore } from '../store/settingsStore.js';
 const settings = useSettingsStore(pinia);
@@ -16,7 +17,9 @@ const state = useStateStore(pinia);
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
 
-
+function deleteChat(callsign){
+ deleteChatByCallsign(callsign)
+}
 
 
 import chat_conversations_entry from './chat_conversations_entry.vue'
@@ -25,10 +28,15 @@ import chat_conversations_entry from './chat_conversations_entry.vue'
 
 <div class="list-group" id="chat-list-tab" role="chat-tablist">
        <template  v-for="item in chat.callsign_list" :key="item.dxcallsign">
-          <a class="list-group-item list-group-item-action" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages">{{item}}</a>
+           <a class="list-group-item list-group-item-action" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages">
+                <div class="row">
+                    <div class="col-9">{{item}}</div>
+                    <div class="col-3">
+                        <button class="btn btn-sm btn-outline-danger ms-5" @click="deleteChat(item)"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            </a>
         </template>
-
-
     <!--<chat_conversations_entry/>-->
 </div>
 

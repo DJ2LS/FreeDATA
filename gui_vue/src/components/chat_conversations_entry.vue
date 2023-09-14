@@ -27,4 +27,5 @@ const state = useStateStore(pinia);
 <template>
 
       <a class="list-group-item list-group-item-action active" id="list-home-list" data-bs-toggle="list" href="#list-home" role="tab" aria-controls="list-home">Home</a>
+
 </template>
