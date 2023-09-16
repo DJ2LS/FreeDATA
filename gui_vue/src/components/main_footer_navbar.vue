@@ -67,7 +67,7 @@ const settings = useSettingsStore(pinia);
               </button>
 
               <button
-                class="btn btn-sm btn-secondary me-4"
+                class="btn btn-sm btn-secondary me-1"
                 id="arq_state"
                 type="button"
                 data-bs-placement="top"
@@ -97,6 +97,20 @@ const settings = useSettingsStore(pinia);
                 <i class="bi bi-usb-symbol" style="font-size: 0.8rem"></i>
               </button>
 -->
+
+<button
+                          class="btn btn-sm disabled me-3"
+                          type="button"
+                          data-bs-placement="top"
+                          data-bs-toggle="tooltip"
+                          data-bs-trigger="hover"
+                          data-bs-html="true"
+                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False'}"
+                          title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+                        >
+                          busy
+                        </button>
+
             </div>
 
 
@@ -116,6 +130,9 @@ const settings = useSettingsStore(pinia);
 
 
           </div>
+
+
+
 
           <div class="btn-group btn-group-sm me-1" role="group">
 
