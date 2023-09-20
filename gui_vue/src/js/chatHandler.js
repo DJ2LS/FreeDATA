@@ -21,13 +21,11 @@ const split_char = "0;1;";
 
 
 
-
 // ---- MessageDB
 try {
   var PouchDB = require("pouchdb");
 } catch (err) {
   console.log(err);
-
   /*
     This is a fix for raspberryPi where we get an error when loading pouchdb because of
     leveldown package isnt running on ARM devices.
@@ -61,16 +59,11 @@ var db = new PouchDB(chatDB);
 /* -------- CREATE DATABASE INDEXES */
 createChatIndex();
 
-
-
-
-
-
+// create callsign set for storing unique callsigns
 chat.callsign_list = new Set()
 
 
-
-
+// function for creating a new message
 export function newMessage(dxcallsign, chatmessage){
     var mode = ''
     var frames = ''
@@ -165,6 +158,7 @@ function sortChatList(){
 }
 
 
+// function for fetching all messages from chat / updating chat
 export async function updateAllChat() {
 
   //Ensure we create an index before running db.find
@@ -190,7 +184,6 @@ export async function updateAllChat() {
           sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
         })
         .then(async function (result) {
-          console.log(result);
           for (var item of result.docs) {
             chat.callsign_list.add(item.dxcallsign)
             chat.unsorted_chat_list.push(item)
@@ -335,6 +328,77 @@ db.find({
           console.log(err);
         });
 }
+
+
+// function for handling a received message
+export function newMessageReceived(message, protocol){
+/*
+
+PROTOCOL
+{
+    "freedata": "tnc-message",
+    "arq": "transmission",
+    "status": "received",
+    "uuid": "58d64f7d-be8c-4578-879b-3b6cb3b60ddf",
+    "percent": 100,
+    "bytesperminute": 536,
+    "compression": 0.5714285714285714,
+    "timestamp": 1695203863,
+    "finished": 0,
+    "mycallsign": "DJ2LS-0",
+    "dxcallsign": "DJ2LS-0",
+    "dxgrid": "------",
+    "data": "bTA7MTttc2cwOzE7MDsxOzA3ZTIwOzE7MTY5NTIwMzgzMzA7MTt0ZXN0MDsxOzA7MTtwbGFpbi90ZXh0MDsxOw==",
+    "irs": "True",
+    "hmac_signed": "False"
+}
+
+MESSAGE; decoded from "data"
+[
+0 - protocol type message   -     "m",
+1 - type             -     "msg",
+2 - checksum     "",
+3 - uuid -     "07e2",
+4 - timestamp -    "1695203833",
+5 - message      -    "test",
+6 - file name    -   "",
+7 - mime         -    "plain/text",
+8 - file         -    ""
+]
+
+
+*/
+console.log(protocol)
+
+    let newChatObj = new Object();
+
+        newChatObj.command = "msg"
+        newChatObj.hmac_signed = protocol["hmac_signed"]
+        newChatObj.percent = 100
+        newChatObj.bytesperminute = protocol["bytesperminute"]
+        newChatObj.is_new = true
+        newChatObj._id = message[3]
+        newChatObj.timestamp = message[4]
+        newChatObj.dxcallsign = protocol["dxcallsign"]
+        newChatObj.dxgrid = protocol["dxgrid"]
+        newChatObj.msg = message[5]
+        newChatObj.checksum = message[2]
+        newChatObj.type = message[1]
+        newChatObj.status = protocol["status"]
+        newChatObj.attempt = 1
+        newChatObj.uuid = message[3]
+        newChatObj._attachments = {
+            [message[6]]: {
+              content_type: message[7],
+              data: FD.btoa_FD(message[8]),
+            },
+        }
+
+    addObjToDatabase(newChatObj)
+
+}
+
+
 
 
 

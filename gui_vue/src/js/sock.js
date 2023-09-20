@@ -2,6 +2,7 @@ var net = require("net");
 const path = require("path");
 const FD = require("./src/js/freedata.js");
 //import FD from './freedata.js';
+import { newMessageReceived } from './chatHandler.js';
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from 'pinia';
@@ -103,8 +104,6 @@ client.on("end", function (data) {
     setTimeout(connectTNC, 500);
 });
 
-//exports.writeTncCommand = function (command) {
-//writeTncCommand = function (command) {
 function writeTncCommand(command) {
   console.log(command)
   // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
@@ -169,7 +168,7 @@ client.on("data", function (socketdata) {
       }
 
       if (data["command"] == "tnc_state") {
-        console.log(data)
+        //console.log(data)
         // set length of RX Buffer to global variable
         rxBufferLengthTnc = data["rx_buffer_length"];
         //rxMsgBufferLengthTnc = data["rx_msg_buffer_length"];
@@ -207,11 +206,6 @@ client.on("data", function (socketdata) {
 
         stateStore.is_codec2_traffic = data["is_codec2_traffic"]
 
-
-
-
-
-
         // TODO: Remove ported objects
         let Data = {
           mycallsign: data["mycallsign"],
@@ -242,7 +236,6 @@ client.on("data", function (socketdata) {
           //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
         };
 
-        //ipcRenderer.send("request-update-tnc-state", Data);
         //continue to next for loop iteration, nothing else needs to be done here
         continue;
       }
@@ -252,9 +245,6 @@ client.on("data", function (socketdata) {
         switch (data["fec"]) {
           case "is_writing":
             // RX'd FECiswriting
-            //ipcRenderer.send("request-show-fec-toast-iswriting", {
-            //  data: [data],
-            //});
             break;
 
           case "broadcast":
@@ -266,85 +256,50 @@ client.on("data", function (socketdata) {
               messageArray.push(data);
               console.log(data);
             }
-
-            let Messages = {
-              data: messageArray,
-            };
-            //ipcRenderer.send("request-new-msg-received", Messages);
             break;
         }
 
         switch (data["cq"]) {
           case "transmitting":
             // CQ TRANSMITTING
-            //ipcRenderer.send("request-show-cq-toast-transmitting", {
-            //  data: [data],
-            //});
             break;
 
           case "received":
             // CQ RECEIVED
-            //ipcRenderer.send("request-show-cq-toast-received", {
-            //  data: [data],
-            //});
             break;
         }
 
         switch (data["qrv"]) {
           case "transmitting":
             // QRV TRANSMITTING
-            //ipcRenderer.send("request-show-qrv-toast-transmitting", {
-            //  data: [data],
-            //});
             break;
 
           case "received":
             // QRV RECEIVED
-            //ipcRenderer.send("request-show-qrv-toast-received", {
-            //  data: [data],
-            //});
             break;
         }
 
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
-            //ipcRenderer.send("request-show-beacon-toast-transmitting", {
-            //  data: [data],
-            //});
             break;
 
           case "received":
             // BEACON RECEIVED
-            //ipcRenderer.send("request-show-beacon-toast-received", {
-            //  data: [data],
-            //});
-            //ipcRenderer.send("request-new-msg-received", { data: [data] });
             break;
         }
 
         switch (data["ping"]) {
           case "transmitting":
             // PING TRANSMITTING
-            //ipcRenderer.send("request-show-ping-toast-transmitting", {
-            //  data: [data],
-            //});
             break;
 
           case "received":
             // PING RECEIVED
-            //ipcRenderer.send("request-show-ping-toast-received", {
-            //  data: [data],
-            //});
-            //ipcRenderer.send("request-new-msg-received", { data: [data] });
             break;
 
           case "acknowledge":
             // PING ACKNOWLEDGE
-            //ipcRenderer.send("request-show-ping-toast-received-ack", {
-            //  data: [data],
-            //});
-            //ipcRenderer.send("request-new-msg-received", { data: [data] });
             break;
         }
 
@@ -353,37 +308,22 @@ client.on("data", function (socketdata) {
           switch (data["status"]) {
             case "connecting":
               // ARQ Open
-              //ipcRenderer.send("request-show-arq-toast-session-connecting", {
-              //  data: [data],
-              //});
               break;
 
             case "connected":
               // ARQ Opening
-              //ipcRenderer.send("request-show-arq-toast-session-connected", {
-              //  data: [data],
-              //});
               break;
 
             case "waiting":
               // ARQ Opening
-              //ipcRenderer.send("request-show-arq-toast-session-waiting", {
-              //  data: [data],
-              //});
               break;
 
             case "close":
               // ARQ Closing
-              //ipcRenderer.send("request-show-arq-toast-session-close", {
-              //  data: [data],
-              //});
               break;
 
             case "failed":
               // ARQ Failed
-              //ipcRenderer.send("request-show-arq-toast-session-failed", {
-              //  data: [data],
-              //});
               break;
           }
         }
@@ -392,29 +332,13 @@ client.on("data", function (socketdata) {
           switch (data["status"]) {
             case "opened":
               // ARQ Open
-              //ipcRenderer.send("request-show-arq-toast-datachannel-opened", {
-              //  data: [data],
-              //});
               break;
 
             case "opening":
               // ARQ Opening IRS/ISS
               if (data["irs"] == "False") {
-                //ipcRenderer.send("request-show-arq-toast-datachannel-opening", {
-                //  data: [data],
-                //});
-                //ipcRenderer.send("request-update-transmission-status", {
-                //  data: [data],
-                //});
                 break;
               } else {
-                //ipcRenderer.send(
-                //  "request-show-arq-toast-datachannel-received-opener",
-                //  { data: [data] },
-                //);
-                //ipcRenderer.send("request-update-reception-status", {
-                //  data: [data],
-                //});
                 break;
 
               }
@@ -423,58 +347,30 @@ client.on("data", function (socketdata) {
 
             case "waiting":
               // ARQ waiting
-              //ipcRenderer.send("request-show-arq-toast-datachannel-waiting", {
-              //  data: [data],
-              //});
               break;
 
             case "receiving":
               // ARQ RX
-              //ipcRenderer.send("request-update-reception-status", {
-              //  data: [data],
-              //});
               break;
 
             case "failed":
               // ARQ TX Failed
               if (data["reason"] == "protocol version missmatch") {
-                //ipcRenderer.send(
-                //  "request-show-arq-toast-transmission-failed-ver",
-                //  { data: [data] },
                 break;
 
               } else {
-                //ipcRenderer.send("request-show-arq-toast-transmission-failed", {
-                //  data: [data],
-                //});
                 break;
               }
               switch (data["irs"]) {
                 case "True":
-                  //ipcRenderer.send("request-update-reception-status", {
-                  //  data: [data],
-                  //});
                   break;
                 default:
-                  //ipcRenderer.send("request-update-transmission-status", {
-                  //  data: [data],
-                  //});
                   break;
               }
               break;
 
             case "received":
-              // ARQ Received
-              //ipcRenderer.send("request-show-arq-toast-transmission-received", {
-              //  data: [data],
-              //});
-
-              //ipcRenderer.send("request-update-reception-status", {
-              //  data: [data],
-              //});
-
-              dataArray = [];
-              messageArray = [];
+              // ARQ data received
 
               console.log(data);
               // we need to encode here to do a deep check for checking if file or message
@@ -482,49 +378,22 @@ client.on("data", function (socketdata) {
               var encoded_data = FD.atob_FD(data["data"]);
               var splitted_data = encoded_data.split(split_char);
 
-              if (splitted_data[0] == "f") {
-                dataArray.push(data);
-              }
-
+              // new message received
               if (splitted_data[0] == "m") {
-                messageArray.push(data);
-                console.log(data);
+                console.log(splitted_data)
+                newMessageReceived(splitted_data, data)
+
+
               }
 
-              rxBufferLengthGui = dataArray.length;
-              let Files = {
-                data: dataArray,
-              };
-              //ipcRenderer.send("request-update-rx-buffer", Files);
-              //ipcRenderer.send("request-new-msg-received", Files);
-
-              //rxMsgBufferLengthGui = messageArray.length;
-              let Messages = {
-                data: messageArray,
-              };
-              //ipcRenderer.send("request-new-msg-received", Messages);
               break;
 
             case "transmitting":
               // ARQ transmitting
-              //ipcRenderer.send(
-              //  "request-show-arq-toast-transmission-transmitting",
-              //  { data: [data] },
-              //);
-              //ipcRenderer.send("request-update-transmission-status", {
-              //  data: [data],
-              //});
               break;
 
             case "transmitted":
               // ARQ transmitted
-              //ipcRenderer.send(
-              //  "request-show-arq-toast-transmission-transmitted",
-              //  { data: [data] },
-              //);
-              //ipcRenderer.send("request-update-transmission-status", {
-              //  data: [data],
-              //});
               break;
           }
         }
@@ -547,9 +416,6 @@ client.on("data", function (socketdata) {
             var encoded_data = FD.atob_FD(data["data-array"][i]["data"]);
             var splitted_data = encoded_data.split(split_char);
 
-            if (splitted_data[0] == "f") {
-              dataArray.push(data["data-array"][i]);
-            }
 
             if (splitted_data[0] == "m") {
               messageArray.push(data["data-array"][i]);
@@ -559,13 +425,6 @@ client.on("data", function (socketdata) {
           }
         }
 
-        rxBufferLengthGui = dataArray.length;
-        let Files = {
-          data: dataArray,
-        };
-        //ipcRenderer.send("request-update-rx-buffer", Files);
-
-        //rxMsgBufferLengthGui = messageArray.length;
         let Messages = {
           data: messageArray,
         };
