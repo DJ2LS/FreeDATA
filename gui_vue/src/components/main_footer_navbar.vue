@@ -105,7 +105,7 @@ const settings = useSettingsStore(pinia);
                           data-bs-toggle="tooltip"
                           data-bs-trigger="hover"
                           data-bs-html="true"
-                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False'}"
+                          v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-secondary' : state.channel_busy === 'False'}"
                           title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
                         >
                           busy
