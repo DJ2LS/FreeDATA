@@ -1,6 +1,9 @@
 const path = require("path");
 const fs = require("fs");
 
+const { v4: uuidv4 } = require("uuid");
+
+
 // pinia store setup
 import { setActivePinia } from 'pinia';
 import pinia from '../store/index';
@@ -8,6 +11,15 @@ setActivePinia(pinia);
 
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
+
+import { sendMessage } from './sock.js';
+
+const FD = require("./src/js/freedata.js");
+
+// split character
+const split_char = "0;1;";
+
+
 
 
 // ---- MessageDB
@@ -54,8 +66,82 @@ createChatIndex();
 
 
 
-
 chat.callsign_list = new Set()
+
+
+
+
+export function newMessage(dxcallsign, chatmessage){
+    var mode = ''
+    var frames = ''
+    var data = ''
+    var file = ''
+    var file_checksum = crc32(file).toString(16).toUpperCase();
+    var checksum = ''
+    var message_type = 'transmit'
+    var command = ''
+    var filetype = "plain/text"
+    var filename = ''
+    var timestamp = Math.floor(Date.now() / 1000)
+    var uuid = uuidv4();
+    let uuidlast = uuid.lastIndexOf("-");
+    console.log(uuidlast)
+    uuidlast += 1;
+    if (uuidlast > 0) {
+        uuid = uuid.substring(uuidlast);
+    }
+    // slice uuid for reducing overhead
+    uuid = uuid.slice(-4);
+
+
+    var data_with_attachment =
+        timestamp +
+        split_char +
+        chatmessage +
+        split_char +
+        filename +
+        split_char +
+        filetype +
+        split_char +
+        file;
+      var tnc_command = "msg";
+
+    sendMessage(
+        dxcallsign,
+        data_with_attachment,
+        checksum,
+        uuid,
+        tnc_command
+    )
+
+    let newChatObj = new Object();
+
+        newChatObj.command = "msg"
+        newChatObj.hmac_signed = false
+        newChatObj.percent = 0
+        newChatObj.bytesperminute
+        newChatObj.is_new = false
+        newChatObj._id = uuid
+        newChatObj.timestamp = timestamp
+        newChatObj.dxcallsign = dxcallsign
+        newChatObj.dxgrid = "null"
+        newChatObj.msg = chatmessage
+        newChatObj.checksum = file_checksum
+        newChatObj.type = message_type
+        newChatObj.status = "transmit"
+        newChatObj.attempt = 1
+        newChatObj.uuid = uuid
+        newChatObj._attachments = {
+            [filename]: {
+              content_type: filetype,
+              data: FD.btoa_FD(file),
+            },
+        }
+
+    addObjToDatabase(newChatObj)
+
+}
+
 
 
 
@@ -113,7 +199,6 @@ export async function updateAllChat() {
             chat.sorted_chat_list = sortChatList()
 
           /*
-
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
               //await otherwise history will not be in chronological order
@@ -140,6 +225,41 @@ export async function updateAllChat() {
 
 }
 
+function addObjToDatabase(newobj){
+        console.log(newobj)
+        /*
+        db.upsert(newobj._id, function (doc) {
+          if (!doc._id) {
+            console.log("upsert")
+            console.log(doc)
+            doc = newobj
+          } else {
+                        console.log("new...")
+            */
+          db.post(newobj)
+            .then(function (response) {
+              // handle response
+              console.log("new database entry");
+              console.log(response);
+            })
+            .catch(function (err) {
+              console.log(err);
+            });
+
+            chat.unsorted_chat_list.push(newobj)
+            chat.sorted_chat_list = sortChatList()
+
+
+/*
+// upsert footer ...
+
+          }
+          return doc;
+        })
+*/
+}
+
+
 
 function createChatIndex() {
   db.createIndex({
@@ -159,7 +279,7 @@ function createChatIndex() {
         "hmac_signed",
         "bytesperminute",
         "_attachments",
-        "new",
+        "is_new",
       ],
     },
   })
@@ -215,3 +335,37 @@ db.find({
           console.log(err);
         });
 }
+
+
+
+
+// CRC CHECKSUMS
+// https://stackoverflow.com/a/50579690
+// crc32 calculation
+//console.log(crc32('abc'));
+//var crc32=function(r){for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}for(var n=-1,t=0;t<r.length;t++)n=n>>>8^o[255&(n^r.charCodeAt(t))];return(-1^n)>>>0};
+//console.log(crc32('abc').toString(16).toUpperCase()); // hex
+
+var makeCRCTable = function () {
+  var c;
+  var crcTable = [];
+  for (var n = 0; n < 256; n++) {
+    c = n;
+    for (var k = 0; k < 8; k++) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    crcTable[n] = c;
+  }
+  return crcTable;
+};
+
+var crc32 = function (str) {
+  var crcTable = window.crcTable || (window.crcTable = makeCRCTable());
+  var crc = 0 ^ -1;
+
+  for (var i = 0; i < str.length; i++) {
+    crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xff];
+  }
+
+  return (crc ^ -1) >>> 0;
+};

@@ -13,13 +13,35 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
 
+import { useChatStore } from '../store/chatStore.js';
+const chat = useChatStore(pinia);
+
+
 import chat_navbar from './chat_navbar.vue'
 import chat_conversations from './chat_conversations.vue'
 import chat_messages from './chat_messages.vue'
 
-import {updateAllChat} from '../js/chatHandler'
+import {updateAllChat, newMessage} from '../js/chatHandler'
 
 updateAllChat()
+
+
+
+
+function transmitNewMessage(){
+    console.log(chat.inputText)
+    console.log(chat.selectedCallsign)
+
+    newMessage(chat.selectedCallsign, chat.inputText)
+
+    // finally do a cleanup
+    chat.inputText = ''
+
+
+}
+
+
+
 
 </script>
 
@@ -67,10 +89,7 @@ updateAllChat()
                         style="height: calc(100% - 200px)"
                       >
                       <chat_messages/>
-                        <!--<div class="tab-content" id="nav-tabContent-Chat"></div>-->
-                        <!--<div class="container position-absolute bottom-0">-->
                       </div>
-                      <!-- </div>-->
                       <div class="container-fluid mt-2 p-0">
                         <input
                           type="checkbox"
@@ -104,18 +123,22 @@ updateAllChat()
                             rows="1"
                             id="chatModuleMessage"
                             placeholder="Message - Send with [Enter]"
+                            v-model="chat.inputText"
                           ></textarea>
 
-                          <div class="input-group-text me-3">
+                          <div class="input-group-text">
                             <i
                               class="bi bi-paperclip"
                               style="font-size: 1rem"
                               id="selectFilesButton"
                             ></i>
+                          </div>
+
 
                             <button
-                              class="btn btn-sm btn-secondary d-none invisible"
+                              class="btn btn-sm btn-secondary me-2"
                               id="sendMessage"
+                              @click="transmitNewMessage()"
                               type="button"
                             >
                               <i
@@ -123,7 +146,7 @@ updateAllChat()
                                 style="font-size: 1.2rem"
                               ></i>
                             </button>
-                          </div>
+
                         </div>
                       </div>
                     </div>

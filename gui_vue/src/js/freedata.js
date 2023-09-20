@@ -1,15 +1,5 @@
 const fs = require("fs");
-const { ipcRenderer } = require("electron");
 
-/**
- * Save config and update config setting globally
- * @param {string} config - config data
- * @param {string} configPath
- */
-exports.saveConfig = function (config, configPath) {
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  ipcRenderer.send("set-config-global", config);
-};
 
 /**
  * Binary to ASCII replacement

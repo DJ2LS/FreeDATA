@@ -14,11 +14,14 @@ export const useChatStore = defineStore('chatStore', () => {
     ])
 
 
+    var selectedCallsign = ref()
+    var inputText = ref()
+
 
     var callsign_list = ref()
     var sorted_chat_list = ref()
     var unsorted_chat_list = ref([])
 
 
-  return {chat_filter, callsign_list, sorted_chat_list, unsorted_chat_list  };
+  return {selectedCallsign, inputText, chat_filter, callsign_list, sorted_chat_list, unsorted_chat_list  };
 });

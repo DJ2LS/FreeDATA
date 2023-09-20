@@ -115,7 +115,7 @@ function writeTncCommand(command) {
   }
 
   if (client.readyState == "closed") {
-    console.log("CLOSED!");
+    console.log("TNC SOCKET CONNECTION CLOSED!");
   }
 
   if (client.readyState == "opening") {
@@ -683,11 +683,8 @@ function sendFile(
 };
 
 // Send Message
-//exports.sendMessage = function (
-function sendMessage(
+export function sendMessage(
   dxcallsign,
-  mode,
-  frames,
   data,
   checksum,
   uuid,
@@ -704,6 +701,12 @@ function sendMessage(
       split_char +
       data,
   );
+
+  // TODO: REMOVE mode and frames from TNC!
+  var mode = 255
+  var frames = 5
+
+
   command =
     '{"type" : "arq", "command" : "send_raw",  "uuid" : "' +
     uuid +
@@ -717,7 +720,6 @@ function sendMessage(
     data +
     '", "attempts": "10"}]}';
   console.log(command);
-  console.log("-------------------------------------");
   writeTncCommand(command);
 };
 
@@ -950,6 +952,7 @@ export function set_rf_level(rf_level){
 // crc32 calculation
 //console.log(crc32('abc'));
 //console.log(crc32('abc').toString(16).toUpperCase()); // hex
+
 var crc32 = function (r) {
   for (var a, o = [], c = 0; c < 256; c++) {
     a = c;
