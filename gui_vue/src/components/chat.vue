@@ -43,8 +43,8 @@ function transmitNewMessage(){
 
                   <chat_navbar/>
 
-                  <div class="row h-100 ms-1 mt-1 me-1">
-                    <div class="col-4">
+                  <div class="row h-100 ms-0 mt-0 me-1">
+                    <div class="col-3 m-0 p-0 bg-light">
                       <!------Chats area ---------------------------------------------------------------------->
                       <div class="container-fluid m-0 p-0">
                                              <chat_conversations/>
@@ -59,7 +59,7 @@ function transmitNewMessage(){
                         ></div>
                       </div>
                     </div>
-                    <div class="col-8 border-start vh-100 p-0">
+                    <div class="col-9 border-start vh-100 p-0">
                       <div
                         class="position-absolute container bottom-0 end-0 mb-5"
                         style="z-index: 100; display: none"

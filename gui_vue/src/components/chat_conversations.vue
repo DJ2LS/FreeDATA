@@ -38,13 +38,13 @@ function chatSelected(callsign){
 </script>
 <template>
 
-<div class="list-group" id="chat-list-tab" role="chat-tablist">
+<div class="list-group m-0 p-0" id="chat-list-tab" role="chat-tablist">
        <template  v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
-           <a class="list-group-item list-group-item-action" :class="{ active: key==0 }" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages" @click="chatSelected(item)">
+           <a class="list-group-item list-group-item-action border-bottom border-0" :class="{ active: key==0 }" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages" @click="chatSelected(item)">
                 <div class="row">
                     <div class="col-9">{{item}}</div>
                     <div class="col-3">
-                        <button class="btn btn-sm btn-outline-danger ms-5" @click="deleteChat(item)"><i class="bi bi-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-danger ms-2" @click="deleteChat(item)"><i class="bi bi-trash"></i></button>
                     </div>
                 </div>
             </a>
