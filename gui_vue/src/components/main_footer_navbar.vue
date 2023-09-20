@@ -229,24 +229,48 @@ const settings = useSettingsStore(pinia);
         </div>
         <div class="col-lg-4">
           <div style="margin-right: 2px">
-            <div class="progress w-100" style="height: 30px; min-width: 200px">
+
+
+
+
+
+
+
+
+
+            <div class="progress w-100" style="height: 20px; min-width: 200px">
               <div
                 class="progress-bar progress-bar-striped bg-primary force-gpu"
                 id="transmission_progress"
                 role="progressbar"
-                style="width: 0%"
+                :style="{ width: state.arq_transmission_percent + '%' }"
                 aria-valuenow="0"
                 aria-valuemin="0"
                 aria-valuemax="100"
               ></div>
-              <!--<p class="justify-content-center d-flex position-absolute w-100">PROGRESS</p>-->
               <p
                 class="justify-content-center mt-2 d-flex position-absolute w-100"
-                id="transmission_timeleft"
+
               >
                 ---
               </p>
             </div>
+
+
+            <div class="progress mb-0" style="height: 10px">
+                        <div
+                          class="progress-bar progress-bar-striped bg-warning"
+                          id="transmission_timeleft"
+                          role="progressbar"
+                         :style="{ width: state.arq_transmission_percent + '%' }"
+                          aria-valuenow="1"
+                          aria-valuemin="0"
+                          aria-valuemax="100"
+                        ></div>
+                      </div>
+
+
+
           </div>
         </div>
       </nav>

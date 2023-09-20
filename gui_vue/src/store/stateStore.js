@@ -10,7 +10,9 @@ export const useStateStore = defineStore('stateStore', () => {
     var mode = ref("-")
     var rf_level = ref("10")
     var bandwidth = ref("-")
-    var dbfs_level = ref(0)
+    var dbfs_level_percent = ref(0)
+    var dbfs_level_raw = ref(0)
+
     var ptt_state = ref("False")
 
     var speed_level = ref(0)
@@ -26,6 +28,7 @@ export const useStateStore = defineStore('stateStore', () => {
     var tnc_running_state = ref("--------")
 
     var arq_total_bytes = ref(0)
+    var arq_transmission_percent = ref(0)
     
     var heard_stations = ref("")
     var dxcallsign = ref("")
@@ -111,5 +114,5 @@ export const useStateStore = defineStore('stateStore', () => {
 
 
 
-  return { dxcallsign, busy_state, arq_state, new_frequency, frequency, mode, bandwidth, dbfs_level, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, audio_recording, hamlib_status, audio_level, alc, updateTncState };
+  return { dxcallsign, busy_state, arq_state, new_frequency, frequency, mode, bandwidth, dbfs_level_raw, dbfs_level_percent, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, audio_recording, hamlib_status, audio_level, alc, updateTncState, arq_transmission_percent };
 });

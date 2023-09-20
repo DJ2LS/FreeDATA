@@ -81,7 +81,7 @@ function startStopRecordAudio(){
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="noise_level"
                           role="progressbar"
-                          style="width: {{state.s_meter_strength_percent}}%;"
+                          :style="{ width: state.s_meter_strength_percent + '%' }"
                           aria-valuenow="{{state.s_meter_strength_percent}}"
                           aria-valuemin="0"
                           aria-valuemax="100"
@@ -134,7 +134,7 @@ function startStopRecordAudio(){
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="dbfs_level"
                           role="progressbar"
-                          style="width: 0%"
+                         :style="{ width: state.dbfs_level_percent + '%' }"
                           aria-valuenow="0"
                           aria-valuemin="0"
                           aria-valuemax="100"
@@ -143,7 +143,7 @@ function startStopRecordAudio(){
                           class="justify-content-center d-flex position-absolute w-100"
                           id="dbfs_level_value"
                         >
-                          dBFS (Audio Level)
+                          {{state.dbfs_level_percent}} dBFS
                         </p>
                       </div>
                       <div class="progress mb-0" style="height: 8px">

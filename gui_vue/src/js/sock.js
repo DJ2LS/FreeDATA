@@ -192,20 +192,30 @@ client.on("data", function (socketdata) {
         var noise_level = Math.round(Math.pow(10, stateStore.s_meter_strength_raw / 20) * 100);
         stateStore.s_meter_strength_percent = noise_level
 
+
+        stateStore.dbfs_level_raw = data["audio_level"]
+//        var dbfs_level = Math.round(Math.pow(10, stateStore.dbfs_level_raw / 20) * 100);
+        var dbfs_level = stateStore.dbfs_level_raw
+        stateStore.dbfs_level_percent = dbfs_level
+
+
         stateStore.arq_total_bytes = data["total_bytes"]
         stateStore.heard_stations = data["stations"]
         stateStore.dxcallsign = data["dxcallsign"]
-        stateStore.arq_session_state = data["arq_session"]
-        stateStore.arq_state = data["arq_state"]
+
         stateStore.beacon_state = data["beacon_state"]
         stateStore.audio_recording = data["audio_recording"]
 
         stateStore.hamlib_status = data["hamlib_status"]
-        stateStore.audio_level = data["audio_level"]
         stateStore.alc = data["alc"]
         stateStore.rf_level = data["rf_level"]
 
         stateStore.is_codec2_traffic = data["is_codec2_traffic"]
+
+        stateStore.arq_session_state = data["arq_session"]
+        stateStore.arq_state = data["arq_state"]
+        stateStore.arq_transmission_percent = data["arq_transmission_percent"]
+
 
         // TODO: Remove ported objects
         let Data = {
@@ -228,7 +238,6 @@ client.on("data", function (socketdata) {
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
           arq_seconds_until_finish: data["arq_seconds_until_finish"],
           arq_compression_factor: data["arq_compression_factor"],
-          arq_transmission_percent: data["arq_transmission_percent"],
           routing_table: data["routing_table"],
           mesh_signalling_table: data["mesh_signalling_table"],
           listen: data["listen"],
