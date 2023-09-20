@@ -148,8 +148,9 @@ function changeGuiDesign(design) {
                   ><i class="bi bi-chat-text h3"></i
                 ></a>
 
+
                 <a
-                  class="list-group-item list-group-item-action"
+                  class="list-group-item list-group-item-action d-none"
                   id="list-mesh-list"
                   data-bs-toggle="list"
                   href="#list-mesh"
@@ -157,6 +158,7 @@ function changeGuiDesign(design) {
                   aria-controls="list-mesh"
                   ><i class="bi bi-rocket h3"></i
                 ></a>
+
                 <a
                   class="list-group-item list-group-item-action mt-2 border"
                   id="list-info-list"
@@ -167,8 +169,9 @@ function changeGuiDesign(design) {
                   ><i class="bi bi-info h3"></i
                 ></a>
 
+
                 <a
-                  class="list-group-item list-group-item-action"
+                  class="list-group-item list-group-item-action d-none"
                   id="list-logger-list"
                   data-bs-toggle="list"
                   href="#list-logger"
@@ -274,7 +277,7 @@ function changeGuiDesign(design) {
               </div>
 
               <div
-                class="tab-pane fade"
+                class="tab-pane fade d-none"
                 id="list-mesh"
                 role="tabpanel"
                 aria-labelledby="list-mesh-list"
@@ -325,7 +328,7 @@ function changeGuiDesign(design) {
                     </div>
                   </nav>
 
-                  <div class="tab-content" id="nav-tabContent-Mesh">
+                  <div class="tab-content  d-none" id="nav-tabContent-Mesh">
                     <div
                       class="tab-pane fade show active vw-100 vh-90 overflow-auto"
                       id="nav-route"
@@ -381,6 +384,8 @@ function changeGuiDesign(design) {
                         </div>
                       </div>
                     </div>
+
+
                     <div
                       class="tab-pane fade"
                       id="nav-actions"

@@ -128,7 +128,7 @@ export function newMessage(dxcallsign, chatmessage){
         newChatObj.msg = chatmessage
         newChatObj.checksum = file_checksum
         newChatObj.type = message_type
-        newChatObj.status = "transmit"
+        newChatObj.status = "transmitting"
         newChatObj.attempt = 1
         newChatObj.uuid = uuid
         newChatObj._attachments = {

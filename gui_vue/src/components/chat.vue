@@ -26,22 +26,12 @@ import {updateAllChat, newMessage} from '../js/chatHandler'
 updateAllChat()
 
 
-
-
 function transmitNewMessage(){
-    console.log(chat.inputText)
-    console.log(chat.selectedCallsign)
-
     newMessage(chat.selectedCallsign, chat.inputText)
 
     // finally do a cleanup
     chat.inputText = ''
-
-
 }
-
-
-
 
 </script>
 

@@ -25,7 +25,8 @@ function deleteChat(callsign){
 import chat_conversations_entry from './chat_conversations_entry.vue'
 
 function chatSelected(callsign){
-    chat.selectedCallsign = callsign
+
+    chat.selectedCallsign = callsign.toUpperCase()
 
   // scroll message container to bottom
   var messageBody = document.getElementById("message-container");
