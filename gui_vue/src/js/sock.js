@@ -3,6 +3,7 @@ const path = require("path");
 const FD = require("./src/js/freedata.js");
 //import FD from './freedata.js';
 import { newMessageReceived } from './chatHandler.js';
+import {displayToast} from './popupHandler.js'
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from 'pinia';
@@ -241,6 +242,8 @@ client.on("data", function (socketdata) {
       }
 
       // ----------- catch tnc messages START -----------
+      //init message variable
+      var message = ''
       if (data["freedata"] == "tnc-message") {
         switch (data["fec"]) {
           case "is_writing":
@@ -262,44 +265,64 @@ client.on("data", function (socketdata) {
         switch (data["cq"]) {
           case "transmitting":
             // CQ TRANSMITTING
+            displayToast("success", "bi-arrow-left-right", "transmitting CQ", 5000);
+
+
             break;
 
           case "received":
             // CQ RECEIVED
+            displayToast("success", "bi-arrow-left-right", "received CQ from ", 5000);
+
             break;
         }
 
         switch (data["qrv"]) {
           case "transmitting":
             // QRV TRANSMITTING
+            displayToast("success", "bi-arrow-left-right", "transmitting QRV ", 5000);
+
             break;
 
           case "received":
             // QRV RECEIVED
+            message = "received QRV from " + data['dxcallsign'] + " | " + data['dxgrid']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
+
             break;
         }
 
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
+            displayToast("success", "bi-arrow-left-right", "transmitting BEACON ", 5000);
+
             break;
 
           case "received":
             // BEACON RECEIVED
+            message = "received BEACON from " + data['dxcallsign'] + " | " + data['dxgrid']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
 
         switch (data["ping"]) {
           case "transmitting":
             // PING TRANSMITTING
+            message = "transmitting PING to " + data['dxcallsign']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
 
           case "received":
             // PING RECEIVED
+            message = "received PING from " + data['dxcallsign'] + " | " + data['dxgrid']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
 
           case "acknowledge":
             // PING ACKNOWLEDGE
+            message = "received PING ACK from " + data['dxcallsign'] + " | " + data['dxgrid']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
 
