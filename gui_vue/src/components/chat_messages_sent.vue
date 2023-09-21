@@ -2,6 +2,12 @@
   <div class="row justify-content-end mb-2">
     <div :class="messageWidthClass">
       <div class="card bg-primary text-white">
+
+        <div class="card-header" v-if="getFileContent['filesize'] !== 0">
+          <p class="card-text">{{ getFileContent["filename"] }} | {{ getFileContent["filesize"] }} Bytes | {{ getFileContent["filetype"] }}</p>
+        </div>
+
+
         <div class="card-body">
           <p class="card-text">{{ message.msg }}</p>
         </div>
@@ -38,6 +44,13 @@ export default {
     message: Object,
   },
   computed: {
+    getFileContent(){
+        var filename = Object.keys(this.message._attachments)[0]
+        var filesize = this.message._attachments[filename]["length"]
+        var filetype = filename.split(".")[1]
+
+        return {filename: filename, filesize: filesize, filetype: filetype}
+    },
     messageWidthClass() {
       // Calculate a Bootstrap grid class based on message length
       // Adjust the logic as needed to fit your requirements

@@ -62,19 +62,18 @@ createChatIndex();
 // create callsign set for storing unique callsigns
 chat.callsign_list = new Set()
 
-
 // function for creating a new message
-export function newMessage(dxcallsign, chatmessage){
+export function newMessage(dxcallsign, chatmessage, chatFile, chatFileName, chatFileSize, chatFileType){
     var mode = ''
     var frames = ''
     var data = ''
-    var file = ''
-    var file_checksum = crc32(file).toString(16).toUpperCase();
+    var file = chatFile;
+    var file_checksum = ''//crc32(file).toString(16).toUpperCase();
     var checksum = ''
     var message_type = 'transmit'
     var command = ''
-    var filetype = "plain/text"
-    var filename = ''
+    var filetype = chatFileType
+    var filename = chatFileName
     var timestamp = Math.floor(Date.now() / 1000)
     var uuid = uuidv4();
     let uuidlast = uuid.lastIndexOf("-");
@@ -84,7 +83,7 @@ export function newMessage(dxcallsign, chatmessage){
         uuid = uuid.substring(uuidlast);
     }
     // slice uuid for reducing overhead
-    uuid = uuid.slice(-4);
+    uuid = uuid.slice(-8);
 
 
     var data_with_attachment =
@@ -97,6 +96,7 @@ export function newMessage(dxcallsign, chatmessage){
         filetype +
         split_char +
         file;
+
       var tnc_command = "msg";
 
     sendMessage(

@@ -29,41 +29,44 @@ import {updateAllChat, newMessage} from '../js/chatHandler'
 
 
 function transmitNewMessage(){
-    newMessage(chat.selectedCallsign, chat.inputText)
+
+    newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
 
     // finally do a cleanup
     chat.inputText = ''
+    resetFile()
+}
 
-    chat.inputFileName = ''
-    chat.inputFileSize = ''
-    chat.inputFileType = ''
+function resetFile(event){
+    chat.inputFileName = '-'
+    chat.inputFileSize = '-'
+    chat.inputFileType = '-'
 
-    const reader = new FileReader();
-    chat.inputFile = reader.readAsArrayBuffer(event.target.files[0]);
-
+    chat.calculatedSpeedPerMinutePER0 = []
+    chat.calculatedSpeedPerMinutePER25 = []
+    chat.calculatedSpeedPerMinutePER75 = []
 }
 
 
 function readFile(event) {
-
-    console.log(event.target.files);
-    chat.inputFileName = event.target.files[0].name
-    chat.inputFileSize = event.target.files[0].size
-    chat.inputFileType = event.target.files[0].type
-
     const reader = new FileReader();
-    chat.inputFile = reader.readAsArrayBuffer(event.target.files[0]);
 
-    calculateTimeNeeded()
+    reader.onload = () => {
+        console.log(reader.result);
+        chat.inputFileName = event.target.files[0].name
+        chat.inputFileSize = event.target.files[0].size
+        chat.inputFileType = event.target.files[0].type
+
+        chat.inputFile = reader.result
+        calculateTimeNeeded()
+
+//        String.fromCharCode.apply(null, Array.from(chatFile))
 
 
-  reader.onload = function() {
-    console.log(reader.result);
-  };
+      };
 
-  reader.onerror = function() {
-    console.log(reader.error);
-  };
+    reader.readAsArrayBuffer(event.target.files[0]);
+
 }
 
 
@@ -240,7 +243,7 @@ const speedChartData = computed(() => ({
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="staticBackdropLabel">File Attachment</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" @click="resetFile"></button>
       </div>
       <div class="modal-body">
 
@@ -248,7 +251,7 @@ const speedChartData = computed(() => ({
      <div class="alert alert-warning d-flex align-items-center" role="alert">
  <i class="bi bi-exclamation-triangle-fill ms-2 me-2"></i>
   <div>
-    Please keep in mind, transmission speed is limited on HF channels when selecting a file.
+    Transmission speed over HF channels is very limited!
   </div>
 </div>
 
@@ -272,8 +275,8 @@ const speedChartData = computed(() => ({
 
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Reset</button>
-        <button type="button" class="btn btn-primary">Append</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click="resetFile">Reset</button>
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Append</button>
       </div>
     </div>
   </div>
