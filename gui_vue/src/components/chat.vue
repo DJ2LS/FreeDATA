@@ -20,18 +20,14 @@ const chat = useChatStore(pinia);
 import chat_navbar from './chat_navbar.vue'
 import chat_conversations from './chat_conversations.vue'
 import chat_messages from './chat_messages.vue'
+import chat_new_message from './chat_new_message.vue'
 
 import {updateAllChat, newMessage} from '../js/chatHandler'
 
 updateAllChat()
 
 
-function transmitNewMessage(){
-    newMessage(chat.selectedCallsign, chat.inputText)
 
-    // finally do a cleanup
-    chat.inputText = ''
-}
 
 </script>
 
@@ -80,68 +76,18 @@ function transmitNewMessage(){
                       >
                       <chat_messages/>
                       </div>
-                      <div class="container-fluid mt-2 p-0">
-                        <input
-                          type="checkbox"
-                          id="expand_textarea"
-                          class="btn-check"
-                          autocomplete="off"
-                        />
-                        <label
-                          class="btn d-flex justify-content-center"
-                          id="expand_textarea_label"
-                          for="expand_textarea"
-                          ><i
-                            id="expand_textarea_button"
-                            class="bi bi-chevron-compact-up"
-                          ></i
-                        ></label>
-
-                        <div class="input-group bottom-0 ms-2">
-                          <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
-                          <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
-                          <div class="input-group-text">
-                            <i
-                              id="emojipickerbutton"
-                              class="bi bi-emoji-smile p-0"
-                              style="font-size: 1rem"
-                            ></i>
-                          </div>
-
-                          <textarea
-                            class="form-control"
-                            rows="1"
-                            id="chatModuleMessage"
-                            placeholder="Message - Send with [Enter]"
-                            v-model="chat.inputText"
-                          ></textarea>
-
-                          <div class="input-group-text">
-                            <i
-                              class="bi bi-paperclip"
-                              style="font-size: 1rem"
-                              id="selectFilesButton"
-                            ></i>
-                          </div>
 
 
-                            <button
-                              class="btn btn-sm btn-secondary me-2"
-                              id="sendMessage"
-                              @click="transmitNewMessage()"
-                              type="button"
-                            >
-                              <i
-                                class="bi bi-send"
-                                style="font-size: 1.2rem"
-                              ></i>
-                            </button>
+                      <!------ new message area ---------------------------------------------------------------------->
 
-                        </div>
-                      </div>
+                      <chat_new_message/>
+
+
                     </div>
                   </div>
                 </div>
+
+
                 <!-- user modal -->
 
                 <div

@@ -32,6 +32,7 @@
     "socket.io": "^4.7.2",
     "uuid": "^9.0.0",
     "vue": "^3.3.4",
+    "vue-chartjs": "^5.2.0",
     "winston": "^3.10.0"
   },
   "devDependencies": {
