@@ -1,5 +1,13 @@
 <template>
   <div class="row justify-content-end mb-2">
+    <!-- control area -->
+    <div class="col-2 p-0 m-0">
+      <button class="btn btn-outline-secondary me-1" @click="repeatMessage"><i class="bi bi-arrow-repeat"></i></button>
+      <button class="btn btn-outline-secondary" @click="deleteMessage"><i class="bi bi-trash"></i></button>
+    </div>
+
+
+    <!-- message area -->
     <div :class="messageWidthClass">
       <div class="card bg-primary text-white">
 
@@ -7,29 +15,25 @@
           <p class="card-text">{{ getFileContent["filename"] }} | {{ getFileContent["filesize"] }} Bytes | {{ getFileContent["filetype"] }}</p>
         </div>
 
-
         <div class="card-body">
           <p class="card-text">{{ message.msg }}</p>
         </div>
 
         <div class="card-footer p-0 bg-primary border-top-0">
-                  <p class="text p-0 m-0 me-1 text-end">{{ getDateTime }}</p> <!-- Display formatted timestamp in card-footer -->
+          <p class="text p-0 m-0 me-1 text-end">{{ getDateTime }}</p> <!-- Display formatted timestamp in card-footer -->
         </div>
 
-
-
-
         <div class="card-footer p-0 border-top-0" v-if="message.percent < 100">
-          <div class="progress  bg-secondary  "  :style="{height: 10 + 'px'}">
+          <div class="progress bg-secondary" :style="{ height: '10px' }">
             <div
               class="progress-bar progress-bar-striped overflow-visible"
               role="progressbar"
-              :style="{ width: message.percent + '%', height: 10 + 'px'}"
+              :style="{ width: message.percent + '%', height: '10px' }"
               :aria-valuenow="message.percent"
               aria-valuemin="0"
               aria-valuemax="100"
             >
-                {{ message.percent }} % with {{ message.bytesperminute }} bpm
+              {{ message.percent }} % with {{ message.bytesperminute }} bpm
             </div>
           </div>
         </div>
@@ -38,16 +42,30 @@
   </div>
 </template>
 
+
 <script>
+
+import {repeatMessageTransmission, deleteMessageFromDB} from '../js/chatHandler'
+
+
+
 export default {
   props: {
     message: Object,
   },
   computed: {
     getFileContent(){
+
         var filename = Object.keys(this.message._attachments)[0]
         var filesize = this.message._attachments[filename]["length"]
         var filetype = filename.split(".")[1]
+
+        // ensure filesize is 0 for hiding message header if no data is available
+        if (typeof filename === 'undefined' || filename === '' || filename === '-'){
+            filesize = 0
+
+        }
+
 
         return {filename: filename, filesize: filesize, filetype: filetype}
     },
@@ -62,6 +80,17 @@ export default {
         return 'col-9';
       }
     },
+    repeatMessage(){
+        repeatMessageTransmission(this.message._id)
+
+    },
+    deleteMessage(){
+        deleteMessageFromDB(this.message._id)
+
+
+
+    },
+
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
         navigator.language,

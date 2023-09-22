@@ -67,23 +67,32 @@ export function newMessage(dxcallsign, chatmessage, chatFile, chatFileName, chat
     var mode = ''
     var frames = ''
     var data = ''
-    var file = chatFile;
+    if (typeof chatFile !== "undefined"){
+        var file = chatFile;
+        var filetype = chatFileType
+        var filename = chatFileName
+    } else {
+        var file = '';
+        var filetype = 'text'
+        var filename = ''
+    }
     var file_checksum = ''//crc32(file).toString(16).toUpperCase();
     var checksum = ''
     var message_type = 'transmit'
     var command = ''
-    var filetype = chatFileType
-    var filename = chatFileName
+
     var timestamp = Math.floor(Date.now() / 1000)
     var uuid = uuidv4();
+    // TODO: Not sure what this uuid part is needed for ...
     let uuidlast = uuid.lastIndexOf("-");
-    console.log(uuidlast)
     uuidlast += 1;
     if (uuidlast > 0) {
         uuid = uuid.substring(uuidlast);
     }
     // slice uuid for reducing overhead
     uuid = uuid.slice(-8);
+
+
 
 
     var data_with_attachment =
@@ -157,6 +166,27 @@ function sortChatList(){
     return reorderedData
 }
 
+//repeat a message
+export function repeatMessageTransmission(id){
+ console.log(id)
+
+}
+
+// delete a message from databse and gui
+export function deleteMessageFromDB(id){
+ console.log("deleting: " + id)
+   db.get(id).then(function (doc) {
+        db.remove(doc)
+   })
+
+   // overwrote unsorted chat list  by filtering if not ID
+   chat.unsorted_chat_list = chat.unsorted_chat_list.filter(entry => entry.uuid !== id);
+
+   // and finally generate our sorted chat list, which is the key store for chat gui rendering
+   // the removed entry should be removed now from gui
+   chat.sorted_chat_list = sortChatList()
+
+}
 
 // function for fetching all messages from chat / updating chat
 export async function updateAllChat() {

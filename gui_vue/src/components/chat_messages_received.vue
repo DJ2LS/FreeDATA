@@ -10,15 +10,28 @@
         <div class="card-body">
           <p class="card-text">{{ message.msg }}</p>
         </div>
+
         <div class="card-footer p-0 bg-light border-top-0">
           <p class="text-muted p-0 m-0 me-1 text-end">{{ getDateTime }}</p> <!-- Display formatted timestamp in card-footer -->
         </div>
       </div>
     </div>
+
+    <!-- Delete button outside of the card -->
+    <div class="col-2">
+      <button class="btn btn-outline-secondary" @click="deleteMessage"><i class="bi bi-trash"></i></button>
+    </div>
   </div>
 </template>
 
+
+
 <script>
+
+import {deleteMessageFromDB} from '../js/chatHandler'
+
+
+
 export default {
   props: {
     message: Object,
@@ -47,6 +60,10 @@ export default {
       } else {
         return 'col-9';
       }
+    },
+    deleteMessage(){
+            deleteMessageFromDB(this.message._id)
+
     },
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
