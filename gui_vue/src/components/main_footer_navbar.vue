@@ -108,7 +108,7 @@ const settings = useSettingsStore(pinia);
                           v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-secondary' : state.channel_busy === 'False'}"
                           title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
                         >
-                          busy
+                        <i class="bi bi-hourglass"></i>
                         </button>
 
             </div>

@@ -90,7 +90,7 @@ function startStopRecordAudio(){
                           class="justify-content-center d-flex position-absolute w-100"
                           id="noise_level_value"
                         >
-                          S-Meter: {{state.s_meter_strength_raw}} dB
+                          S-Meter(dB): {{state.s_meter_strength_raw}}
                         </p>
                       </div>
                       <div class="progress mb-0" style="height: 8px">
@@ -143,7 +143,7 @@ function startStopRecordAudio(){
                           class="justify-content-center d-flex position-absolute w-100"
                           id="dbfs_level_value"
                         >
-                          {{state.dbfs_level_percent}} dBFS
+                          {{state.dbfs_level}} dBFS
                         </p>
                       </div>
                       <div class="progress mb-0" style="height: 8px">

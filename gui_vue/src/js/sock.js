@@ -188,16 +188,17 @@ client.on("data", function (socketdata) {
         stateStore.scatter = data["scatter"]
         // s meter strength
         stateStore.s_meter_strength_raw = data["strength"]
+        if (stateStore.s_meter_strength_raw == "") {
+          stateStore.s_meter_strength_raw = "Unsupported"
+          stateStore.s_meter_strength_percent = 0
+        } else {
         // https://www.moellerstudios.org/converting-amplitude-representations/
-        var noise_level = Math.round(Math.pow(10, stateStore.s_meter_strength_raw / 20) * 100);
-        stateStore.s_meter_strength_percent = noise_level
+          stateStore.s_meter_strength_percent = Math.round(Math.pow(10, stateStore.s_meter_strength_raw / 20) * 100);
+        }
 
-
-        stateStore.dbfs_level_raw = data["audio_level"]
-//        var dbfs_level = Math.round(Math.pow(10, stateStore.dbfs_level_raw / 20) * 100);
-        var dbfs_level = stateStore.dbfs_level_raw
-        stateStore.dbfs_level_percent = dbfs_level
-
+        stateStore.dbfs_level_percent = Math.round(Math.pow(10, stateStore.dbfs_level / 20) * 100);
+        stateStore.dbfs_level = Math.round(stateStore.dbfs_level)
+       
 
         stateStore.arq_total_bytes = data["total_bytes"]
         stateStore.heard_stations = data["stations"]
