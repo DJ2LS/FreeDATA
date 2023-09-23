@@ -22,3 +22,6 @@ package-lock.json
 *.raw
 coverage.sh
 coverage.xml
+
+#ignore node_modules
+/gui_vue/node_modules/
