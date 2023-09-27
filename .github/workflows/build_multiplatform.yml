@@ -111,7 +111,7 @@ jobs:
             libcodec2_os_name: libcodec2_ubuntu_latest_armv7.so
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.head_ref }}
       - uses: uraimo/run-on-arch-action@v2
@@ -218,7 +218,7 @@ jobs:
             electron_parameters: "-p always --x64 --ia32"
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: DJ2LS/FreeDATA
 
