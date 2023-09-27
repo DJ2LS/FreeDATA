@@ -21,7 +21,7 @@ import chat_navbar from './chat_navbar.vue'
 import chat_conversations from './chat_conversations.vue'
 import chat_messages from './chat_messages.vue'
 
-import {updateAllChat, newMessage} from '../js/chatHandler'
+import {updateAllChat, newMessage, newBroadcast} from '../js/chatHandler'
 
 
 
@@ -30,8 +30,14 @@ import {updateAllChat, newMessage} from '../js/chatHandler'
 
 function transmitNewMessage(){
 
-    newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
 
+    if (chat.selectedCallsign.startsWith("BC-")) {
+
+        newBroadcast(chat.selectedCallsign, chat.inputText)
+
+    } else {
+        newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
+    }
     // finally do a cleanup
     chat.inputText = ''
     resetFile()

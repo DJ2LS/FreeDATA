@@ -62,6 +62,86 @@ createChatIndex();
 // create callsign set for storing unique callsigns
 chat.callsign_list = new Set()
 
+// function for creating a new broadcast
+export function newBroadcast(broadcastChannel, chatmessage){
+
+    var mode = ''
+    var frames = ''
+    var data = ''
+    if (typeof chatFile !== "undefined"){
+        var file = chatFile;
+        var filetype = chatFileType
+        var filename = chatFileName
+    } else {
+        var file = '';
+        var filetype = 'text'
+        var filename = ''
+    }
+    var file_checksum = ''//crc32(file).toString(16).toUpperCase();
+    var checksum = ''
+    var message_type = 'broadcast_transmit'
+    var command = ''
+
+    var timestamp = Math.floor(Date.now() / 1000)
+    var uuid = uuidv4();
+    // TODO: Not sure what this uuid part is needed for ...
+    let uuidlast = uuid.lastIndexOf("-");
+    uuidlast += 1;
+    if (uuidlast > 0) {
+        uuid = uuid.substring(uuidlast);
+    }
+    // slice uuid for reducing overhead
+    uuid = uuid.slice(-4);
+
+    var data_with_attachment =
+        timestamp +
+        split_char +
+        chatmessage +
+        split_char +
+        filename +
+        split_char +
+        filetype +
+        split_char +
+        file;
+
+      var tnc_command = "broadcast";
+
+    sendMessage(
+        dxcallsign,
+        data_with_attachment,
+        checksum,
+        uuid,
+        tnc_command
+    )
+
+    let newChatObj = new Object();
+
+        newChatObj.command = "msg"
+        newChatObj.hmac_signed = false
+        newChatObj.percent = 0
+        newChatObj.bytesperminute
+        newChatObj.is_new = false
+        newChatObj._id = uuid
+        newChatObj.timestamp = timestamp
+        newChatObj.dxcallsign = dxcallsign
+        newChatObj.dxgrid = "null"
+        newChatObj.msg = chatmessage
+        newChatObj.checksum = file_checksum
+        newChatObj.type = message_type
+        newChatObj.status = "transmitting"
+        newChatObj.attempt = 1
+        newChatObj.uuid = uuid
+        newChatObj._attachments = {
+            [filename]: {
+              content_type: filetype,
+              data: FD.btoa_FD(file),
+            },
+        }
+
+    addObjToDatabase(newChatObj)
+
+}
+
 // function for creating a new message
 export function newMessage(dxcallsign, chatmessage, chatFile, chatFileName, chatFileSize, chatFileType){
     var mode = ''
@@ -362,67 +442,73 @@ db.find({
 
 // function for handling a received message
 export function newMessageReceived(message, protocol){
-/*
+    /*
 
-PROTOCOL
-{
-    "freedata": "tnc-message",
-    "arq": "transmission",
-    "status": "received",
-    "uuid": "58d64f7d-be8c-4578-879b-3b6cb3b60ddf",
-    "percent": 100,
-    "bytesperminute": 536,
-    "compression": 0.5714285714285714,
-    "timestamp": 1695203863,
-    "finished": 0,
-    "mycallsign": "DJ2LS-0",
-    "dxcallsign": "DJ2LS-0",
-    "dxgrid": "------",
-    "data": "bTA7MTttc2cwOzE7MDsxOzA3ZTIwOzE7MTY5NTIwMzgzMzA7MTt0ZXN0MDsxOzA7MTtwbGFpbi90ZXh0MDsxOw==",
-    "irs": "True",
-    "hmac_signed": "False"
-}
+    PROTOCOL
+    {
+        "freedata": "tnc-message",
+        "arq": "transmission",
+        "status": "received",
+        "uuid": "58d64f7d-be8c-4578-879b-3b6cb3b60ddf",
+        "percent": 100,
+        "bytesperminute": 536,
+        "compression": 0.5714285714285714,
+        "timestamp": 1695203863,
+        "finished": 0,
+        "mycallsign": "DJ2LS-0",
+        "dxcallsign": "DJ2LS-0",
+        "dxgrid": "------",
+        "data": "bTA7MTttc2cwOzE7MDsxOzA3ZTIwOzE7MTY5NTIwMzgzMzA7MTt0ZXN0MDsxOzA7MTtwbGFpbi90ZXh0MDsxOw==",
+        "irs": "True",
+        "hmac_signed": "False"
+    }
 
-MESSAGE; decoded from "data"
-[
-0 - protocol type message   -     "m",
-1 - type             -     "msg",
-2 - checksum     "",
-3 - uuid -     "07e2",
-4 - timestamp -    "1695203833",
-5 - message      -    "test",
-6 - file name    -   "",
-7 - mime         -    "plain/text",
-8 - file         -    ""
-]
+    MESSAGE; decoded from "data"
+    [
+    0 - protocol type message   -     "m",
+    1 - type             -     "msg",
+    2 - checksum     "",
+    3 - uuid -     "07e2",
+    4 - timestamp -    "1695203833",
+    5 - message      -    "test",
+    6 - file name    -   "",
+    7 - mime         -    "plain/text",
+    8 - file         -    ""
+    ]
 
 
-*/
-console.log(protocol)
+    */
+    console.log(protocol)
 
     let newChatObj = new Object();
 
-        newChatObj.command = "msg"
-        newChatObj.hmac_signed = protocol["hmac_signed"]
-        newChatObj.percent = 100
-        newChatObj.bytesperminute = protocol["bytesperminute"]
-        newChatObj.is_new = true
-        newChatObj._id = message[3]
-        newChatObj.timestamp = message[4]
-        newChatObj.dxcallsign = protocol["dxcallsign"]
-        newChatObj.dxgrid = protocol["dxgrid"]
-        newChatObj.msg = message[5]
-        newChatObj.checksum = message[2]
-        newChatObj.type = message[1]
-        newChatObj.status = protocol["status"]
-        newChatObj.attempt = 1
-        newChatObj.uuid = message[3]
-        newChatObj._attachments = {
-            [message[6]]: {
-              content_type: message[7],
-              data: FD.btoa_FD(message[8]),
-            },
-        }
+    newChatObj.command = "msg"
+    newChatObj.hmac_signed = protocol["hmac_signed"]
+    newChatObj.percent = 100
+    newChatObj.bytesperminute = protocol["bytesperminute"]
+    newChatObj.is_new = true
+    newChatObj._id = message[3]
+    newChatObj.timestamp = message[4]
+    newChatObj.dxcallsign = protocol["dxcallsign"]
+    newChatObj.dxgrid = protocol["dxgrid"]
+    newChatObj.msg = message[5]
+    newChatObj.checksum = message[2]
+    newChatObj.type = message[1]
+    newChatObj.status = protocol["status"]
+    newChatObj.attempt = 1
+    newChatObj.uuid = message[3]
+    newChatObj._attachments = {
+        [message[6]]: {
+          content_type: message[7],
+          data: FD.btoa_FD(message[8]),
+        },
+    }
+
+    // some tweaks for broadcasts
+    if (item.fec == "broadcast") {
+        newChatObj.broadcast_sender = protocol["dxcallsign"]
+        newChatObj.type = 'broadcast_received'
+    }
 
     addObjToDatabase(newChatObj)
 
