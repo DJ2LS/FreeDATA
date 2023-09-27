@@ -253,6 +253,14 @@ if __name__ == "__main__":
         help="Enable mesh protocol",
     )
 
+    PARSER.add_argument(
+        "--hmac",
+        dest="enable_hmac",
+        action="store_true",
+        default=True,
+        help="Enable and set hmac message salt",
+    )
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -307,6 +315,8 @@ if __name__ == "__main__":
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
             MeshParam.enable_protocol = ARGS.enable_mesh
+            TNC.enable_hmac = ARGS.enable_hmac
+
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)

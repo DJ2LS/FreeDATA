@@ -53,37 +53,33 @@ class MeshRouter():
 
         self.log = structlog.get_logger("RF")
 
-        self.transmission_time_list = [30, 60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60,120,120,120,120,120,120, 180, 180, 180, 180, 180,180,360,360,360,360,360,360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          60, 60, 60, 60, 60, 60, 120, 120, 120, 120, 120, 120, 180, 180, 180, 180, 180, 180, 360, 360,
-                          360, 360, 360, 360,
-                          ]
+        self.transmission_time_list = [
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360,
+            60, 90, 120, 180, 180, 180, 180, 180, 180, 360, 360, 360, 360, 360, 360
+        ]
         # for testing only: self.transmission_time_list = [30, 30]
         self.signalling_max_attempts = len(self.transmission_time_list)
 
@@ -453,62 +449,68 @@ class MeshRouter():
 
 
     def add_mesh_ping_to_signalling_table(self, destination, origin, frametype, status):
-        timestamp = time.time()
-        #router = ""
-        #frametype = "PING"
-        payload = ""
-        attempt = 0
+        try:
+            timestamp = time.time()
+            #router = ""
+            #frametype = "PING"
+            payload = ""
+            attempt = 0
 
-        #           [timestamp, destination, origin, frametype, payload, attempt, status]
-        # --------------0------------1---------2---------3--------4---------5--------6-----#
-        new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
-        for _, item in enumerate(MESH_SIGNALLING_TABLE):
-            # update entry if exists
-            if destination in item[1] and origin in item[2] and frametype in item[3]:
-                # reset attempts if entry exists and it failed or is acknowledged
-                attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
-                update_entry = [item[0], destination, origin, frametype, "",attempt, status]
-                #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+            #           [timestamp, destination, origin, frametype, payload, attempt, status]
+            # --------------0------------1---------2---------3--------4---------5--------6-----#
+            new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
+            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+                # update entry if exists
+                if destination in item[1] and origin in item[2] and frametype in item[3]:
+                    # reset attempts if entry exists and it failed or is acknowledged
+                    attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
+                    update_entry = [item[0], destination, origin, frametype, "",attempt, status]
+                    #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
 
-                self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
+                    self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
 
-                MESH_SIGNALLING_TABLE[_] = update_entry
-                return
+                    MESH_SIGNALLING_TABLE[_] = update_entry
+                    return
 
-        # add new routing entry if not exists
-        if new_entry not in MESH_SIGNALLING_TABLE:
-            #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
-            self.log.info("[MESH] [SIGNALLING TABLE] [INSERT]:", insert=new_entry)
+            # add new routing entry if not exists
+            if new_entry not in MESH_SIGNALLING_TABLE:
+                #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+                self.log.info("[MESH] [SIGNALLING TABLE] [INSERT]:", insert=new_entry)
 
-            MESH_SIGNALLING_TABLE.append(new_entry)
+                MESH_SIGNALLING_TABLE.append(new_entry)
 
+        except Exception as e:
+            self.log.warning(f"[MESH] [SIGNALLING TABLE] [INSERT] [PING] [ERROR] ", e=e)
     def add_mesh_ping_ack_to_signalling_table(self, destination, origin, status):
+        try:
+            timestamp = time.time()
+            #router = ""
+            frametype = "PING-ACK"
+            payload = ""
+            attempt = 0
+            new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
 
-        timestamp = time.time()
-        #router = ""
-        frametype = "PING-ACK"
-        payload = ""
-        attempt = 0
-        new_entry = [timestamp, destination, origin, frametype, payload, attempt, status]
+            for _, item in enumerate(MESH_SIGNALLING_TABLE):
+                # update entry if exists
+                if destination in item[1] and origin in item[2] and item[3] in ["PING", "PING-ACK"]:
+                    # reset attempts if entry exists and it failed or is acknowledged
+                    attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
+                    update_entry = [item[0], destination, origin, "PING-ACK", "", attempt, status]
+                    #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
+                    self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
 
-        for _, item in enumerate(MESH_SIGNALLING_TABLE):
-            # update entry if exists
-            if destination in item[1] and origin in item[2] and item[3] in ["PING", "PING-ACK"]:
-                # reset attempts if entry exists and it failed or is acknowledged
-                attempt = 0 if item[6] in ["failed", "acknowledged"] else item[5]
-                update_entry = [item[0], destination, origin, "PING-ACK", "", attempt, status]
-                #print(f"UPDATE {MESH_SIGNALLING_TABLE[_]} >>> {update_entry}")
-                self.log.info(f"[MESH] [SIGNALLING TABLE] [UPDATE]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=update_entry)
+                    MESH_SIGNALLING_TABLE[_] = update_entry
+                    return
 
-                MESH_SIGNALLING_TABLE[_] = update_entry
-                return
+            # add new routing entry if not exists
+            if new_entry not in MESH_SIGNALLING_TABLE:
+                #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
+                self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT] >>> ", update=new_entry)
 
-        # add new routing entry if not exists
-        if new_entry not in MESH_SIGNALLING_TABLE:
-            #print(f"INSERT {new_entry} >>> SIGNALLING TABLE")
-            self.log.info(f"[MESH] [SIGNALLING TABLE] [INSERT]: {MESH_SIGNALLING_TABLE[_]} >>> ", update=new_entry)
+                MESH_SIGNALLING_TABLE.append(new_entry)
+        except Exception as e:
+            self.log.warning(f"[MESH] [SIGNALLING TABLE] [INSERT] [PING ACK] [ERROR] ", e=e)
 
-            MESH_SIGNALLING_TABLE.append(new_entry)
 
     def enqueue_frame_for_tx(
             self,

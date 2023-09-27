@@ -130,7 +130,7 @@ class TCIParam:
 
 @dataclass 
 class TNC:
-    version = "0.10.2-alpha.1"
+    version = "0.10.3-alpha.1-hmac-exp4"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
@@ -144,6 +144,7 @@ class TNC:
     respond_to_call: bool = True  # respond to cq, ping, connection request, file request if not in session
     heard_stations = []
     listen: bool = True
+    enable_hmac: bool = True
 
     # ------------
 

@@ -13,6 +13,13 @@ import structlog
 import numpy as np
 import threading
 import mesh
+import hashlib
+import hmac
+import os
+import sys
+from pathlib import Path
+
+
 
 log = structlog.get_logger("helpers")
 
@@ -489,3 +496,172 @@ def return_key_from_object(default, obj, key):
 
 def bool_to_string(state):
     return "True" if state else "False"
+
+
+
+
+def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
+    filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
+    if sys.platform in ["linux"]:
+
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+
+    elif sys.platform in ["darwin"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+    elif sys.platform in ["win32", "win64"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+    else:
+        try:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+        except Exception as e:
+            log.error(
+                "[TNC] [HMAC] File lookup error", file=filepath,
+            )
+
+    # check if file exists else return false
+    if not check_if_file_exists(filepath):
+        return False
+
+    log.info("[SCK] [HMAC] File lookup", file=filepath)
+
+    try:
+        with open(filepath, "r") as file:
+            line = file.readlines()
+            hmac_salt = bytes(line[-1], "utf-8").split(b'\n')
+            hmac_salt = hmac_salt[0]
+            return hmac_salt if delete_last_line_from_hmac_list(filepath, -1) else False
+    except Exception as e:
+        log.warning("[SCK] [HMAC] File lookup failed", file=filepath, e=e)
+        return False
+
+def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_frame, token_iters):
+
+    filename = f"freedata_hmac_STATION_{mycallsign.decode('utf-8')}_REMOTE_{dxcallsign.decode('utf-8')}.txt"
+    if sys.platform in ["linux"]:
+
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+
+    elif sys.platform in ["darwin"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+
+    elif sys.platform in ["win32", "win64"]:
+        if hasattr(sys, "_MEIPASS"):
+            filepath = getattr(sys, "_MEIPASS") + '/hmac/' + filename
+        else:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+    else:
+        try:
+            subfolder = Path('hmac')
+            filepath = subfolder / filename
+        except Exception as e:
+            log.error(
+                "[TNC] [HMAC] File lookup error", file=filepath,
+            )
+
+    # check if file exists else return false
+    if not check_if_file_exists(filepath):
+        log.warning(
+            "[TNC] [HMAC] Token file not found", file=filepath,
+        )
+        return False
+
+    try:
+        with open(filepath, "r") as file:
+            token_list = file.readlines()
+
+            token_iters = min(token_iters, len(token_list))
+            for _ in range(1, token_iters + 1):
+                key = token_list[len(token_list) - _][:-1]
+                key = bytes(key, "utf-8")
+                search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
+                # TODO: Remove this debugging information if not needed anymore
+                # print("-----------------------------------------")
+                # print(_)
+                # print(f" key-------------{key}")
+                # print(f" key-------------{token_list[len(token_list) - _][:-1]}")
+                # print(f" key-------------{key.hex()}")
+                # print(f" search token----{search_token.hex()}")
+                # print(f" search digest---{search_digest.hex()}")
+                if search_token.hex() == search_digest.hex():
+                    token_position = len(token_list) - _
+                    delete_last_line_from_hmac_list(filepath, token_position)
+                    log.info(
+                        "[TNC] [HMAC] Signature found", expected=search_token.hex(),
+                    )
+                    return True
+
+
+        log.warning(
+            "[TNC] [HMAC] Signature not found", expected=search_token.hex(), filepath=filepath,
+        )
+        return False
+
+    except Exception as e:
+        log.warning(
+            "[TNC] [HMAC] Lookup failed", e=e, expected=search_token,
+        )
+        return False
+
+
+def delete_last_line_from_hmac_list(filepath, position):
+    # check if file exists else return false
+    if not check_if_file_exists(filepath):
+        return False
+
+    try:
+        linearray = []
+        with open(filepath, "r") as file:
+            linearray = file.readlines()[:position]
+            #print(linearray)
+
+        with open(filepath, "w") as file:
+            #print(linearray)
+            for line in linearray:
+                file.write(line)
+
+        return True
+
+    except Exception:
+        return False
+
+def check_if_file_exists(path):
+    try:
+        # check if file size is present and filesize > 0
+        if os.path.isfile(path):
+            filesize = os.path.getsize(path)
+            if filesize > 0:
+                return True
+            else:
+                return False
+        else:
+            return False
+    except Exception as e:
+        log.warning(
+            "[TNC] [FILE] Lookup failed", e=e, path=path,
+        )
+        return False

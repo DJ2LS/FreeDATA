@@ -780,9 +780,16 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 raise TypeError
 
             binarydata = base64.b64decode(base64data)
-
+            # check if hmac hash is provided
+            try:
+                log.info("[SCK] [HMAC] Looking for salt/token", local=mycallsign, remote=dxcallsign)
+                hmac_salt = helpers.get_hmac_salt(dxcallsign, mycallsign)
+                log.info("[SCK] [HMAC] Salt info", local=mycallsign, remote=dxcallsign, salt=hmac_salt)
+            except Exception:
+                log.warning("[SCK] [HMAC] No salt/token found")
+                hmac_salt = ''
             DATA_QUEUE_TRANSMIT.put(
-                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts]
+                ["ARQ_RAW", binarydata, arq_uuid, mycallsign, dxcallsign, attempts, hmac_salt]
             )
 
         except Exception as err:
