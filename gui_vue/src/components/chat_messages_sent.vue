@@ -1,9 +1,9 @@
 <template>
   <div class="row justify-content-end mb-2">
     <!-- control area -->
-    <div class="col-2 p-0 m-0">
-      <button class="btn btn-outline-secondary me-1" @click="repeatMessage"><i class="bi bi-arrow-repeat"></i></button>
-      <button class="btn btn-outline-secondary" @click="deleteMessage"><i class="bi bi-trash"></i></button>
+    <div class="col-auto p-0 m-0">
+      <button class="btn btn-outline-secondary border-0 me-1" @click="repeatMessage"><i class="bi bi-arrow-repeat"></i></button>
+      <button class="btn btn-outline-secondary border-0" @click="deleteMessage"><i class="bi bi-trash"></i></button>
     </div>
 
 

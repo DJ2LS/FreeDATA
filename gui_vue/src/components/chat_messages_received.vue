@@ -18,8 +18,8 @@
     </div>
 
     <!-- Delete button outside of the card -->
-    <div class="col-2">
-      <button class="btn btn-outline-secondary" @click="deleteMessage"><i class="bi bi-trash"></i></button>
+    <div class="col-auto">
+      <button class="btn btn-outline-secondary border-0" @click="deleteMessage"><i class="bi bi-trash"></i></button>
     </div>
   </div>
 </template>
