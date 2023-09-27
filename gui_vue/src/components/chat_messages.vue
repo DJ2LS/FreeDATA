@@ -18,6 +18,8 @@ const chat = useChatStore(pinia);
 
 import SentMessage from './chat_messages_sent.vue'; // Import the chat_messages_sent component
 import ReceivedMessage from './chat_messages_received.vue'; // Import the chat_messages_sent component
+import ReceivedBroadcastMessage from './chat_messages_broadcast_received.vue'; // Import the chat_messages_sent component for broadcasts
+import SentBroadcastMessage from './chat_messages_broadcast_sent.vue'; // Import the chat_messages_sent component for broadcasts
 
 //helper function for saving the last messages day for disaplying the day based divider
 var prevChatMessageDay = ''
@@ -48,13 +50,30 @@ return datetime
                 <div class="separator my-2">{{prevChatMessageDay = getDateTime(item.timestamp)}}</div>
             </div>
 
+              <div v-if="item.type === 'beacon'">
+              {{item}}
+                {{lastBeaconReceived = getDateTime(item.timestamp)}}
+            </div>
+
+
+
+
               <div v-if="item.type === 'transmit'">
                 <sent-message :message="item" />
               </div>
               <div v-else-if="item.type === 'received'">
                 <received-message :message="item" />
-
               </div>
+              <div v-if="item.type === 'broadcast_transmit'">
+                <sent-broadcast-message :message="item" />
+              </div>
+              <div v-else-if="item.type === 'broadcast_received'">
+                <received-broadcast-message :message="item" />
+              </div>
+
+
+
+
 
             </template>
 

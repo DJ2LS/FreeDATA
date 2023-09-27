@@ -431,8 +431,6 @@ console.log(protocol)
 
 
 
-
-
 // CRC CHECKSUMS
 // https://stackoverflow.com/a/50579690
 // crc32 calculation
