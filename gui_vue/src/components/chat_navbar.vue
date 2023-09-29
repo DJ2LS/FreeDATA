@@ -16,6 +16,89 @@ const state = useStateStore(pinia);
 import { useChatStore } from '../store/chatStore.js';
 const chat = useChatStore(pinia);
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement
+} from 'chart.js'
+import { Line, Scatter, Bar } from 'vue-chartjs'
+import { ref, computed } from 'vue';
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement
+)
+
+  var beaconHistogramOptions = {
+    type: 'bar',
+    bezierCurve:false, //remove curves from your plot
+    scaleShowLabels : false, //remove labels
+    tooltipEvents:[], //remove trigger from tooltips so they will'nt be show
+    pointDot : false, //remove the points markers
+    scaleShowGridLines: true, //set to false to remove the grids background
+    plugins:{
+       legend: {
+        display: false
+       }
+    },
+    scales: {
+        x: {
+          position: "bottom",
+          display: true,
+          min: -10,
+          max: 15,
+          ticks: {
+            display: false,
+          },
+        },
+        y: {
+          display: true,
+          min: -5,
+          max: 10,
+          ticks: {
+            display: false,
+          },
+        },
+      },
+  };
+
+const beaconHistogramData = computed(() => ({
+ labels: ['18:10', '19:00', '23:00', '01:13', '04:25', '08:15', '09:12'],
+  datasets: [
+    { data: [-3, 10, 8, 5, 3, 0, -5], tension: 0.1, borderColor: 'rgb(0, 255, 0)' }
+  ]
+}
+));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function newChat(obj){
 
@@ -61,6 +144,10 @@ function newChat(obj){
                         <div class="col-7 ms-2 p-0">
 
                         <!-- right side of chat nav bar-->
+
+
+                                          <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" style="height:100%" />
+
 
 
                         </div>
