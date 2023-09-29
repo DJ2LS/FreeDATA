@@ -216,6 +216,7 @@ client.on("data", function (socketdata) {
         stateStore.arq_session_state = data["arq_session"]
         stateStore.arq_state = data["arq_state"]
         stateStore.arq_transmission_percent = data["arq_transmission_percent"]
+        stateStore.arq_speed_list = data["speed_list"]
 
 
         // TODO: Remove ported objects
@@ -242,7 +243,6 @@ client.on("data", function (socketdata) {
           routing_table: data["routing_table"],
           mesh_signalling_table: data["mesh_signalling_table"],
           listen: data["listen"],
-          speed_list: data["speed_list"],
           //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
         };
 

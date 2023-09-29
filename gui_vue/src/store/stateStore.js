@@ -45,7 +45,7 @@ export const useStateStore = defineStore('stateStore', () => {
 
     var is_codec2_traffic = ref("")
 
-
+    var arq_speed_list = ref()
 
 
     function updateTncState(state){
@@ -114,5 +114,5 @@ export const useStateStore = defineStore('stateStore', () => {
 
 
 
-  return { dxcallsign, busy_state, arq_state, new_frequency, frequency, mode, bandwidth, dbfs_level_raw, dbfs_level_percent, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, audio_recording, hamlib_status, audio_level, alc, updateTncState, arq_transmission_percent };
+  return { dxcallsign, busy_state, arq_state, new_frequency, frequency, mode, bandwidth, dbfs_level_raw, dbfs_level_percent, speed_level, fft, channel_busy, channel_busy_slot, scatter, ptt_state, s_meter_strength_percent, s_meter_strength_raw, arq_total_bytes, audio_recording, hamlib_status, audio_level, alc, updateTncState, arq_transmission_percent, arq_speed_list };
 });

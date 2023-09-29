@@ -13,9 +13,24 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from '../store/stateStore.js';
 const state = useStateStore(pinia);
 
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+import { Line, Scatter } from 'vue-chartjs'
+import { ref, computed } from 'vue';
+
+
+
 function selectStatsControl(obj){
-console.log(event.target.id)
-switch (event.target.id) {
+switch (obj.delegateTarget.id) {
   case 'list-waterfall-list':
     settings.spectrum = "waterfall"
     break;
@@ -31,18 +46,103 @@ switch (event.target.id) {
 }
     saveSettingsToFile()
 
-
 }
+
+
+
+  var transmissionSpeedChartOptions = {
+    type: "line",
+  };
+
+
+const scatterChartOptions = {
+      plugins: {
+        legend: {
+          display: false,
+        },
+        tooltip: {
+          enabled: false,
+        },
+        annotation: {
+          annotations: {
+            line1: {
+              type: "line",
+              yMin: 0,
+              yMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+            line2: {
+              type: "line",
+              xMin: 0,
+              xMax: 0,
+              borderColor: "rgb(255, 99, 132)",
+              borderWidth: 2,
+            },
+          },
+        },
+      },
+      animations: false,
+      scales: {
+        x: {
+          type: "linear",
+          position: "bottom",
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+        y: {
+          display: true,
+          min: -80,
+          max: 80,
+          ticks: {
+            display: false,
+          },
+        },
+      },
+    };
+
+
+
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
+
+const transmissionSpeedChartData = computed(() => ({
+ labels: ['-10', '-5', '0', '5', '10'],
+  datasets: [
+    { data: state.arq_speed_list, label: 'BPM 0%' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
+  ]
+}
+));
+
+
+
+
+const scatterChartData = computed(() => ({
+ labels: ['-10', '-5', '0', '5', '10'],
+  datasets: [
+    { type: 'scatter', data: state.scatter, label: 'PER 0%' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
+  ]
+  }
+));
 
 
 
 
 
 </script>
-
-
-
-
 
 <template>
 <div class="card mb-1">
@@ -60,13 +160,13 @@ switch (event.target.id) {
                       >
 
                        <div class="list-group list-group-horizontal" id="list-tab" role="tablist">
-      <a class="py-1 list-group-item list-group-item-action" id="list-waterfall-list" data-bs-toggle="list" href="#list-waterfall" role="tab" aria-controls="list-home" v-bind:class="{ 'active' : settings.spectrum === 'waterfall'}" @click="selectStatsControl()"><strong><i class="bi bi-water" ></i></strong></a>
-      <a class="py-1 list-group-item list-group-item-action" id="list-scatter-list" data-bs-toggle="list" href="#list-scatter" role="tab" aria-controls="list-profile" v-bind:class="{ 'active' : settings.spectrum === 'scatter'}" @click="selectStatsControl()"><strong><i class="bi bi-border-outer" ></i></strong></a>
-      <a class="py-1 list-group-item list-group-item-action" id="list-chart-list" data-bs-toggle="list" href="#list-chart" role="tab" aria-controls="list-messages" v-bind:class="{ 'active' : settings.spectrum === 'chart'}" @click="selectStatsControl()"><strong><i class="bi bi-graph-up-arrow" ></i></strong></a>
-    </div>
+                          <a class="py-1 list-group-item list-group-item-action" id="list-waterfall-list" data-bs-toggle="list" href="#list-waterfall" role="tab" aria-controls="list-waterfall" v-bind:class="{ 'active' : settings.spectrum === 'waterfall'}" @click="selectStatsControl($event)"><strong><i class="bi bi-water" ></i></strong></a>
+                          <a class="py-1 list-group-item list-group-item-action" id="list-scatter-list" data-bs-toggle="list" href="#list-scatter" role="tab" aria-controls="list-scatter" v-bind:class="{ 'active' : settings.spectrum === 'scatter'}" @click="selectStatsControl($event)"><strong><i class="bi bi-border-outer" ></i></strong></a>
+                          <a class="py-1 list-group-item list-group-item-action" id="list-chart-list" data-bs-toggle="list" href="#list-chart" role="tab" aria-controls="list-chart" v-bind:class="{ 'active' : settings.spectrum === 'chart'}" @click="selectStatsControl($event)"><strong><i class="bi bi-graph-up-arrow" ></i></strong></a>
+                       </div>
 
-    </div>
-<div
+                        </div>
+                    <div
                         class="btn-group"
                         role="group"
                         aria-label="Busy indicators"
@@ -124,16 +224,21 @@ switch (event.target.id) {
                   style="position: relative; z-index: 2"
                   class="force-gpu"
                 ></canvas></div>
-                  <div class="tab-pane fade" v-bind:class="{ 'show active' : settings.spectrum === 'scatter'}" id="list-scatter" role="tabpanel" aria-labelledby="list-scatter-list"> <canvas
-                  id="scatter"
-                  style="position: relative; z-index: 1"
-                  class="force-gpu"
-                ></canvas></div>
-                  <div class="tab-pane fade" v-bind:class="{ 'show active' : settings.spectrum === 'chart'}" id="list-chart" role="tabpanel" aria-labelledby="list-chart-list">   <canvas
-                  id="chart"
-                  style="position: relative; z-index: 1"
-                  class="force-gpu"
-                ></canvas></div>
+                  <div class="tab-pane fade" v-bind:class="{ 'show active' : settings.spectrum === 'scatter'}" id="list-scatter" role="tabpanel" aria-labelledby="list-scatter-list">
+
+                  <Line :data="scatterChartData" :options="scatterChartOptions" />
+
+
+
+
+
+
+                </div>
+                  <div class="tab-pane fade" v-bind:class="{ 'show active' : settings.spectrum === 'chart'}" id="list-chart" role="tabpanel" aria-labelledby="list-chart-list">
+
+                                    <Line :data="transmissionSpeedChartData" :options="transmissionSpeedChartOptions" />
+
+                  </div>
                 </div>
 
 
