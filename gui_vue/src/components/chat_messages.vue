@@ -37,6 +37,13 @@ function getDateTime(timestampRaw){
 return datetime
 }
 
+function addBeaconDataToStore(item){
+
+//chat.beaconDataArray.push(item.snr)
+//chat.beaconLabelArray.push(item.timestamp)
+return
+
+}
 
 </script>
 
@@ -50,18 +57,30 @@ return datetime
                 <div class="separator my-2">{{prevChatMessageDay = getDateTime(item.timestamp)}}</div>
             </div>
 
-              <div v-if="item.type === 'beacon'">
+              <div v-if="item.type === 'beacon' && item.status === 'received'">
               {{item}}
-                {{lastBeaconReceived = getDateTime(item.timestamp)}}
+              {{item.snr}}
+                {{addBeaconDataToStore(item)}}
             </div>
 
+            <div v-if="item.type === 'ping'">
+              {{item.snr}}
 
+                {{chat.beaconDataArray}}
+            </div>
+
+            <div v-if="item.type === 'ping-ack'">
+              {{item.snr}}
+
+                {{chat.beaconDataArray}}
+            </div>
 
 
               <div v-if="item.type === 'transmit'">
                 <sent-message :message="item" />
               </div>
               <div v-else-if="item.type === 'received'">
+
                 <received-message :message="item" />
               </div>
               <div v-if="item.type === 'broadcast_transmit'">
@@ -70,10 +89,6 @@ return datetime
               <div v-else-if="item.type === 'broadcast_received'">
                 <received-broadcast-message :message="item" />
               </div>
-
-
-
-
 
             </template>
 

@@ -48,6 +48,7 @@ ChartJS.register(
     tooltipEvents:[], //remove trigger from tooltips so they will'nt be show
     pointDot : false, //remove the points markers
     scaleShowGridLines: true, //set to false to remove the grids background
+    maintainAspectRatio:true,
     plugins:{
        legend: {
         display: false
@@ -56,7 +57,7 @@ ChartJS.register(
     scales: {
         x: {
           position: "bottom",
-          display: true,
+          display: false,
           min: -10,
           max: 15,
           ticks: {
@@ -64,7 +65,7 @@ ChartJS.register(
           },
         },
         y: {
-          display: true,
+          display: false,
           min: -5,
           max: 10,
           ticks: {
@@ -74,10 +75,18 @@ ChartJS.register(
       },
   };
 
+//let dataArray = new Array(25).fill(0)
+//dataArray = dataArray.add([-3, 10, 8, 5, 3, 0, -5])
+//let dataArray1 = dataArray.shift(2)
+//console.log(dataArray1)
+//[-3, 10, 8, 5, 3, 0, -5]
+
+//console.log(dataArray)
+
 const beaconHistogramData = computed(() => ({
- labels: ['18:10', '19:00', '23:00', '01:13', '04:25', '08:15', '09:12'],
+ labels: chat.beaconLabelArray,
   datasets: [
-    { data: [-3, 10, 8, 5, 3, 0, -5], tension: 0.1, borderColor: 'rgb(0, 255, 0)' }
+    { data: chat.beaconDataArray, tension: 0.1, borderColor: 'rgb(0, 255, 0)' }
   ]
 }
 ));
@@ -144,9 +153,7 @@ function newChat(obj){
                         <div class="col-7 ms-2 p-0">
 
                         <!-- right side of chat nav bar-->
-
-
-                                          <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" style="height:100%" />
+                      <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" width="300" style="height:100%" />
 
 
 

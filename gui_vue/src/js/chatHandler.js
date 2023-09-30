@@ -301,6 +301,10 @@ export async function updateAllChat() {
 
             chat.sorted_chat_list = sortChatList()
 
+
+            console.log(chat.sorted_chat_list["EI7IG-0"])
+
+
           /*
           if (typeof result !== "undefined") {
             for (const item of result.docs) {
@@ -440,6 +444,36 @@ db.find({
 }
 
 
+// function for handling a received beacon
+export function newBeaconReceived(obj){
+/*
+{
+    "freedata": "tnc-message",
+    "beacon": "received",
+    "uuid": "12741312-3dbb-4a53-b0cc-100f6c930ab8",
+    "timestamp": 1696076869,
+    "dxcallsign": "DJ2LS-0",
+    "dxgrid": "JN48CS",
+    "snr": "-2.8",
+    "mycallsign": "DJ2LS-0"
+}
+*/
+    let newChatObj = new Object();
+
+    newChatObj.command = "beacon"
+    newChatObj._id = obj['uuid']
+    newChatObj.uuid = obj['uuid']
+    newChatObj.timestamp = obj['timestamp']
+    newChatObj.dxcallsign = obj["dxcallsign"]
+    newChatObj.dxgrid = obj["dxgrid"]
+    newChatObj.type = 'beacon'
+    newChatObj.status = obj["beacon"]
+    newChatObj.snr = obj["snr"]
+
+
+    addObjToDatabase(newChatObj)
+}
+
 // function for handling a received message
 export function newMessageReceived(message, protocol){
     /*
@@ -505,7 +539,7 @@ export function newMessageReceived(message, protocol){
     }
 
     // some tweaks for broadcasts
-    if (item.fec == "broadcast") {
+    if (protocol.fec == "broadcast") {
         newChatObj.broadcast_sender = protocol["dxcallsign"]
         newChatObj.type = 'broadcast_received'
     }

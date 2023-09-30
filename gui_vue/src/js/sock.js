@@ -2,7 +2,7 @@ var net = require("net");
 const path = require("path");
 const FD = require("./src/js/freedata.js");
 //import FD from './freedata.js';
-import { newMessageReceived } from './chatHandler.js';
+import { newMessageReceived, newBeaconReceived } from './chatHandler.js';
 import {displayToast} from './popupHandler.js'
 
 // ----------------- init pinia stores -------------
@@ -216,6 +216,11 @@ client.on("data", function (socketdata) {
         stateStore.arq_session_state = data["arq_session"]
         stateStore.arq_state = data["arq_state"]
         stateStore.arq_transmission_percent = data["arq_transmission_percent"]
+        stateStore.arq_seconds_until_finish = data["arq_seconds_until_finish"]
+        stateStore.arq_seconds_until_timeout = data["arq_seconds_until_timeout"]
+        stateStore.arq_seconds_until_timeout_percent = (stateStore.arq_seconds_until_timeout / 180) * 100
+
+
         stateStore.arq_speed_list = data["speed_list"]
 
 
@@ -310,6 +315,9 @@ client.on("data", function (socketdata) {
 
           case "received":
             // BEACON RECEIVED
+           newBeaconReceived(data)
+
+
             message = "received BEACON from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
@@ -414,8 +422,6 @@ client.on("data", function (socketdata) {
               if (splitted_data[0] == "m") {
                 console.log(splitted_data)
                 newMessageReceived(splitted_data, data)
-
-
               }
 
               break;
