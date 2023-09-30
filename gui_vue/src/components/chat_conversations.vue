@@ -44,7 +44,12 @@ function chatSelected(callsign){
                 <div class="row">
                     <div class="col-9">{{item}}</div>
                     <div class="col-3">
-                        <button class="btn btn-sm btn-outline-danger ms-2" @click="deleteChat(item)"><i class="bi bi-trash"></i></button>
+
+                    <button class="btn btn-sm btn-outline-danger ms-2" @click="deleteChat(item)"><i class="bi bi-trash"></i></button>
+
+
+
+
                     </div>
                 </div>
             </a>

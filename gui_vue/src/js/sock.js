@@ -243,7 +243,6 @@ client.on("data", function (socketdata) {
           arq_n_arq_frames_per_data_frame:
           data["arq_n_arq_frames_per_data_frame"],
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
-          arq_seconds_until_finish: data["arq_seconds_until_finish"],
           arq_compression_factor: data["arq_compression_factor"],
           routing_table: data["routing_table"],
           mesh_signalling_table: data["mesh_signalling_table"],

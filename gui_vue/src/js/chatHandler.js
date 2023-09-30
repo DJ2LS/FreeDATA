@@ -226,12 +226,32 @@ export function newMessage(dxcallsign, chatmessage, chatFile, chatFileName, chat
 
 
 
-
+// function for creating a list, accessible by callsign
 function sortChatList(){
 
     // Create an empty object to store the reordered data dynamically
     var reorderedData = {};
     var jsonObjects = chat.unsorted_chat_list
+    // Iterate through the list of JSON objects and reorder them dynamically
+    jsonObjects.forEach(obj => {
+        var dxcallsign = obj.dxcallsign;
+        if (dxcallsign) {
+            if (!reorderedData[dxcallsign]) {
+                reorderedData[dxcallsign] = [];
+            }
+            reorderedData[dxcallsign].push(obj);
+        }
+    });
+    //console.log(reorderedData["DJ2LS-0"])
+    return reorderedData
+}
+
+// function for creating a list, accessible by callsign
+function sortBeaconList(){
+
+    // Create an empty object to store the reordered data dynamically
+    var reorderedData = {};
+    var jsonObjects = chat.unsorted_beacon_list
     // Iterate through the list of JSON objects and reorder them dynamically
     jsonObjects.forEach(obj => {
         var dxcallsign = obj.dxcallsign;
@@ -295,12 +315,18 @@ export async function updateAllChat() {
         })
         .then(async function (result) {
           for (var item of result.docs) {
-            chat.callsign_list.add(item.dxcallsign)
-            chat.unsorted_chat_list.push(item)
+            if(item.type === 'beacon'){
+                chat.callsign_list.add(item.dxcallsign)
+                chat.unsorted_beacon_list.push(item)
+            } else {
+                chat.callsign_list.add(item.dxcallsign)
+                chat.unsorted_chat_list.push(item)
+            }
           }
 
             chat.sorted_chat_list = sortChatList()
-
+            console.log(chat.unsorted_beacon_list)
+            console.log(chat.sorted_beacon_list)
 
             console.log(chat.sorted_chat_list["EI7IG-0"])
 

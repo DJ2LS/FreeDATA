@@ -249,10 +249,10 @@ const settings = useSettingsStore(pinia);
                 aria-valuemax="100"
               ></div>
               <p
-                class="justify-content-center mt-2 d-flex position-absolute w-100"
+                class="justify-content-center m-0 d-flex position-absolute w-100"
 
               >
-                ---
+                {{state.arq_seconds_until_finish}}s left
               </p>
             </div>
 
@@ -262,11 +262,19 @@ const settings = useSettingsStore(pinia);
                           class="progress-bar progress-bar-striped bg-warning"
                           id="transmission_timeleft"
                           role="progressbar"
-                         :style="{ width: state.arq_transmission_percent + '%' }"
-                          aria-valuenow="1"
+                         :style="{ width: state.arq_seconds_until_timeout_percent + '%' }"
+                          aria-valuenow="0"
                           aria-valuemin="0"
                           aria-valuemax="100"
-                        ></div>
+                        >
+
+                        <p
+                class="justify-content-center m-0 d-flex position-absolute w-100"
+
+              >
+                timeout in: {{state.arq_seconds_until_timeout}}s
+              </p>
+                        </div>
                       </div>
 
 
