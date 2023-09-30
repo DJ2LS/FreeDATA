@@ -1173,6 +1173,7 @@ def send_tnc_state():
         "arq_bytes_per_minute": str(ARQ.bytes_per_minute),
         "arq_bytes_per_minute_burst": str(ARQ.bytes_per_minute_burst),
         "arq_seconds_until_finish": str(ARQ.arq_seconds_until_finish),
+        "arq_seconds_until_timeout": str(ARQ.arq_seconds_until_timeout),
         "arq_compression_factor": str(ARQ.arq_compression_factor),
         "arq_transmission_percent": str(ARQ.arq_transmission_percent),
         "speed_list": ARQ.speed_list,

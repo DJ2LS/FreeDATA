@@ -26,6 +26,7 @@ class ARQ:
     arq_bits_per_second_burst: int = 0
     arq_bits_per_second: int = 0
     arq_seconds_until_finish: int = 0
+    arq_seconds_until_timeout: int = 0
     rx_buffer_size: int = 16
     rx_frame_buffer: bytes = b""
     rx_burst_buffer = []
@@ -35,7 +36,7 @@ class ARQ:
     # ARQ PROTOCOL VERSION
     # v.5 - signalling frame uses datac0
     # v.6 - signalling frame uses datac13
-    arq_protocol_version: int = 6
+    arq_protocol_version: int = 7
     total_bytes: int = 0
     speed_list = []
     # set save to folder state for allowing downloading files to local file system

@@ -3415,6 +3415,7 @@ class DATA:
             ):
 
                 timeleft = int((self.data_channel_last_received + self.transmission_timeout) - time.time())
+                ARQ.arq_seconds_until_timeout = timeleft
                 if timeleft % 10 == 0:
                     self.log.debug("Time left until channel timeout", seconds=timeleft)
 
