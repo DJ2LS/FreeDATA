@@ -37,14 +37,6 @@ function getDateTime(timestampRaw){
 return datetime
 }
 
-function addBeaconDataToStore(item){
-
-//chat.beaconDataArray.push(item.snr)
-//chat.beaconLabelArray.push(item.timestamp)
-return
-
-}
-
 </script>
 
 <template>
@@ -59,8 +51,6 @@ return
 
               <div v-if="item.type === 'beacon' && item.status === 'received'">
               {{item}}
-              {{item.snr}}
-                {{addBeaconDataToStore(item)}}
             </div>
 
             <div v-if="item.type === 'ping'">

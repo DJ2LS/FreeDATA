@@ -54,6 +54,7 @@ ChartJS.register(
         display: false
        }
     },
+
     scales: {
         x: {
           position: "bottom",
@@ -62,7 +63,7 @@ ChartJS.register(
           max: 15,
           ticks: {
             display: false,
-          },
+          }
         },
         y: {
           display: false,
@@ -70,7 +71,7 @@ ChartJS.register(
           max: 10,
           ticks: {
             display: false,
-          },
+          }
         },
       },
   };
@@ -81,7 +82,20 @@ ChartJS.register(
 //console.log(dataArray1)
 //[-3, 10, 8, 5, 3, 0, -5]
 
-//console.log(dataArray)
+
+try{
+
+    chat.beaconLabelArray = Object.values(chat.sorted_beacon_list['DJ2LS-0'].timestamp)
+    chat.beaconDataArray = Object.values(chat.sorted_beacon_list['DJ2LS-0'].snr)
+} catch(e){
+
+    console.log(e)
+
+    var beaconLabels = []
+    var beaconData = []
+}
+
+
 
 const beaconHistogramData = computed(() => ({
  labels: chat.beaconLabelArray,
@@ -109,11 +123,13 @@ const beaconHistogramData = computed(() => ({
 
 
 
+
+
 function newChat(obj){
 
         let callsign = document.getElementById("chatModuleNewDxCall").value
         callsign = callsign.toUpperCase()
-            chat.callsign_list.add(callsign)
+        chat.callsign_list.add(callsign)
 
 
 }
@@ -153,6 +169,7 @@ function newChat(obj){
                         <div class="col-7 ms-2 p-0">
 
                         <!-- right side of chat nav bar-->
+                        {{beaconData}}
                       <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" width="300" style="height:100%" />
 
 

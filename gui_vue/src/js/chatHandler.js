@@ -246,25 +246,6 @@ function sortChatList(){
     return reorderedData
 }
 
-// function for creating a list, accessible by callsign
-function sortBeaconList(){
-
-    // Create an empty object to store the reordered data dynamically
-    var reorderedData = {};
-    var jsonObjects = chat.unsorted_beacon_list
-    // Iterate through the list of JSON objects and reorder them dynamically
-    jsonObjects.forEach(obj => {
-        var dxcallsign = obj.dxcallsign;
-        if (dxcallsign) {
-            if (!reorderedData[dxcallsign]) {
-                reorderedData[dxcallsign] = [];
-            }
-            reorderedData[dxcallsign].push(obj);
-        }
-    });
-    //console.log(reorderedData["DJ2LS-0"])
-    return reorderedData
-}
 
 //repeat a message
 export function repeatMessageTransmission(id){
@@ -316,8 +297,39 @@ export async function updateAllChat() {
         .then(async function (result) {
           for (var item of result.docs) {
             if(item.type === 'beacon'){
-                chat.callsign_list.add(item.dxcallsign)
-                chat.unsorted_beacon_list.push(item)
+
+                console.log(item)
+
+                // TODO: sort beacon list .... maybe a part for a separate function
+                const jsonData = [item]
+                const dxcallsign = obj.dxcallsign
+                // Process each JSON item step by step
+                jsonData.forEach(jsonitem => {
+                    const { snr, timestamp } = item;
+
+                    // Check if dxcallsign already exists as a property in the result object
+                    if (!chat.sorted_beacon_list[dxcallsign]) {
+                        // If not, initialize it with an empty array for snr values
+                        chat.sorted_beacon_list[dxcallsign] = {
+                            dxcallsign,
+                            snr: [],
+                            timestamp: [],
+                        };
+                    }
+
+                    // Push the snr value to the corresponding dxcallsign's snr array
+                    chat.sorted_beacon_list[dxcallsign].snr.push(snr);
+                    chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
+
+                });
+
+
+
+
+
+
+
+
             } else {
                 chat.callsign_list.add(item.dxcallsign)
                 chat.unsorted_chat_list.push(item)
@@ -328,7 +340,6 @@ export async function updateAllChat() {
             console.log(chat.unsorted_beacon_list)
             console.log(chat.sorted_beacon_list)
 
-            console.log(chat.sorted_chat_list["EI7IG-0"])
 
 
           /*
@@ -498,6 +509,34 @@ export function newBeaconReceived(obj){
 
 
     addObjToDatabase(newChatObj)
+
+
+    console.log(obj)
+
+const jsonData = [obj]
+const dxcallsign = obj.dxcallsign
+// Process each JSON item step by step
+jsonData.forEach(item => {
+  const { snr, timestamp } = obj;
+
+  // Check if dxcallsign already exists as a property in the result object
+  if (!chat.sorted_beacon_list[dxcallsign]) {
+    // If not, initialize it with an empty array for snr values
+    chat.sorted_beacon_list[dxcallsign] = {
+      dxcallsign,
+      snr: [],
+      timestamp: [],
+    };
+  }
+
+  // Push the snr value to the corresponding dxcallsign's snr array
+  chat.sorted_beacon_list[dxcallsign].snr.push(snr);
+  chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
+
+});
+
+
+
 }
 
 // function for handling a received message

@@ -2789,7 +2789,7 @@ class DATA:
                             not ARQ.arq_session
                             and not self.arq_file_transfer
                             and not Beacon.beacon_pause
-                            and not ModemParam.channel_busy
+                            #and not ModemParam.channel_busy
                             and TNC.tnc_state not in ["BUSY"]
                             and not ARQ.arq_state
                     ):
