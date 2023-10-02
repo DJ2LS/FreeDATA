@@ -269,6 +269,59 @@ export function deleteMessageFromDB(id){
 
 }
 
+// function to update transmission status
+export function updateTransmissionStatus(obj){
+    console.log(obj.percent)
+    console.log(obj.uuid)
+    console.log(obj.status)
+
+    // update database entries
+    databaseUpsert(obj.uuid, "percent", obj.percent)
+    databaseUpsert(obj.uuid, "bytesperminute", obj.bytesperminute)
+
+    // update screen rendering / messages
+    updateUnsortedChatListEntry(obj.uuid, "percent", obj.percent)
+    updateUnsortedChatListEntry(obj.uuid, "bytesperminute", obj.bytesperminute)
+
+}
+
+export function updateUnsortedChatListEntry(uuid, object, value){
+
+    for (const entry of chat.unsorted_chat_list) {
+        if (entry.uuid === uuid) {
+            entry[object] = value
+            console.log("Entry updated:", entry[object])
+            chat.sorted_chat_list = sortChatList()
+            return entry
+        }
+    }
+
+    console.log("Entry not updated:", object)
+    return null; // Return null if not found
+
+}
+
+
+export function databaseUpsert(id, object, value){
+
+    db.upsert(id, function (doc) {
+      if (!doc[object]) {
+        doc[object] = value;
+      }
+      doc[object] = value;
+      return doc;
+    }).then(function (res) {
+      // success, res is {rev: '1-xxx', updated: true, id: 'myDocId'}
+      console.log(res)
+    }).catch(function (err) {
+      // error
+      console.log(err)
+    });
+
+
+}
+
+
 // function for fetching all messages from chat / updating chat
 export async function updateAllChat() {
 
@@ -390,9 +443,12 @@ function addObjToDatabase(newobj){
               console.log(err);
             });
 
-            chat.unsorted_chat_list.push(newobj)
-            chat.sorted_chat_list = sortChatList()
 
+            console.log(newobj)
+            if(newobj.command === 'msg'){
+                chat.unsorted_chat_list.push(newobj)
+                chat.sorted_chat_list = sortChatList()
+            }
 
 /*
 // upsert footer ...
@@ -509,7 +565,6 @@ export function newBeaconReceived(obj){
 
 
     addObjToDatabase(newChatObj)
-
 
     console.log(obj)
 

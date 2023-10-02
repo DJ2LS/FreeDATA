@@ -2,7 +2,7 @@ var net = require("net");
 const path = require("path");
 const FD = require("./src/js/freedata.js");
 //import FD from './freedata.js';
-import { newMessageReceived, newBeaconReceived } from './chatHandler.js';
+import { newMessageReceived, newBeaconReceived, updateTransmissionStatus } from './chatHandler.js';
 import {displayToast} from './popupHandler.js'
 
 // ----------------- init pinia stores -------------
@@ -258,6 +258,10 @@ client.on("data", function (socketdata) {
       //init message variable
       var message = ''
       if (data["freedata"] == "tnc-message") {
+
+      console.log(data);
+
+
         switch (data["fec"]) {
           case "is_writing":
             // RX'd FECiswriting
@@ -427,6 +431,7 @@ client.on("data", function (socketdata) {
 
             case "transmitting":
               // ARQ transmitting
+              updateTransmissionStatus(data)
               break;
 
             case "transmitted":
