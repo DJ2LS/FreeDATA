@@ -290,14 +290,11 @@ client.on("data", function (socketdata) {
           case "transmitting":
             // CQ TRANSMITTING
             displayToast("success", "bi-arrow-left-right", "transmitting CQ", 5000);
-
-
             break;
 
           case "received":
             // CQ RECEIVED
             displayToast("success", "bi-arrow-left-right", "received CQ from ", 5000);
-
             break;
         }
 
@@ -305,14 +302,12 @@ client.on("data", function (socketdata) {
           case "transmitting":
             // QRV TRANSMITTING
             displayToast("success", "bi-arrow-left-right", "transmitting QRV ", 5000);
-
             break;
 
           case "received":
             // QRV RECEIVED
             message = "received QRV from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
-
             break;
         }
 
@@ -320,13 +315,11 @@ client.on("data", function (socketdata) {
           case "transmitting":
             // BEACON TRANSMITTING
             displayToast("success", "bi-arrow-left-right", "transmitting BEACON ", 5000);
-
             break;
 
           case "received":
             // BEACON RECEIVED
            newBeaconReceived(data)
-
 
             message = "received BEACON from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
@@ -382,13 +375,20 @@ client.on("data", function (socketdata) {
           switch (data["status"]) {
             case "opened":
               // ARQ Open
+          message = "ARQ session opened:" + data['dxcallsign']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
               break;
 
             case "opening":
               // ARQ Opening IRS/ISS
               if (data["irs"] == "False") {
+                message = "ARQ session opening:" + data['dxcallsign']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
                 break;
               } else {
+
+            message = data['dxcallsign'] + "is requesting an ARQ session"
+            displayToast("success", "bi-arrow-left-right", message, 5000);
                 break;
 
               }
@@ -397,6 +397,8 @@ client.on("data", function (socketdata) {
 
             case "waiting":
               // ARQ waiting
+              message = "busy channel | ARQ protocol is waiting"
+            displayToast("success", "bi-arrow-left-right", message, 5000);
               break;
 
             case "receiving":
@@ -406,9 +408,13 @@ client.on("data", function (socketdata) {
             case "failed":
               // ARQ TX Failed
               if (data["reason"] == "protocol version missmatch") {
+                message = "protocol version missmatch"
+            displayToast("success", "bi-arrow-left-right", message, 5000);
                 break;
 
               } else {
+                message = "transmission failed"
+            displayToast("success", "bi-arrow-left-right", message, 5000);
                 updateTransmissionStatus(data)
                 break;
               }
@@ -446,6 +452,8 @@ client.on("data", function (socketdata) {
 
             case "transmitted":
               // ARQ transmitted
+                message = "data transmitted"
+            displayToast("success", "bi-arrow-left-right", message, 5000);
               updateTransmissionStatus(data)
               break;
           }
