@@ -185,7 +185,10 @@ client.on("data", function (socketdata) {
         stateStore.fft = data["fft"]
         stateStore.channel_busy = data["channel_busy"]
         stateStore.channel_busy_slot = data["channel_busy_slot"]
-        //stateStore.scatter = data["scatter"]
+
+        if(data["scatter"].length > 0){
+            stateStore.scatter = data["scatter"]
+        }
         // s meter strength
         stateStore.s_meter_strength_raw = data["strength"]
         if (stateStore.s_meter_strength_raw == "") {
@@ -220,8 +223,9 @@ client.on("data", function (socketdata) {
         stateStore.arq_seconds_until_timeout = data["arq_seconds_until_timeout"]
         stateStore.arq_seconds_until_timeout_percent = (stateStore.arq_seconds_until_timeout / 180) * 100
 
-
-        stateStore.arq_speed_list = data["speed_list"]
+        if(data["speed_list"].length > 0){
+            stateStore.arq_speed_list = data["speed_list"]
+         }
 
 
         // TODO: Remove ported objects
