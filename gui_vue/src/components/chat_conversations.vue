@@ -32,8 +32,6 @@ function chatSelected(callsign){
   var messageBody = document.getElementById("message-container");
   messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
 
-    console.log(chat.sorted_beacon_list[chat.selectedCallsign])
-    console.log(chat.selectedCallsign)
     try{
         chat.beaconLabelArray = Object.values(chat.sorted_beacon_list[chat.selectedCallsign].timestamp)
         chat.beaconDataArray = Object.values(chat.sorted_beacon_list[chat.selectedCallsign].snr)

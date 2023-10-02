@@ -2,7 +2,7 @@ var net = require("net");
 const path = require("path");
 const FD = require("./src/js/freedata.js");
 //import FD from './freedata.js';
-import { newMessageReceived, newBeaconReceived, updateTransmissionStatus } from './chatHandler.js';
+import { newMessageReceived, newBeaconReceived, updateTransmissionStatus, setStateSuccess, setStateFailed } from './chatHandler.js';
 import {displayToast} from './popupHandler.js'
 
 // ----------------- init pinia stores -------------
@@ -298,7 +298,8 @@ client.on("data", function (socketdata) {
 
           case "received":
             // CQ RECEIVED
-            displayToast("success", "bi-arrow-left-right", "received CQ from ", 5000);
+            message = "CQ from " + data['dxcallsign']
+            displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
 
@@ -310,7 +311,7 @@ client.on("data", function (socketdata) {
 
           case "received":
             // QRV RECEIVED
-            message = "received QRV from " + data['dxcallsign'] + " | " + data['dxgrid']
+            message = "QRV from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
@@ -318,14 +319,14 @@ client.on("data", function (socketdata) {
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
-            displayToast("success", "bi-arrow-left-right", "transmitting BEACON ", 5000);
+            displayToast("success", "bi-arrow-left-right", "BEACON... ", 5000);
             break;
 
           case "received":
             // BEACON RECEIVED
            newBeaconReceived(data)
 
-            message = "received BEACON from " + data['dxcallsign'] + " | " + data['dxgrid']
+            message = "BEACON from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
@@ -333,19 +334,19 @@ client.on("data", function (socketdata) {
         switch (data["ping"]) {
           case "transmitting":
             // PING TRANSMITTING
-            message = "transmitting PING to " + data['dxcallsign']
+            message = "PING to " + data['dxcallsign']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
 
           case "received":
             // PING RECEIVED
-            message = "received PING from " + data['dxcallsign'] + " | " + data['dxgrid']
+            message = "PING from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
 
           case "acknowledge":
             // PING ACKNOWLEDGE
-            message = "received PING ACK from " + data['dxcallsign'] + " | " + data['dxgrid']
+            message = "PING ACK from " + data['dxcallsign'] + " | " + data['dxgrid']
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
@@ -414,17 +415,21 @@ client.on("data", function (socketdata) {
               if (data["reason"] == "protocol version missmatch") {
                 message = "protocol version missmatch"
             displayToast("success", "bi-arrow-left-right", message, 5000);
+                            setStateFailed()
+
                 break;
 
               } else {
                 message = "transmission failed"
             displayToast("success", "bi-arrow-left-right", message, 5000);
                 updateTransmissionStatus(data)
+                setStateFailed()
                 break;
               }
               switch (data["irs"]) {
                 case "True":
                   updateTransmissionStatus(data)
+
                   break;
                 default:
                   updateTransmissionStatus(data)
@@ -459,6 +464,8 @@ client.on("data", function (socketdata) {
                 message = "data transmitted"
             displayToast("success", "bi-arrow-left-right", message, 5000);
               updateTransmissionStatus(data)
+                              setStateSuccess()
+
               break;
           }
         }

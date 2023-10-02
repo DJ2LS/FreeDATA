@@ -389,8 +389,6 @@ export async function updateAllChat() {
           }
 
             chat.sorted_chat_list = sortChatList()
-            console.log(chat.unsorted_beacon_list)
-            console.log(chat.sorted_beacon_list)
 
 
 
@@ -667,6 +665,17 @@ export function newMessageReceived(message, protocol){
 
 }
 
+export function setStateFailed(){
+ state.arq_seconds_until_finish = 0
+ state.arq_seconds_until_timeout = 180
+ state.arq_seconds_until_timeout_percent = 100
+}
+
+export function setStateSuccess(){
+ state.arq_seconds_until_finish = 0
+ state.arq_seconds_until_timeout = 180
+ state.arq_seconds_until_timeout_percent = 100
+}
 
 
 
@@ -700,3 +709,7 @@ var crc32 = function (str) {
 
   return (crc ^ -1) >>> 0;
 };
+
+
+
+
