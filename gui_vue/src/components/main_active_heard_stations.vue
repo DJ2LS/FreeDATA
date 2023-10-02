@@ -108,7 +108,7 @@ try{
                         <td>{{ getDateTime(item.timestamp) }}</td>
                         <td>{{ item.frequency }}</td>
                         <td>&nbsp;</td>
-                        <td>{{ item.dxcallsign }}</td>
+                        <td><span class="badge bg-secondary">{{ item.dxcallsign }}</span></td>
                         <td>{{ item.dxgrid }}</td>
                         <td>{{ getMaidenheadDistance(item.dxgrid)}} km</td>
                         <td>{{ item.datatype }}</td>

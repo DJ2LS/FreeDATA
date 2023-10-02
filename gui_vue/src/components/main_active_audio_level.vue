@@ -76,7 +76,7 @@ function startStopRecordAudio(){
                 <div class="container">
                   <div class="row">
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 22px">
+                      <div class="progress mb-0 rounded-0 rounded-top" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="noise_level"
@@ -93,7 +93,7 @@ function startStopRecordAudio(){
                           S-Meter(dB): {{state.s_meter_strength_raw}}
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 8px">
+                      <div class="progress mb-0 rounded-0 rounded-bottom" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"
@@ -129,7 +129,7 @@ function startStopRecordAudio(){
                       </div>
                     </div>
                     <div class="col-sm">
-                      <div class="progress mb-0" style="height: 22px">
+                      <div class="progress mb-0 rounded-0 rounded-top" style="height: 22px">
                         <div
                           class="progress-bar progress-bar-striped bg-primary force-gpu"
                           id="dbfs_level"
@@ -146,7 +146,7 @@ function startStopRecordAudio(){
                           {{state.dbfs_level}} dBFS
                         </p>
                       </div>
-                      <div class="progress mb-0" style="height: 8px">
+                      <div class="progress mb-0 rounded-0 rounded-bottom" style="height: 8px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           role="progressbar"

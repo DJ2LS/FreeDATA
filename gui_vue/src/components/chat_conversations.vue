@@ -57,7 +57,7 @@ function chatSelected(callsign){
 
 <div class="list-group m-0 p-0" id="chat-list-tab" role="chat-tablist">
        <template  v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
-           <a class="list-group-item list-group-item-action border-bottom border-0" :class="{ active: key==0 }" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages" @click="chatSelected(item)">
+           <a class="list-group-item list-group-item-action border-0 border-bottom rounded-0" :class="{ active: key==0 }" :id="`list-chat-list-${item}`" data-bs-toggle="list" :href="`#list-${item}-messages`" role="tab" aria-controls="list-{{item}}-messages" @click="chatSelected(item)">
                 <div class="row">
                     <div class="col-9">{{item}}</div>
                     <div class="col-3">

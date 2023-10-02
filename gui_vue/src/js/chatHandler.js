@@ -271,17 +271,16 @@ export function deleteMessageFromDB(id){
 
 // function to update transmission status
 export function updateTransmissionStatus(obj){
-    console.log(obj.percent)
-    console.log(obj.uuid)
-    console.log(obj.status)
 
     // update database entries
     databaseUpsert(obj.uuid, "percent", obj.percent)
     databaseUpsert(obj.uuid, "bytesperminute", obj.bytesperminute)
+    databaseUpsert(obj.uuid, "status", obj.status)
 
     // update screen rendering / messages
     updateUnsortedChatListEntry(obj.uuid, "percent", obj.percent)
     updateUnsortedChatListEntry(obj.uuid, "bytesperminute", obj.bytesperminute)
+    updateUnsortedChatListEntry(obj.uuid, "status", obj.status)
 
 }
 

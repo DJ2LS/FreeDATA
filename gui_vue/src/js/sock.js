@@ -185,7 +185,7 @@ client.on("data", function (socketdata) {
         stateStore.fft = data["fft"]
         stateStore.channel_busy = data["channel_busy"]
         stateStore.channel_busy_slot = data["channel_busy_slot"]
-        stateStore.scatter = data["scatter"]
+        //stateStore.scatter = data["scatter"]
         // s meter strength
         stateStore.s_meter_strength_raw = data["strength"]
         if (stateStore.s_meter_strength_raw == "") {
@@ -402,12 +402,15 @@ client.on("data", function (socketdata) {
                 break;
 
               } else {
+                updateTransmissionStatus(data)
                 break;
               }
               switch (data["irs"]) {
                 case "True":
+                  updateTransmissionStatus(data)
                   break;
                 default:
+                  updateTransmissionStatus(data)
                   break;
               }
               break;
@@ -436,6 +439,7 @@ client.on("data", function (socketdata) {
 
             case "transmitted":
               // ARQ transmitted
+              updateTransmissionStatus(data)
               break;
           }
         }

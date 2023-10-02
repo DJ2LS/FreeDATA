@@ -55,55 +55,6 @@ switch (obj.delegateTarget.id) {
   };
 
 
-const scatterChartOptions = {
-      plugins: {
-        legend: {
-          display: false,
-        },
-        tooltip: {
-          enabled: false,
-        },
-        annotation: {
-          annotations: {
-            line1: {
-              type: "line",
-              yMin: 0,
-              yMax: 0,
-              borderColor: "rgb(255, 99, 132)",
-              borderWidth: 2,
-            },
-            line2: {
-              type: "line",
-              xMin: 0,
-              xMax: 0,
-              borderColor: "rgb(255, 99, 132)",
-              borderWidth: 2,
-            },
-          },
-        },
-      },
-      animations: false,
-      scales: {
-        x: {
-          type: "linear",
-          position: "bottom",
-          display: true,
-          min: -80,
-          max: 80,
-          ticks: {
-            display: false,
-          },
-        },
-        y: {
-          display: true,
-          min: -80,
-          max: 80,
-          ticks: {
-            display: false,
-          },
-        },
-      },
-    };
 
 
 
@@ -119,21 +70,146 @@ ChartJS.register(
 )
 
 
+//state.arq_speed_list = [{"snr":0.0,"bpm":104,"timestamp":1696189769},{"snr":0.0,"bpm":80,"timestamp":1696189778},{"snr":0.0,"bpm":70,"timestamp":1696189783},{"snr":0.0,"bpm":58,"timestamp":1696189792},{"snr":0.0,"bpm":52,"timestamp":1696189797},{"snr":"NaN","bpm":42,"timestamp":1696189811},{"snr":0.0,"bpm":22,"timestamp":1696189875},{"snr":0.0,"bpm":21,"timestamp":1696189881},{"snr":0.0,"bpm":17,"timestamp":1696189913},{"snr":0.0,"bpm":15,"timestamp":1696189932},{"snr":0.0,"bpm":15,"timestamp":1696189937},{"snr":0.0,"bpm":14,"timestamp":1696189946},{"snr":-6.1,"bpm":14,"timestamp":1696189954},{"snr":-6.1,"bpm":14,"timestamp":1696189955},{"snr":-5.5,"bpm":28,"timestamp":1696189963},{"snr":-5.5,"bpm":27,"timestamp":1696189963}]
+
+var speed_listSize = state.arq_speed_list.length
+
+var speedDataBpm = [];
+
+  for (var i = 0; i < speed_listSize; i++) {
+    speedDataBpm.push(state.arq_speed_list[i].bpm);
+  }
+
+   var speedDataTime = [];
+
+   for (var i = 0; i < speed_listSize; i++) {
+    var timestamp = state.arq_speed_list[i].timestamp * 1000;
+    var h = new Date(timestamp).getHours();
+    var m = new Date(timestamp).getMinutes();
+    var s = new Date(timestamp).getSeconds();
+    var time = h + ":" + m + ":" + s;
+    speedDataTime.push(time);
+  }
+
+  var speedDataSnr = [];
+  for (var i = 0; i < speed_listSize; i++) {
+    let snr = NaN;
+    if (state.arq_speed_list[i].snr !== 0) {
+      snr = state.arq_speed_list[i].snr;
+    } else {
+      snr = NaN;
+    }
+    speedDataSnr.push(snr);
+  }
+
+// https://www.chartjs.org/docs/latest/samples/line/segments.html
+  const skipped = (speedCtx, value) =>
+    speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
+  const down = (speedCtx, value) =>
+    speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
+
+ var transmissionSpeedChartOptions = {
+    responsive: true,
+    animations: true,
+    cubicInterpolationMode: "monotone",
+    tension: 0.4,
+    scales: {
+      SNR: {
+        type: "linear",
+        ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
+        position: "right",
+      },
+      SPEED: {
+        type: "linear",
+        ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
+        position: "left",
+        grid: {
+          drawOnChartArea: false, // only want the grid lines for one axis to show up
+        },
+      },
+      x: { ticks: { beginAtZero: true } },
+    },
+  };
+
 const transmissionSpeedChartData = computed(() => ({
- labels: ['-10', '-5', '0', '5', '10'],
+ labels: speedDataTime,
   datasets: [
-    { data: state.arq_speed_list, label: 'BPM 0%' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
+    {
+        type: "line",
+        label: "SNR[dB]",
+        data: speedDataSnr,
+        borderColor: "rgb(75, 192, 192, 1.0)",
+        pointRadius: 1,
+        segment: {
+          borderColor: (speedCtx) =>
+            skipped(speedCtx, "rgb(0,0,0,0.4)") ||
+            down(speedCtx, "rgb(192,75,75)"),
+          borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
+        },
+        spanGaps: true,
+        backgroundColor: "rgba(75, 192, 192, 0.2)",
+        order: 1,
+        yAxisID: "SNR",
+      },
+      {
+        type: "bar",
+        label: "Speed[bpm]",
+        data: speedDataBpm,
+        borderColor: "rgb(120, 100, 120, 1.0)",
+        backgroundColor: "rgba(120, 100, 120, 0.2)",
+        order: 0,
+        yAxisID: "SPEED",
+      },
   ]
 }
 ));
 
 
 
+const scatterChartOptions = {
+  responsive: true,
+  maintainAspectRatio: true,
+  scales: {
+    x: {
+      type: 'linear',
+      position: 'bottom',
+      grid: {
+        display: true,
+        lineWidth: 1, // Set the line width for x-axis grid lines
+      },
+      ticks: {
+        display: false,
+      },
+    },
+    y: {
+      type: 'linear',
+      position: 'left',
+      grid: {
+        display: true,
+        lineWidth: 1, // Set the line width for y-axis grid lines
+      },
+      ticks: {
+        display: false,
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+    tooltip: {
+      enabled: false,
+    },
+  },
+};
+
+
+
+state.scatter = [{"x":"166","y":"46"},{"x":"-193","y":"-139"},{"x":"-165","y":"-291"},{"x":"311","y":"-367"},{"x":"389","y":"199"},{"x":"78","y":"372"},{"x":"242","y":"-431"},{"x":"-271","y":"-248"},{"x":"28","y":"-130"},{"x":"-20","y":"187"},{"x":"74","y":"362"},{"x":"-316","y":"-229"},{"x":"-180","y":"261"},{"x":"321","y":"360"},{"x":"438","y":"-288"},{"x":"378","y":"-94"},{"x":"462","y":"-163"},{"x":"-265","y":"248"},{"x":"210","y":"314"},{"x":"230","y":"-320"},{"x":"261","y":"-244"},{"x":"-283","y":"-373"}]
 
 const scatterChartData = computed(() => ({
- labels: ['-10', '-5', '0', '5', '10'],
   datasets: [
-    { type: 'scatter', data: state.scatter, label: 'PER 0%' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
+    { type: 'scatter', fill: true, data: state.scatter, label: 'Scatter' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
   ]
   }
 ));
@@ -250,7 +326,8 @@ const scatterChartData = computed(() => ({
           role="tabpanel"
           aria-labelledby="list-scatter-list"
         >
-          <Line :data="scatterChartData" :options="scatterChartOptions" />
+          <Scatter :data="scatterChartData" :options="scatterChartOptions" />
+
         </div>
         <div
           class="tab-pane fade"

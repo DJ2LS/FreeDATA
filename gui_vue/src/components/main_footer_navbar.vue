@@ -238,7 +238,7 @@ const settings = useSettingsStore(pinia);
 
 
 
-            <div class="progress w-100" style="height: 20px; min-width: 200px">
+            <div class="progress w-100 rounded-0 rounded-top" style="height: 20px; min-width: 200px">
               <div
                 class="progress-bar progress-bar-striped bg-primary force-gpu"
                 id="transmission_progress"
@@ -257,7 +257,7 @@ const settings = useSettingsStore(pinia);
             </div>
 
 
-            <div class="progress mb-0" style="height: 10px">
+            <div class="progress mb-0 rounded-0 rounded-bottom" style="height: 10px">
                         <div
                           class="progress-bar progress-bar-striped bg-warning"
                           id="transmission_timeleft"

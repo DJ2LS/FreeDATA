@@ -119,12 +119,12 @@ function changeGuiDesign(design) {
 
       <div class="container-fluid">
         <div class="row">
-          <div class="col-sm-auto bg-body-tertiary border-end">
+          <div class="col-sm-auto bg-body-secondary border-end">
             <div
               class="d-flex flex-sm-column flex-row flex-nowrap align-items-center sticky-top"
             >
               <div
-                class="list-group"
+                class="list-group bg-body-secondary"
                 id="main-list-tab"
                 role="tablist"
                 style="margin-top: 100px"

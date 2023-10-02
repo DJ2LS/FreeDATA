@@ -24,7 +24,7 @@
         </div>
 
         <div class="card-footer p-0 border-top-0" v-if="message.percent < 100">
-          <div class="progress bg-secondary" :style="{ height: '10px' }">
+          <div class="progress bg-secondary rounded-0 rounded-bottom" :style="{ height: '10px' }">
             <div
               class="progress-bar progress-bar-striped overflow-visible"
               role="progressbar"
