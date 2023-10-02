@@ -902,10 +902,13 @@ function prepareStatsDataForStore(data){
   }
 
 
+  var speed_list_bpm = []
+
   for (var i = 0; i < speed_listSize; i++) {
-    stateStore.arq_speed_list_bpm.push(data[i].bpm);
+    speed_list_bpm.push(data[i].bpm);
   }
 
+  var speed_list_timestamp = []
 
    for (var i = 0; i < speed_listSize; i++) {
     var timestamp = data[i].timestamp * 1000;
@@ -913,9 +916,11 @@ function prepareStatsDataForStore(data){
     var m = new Date(timestamp).getMinutes();
     var s = new Date(timestamp).getSeconds();
     var time = h + ":" + m + ":" + s;
-    stateStore.arq_speed_list_timestamp.push(time);
+    speed_list_timestamp.push(time);
   }
 
+
+  var speed_list_snr = []
   for (var i = 0; i < speed_listSize; i++) {
     let snr = NaN;
     if (data[i].snr !== 0) {
@@ -923,7 +928,11 @@ function prepareStatsDataForStore(data){
     } else {
       snr = NaN;
     }
-    stateStore.arq_speed_list_snr.push(snr);
+    speed_list_snr.push(snr);
   }
+
+  stateStore.arq_speed_list_bpm = speed_list_bpm
+  stateStore.arq_speed_list_timestamp = speed_list_timestamp
+  stateStore.arq_speed_list_snr = speed_list_snr
 
 }
