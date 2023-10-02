@@ -224,7 +224,7 @@ client.on("data", function (socketdata) {
         stateStore.arq_seconds_until_timeout_percent = (stateStore.arq_seconds_until_timeout / 180) * 100
 
         if(data["speed_list"].length > 0){
-            stateStore.arq_speed_list = data["speed_list"]
+            prepareStatsDataForStore(data["speed_list"])
          }
 
 
@@ -887,3 +887,43 @@ var crc32 = function (r) {
     n = (n >>> 8) ^ o[255 & (n ^ r.charCodeAt(t))];
   return (-1 ^ n) >>> 0;
 };
+
+
+// TODO: Maybe moving this to another module
+function prepareStatsDataForStore(data){
+
+// dummy data
+//state.arq_speed_list = [{"snr":0.0,"bpm":104,"timestamp":1696189769},{"snr":0.0,"bpm":80,"timestamp":1696189778},{"snr":0.0,"bpm":70,"timestamp":1696189783},{"snr":0.0,"bpm":58,"timestamp":1696189792},{"snr":0.0,"bpm":52,"timestamp":1696189797},{"snr":"NaN","bpm":42,"timestamp":1696189811},{"snr":0.0,"bpm":22,"timestamp":1696189875},{"snr":0.0,"bpm":21,"timestamp":1696189881},{"snr":0.0,"bpm":17,"timestamp":1696189913},{"snr":0.0,"bpm":15,"timestamp":1696189932},{"snr":0.0,"bpm":15,"timestamp":1696189937},{"snr":0.0,"bpm":14,"timestamp":1696189946},{"snr":-6.1,"bpm":14,"timestamp":1696189954},{"snr":-6.1,"bpm":14,"timestamp":1696189955},{"snr":-5.5,"bpm":28,"timestamp":1696189963},{"snr":-5.5,"bpm":27,"timestamp":1696189963}]
+
+  if (typeof data == "undefined") {
+    var speed_listSize = 0;
+  } else {
+    var speed_listSize = data.length;
+  }
+
+
+  for (var i = 0; i < speed_listSize; i++) {
+    stateStore.arq_speed_list_bpm.push(data[i].bpm);
+  }
+
+
+   for (var i = 0; i < speed_listSize; i++) {
+    var timestamp = data[i].timestamp * 1000;
+    var h = new Date(timestamp).getHours();
+    var m = new Date(timestamp).getMinutes();
+    var s = new Date(timestamp).getSeconds();
+    var time = h + ":" + m + ":" + s;
+    stateStore.arq_speed_list_timestamp.push(time);
+  }
+
+  for (var i = 0; i < speed_listSize; i++) {
+    let snr = NaN;
+    if (data[i].snr !== 0) {
+      snr = data[i].snr;
+    } else {
+      snr = NaN;
+    }
+    stateStore.arq_speed_list_snr.push(snr);
+  }
+
+}

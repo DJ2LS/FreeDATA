@@ -69,43 +69,6 @@ ChartJS.register(
   Legend
 )
 
-// dummy data
-//state.arq_speed_list = [{"snr":0.0,"bpm":104,"timestamp":1696189769},{"snr":0.0,"bpm":80,"timestamp":1696189778},{"snr":0.0,"bpm":70,"timestamp":1696189783},{"snr":0.0,"bpm":58,"timestamp":1696189792},{"snr":0.0,"bpm":52,"timestamp":1696189797},{"snr":"NaN","bpm":42,"timestamp":1696189811},{"snr":0.0,"bpm":22,"timestamp":1696189875},{"snr":0.0,"bpm":21,"timestamp":1696189881},{"snr":0.0,"bpm":17,"timestamp":1696189913},{"snr":0.0,"bpm":15,"timestamp":1696189932},{"snr":0.0,"bpm":15,"timestamp":1696189937},{"snr":0.0,"bpm":14,"timestamp":1696189946},{"snr":-6.1,"bpm":14,"timestamp":1696189954},{"snr":-6.1,"bpm":14,"timestamp":1696189955},{"snr":-5.5,"bpm":28,"timestamp":1696189963},{"snr":-5.5,"bpm":27,"timestamp":1696189963}]
-
-  if (typeof state.arq_speed_list == "undefined") {
-    var speed_listSize = 0;
-  } else {
-    var speed_listSize = state.arq_speed_list.length;
-  }
-
-
-var speedDataBpm = [];
-
-  for (var i = 0; i < speed_listSize; i++) {
-    speedDataBpm.push(state.arq_speed_list[i].bpm);
-  }
-
-   var speedDataTime = [];
-
-   for (var i = 0; i < speed_listSize; i++) {
-    var timestamp = state.arq_speed_list[i].timestamp * 1000;
-    var h = new Date(timestamp).getHours();
-    var m = new Date(timestamp).getMinutes();
-    var s = new Date(timestamp).getSeconds();
-    var time = h + ":" + m + ":" + s;
-    speedDataTime.push(time);
-  }
-
-  var speedDataSnr = [];
-  for (var i = 0; i < speed_listSize; i++) {
-    let snr = NaN;
-    if (state.arq_speed_list[i].snr !== 0) {
-      snr = state.arq_speed_list[i].snr;
-    } else {
-      snr = NaN;
-    }
-    speedDataSnr.push(snr);
-  }
 
 // https://www.chartjs.org/docs/latest/samples/line/segments.html
   const skipped = (speedCtx, value) =>
@@ -137,12 +100,12 @@ var speedDataBpm = [];
   };
 
 const transmissionSpeedChartData = computed(() => ({
- labels: speedDataTime,
+ labels: state.arq_speed_list_timestamp,
   datasets: [
     {
         type: "line",
         label: "SNR[dB]",
-        data: speedDataSnr,
+        data: state.arq_speed_list_snr,
         borderColor: "rgb(75, 192, 192, 1.0)",
         pointRadius: 1,
         segment: {
@@ -159,7 +122,7 @@ const transmissionSpeedChartData = computed(() => ({
       {
         type: "bar",
         label: "Speed[bpm]",
-        data: speedDataBpm,
+        data: state.arq_speed_list_bpm,
         borderColor: "rgb(120, 100, 120, 1.0)",
         backgroundColor: "rgba(120, 100, 120, 0.2)",
         order: 0,
