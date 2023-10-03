@@ -108,6 +108,7 @@ function changeGuiDesign(design) {
 
 
 function stopAllTransmissions(){
+    console.log("stopping transmissions")
     stopTransmission()
 }
 
@@ -211,6 +212,7 @@ function stopAllTransmissions(){
                   data-bs-toggle="tooltip"
                   data-bs-trigger="hover"
                   data-bs-html="false"
+                  @click="stopAllTransmissions()"
                   title="Abort session and stop transmissions"
                   ><i class="bi bi-sign-stop-fill h3"></i
                 ></a>
@@ -844,7 +846,6 @@ function stopAllTransmissions(){
                       <div class="col-md-auto">
                         <button
                           type="button"
-                          @click="stopAllTransmissions()"
                           class="btn btn-danger"
                           style="width: 100%"
                         >
