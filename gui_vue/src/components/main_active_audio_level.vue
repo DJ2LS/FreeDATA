@@ -145,7 +145,7 @@ function startStopRecordAudio() {
                 class="justify-content-center d-flex position-absolute w-100"
                 id="dbfs_level_value"
               >
-                {{ state.dbfs_level }} dBFS
+                {{ state.dbfs_level_raw }} dBFS
               </p>
             </div>
             <div

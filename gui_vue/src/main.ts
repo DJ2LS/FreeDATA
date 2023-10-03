@@ -1,4 +1,4 @@
-import { createApp, Vue } from 'vue'
+import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import {loadSettings} from './js/settingsHandler'
 
