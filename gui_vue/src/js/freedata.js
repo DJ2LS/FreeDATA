@@ -1,6 +1,5 @@
 const fs = require("fs");
 
-
 /**
  * Binary to ASCII replacement
  * @param {string} data in normal/usual utf-8 format
@@ -25,5 +24,3 @@ exports.atob_FD = function (data) {
 exports.atob = function (data) {
   return window.btoa(Buffer.from(data, "base64").toString("utf8"));
 };
-
-

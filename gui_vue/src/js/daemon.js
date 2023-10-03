@@ -1,19 +1,19 @@
 //var net = require("net");
-var net = require('node:net');
+var net = require("node:net");
 
 const path = require("path");
 const { ipcRenderer } = require("electron");
 // ----------------- init pinia stores -------------
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
-import { useAudioStore } from '../store/audioStore.js';
+import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
+import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-import { useStateStore } from '../store/stateStore.js';
+import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 var daemon = new net.Socket();
@@ -21,7 +21,6 @@ var socketchunk = ""; // Current message, per connection.
 
 // global to keep track of daemon connection error emissions
 var daemonShowConnectStateError = 1;
-
 
 setTimeout(connectDAEMON, 500);
 
@@ -32,7 +31,6 @@ function connectDAEMON() {
 
   //clear message buffer after reconnecting or initial connection
   socketchunk = "";
-
 
   daemon.connect(settings.daemon_port, settings.daemon_host);
 
@@ -89,7 +87,6 @@ daemon.on("end", function (data) {
 //exports.writeDaemonCommand = function(command){
 //writeDaemonCommand = function (command) {
 function writeDaemonCommand(command) {
-
   // we use the writingCommand function to update our TCPIP state because we are calling this function a lot
   // if socket opened, we are able to run commands
   if (daemon.readyState == "open") {
@@ -109,7 +106,7 @@ function writeDaemonCommand(command) {
     daemon_connection: daemon.readyState,
   };
   ipcRenderer.send("request-update-daemon-connection", Data);
-};
+}
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
 
@@ -168,8 +165,6 @@ daemon.on("data", function (socketdata) {
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
         state.tnc_running_state = data["daemon_state"][0]["status"];
-
-
       }
 
       if (data["command"] == "test_hamlib") {
@@ -193,11 +188,10 @@ function hexToBytes(hex) {
 
 //exports.getDaemonState = function () {
 function getDaemonState() {
-
   //function getDaemonState(){
   command = '{"type" : "get", "command" : "daemon_state"}';
   writeDaemonCommand(command);
-};
+}
 
 // START TNC
 // ` `== multi line string
@@ -244,20 +238,18 @@ export function startTNC() {
 
   console.log(json_command);
   writeDaemonCommand(json_command);
-};
+}
 
 // STOP TNC
 //exports.stopTNC = function () {
 export function stopTNC() {
-
   var command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }';
   writeDaemonCommand(command);
-};
+}
 
 // TEST HAMLIB
 function testHamlib(
-
-//exports.testHamlib = function (
+  //exports.testHamlib = function (
   radiocontrol,
   devicename,
   deviceport,
@@ -291,26 +283,25 @@ function testHamlib(
   });
   console.log(json_command);
   writeDaemonCommand(json_command);
-};
+}
 
 //Save myCall
-function saveMyCall(callsign){
-//exports.saveMyCall = function (callsign) {
+function saveMyCall(callsign) {
+  //exports.saveMyCall = function (callsign) {
   command =
     '{"type" : "set", "command": "mycallsign" , "parameter": "' +
     callsign +
     '"}';
   writeDaemonCommand(command);
-};
+}
 
 // Save myGrid
 //exports.saveMyGrid = function (grid) {
-function saveMyGrid(grid){
-
+function saveMyGrid(grid) {
   command =
     '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}';
   writeDaemonCommand(command);
-};
+}
 
 ipcRenderer.on("action-update-daemon-ip", (event, arg) => {
   daemon.destroy();

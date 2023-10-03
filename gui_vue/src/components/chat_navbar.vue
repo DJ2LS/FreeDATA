@@ -1,19 +1,17 @@
 <script setup lang="ts">
+import { saveSettingsToFile } from "../js/settingsHandler";
 
-
-import {saveSettingsToFile} from '../js/settingsHandler';
-
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
+import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-import { useStateStore } from '../store/stateStore.js';
+import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { useChatStore } from '../store/chatStore.js';
+import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
 import {
@@ -25,11 +23,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  BarElement
-} from 'chart.js'
-import { Line, Scatter, Bar } from 'vue-chartjs'
-import { ref, computed } from 'vue';
-
+  BarElement,
+} from "chart.js";
+import { Line, Scatter, Bar } from "vue-chartjs";
+import { ref, computed } from "vue";
 
 ChartJS.register(
   CategoryScale,
@@ -38,43 +35,43 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarElement
-)
+  BarElement,
+);
 
-  var beaconHistogramOptions = {
-    type: 'bar',
-    bezierCurve:false, //remove curves from your plot
-    scaleShowLabels : false, //remove labels
-    tooltipEvents:[], //remove trigger from tooltips so they will'nt be show
-    pointDot : false, //remove the points markers
-    scaleShowGridLines: true, //set to false to remove the grids background
-    maintainAspectRatio:true,
-    plugins:{
-       legend: {
-        display: false
-       }
+var beaconHistogramOptions = {
+  type: "bar",
+  bezierCurve: false, //remove curves from your plot
+  scaleShowLabels: false, //remove labels
+  tooltipEvents: [], //remove trigger from tooltips so they will'nt be show
+  pointDot: false, //remove the points markers
+  scaleShowGridLines: true, //set to false to remove the grids background
+  maintainAspectRatio: true,
+  plugins: {
+    legend: {
+      display: false,
     },
+  },
 
-    scales: {
-        x: {
-          position: "bottom",
-          display: false,
-          min: -10,
-          max: 15,
-          ticks: {
-            display: false,
-          }
-        },
-        y: {
-          display: false,
-          min: -5,
-          max: 10,
-          ticks: {
-            display: false,
-          }
-        },
+  scales: {
+    x: {
+      position: "bottom",
+      display: false,
+      min: -10,
+      max: 15,
+      ticks: {
+        display: false,
       },
-  };
+    },
+    y: {
+      display: false,
+      min: -5,
+      max: 10,
+      ticks: {
+        display: false,
+      },
+    },
+  },
+};
 
 //let dataArray = new Array(25).fill(0)
 //dataArray = dataArray.add([-3, 10, 8, 5, 3, 0, -5])
@@ -82,100 +79,68 @@ ChartJS.register(
 //console.log(dataArray1)
 //[-3, 10, 8, 5, 3, 0, -5]
 
+try {
+  chat.beaconLabelArray = Object.values(
+    chat.sorted_beacon_list["DJ2LS-0"].timestamp,
+  );
+  chat.beaconDataArray = Object.values(chat.sorted_beacon_list["DJ2LS-0"].snr);
+} catch (e) {
+  console.log(e);
 
-try{
-
-    chat.beaconLabelArray = Object.values(chat.sorted_beacon_list['DJ2LS-0'].timestamp)
-    chat.beaconDataArray = Object.values(chat.sorted_beacon_list['DJ2LS-0'].snr)
-} catch(e){
-
-    console.log(e)
-
-    var beaconLabels = []
-    var beaconData = []
+  var beaconLabels = [];
+  var beaconData = [];
 }
-
-
 
 const beaconHistogramData = computed(() => ({
- labels: chat.beaconLabelArray,
+  labels: chat.beaconLabelArray,
   datasets: [
-    { data: chat.beaconDataArray, tension: 0.1, borderColor: 'rgb(0, 255, 0)' }
-  ]
+    { data: chat.beaconDataArray, tension: 0.1, borderColor: "rgb(0, 255, 0)" },
+  ],
+}));
+
+function newChat(obj) {
+  let callsign = document.getElementById("chatModuleNewDxCall").value;
+  callsign = callsign.toUpperCase();
+  chat.callsign_list.add(callsign);
 }
-));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function newChat(obj){
-
-        let callsign = document.getElementById("chatModuleNewDxCall").value
-        callsign = callsign.toUpperCase()
-        chat.callsign_list.add(callsign)
-
-
-}
-
 </script>
 
 <template>
-<nav class="navbar bg-body-tertiary border-bottom">
-                    <div class="container">
-                      <div class="row w-100">
-                        <div class="col-4 p-0 me-2">
-                          <div class="input-group bottom-0 m-0">
-                            <input
-                              class="form-control w-50"
-                              maxlength="9"
-                              style="text-transform: uppercase"
-                              id="chatModuleNewDxCall"
-                              placeholder="DX CALL"
-                            />
-                            <button
-                              class="btn btn-sm btn-success"
-                              id="createNewChatButton"
-                              type="button"
-                              title="Start a new chat (enter dx call sign first)"
-                              @click="newChat()"
-                            >
-                              new chat
-                              <i
-                                class="bi bi-pencil-square"
-                                style="font-size: 1.2rem"
-                              ></i>
-                            </button>
-
-
-                          </div>
-                        </div>
-                        <div class="col-7 ms-2 p-0">
-
-                        <!-- right side of chat nav bar-->
-                        {{beaconData}}
-                      <Bar :data="beaconHistogramData" :options="beaconHistogramOptions" width="300" style="height:100%" />
-
-
-
-                        </div>
-                      </div>
-                    </div>
-                  </nav>
+  <nav class="navbar bg-body-tertiary border-bottom">
+    <div class="container">
+      <div class="row w-100">
+        <div class="col-4 p-0 me-2">
+          <div class="input-group bottom-0 m-0">
+            <input
+              class="form-control w-50"
+              maxlength="9"
+              style="text-transform: uppercase"
+              id="chatModuleNewDxCall"
+              placeholder="DX CALL"
+            />
+            <button
+              class="btn btn-sm btn-success"
+              id="createNewChatButton"
+              type="button"
+              title="Start a new chat (enter dx call sign first)"
+              @click="newChat()"
+            >
+              new chat
+              <i class="bi bi-pencil-square" style="font-size: 1.2rem"></i>
+            </button>
+          </div>
+        </div>
+        <div class="col-7 ms-2 p-0">
+          <!-- right side of chat nav bar-->
+          {{ beaconData }}
+          <Bar
+            :data="beaconHistogramData"
+            :options="beaconHistogramOptions"
+            width="300"
+            style="height: 100%"
+          />
+        </div>
+      </div>
+    </div>
+  </nav>
 </template>

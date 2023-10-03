@@ -1,46 +1,34 @@
 <script setup lang="ts">
+import { saveSettingsToFile } from "../js/settingsHandler";
 
-import {saveSettingsToFile} from '../js/settingsHandler'
-
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from '../store/stateStore.js';
+import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
+import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-import main_modals from './main_modals.vue'
-import main_top_navbar from './main_top_navbar.vue'
-import main_audio from './main_audio.vue'
-import main_rig_control from './main_rig_control.vue'
-import main_my_station from './main_my_station.vue'
-import main_updater from './main_updater.vue'
-import settings_view from './settings.vue'
-import main_active_rig_control from './main_active_rig_control.vue'
-import main_footer_navbar from './main_footer_navbar.vue'
+import main_modals from "./main_modals.vue";
+import main_top_navbar from "./main_top_navbar.vue";
+import main_audio from "./main_audio.vue";
+import main_rig_control from "./main_rig_control.vue";
+import main_my_station from "./main_my_station.vue";
+import main_updater from "./main_updater.vue";
+import settings_view from "./settings.vue";
+import main_active_rig_control from "./main_active_rig_control.vue";
+import main_footer_navbar from "./main_footer_navbar.vue";
 
-import main_active_stats from './main_active_stats.vue'
-import main_active_broadcasts from './main_active_broadcasts.vue'
-import main_active_heard_stations from './main_active_heard_stations.vue'
-import main_active_audio_level from './main_active_audio_level.vue'
+import main_active_stats from "./main_active_stats.vue";
+import main_active_broadcasts from "./main_active_broadcasts.vue";
+import main_active_heard_stations from "./main_active_heard_stations.vue";
+import main_active_audio_level from "./main_active_audio_level.vue";
 
-import chat from './chat.vue'
+import chat from "./chat.vue";
 
-
-import {stopTransmission} from '../js/sock.js'
-
-
-
-
-
-
-
-
-
-
+import { stopTransmission } from "../js/sock.js";
 
 function changeGuiDesign(design) {
   if (
@@ -105,16 +93,10 @@ function changeGuiDesign(design) {
   document.getElementById("bootstrap_theme").href = escape(theme_path);
 }
 
-
-
-function stopAllTransmissions(){
-    console.log("stopping transmissions")
-    stopTransmission()
+function stopAllTransmissions() {
+  console.log("stopping transmissions");
+  stopTransmission();
 }
-
-
-
-
 </script>
 
 <template>
@@ -164,7 +146,6 @@ function stopAllTransmissions(){
                   ><i class="bi bi-chat-text h3"></i
                 ></a>
 
-
                 <a
                   class="list-group-item list-group-item-action d-none"
                   id="list-mesh-list"
@@ -184,7 +165,6 @@ function stopAllTransmissions(){
                   aria-controls="list-info"
                   ><i class="bi bi-info h3"></i
                 ></a>
-
 
                 <a
                   class="list-group-item list-group-item-action d-none"
@@ -345,7 +325,7 @@ function stopAllTransmissions(){
                     </div>
                   </nav>
 
-                  <div class="tab-content  d-none" id="nav-tabContent-Mesh">
+                  <div class="tab-content d-none" id="nav-tabContent-Mesh">
                     <div
                       class="tab-pane fade show active vw-100 vh-90 overflow-auto"
                       id="nav-route"
@@ -401,7 +381,6 @@ function stopAllTransmissions(){
                         </div>
                       </div>
                     </div>
-
 
                     <div
                       class="tab-pane fade"
@@ -537,10 +516,7 @@ function stopAllTransmissions(){
                 role="tabpanel"
                 aria-labelledby="list-chat-list"
               >
-                <chat/>
-
-
-
+                <chat />
               </div>
               <div
                 class="tab-pane fade"

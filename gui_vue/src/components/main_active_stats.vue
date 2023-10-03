@@ -1,18 +1,15 @@
 <script setup lang="ts">
+import { saveSettingsToFile } from "../js/settingsHandler";
 
-
-import {saveSettingsToFile} from '../js/settingsHandler';
-
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
+import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-import { useStateStore } from '../store/stateStore.js';
+import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
 
 import {
   Chart as ChartJS,
@@ -22,42 +19,31 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js'
-import { Line, Scatter } from 'vue-chartjs'
-import { ref, computed } from 'vue';
+  Legend,
+} from "chart.js";
+import { Line, Scatter } from "vue-chartjs";
+import { ref, computed } from "vue";
 
-
-
-function selectStatsControl(obj){
-switch (obj.delegateTarget.id) {
-  case 'list-waterfall-list':
-    settings.spectrum = "waterfall"
-    break;
-  case 'list-scatter-list':
-    settings.spectrum = "scatter"
-    break;
-  case 'list-chart-list':
-    settings.spectrum = "chart"
-    break;
-  default:
-    settings.spectrum = "waterfall"
-
-}
-    saveSettingsToFile()
-
+function selectStatsControl(obj) {
+  switch (obj.delegateTarget.id) {
+    case "list-waterfall-list":
+      settings.spectrum = "waterfall";
+      break;
+    case "list-scatter-list":
+      settings.spectrum = "scatter";
+      break;
+    case "list-chart-list":
+      settings.spectrum = "chart";
+      break;
+    default:
+      settings.spectrum = "waterfall";
+  }
+  saveSettingsToFile();
 }
 
-
-
-  var transmissionSpeedChartOptions = {
-    type: "line",
-  };
-
-
-
-
-
+var transmissionSpeedChartOptions = {
+  type: "line",
+};
 
 ChartJS.register(
   CategoryScale,
@@ -66,81 +52,77 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
-)
-
+  Legend,
+);
 
 // https://www.chartjs.org/docs/latest/samples/line/segments.html
-  const skipped = (speedCtx, value) =>
-    speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
-  const down = (speedCtx, value) =>
-    speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
+const skipped = (speedCtx, value) =>
+  speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
+const down = (speedCtx, value) =>
+  speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
 
- var transmissionSpeedChartOptions = {
-    responsive: true,
-    animations: true,
-    cubicInterpolationMode: "monotone",
-    tension: 0.4,
-    scales: {
-      SNR: {
-        type: "linear",
-        ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
-        position: "right",
-      },
-      SPEED: {
-        type: "linear",
-        ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
-        position: "left",
-        grid: {
-          drawOnChartArea: false, // only want the grid lines for one axis to show up
-        },
-      },
-      x: { ticks: { beginAtZero: true } },
+var transmissionSpeedChartOptions = {
+  responsive: true,
+  animations: true,
+  cubicInterpolationMode: "monotone",
+  tension: 0.4,
+  scales: {
+    SNR: {
+      type: "linear",
+      ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
+      position: "right",
     },
-  };
+    SPEED: {
+      type: "linear",
+      ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
+      position: "left",
+      grid: {
+        drawOnChartArea: false, // only want the grid lines for one axis to show up
+      },
+    },
+    x: { ticks: { beginAtZero: true } },
+  },
+};
 
 const transmissionSpeedChartData = computed(() => ({
- labels: state.arq_speed_list_timestamp,
+  labels: state.arq_speed_list_timestamp,
   datasets: [
     {
-        type: "line",
-        label: "SNR[dB]",
-        data: state.arq_speed_list_snr,
-        borderColor: "rgb(75, 192, 192, 1.0)",
-        pointRadius: 1,
-        segment: {
-          borderColor: (speedCtx) =>
-            skipped(speedCtx, "rgb(0,0,0,0.4)") ||
-            down(speedCtx, "rgb(192,75,75)"),
-          borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
-        },
-        spanGaps: true,
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        order: 1,
-        yAxisID: "SNR",
+      type: "line",
+      label: "SNR[dB]",
+      data: state.arq_speed_list_snr,
+      borderColor: "rgb(75, 192, 192, 1.0)",
+      pointRadius: 1,
+      segment: {
+        borderColor: (speedCtx) =>
+          skipped(speedCtx, "rgb(0,0,0,0.4)") ||
+          down(speedCtx, "rgb(192,75,75)"),
+        borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
       },
-      {
-        type: "bar",
-        label: "Speed[bpm]",
-        data: state.arq_speed_list_bpm,
-        borderColor: "rgb(120, 100, 120, 1.0)",
-        backgroundColor: "rgba(120, 100, 120, 0.2)",
-        order: 0,
-        yAxisID: "SPEED",
-      },
-  ]
-}
-));
-
-
+      spanGaps: true,
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+      order: 1,
+      yAxisID: "SNR",
+    },
+    {
+      type: "bar",
+      label: "Speed[bpm]",
+      data: state.arq_speed_list_bpm,
+      borderColor: "rgb(120, 100, 120, 1.0)",
+      backgroundColor: "rgba(120, 100, 120, 0.2)",
+      order: 0,
+      yAxisID: "SPEED",
+    },
+  ],
+}));
 
 const scatterChartOptions = {
   responsive: true,
   maintainAspectRatio: true,
   scales: {
     x: {
-      type: 'linear',
-      position: 'bottom',
+      type: "linear",
+      position: "bottom",
       grid: {
         display: true,
         lineWidth: 1, // Set the line width for x-axis grid lines
@@ -150,8 +132,8 @@ const scatterChartOptions = {
       },
     },
     y: {
-      type: 'linear',
-      position: 'left',
+      type: "linear",
+      position: "left",
       grid: {
         display: true,
         lineWidth: 1, // Set the line width for y-axis grid lines
@@ -171,16 +153,21 @@ const scatterChartOptions = {
   },
 };
 
-
 // dummy data
 //state.scatter = [{"x":"166","y":"46"},{"x":"-193","y":"-139"},{"x":"-165","y":"-291"},{"x":"311","y":"-367"},{"x":"389","y":"199"},{"x":"78","y":"372"},{"x":"242","y":"-431"},{"x":"-271","y":"-248"},{"x":"28","y":"-130"},{"x":"-20","y":"187"},{"x":"74","y":"362"},{"x":"-316","y":"-229"},{"x":"-180","y":"261"},{"x":"321","y":"360"},{"x":"438","y":"-288"},{"x":"378","y":"-94"},{"x":"462","y":"-163"},{"x":"-265","y":"248"},{"x":"210","y":"314"},{"x":"230","y":"-320"},{"x":"261","y":"-244"},{"x":"-283","y":"-373"}]
 
 const scatterChartData = computed(() => ({
   datasets: [
-    { type: 'scatter', fill: true, data: state.scatter, label: 'Scatter' ,tension: 0.1, borderColor: 'rgb(0, 255, 0)' },
-  ]
-  }
-));
+    {
+      type: "scatter",
+      fill: true,
+      data: state.scatter,
+      label: "Scatter",
+      tension: 0.1,
+      borderColor: "rgb(0, 255, 0)",
+    },
+  ],
+}));
 </script>
 
 <template>
@@ -202,7 +189,7 @@ const scatterChartData = computed(() => ({
                   href="#list-waterfall"
                   role="tab"
                   aria-controls="list-waterfall"
-                  v-bind:class="{ 'active' : settings.spectrum === 'waterfall'}"
+                  v-bind:class="{ active: settings.spectrum === 'waterfall' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-water"></i></strong
                 ></a>
@@ -213,7 +200,7 @@ const scatterChartData = computed(() => ({
                   href="#list-scatter"
                   role="tab"
                   aria-controls="list-scatter"
-                  v-bind:class="{ 'active' : settings.spectrum === 'scatter'}"
+                  v-bind:class="{ active: settings.spectrum === 'scatter' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-border-outer"></i></strong
                 ></a>
@@ -224,7 +211,7 @@ const scatterChartData = computed(() => ({
                   href="#list-chart"
                   role="tab"
                   aria-controls="list-chart"
-                  v-bind:class="{ 'active' : settings.spectrum === 'chart'}"
+                  v-bind:class="{ active: settings.spectrum === 'chart' }"
                   @click="selectStatsControl($event)"
                   ><strong><i class="bi bi-graph-up-arrow"></i></strong
                 ></a>
@@ -238,7 +225,10 @@ const scatterChartData = computed(() => ({
                 data-bs-toggle="tooltip"
                 data-bs-trigger="hover"
                 data-bs-html="true"
-                v-bind:class="{ 'btn-warning' : state.channel_busy === 'True', 'btn-outline-secondary' : state.channel_busy === 'False'}"
+                v-bind:class="{
+                  'btn-warning': state.channel_busy === 'True',
+                  'btn-outline-secondary': state.channel_busy === 'False',
+                }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
                 busy
@@ -251,7 +241,10 @@ const scatterChartData = computed(() => ({
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 title="Recieving data: illuminates <strong class='text-success'>green</strong> if receiving codec2 data"
-                v-bind:class="{ 'btn-success' : state.is_codec2_traffic === 'True', 'btn-outline-secondary' : state.is_codec2_traffic === 'False'}"
+                v-bind:class="{
+                  'btn-success': state.is_codec2_traffic === 'True',
+                  'btn-outline-secondary': state.is_codec2_traffic === 'False',
+                }"
               >
                 signal
               </button>
@@ -276,7 +269,7 @@ const scatterChartData = computed(() => ({
       <div class="tab-content" id="nav-stats-tabContent">
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active' : settings.spectrum === 'waterfall'}"
+          v-bind:class="{ 'show active': settings.spectrum === 'waterfall' }"
           id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
@@ -289,17 +282,16 @@ const scatterChartData = computed(() => ({
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active' : settings.spectrum === 'scatter'}"
+          v-bind:class="{ 'show active': settings.spectrum === 'scatter' }"
           id="list-scatter"
           role="tabpanel"
           aria-labelledby="list-scatter-list"
         >
           <Scatter :data="scatterChartData" :options="scatterChartOptions" />
-
         </div>
         <div
           class="tab-pane fade"
-          v-bind:class="{ 'show active' : settings.spectrum === 'chart'}"
+          v-bind:class="{ 'show active': settings.spectrum === 'chart' }"
           id="list-chart"
           role="tabpanel"
           aria-labelledby="list-chart-list"

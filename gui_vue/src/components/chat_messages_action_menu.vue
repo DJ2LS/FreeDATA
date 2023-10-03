@@ -12,15 +12,15 @@ export default {
   methods: {
     onDelete() {
       // Implement delete action
-      this.$emit('delete');
+      this.$emit("delete");
     },
     onCopy() {
       // Implement copy action
-      this.$emit('copy');
+      this.$emit("copy");
     },
     onQuote() {
       // Implement quote action
-      this.$emit('quote');
+      this.$emit("quote");
     },
   },
 };

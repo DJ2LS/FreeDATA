@@ -1,14 +1,7 @@
 const { v4: uuidv4 } = require("uuid");
-import * as bootstrap from 'bootstrap'
+import * as bootstrap from "bootstrap";
 
-
-
-export function displayToast(
-  type,
-  icon,
-  content,
-  duration,
-) {
+export function displayToast(type, icon, content, duration) {
   let mainToastContainer = document.getElementById("mainToastContainer");
 
   let randomID = uuidv4();

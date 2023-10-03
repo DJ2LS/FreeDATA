@@ -2,17 +2,16 @@
 //const fs = require("fs");
 //const os = require("os");
 
-import path from 'node:path'
-import fs from 'fs'
-import os from 'os'
-
+import path from "node:path";
+import fs from "fs";
+import os from "os";
 
 // pinia store setup
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from '../store/settingsStore.js';
+import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 // ---------------------------------
 
@@ -94,48 +93,40 @@ if (!fs.existsSync(configPath)) {
   fs.writeFileSync(configPath, configDefaultSettings);
 }
 
+export function loadSettings() {
+  // load settings
+  var config = require(configPath);
 
-export function loadSettings(){
-// load settings
-var config = require(configPath);
+  //config validation
+  // check running config against default config.
+  // if parameter not exists, add it to running config to prevent errors
+  console.log("CONFIG VALIDATION  -----------------------------  ");
 
-//config validation
-// check running config against default config.
-// if parameter not exists, add it to running config to prevent errors
-console.log("CONFIG VALIDATION  -----------------------------  ");
-
-var parsedConfig = JSON.parse(configDefaultSettings);
-for (var key in parsedConfig) {
-  if (config.hasOwnProperty(key)) {
-    console.log("FOUND SETTTING [" + key + "]: " + config[key]);
-  } else {
-    console.log("MISSING SETTTING [" + key + "] : " + parsedConfig[key]);
-    config[key] = parsedConfig[key];
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-  }
-  try{
-    if (key == "mycall"){
-    settings.mycall = config[key].split("-")[0]
-    settings.myssid = config[key].split("-")[1]
-
+  var parsedConfig = JSON.parse(configDefaultSettings);
+  for (var key in parsedConfig) {
+    if (config.hasOwnProperty(key)) {
+      console.log("FOUND SETTTING [" + key + "]: " + config[key]);
     } else {
-    settings[key] = config[key];
+      console.log("MISSING SETTTING [" + key + "] : " + parsedConfig[key]);
+      config[key] = parsedConfig[key];
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     }
-
-
-  } catch(e){
-  console.log(e)
+    try {
+      if (key == "mycall") {
+        settings.mycall = config[key].split("-")[0];
+        settings.myssid = config[key].split("-")[1];
+      } else {
+        settings[key] = config[key];
+      }
+    } catch (e) {
+      console.log(e);
+    }
   }
-
-
-}
 }
 
-
-export function saveSettingsToFile(){
-    console.log("save settings to file...")
-    let config = settings.getJSON()
-    console.log(config)
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-
+export function saveSettingsToFile() {
+  console.log("save settings to file...");
+  let config = settings.getJSON();
+  console.log(config);
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }

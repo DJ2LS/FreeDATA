@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import settings_gui from './settings_gui.vue'
-import settings_chat from './settings_chat.vue'
-import settings_hamlib from './settings_hamlib.vue'
-import settings_tnc from './settings_tnc.vue'
-import settings_web from './settings_web.vue'
-import settings_exp from './settings_exp.vue'
+import settings_gui from "./settings_gui.vue";
+import settings_chat from "./settings_chat.vue";
+import settings_hamlib from "./settings_hamlib.vue";
+import settings_tnc from "./settings_tnc.vue";
+import settings_web from "./settings_web.vue";
+import settings_exp from "./settings_exp.vue";
 </script>
 <template>
   <div
