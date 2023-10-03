@@ -2,6 +2,19 @@ import { app, BrowserWindow, ipcMain } from 'electron'
 import path from 'node:path'
 
 
+
+// pinia store setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
+
+
+
+
 //import { useIpcRenderer } from '@vueuse/electron'
 //const ipcRenderer = useIpcRenderer()
 
@@ -54,6 +67,17 @@ function createWindow() {
     win?.webContents.send('main-process-message', (new Date).toLocaleString())
   })
 
+    win.once("ready-to-show", () => {
+        console.log(settings.update_channel)
+        autoUpdater.channel = settings.update_channel;
+        autoUpdater.autoInstallOnAppQuit = false;
+        autoUpdater.autoDownload = true;
+        autoUpdater.checkForUpdatesAndNotify();
+        //autoUpdater.quitAndInstall();
+    });
+
+
+
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
@@ -67,3 +91,5 @@ app.on('window-all-closed', () => {
 })
 
 app.whenReady().then(createWindow)
+
+

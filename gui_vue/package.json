@@ -11,6 +11,23 @@
     "lint": "eslint --ext .js,.vue src",
     "lint-fix": "eslint --ext .js,.vue --fix src"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DJ2LS/FreeDATA.git"
+  },
+    "keywords": [
+    "TNC",
+    "GUI",
+    "FreeDATA",
+    "codec2"
+  ],
+  "author": "DJ2LS",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/DJ2LS/FreeDATA/issues"
+  },
+    "homepage": "https://freedata.app",
+
   "dependencies": {
     "@vueuse/electron": "^10.4.1",
     "blob-util": "^2.0.2",
@@ -20,6 +37,7 @@
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.3.3",
     "chartjs-plugin-annotation": "^3.0.1",
+    "@electron/notarize": "^1.5.1",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.1",
     "emoji-picker-element": "^1.18.3",

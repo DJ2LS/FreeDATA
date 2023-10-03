@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { saveSettingsToFile } from "../js/settingsHandler";
+
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -38,7 +40,7 @@ function saveSettings() {
           type="checkbox"
           id="ExplorerStatsSwitch"
           @change="saveSettings"
-          v-model="settings.enable_stats"
+          v-model="settings.explorer_stats"
           true-value="True"
           false-value="False"
         />

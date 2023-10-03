@@ -108,3 +108,42 @@ window.onmessage = ev => {
 }
 
 setTimeout(removeLoading, 3000)
+
+
+
+import { autoUpdater } from 'electron-updater';
+autoUpdater.channel = settings.update_channel;
+autoUpdater.autoInstallOnAppQuit = false;
+autoUpdater.autoDownload = true;
+autoUpdater.checkForUpdatesAndNotify();
+
+
+// LISTENER FOR UPDATER EVENTS
+autoUpdater.on("update-available", (info) => {
+  console.log("update available");
+});
+
+autoUpdater.on("update-not-available", (info) => {
+  console.log("update not available");
+});
+
+autoUpdater.on("update-downloaded", (info) => {
+  console.log("update downloaded");
+  // we need to call this at this point.
+  // if an update is available and we are force closing the app
+  // the entire screen crashes...
+  //console.log('quit application and install update');
+  //autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on("checking-for-update", () => {
+  console.log("checking for update");
+});
+
+autoUpdater.on("download-progress", (progress) => {
+
+});
+
+autoUpdater.on("error", (error) => {
+  console.log("update error");
+});
