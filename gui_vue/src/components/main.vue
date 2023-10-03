@@ -30,6 +30,11 @@ import main_active_audio_level from './main_active_audio_level.vue'
 import chat from './chat.vue'
 
 
+import {stopTransmission} from '../js/sock.js'
+
+
+
+
 
 
 
@@ -99,6 +104,16 @@ function changeGuiDesign(design) {
   //update path to css file
   document.getElementById("bootstrap_theme").href = escape(theme_path);
 }
+
+
+
+function stopAllTransmissions(){
+    stopTransmission()
+}
+
+
+
+
 </script>
 
 <template>
@@ -829,7 +844,7 @@ function changeGuiDesign(design) {
                       <div class="col-md-auto">
                         <button
                           type="button"
-                          id="stopTransmission"
+                          @click="stopAllTransmissions()"
                           class="btn btn-danger"
                           style="width: 100%"
                         >
