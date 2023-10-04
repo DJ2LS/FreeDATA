@@ -21,6 +21,7 @@ function deleteChat(callsign) {
 
 import chat_conversations_entry from "./chat_conversations_entry.vue";
 
+
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
 

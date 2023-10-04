@@ -24,6 +24,18 @@ import chat_messages from './chat_messages.vue'
 import {updateAllChat, newMessage, newBroadcast} from '../js/chatHandler'
 
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+import { Line } from 'vue-chartjs'
+import { ref, computed } from 'vue';
 
 
 
@@ -48,9 +60,6 @@ function resetFile(event){
     chat.inputFileSize = '-'
     chat.inputFileType = '-'
 
-    chat.calculatedSpeedPerMinutePER0 = []
-    chat.calculatedSpeedPerMinutePER25 = []
-    chat.calculatedSpeedPerMinutePER75 = []
 }
 
 
@@ -74,40 +83,6 @@ function readFile(event) {
     reader.readAsArrayBuffer(event.target.files[0]);
 
 }
-
-
-
-</script>
-
-<script lang="ts">
-
-import { setActivePinia } from 'pinia';
-import pinia from '../store/index';
-setActivePinia(pinia);
-
-import { useSettingsStore } from '../store/settingsStore.js';
-const settings = useSettingsStore(pinia);
-
-import { useStateStore } from '../store/stateStore.js';
-const state = useStateStore(pinia);
-
-import { useChatStore } from '../store/chatStore.js';
-const chat = useChatStore(pinia);
-
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend
-} from 'chart.js'
-import { Line } from 'vue-chartjs'
-
-import { ref, computed } from 'vue';
 
 
 

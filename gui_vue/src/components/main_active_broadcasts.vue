@@ -18,7 +18,7 @@ function transmitCQ() {
 }
 
 function transmitPing() {
-  sendPing(document.getElementById("dxCall").value);
+  sendPing((<HTMLInputElement>document.getElementById("dxCall")).value);
 }
 
 function startStopBeacon() {

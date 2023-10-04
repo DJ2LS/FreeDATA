@@ -52,10 +52,8 @@ ChartJS.register(
 );
 
 // https://www.chartjs.org/docs/latest/samples/line/segments.html
-// @ts-expect-error
 const skipped = (speedCtx, value) =>
   speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
-  // @ts-expect-error
 const down = (speedCtx, value) =>
   speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
 
@@ -93,11 +91,9 @@ const transmissionSpeedChartData = computed(() => ({
       borderColor: "rgb(75, 192, 192, 1.0)",
       pointRadius: 1,
       segment: {
-      // @ts-expect-error
         borderColor: (speedCtx) =>
           skipped(speedCtx, "rgb(0,0,0,0.4)") ||
           down(speedCtx, "rgb(192,75,75)"),
-          // @ts-expect-error
         borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
       },
       spanGaps: true,

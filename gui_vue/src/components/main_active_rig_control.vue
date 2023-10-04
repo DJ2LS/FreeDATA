@@ -11,7 +11,7 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { set_frequency, set_mode } from "../js/sock.js";
+import { set_frequency, set_mode, set_rf_level } from "../js/sock.js";
 
 function set_hamlib_frequency() {
   set_frequency(state.new_frequency);

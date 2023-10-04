@@ -12,9 +12,11 @@
     "lib": ["ESNext", "DOM"],
     "skipLibCheck": true,
     "noEmit": true,
-    "allowJs": true
+    "allowJs": true,
+    "noImplicitAny": false
   },
   "include": ["src"],
+  "exclude": ["node_modules"],
   "references": [
     { "path": "./tsconfig.node.json" }
   ]
