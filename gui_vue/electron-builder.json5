@@ -5,7 +5,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "YourAppID",
   "asar": true,
-  "productName": "YourAppName",
+  "productName": "FreeDATA",
   "directories": {
     "output": "release/${version}"
   },
@@ -40,6 +40,19 @@
     "target": [
       "AppImage"
     ],
-    "artifactName": "${productName}-Linux-${version}.${ext}"
-  }
-}
+    "artifactName": "${productName}-${version}.${ext}"
+  },
+      "files": [
+      "**/*",
+      "!**/*.ts",
+      "!*.map",
+      "!package.json",
+      "!package-lock.json",
+      {
+        "from": "../dist",
+        "filter": [
+          "**/*"
+        ]
+      },
+  ]
+        }

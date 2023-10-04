@@ -27,7 +27,10 @@ function chatSelected(callsign) {
 
   // scroll message container to bottom
   var messageBody = document.getElementById("message-container");
-  messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+  if (messageBody != null ) {
+    // needs sensible defaults
+    messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
+  }
 
   try {
     chat.beaconLabelArray = Object.values(

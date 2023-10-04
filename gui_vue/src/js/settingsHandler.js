@@ -15,13 +15,43 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 // ---------------------------------
 
-var appDataFolder =
-  process.env.APPDATA ||
-  (process.platform == "darwin"
-    ? process.env.HOME + "/Library/Application Support"
-    : process.env.HOME + "/.config");
+console.log(process.env)
+if(typeof process.env["APPDATA"]  !== "undefined"){
+    var appDataFolder = process.env["APPDATA"]
+    console.log(appDataFolder)
+
+} else {
+        switch (process.platform) {
+        case "darwin":
+            var appDataFolder = process.env["HOME"] + "/Library/Application Support";
+            console.log(appDataFolder)
+
+            break;
+        case "linux":
+            var appDataFolder = process.env["HOME"] + "/.config";
+            console.log(appDataFolder)
+
+            break;
+        case "linux2":
+            var appDataFolder = "undefined";
+            break;
+        case "windows":
+            var appDataFolder = "undefined";
+            break;
+        default:
+            var appDataFolder = "undefined";
+            break;
+    }
+}
+
+
 var configFolder = path.join(appDataFolder, "FreeDATA");
 var configPath = path.join(configFolder, "config.json");
+
+console.log(appDataFolder)
+console.log(configFolder)
+console.log(configPath)
+
 
 // create config folder if not exists
 if (!fs.existsSync(configFolder)) {

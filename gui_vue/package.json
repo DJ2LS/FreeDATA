@@ -1,11 +1,12 @@
 {
   "name": "FreeDATA",
+  "description": "FreeDATA ",
   "private": true,
   "version": "0.11.0-alpha",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "vite",
-     "dev": "vite",
+    "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",
@@ -74,65 +75,5 @@
     "vite-plugin-electron-renderer": "^0.14.5",
     "vue": "^3.3.4",
     "vue-tsc": "^1.4.2"
-  },
-  "build": {
-    "productName": "FreeDATA",
-    "appId": "app.freedata",
-    "afterSign": "electron-builder-notarize",
-    "npmRebuild": "false",
-    "directories": {
-      "buildResources": "build",
-      "output": "dist"
-    },
-    "mac": {
-      "target": [
-        "default"
-      ],
-      "icon": "build/icon.png",
-      "hardenedRuntime": true,
-      "entitlements": "build/entitlements.plist",
-      "entitlementsInherit": "build/entitlements.plist",
-      "gatekeeperAssess": false
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "target": [
-        "AppImage"
-      ],
-      "category": "Development"
-    },
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    },
-    "extraResources": [
-      {
-        "from": "../tnc/dist/tnc/",
-        "to": "tnc",
-        "filter": [
-          "**/*",
-          "!**/.git"
-        ]
-      }
-    ],
-    "files": [
-      "**/*",
-      "!**/*.ts",
-      "!*.map",
-      "!package.json",
-      "!package-lock.json",
-      {
-        "from": "../dist",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ]
   }
 }
