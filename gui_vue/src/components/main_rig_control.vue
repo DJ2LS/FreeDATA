@@ -9,6 +9,7 @@ import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
 function selectRadioControl() {
+// @ts-expect-error
   switch (event.target.id) {
     case "list-rig-control-none-list":
       settings.radiocontrol = "disabled";
