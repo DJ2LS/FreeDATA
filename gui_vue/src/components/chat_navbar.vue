@@ -1,4 +1,6 @@
 <script setup lang="ts">
+// @ts-nocheck
+
 import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";

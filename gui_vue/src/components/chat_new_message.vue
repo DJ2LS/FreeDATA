@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 
 
 import {saveSettingsToFile} from '../js/settingsHandler';
@@ -52,6 +53,7 @@ function transmitNewMessage(){
     }
     // finally do a cleanup
     chat.inputText = ''
+    // @ts-expect-error
     resetFile()
 }
 

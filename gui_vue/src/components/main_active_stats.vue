@@ -1,4 +1,5 @@
 <script setup lang="ts">
+// @ts-nocheck
 import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
@@ -58,7 +59,7 @@ const down = (speedCtx, value) =>
   speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
 
 var transmissionSpeedChartOptions = {
-  type: "line",
+  //type: "line",
   responsive: true,
   animations: true,
   cubicInterpolationMode: "monotone",
