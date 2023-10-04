@@ -1,7 +1,11 @@
 import { defineStore } from "pinia";
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 export const useSettingsStore = defineStore("settingsStore", () => {
+  // audio
+  var tx_audio = ref()
+  var rx_audio = ref()
+
   // network
   var tnc_host = ref("127.0.0.1");
   var tnc_port = ref(3000);
@@ -44,8 +48,6 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   var hamlib_ptt_port = ref("ignore");
   var hamlib_dcd = ref("ignore");
   var hamlbib_serialspeed_ptt = ref(9600);
-  var hamlib_rigctld_port = ref(4532);
-  var hamlib_rigctld_ip = ref("127.0.0.1");
   var hamlib_rigctld_path = ref("");
   var hamlib_rigctld_server_port = ref(4532);
   var hamlib_rigctld_custom_args = ref("");
@@ -132,6 +134,8 @@ export const useSettingsStore = defineStore("settingsStore", () => {
       auto_start: auto_start.value,
       enable_sys_notification: enable_sys_notification.value,
       enable_mesh_features: enable_mesh_features.value,
+      tx_audio: tx_audio.value,
+      rx_audio: rx_audio.value,
     };
 
     return config_export;
@@ -171,8 +175,6 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     hamlib_ptt_port,
     hamlib_dcd,
     hamlbib_serialspeed_ptt,
-    hamlib_rigctld_port,
-    hamlib_rigctld_ip,
     hamlib_rigctld_path,
     hamlib_rigctld_server_port,
     hamlib_rigctld_custom_args,
@@ -197,5 +199,7 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     tx_delay,
     enable_mesh_features,
     getJSON,
+    tx_audio,
+    rx_audio
   };
 });

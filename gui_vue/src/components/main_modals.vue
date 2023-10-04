@@ -1,12 +1,8 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -17,7 +13,7 @@ function tuneAudio() {
   sendTestFrame();
 }
 
-function set_audio_level(obj) {
+function set_audio_level() {
   setTxAudioLevel(state.audio_level);
 }
 </script>
@@ -624,7 +620,7 @@ function set_audio_level(obj) {
           <div class="card mb-3">
             <div class="card-body">
               <h5 class="card-title">
-                <button type="button" class="btn btn-sm btn-outline-secondary">
+                <button type="button" class="btn btn-sm btn-outline-secondary" @click="tuneAudio">
                   Tune
                 </button>
               </h5>

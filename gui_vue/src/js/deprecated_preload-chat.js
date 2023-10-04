@@ -37,7 +37,7 @@ const dateFormatHours = new Intl.DateTimeFormat(navigator.language, {
   hour12: false,
 });
 // split character
-const split_char = "\0;\1;";
+//const split_char = "\0;\1;";
 // global for our selected file we want to transmit
 // ----------------- some chat globals
 var filetype = "";

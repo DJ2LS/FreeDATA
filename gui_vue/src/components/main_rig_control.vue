@@ -8,7 +8,7 @@ setActivePinia(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-function selectRadioControl(obj) {
+function selectRadioControl() {
   switch (event.target.id) {
     case "list-rig-control-none-list":
       settings.radiocontrol = "disabled";
@@ -24,6 +24,14 @@ function selectRadioControl(obj) {
       settings.radiocontrol = "disabled";
   }
   saveSettingsToFile();
+}
+
+
+function testHamlib(){
+
+console.log("not yet implemented")
+alert("not yet implemented")
+
 }
 </script>
 

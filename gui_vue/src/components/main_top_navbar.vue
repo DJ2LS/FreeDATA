@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";

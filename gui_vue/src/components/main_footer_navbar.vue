@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -8,8 +7,6 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
 </script>
 
 <template>
@@ -156,11 +153,11 @@ const settings = useSettingsStore(pinia);
               class="bi"
               style="font-size: 1rem"
               v-bind:class="{
-                'bi-reception-0': state.speed_level === '0',
-                'bi-reception-1': state.speed_level === '1',
-                'bi-reception-2': state.speed_level === '2',
-                'bi-reception-3': state.speed_level === '3',
-                'bi-reception-4': state.speed_level === '4',
+                'bi-reception-0': state.speed_level === 0,
+                'bi-reception-1': state.speed_level === 1,
+                'bi-reception-2': state.speed_level === 2,
+                'bi-reception-3': state.speed_level === 3,
+                'bi-reception-4': state.speed_level === 4,
               }"
             ></i>
           </button>

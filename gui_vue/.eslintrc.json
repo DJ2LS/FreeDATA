@@ -17,7 +17,7 @@
     "plugins": [
         "vue"
     ],
-    "ignorePatterns": ["**/src/assets/*", "**/src/js/deprecated*"],
+    "ignorePatterns": ["**/src/assets/*", "**/src/js/deprecated*", "**/node_modules"],
     "rules": {
     }
 }
