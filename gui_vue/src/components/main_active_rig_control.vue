@@ -116,8 +116,11 @@ function set_hamlib_rf_level() {
               >
                 <option value="USB">USB</option>
                 <option value="LSB">LSB</option>
+                <option value="PKTUSB">PKT-U</option>
+                <option value="PKTLSB">PKT-L</option>
                 <option value="AM">AM</option>
                 <option value="FM">FM</option>
+                <option value="PKTFM">PKTFM</option>
               </select>
             </div>
           </div>
