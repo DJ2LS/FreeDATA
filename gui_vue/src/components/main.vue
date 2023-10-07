@@ -30,12 +30,16 @@ import chat from "./chat.vue";
 
 import { stopTransmission } from "../js/sock.js";
 
-
+const version = import.meta.env.PACKAGE_VERSION;
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
 }
+function openWebExternal(url) {
+  open(url); 
+}
+
 </script>
 
 <template>
@@ -358,7 +362,7 @@ function stopAllTransmissions() {
                 aria-labelledby="list-info-list"
               >
                 <h1 class="modal-title fs-5" id="aboutModalLabel">
-                  FreeDATA - <span id="aboutVersion"></span>
+                  FreeDATA - {{ version }}
                 </h1>
 
                 <div class="container-fluid">
@@ -374,6 +378,7 @@ function stopAllTransmissions() {
                           id="openExplorer"
                           type="button"
                           data-bs-placement="bottom"
+                          @click="openWebExternal('https://explorer.freedata.app')"
                         >
                           Explorer map
                         </button>
@@ -384,6 +389,7 @@ function stopAllTransmissions() {
                           id="btnStats"
                           type="button"
                           data-bs-placement="bottom"
+                          @click="openWebExternal('https://statistics.freedata.app/')"
                         >
                           Statistics
                         </button>
@@ -396,6 +402,7 @@ function stopAllTransmissions() {
                           data-bs-trigger="hover"
                           title="FreeDATA website"
                           role="button"
+                          @click="openWebExternal('https://freedata.app')"
                         >
                           Website
                         </button>
@@ -408,6 +415,7 @@ function stopAllTransmissions() {
                           data-bs-trigger="hover"
                           title="Github"
                           role="button"
+                          @click="openWebExternal('https://github.com/dj2ls/freedata')"
                         >
                           Github
                         </button>
@@ -420,6 +428,7 @@ function stopAllTransmissions() {
                           data-bs-trigger="hover"
                           title="Wiki"
                           role="button"
+                          @click="openWebExternal('https://wiki.freedata.app')"
                         >
                           Wiki
                         </button>
@@ -432,6 +441,7 @@ function stopAllTransmissions() {
                           data-bs-trigger="hover"
                           title="Discord"
                           role="button"
+                          @click="openWebExternal('https://discord.freedata.app')"
                         >
                           Discord
                         </button>

@@ -80,6 +80,9 @@ export default defineConfig(({ command }) => {
         port: +url.port,
       }
     })(),
+     define: {
+      'import.meta.env.PACKAGE_VERSION':JSON.stringify(pkg.version)
+  },
     clearScreen: false,
   }
 })
