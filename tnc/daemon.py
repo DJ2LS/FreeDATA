@@ -291,51 +291,48 @@ class DAEMON:
 
             # hamlib_deviceid
             if data[1] not in [None, "None", "ignore"]:
-                options.extend(("-m", data[1]))
+                options.extend(("--model=", data[1]))
 
             # hamlib_deviceport
             if data[2] not in [None, "None", "ignore"]:
-                options.extend(("-r", data[2]))
-
+                options.extend(("--rig-file=", data[2]))
             # hamlib_stop_bits
             if data[3] not in [None, "None", "ignore"]:
-                #  options.extend(("-m", data[3]))
-                pass
+                options.extend(("--set-conf=stop_bits=", data[3]))
 
             # hamlib_data_bits
             if data[4] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[4]))
-                pass
+                options.extend(("--set-conf=data_bits=", data[4]))
+
 
             # hamlib_handshake
             if data[5] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[5]))
-                pass
+                options.extend(("--set-conf=serial_handshake=", data[5]))
+
 
             # hamlib_serialspeed
             if data[6] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[6]))
-                pass
+                options.extend(("--serial-speed=", data[6]))
 
             # hamlib_dtrstate
             if data[7] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[7]))
-                pass
+                options.extend(("--set-conf=dtr_state=", data[7]))
+
 
             # hamlib_pttprotocol
             if data[8] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[8]))
-                pass
+                options.extend(("--ptt-type", data[8]))
+
 
             # hamlib_ptt_port
             if data[9] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[9]))
-                pass
+                options.extend(("--ptt-file=", data[9]))
+
 
             # hamlib_dcd
             if data[10] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[10]))
-                pass
+                options.extend(("--dcd-type=", data[10]))
+
 
             # hamlbib_serialspeed_ptt
             if data[11] not in [None, "None", "ignore"]:
