@@ -12,11 +12,10 @@
   "files": [
     "dist",
     "dist-electron",
-    "src/**/*",
-    "node_modules/**/*",
+
     {
           from: 'src',
-          to: 'dist'
+          to: '123'
         }
   ],
 

@@ -40,11 +40,33 @@ PouchDB.plugin(require("pouchdb-find"));
 PouchDB.plugin(require("pouchdb-upsert"));
 
 // https://stackoverflow.com/a/26227660
-var appDataFolder =
-  process.env.APPDATA ||
-  (process.platform == "darwin"
-    ? process.env.HOME + "/Library/Application Support"
-    : process.env.HOME + "/.config");
+if(typeof process.env["APPDATA"]  !== "undefined"){
+    var appDataFolder = process.env["APPDATA"]
+    console.log(appDataFolder)
+
+} else {
+        switch (process.platform) {
+        case "darwin":
+            var appDataFolder = process.env["HOME"] + "/Library/Application Support";
+            console.log(appDataFolder)
+
+            break;
+        case "linux":
+            var appDataFolder = process.env["HOME"] + "/.config";
+            console.log(appDataFolder)
+
+            break;
+        case "linux2":
+            var appDataFolder = "undefined";
+            break;
+        case "windows":
+            var appDataFolder = "undefined";
+            break;
+        default:
+            var appDataFolder = "undefined";
+            break;
+    }
+}
 var configFolder = path.join(appDataFolder, "FreeDATA");
 
 var chatDB = path.join(configFolder, "chatDB");
