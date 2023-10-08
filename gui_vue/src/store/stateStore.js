@@ -53,6 +53,10 @@ export const useStateStore = defineStore("stateStore", () => {
   var arq_seconds_until_timeout = ref();
   var arq_seconds_until_timeout_percent = ref();
 
+  var rigctld_started = ref();
+  var rigctld_process = ref();
+
+
   function updateTncState(state) {
     tnc_connection.value = state;
 
@@ -145,6 +149,8 @@ export const useStateStore = defineStore("stateStore", () => {
     is_codec2_traffic,
     rf_level,
     heard_stations,
-    beacon_state
+    beacon_state,
+    rigctld_started,
+    rigctld_process
   };
 });

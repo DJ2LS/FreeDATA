@@ -11,6 +11,9 @@ setActivePinia(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
 function selectRadioControl() {
 // @ts-expect-error
   switch (event.target.id) {
@@ -177,6 +180,8 @@ alert("not yet implemented")
                 id="hamlib_rigctld_status"
                 aria-label="State"
                 aria-describedby="basic-addon1"
+                v-model="state.rigctld_started"
+
               />
 
               <button

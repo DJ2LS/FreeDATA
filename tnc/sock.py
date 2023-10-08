@@ -956,7 +956,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         if received_json["type"] == "set" and received_json["command"] == "stop_tnc":
             self.daemon_stop_tnc(received_json)
 
-        if received_json["type"] == "set" and received_json["command"] == "start_rigctld":
+        if received_json["type"] == "set" and received_json["command"] == "start_rigctld" and not Daemon.rigctldstarted:
             self.daemon_start_rigctld(received_json)
 
         if received_json["type"] == "set" and received_json["command"] == "stop_rigctld":
@@ -1183,12 +1183,13 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         try:
             log.warning("[SCK] Stopping rigctld")
 
-            Daemon.rigctldprocess.kill()
-            # unregister process from atexit to avoid process zombies
-            atexit.unregister(Daemon.rigctldprocess.kill)
+            if Daemon.rigctldstarted:
+                Daemon.rigctldprocess.kill()
+                # unregister process from atexit to avoid process zombies
+                atexit.unregister(Daemon.rigctldprocess.kill)
 
-            Daemon.rigctldstarted = False
-            command_response("stop_tnc", True)
+                Daemon.rigctldstarted = False
+                command_response("stop_rigctld", True)
         except Exception as err:
             command_response("stop_tnc", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
@@ -1208,19 +1209,25 @@ def send_daemon_state():
         output = {
             "command": "daemon_state",
             "daemon_state": [],
+            "rigctld_state": [],
             "python_version": str(python_version),
             "input_devices": AudioParam.audio_input_devices,
             "output_devices": AudioParam.audio_output_devices,
             "serial_devices": Daemon.serial_devices,
             # 'cpu': str(psutil.cpu_percent()),
             # 'ram': str(psutil.virtual_memory().percent),
-            "version": "0.1",
+            "version": TNC.version,
         }
 
         if Daemon.tncstarted:
             output["daemon_state"].append({"status": "running"})
         else:
             output["daemon_state"].append({"status": "stopped"})
+
+        if Daemon.rigctldstarted:
+            output["rigctld_state"].append({"status": "running"})
+        else:
+            output["rigctld_state"].append({"status": "stopped"})
 
         return json.dumps(output)
     except Exception as err:
@@ -1277,6 +1284,7 @@ def send_tnc_state():
         "hamlib_status": HamlibParam.hamlib_status,
         "listen": str(TNC.listen),
         "audio_recording": str(AudioParam.audio_record),
+
     }
 
     # add heard stations to heard stations object

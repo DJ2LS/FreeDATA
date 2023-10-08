@@ -148,6 +148,7 @@ daemon.on("data", function (socketdata) {
         }
       }
 
+      console.log(data)
       if (data["command"] == "daemon_state") {
         let Data = {
           input_devices: data["input_devices"],
@@ -165,7 +166,15 @@ daemon.on("data", function (socketdata) {
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
         state.tnc_running_state = data["daemon_state"][0]["status"];
+
+        state.rigctld_started = data["rigctld_state"][0]["status"];
+        //state.rigctld_process = data["daemon_state"][0]["rigctld_process"];
+
+
       }
+
+
+
 
       if (data["command"] == "test_hamlib") {
         let Data = {

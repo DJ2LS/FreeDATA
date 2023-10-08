@@ -252,16 +252,15 @@ class DAEMON:
             elif sys.platform in ["win32", "win64"]:
                 command.append("rigctld.exe")
 
-            options = ""
+            options = "--version"
             command += options
             proc = subprocess.Popen(command)
             atexit.register(proc.kill)
         except Exception as err:
             self.log.info("[DMN] starting rigctld: ", e=err)
 
-        Daemon.rigctldrocess = proc
+        Daemon.rigctldprocess = proc
         Daemon.rigctldstarted = True
-
 
     def start_tnc(self, data):
         self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
