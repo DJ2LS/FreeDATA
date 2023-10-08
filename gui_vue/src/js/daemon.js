@@ -166,7 +166,6 @@ daemon.on("data", function (socketdata) {
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
         state.tnc_running_state = data["daemon_state"][0]["status"];
-
         state.rigctld_started = data["rigctld_state"][0]["status"];
         //state.rigctld_process = data["daemon_state"][0]["rigctld_process"];
 
@@ -317,6 +316,7 @@ export function startRigctld() {
       hamlib_rigctld_path: settings.hamlib_rigctld_path,
       hamlib_rigctld_server_port: settings.hamlib_rigctld_server_port,
       hamlib_rigctld_custom_args: settings.hamlib_rigctld_custom_args
+
       },
     ],
   });

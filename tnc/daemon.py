@@ -238,29 +238,147 @@ class DAEMON:
         sock.SOCKET_QUEUE.put(jsondata)
 
     def start_rigctld(self, data):
+        """
+        data[0] START_RIGCTLD,
+        data[1] hamlib_deviceid,
+        data[2] hamlib_deviceport,
+        data[3] hamlib_stop_bits,
+        data[4] hamlib_data_bits,
+        data[5] hamlib_handshake,
+        data[6] hamlib_serialspeed,
+        data[7] hamlib_dtrstate,
+        data[8] hamlib_pttprotocol,
+        data[9] hamlib_ptt_port,
+        data[10] hamlib_dcd,
+        data[11] hamlbib_serialspeed_ptt,
+        data[12] hamlib_rigctld_port,
+        data[13] hamlib_rigctld_ip,
+        data[14] hamlib_rigctld_path,
+        data[15] hamlib_rigctld_server_port,
+        data[16] hamlib_rigctld_custom_args
+        """
         try:
             command = []
+
+
+
             if sys.platform in ["darwin"]:
-                # If the application is run as a bundle, the PyInstaller bootloader
-                # extends the sys module by a flag frozen=True and sets the app
-                # path into variable _MEIPASS'.
-                application_path = sys._MEIPASS
-                command.append("rigctld")
+                if data[14] not in [""]:
+                    # hamlib_rigctld_path
+                    application_path = data[14]
+                else:
+                    application_path = "rigctld"
+
+                command.append(f'{application_path}')
 
             elif sys.platform in ["linux", "darwin"]:
-                command.append("rigctld")
+                if data[14] not in [""]:
+                    # hamlib_rigctld_path
+                    application_path = data[14]
+                else:
+                    application_path = "rigctld"
+                command.append(f'{application_path}')
             elif sys.platform in ["win32", "win64"]:
-                command.append("rigctld.exe")
+                if data[14] not in [""]:
+                    # hamlib_rigctld_path
+                    application_path = data[14]
+                else:
+                    application_path = "rigctld.exe"
+                command.append(f'{application_path}')
 
-            options = "--version"
+
+            options = []
+
+            # hamlib_deviceid
+            if data[1] not in [None, "None", "ignore"]:
+                options.extend(("-m", data[1]))
+
+            # hamlib_deviceport
+            if data[2] not in [None, "None", "ignore"]:
+                options.extend(("-r", data[2]))
+
+            # hamlib_stop_bits
+            if data[3] not in [None, "None", "ignore"]:
+                #  options.extend(("-m", data[3]))
+                pass
+
+            # hamlib_data_bits
+            if data[4] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[4]))
+                pass
+
+            # hamlib_handshake
+            if data[5] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[5]))
+                pass
+
+            # hamlib_serialspeed
+            if data[6] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[6]))
+                pass
+
+            # hamlib_dtrstate
+            if data[7] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[7]))
+                pass
+
+            # hamlib_pttprotocol
+            if data[8] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[8]))
+                pass
+
+            # hamlib_ptt_port
+            if data[9] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[9]))
+                pass
+
+            # hamlib_dcd
+            if data[10] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[10]))
+                pass
+
+            # hamlbib_serialspeed_ptt
+            if data[11] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[11]))
+                pass
+
+            # hamlib_rigctld_port
+            if data[12] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[12]))
+                pass
+
+            # hamlib_rigctld_ip
+            if data[13] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[13]))
+                pass
+
+            # data[14] == hamlib_rigctld_path
+            # maybe at wrong place in list...
+
+            # hamlib_rigctld_server_port
+            if data[15] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[15]))
+                pass
+
+            # hamlib_rigctld_custom_args
+            if data[16] not in [None, "None", "ignore"]:
+                # options.extend(("-m", data[16]))
+                pass
+
+
             command += options
+
+            print(command)
             proc = subprocess.Popen(command)
             atexit.register(proc.kill)
+
+            Daemon.rigctldprocess = proc
+            Daemon.rigctldstarted = True
+
         except Exception as err:
             self.log.info("[DMN] starting rigctld: ", e=err)
 
-        Daemon.rigctldprocess = proc
-        Daemon.rigctldstarted = True
+
 
     def start_tnc(self, data):
         self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
@@ -365,6 +483,9 @@ class DAEMON:
 
             atexit.register(proc.kill)
 
+            Daemon.tncprocess = proc
+            Daemon.tncstarted = True
+
             self.log.info("[DMN] TNC started", path="binary")
         except FileNotFoundError as err1:
             self.log.info("[DMN] worker: ", e=err1)
@@ -382,8 +503,7 @@ class DAEMON:
 
             self.log.info("[DMN] TNC started", path="source")
 
-        Daemon.tncprocess = proc
-        Daemon.tncstarted = True
+
 if __name__ == "__main__":
     mainlog = structlog.get_logger(__file__)
     # we need to run this on Windows for multiprocessing support
