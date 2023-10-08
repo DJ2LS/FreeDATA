@@ -35,17 +35,35 @@ function useLoading() {
   const className = `loaders-css__square-spin`
   const styleContent = `
 @keyframes square-spin {
-  25% { transform: perspective(100px) rotateX(180deg) rotateY(0); }
-  50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg); }
-  75% { transform: perspective(100px) rotateX(0) rotateY(180deg); }
-  100% { transform: perspective(100px) rotateX(0) rotateY(0); }
+  0% {
+    transform: rotate(0deg);
+    background-image: url('/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-size: cover; /* Scale the image to cover the entire container */
+  }
+  25% { transform: perspective(100px) rotateX(180deg) rotateY(0);
+    background-image: url('/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-size: cover; /* Scale the image to cover the entire container */
+   }
+
+  50% { transform: perspective(100px) rotateX(180deg) rotateY(180deg);
+    background-image: url('/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-size: cover; /* Scale the image to cover the entire container */
+  }
+  75% { transform: perspective(100px) rotateX(0) rotateY(180deg);
+    background-image: url('/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-size: cover; /* Scale the image to cover the entire container */
+  }
+  100% { transform: perspective(100px) rotateX(0) rotateY(0);
+    background-image: url('/icon_cube_border.png'); /* Replace with the URL of your image */
+    background-size: cover; /* Scale the image to cover the entire container */
+  }
 }
 .${className} > div {
   animation-fill-mode: both;
   width: 50px;
   height: 50px;
   background: #fff;
-  animation: square-spin 3s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
+  animation: square-spin 6s 0s cubic-bezier(0.09, 0.57, 0.49, 0.9) infinite;
 }
 .app-loading-wrap {
   position: fixed;
@@ -57,7 +75,7 @@ function useLoading() {
   align-items: center;
   justify-content: center;
   background: #282c34;
-  z-index: 9;
+  z-index: 99999;
 }
     `
   const oStyle = document.createElement('style')

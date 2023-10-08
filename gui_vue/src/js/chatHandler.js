@@ -13,7 +13,10 @@ const chat = useChatStore(pinia);
 
 import { sendMessage } from "./sock.js";
 
-const FD = require("./src/js/freedata.js");
+
+//const FD = require("./src/js/freedata.js");
+import {btoa_FD} from "./freedata.js"
+
 
 // split character
 const split_char = "0;1;";
@@ -118,7 +121,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
-      data: FD.btoa_FD(file),
+      data: btoa_FD(file),
     },
   };
 
@@ -197,7 +200,7 @@ export function newMessage(
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
-      data: FD.btoa_FD(file),
+      data: btoa_FD(file),
     },
   };
 
@@ -592,7 +595,7 @@ export function newMessageReceived(message, protocol) {
   newChatObj._attachments = {
     [message[6]]: {
       content_type: message[7],
-      data: FD.btoa_FD(message[8]),
+      data: btoa_FD(message[8]),
     },
   };
 
