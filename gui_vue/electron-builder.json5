@@ -3,8 +3,9 @@
  */
 {
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  "appId": "YourAppID",
+  "appId": "app.freedata",
   "asar": true,
+  "afterSign": "electron-builder-notarize",
   "productName": "FreeDATA",
   "directories": {
     "output": "release/${version}"
@@ -56,6 +57,7 @@
     "deleteAppDataOnUninstall": false
   },
   "linux": {
+    "category": "Development",
     "target": [
       "AppImage"
     ],

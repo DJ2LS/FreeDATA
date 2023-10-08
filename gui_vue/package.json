@@ -40,7 +40,7 @@
     "chartjs-plugin-annotation": "^3.0.1",
     "electron-builder-notarize": "^1.5.1",
     "electron-log": "^4.4.8",
-    "electron-updater": "^6.1.1",
+    "electron-updater": "^6.1.4",
     "emoji-picker-element": "^1.18.3",
     "emoji-picker-element-data": "^1.4.0",
     "mime": "^3.0.0",

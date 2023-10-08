@@ -17,6 +17,7 @@ const settings = useSettingsStore(pinia);
           </div>
           <div class="col-3">
             <strong class="fs-5">Updater</strong>
+
           </div>
           <div class="col-7">
             <div class="progress w-100 ms-1 m-1">

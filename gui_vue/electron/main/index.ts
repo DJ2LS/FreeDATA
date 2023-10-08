@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
 import { release } from 'node:os'
 import { join } from 'node:path'
+import { autoUpdater } from "electron-updater"
 
 // The built directory structure
 //
@@ -76,6 +77,18 @@ async function createWindow() {
     return { action: 'deny' }
   })
   // win.webContents.on('will-navigate', (event, url) => { }) #344
+
+
+  win.once("ready-to-show", () => {
+    //autoUpdater.logger = log.scope("updater");
+    //autoUpdater.channel = config.update_channel;
+    autoUpdater.autoInstallOnAppQuit = false;
+    autoUpdater.autoDownload = true;
+    autoUpdater.checkForUpdatesAndNotify();
+    //autoUpdater.quitAndInstall();
+  });
+
+
 }
 
 app.whenReady().then(createWindow)
@@ -118,3 +131,73 @@ ipcMain.handle('open-win', (_, arg) => {
     childWindow.loadFile(indexHtml, { hash: arg })
   }
 })
+
+
+
+
+  //restart and install udpate
+ipcMain.on("request-restart-and-install-update", (event, data) => {
+  close_sub_processes();
+  autoUpdater.quitAndInstall();
+});
+
+// LISTENER FOR UPDATER EVENTS
+autoUpdater.on("update-available", (info) => {
+  console.log("update available");
+
+  let arg = {
+    status: "update-available",
+    info: info,
+  };
+  win.webContents.send("action-updater", arg);
+});
+
+autoUpdater.on("update-not-available", (info) => {
+  console.log("update not available");
+  let arg = {
+    status: "update-not-available",
+    info: info,
+  };
+  win.webContents.send("action-updater", arg);
+});
+
+autoUpdater.on("update-downloaded", (info) => {
+  console.log("update downloaded");
+  let arg = {
+    status: "update-downloaded",
+    info: info,
+  };
+  win.webContents.send("action-updater", arg);
+  // we need to call this at this point.
+  // if an update is available and we are force closing the app
+  // the entire screen crashes...
+  //console.log.info('quit application and install update');
+  //autoUpdater.quitAndInstall();
+});
+
+autoUpdater.on("checking-for-update", () => {
+  console.log.info("checking for update");
+  let arg = {
+    status: "checking-for-update",
+    version: app.getVersion(),
+  };
+  win.webContents.send("action-updater", arg);
+});
+
+autoUpdater.on("download-progress", (progress) => {
+  let arg = {
+    status: "download-progress",
+    progress: progress,
+  };
+  win.webContents.send("action-updater", arg);
+});
+
+autoUpdater.on("error", (error) => {
+  console.log("update error");
+  let arg = {
+    status: "error",
+    progress: error,
+  };
+  win.webContents.send("action-updater", arg);
+  console.log("AUTO UPDATER : " + error);
+});
