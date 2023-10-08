@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { saveSettingsToFile } from "../js/settingsHandler";
 
+import { startRigctld, stopRigctld } from "../js/daemon.js";
+
+
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -154,6 +157,7 @@ alert("not yet implemented")
                 class="btn btn-outline-success"
                 type="button"
                 id="hamlib_rigctld_start"
+                @click="startRigctld"
               >
                 Start
               </button>
@@ -161,6 +165,8 @@ alert("not yet implemented")
                 class="btn btn-outline-danger"
                 type="button"
                 id="hamlib_rigctld_stop"
+                @click="stopRigctld"
+
               >
                 Stop
               </button>

@@ -75,7 +75,7 @@ client.on('close', function(data) {
 */
 
 daemon.on("end", function (data) {
-  daemonLog.warn("daemon connection ended");
+  console.log("daemon connection ended");
   daemon.destroy();
   setTimeout(connectDAEMON, 500);
   let Data = {
@@ -285,10 +285,48 @@ function testHamlib(
   writeDaemonCommand(json_command);
 }
 
+export function startRigctld() {
+
+  var json_command = JSON.stringify({
+    type: "set",
+    command: "start_rigctld",
+    parameter: [
+      {
+      hamlib_deviceid: settings.hamlib_deviceid,
+      hamlib_deviceport: settings.hamlib_deviceport,
+      hamlib_stop_bits: settings.hamlib_stop_bits,
+      hamlib_data_bits: settings.hamlib_data_bits,
+      hamlib_handshake: settings.hamlib_handshake,
+      hamlib_serialspeed: settings.hamlib_serialspeed,
+      hamlib_dtrstate: settings.hamlib_dtrstate,
+      hamlib_pttprotocol: settings.hamlib_pttprotocol,
+      hamlib_ptt_port: settings.hamlib_ptt_port,
+      hamlib_dcd: settings.hamlib_dcd,
+      hamlbib_serialspeed_ptt: settings.hamlib_serialspeed,
+      hamlib_rigctld_port: settings.hamlib_rigctld_port,
+      hamlib_rigctld_ip: settings.hamlib_rigctld_ip,
+      hamlib_rigctld_path: settings.hamlib_rigctld_path,
+      hamlib_rigctld_server_port: settings.hamlib_rigctld_server_port,
+      hamlib_rigctld_custom_args: settings.hamlib_rigctld_custom_args
+      },
+    ],
+  });
+  console.log(json_command);
+  writeDaemonCommand(json_command);
+
+}
+export function stopRigctld(){
+  let command = '{"type" : "set", "command": "stop_rigctld"}';
+  writeDaemonCommand(command);
+
+}
+
+
+
 //Save myCall
 function saveMyCall(callsign) {
   //exports.saveMyCall = function (callsign) {
-  command =
+  let command =
     '{"type" : "set", "command": "mycallsign" , "parameter": "' +
     callsign +
     '"}';
@@ -298,24 +336,9 @@ function saveMyCall(callsign) {
 // Save myGrid
 //exports.saveMyGrid = function (grid) {
 function saveMyGrid(grid) {
-  command =
+  let command =
     '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}';
   writeDaemonCommand(command);
 }
 
-ipcRenderer.on("action-update-daemon-ip", (event, arg) => {
-  daemon.destroy();
-  let Data = {
-    busy_state: "-",
-    arq_state: "-",
-    //channel_state: "-",
-    frequency: "-",
-    mode: "-",
-    bandwidth: "-",
-    dbfs_level: 0,
-  };
-  ipcRenderer.send("request-update-tnc-state", Data);
-  daemon_port = arg.port;
-  daemon_host = arg.adress;
-  connectDAEMON();
-});
+

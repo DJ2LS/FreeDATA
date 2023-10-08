@@ -162,6 +162,29 @@ class DAEMON:
                     # data[11] rigctld_port
                     self.test_hamlib_ptt(data)
 
+                if data[0] == "START_RIGCTLD":
+                    """
+                    data[0] START_RIGCTLD,
+                    data[1] hamlib_deviceid,
+                    data[2] hamlib_deviceport,
+                    data[3] hamlib_stop_bits,
+                    data[4] hamlib_data_bits,
+                    data[5] hamlib_handshake,
+                    data[6] hamlib_serialspeed,
+                    data[7] hamlib_dtrstate,
+                    data[8] hamlib_pttprotocol,
+                    data[9] hamlib_ptt_port,
+                    data[10] hamlib_dcd,
+                    data[11] hamlbib_serialspeed_ptt,
+                    data[12] hamlib_rigctld_port,
+                    data[13] hamlib_rigctld_ip,
+                    data[14] hamlib_rigctld_path,
+                    data[15] hamlib_rigctld_server_port,
+                    data[16] hamlib_rigctld_custom_args
+                    """
+                    self.start_rigctld(data)
+
+
             except Exception as err1:
                 self.log.error("[DMN] worker: Exception: ", e=err1)
 
@@ -213,6 +236,32 @@ class DAEMON:
 
         jsondata = json.dumps(response)
         sock.SOCKET_QUEUE.put(jsondata)
+
+    def start_rigctld(self, data):
+        try:
+            command = []
+            if sys.platform in ["darwin"]:
+                # If the application is run as a bundle, the PyInstaller bootloader
+                # extends the sys module by a flag frozen=True and sets the app
+                # path into variable _MEIPASS'.
+                application_path = sys._MEIPASS
+                command.append("rigctld")
+
+            elif sys.platform in ["linux", "darwin"]:
+                command.append("rigctld")
+            elif sys.platform in ["win32", "win64"]:
+                command.append("rigctld.exe")
+
+            options = ""
+            command += options
+            proc = subprocess.Popen(command)
+            atexit.register(proc.kill)
+        except Exception as err:
+            self.log.info("[DMN] starting rigctld: ", e=err)
+
+        Daemon.rigctldrocess = proc
+        Daemon.rigctldstarted = True
+
 
     def start_tnc(self, data):
         self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])

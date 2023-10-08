@@ -36,6 +36,7 @@ class ARQ:
     # ARQ PROTOCOL VERSION
     # v.5 - signalling frame uses datac0
     # v.6 - signalling frame uses datac13
+    # v.7 - adjusting ARQ timeouts, not done yet
     arq_protocol_version: int = 7
     total_bytes: int = 0
     speed_list = []
@@ -73,7 +74,9 @@ class Channel:
 @dataclass 
 class Daemon:
     tncprocess: subprocess.Popen
+    rigctldprocess: subprocess.Popen
     tncstarted: bool = False
+    rigctldstarted: bool = False
     port: int = 3001
     serial_devices = []
 

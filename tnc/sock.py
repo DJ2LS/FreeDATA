@@ -956,6 +956,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         if received_json["type"] == "set" and received_json["command"] == "stop_tnc":
             self.daemon_stop_tnc(received_json)
 
+        if received_json["type"] == "set" and received_json["command"] == "start_rigctld":
+            self.daemon_start_rigctld(received_json)
+
+        if received_json["type"] == "set" and received_json["command"] == "stop_rigctld":
+            self.daemon_stop_rigctld(received_json)
+
     def daemon_set_mycallsign(self, received_json):
         try:
             callsign = received_json["parameter"]
@@ -1106,6 +1112,88 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         except Exception as err:
             command_response("test_hamlib", False)
             log.warning("[SCK] command execution error", e=err, command=received_json)
+
+    def daemon_start_rigctld(self, received_json):
+        """
+        hamlib_deviceid: settings.hamlib_deviceid,
+        hamlib_deviceport: settings.hamlib_deviceport,
+        hamlib_stop_bits: settings.hamlib_stop_bits,
+        hamlib_data_bits: settings.hamlib_data_bits,
+        hamlib_handshake: settings.hamlib_handshake,
+        hamlib_serialspeed: settings.hamlib_serialspeed,
+        hamlib_dtrstate: settings.hamlib_dtrstate,
+        hamlib_pttprotocol: settings.hamlib_pttprotocol,
+        hamlib_ptt_port: settings.hamlib_ptt_port,
+        hamlib_dcd: settings.hamlib_dcd,
+        hamlbib_serialspeed_ptt: settings.hamlib_serialspeed,
+        hamlib_rigctld_port: settings.hamlib_rigctld_port,
+        hamlib_rigctld_ip: settings.hamlib_rigctld_ip,
+        hamlib_rigctld_path: settings.hamlib_rigctld_path,
+        hamlib_rigctld_server_port: settings.hamlib_rigctld_server_port,
+        hamlib_rigctld_custom_args: settings.hamlib_rigctld_custom_args
+        """
+        try:
+
+            hamlib_deviceid = str(received_json["parameter"][0]["hamlib_deviceid"])
+            hamlib_deviceport = str(received_json["parameter"][0]["hamlib_deviceport"])
+            hamlib_stop_bits = str(received_json["parameter"][0]["hamlib_stop_bits"])
+            hamlib_data_bits = str(received_json["parameter"][0]["hamlib_data_bits"])
+            hamlib_handshake = str(received_json["parameter"][0]["hamlib_handshake"])
+            hamlib_serialspeed = str(received_json["parameter"][0]["hamlib_serialspeed"])
+            hamlib_dtrstate = str(received_json["parameter"][0]["hamlib_dtrstate"])
+            hamlib_pttprotocol = str(received_json["parameter"][0]["hamlib_pttprotocol"])
+            hamlib_ptt_port = str(received_json["parameter"][0]["hamlib_ptt_port"])
+            hamlib_dcd = str(received_json["parameter"][0]["hamlib_dcd"])
+            hamlbib_serialspeed_ptt = str(received_json["parameter"][0]["hamlib_serialspeed"])
+            hamlib_rigctld_port = str(received_json["parameter"][0]["hamlib_rigctld_port"])
+            hamlib_rigctld_ip = str(received_json["parameter"][0]["hamlib_rigctld_ip"])
+            hamlib_rigctld_path = str(received_json["parameter"][0]["hamlib_rigctld_path"])
+            hamlib_rigctld_server_port = str(received_json["parameter"][0]["hamlib_rigctld_server_port"])
+            hamlib_rigctld_custom_args = str(received_json["parameter"][0]["hamlib_rigctld_custom_args"])
+
+            DAEMON_QUEUE.put(
+                [
+                    "START_RIGCTLD",
+                    hamlib_deviceid,
+                    hamlib_deviceport,
+                    hamlib_stop_bits,
+                    hamlib_data_bits,
+                    hamlib_handshake,
+                    hamlib_serialspeed,
+                    hamlib_dtrstate,
+                    hamlib_pttprotocol,
+                    hamlib_ptt_port,
+                    hamlib_dcd,
+                    hamlbib_serialspeed_ptt,
+                    hamlib_rigctld_port,
+                    hamlib_rigctld_ip,
+                    hamlib_rigctld_path,
+                    hamlib_rigctld_server_port,
+                    hamlib_rigctld_custom_args
+                ]
+            )
+            command_response("start_rigctld", True)
+        except Exception as err:
+            command_response("start_rigctld", False)
+            log.warning("[SCK] command execution error", e=err, command=received_json)
+
+
+    def daemon_stop_rigctld(self, received_json):
+
+        try:
+            log.warning("[SCK] Stopping rigctld")
+
+            Daemon.rigctldprocess.kill()
+            # unregister process from atexit to avoid process zombies
+            atexit.unregister(Daemon.rigctldprocess.kill)
+
+            Daemon.rigctldstarted = False
+            command_response("stop_tnc", True)
+        except Exception as err:
+            command_response("stop_tnc", False)
+            log.warning("[SCK] command execution error", e=err, command=received_json)
+
+
 
 
 def send_daemon_state():
