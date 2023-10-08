@@ -13,7 +13,10 @@ const chat = useChatStore(pinia);
 
 import { sendMessage } from "./sock.js";
 
-const FD = require("./src/js/freedata.js");
+
+//const FD = require("./src/js/freedata.js");
+import {btoa_FD} from "./freedata.js"
+
 
 // split character
 const split_char = "0;1;";
@@ -37,11 +40,33 @@ PouchDB.plugin(require("pouchdb-find"));
 PouchDB.plugin(require("pouchdb-upsert"));
 
 // https://stackoverflow.com/a/26227660
-var appDataFolder =
-  process.env.APPDATA ||
-  (process.platform == "darwin"
-    ? process.env.HOME + "/Library/Application Support"
-    : process.env.HOME + "/.config");
+if(typeof process.env["APPDATA"]  !== "undefined"){
+    var appDataFolder = process.env["APPDATA"]
+    console.log(appDataFolder)
+
+} else {
+        switch (process.platform) {
+        case "darwin":
+            var appDataFolder = process.env["HOME"] + "/Library/Application Support";
+            console.log(appDataFolder)
+
+            break;
+        case "linux":
+            var appDataFolder = process.env["HOME"] + "/.config";
+            console.log(appDataFolder)
+
+            break;
+        case "linux2":
+            var appDataFolder = "undefined";
+            break;
+        case "windows":
+            var appDataFolder = "undefined";
+            break;
+        default:
+            var appDataFolder = "undefined";
+            break;
+    }
+}
 var configFolder = path.join(appDataFolder, "FreeDATA");
 
 var chatDB = path.join(configFolder, "chatDB");
@@ -118,7 +143,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
-      data: FD.btoa_FD(file),
+      data: btoa_FD(file),
     },
   };
 
@@ -197,7 +222,7 @@ export function newMessage(
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
-      data: FD.btoa_FD(file),
+      data: btoa_FD(file),
     },
   };
 
@@ -592,7 +617,7 @@ export function newMessageReceived(message, protocol) {
   newChatObj._attachments = {
     [message[6]]: {
       content_type: message[7],
-      data: FD.btoa_FD(message[8]),
+      data: btoa_FD(message[8]),
     },
   };
 

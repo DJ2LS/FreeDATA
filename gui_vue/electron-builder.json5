@@ -11,8 +11,27 @@
   },
   "files": [
     "dist",
-    "dist-electron"
+    "dist-electron",
+
+    {
+          from: 'src',
+          to: '123'
+        }
   ],
+
+
+      "extraResources": [
+      {
+        "from": "src",
+        "to": "testfolder",
+        "filter": [
+          "**/*",
+          "!**/.git"
+        ]
+      }
+    ],
+
+
   "mac": {
     "target": [
       "dmg"
@@ -41,18 +60,5 @@
       "AppImage"
     ],
     "artifactName": "${productName}-${version}.${ext}"
-  },
-      "files": [
-      "**/*",
-      "!**/*.ts",
-      "!*.map",
-      "!package.json",
-      "!package-lock.json",
-      {
-        "from": "../dist",
-        "filter": [
-          "**/*"
-        ]
-      },
-  ]
+  }
         }

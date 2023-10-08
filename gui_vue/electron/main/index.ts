@@ -43,9 +43,12 @@ const indexHtml = join(process.env.DIST, 'index.html')
 async function createWindow() {
   win = new BrowserWindow({
     title: 'Main window',
-    icon: join(process.env.VITE_PUBLIC, 'favicon.ico'),
+    icon: join(process.env.VITE_PUBLIC, 'icon_cube_border.png'),
+    autoHideMenuBar: true,
     webPreferences: {
       preload,
+      backgroundThrottle: false,
+
       // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
       // Consider using contextBridge.exposeInMainWorld
       // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation

@@ -12,3 +12,31 @@
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
+
+
+
+<script type="module">
+// debugging code for figuring out correct folder structure in build environment
+console.log(process.env)
+
+
+    import { readdir } from 'node:fs/promises';
+    import { readdirSync } from 'fs'
+    import { join } from 'path'
+
+    function walk(dir) {
+      return readdirSync(dir, { withFileTypes: true }).flatMap((file) => file.isDirectory() ? walk(join(dir, file.name)) : join(dir, file.name))
+    }
+
+
+    if (process.env["NODE_ENV"] == "production"){
+
+    console.log(walk(process.env["APPDIR"]))
+    console.log(walk(process.env["DIST"]))
+    console.log(walk(process.env["DIST_ELECTRON"]))
+
+} else {
+  console.log("running in " + process.env["NODE_ENV"])
+  }
+
+</script>

@@ -1,7 +1,10 @@
 var net = require("net");
 const path = require("path");
-const FD = require("./src/js/freedata.js");
+//const FD = require("./src/js/freedata.js");
+import {atob_FD, btoa_FD} from "./freedata.js"
 //import FD from './freedata.js';
+
+
 import {
   newMessageReceived,
   newBeaconReceived,
@@ -276,7 +279,7 @@ client.on("data", function (socketdata) {
 
           case "broadcast":
             // RX'd FEC BROADCAST
-            var encoded_data = FD.atob_FD(data["data"]);
+            var encoded_data = atob_FD(data["data"]);
             var splitted_data = encoded_data.split(split_char);
             var messageArray = [];
             if (splitted_data[0] == "m") {
@@ -449,7 +452,7 @@ client.on("data", function (socketdata) {
               console.log(data);
               // we need to encode here to do a deep check for checking if file or message
               //var encoded_data = atob(data['data'])
-              var encoded_data = FD.atob_FD(data["data"]);
+              var encoded_data = atob_FD(data["data"]);
               var splitted_data = encoded_data.split(split_char);
 
               // new message received
@@ -490,7 +493,7 @@ client.on("data", function (socketdata) {
           try {
             // we need to encode here to do a deep check for checking if file or message
             //var encoded_data = atob(data['data-array'][i]['data'])
-            var encoded_data = FD.atob_FD(data["data-array"][i]["data"]);
+            var encoded_data = atob_FD(data["data-array"][i]["data"]);
             var splitted_data = encoded_data.split(split_char);
 
             if (splitted_data[0] == "m") {
@@ -600,7 +603,7 @@ function sendFile(
   //Btoa / atob will not work with charsets > 8 bits (i.e. the emojis); should probably move away from using it
   //TODO:  Will need to update anyother occurences and throughly test
   //data = btoa(data)
-  data = FD.btoa_FD(data);
+  data = btoa_FD(data);
 
   command =
     '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' +
@@ -617,7 +620,7 @@ function sendFile(
 
 // Send Message
 export function sendMessage(dxcallsign, data, checksum, uuid, command) {
-  data = FD.btoa_FD(
+  data = btoa_FD(
     "m" +
       split_char +
       command +
@@ -652,7 +655,7 @@ export function sendMessage(dxcallsign, data, checksum, uuid, command) {
 // Send Request message
 //It would be then „m + split + request + split + request-type“
 function sendRequest(dxcallsign, mode, frames, data, command) {
-  data = FD.btoa_FD("m" + split_char + command + split_char + data);
+  data = btoa_FD("m" + split_char + command + split_char + data);
   command =
     '{"type" : "arq", "command" : "send_raw", "parameter" : [{"dxcallsign" : "' +
     dxcallsign +
@@ -671,7 +674,7 @@ function sendRequest(dxcallsign, mode, frames, data, command) {
 // Send Response message
 //It would be then „m + split + request + split + request-type“
 function sendResponse(dxcallsign, mode, frames, data, command) {
-  data = FD.btoa_FD("m" + split_char + command + split_char + data);
+  data = btoa_FD("m" + split_char + command + split_char + data);
   command =
     '{"type" : "arq", "command" : "send_raw", "parameter" : [{"dxcallsign" : "' +
     dxcallsign +
@@ -823,7 +826,7 @@ export function sendFecIsWriting(mycallsign) {
 export function sendBroadcastChannel(channel, data_out, uuid) {
   let checksum = "";
   let command = "";
-  let data = FD.btoa_FD(
+  let data = btoa_FD(
     "m" +
       split_char +
       channel +
