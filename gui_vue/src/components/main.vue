@@ -43,8 +43,6 @@ function openWebExternal(url) {
 </script>
 
 <template>
-  <html lang="en" data-bs-theme="light">
-    <body>
       <!-------------------------------- INFO TOASTS ---------------->
       <div
         aria-live="polite"
@@ -157,7 +155,7 @@ function openWebExternal(url) {
 
                 <div
                   id="blurdiv"
-                  style="-webkit-filter: blur(0px); filter: blur(0px)"
+                  style="-webkit-filter: blur(0px); filter: blur(0px); height: 100vh"
                 >
                   <!--beginn of blur div -->
                   <!-------------------------------- MAIN AREA ---------------->
@@ -560,235 +558,6 @@ function openWebExternal(url) {
 
             <settings_view />
 
-            <!------------------------------- RECEIVED FILES SIDEBAR ----------------------->
-            <div
-              class="offcanvas offcanvas-end"
-              tabindex="-1"
-              id="receivedFilesSidebar"
-              aria-labelledby="receivedFilesSidebarLabel"
-            >
-              <div class="offcanvas-header p-2">
-                <button
-                  class="btn btn-sm btn-primary me-2"
-                  id="openReceivedFilesFolder"
-                  type="button"
-                >
-                  <i class="bi bi-folder2-open" style="font-size: 1rem"></i>
-                </button>
-                <h5 id="receivedFilesSidebarLabel">Filetransfer</h5>
-                <button
-                  type="button"
-                  class="btn-close text-reset"
-                  data-bs-dismiss="offcanvas"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="input-group input-group-sm p-1">
-                <input type="file" class="form-control" id="dataModalFile" />
-                <input
-                  type="text"
-                  class="form-control"
-                  style="max-width: 6rem; text-transform: uppercase"
-                  pattern="[A-Z]"
-                  placeholder="DXcall"
-                  id="dataModalDxCall"
-                  maxlength="11"
-                  aria-label="Input group"
-                  aria-describedby="btnGroupAddon"
-                />
-                <button
-                  type="button"
-                  id="startTransmission"
-                  data-bs-dismiss="offcanvas"
-                  class="btn btn-success"
-                >
-                  Send
-                </button>
-              </div>
-              <div class="offcanvas-body p-0">
-                <!-- START OF TABLE FOR RECEIVED FILES-->
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Time</th>
-                      <th scope="col">DXCall</th>
-                      <!--<th scope="col">DXGrid</th>
-                        <th scope="col">Distance</th>-->
-                      <th scope="col">Filename</th>
-                      <!--<th scope="col">SNR</th>-->
-                    </tr>
-                  </thead>
-                  <tbody id="rx-data">
-                    <!--
-                     <tr>
-                       <th scope="row">1</th>
-                       <td>Mark</td>
-                       <td>Otto</td>
-                       <td>@mdo</td>
-                     </tr>
-                         -->
-                  </tbody>
-                </table>
-                <!-- END OF  RECEIVED FILES-->
-              </div>
-            </div>
-            <!------------------------------- DATA SIDEBAR ----------------------->
-            <div
-              class="offcanvas offcanvas-end"
-              tabindex="-1"
-              id="transmitFileSidebar"
-              aria-labelledby="transmitFileSidebarLabel"
-            >
-              <div class="offcanvas-header p-2">
-                <h5 id="transmitFileSidebarLabel">Transmit Files</h5>
-                <button
-                  type="button"
-                  class="btn-close text-reset"
-                  data-bs-dismiss="offcanvas"
-                  aria-label="Close"
-                ></button>
-              </div>
-              <div class="offcanvas-body p-0">
-                <!--<div id="transmitFileSidebar" class="sidebar shadow-lg rounded">-->
-                <div class="container-fluid">
-                  <div class="container mt-1">
-                    <div class="row mb-1">
-                      <div class="col">
-                        <div class="card mb-0">
-                          <div class="card-header p-1">
-                            <strong>DX Station</strong>
-                          </div>
-                          <div class="card-body p-2">
-                            <div class="row">
-                              <div class="col-auto">
-                                <!--
-                                       <div class="input-group input-group-sm mb-0">
-
-                                       	<input type="text" class="form-control" style="max-width: 6rem; text-transform:uppercase" pattern="[A-Z]" placeholder="DXcall" id="dataModalDxCall" maxlength="11" aria-label="Input group" aria-describedby="btnGroupAddon">
-                                       </div>
-                                       -->
-                              </div>
-                              <div class="col-auto">
-                                <div class="input-group input-group-sm mb-0">
-                                  <button
-                                    class="btn btn-success"
-                                    id="dataModalSendPing"
-                                    type="button"
-                                  >
-                                    Ping
-                                  </button>
-                                  <span
-                                    class="input-group-text text-secondary"
-                                    id="dataModalPingACK"
-                                    >ACK</span
-                                  >
-                                  <span
-                                    class="input-group-text"
-                                    id="dataModalPingDistance"
-                                    >0000 km</span
-                                  >
-                                  <span
-                                    class="input-group-text"
-                                    id="dataModalPingDB"
-                                    >0 dB</span
-                                  >
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <!--col-->
-                    </div>
-                    <!--row-->
-                    <div class="row mb-1">
-                      <div class="col">
-                        <div class="card mb-0">
-                          <!--
-                              <div class="card-header p-1"> <strong>Data</strong>
-                              </div>
-                              <div class="card-body p-2">
-                              	<div class="input-group input-group-sm mb-0">
-                              		<input type="file" class="form-control" id="dataModalFile">
-                              		<label class="input-group-text" for="inputGroupFile02">kB</label>
-                              	</div>
-                              </div>
-                              -->
-                        </div>
-                      </div>
-                      <!--col-->
-                    </div>
-                    <!--row-->
-                    <div class="row mb-1">
-                      <div class="col">
-                        <div class="card mb-0">
-                          <div class="card-header p-1">
-                            <strong>Mode</strong>
-                          </div>
-                          <div class="card-body p-2">
-                            <div class="row">
-                              <div class="col">
-                                <div class="input-group input-group-sm">
-                                  <span class="input-group-text">Mode</span>
-                                  <select
-                                    class="form-select form-select-sm"
-                                    aria-label=".form-select-sm"
-                                    id="datamode"
-                                    disabled
-                                  >
-                                    <option selected value="255">AUTO</option>
-                                    <!--<option value="232">HIGH SNR (DC1)</option>-->
-                                    <!--<option value="231">MED SNR (DC3)</option>-->
-                                    <!--<option value="230">LOW SNR (DC0)</option>-->
-                                  </select>
-                                </div>
-                              </div>
-                              <div class="col-auto">
-                                <div class="input-group input-group-sm">
-                                  <span class="input-group-text">Frames</span>
-                                  <select
-                                    class="form-select form-select-sm"
-                                    aria-label=".form-select-sm"
-                                    id="framesperburst"
-                                    disabled
-                                  >
-                                    <option selected value="1">1</option>
-                                  </select>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <!--col-->
-                      </div>
-                      <!--row-->
-                    </div>
-                    <div class="row mb-1">
-                      <div class="col">
-                        <!--
-                           <button type="button" id="startTransmission" data-bs-dismiss="offcanvas" class="btn btn-success" style="width:100%">START TRANSMISSION</button>-->
-                      </div>
-                      <div class="col-md-auto">
-                        <button
-                          type="button"
-                          class="btn btn-danger"
-                          style="width: 100%"
-                        >
-                          STOP
-                        </button>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col"></div>
-                    </div>
-                    <!--row-->
-                  </div>
-                  <!--container-->
-                  <!--</div>-->
-                </div>
-              </div>
-            </div>
-            <!--end of blur div -->
             <!---------------------------------------------------------------------- FOOTER AREA ------------------------------------------------------------>
 
             <div class="container">
@@ -799,6 +568,4 @@ function openWebExternal(url) {
       </div>
 
       <main_modals />
-    </body>
-  </html>
 </template>

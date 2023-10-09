@@ -62,6 +62,7 @@ var transmissionSpeedChartOptions = {
   //type: "line",
   responsive: true,
   animations: true,
+  maintainAspectRatio: false,
   cubicInterpolationMode: "monotone",
   tension: 0.4,
   scales: {
@@ -116,7 +117,7 @@ const transmissionSpeedChartData = computed(() => ({
 
 const scatterChartOptions = {
   responsive: true,
-  maintainAspectRatio: true,
+  maintainAspectRatio: false,
   scales: {
     x: {
       type: "linear",
@@ -169,7 +170,7 @@ const scatterChartData = computed(() => ({
 </script>
 
 <template>
-  <div class="card mb-1">
+  <div class="card mb-1" style="height: calc(var(--variable-height) - 20px);">
     <div class="card-header p-1">
       <div class="container">
         <div class="row">
@@ -263,7 +264,7 @@ const scatterChartData = computed(() => ({
         </div>
       </div>
     </div>
-    <div class="card-body p-1" style="height: 200px">
+    <div class="card-body p-1">
       <div class="tab-content" id="nav-stats-tabContent">
         <div
           class="tab-pane fade"
