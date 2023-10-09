@@ -167,7 +167,32 @@ const scatterChartData = computed(() => ({
     },
   ],
 }));
+
+
+
+
+
+
 </script>
+
+<script lang="ts">
+
+import {initWaterfall} from "../js/waterfallHandler.js"
+
+export default {
+  mounted() {
+    // This code will be executed after the component is mounted to the DOM
+    // You can access DOM elements or perform other initialization here
+    //const myElement = this.$refs.waterfall; // Access the DOM element with ref
+
+    // init waterfall
+    initWaterfall()
+
+  },
+}
+
+</script>
+
 
 <template>
   <div class="card mb-1" style="height: calc(var(--variable-height) - 20px);">
@@ -274,9 +299,10 @@ const scatterChartData = computed(() => ({
           aria-labelledby="list-waterfall-list"
         >
           <canvas
+            ref="waterfall"
             id="waterfall"
-            style="position: relative; z-index: 2"
-            class="force-gpu"
+            style="position: relative; z-index: 2;"
+            class="force-gpu h-100 w-100"
           ></canvas>
         </div>
         <div

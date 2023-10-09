@@ -4,6 +4,8 @@ const path = require("path");
 import {atob_FD, btoa_FD} from "./freedata.js"
 //import FD from './freedata.js';
 
+        import {addDataToWaterfall} from "../js/waterfallHandler.js"
+
 
 import {
   newMessageReceived,
@@ -180,9 +182,13 @@ client.on("data", function (socketdata) {
         stateStore.dbfs_level = data["audio_dbfs"];
         stateStore.ptt_state = data["ptt_state"];
         stateStore.speed_level = data["speed_level"];
-        stateStore.fft = data["fft"];
+        stateStore.fft = JSON.parse(data["fft"]);
         stateStore.channel_busy = data["channel_busy"];
         stateStore.channel_busy_slot = data["channel_busy_slot"];
+
+        addDataToWaterfall(JSON.parse(data["fft"]))
+
+
 
         if (data["scatter"].length > 0) {
           stateStore.scatter = data["scatter"];
