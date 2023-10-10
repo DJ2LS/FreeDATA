@@ -341,7 +341,7 @@ export async function updateAllChat() {
         .then(async function (result) {
           for (var item of result.docs) {
             if (item.type === "beacon") {
-              console.log(item);
+              //console.log(item);
 
               // TODO: sort beacon list .... maybe a part for a separate function
               const jsonData = [item];
