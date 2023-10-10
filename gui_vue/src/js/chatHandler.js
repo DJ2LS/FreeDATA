@@ -333,9 +333,8 @@ export async function updateAllChat() {
             $and: [
               { dxcallsign: { $exists: true } },
               { timestamp: { $exists: true } },
-              { $or: chat.chat_filter },
+              //{ $or: chat.chat_filter },
             ],
-            //$or: chat.chat_filter
           },
           sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
         })
