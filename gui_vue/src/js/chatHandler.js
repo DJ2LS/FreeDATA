@@ -340,32 +340,34 @@ export async function updateAllChat() {
         })
         .then(async function (result) {
           for (var item of result.docs) {
+            const dxcallsign = item.dxcallsign;
+            // Check if dxcallsign already exists as a property in the result object
+            if (!chat.sorted_beacon_list[dxcallsign]) {
+              // If not, initialize it with an empty array for snr values
+              chat.sorted_beacon_list[dxcallsign] = {
+                dxcallsign,
+                snr: [],
+                timestamp: [],
+              };
+              chat.callsign_list.add(dxcallsign);
+            }
+
             if (item.type === "beacon") {
               //console.log(item);
 
               // TODO: sort beacon list .... maybe a part for a separate function
               const jsonData = [item];
-              const dxcallsign = item.dxcallsign;
+              
               // Process each JSON item step by step
               jsonData.forEach((jsonitem) => {
                 const { snr, timestamp } = item;
-
-                // Check if dxcallsign already exists as a property in the result object
-                if (!chat.sorted_beacon_list[dxcallsign]) {
-                  // If not, initialize it with an empty array for snr values
-                  chat.sorted_beacon_list[dxcallsign] = {
-                    dxcallsign,
-                    snr: [],
-                    timestamp: [],
-                  };
-                }
 
                 // Push the snr value to the corresponding dxcallsign's snr array
                 chat.sorted_beacon_list[dxcallsign].snr.push(snr);
                 chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
               });
             } else {
-              chat.callsign_list.add(item.dxcallsign);
+              
               chat.unsorted_chat_list.push(item);
             }
           }
