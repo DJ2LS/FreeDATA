@@ -345,7 +345,7 @@ export async function updateAllChat() {
 
               // TODO: sort beacon list .... maybe a part for a separate function
               const jsonData = [item];
-              const dxcallsign = obj.dxcallsign;
+              const dxcallsign = item.dxcallsign;
               // Process each JSON item step by step
               jsonData.forEach((jsonitem) => {
                 const { snr, timestamp } = item;
