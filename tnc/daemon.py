@@ -369,8 +369,10 @@ class DAEMON:
             proc = subprocess.Popen(command)
             atexit.register(proc.kill)
 
-            Daemon.rigctldprocess = proc
             Daemon.rigctldstarted = True
+            Daemon.rigctldprocess = proc
+
+
 
         except Exception as err:
             self.log.info("[DMN] starting rigctld: ", e=err)
@@ -483,22 +485,31 @@ class DAEMON:
             Daemon.tncprocess = proc
             Daemon.tncstarted = True
 
+
             self.log.info("[DMN] TNC started", path="binary")
         except FileNotFoundError as err1:
-            self.log.info("[DMN] worker: ", e=err1)
-            command = []
 
-            if sys.platform in ["linux", "darwin"]:
-                command.append("python3")
-            elif sys.platform in ["win32", "win64"]:
-                command.append("python")
+            try:
+                self.log.info("[DMN] worker: ", e=err1)
+                command = []
 
-            command.append("main.py")
-            command += options
-            proc = subprocess.Popen(command)
-            atexit.register(proc.kill)
+                if sys.platform in ["linux", "darwin"]:
+                    command.append("python3")
+                elif sys.platform in ["win32", "win64"]:
+                    command.append("python")
 
-            self.log.info("[DMN] TNC started", path="source")
+                command.append("main.py")
+                command += options
+                proc = subprocess.Popen(command)
+                atexit.register(proc.kill)
+
+                self.log.info("[DMN] TNC started", path="source")
+
+                Daemon.tncprocess = proc
+                Daemon.tncstarted = True
+            except Exception as e:
+                self.log.error("[DMN] TNC not started", error=e)
+                Daemon.tncstarted = False
 
 
 if __name__ == "__main__":
