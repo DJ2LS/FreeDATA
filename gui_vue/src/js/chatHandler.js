@@ -422,16 +422,25 @@ function addObjToDatabase(newobj) {
       // handle response
       console.log("new database entry");
       console.log(response);
+
+
+      if (newobj.command === "msg") {
+        chat.unsorted_chat_list.push(newobj);
+        chat.sorted_chat_list = sortChatList();
+      }
+
     })
     .catch(function (err) {
       console.log(err);
+      console.log(newobj);
+
+      // try upserting status in case we tried sending a message to our selfes
+      databaseUpsert(newobj.uuid, "status", newobj.status);
+      updateUnsortedChatListEntry(newobj.uuid, "status", newobj.status);
+
+
     });
 
-  console.log(newobj);
-  if (newobj.command === "msg") {
-    chat.unsorted_chat_list.push(newobj);
-    chat.sorted_chat_list = sortChatList();
-  }
 
   /*
 // upsert footer ...
@@ -461,6 +470,9 @@ function createChatIndex() {
         "bytesperminute",
         "_attachments",
         "is_new",
+        "nacks",
+        "duration",
+        "speed_list"
       ],
     },
   })
