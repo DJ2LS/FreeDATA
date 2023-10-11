@@ -167,7 +167,7 @@ client.on("data", function (socketdata) {
           continue;
         }
       }
-
+        console.log(data)
       if (data["command"] == "tnc_state") {
         //console.log(data)
         // set length of RX Buffer to global variable
@@ -253,7 +253,7 @@ client.on("data", function (socketdata) {
           arq_rx_frame_n_bursts: data["arq_rx_frame_n_bursts"],
           arq_rx_n_current_arq_frame: data["arq_rx_n_current_arq_frame"],
           arq_n_arq_frames_per_data_frame:
-            data["arq_n_arq_frames_per_data_frame"],
+          data["arq_n_arq_frames_per_data_frame"],
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
           arq_compression_factor: data["arq_compression_factor"],
           routing_table: data["routing_table"],
@@ -486,36 +486,6 @@ client.on("data", function (socketdata) {
         }
       }
 
-      // ----------- catch tnc info messages END -----------
-
-      // if we manually checking for the rx buffer we are getting an array of multiple data
-      if (data["command"] == "rx_buffer") {
-        console.log(data);
-        // iterate through buffer list and sort it to file or message array
-        dataArray = [];
-        messageArray = [];
-
-        for (var i = 0; i < data["data-array"].length; i++) {
-          try {
-            // we need to encode here to do a deep check for checking if file or message
-            //var encoded_data = atob(data['data-array'][i]['data'])
-            var encoded_data = atob_FD(data["data-array"][i]["data"]);
-            var splitted_data = encoded_data.split(split_char);
-
-            if (splitted_data[0] == "m") {
-              messageArray.push(data["data-array"][i]);
-            }
-          } catch (e) {
-            console.log(e);
-          }
-        }
-
-        let Messages = {
-          data: messageArray,
-        };
-        ////ipcRenderer.send('request-update-rx-msg-buffer', Messages);
-        //ipcRenderer.send("request-new-msg-received", Messages);
-      }
     }
 
     //finally delete message buffer
@@ -766,10 +736,8 @@ export function stopTransmission() {
 export function getRxBuffer() {
   var command = '{"type" : "get", "command" : "rx_buffer"}';
 
-  // call command only if new data arrived
-  if (rxBufferLengthGui != rxBufferLengthTnc) {
     writeTncCommand(command);
-  }
+
 }
 
 // START BEACON

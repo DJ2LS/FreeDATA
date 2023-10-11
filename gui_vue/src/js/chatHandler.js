@@ -140,6 +140,11 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   newChatObj.status = "transmitting";
   newChatObj.attempt = 1;
   newChatObj.uuid = uuid;
+  newChatObj.duration = 0;
+  newChatObj.nacks = 0;
+  newChatObj.speed_list = "null";
+
+
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
@@ -219,6 +224,9 @@ export function newMessage(
   newChatObj.status = "transmitting";
   newChatObj.attempt = 1;
   newChatObj.uuid = uuid;
+  newChatObj.duration = 0;
+  newChatObj.nacks = 0;
+  newChatObj.speed_list = "null";
   newChatObj._attachments = {
     [filename]: {
       content_type: filetype,
@@ -563,23 +571,62 @@ export function newMessageReceived(message, protocol) {
   /*
 
     PROTOCOL
-    {
-        "freedata": "tnc-message",
-        "arq": "transmission",
-        "status": "received",
-        "uuid": "58d64f7d-be8c-4578-879b-3b6cb3b60ddf",
-        "percent": 100,
-        "bytesperminute": 536,
-        "compression": 0.5714285714285714,
-        "timestamp": 1695203863,
-        "finished": 0,
-        "mycallsign": "DJ2LS-0",
-        "dxcallsign": "DJ2LS-0",
-        "dxgrid": "------",
-        "data": "bTA7MTttc2cwOzE7MDsxOzA3ZTIwOzE7MTY5NTIwMzgzMzA7MTt0ZXN0MDsxOzA7MTtwbGFpbi90ZXh0MDsxOw==",
-        "irs": "True",
-        "hmac_signed": "False"
-    }
+{
+    "freedata": "tnc-message",
+    "arq": "transmission",
+    "status": "received",
+    "uuid": "5a3caa57-7feb-4436-853d-e341b085350f",
+    "percent": 100,
+    "bytesperminute": 206,
+    "compression": 0.5833333333333334,
+    "timestamp": 1697048385,
+    "finished": 0,
+    "mycallsign": "DJ2LS-0",
+    "dxcallsign": "DJ2LS-0",
+    "dxgrid": "------",
+    "data": "bTA7MTttc2cwOzE7MDsxOzBlNGE3YjQ2MDsxOzE2OTcwNDgzMTkwOzE7dGVzdDMwOzE7MDsxO3RleHQwOzE7",
+    "irs": "False",
+    "hmac_signed": "False",
+    "duration": 44.385897636413574,
+    "nacks": 1,
+    "speed_list": [
+        {
+            "snr": 0,
+            "bpm": 106,
+            "timestamp": 1697048362
+        },
+        {
+            "snr": -6,
+            "bpm": 104,
+            "timestamp": 1697048370
+        },
+        {
+            "snr": -6,
+            "bpm": 81,
+            "timestamp": 1697048370
+        },
+        {
+            "snr": -5.7,
+            "bpm": 161,
+            "timestamp": 1697048378
+        },
+        {
+            "snr": -5.7,
+            "bpm": 133,
+            "timestamp": 1697048379
+        },
+        {
+            "snr": -5.4,
+            "bpm": 206,
+            "timestamp": 1697048385
+        },
+        {
+            "snr": -5.8,
+            "bpm": 179,
+            "timestamp": 1697048391
+        }
+    ]
+}
 
     MESSAGE; decoded from "data"
     [
@@ -616,6 +663,11 @@ export function newMessageReceived(message, protocol) {
   newChatObj.status = protocol["status"];
   newChatObj.attempt = 1;
   newChatObj.uuid = message[3];
+  newChatObj.duration = protocol["duration"];
+  newChatObj.nacks = protocol["nacks"];
+  newChatObj.speed_list = protocol["speed_list"];
+
+
   newChatObj._attachments = {
     [message[6]]: {
       content_type: message[7],

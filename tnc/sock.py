@@ -816,33 +816,32 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def tnc_get_mesh_routing_table(self, received_json):
         try:
-            if not RX_BUFFER.empty():
-                output = {
-                    "command": "routing_table",
-                    "routes": [],
-                }
+            output = {
+                "command": "routing_table",
+                "routes": [],
+            }
 
-                for _, route in enumerate(MeshParam.routing_table):
-                    if MeshParam.routing_table[_][0].hex() == helpers.get_crc_24(b"direct").hex():
-                        router = "direct"
-                    else:
-                        router = MeshParam.routing_table[_][0].hex()
-                    output["routes"].append(
-                        {
-                            "dxcall": MeshParam.routing_table[_][0].hex(),
-                            "router": router,
-                            "hops": MeshParam.routing_table[_][2],
-                            "snr": MeshParam.routing_table[_][3],
-                            "score": MeshParam.routing_table[_][4],
-                            "timestamp": MeshParam.routing_table[_][5],
-                        }
-                    )
+            for _, route in enumerate(MeshParam.routing_table):
+                if MeshParam.routing_table[_][0].hex() == helpers.get_crc_24(b"direct").hex():
+                    router = "direct"
+                else:
+                    router = MeshParam.routing_table[_][0].hex()
+                output["routes"].append(
+                    {
+                        "dxcall": MeshParam.routing_table[_][0].hex(),
+                        "router": router,
+                        "hops": MeshParam.routing_table[_][2],
+                        "snr": MeshParam.routing_table[_][3],
+                        "score": MeshParam.routing_table[_][4],
+                        "timestamp": MeshParam.routing_table[_][5],
+                    }
+                )
 
 
-                jsondata = json.dumps(output)
-                # self.request.sendall(bytes(jsondata, encoding))
-                SOCKET_QUEUE.put(jsondata)
-                command_response("routing_table", True)
+            jsondata = json.dumps(output)
+            # self.request.sendall(bytes(jsondata, encoding))
+            SOCKET_QUEUE.put(jsondata)
+            command_response("routing_table", True)
 
         except Exception as err:
             command_response("routing_table", False)
@@ -855,26 +854,72 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def tnc_get_rx_buffer(self, received_json):
         try:
             if not RX_BUFFER.empty():
-                output = {
-                    "command": "rx_buffer",
-                    "data-array": [],
-                }
+                # TODO: REMOVE DEPRECATED MESSAGES
+                #output = {
+                #    "command": "rx_buffer",
+                #    "data-array": [],
+                #}#
 
+                #for _buffer_length in range(RX_BUFFER.qsize()):
+                #    base64_data = RX_BUFFER.queue[_buffer_length][4]
+                #    output["data-array"].append(
+                #        {
+                #            "uuid": RX_BUFFER.queue[_buffer_length][0],
+                #            "timestamp": RX_BUFFER.queue[_buffer_length][1],
+                #            "dxcallsign": str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
+                #            "dxgrid": str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
+                #            "data": base64_data,
+                #        }
+                #    )
+                #jsondata = json.dumps(output)
+                ## self.request.sendall(bytes(jsondata, encoding))
+                #SOCKET_QUEUE.put(jsondata)
+                #command_response("rx_buffer", True)
+
+
+                # REQUEST REQUEST RX BUFFER AGAIN
+                # NEW BEHAVIOUR IS, PUSHING DATA TO NETWORK LIKE WE RECEIVED IT
+                #  RX_BUFFER[0] = transmission uuid
+                #  RX_BUFFER[1] = timestamp
+                #  RX_BUFFER[2] = dxcallsign
+                #  RX_BUFFER[3] = dxgrid
+                #  RX_BUFFER[4] = data
+                #  RX_BUFFER[5] = hmac signed
+                #  RX_BUFFER[6] = compression factor
+                #  RX_BUFFER[7] = bytes per minute
+                #  RX_BUFFER[8] = duration
+                #  RX_BUFFER[9] = self.frame_nack_counter
+                #  RX_BUFFER[10] = speed list stats
                 for _buffer_length in range(RX_BUFFER.qsize()):
-                    base64_data = RX_BUFFER.queue[_buffer_length][4]
-                    output["data-array"].append(
-                        {
-                            "uuid": RX_BUFFER.queue[_buffer_length][0],
-                            "timestamp": RX_BUFFER.queue[_buffer_length][1],
-                            "dxcallsign": str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
-                            "dxgrid": str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
-                            "data": base64_data,
-                        }
-                    )
-                jsondata = json.dumps(output)
-                # self.request.sendall(bytes(jsondata, encoding))
-                SOCKET_QUEUE.put(jsondata)
-                command_response("rx_buffer", True)
+                    output = {
+                        "freedata" : "tnc-message",
+                        "arq" : "transmission",
+                        "status" : "received",
+                        "uuid" : RX_BUFFER.queue[_buffer_length][0],
+                        "percent" : 100,
+                        "bytesperminute" : RX_BUFFER.queue[_buffer_length][7],
+                        "compression" : RX_BUFFER.queue[_buffer_length][6],
+                        "timestamp" : RX_BUFFER.queue[_buffer_length][1],
+                        "finished" : 0,
+                        "mycallsign" : str(Station.mycallsign, "UTF-8"),
+                        "dxcallsign" : str(RX_BUFFER.queue[_buffer_length][2], "utf-8"),
+                        "dxgrid" : str(RX_BUFFER.queue[_buffer_length][3], "utf-8"),
+                        "data" : RX_BUFFER.queue[_buffer_length][4],
+                        "irs" : RX_BUFFER.queue[_buffer_length][5],
+                        "hmac_signed" : "False",
+                        "duration" : RX_BUFFER.queue[_buffer_length][8],
+                        "nacks" : RX_BUFFER.queue[_buffer_length][9],
+                        "speed_list" : RX_BUFFER.queue[_buffer_length][10]
+                    }
+
+                    jsondata = json.dumps(output)
+                    SOCKET_QUEUE.put(jsondata)
+                    print(jsondata)
+
+                    command_response("rx_buffer", True)
+
+
+
 
         except Exception as err:
             command_response("rx_buffer", False)

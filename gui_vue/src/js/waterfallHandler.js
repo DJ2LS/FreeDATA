@@ -1,6 +1,15 @@
 import {Spectrum} from "../assets/waterfall/spectrum.js"
 
 
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
+
+
 var spectrum = new Object
 
 export function initWaterfall(){
@@ -9,7 +18,8 @@ export function initWaterfall(){
         wf_rows: 192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
       });
 
-        //spectrum.setColorMap(config.wftheme);
+      console.log(settings.wftheme)
+      spectrum.setColorMap(settings.wftheme);
 
 }
 

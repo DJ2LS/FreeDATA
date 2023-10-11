@@ -16,6 +16,10 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
+import {getRxBuffer} from '../js/sock.js'
+
+
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -133,6 +137,15 @@ function newChat(obj) {
   callsign = callsign.toUpperCase();
   chat.callsign_list.add(callsign);
 }
+
+
+function syncWithTNC(){
+
+getRxBuffer()
+}
+
+
+
 </script>
 
 <template>
@@ -160,7 +173,7 @@ function newChat(obj) {
             </button>
           </div>
         </div>
-        <div class="col-7 ms-2 p-0">
+        <div class="col-5 ms-2 p-0">
           <!-- right side of chat nav bar-->
 
 
@@ -181,18 +194,22 @@ function newChat(obj) {
 
           />
 
-
-
-
-
-
   </div>
+
+</div>
+</div>
+
+        <div class="col-2 ms-2 p-0">
+
+<div class="input-group mb-0 p-0  ">
+
+  <button type="button" class="btn btn-secondary" @click="syncWithTNC()">
+      Sync with TNC
+    </button>
+</div>
 </div>
 
 
-
-
-        </div>
       </div>
     </div>
   </nav>

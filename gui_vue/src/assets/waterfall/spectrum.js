@@ -469,7 +469,7 @@ export function Spectrum(id, options) {
 
   // Colors
   this.colorindex = 0;
-  this.colormap = colormaps[2];
+  this.colormap = colormaps[1];
 
   // Create main canvas and adjust dimensions to match actual
   this.canvas = document.getElementById(id);

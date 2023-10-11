@@ -717,7 +717,7 @@ class DATA:
         helpers.add_to_heard_stations(
             Station.dxcallsign,
             Station.dxgrid,
-            "DATA-CHANNEL",
+            "DATA",
             snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
@@ -1090,6 +1090,19 @@ class DATA:
             maxsize=RX_BUFFER.maxsize
         )
         try:
+            #  RX_BUFFER[0] = transmission uuid
+            #  RX_BUFFER[1] = timestamp
+            #  RX_BUFFER[2] = dxcallsign
+            #  RX_BUFFER[3] = dxgrid
+            #  RX_BUFFER[4] = data
+            #  RX_BUFFER[5] = hmac signed
+            #  RX_BUFFER[6] = compression factor
+            #  RX_BUFFER[7] = bytes per minute
+            #  RX_BUFFER[8] = duration
+            #  RX_BUFFER[9] = self.frame_nack_counter
+            #  RX_BUFFER[10] = speed list stats
+
+
             RX_BUFFER.put(
                 [
                     self.transmission_uuid,
@@ -1097,6 +1110,12 @@ class DATA:
                     Station.dxcallsign,
                     Station.dxgrid,
                     base64_data,
+                    signed,
+                    ARQ.arq_compression_factor,
+                    ARQ.bytes_per_minute,
+                    duration,
+                    self.frame_nack_counter,
+                    ARQ.speed_list
                 ]
             )
         except Exception as e:
@@ -1151,7 +1170,10 @@ class DATA:
             dxgrid=str(Station.dxgrid, "UTF-8"),
             data=base64_data,
             irs=helpers.bool_to_string(self.is_IRS),
-            hmac_signed=signed
+            hmac_signed=signed,
+            duration=duration,
+            nacks=self.frame_nack_counter,
+            speed_list=ARQ.speed_list
         )
 
         if TNC.enable_stats:
@@ -1476,7 +1498,9 @@ class DATA:
             finished=ARQ.arq_seconds_until_finish,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            irs=helpers.bool_to_string(self.is_IRS)
+            irs=helpers.bool_to_string(self.is_IRS),
+            nacks=self.frame_nack_counter,
+            speed_list=ARQ.speed_list
         )
 
         self.log.info(
@@ -1505,7 +1529,9 @@ class DATA:
             compression=ARQ.arq_compression_factor,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            irs=helpers.bool_to_string(self.is_IRS)
+            irs=helpers.bool_to_string(self.is_IRS),
+            nacks=self.frame_nack_counter,
+            speed_list=ARQ.speed_list
         )
 
         self.log.info(
@@ -1532,7 +1558,7 @@ class DATA:
             helpers.add_to_heard_stations(
                 self.dxcallsign,
                 Station.dxgrid,
-                "DATA-CHANNEL",
+                "DATA",
                 ModemParam.snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
@@ -1587,7 +1613,7 @@ class DATA:
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
                 Station.dxgrid,
-                "DATA-CHANNEL",
+                "DATA",
                 ModemParam.snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
@@ -1616,14 +1642,16 @@ class DATA:
                          bytesperminute=ARQ.bytes_per_minute,
                          mycallsign=str(self.mycallsign, 'UTF-8'),
                          dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                         irs=helpers.bool_to_string(self.is_IRS)
+                         irs=helpers.bool_to_string(self.is_IRS),
+                         nacks=self.frame_nack_counter,
+                         speed_list=ARQ.speed_list
                          )
 
         Station.dxgrid = b'------'
         helpers.add_to_heard_stations(
             Station.dxcallsign,
             Station.dxgrid,
-            "DATA-CHANNEL",
+            "DATA",
             ModemParam.snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
@@ -1638,7 +1666,9 @@ class DATA:
             compression=ARQ.arq_compression_factor,
             mycallsign=str(self.mycallsign, 'UTF-8'),
             dxcallsign=str(self.dxcallsign, 'UTF-8'),
-            irs=helpers.bool_to_string(self.is_IRS)
+            irs=helpers.bool_to_string(self.is_IRS),
+            nacks=self.frame_nack_counter,
+            speed_list=ARQ.speed_list
         )
         # Update data_channel timestamp
         self.arq_session_last_received = int(time.time())
@@ -1660,7 +1690,7 @@ class DATA:
         helpers.add_to_heard_stations(
             Station.dxcallsign,
             Station.dxgrid,
-            "DATA-CHANNEL",
+            "DATA",
             ModemParam.snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
@@ -1913,7 +1943,7 @@ class DATA:
         helpers.add_to_heard_stations(
             Station.dxcallsign,
             Station.dxgrid,
-            "DATA-CHANNEL",
+            "DATA",
             ModemParam.snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
@@ -1987,7 +2017,7 @@ class DATA:
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
                 Station.dxgrid,
-                "DATA-CHANNEL",
+                "DATA",
                 ModemParam.snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
@@ -2255,7 +2285,9 @@ class DATA:
                 compression=ARQ.arq_compression_factor,
                 mycallsign=str(self.mycallsign, 'UTF-8'),
                 dxcallsign=str(self.dxcallsign, 'UTF-8'),
-                irs=helpers.bool_to_string(self.is_IRS)
+                irs=helpers.bool_to_string(self.is_IRS),
+                nacks=self.frame_nack_counter,
+                speed_list=ARQ.speed_list
             )
 
             self.log.warning(
@@ -2404,7 +2436,7 @@ class DATA:
         helpers.add_to_heard_stations(
             Station.dxcallsign,
             Station.dxgrid,
-            "DATA-CHANNEL",
+            "DATA",
             ModemParam.snr,
             ModemParam.frequency_offset,
             HamlibParam.hamlib_frequency,
@@ -2515,7 +2547,7 @@ class DATA:
             helpers.add_to_heard_stations(
                 Station.dxcallsign,
                 Station.dxgrid,
-                "DATA-CHANNEL",
+                "DATA",
                 ModemParam.snr,
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
