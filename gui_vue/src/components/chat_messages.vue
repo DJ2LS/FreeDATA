@@ -57,19 +57,17 @@ function getDateTime(timestampRaw) {
           </div>
 
           <div v-if="item.type === 'beacon' && item.status === 'received'">
-            {{ item }}
+           <!-- {{ item }} -->
           </div>
 
           <div v-if="item.type === 'ping'">
-            {{ item.snr }}
-
-            {{ chat.beaconDataArray }}
+            {{ item.snr }} dB
+            ping received
           </div>
 
           <div v-if="item.type === 'ping-ack'">
-            {{ item.snr }}
-
-            {{ chat.beaconDataArray }}
+            {{ item.snr }} dB
+            ping-ack received
           </div>
 
           <div v-if="item.type === 'transmit'">
