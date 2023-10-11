@@ -611,7 +611,8 @@ export function newMessageReceived(message, protocol) {
   newChatObj.dxgrid = protocol["dxgrid"];
   newChatObj.msg = message[5];
   newChatObj.checksum = message[2];
-  newChatObj.type = message[1];
+  //newChatObj.type = message[1];
+  newChatObj.type = protocol["status"];
   newChatObj.status = protocol["status"];
   newChatObj.attempt = 1;
   newChatObj.uuid = message[3];
