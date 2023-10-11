@@ -27,8 +27,12 @@ import {
   Legend,
   BarElement,
 } from "chart.js";
+
 import { Line, Scatter, Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
+import annotationPlugin from 'chartjs-plugin-annotation';
+
+
 
 ChartJS.register(
   CategoryScale,
@@ -38,7 +42,10 @@ ChartJS.register(
   Tooltip,
   Legend,
   BarElement,
+  annotationPlugin
 );
+
+
 
 var beaconHistogramOptions = {
   type: "bar",
@@ -51,6 +58,18 @@ var beaconHistogramOptions = {
   plugins: {
     legend: {
       display: false,
+    },
+    annotation: {
+      annotations: [
+        {
+          type: 'line',
+          mode: 'horizontal',
+          scaleID: 'y',
+          value: 0,
+          borderColor: 'darkgrey', // Set the color to dark grey for the zero line
+          borderWidth: 2, // Set the line width
+        }
+      ],
     },
   },
 
@@ -96,7 +115,16 @@ try {
 const beaconHistogramData = computed(() => ({
   labels: chat.beaconLabelArray,
   datasets: [
-    { data: chat.beaconDataArray, tension: 0.1, borderColor: "rgb(0, 255, 0)" },
+    { data: chat.beaconDataArray, tension: 0.1, borderColor: "rgb(0, 255, 0)",
+
+    backgroundColor: function(context) {
+          var value = context.dataset.data[context.dataIndex];
+          return value >= 0 ? 'green' : 'red';
+        },
+
+
+
+    },
   ],
 }));
 
@@ -134,13 +162,36 @@ function newChat(obj) {
         </div>
         <div class="col-7 ms-2 p-0">
           <!-- right side of chat nav bar-->
-          {{ beaconData }}
+
+
+<div class="input-group mb-0 p-0 h-100 w-50 ">
+
+
+  <button type="button" class="btn btn-secondary" disabled>
+      Beacons
+    </button>
+
+  <div class="form-floating border border-2">
+
           <Bar
             :data="beaconHistogramData"
             :options="beaconHistogramOptions"
             width="300"
-            style="height: 100%"
+            height="50"
+
           />
+
+
+
+
+
+
+  </div>
+</div>
+
+
+
+
         </div>
       </div>
     </div>
