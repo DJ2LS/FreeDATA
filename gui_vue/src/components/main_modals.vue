@@ -7,6 +7,10 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+import { useChatStore } from "../store/chatStore.js";
+const chat = useChatStore(pinia);
+
+
 import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
 
 function tuneAudio() {
@@ -16,9 +20,75 @@ function tuneAudio() {
 function set_audio_level() {
   setTxAudioLevel(state.audio_level);
 }
+
+
+
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js'
+import { Line } from "vue-chartjs";
+import { ref, computed } from "vue";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+)
+
+
 </script>
 
 <template>
+
+
+<!-- Message Info Modal -->
+<div class="modal fade" ref="modalEle" id="messageInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="messageInfoModalLabel">{{chat.selectedMessageObject["uuid"]}}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+{{chat.selectedMessageObject}}
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Status</span>
+            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["status"]}}</span>
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Attempts</span>
+            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["attempt"]}}</span>
+        </div>
+
+        <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Bytes per Minute</span>
+            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["bytesperminute"]}}</span>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <!-- HELP MODALS AUDIO -->
   <div
     class="modal fade"

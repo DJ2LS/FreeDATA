@@ -14,6 +14,32 @@ export const useChatStore = defineStore("chatStore", () => {
   ]);
 
   var selectedCallsign = ref();
+  // we need a default value in our ref because of our message info modal
+  var selectedMessageObject = ref({
+    "command": "msg",
+    "hmac_signed": false,
+    "percent": 0,
+    "is_new": false,
+    "_id": "2ead6698",
+    "timestamp": 1697289795,
+    "dxcallsign": "DJ2LS-0",
+    "dxgrid": "null",
+    "msg": "test",
+    "checksum": "",
+    "type": "transmit",
+    "status": "transmitting",
+    "attempt": 1,
+    "uuid": "2ead6698",
+    "duration": 0,
+    "nacks": 0,
+    "speed_list": "null",
+    "_attachments": {
+        "": {
+            "content_type": "text",
+            "data": ""
+        }
+    }
+});
   var inputText = ref();
   var inputFile = ref();
   var inputFileName = ref();
@@ -38,6 +64,7 @@ export const useChatStore = defineStore("chatStore", () => {
 
   return {
     selectedCallsign,
+    selectedMessageObject,
     inputText,
     chat_filter,
     callsign_list,

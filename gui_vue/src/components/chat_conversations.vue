@@ -44,8 +44,6 @@ function chatSelected(callsign) {
     chat.beaconLabelArray = [];
     chat.beaconDataArray = [];
   }
-
-  console.log(chat.beaconDataArray);
 }
 </script>
 <template>

@@ -8,6 +8,16 @@
       >
         <i class="bi bi-arrow-repeat"></i>
       </button>
+
+      <button
+        class="btn btn-outline-secondary border-0 me-1"
+        @click="showMessageInfo"
+        data-bs-target="#messageInfoModal"
+        data-bs-toggle="modal"
+      >
+        <i class="bi bi-info-circle"></i>
+      </button>
+
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
@@ -53,18 +63,32 @@
       </div>
     </div>
   </div>
+
+
+
+
+
 </template>
 
+
 <script>
+
+import { Modal } from "bootstrap";
+import { onMounted, ref } from "vue";
+
 import {
   repeatMessageTransmission,
   deleteMessageFromDB,
+  requestMessageInfo,
 } from "../js/chatHandler";
 
 export default {
   props: {
     message: Object,
   },
+
+
+
   computed: {
     getFileContent() {
       var filename = Object.keys(this.message._attachments)[0];
@@ -99,6 +123,13 @@ export default {
     deleteMessage() {
       deleteMessageFromDB(this.message._id);
     },
+    showMessageInfo() {
+    requestMessageInfo(this.message._id);
+    //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
+    //console.log(this.infoModal)
+    //this.infoModal.show()
+    },
+
 
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(

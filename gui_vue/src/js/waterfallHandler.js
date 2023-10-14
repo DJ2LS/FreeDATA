@@ -28,7 +28,7 @@ export function addDataToWaterfall(data){
     try {
           spectrum.addData(data);
         } catch (e) {
-          console.log(e);
+          //console.log(e);
         }
 
 }

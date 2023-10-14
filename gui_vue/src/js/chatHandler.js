@@ -259,6 +259,9 @@ function sortChatList() {
 //repeat a message
 export function repeatMessageTransmission(id) {
   console.log(id);
+  // 1. get message object by ID
+  // 2. Upsert Attempts
+  // 3. send message
 }
 
 // delete a message from databse and gui
@@ -285,13 +288,26 @@ export function updateTransmissionStatus(obj) {
   databaseUpsert(obj.uuid, "bytesperminute", obj.bytesperminute);
   databaseUpsert(obj.uuid, "status", obj.status);
 
+
   // update screen rendering / messages
   updateUnsortedChatListEntry(obj.uuid, "percent", obj.percent);
   updateUnsortedChatListEntry(obj.uuid, "bytesperminute", obj.bytesperminute);
   updateUnsortedChatListEntry(obj.uuid, "status", obj.status);
+
 }
 
 export function updateUnsortedChatListEntry(uuid, object, value) {
+
+  var data = getFromUnsortedChatListByUUID(uuid)
+  if(data){
+    data[object] = value;
+    console.log("Entry updated:", data[object]);
+    chat.sorted_chat_list = sortChatList();
+    return data;
+
+  }
+
+  /*
   for (const entry of chat.unsorted_chat_list) {
     if (entry.uuid === uuid) {
       entry[object] = value;
@@ -300,10 +316,22 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
       return entry;
     }
   }
+  */
 
   console.log("Entry not updated:", object);
   return null; // Return null if not found
 }
+
+function getFromUnsortedChatListByUUID(uuid){
+    for (const entry of chat.unsorted_chat_list) {
+        if (entry.uuid === uuid) {
+            return entry;
+        }
+    }
+
+    return false;
+}
+
 
 export function databaseUpsert(id, object, value) {
   db.upsert(id, function (doc) {
@@ -707,6 +735,20 @@ export function setStateSuccess() {
   state.arq_seconds_until_timeout = 180;
   state.arq_seconds_until_timeout_percent = 100;
 }
+
+export function requestMessageInfo(id){
+
+console.log(id)
+// id and uuid are the same
+var data = getFromUnsortedChatListByUUID(id)
+console.log(data)
+    chat.selectedMessageObject = data
+
+
+}
+
+
+
 
 // CRC CHECKSUMS
 // https://stackoverflow.com/a/50579690
