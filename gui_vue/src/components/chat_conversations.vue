@@ -4,7 +4,6 @@ import { saveSettingsToFile } from "../js/settingsHandler";
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { deleteChatByCallsign } from "../js/chatHandler";
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
@@ -15,9 +14,6 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-function deleteChat(callsign) {
-  deleteChatByCallsign(callsign);
-}
 
 import chat_conversations_entry from "./chat_conversations_entry.vue";
 
@@ -63,10 +59,12 @@ function chatSelected(callsign) {
           <div class="col-9">{{ item }}</div>
           <div class="col-3">
             <button
-              class="btn btn-sm btn-outline-danger ms-2"
-              @click="deleteChat(item)"
+              class="btn btn-sm btn-outline-secondary ms-2 border-0"
+              data-bs-target="#deleteChatModal"
+              data-bs-toggle="modal"
+              @click="chatSelected(item)"
             >
-              <i class="bi bi-trash"></i>
+              <i class="bi bi-three-dots-vertical"></i>
             </button>
           </div>
         </div>

@@ -10,6 +10,7 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
+import { deleteChatByCallsign } from "../js/chatHandler";
 
 import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
 
@@ -21,7 +22,10 @@ function set_audio_level() {
   setTxAudioLevel(state.audio_level);
 }
 
-
+function deleteChat() {
+  //console.log(chat.selectedCallsign)
+  deleteChatByCallsign(chat.selectedCallsign);
+}
 
 import {
   Chart as ChartJS,
@@ -50,6 +54,27 @@ ChartJS.register(
 </script>
 
 <template>
+
+
+
+<!-- delete chat modal -->
+<div class="modal fade" ref="modalEle" id="deleteChatModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="deleteChatModalLabel">Sub menu for: {{chat.selectedCallsign}}</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-danger" @click="deleteChat" data-bs-dismiss="modal">Delete Chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 
 <!-- Message Info Modal -->
