@@ -12,6 +12,7 @@ import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
 import { sendMessage } from "./sock.js";
+import { displayToast } from "./popupHandler.js";
 
 
 //const FD = require("./src/js/freedata.js");
@@ -74,6 +75,11 @@ var db = new PouchDB(chatDB);
 
 /* -------- CREATE DATABASE INDEXES */
 createChatIndex();
+
+/* -------- RUN A DATABASE CLEANUP ON STARTUP */
+dbClean()
+
+
 
 // create callsign set for storing unique callsigns
 chat.callsign_list = new Set();
@@ -280,6 +286,59 @@ export function deleteMessageFromDB(id) {
   // the removed entry should be removed now from gui
   chat.sorted_chat_list = sortChatList();
 }
+
+
+//Function to clean old beacons and optimize database
+async function dbClean() {
+  //Only keep the most x latest days of beacons
+  let beaconKeep = 4;
+  let itemCount = 0;
+  let timestampPurge = Math.floor(
+    (Date.now() - beaconKeep * 24 * 60 * 60 * 1000) / 1000,
+  );
+
+
+  //Items to purge from database
+  var purgeFilter = [
+    { type: "beacon" },
+    { type: "ping-ack" },
+    { type: "ping" },
+  ];
+
+  await db
+    .find({
+      selector: {
+        $and: [{ timestamp: { $lt: timestampPurge } }, { $or: purgeFilter }],
+      },
+    })
+    .then(async function (result) {
+      //console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
+      itemCount = result.docs.length;
+      result.docs.forEach(async function (item) {
+           await deleteMessageFromDB(item._id)
+      });
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
+
+  //Compact database
+  await db.compact();
+
+// finally reload entire data
+updateAllChat(true)
+
+ let message = "Database maintenance is complete"
+              displayToast("info", "bi bi-info-circle", message, 5000);
+
+ message = "Removed "+itemCount+" items from database"
+              displayToast("info", "bi bi-info-circle", message, 5000);
+
+
+}
+
+
+
 
 // function to update transmission status
 export function updateTransmissionStatus(obj) {

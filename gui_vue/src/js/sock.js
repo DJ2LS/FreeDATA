@@ -272,7 +272,7 @@ client.on("data", function (socketdata) {
       if (data["freedata"] == "tnc-message") {
         // break early if we received a dummy callsign
         // thats a kind of hotfix, as long as the tnc isnt handling this better
-        if (data["dxcallsign"] == "AA0AA-0") {
+        if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
           break;
         }
 
