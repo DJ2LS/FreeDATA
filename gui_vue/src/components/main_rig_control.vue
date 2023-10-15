@@ -133,29 +133,27 @@ alert("not yet implemented")
         >
           <div class="input-group input-group-sm mb-1">
             <div class="input-group input-group-sm mb-1">
-              <span class="input-group-text">Rigctld</span>
-              <span class="input-group-text">Address</span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="rigctld IP"
-                id="hamlib_rigctld_ip"
-                aria-label="Device IP"
-                v-model="settings.hamlib_rigctld_ip"
-              />
-              <span class="input-group-text">Port</span>
-              <input
-                type="text"
-                class="form-control"
-                placeholder="rigctld port"
-                id="hamlib_rigctld_port"
-                aria-label="Device Port"
-                v-model="settings.hamlib_rigctld_port"
-              />
+
+<span class="input-group-text"> Radio port </span>
+
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      id="hamlib_deviceport"
+      style="width: 7rem"
+      @change="saveSettings"
+      v-model="settings.hamlib_deviceport"
+    >
+      <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
+                                    <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
+    </select>
+
+
+
             </div>
 
             <div class="input-group input-group-sm mb-1">
-              <span class="input-group-text">Rigctld</span>
+              <span class="input-group-text">Rigctld service</span>
               <button
                 class="btn btn-outline-success"
                 type="button"
