@@ -280,7 +280,7 @@ class DAEMON:
                     application_path = "rigctld"
                 command.append(f'{application_path}')
             elif sys.platform in ["win32", "win64"]:
-                if data[13].tolower() == "localhost":
+                if data[13].lower() == "localhost":
                     data[13]="127.0.0.1"
                 if data[14] not in [""]:
                     # hamlib_rigctld_path
