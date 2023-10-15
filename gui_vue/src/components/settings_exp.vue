@@ -45,6 +45,7 @@ function saveSettings() {
           v-model="settings.enable_fsk"
           true-value="True"
           false-value="False"
+          disabled
         />
         <label class="form-check-label" for="fskModeSwitch"
           >not available, yet</label
@@ -78,6 +79,7 @@ function saveSettings() {
         class="btn btn-outline-secondary btn-sm w-50"
         id="btnCleanDB"
         type="button"
+        disabled
       >
         Clean</button
       >&nbsp;

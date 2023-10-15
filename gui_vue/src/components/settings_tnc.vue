@@ -157,7 +157,7 @@ function saveSettings() {
     </label>
   </div>
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Enable 250Hz only mode</label>
+    <label class="input-group-text w-50">Enable 250Hz bandwidth mode</label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input

@@ -20,6 +20,7 @@ function saveSettings() {
       id="theme_selector"
       @change="saveSettings"
       v-model="settings.theme"
+      disabled
     >
       <option value="default_light">Default (light)</option>
       <option value="default_dark">Default (dark)</option>
@@ -58,6 +59,7 @@ function saveSettings() {
       id="wftheme_selector"
       @change="saveSettings"
       v-model="settings.wftheme"
+      disabled
     >
       <option value="2">Default</option>
       <option value="0">Turbo</option>
@@ -80,6 +82,7 @@ function saveSettings() {
           v-model="settings.high_graphics"
           true-value="True"
           false-value="False"
+          disabled
         />
         <label class="form-check-label" for="GraphicsSwitch"
           >Higher CPU Usage</label
@@ -91,7 +94,7 @@ function saveSettings() {
     <label class="input-group-text w-50" for="inputGroupFile02"
       >Received files folder</label
     >
-    <input type="text" class="form-control w-50" id="received_files_folder" />
+    <input type="text" class="form-control w-50" id="received_files_folder" disabled/>
   </div>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Update channel</span>
@@ -100,6 +103,7 @@ function saveSettings() {
       id="update_channel_selector"
       @change="saveSettings"
       v-model="settings.update_channel"
+      disabled
     >
       <option value="latest">stable</option>
       <option value="beta">beta</option>
@@ -118,6 +122,7 @@ function saveSettings() {
           v-model="settings.enable_sys_notification"
           true-value="True"
           false-value="False"
+          disabled
         />
         <label class="form-check-label" for="NotificationSwitch"
           >Show system pop-ups</label
@@ -137,6 +142,7 @@ function saveSettings() {
           v-model="settings.auto_start"
           true-value="True"
           false-value="False"
+          disabled
         />
         <label class="form-check-label" for="AutoStartSwitch"
           >Start on app launch</label

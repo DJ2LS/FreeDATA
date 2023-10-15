@@ -26,6 +26,7 @@ function saveSettings() {
           v-model="settings.enable_is_writing"
           true-value="True"
           false-value="False"
+          disabled
         />
         <label class="form-check-label" for="GraphicsSwitch"
           >Additional broadcast burst</label
@@ -46,6 +47,7 @@ function saveSettings() {
           v-model="settings.enable_request_profile"
           true-value="True"
           false-value="False"
+          disabled
         />
       </div>
     </label>
@@ -65,6 +67,7 @@ function saveSettings() {
           v-model="settings.enable_request_shared_folder"
           true-value="True"
           false-value="False"
+          disabled
         />
       </div>
     </label>
@@ -78,6 +81,7 @@ function saveSettings() {
       id="shared_folder_path"
       @change="saveSettings"
       v-model="settings.shared_folder_path"
+      disabled
     />
   </div>
 
@@ -96,6 +100,7 @@ function saveSettings() {
           v-model="settings.enable_auto_retry"
           true-value="True"
           false-value="False"
+          disabled
         />
       </div>
     </label>
@@ -108,6 +113,7 @@ function saveSettings() {
       id="max_retry_attempts"
       @change="saveSettings"
       v-model="settings.max_retry_attempts"
+      disabled
     >
       <option value="1">1</option>
       <option value="2">2</option>
