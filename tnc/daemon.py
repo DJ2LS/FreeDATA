@@ -238,6 +238,7 @@ class DAEMON:
         sock.SOCKET_QUEUE.put(jsondata)
 
     def start_rigctld(self, data):
+        # Seems to be working on Win
         """
         data[0] START_RIGCTLD,
         data[1] hamlib_deviceid,
@@ -279,6 +280,8 @@ class DAEMON:
                     application_path = "rigctld"
                 command.append(f'{application_path}')
             elif sys.platform in ["win32", "win64"]:
+                if data[13].lower() == "localhost":
+                    data[13]="127.0.0.1"
                 if data[14] not in [""]:
                     # hamlib_rigctld_path
                     application_path = data[14]
@@ -291,47 +294,47 @@ class DAEMON:
 
             # hamlib_deviceid
             if data[1] not in [None, "None", "ignore"]:
-                options.extend(("--model=", data[1]))
+                options.append(("--model=" + data[1] ))
 
             # hamlib_deviceport
             if data[2] not in [None, "None", "ignore"]:
-                options.extend(("--rig-file=", data[2]))
+                options.append(("--rig-file="+ data[2]))
             # hamlib_stop_bits
             if data[3] not in [None, "None", "ignore"]:
-                options.extend(("--set-conf=stop_bits=", data[3]))
+                options.append(("--set-conf=stop_bits=" + data[3]))
 
             # hamlib_data_bits
             if data[4] not in [None, "None", "ignore"]:
-                options.extend(("--set-conf=data_bits=", data[4]))
+                options.append(("--set-conf=data_bits=" + data[4]))
 
 
             # hamlib_handshake
             if data[5] not in [None, "None", "ignore"]:
-                options.extend(("--set-conf=serial_handshake=", data[5]))
+                options.append(("--set-conf=serial_handshake=" + data[5]))
 
 
             # hamlib_serialspeed
             if data[6] not in [None, "None", "ignore"]:
-                options.extend(("--serial-speed=", data[6]))
+                options.append(("--serial-speed=" + data[6]))
 
             # hamlib_dtrstate
             if data[7] not in [None, "None", "ignore"]:
-                options.extend(("--set-conf=dtr_state=", data[7]))
+                options.append(("--set-conf=dtr_state=" + data[7]))
 
 
             # hamlib_pttprotocol
             if data[8] not in [None, "None", "ignore"]:
-                options.extend(("--ptt-type", data[8]))
+                options.append(("--ptt-type=" + data[8]))
 
 
             # hamlib_ptt_port
             if data[9] not in [None, "None", "ignore"]:
-                options.extend(("--ptt-file=", data[9]))
+                options.append(("--ptt-file=" + data[9]))
 
 
             # hamlib_dcd
             if data[10] not in [None, "None", "ignore"]:
-                options.extend(("--dcd-type=", data[10]))
+                options.append(("--dcd-type=" + data[10]))
 
 
             # hamlbib_serialspeed_ptt
@@ -340,30 +343,30 @@ class DAEMON:
                 pass
 
             # hamlib_rigctld_port
+            # Using this ensures rigctld starts on port configured in GUI
             if data[12] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[12]))
-                pass
+                 options.append(("--port="+ data[12]))
 
             # hamlib_rigctld_ip
             if data[13] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[13]))
-                pass
+                options.append(("--listen-addr="+ data[13]))
 
             # data[14] == hamlib_rigctld_path
             # maybe at wrong place in list...
+            #Not needed for setting command line arguments
 
             # hamlib_rigctld_server_port
-            if data[15] not in [None, "None", "ignore"]:
+            # Ignore configured value and use value configured in GUI
+            #if data[15] not in [None, "None", "ignore"]:
                 # options.extend(("-m", data[15]))
-                pass
+            #    pass
 
             # hamlib_rigctld_custom_args
             if data[16] not in [None, "None", "ignore"]:
-                # options.extend(("-m", data[16]))
-                pass
+                for o in data[16].split(" "):
+                    options.append(o)
 
-
-            command += options
+                command += options
 
             print(command)
             proc = subprocess.Popen(command)
