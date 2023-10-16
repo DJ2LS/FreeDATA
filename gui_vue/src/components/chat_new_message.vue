@@ -38,12 +38,14 @@ import {
 import { Line } from 'vue-chartjs'
 import { ref, computed } from 'vue';
 
-
+const chatModuleMessage=ref(null);
 
 
 function transmitNewMessage(){
 
-
+    chat.inputText = chat.inputText.trim();
+    if (chat.inputText.length==0)
+      return;
     if (chat.selectedCallsign.startsWith("BC-")) {
 
         newBroadcast(chat.selectedCallsign, chat.inputText)
@@ -52,7 +54,9 @@ function transmitNewMessage(){
         newMessage(chat.selectedCallsign, chat.inputText, chat.inputFile, chat.inputFileName, chat.inputFileSize, chat.inputFileType)
     }
     // finally do a cleanup
-    chat.inputText = ''
+    //chatModuleMessage.reset();
+    chat.inputText = '';
+    chatModuleMessage.value="";
     // @ts-expect-error
     resetFile()
 }
@@ -183,9 +187,10 @@ const speedChartData = computed(() => ({
                           <textarea
                             class="form-control"
                             rows="1"
-                            id="chatModuleMessage"
+                            ref="chatModuleMessage"
                             placeholder="Message - Send with [Enter]"
                             v-model="chat.inputText"
+                            @keyup.enter.exact="transmitNewMessage()"
                           ></textarea>
 
 
