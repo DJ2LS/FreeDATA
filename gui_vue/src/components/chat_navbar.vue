@@ -181,7 +181,7 @@ getRxBuffer()
           <!-- right side of chat nav bar-->
 
 
-<div class="input-group mb-0 p-0 h-100 w-50 ">
+<div class="input-group mb-0 p-0 w-50 ">
 
 
   <button type="button" class="btn btn-outline-secondary" disabled>
@@ -208,7 +208,7 @@ getRxBuffer()
 <div class="input-group mb-0 p-0  ">
 
   <button type="button" class="btn btn-secondary" @click="syncWithTNC()">
-      Sync with TNC
+      TNC Sync
     </button>
 </div>
 </div>
