@@ -326,7 +326,8 @@ async function dbClean() {
   await db.compact();
 
 // finally reload entire data
-updateAllChat(true)
+//Commented out as was causing duplicate messages to show
+//updateAllChat(true)
 
  let message = "Database maintenance is complete"
               displayToast("info", "bi bi-info-circle", message, 5000);
