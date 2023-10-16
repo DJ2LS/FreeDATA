@@ -23,6 +23,17 @@
 
     <!-- Delete button outside of the card -->
     <div class="col-auto">
+
+     <button
+        class="btn btn-outline-secondary border-0 me-1"
+        @click="showMessageInfo"
+        data-bs-target="#messageInfoModal"
+        data-bs-toggle="modal"
+      >
+        <i class="bi bi-info-circle"></i>
+      </button>
+
+
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
       </button>
@@ -31,7 +42,7 @@
 </template>
 
 <script>
-import { deleteMessageFromDB } from "../js/chatHandler";
+import { deleteMessageFromDB, requestMessageInfo } from "../js/chatHandler";
 
 export default {
   props: {
@@ -61,6 +72,12 @@ export default {
       } else {
         return "col-9";
       }
+    },
+    showMessageInfo() {
+        requestMessageInfo(this.message._id);
+        //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
+        //console.log(this.infoModal)
+        //this.infoModal.show()
     },
     deleteMessage() {
       deleteMessageFromDB(this.message._id);
