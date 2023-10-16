@@ -73,7 +73,7 @@ var beaconHistogramOptions = {
           scaleID: 'y',
           value: 0,
           borderColor: 'darkgrey', // Set the color to dark grey for the zero line
-          borderWidth: 2, // Set the line width
+          borderWidth: 0.5, // Set the line width
         }
       ],
     },
@@ -184,11 +184,11 @@ getRxBuffer()
 <div class="input-group mb-0 p-0 h-100 w-50 ">
 
 
-  <button type="button" class="btn btn-secondary" disabled>
+  <button type="button" class="btn btn-outline-secondary" disabled>
       Beacons
     </button>
 
-  <div class="form-floating border border-2">
+  <div class="form-floating border border-secondary-subtle border-1 rounded-end">
 
           <Bar
             :data="beaconHistogramData"
