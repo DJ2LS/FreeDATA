@@ -36,6 +36,8 @@ import { Line, Scatter, Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
 import annotationPlugin from 'chartjs-plugin-annotation';
 
+const newChatCall=ref(null);
+
 
 
 ChartJS.register(
@@ -133,9 +135,10 @@ const beaconHistogramData = computed(() => ({
 }));
 
 function newChat(obj) {
-  let callsign = document.getElementById("chatModuleNewDxCall").value;
+  let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase();
   chat.callsign_list.add(callsign);
+  this.newChatCall.value="";
 }
 
 
@@ -158,8 +161,9 @@ getRxBuffer()
               class="form-control w-50"
               maxlength="9"
               style="text-transform: uppercase"
-              id="chatModuleNewDxCall"
               placeholder="DX CALL"
+              @keypress.enter="newChat()"
+             ref="newChatCall"
             />
             <button
               class="btn btn-sm btn-success"
