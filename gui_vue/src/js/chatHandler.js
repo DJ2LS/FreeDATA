@@ -77,8 +77,9 @@ var db = new PouchDB(chatDB);
 createChatIndex();
 
 /* -------- RUN A DATABASE CLEANUP ON STARTUP */
-dbClean()
+//dbClean()
 
+updateAllChat(true)
 
 
 // create callsign set for storing unique callsigns
@@ -325,9 +326,7 @@ async function dbClean() {
   //Compact database
   await db.compact();
 
-// finally reload entire data
-//Commented out as was causing duplicate messages to show
-//updateAllChat(true)
+
 
  let message = "Database maintenance is complete"
               displayToast("info", "bi bi-info-circle", message, 5000);
@@ -412,7 +411,12 @@ export function databaseUpsert(id, object, value) {
 }
 
 // function for fetching all messages from chat / updating chat
-export async function updateAllChat() {
+export async function updateAllChat(cleanup) {
+
+    // run cleanup if requested
+    if (cleanup) {
+        await dbClean()
+    }
   //Ensure we create an index before running db.find
   //We can't rely on the default index existing before we get here...... :'(
   await db
@@ -596,7 +600,7 @@ function deleteFromDatabaseByCallsign(callsign) {
             .then(function (doc) {
               db.remove(doc)
                 .then(function (doc) {
-                  updateAllChat(true);
+                  updateAllChat(false);
                   return true;
                 })
                 .catch(function (err) {
