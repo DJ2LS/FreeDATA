@@ -26,7 +26,7 @@ import crcengine
 import log_handler
 import serial.tools.list_ports
 import sock
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
 
 import structlog
 import ujson as json
@@ -368,8 +368,13 @@ class DAEMON:
 
                 command += options
 
-            print(command)
-            proc = subprocess.Popen(command)
+
+            # append debugging paramter
+            options.append(("-vvv"))
+
+            self.log.info("[DMN] starting rigctld: ", param=command)
+            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+
             atexit.register(proc.kill)
 
             Daemon.rigctldstarted = True
@@ -378,7 +383,7 @@ class DAEMON:
 
 
         except Exception as err:
-            self.log.info("[DMN] starting rigctld: ", e=err)
+            self.log.warning("[DMN] err starting rigctld: ", e=err)
 
 
 
@@ -513,6 +518,7 @@ class DAEMON:
             except Exception as e:
                 self.log.error("[DMN] TNC not started", error=e)
                 Daemon.tncstarted = False
+
 
 
 if __name__ == "__main__":

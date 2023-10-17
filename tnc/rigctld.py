@@ -10,7 +10,7 @@ import time
 import structlog
 import threading
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam
 
 
 class radio:

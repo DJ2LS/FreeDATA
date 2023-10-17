@@ -12,8 +12,7 @@ import threading
 import time
 import ujson as json
 import structlog
-import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, TNC
 
 log = structlog.get_logger("stats")
 

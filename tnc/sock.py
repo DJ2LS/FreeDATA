@@ -27,7 +27,7 @@ import time
 import wave
 import helpers
 import static
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
 import structlog
 from random import randrange
 import ujson as json
@@ -1247,6 +1247,32 @@ def send_daemon_state():
     send the daemon state to network
     """
     log = structlog.get_logger("send_daemon_state")
+
+    # we need to do some process checking for providing the correct state
+    # at least we are checking the returncode of rigctld
+    # None state means, the process is still running
+    try:
+        retcode_rigctld = Daemon.rigctldprocess.poll()
+        if retcode_rigctld in [None, "None"]:
+            output, errs = Daemon.rigctldprocess.communicate()
+            print(f"rigctld out: {output}")
+            print(f"rigctld err: {errs}")
+        else:
+            # print(f"rigctld closed with code: {retcode_rigctld}")
+            Daemon.rigctldstarted = False
+
+
+        retcode_tnc = Daemon.tncprocess.poll()
+        if retcode_tnc in [None, "None"]:
+            output, errs = Daemon.tncprocess.communicate()
+            print(f"tnc out: {output}")
+            print(f"tnc err: {errs}")
+        else:
+            # print(f"tnc closed with code: {retcode_tnc}")
+            Daemon.tncstarted = False
+
+    except Exception:
+        pass
 
     try:
         python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"

@@ -36,7 +36,9 @@ SNR: negative --> * 2
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
-from static import TNC, MeshParam, FRAME_TYPE, Station, ModemParam, ARQ
+from static import FRAME_TYPE
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+
 from codec2 import FREEDV_MODE
 import numpy as np
 import time
