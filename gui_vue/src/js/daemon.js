@@ -150,21 +150,13 @@ daemon.on("data", function (socketdata) {
 
       console.log(data)
       if (data["command"] == "daemon_state") {
-        let Data = {
-          input_devices: data["input_devices"],
-          output_devices: data["output_devices"],
-          python_version: data["python_version"],
-          hamlib_version: data["hamlib_version"],
-          serial_devices: data["serial_devices"],
-          tnc_running_state: data["daemon_state"][0]["status"],
-          ram_usage: data["ram"],
-          cpu_usage: data["cpu"],
-          version: data["version"],
-        };
 
         // update audio devices by putting them to audio store
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
+        settings.serial_devices = data["serial_devices"];
+        state.python_version = data["python_version"]
+        state.tnc_version = data["version"]
         state.tnc_running_state = data["daemon_state"][0]["status"];
         state.rigctld_started = data["rigctld_state"][0]["status"];
         //state.rigctld_process = data["daemon_state"][0]["rigctld_process"];

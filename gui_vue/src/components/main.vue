@@ -363,6 +363,12 @@ function openWebExternal(url) {
                   FreeDATA - {{ version }}
                 </h1>
 
+<h4 class="fs-5">
+                  tnc version - {{ state.tnc_version }}
+                </h4>
+
+
+
                 <div class="container-fluid">
                   <div class="row mt-2">
                     <div

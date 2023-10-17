@@ -56,6 +56,8 @@ export const useStateStore = defineStore("stateStore", () => {
   var rigctld_started = ref();
   var rigctld_process = ref();
 
+  var python_version = ref();
+  var tnc_version = ref();
 
   function updateTncState(state) {
     tnc_connection.value = state;
@@ -151,6 +153,8 @@ export const useStateStore = defineStore("stateStore", () => {
     heard_stations,
     beacon_state,
     rigctld_started,
-    rigctld_process
+    rigctld_process,
+    python_version,
+    tnc_version
   };
 });

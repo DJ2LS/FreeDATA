@@ -14,6 +14,24 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+function startStopRigctld() {
+  switch (state.rigctld_started) {
+    case "stopped":
+
+      settings.hamlib_deviceport = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
+
+
+      startRigctld();
+
+      break;
+    case "running":
+      stopRigctld();
+
+      break;
+    default:
+  }
+}
+
 function selectRadioControl() {
 // @ts-expect-error
   switch (event.target.id) {
@@ -142,12 +160,10 @@ alert("not yet implemented")
       id="hamlib_deviceport"
       style="width: 7rem"
       @change="saveSettings"
-      v-model="settings.hamlib_deviceport"
+      v-html="settings.getSerialDevices()"
     >
-      <!--<option selected value="/dev/ttyUSB0">/dev/ttyUSB0</option>
-                                    <option value="/dev/ttyUSB1">/dev/ttyUSB1</option>-->
-    </select>
 
+    </select>
 
 
             </div>
@@ -158,7 +174,7 @@ alert("not yet implemented")
                 class="btn btn-outline-success"
                 type="button"
                 id="hamlib_rigctld_start"
-                @click="startRigctld"
+                @click="startStopRigctld"
               >
                 Start
               </button>
@@ -166,7 +182,7 @@ alert("not yet implemented")
                 class="btn btn-outline-danger"
                 type="button"
                 id="hamlib_rigctld_stop"
-                @click="stopRigctld"
+                @click="startStopRigctld"
 
               >
                 Stop

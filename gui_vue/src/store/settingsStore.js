@@ -75,6 +75,16 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   var enable_is_writing = ref("True");
   var tx_delay = ref(0);
   var enable_mesh_features = ref("False");
+  var serial_devices = ref();
+
+
+  function getSerialDevices() {
+    var html = "";
+    for (var key in serial_devices.value) {
+      html += `<option value="${serial_devices.value[key]["port"]}">${serial_devices.value[key]["port"]} - ${serial_devices.value[key]["description"]}</option>`;
+    }
+    return html;
+  }
 
   function getJSON() {
     var config_export = {
@@ -200,6 +210,8 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     enable_mesh_features,
     getJSON,
     tx_audio,
-    rx_audio
+    rx_audio,
+    getSerialDevices,
+    serial_devices
   };
 });
