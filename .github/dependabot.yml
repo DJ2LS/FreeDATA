@@ -19,6 +19,7 @@ updates:
     directory: "/gui_vue"
     schedule:
       interval: "daily"
+    target-branch: "ls-single-pager"
 
 
 
