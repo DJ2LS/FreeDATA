@@ -242,48 +242,89 @@ export default {
               </div>
             </div>
             <div class="btn-group" role="group" aria-label="Busy indicators">
-              <button
-                class="btn btn-sm ms-2 disabled"
-                type="button"
-                data-bs-placement="top"
-                data-bs-toggle="tooltip"
-                data-bs-trigger="hover"
-                data-bs-html="true"
-                v-bind:class="{
-                  'btn-warning': state.channel_busy === 'True',
-                  'btn-outline-secondary': state.channel_busy === 'False',
-                }"
-                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
-              >
-                busy
-              </button>
 
               <button
-                class="btn btn-sm ms-2 disabled"
+                class="btn btn-sm p-1 disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"
                 data-bs-trigger="hover"
                 data-bs-html="true"
                 v-bind:class="{
-                  'btn-warning': state.channel_busy === 'True',
-                  'btn-outline-secondary': state.channel_busy === 'False',
+                  'btn-warning': state.getChannelBusySlotState(0) === true,
+                  'btn-outline-secondary': state.getChannelBusySlotState(0) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
                 S1
               </button>
 
-
-
-
-
-
-
-
+              <button
+                class="btn btn-sm p-1 disabled"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                v-bind:class="{
+                  'btn-warning': state.getChannelBusySlotState(1) === true,
+                  'btn-outline-secondary': state.getChannelBusySlotState(1) === false,
+                }"
+                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+              >
+                S2
+              </button>
 
               <button
-                class="btn btn-sm disabled"
+                class="btn btn-sm p-1 disabled"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                v-bind:class="{
+                  'btn-warning': state.getChannelBusySlotState(2) === true,
+                  'btn-outline-secondary': state.getChannelBusySlotState(2) === false,
+                }"
+                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+              >
+                S3
+              </button>
+
+              <button
+                class="btn btn-sm p-1 disabled"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                v-bind:class="{
+                  'btn-warning': state.getChannelBusySlotState(3) === true,
+                  'btn-outline-secondary': state.getChannelBusySlotState(3) === false,
+                }"
+                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+              >
+                S4
+              </button>
+
+              <button
+                class="btn btn-sm p-1 disabled"
+                type="button"
+                data-bs-placement="top"
+                data-bs-toggle="tooltip"
+                data-bs-trigger="hover"
+                data-bs-html="true"
+                v-bind:class="{
+                  'btn-warning': state.getChannelBusySlotState(4) === true,
+                  'btn-outline-secondary': state.getChannelBusySlotState(4) === false,
+                }"
+                title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+              >
+                S5
+              </button>
+
+              <button
+                class="btn btn-sm p-1 disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"

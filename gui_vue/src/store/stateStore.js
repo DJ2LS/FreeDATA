@@ -59,6 +59,25 @@ export const useStateStore = defineStore("stateStore", () => {
   var python_version = ref();
   var tnc_version = ref();
 
+
+function getChannelBusySlotState(slot){
+    const slot_state = channel_busy_slot.value;
+
+    if (typeof slot_state !== 'undefined') {
+      // Replace 'False' with 'false' to match JavaScript's boolean representation
+      const string = slot_state.replace(/False/g, 'false').replace(/True/g, 'true');
+
+      // Parse the string to get an array
+      const arr = JSON.parse(string);
+
+      return arr[slot]
+    } else {
+      // Handle the undefined case
+      return false;
+    }
+}
+
+
   function updateTncState(state) {
     tnc_connection.value = state;
 
@@ -129,6 +148,7 @@ export const useStateStore = defineStore("stateStore", () => {
     fft,
     channel_busy,
     channel_busy_slot,
+    getChannelBusySlotState,
     scatter,
     ptt_state,
     s_meter_strength_percent,
