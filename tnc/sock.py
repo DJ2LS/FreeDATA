@@ -1254,9 +1254,11 @@ def send_daemon_state():
     try:
         retcode_rigctld = Daemon.rigctldprocess.poll()
         if retcode_rigctld in [None, "None"]:
-            output, errs = Daemon.rigctldprocess.communicate()
-            print(f"rigctld out: {output}")
-            print(f"rigctld err: {errs}")
+            Daemon.rigctldstarted = True
+            # This is a blocking code ....
+            #output, errs = Daemon.rigctldprocess.communicate()
+            #print(f"rigctld out: {output}")
+            #print(f"rigctld err: {errs}")
         else:
             # print(f"rigctld closed with code: {retcode_rigctld}")
             Daemon.rigctldstarted = False
@@ -1264,6 +1266,8 @@ def send_daemon_state():
 
         retcode_tnc = Daemon.tncprocess.poll()
         if retcode_tnc in [None, "None"]:
+            Daemon.tncstarted = True
+            # This is a blocking code ....
             output, errs = Daemon.tncprocess.communicate()
             print(f"tnc out: {output}")
             print(f"tnc err: {errs}")
