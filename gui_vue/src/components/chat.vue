@@ -31,12 +31,12 @@ updateAllChat();
     <chat_navbar />
 
     <div class="row h-100 ms-0 mt-0 me-1">
-      <div class="col-3 m-0 p-0 vh-100 overflow-scroll bg-light">
+      <div class="col-3 m-0 p-0 h-100 bg-light">
         <!------Chats area ---------------------------------------------------------------------->
-        <div class="container-fluid m-0 p-0">
+        <div class="container-fluid vh-100 overflow-scroll m-0 p-0">
           <chat_conversations />
         </div>
-        <div class="overflow-auto vh-100">
+        <div class="h-100">
           <div
             class="list-group overflow-auto"
             id="list-tab-chat"

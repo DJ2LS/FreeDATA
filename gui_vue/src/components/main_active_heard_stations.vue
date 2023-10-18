@@ -44,7 +44,7 @@ function getMaidenheadDistance(dxGrid) {
 }
 </script>
 <template>
-  <div class="card mb-1" style="height: 240px">
+  <div class="card mb-1 h-100">
     <!--325px-->
     <div class="card-header p-1">
       <div class="container">
