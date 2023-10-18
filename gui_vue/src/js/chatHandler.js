@@ -115,24 +115,10 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   // slice uuid for reducing overhead
   uuid = uuid.slice(-4);
 
-  var data_with_attachment =
-    timestamp +
-    split_char +
-    chatmessage +
-    split_char +
-    filename +
-    split_char +
-    filetype +
-    split_char +
-    file;
-
-  var tnc_command = "broadcast";
-
-  sendMessage(dxcallsign, data_with_attachment, checksum, uuid, tnc_command);
 
   let newChatObj = new Object();
 
-  newChatObj.command = "msg";
+  newChatObj.command = "broadcast";
   newChatObj.hmac_signed = false;
   newChatObj.percent = 0;
   newChatObj.bytesperminute;
@@ -158,6 +144,8 @@ export function newBroadcast(broadcastChannel, chatmessage) {
       data: btoa_FD(file),
     },
   };
+
+    sendMessage(newChatObj)
 
   addObjToDatabase(newChatObj);
 }
@@ -199,20 +187,6 @@ export function newMessage(
   // slice uuid for reducing overhead
   uuid = uuid.slice(-8);
 
-  var data_with_attachment =
-    timestamp +
-    split_char +
-    chatmessage +
-    split_char +
-    filename +
-    split_char +
-    filetype +
-    split_char +
-    file;
-
-  var tnc_command = "msg";
-
-  sendMessage(dxcallsign, data_with_attachment, checksum, uuid, tnc_command);
 
   let newChatObj = new Object();
 
@@ -241,6 +215,7 @@ export function newMessage(
     },
   };
 
+  sendMessage(newChatObj);
   addObjToDatabase(newChatObj);
 }
 
@@ -265,10 +240,25 @@ function sortChatList() {
 
 //repeat a message
 export function repeatMessageTransmission(id) {
-  console.log(id);
   // 1. get message object by ID
   // 2. Upsert Attempts
   // 3. send message
+
+db.find({
+    selector: {
+      _id: id,
+    },
+  }).then(function (result){
+    console.log(result)
+    let obj = result.docs[0]
+    console.log(obj)
+    obj.attempt += 1
+    databaseUpsert(obj.uuid, "attempt", obj.attempt);
+    updateUnsortedChatListEntry(obj.uuid, "attempt", obj.attempt);
+    sendMessage(obj)
+  }).catch(function (err) {
+                  console.log(err);
+                });
 }
 
 // delete a message from databse and gui
@@ -403,6 +393,7 @@ if (typeof dxcallsign !== 'undefined'){
       if(chat.sorted_chat_list[dxcallsign][key].is_new){
             item_array.push(chat.sorted_chat_list[dxcallsign][key])
             new_counter += 1
+
       }
       total_counter += 1
     }
@@ -611,6 +602,8 @@ export function deleteChatByCallsign(callsign) {
 
   deleteFromDatabaseByCallsign(callsign);
 }
+
+
 
 function deleteFromDatabaseByCallsign(callsign) {
   db.find({

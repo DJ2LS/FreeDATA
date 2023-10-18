@@ -81,5 +81,6 @@ export const useChatStore = defineStore("chatStore", () => {
     beaconLabelArray,
     unsorted_beacon_list,
     sorted_beacon_list,
+
   };
 });

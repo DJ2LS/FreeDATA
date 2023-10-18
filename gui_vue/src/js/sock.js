@@ -595,8 +595,36 @@ function sendFile(
 }
 
 // Send Message
-export function sendMessage(dxcallsign, data, checksum, uuid, command) {
-  data = btoa_FD(
+export function sendMessage(obj) {
+
+let dxcallsign = obj.dxcallsign
+let checksum = obj.checksum
+let uuid = obj.uuid
+let command = obj.command
+
+let filename = Object.keys(obj._attachments)[0]
+//let filetype = filename.split(".")[1]
+let filetype = obj._attachments[filename].content_type
+let file = obj._attachments[filename].data
+
+//console.log(obj._attachments)
+//console.log(filename)
+//console.log(filetype)
+//console.log(file)
+
+
+let data_with_attachment =
+    obj.timestamp +
+    split_char +
+    obj.msg +
+    split_char +
+    filename +
+    split_char +
+    filetype +
+    split_char +
+    file;
+
+  let data = btoa_FD(
     "m" +
       split_char +
       command +
@@ -605,7 +633,7 @@ export function sendMessage(dxcallsign, data, checksum, uuid, command) {
       split_char +
       uuid +
       split_char +
-      data,
+      data_with_attachment,
   );
 
   // TODO: REMOVE mode and frames from TNC!
