@@ -309,7 +309,7 @@ client.on("data", function (socketdata) {
           case "received":
             // CQ RECEIVED
             message = "CQ from " + data["dxcallsign"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
+            displayToast("success", "bi-person-arms-up", message, 5000);
             break;
         }
 
@@ -317,8 +317,8 @@ client.on("data", function (socketdata) {
           case "transmitting":
             // QRV TRANSMITTING
             displayToast(
-              "success",
-              "bi-arrow-left-right",
+              "info",
+              "bi-person-raised-hand",
               "transmitting QRV ",
               5000,
             );
@@ -327,14 +327,14 @@ client.on("data", function (socketdata) {
           case "received":
             // QRV RECEIVED
             message = "QRV from " + data["dxcallsign"] + " | " + data["dxgrid"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
+            displayToast("success", "bi-person-raised-hand", message, 5000);
             break;
         }
 
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
-            displayToast("success", "bi-arrow-left-right", "BEACON... ", 5000);
+            displayToast("success", "bi-broadcast-pin", "BEACON... ", 5000);
             break;
 
           case "received":
@@ -343,7 +343,7 @@ client.on("data", function (socketdata) {
 
             message =
               "BEACON from " + data["dxcallsign"] + " | " + data["dxgrid"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
+            displayToast("info", "bi-broadcast", message, 5000);
             break;
         }
 
@@ -351,14 +351,14 @@ client.on("data", function (socketdata) {
           case "transmitting":
             // PING TRANSMITTING
             message = "PING to " + data["dxcallsign"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
+            displayToast("success", "bi-arrow-right", message, 5000);
             break;
 
           case "received":
             // PING RECEIVED
             message =
               "PING from " + data["dxcallsign"] + " | " + data["dxgrid"];
-            displayToast("success", "bi-arrow-left-right", message, 5000);
+            displayToast("success", "bi-arrow-right-short", message, 5000);
             break;
 
           case "acknowledge":
@@ -406,7 +406,7 @@ client.on("data", function (socketdata) {
               // ARQ Opening IRS/ISS
               if (data["irs"] == "False") {
                 message = "ARQ session opening:" + data["dxcallsign"];
-                displayToast("success", "bi-arrow-left-right", message, 5000);
+                displayToast("info", "bi-arrow-left-right", message, 5000);
                 break;
               } else {
                 message = data["dxcallsign"] + "is requesting an ARQ session";
@@ -419,7 +419,7 @@ client.on("data", function (socketdata) {
             case "waiting":
               // ARQ waiting
               message = "busy channel | ARQ protocol is waiting";
-              displayToast("success", "bi-arrow-left-right", message, 5000);
+              displayToast("warning", "bi-hourglass-split", message, 5000);
               break;
 
             case "receiving":
@@ -430,13 +430,13 @@ client.on("data", function (socketdata) {
               // ARQ TX Failed
               if (data["reason"] == "protocol version missmatch") {
                 message = "protocol version missmatch";
-                displayToast("success", "bi-arrow-left-right", message, 5000);
+                displayToast("danger", "bi-chevron-bar-expand", message, 5000);
                 setStateFailed();
 
                 break;
               } else {
                 message = "transmission failed";
-                displayToast("success", "bi-arrow-left-right", message, 5000);
+                displayToast("danger", "bi-x-octagon", message, 5000);
                 updateTransmissionStatus(data);
                 setStateFailed();
                 break;
@@ -477,7 +477,7 @@ client.on("data", function (socketdata) {
             case "transmitted":
               // ARQ transmitted
               message = "data transmitted";
-              displayToast("success", "bi-arrow-left-right", message, 5000);
+              displayToast("success", "bi-check-sqaure", message, 5000);
               updateTransmissionStatus(data);
               setStateSuccess();
 
