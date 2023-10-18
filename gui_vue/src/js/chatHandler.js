@@ -238,6 +238,35 @@ function sortChatList() {
   return reorderedData;
 }
 
+
+
+
+export function getMessageAttachment(id) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      const findResult = await db.find({
+        selector: {
+          _id: id,
+        },
+      });
+
+      const getResult = await db.get(findResult.docs[0]._id, {
+        attachments: true,
+      });
+
+      let obj = getResult;
+      let filename = Object.keys(obj._attachments)[0];
+      let filetype = obj._attachments[filename].content_type;
+      let file = obj._attachments[filename].data;
+      resolve([filename, filetype, file]);
+    } catch (err) {
+      console.log(err);
+      reject(false); // Reject the Promise if there's an error
+    }
+  });
+}
+
+
 //repeat a message
 export function repeatMessageTransmission(id) {
   // 1. get message object by ID

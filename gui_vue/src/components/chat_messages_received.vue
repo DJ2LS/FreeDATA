@@ -33,6 +33,13 @@
         <i class="bi bi-info-circle"></i>
       </button>
 
+      <button
+        v-if="getFileContent['filesize'] !== 0"
+        class="btn btn-outline-secondary border-0 me-1"
+        @click="downloadAttachment"
+      >
+        <i class="bi bi-download"></i>
+      </button>
 
       <button class="btn btn-outline-secondary border-0" @click="deleteMessage">
         <i class="bi bi-trash"></i>
@@ -42,11 +49,42 @@
 </template>
 
 <script>
-import { deleteMessageFromDB, requestMessageInfo } from "../js/chatHandler";
+import { deleteMessageFromDB, requestMessageInfo, getMessageAttachment } from "../js/chatHandler";
+import {atob_FD} from "../js/freedata.js"
+
+// pinia store setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+import { saveAs } from 'file-saver';
+
+import { useChatStore } from "../store/chatStore.js";
+const chat = useChatStore(pinia);
+
+
+
 
 export default {
   props: {
     message: Object,
+  },
+  methods: {
+
+async downloadAttachment() {
+      try {
+        // reset file store
+        chat.downloadFileFromDB = [];
+
+        const attachment = await getMessageAttachment(this.message._id);
+        const blob = new Blob([atob_FD(attachment[2])], { type: `${attachment[1]};charset=utf-8` });
+        window.focus();
+        saveAs(blob, attachment[0]);
+      } catch (error) {
+        console.error("Failed to download attachment:", error);
+      }
+    },
+
+
   },
   computed: {
     getFileContent() {

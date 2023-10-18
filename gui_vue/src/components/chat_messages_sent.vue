@@ -2,6 +2,17 @@
   <div class="row justify-content-end mb-2">
     <!-- control area -->
     <div class="col-auto p-0 m-0">
+
+
+      <button
+        v-if="getFileContent['filesize'] !== 0"
+        class="btn btn-outline-secondary border-0 me-1"
+        @click="downloadAttachment"
+      >
+        <i class="bi bi-download"></i>
+      </button>
+
+
       <button
         class="btn btn-outline-secondary border-0 me-1"
         @click="repeatMessage"
@@ -75,12 +86,26 @@
 
 import { Modal } from "bootstrap";
 import { onMounted, ref } from "vue";
+import {atob_FD} from "../js/freedata.js"
 
 import {
   repeatMessageTransmission,
   deleteMessageFromDB,
   requestMessageInfo,
+  getMessageAttachment,
 } from "../js/chatHandler";
+
+
+// pinia store setup
+import { setActivePinia } from "pinia";
+import pinia from "../store/index";
+setActivePinia(pinia);
+import { saveAs } from 'file-saver';
+
+import { useChatStore } from "../store/chatStore.js";
+const chat = useChatStore(pinia);
+
+
 
 export default {
   props: {
@@ -88,7 +113,23 @@ export default {
   },
 
 
+  methods: {
 
+async downloadAttachment() {
+      try {
+        // reset file store
+        chat.downloadFileFromDB = [];
+
+        const attachment = await getMessageAttachment(this.message._id);
+        const blob = new Blob([atob_FD(attachment[2])], { type: `${attachment[1]};charset=utf-8` });
+        saveAs(blob, attachment[0]);
+      } catch (error) {
+        console.error("Failed to download attachment:", error);
+      }
+    },
+
+
+  },
   computed: {
     getFileContent() {
       var filename = Object.keys(this.message._attachments)[0];
@@ -120,6 +161,10 @@ export default {
     repeatMessage() {
       repeatMessageTransmission(this.message._id);
     },
+
+
+
+
     deleteMessage() {
       deleteMessageFromDB(this.message._id);
     },

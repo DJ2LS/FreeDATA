@@ -62,6 +62,8 @@ export const useChatStore = defineStore("chatStore", () => {
   var beaconDataArray = ref([]);
   var beaconLabelArray = ref([]);
 
+
+
   return {
     selectedCallsign,
     selectedMessageObject,
@@ -81,6 +83,5 @@ export const useChatStore = defineStore("chatStore", () => {
     beaconLabelArray,
     unsorted_beacon_list,
     sorted_beacon_list,
-
   };
 });
