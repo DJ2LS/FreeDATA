@@ -31,7 +31,7 @@ updateAllChat();
     <chat_navbar />
 
     <div class="row h-100 ms-0 mt-0 me-1">
-      <div class="col-3 m-0 p-0 bg-light">
+      <div class="col-3 m-0 p-0 vh-100 overflow-scroll bg-light">
         <!------Chats area ---------------------------------------------------------------------->
         <div class="container-fluid m-0 p-0">
           <chat_conversations />

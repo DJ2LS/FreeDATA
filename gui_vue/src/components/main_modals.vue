@@ -10,7 +10,8 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { deleteChatByCallsign } from "../js/chatHandler";
+import { deleteChatByCallsign, getNewMessagesByDXCallsign } from "../js/chatHandler";
+
 
 import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
 
@@ -66,6 +67,20 @@ ChartJS.register(
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
+
+
+
+    <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">Total Messages</span>
+            <span class="input-group-text" id="basic-addon1">{{getNewMessagesByDXCallsign(chat.selectedCallsign)[0]}}</span>
+        </div>
+
+    <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1">New Messages</span>
+            <span class="input-group-text" id="basic-addon1">{{getNewMessagesByDXCallsign(chat.selectedCallsign)[1]}}</span>
+        </div>
+
+
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

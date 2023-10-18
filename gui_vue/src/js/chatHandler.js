@@ -304,6 +304,8 @@ async function dbClean() {
     { type: "beacon" },
     { type: "ping-ack" },
     { type: "ping" },
+    { type: "request" },
+    { type: "response" },
   ];
 
   await db
@@ -387,9 +389,34 @@ function getFromUnsortedChatListByUUID(uuid){
             return entry;
         }
     }
-
     return false;
 }
+
+export function getNewMessagesByDXCallsign(dxcallsign){
+let new_counter = 0
+let total_counter = 0
+let item_array = []
+if (typeof dxcallsign !== 'undefined'){
+    for (const key in chat.sorted_chat_list[dxcallsign]){
+        //console.log(chat.sorted_chat_list[dxcallsign][key])
+        //item_array.push(chat.sorted_chat_list[dxcallsign][key])
+      if(chat.sorted_chat_list[dxcallsign][key].is_new){
+            item_array.push(chat.sorted_chat_list[dxcallsign][key])
+            new_counter += 1
+      }
+      total_counter += 1
+    }
+}
+
+    return [total_counter, new_counter, item_array];
+}
+
+
+export function resetIsNewMessage(uuid, value){
+    databaseUpsert(uuid, "is_new", value)
+    updateUnsortedChatListEntry(uuid, "is_new", value);
+}
+
 
 
 export function databaseUpsert(id, object, value) {
