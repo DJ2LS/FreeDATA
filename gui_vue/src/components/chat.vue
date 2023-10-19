@@ -21,7 +21,7 @@ import chat_new_message from "./chat_new_message.vue";
 
 import { updateAllChat, newMessage } from "../js/chatHandler";
 
-updateAllChat();
+//updateAllChat();
 </script>
 
 <template>

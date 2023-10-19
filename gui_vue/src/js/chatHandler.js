@@ -232,13 +232,25 @@ function sortChatList() {
         reorderedData[dxcallsign] = [];
       }
       reorderedData[dxcallsign].push(obj);
+
+      reorderedData[dxcallsign] = reorderedData[dxcallsign].sort(sortByProperty("timestamp"));
     }
   });
-  //console.log(reorderedData["DJ2LS-0"])
+  //console.log(reorderedData["2LS-0"])
   return reorderedData;
 }
 
-
+//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
+function sortByProperty(property){  
+  return function(a,b){  
+     if(a[property] > b[property])  
+        return 1;  
+     else if(a[property] < b[property])  
+        return -1;  
+ 
+     return 0;  
+  }  
+}
 
 
 export function getMessageAttachment(id) {
@@ -516,10 +528,13 @@ export async function updateAllChat(cleanup) {
             } else {
               
               chat.unsorted_chat_list.push(item);
+              chat.sorted_chat_list = sortChatList();
+              
             }
+           
           }
 
-          chat.sorted_chat_list = sortChatList();
+          
 
           /*
           if (typeof result !== "undefined") {
