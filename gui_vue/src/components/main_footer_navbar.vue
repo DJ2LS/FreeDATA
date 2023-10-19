@@ -125,7 +125,7 @@ const state = useStateStore(pinia);
             data-bs-trigger="hover"
             data-bs-html="true"
           >
-            {{ state.frequency }} Hz
+            {{ parseInt(state.frequency) / 1000  }} KHz
           </button>
         </div>
 
