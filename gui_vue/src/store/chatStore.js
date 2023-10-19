@@ -40,7 +40,7 @@ export const useChatStore = defineStore("chatStore", () => {
         }
     }
 });
-  var inputText = ref();
+  var inputText = ref('');
   var inputFile = ref();
   var inputFileName = ref();
   var inputFileType = ref();

@@ -244,7 +244,7 @@ export default {
             <div class="btn-group" role="group" aria-label="Busy indicators">
 
               <button
-                class="btn btn-sm p-1 disabled"
+                class="btn btn-sm ms-1 p-1 disabled"
                 type="button"
                 data-bs-placement="top"
                 data-bs-toggle="tooltip"

@@ -155,18 +155,18 @@ getRxBuffer()
   <nav class="navbar bg-body-tertiary border-bottom">
     <div class="container">
       <div class="row w-100">
-        <div class="col-4 p-0 me-2">
-          <div class="input-group bottom-0 m-0">
+        <div class="col-3 p-0 me-2">
+          <div class="input-group bottom-0 m-0 ms-1">
             <input
-              class="form-control w-50"
+              class="form-control"
               maxlength="9"
               style="text-transform: uppercase"
-              placeholder="DX CALL"
+              placeholder="callsign"
               @keypress.enter="newChat()"
              ref="newChatCall"
             />
             <button
-              class="btn btn-sm btn-success"
+              class="btn btn-sm btn-outline-success"
               id="createNewChatButton"
               type="button"
               title="Start a new chat (enter dx call sign first)"
@@ -207,7 +207,7 @@ getRxBuffer()
 
 <div class="input-group mb-0 p-0  ">
 
-  <button type="button" class="btn btn-secondary" @click="syncWithTNC()">
+  <button type="button" class="btn btn-outline-secondary" @click="syncWithTNC()">
       TNC Sync
     </button>
 </div>

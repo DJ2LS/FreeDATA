@@ -92,6 +92,7 @@ ChartJS.register(
 
 
 
+
 <!-- Message Info Modal -->
 <div class="modal fade" ref="modalEle" id="messageInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
   <div class="modal-dialog">

@@ -38,7 +38,18 @@ import {
 import { Line } from 'vue-chartjs'
 import { ref, computed } from 'vue';
 
+
+import { VuemojiPicker, EmojiClickEventDetail } from 'vuemoji-picker'
+
+const handleEmojiClick = (detail: EmojiClickEventDetail) => {
+chat.inputText += detail.unicode
+
+}
+
+
 const chatModuleMessage=ref(null);
+
+
 
 
 function transmitNewMessage(){
@@ -174,18 +185,28 @@ const speedChartData = computed(() => ({
                         ></label>
 
                         <div class="input-group bottom-0 ms-2">
-                          <!--<input class="form-control" maxlength="8" style="max-width: 6rem; text-transform:uppercase; display:none" id="chatModuleDxCall" placeholder="DX CALL"></input>-->
-                          <!--<button class="btn btn-sm btn-primary me-2" id="emojipickerbutton" type="button">-->
-                          <div class="input-group-text">
-                            <i
-                              id="emojipickerbutton"
-                              class="bi bi-emoji-smile p-0"
-                              style="font-size: 1rem"
-                            ></i>
-                          </div>
+
+                            <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1"
+                            data-bs-toggle="modal" data-bs-target="#emojiPickerModal"
+                            data-bs-backdrop="false"
+                            >
+                                <i
+                                  id="emojipickerbutton"
+                                  class="bi bi-emoji-smile p-0"
+                                  style="font-size: 1rem"
+                                ></i>
+                            </button>
+
+
+
+                                        <!-- trigger file selection modal -->
+                            <button type="button" class="btn btn-outline-secondary border-0 rounded-pill me-1" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
+                              <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
+                            </button>
+
 
                           <textarea
-                            class="form-control"
+                            class="form-control border rounded-pill"
                             rows="1"
                             ref="chatModuleMessage"
                             placeholder="Message - Send with [Enter]"
@@ -194,14 +215,10 @@ const speedChartData = computed(() => ({
                           ></textarea>
 
 
-                            <!-- trigger file selection modal -->
-                            <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#fileSelectionModal">
-                              <i class="bi bi-paperclip" style="font-size: 1.2rem"></i>
-                            </button>
 
 
                             <button
-                              class="btn btn-sm btn-secondary me-2"
+                              class="btn btn-sm btn-secondary ms-1 me-2 rounded-pill"
                               @click="transmitNewMessage()"
                               type="button"
                             >
@@ -270,5 +287,20 @@ const speedChartData = computed(() => ({
   </div>
                 </div>
 
+<!-- Emoji Picker Modal -->
+<div class="modal fade" id="emojiPickerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog  modal-sm">
+    <div class="modal-content">
+      <div class="modal-body p-0">
+        <VuemojiPicker @emojiClick="handleEmojiClick" />
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
 
 </template>
+

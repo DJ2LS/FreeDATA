@@ -167,7 +167,7 @@ client.on("data", function (socketdata) {
           continue;
         }
       }
-       // console.log(data)
+       //console.log(data)
       if (data["command"] == "tnc_state") {
         //console.log(data)
         // set length of RX Buffer to global variable

@@ -21,7 +21,7 @@ const state = useStateStore(pinia);
             class="btn btn-sm btn-secondary me-1"
             v-bind:class="{
               'bg-danger': state.ptt_state === 'True',
-              'bg-success': state.ptt_state === 'False',
+              'bg-secondary': state.ptt_state === 'False',
             }"
             id="ptt_state"
             type="button"
@@ -30,6 +30,7 @@ const state = useStateStore(pinia);
             data-bs-trigger="hover"
             data-bs-html="true"
             title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"
+            disabled
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
           </button>
@@ -44,9 +45,10 @@ const state = useStateStore(pinia);
             data-bs-html="true"
             v-bind:class="{
               'bg-danger': state.busy_state === 'BUSY',
-              'bg-success': state.busy_state === 'IDLE',
+              'bg-secondary': state.busy_state === 'IDLE',
             }"
             title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
+            disabled
           >
             <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
           </button>
@@ -62,8 +64,9 @@ const state = useStateStore(pinia);
             title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
             v-bind:class="{
               'bg-secondary': state.arq_session_state === 'disconnected',
-              'bg-success': state.arq_session_state === 'connected',
+              'bg-warning': state.arq_session_state === 'connected',
             }"
+            disabled
           >
             <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
           </button>
@@ -79,8 +82,9 @@ const state = useStateStore(pinia);
             title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"
             v-bind:class="{
               'bg-secondary': state.arq_state === 'False',
-              'bg-success': state.arq_state === 'True',
+              'bg-warning': state.arq_state === 'True',
             }"
+            disabled
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem"></i>
           </button>
@@ -153,11 +157,11 @@ const state = useStateStore(pinia);
               class="bi"
               style="font-size: 1rem"
               v-bind:class="{
-                'bi-reception-0': state.speed_level === 0,
-                'bi-reception-1': state.speed_level === 1,
-                'bi-reception-2': state.speed_level === 2,
-                'bi-reception-3': state.speed_level === 3,
-                'bi-reception-4': state.speed_level === 4,
+                'bi-reception-0': state.speed_level === '0',
+                'bi-reception-1': state.speed_level === '1',
+                'bi-reception-2': state.speed_level === '2',
+                'bi-reception-3': state.speed_level === '3',
+                'bi-reception-4': state.speed_level === '4',
               }"
             ></i>
           </button>
@@ -225,7 +229,7 @@ const state = useStateStore(pinia);
             aria-valuemin="0"
             aria-valuemax="100"
           ></div>
-          <p class="justify-content-center m-0 d-flex position-absolute w-100">
+          <p class="justify-content-center m-0 d-flex position-absolute w-100 text-dark">
             {{ state.arq_seconds_until_finish }}s left
           </p>
         </div>
@@ -244,9 +248,9 @@ const state = useStateStore(pinia);
             aria-valuemax="100"
           >
             <p
-              class="justify-content-center m-0 d-flex position-absolute w-100"
+              class="justify-content-center m-0 d-flex position-absolute w-100 text-dark"
             >
-              timeout in: {{ state.arq_seconds_until_timeout }}s
+              timeout in {{ state.arq_seconds_until_timeout }}s
             </p>
           </div>
         </div>

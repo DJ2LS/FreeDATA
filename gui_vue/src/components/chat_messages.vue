@@ -94,13 +94,14 @@ function getDateTime(timestampRaw) {
   display: flex;
   align-items: center;
   text-align: center;
+  color: #6c757d;
 }
 
 .separator::before,
 .separator::after {
   content: "";
   flex: 1;
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid #adb5bd;
 }
 
 .separator:not(:empty)::before {
