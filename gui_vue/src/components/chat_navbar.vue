@@ -142,7 +142,7 @@ function newChat(obj) {
 }
 
 
-function syncWithTNC(){
+function syncWithModem(){
 
 getRxBuffer()
 }
@@ -207,8 +207,8 @@ getRxBuffer()
 
 <div class="input-group mb-0 p-0  ">
 
-  <button type="button" class="btn btn-outline-secondary" @click="syncWithTNC()">
-      TNC Sync
+  <button type="button" class="btn btn-outline-secondary" @click="syncWithModem()">
+      Modem Sync
     </button>
 </div>
 </div>

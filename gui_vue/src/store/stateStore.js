@@ -23,9 +23,9 @@ export const useStateStore = defineStore("stateStore", () => {
   var s_meter_strength_percent = ref(0);
   var s_meter_strength_raw = ref(0);
 
-  var tnc_connection = ref("disconnected");
-  var tncStartCount = ref(0);
-  var tnc_running_state = ref("--------");
+  var modem_connection = ref("disconnected");
+  var modemStartCount = ref(0);
+  var modem_running_state = ref("--------");
 
   var arq_total_bytes = ref(0);
   var arq_transmission_percent = ref(0);
@@ -57,7 +57,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var rigctld_process = ref();
 
   var python_version = ref();
-  var tnc_version = ref();
+  var modem_version = ref();
 
 
 function getChannelBusySlotState(slot){
@@ -79,9 +79,9 @@ function getChannelBusySlotState(slot){
 
 
   function updateTncState(state) {
-    tnc_connection.value = state;
+    modem_connection.value = state;
 
-    if (tnc_connection.value == "open") {
+    if (modem_connection.value == "open") {
       // collapse settings screen
       var collapseFirstRow = new bootstrap.Collapse(
         document.getElementById("collapseFirstRow"),
@@ -108,7 +108,7 @@ function getChannelBusySlotState(slot){
       //set_CPU_mode();
 
       //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
-      if (tncStartCount.value == 0) tncStartCount.value++;
+      if (modemStartCount.value == 0) modemStartCount.value++;
     } else {
       // collapse settings screen
       var collapseFirstRow = new bootstrap.Collapse(
@@ -166,7 +166,7 @@ function getChannelBusySlotState(slot){
     arq_seconds_until_finish,
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
-    tnc_running_state,
+    modem_running_state,
     arq_session_state,
     is_codec2_traffic,
     rf_level,
@@ -175,6 +175,6 @@ function getChannelBusySlotState(slot){
     rigctld_started,
     rigctld_process,
     python_version,
-    tnc_version
+    modem_version
   };
 });

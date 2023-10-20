@@ -138,7 +138,7 @@ alert("not yet implemented")
           aria-labelledby="list-rig-control-none-list"
         >
           <p class="small">
-            TNC will not utilize rig control and features will be limited. While
+            Modem will not utilize rig control and features will be limited. While
             functional; it is recommended to configure hamlib.
           </p>
         </div>
@@ -271,7 +271,7 @@ alert("not yet implemented")
       </div>
     </div>
     <!--<div class="card-footer text-muted small" id="hamlib_info_field">
-                Define TNC rig control mode (none/hamlib)
+                Define Modem rig control mode (none/hamlib)
               </div>
               -->
   </div>

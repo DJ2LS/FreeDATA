@@ -70,11 +70,11 @@ function openWebExternal(url) {
               >
                 <a
                   class="list-group-item list-group-item-action active"
-                  id="list-tnc-list"
+                  id="list-modem-list"
                   data-bs-toggle="list"
-                  href="#list-tnc"
+                  href="#list-modem"
                   role="tab"
-                  aria-controls="list-tnc"
+                  aria-controls="list-modem"
                   title="Home"
                   ><i class="bi bi-house-door-fill h3"></i
                 ></a>
@@ -150,9 +150,9 @@ function openWebExternal(url) {
             <div class="tab-content" id="nav-tabContent-settings">
               <div
                 class="tab-pane fade show active"
-                id="list-tnc"
+                id="list-modem"
                 role="tabpanel"
-                aria-labelledby="list-tnc-list"
+                aria-labelledby="list-modem-list"
               >
                 <!-- TOP NAVBAR -->
                 <main_top_navbar />
@@ -368,7 +368,7 @@ function openWebExternal(url) {
                 </h1>
 
 <h4 class="fs-5">
-                  tnc version - {{ state.tnc_version }}
+                  modem version - {{ state.modem_version }}
                 </h4>
 
 

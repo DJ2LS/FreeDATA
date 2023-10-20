@@ -16,6 +16,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css'
 // Import our custom CSS
 //import './scss/styles.scss'
 
+
+
 import App from './App.vue'
 const app = createApp(App)
 //.mount('#app').$nextTick(() => postMessage({ payload: 'removeLoading' }, '*'))

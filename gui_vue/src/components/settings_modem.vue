@@ -15,7 +15,7 @@ function saveSettings() {
 
 <template>
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">TNC port</span>
+    <span class="input-group-text" style="width: 180px">modem port</span>
     <input
       type="text"
       class="form-control"
@@ -30,7 +30,7 @@ function saveSettings() {
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">TNC host</span>
+    <span class="input-group-text" style="width: 180px">modem host</span>
     <input
       type="text"
       class="form-control"

@@ -460,7 +460,7 @@ ChartJS.register(
                     for="local-remote-switch1"
                   >
                     <i class="bi bi-pc-display-horizontal"></i>
-                    <span class="ms-2 me-2">Local tnc</span>
+                    <span class="ms-2 me-2">Local modem</span>
                   </label>
                   <input
                     type="radio"
@@ -474,7 +474,7 @@ ChartJS.register(
                     for="local-remote-switch2"
                   >
                     <i class="bi bi-ethernet"></i>
-                    <span class="ms-2 me-2">Remote tnc</span>
+                    <span class="ms-2 me-2">Remote modem</span>
                   </label>
                 </div>
               </h5>
@@ -489,7 +489,7 @@ ChartJS.register(
             <div class="card-body">
               <h5 class="card-title">
                 <div class="input-group input-group-sm me-2">
-                  <span class="input-group-text">tnc ip</span>
+                  <span class="input-group-text">modem ip</span>
                   <input
                     type="text"
                     class="form-control"
@@ -521,7 +521,7 @@ ChartJS.register(
                 </div>
               </h5>
               <p class="card-text">
-                Remote IP of TNC. Port is port of daemon. The tnc port will
+                Remote IP of TNC. Port is port of daemon. The modem port will
                 automatically adjusted. ( daemon port - 1 )
               </p>
             </div>
@@ -564,7 +564,7 @@ ChartJS.register(
                     disabled
                   >
                     <i class="bi bi-play-fill"></i>
-                    <span class="ms-2">Start tnc</span>
+                    <span class="ms-2">Start modem</span>
                   </button>
                   <button
                     type="button"
@@ -576,7 +576,7 @@ ChartJS.register(
                     disabled
                   >
                     <i class="bi bi-stop-fill"></i>
-                    <span class="ms-2">Stop tnc</span>
+                    <span class="ms-2">Stop modem</span>
                   </button>
                 </div>
               </h5>

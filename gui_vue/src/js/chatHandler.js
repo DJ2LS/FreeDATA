@@ -686,7 +686,7 @@ function deleteFromDatabaseByCallsign(callsign) {
 export function newBeaconReceived(obj) {
   /*
 {
-    "freedata": "tnc-message",
+    "freedata": "modem-message",
     "beacon": "received",
     "uuid": "12741312-3dbb-4a53-b0cc-100f6c930ab8",
     "timestamp": 1696076869,
@@ -740,7 +740,7 @@ export function newMessageReceived(message, protocol) {
 
     PROTOCOL
 {
-    "freedata": "tnc-message",
+    "freedata": "modem-message",
     "arq": "transmission",
     "status": "received",
     "uuid": "5a3caa57-7feb-4436-853d-e341b085350f",

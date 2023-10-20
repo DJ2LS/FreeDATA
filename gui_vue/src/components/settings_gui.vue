@@ -131,7 +131,7 @@ function saveSettings() {
     </label>
   </div>
   <div class="input-group input-group-sm mb-1">
-    <label class="input-group-text w-50">Auto-start TNC/rigctld</label>
+    <label class="input-group-text w-50">Auto-start Modem/rigctld</label>
     <label class="input-group-text w-50">
       <div class="form-check form-switch form-check-inline">
         <input

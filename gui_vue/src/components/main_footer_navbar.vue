@@ -44,7 +44,7 @@ const state = useStateStore(pinia);
               'bg-danger': state.busy_state === 'BUSY',
               'bg-secondary': state.busy_state === 'IDLE',
             }"
-            title="TNC state"
+            title="Modem state"
             disabled
             style="pointer-events: auto;"
           >
@@ -248,3 +248,4 @@ const state = useStateStore(pinia);
     </div>
   </nav>
 </template>
+ww

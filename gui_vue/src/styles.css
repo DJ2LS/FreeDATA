@@ -110,3 +110,8 @@ https://stackoverflow.com/a/9622873
 .modal-backdrop {
    background-color: transparent;
 }
+
+.modal-backdrop.in {
+    filter: alpha(opacity=10);
+    opacity: .1
+}

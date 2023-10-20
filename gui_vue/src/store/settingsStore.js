@@ -7,10 +7,10 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   var rx_audio = ref()
 
   // network
-  var tnc_host = ref("127.0.0.1");
-  var tnc_port = ref(3000);
-  var daemon_host = ref(tnc_host.value);
-  var daemon_port = ref(tnc_port.value + 1);
+  var modem_host = ref("127.0.0.1");
+  var modem_port = ref(3000);
+  var daemon_host = ref(modem_host.value);
+  var daemon_port = ref(modem_port.value + 1);
 
   // app
   var screen_height = ref(430);
@@ -56,7 +56,7 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   var tci_ip = ref("127.0.0.1");
   var tci_port = ref(50001);
 
-  //tnc
+  //modem
   var spectrum = ref("waterfall");
   var enable_scatter = ref("False");
   var enable_fft = ref("False");
@@ -88,10 +88,10 @@ export const useSettingsStore = defineStore("settingsStore", () => {
 
   function getJSON() {
     var config_export = {
-      tnc_host: tnc_host.value,
-      tnc_port: tnc_port.value,
-      daemon_host: tnc_host.value,
-      daemon_port: (parseInt(tnc_port.value) + 1).toString(),
+      modem_host: modem_host.value,
+      modem_port: modem_port.value,
+      daemon_host: modem_host.value,
+      daemon_port: (parseInt(modem_port.value) + 1).toString(),
       mycall: mycall.value,
       myssid: myssid.value,
       mygrid: mygrid.value,
@@ -152,8 +152,8 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   }
 
   return {
-    tnc_host,
-    tnc_port,
+    modem_host,
+    modem_port,
     daemon_host,
     daemon_port,
     screen_height,

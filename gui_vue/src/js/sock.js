@@ -39,24 +39,24 @@ var rxBufferLengthGui = 0;
 //var rxMsgBufferLengthTnc = 0;
 //var rxMsgBufferLengthGui = 0;
 
-// global to keep track of TNC connection error emissions
-var tncShowConnectStateError = 1;
+// global to keep track of Modem connection error emissions
+var modemShowConnectStateError = 1;
 
 // network connection Timeout
-setTimeout(connectTNC, 2000);
+setTimeout(connectModem, 2000);
 
-function connectTNC() {
-  //exports.connectTNC = function(){
-  //console.log('connecting to TNC...')
+function connectModem() {
+  //exports.connectModem = function(){
+  //console.log('connecting to Modem...')
 
   //clear message buffer after reconnecting or initial connection
   socketchunk = "";
 
-  client.connect(settings.tnc_port, settings.tnc_host);
+  client.connect(settings.modem_port, settings.modem_host);
 }
 
 client.on("connect", function (data) {
-  console.log("TNC connection established");
+  console.log("Modem connection established");
 
   stateStore.busy_state = "-";
   stateStore.arq_state = "-";
@@ -66,15 +66,15 @@ client.on("connect", function (data) {
   stateStore.dbfs_level = 0;
   stateStore.updateTncState(client.readyState);
 
-  tncShowConnectStateError = 1;
+  modemShowConnectStateError = 1;
 });
 
 client.on("error", function (data) {
-  if (tncShowConnectStateError == 1) {
-    console.log("TNC connection error");
-    tncShowConnectStateError = 0;
+  if (modemShowConnectStateError == 1) {
+    console.log("Modem connection error");
+    modemShowConnectStateError = 0;
   }
-  setTimeout(connectTNC, 500);
+  setTimeout(connectModem, 500);
   client.destroy();
   stateStore.busy_state = "-";
   stateStore.arq_state = "-";
@@ -87,13 +87,13 @@ client.on("error", function (data) {
 
 /*
 client.on('close', function(data) {
-	console.log(' TNC connection closed');
-    setTimeout(connectTNC, 2000)
+	console.log(' Modem connection closed');
+    setTimeout(connectModem, 2000)
 });
 */
 
 client.on("end", function (data) {
-  console.log("TNC connection ended");
+  console.log("Modem connection ended");
   stateStore.busy_state = "-";
   stateStore.arq_state = "-";
   stateStore.frequency = "-";
@@ -103,7 +103,7 @@ client.on("end", function (data) {
   stateStore.updateTncState(client.readyState);
   client.destroy();
 
-  setTimeout(connectTNC, 500);
+  setTimeout(connectModem, 500);
 });
 
 function writeTncCommand(command) {
@@ -116,11 +116,11 @@ function writeTncCommand(command) {
   }
 
   if (client.readyState == "closed") {
-    console.log("TNC SOCKET CONNECTION CLOSED!");
+    console.log("Modem SOCKET CONNECTION CLOSED!");
   }
 
   if (client.readyState == "opening") {
-    console.log("connecting to TNC...");
+    console.log("connecting to Modem...");
   }
 }
 
@@ -168,14 +168,14 @@ client.on("data", function (socketdata) {
         }
       }
        //console.log(data)
-      if (data["command"] == "tnc_state") {
+      if (data["command"] == "modem_state") {
         //console.log(data)
         // set length of RX Buffer to global variable
         rxBufferLengthTnc = data["rx_buffer_length"];
         //rxMsgBufferLengthTnc = data["rx_msg_buffer_length"];
 
         stateStore.frequency = data["frequency"];
-        stateStore.busy_state = data["tnc_state"];
+        stateStore.busy_state = data["modem_state"];
         stateStore.arq_state = data["arq_state"];
         stateStore.mode = data["mode"];
         stateStore.bandwidth = data["bandwidth"];
@@ -266,12 +266,12 @@ client.on("data", function (socketdata) {
         continue;
       }
 
-      // ----------- catch tnc messages START -----------
+      // ----------- catch modem messages START -----------
       //init message variable
       var message = "";
-      if (data["freedata"] == "tnc-message") {
+      if (data["freedata"] == "modem-message") {
         // break early if we received a dummy callsign
-        // thats a kind of hotfix, as long as the tnc isnt handling this better
+        // thats a kind of hotfix, as long as the modem isnt handling this better
         if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
           break;
         }
@@ -369,7 +369,7 @@ client.on("data", function (socketdata) {
             break;
         }
 
-        // ARQ SESSION && freedata == tnc-message
+        // ARQ SESSION && freedata == modem-message
         if (data["arq"] == "session") {
           switch (data["status"]) {
             case "connecting":
@@ -393,7 +393,7 @@ client.on("data", function (socketdata) {
               break;
           }
         }
-        // ARQ TRANSMISSION && freedata == tnc-message
+        // ARQ TRANSMISSION && freedata == modem-message
         if (data["arq"] == "transmission") {
           switch (data["status"]) {
             case "opened":
@@ -499,10 +499,10 @@ function hexToBytes(hex) {
   return bytes;
 }
 
-//Get TNC State
+//Get Modem State
 //exports.getTncState = function () {
 function getTncState() {
-  var command = '{"type" : "get", "command" : "tnc_state"}';
+  var command = '{"type" : "get", "command" : "modem_state"}';
   writeTncCommand(command);
 }
 
@@ -636,7 +636,7 @@ let data_with_attachment =
       data_with_attachment,
   );
 
-  // TODO: REMOVE mode and frames from TNC!
+  // TODO: REMOVE mode and frames from Modem!
   var mode = 255;
   var frames = 5;
 

@@ -10,21 +10,21 @@ const state = useStateStore(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-import { startTNC, stopTNC } from "../js/daemon.js";
+import { startModem, stopModem } from "../js/daemon.js";
 
-function startStopTNC() {
-  switch (state.tnc_running_state) {
+function startStopModem() {
+  switch (state.modem_running_state) {
     case "stopped":
 
       settings.rx_audio = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).value;
       settings.tx_audio = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).value;
 
 
-      startTNC();
+      startModem();
 
       break;
     case "running":
-      stopTNC();
+      stopModem();
 
       break;
     default:
@@ -36,50 +36,50 @@ function startStopTNC() {
   <nav class="navbar bg-body-tertiary border-bottom">
     <div class="mx-auto">
       <span class="badge bg-secondary me-4"
-        >TNC location | {{ settings.tnc_host }}</span
+        >Modem location | {{ settings.modem_host }}</span
       >
 
       <span class="badge bg-secondary me-4"
-        >Service | {{ state.tnc_running_state }}</span
+        >Service | {{ state.modem_running_state }}</span
       >
 
       <div class="btn-group" role="group"></div>
       <div class="btn-group me-4" role="group">
         <button
           type="button"
-          id="startTNC"
+          id="startModem"
           class="btn btn-sm btn-outline-success"
           data-bs-toggle="tooltip"
           data-bs-trigger="hover"
           data-bs-html="false"
-          title="Start the TNC. Please set your audio and radio settings first!"
-          @click="startStopTNC()"
-          v-bind:class="{ disabled: state.tnc_running_state === 'running' }"
+          title="Start the Modem. Please set your audio and radio settings first!"
+          @click="startStopModem()"
+          v-bind:class="{ disabled: state.modem_running_state === 'running' }"
         >
           <i class="bi bi-play-fill"></i>
-          <span class="ms-2">start tnc</span>
+          <span class="ms-2">start modem</span>
         </button>
         <button
           type="button"
-          id="stopTNC"
+          id="stopModem"
           class="btn btn-sm btn-outline-danger"
           data-bs-toggle="tooltip"
           data-bs-trigger="hover"
           data-bs-html="false"
-          title="Stop the TNC."
-          @click="startStopTNC()"
-          v-bind:class="{ disabled: state.tnc_running_state === 'stopped' }"
+          title="Stop the Modem."
+          @click="startStopModem()"
+          v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
         >
           <i class="bi bi-stop-fill"></i>
-          <span class="ms-2">stop tnc</span>
+          <span class="ms-2">stop modem</span>
         </button>
       </div>
 
       <button
         type="button"
-        id="openHelpModalStartStopTNC"
+        id="openHelpModalStartStopModem"
         data-bs-toggle="modal"
-        data-bs-target="#startStopTNCHelpModal"
+        data-bs-target="#startStopModemHelpModal"
         class="btn me-4 p-0 border-0"
       >
         <i class="bi bi-question-circle" style="font-size: 1rem"></i>

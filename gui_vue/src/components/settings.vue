@@ -2,7 +2,7 @@
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
 import settings_hamlib from "./settings_hamlib.vue";
-import settings_tnc from "./settings_tnc.vue";
+import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
 import settings_exp from "./settings_exp.vue";
 </script>
@@ -15,7 +15,7 @@ import settings_exp from "./settings_exp.vue";
   >
     <div class="container">
       <div class="badge text-bg-warning ms-3">
-        <i class="bi bi-exclamation-triangle"></i> Please restart the TNC after
+        <i class="bi bi-exclamation-triangle"></i> Please restart the modem after
         changing settings!
       </div>
       <!-- SETTINGS Nav tabs -->
@@ -65,15 +65,15 @@ import settings_exp from "./settings_exp.vue";
         <li class="nav-item" role="presentation">
           <button
             class="nav-link"
-            id="tnc-tab"
+            id="modem-tab"
             data-bs-toggle="tab"
-            data-bs-target="#tnc"
+            data-bs-target="#modem"
             type="button"
             role="tab"
             aria-controls="profile"
             aria-selected="false"
           >
-            TNC
+            Modem
           </button>
         </li>
         <li class="nav-item" role="presentation">
@@ -140,12 +140,12 @@ import settings_exp from "./settings_exp.vue";
         </div>
         <div
           class="tab-pane"
-          id="tnc"
+          id="modem"
           role="tabpanel"
-          aria-labelledby="tnc-tab"
+          aria-labelledby="modem-tab"
           tabindex="0"
         >
-          <settings_tnc />
+          <settings_modem />
         </div>
         <div
           class="tab-pane"

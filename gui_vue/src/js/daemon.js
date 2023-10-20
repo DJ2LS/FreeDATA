@@ -51,7 +51,7 @@ daemon.on("error", function (err) {
   if (daemonShowConnectStateError == 1) {
     console.log("daemon connection error");
     console.log("Make sure the daemon is started.");
-    console.log('Run "python daemon.py" in the tnc directory.');
+    console.log('Run "python daemon.py" in the modem directory.');
 
     daemonShowConnectStateError = 0;
   }
@@ -65,8 +65,8 @@ daemon.on("error", function (err) {
 
 /*
 client.on('close', function(data) {
-	console.log(' TNC connection closed');
-    setTimeout(connectTNC, 2000)
+	console.log(' Modem connection closed');
+    setTimeout(connectModem, 2000)
     let Data = {
         daemon_connection: daemon.readyState,
     };
@@ -156,8 +156,8 @@ daemon.on("data", function (socketdata) {
         audioStore.outputDevices = data["output_devices"];
         settings.serial_devices = data["serial_devices"];
         state.python_version = data["python_version"]
-        state.tnc_version = data["version"]
-        state.tnc_running_state = data["daemon_state"][0]["status"];
+        state.modem_version = data["version"]
+        state.modem_running_state = data["daemon_state"][0]["status"];
         state.rigctld_started = data["rigctld_state"][0]["status"];
         //state.rigctld_process = data["daemon_state"][0]["rigctld_process"];
 
@@ -193,12 +193,12 @@ function getDaemonState() {
   writeDaemonCommand(command);
 }
 
-// START TNC
+// START Modem
 // ` `== multi line string
-export function startTNC() {
+export function startModem() {
   var json_command = JSON.stringify({
     type: "set",
-    command: "start_tnc",
+    command: "start_modem",
     parameter: [
       {
         mycall: settings.mycall,
@@ -240,10 +240,10 @@ export function startTNC() {
   writeDaemonCommand(json_command);
 }
 
-// STOP TNC
-//exports.stopTNC = function () {
-export function stopTNC() {
-  var command = '{"type" : "set", "command": "stop_tnc" , "parameter": "---" }';
+// STOP Modem
+//exports.stopModem = function () {
+export function stopModem() {
+  var command = '{"type" : "set", "command": "stop_modem" , "parameter": "---" }';
   writeDaemonCommand(command);
 }
 
