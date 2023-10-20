@@ -156,12 +156,12 @@ ipcRenderer.on("action-updater", (event, arg) => {
 
   if (arg.status == "checking-for-update") {
     //document.title = document.title + ' - v' + arg.version;
-    updateTitle(
-      config.myCall,
-      config.tnc_host,
-      config.tnc_port,
-      " -v " + arg.version,
-    );
+    //updateTitle(
+    //  config.myCall,
+    //  config.tnc_host,
+    //  config.tnc_port,
+    //  " -v " + arg.version,
+    //);
     document.getElementById("updater_status").innerHTML =
       '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
 
@@ -181,6 +181,12 @@ ipcRenderer.on("action-updater", (event, arg) => {
     //autoUpdater.quitAndInstall();
   }
   if (arg.status == "update-not-available") {
+
+  document.getElementById("updater_last_version").innerHTML = arg.info.releaseName
+  document.getElementById("updater_last_update").innerHTML = arg.info.releaseDate
+  document.getElementById("updater_release_notes").innerHTML = arg.info.releaseNotes
+
+
     document.getElementById("updater_status").innerHTML =
       '<i class="bi bi-check2-square ms-1 me-1" style="color: white;"></i>';
     document.getElementById("updater_status").className =

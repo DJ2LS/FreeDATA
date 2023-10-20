@@ -95,7 +95,7 @@ if(typeof process.env["APPDATA"]  !== "undefined"){
     console.log(appDataFolder)
 
 } else {
-    let appDataFolder: string;
+    var appDataFolder: string;
 
     switch (process.platform) {
       case "darwin":
@@ -114,9 +114,14 @@ if(typeof process.env["APPDATA"]  !== "undefined"){
         break;
     }
 }
+console.log("loading chat database...")
+console.log("appdata folder:" + appDataFolder)
 var configFolder = path.join(appDataFolder, "FreeDATA");
+console.log("config folder:" + configFolder)
 
 var chatDB = path.join(configFolder, "chatDB");
+console.log("database path:" + chatDB)
+
 var db = new PouchDB(chatDB);
 
 /* -------- CREATE DATABASE INDEXES */

@@ -51,7 +51,7 @@ const settings = useSettingsStore(pinia);
     </div>
     <div class="card-body p-2 mb-1">
       <button
-        class="btn btn-secondary btn-sm"
+        class="btn btn-secondary btn-sm ms-1 me-1"
         id="updater_channel"
         type="button"
         disabled
@@ -59,7 +59,7 @@ const settings = useSettingsStore(pinia);
         {{ settings.update_channel }}
       </button>
       <button
-        class="btn btn-secondary btn-sm"
+        class="btn btn-secondary btn-sm ms-1"
         id="updater_status"
         type="button"
         disabled
@@ -67,15 +67,16 @@ const settings = useSettingsStore(pinia);
         ...
       </button>
       <button
-        class="btn btn-secondary btn-sm"
+        class="btn btn-secondary btn-sm ms-1"
         id="updater_changelog"
         type="button"
-        style="display: none"
+        data-bs-toggle="modal"
+        data-bs-target="#updaterReleaseNotes"
       >
         Changelog
       </button>
       <button
-        class="btn btn-primary btn-sm"
+        class="btn btn-primary btn-sm ms-1"
         id="update_and_install"
         type="button"
         style="display: none"

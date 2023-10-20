@@ -32,10 +32,10 @@ if(typeof process.env["APPDATA"]  !== "undefined"){
             console.log(appDataFolder)
 
             break;
-        case "linux2":
+        case "linux":
             var appDataFolder = "undefined";
             break;
-        case "windows":
+        case "win32":
             var appDataFolder = "undefined";
             break;
         default:

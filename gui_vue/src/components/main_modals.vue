@@ -56,6 +56,32 @@ ChartJS.register(
 
 <template>
 
+<!-- updater release notes-->
+<div class="modal fade" ref="modalEle" id="updaterReleaseNotes" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+                    <span class="input-group-text" id="updater_last_version"></span>
+                    <span class="input-group-text ms-1" id="updater_last_update"></span>
+
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+<div class="modal-dialog modal-dialog-scrollable">
+
+<div class="" id="updater_release_notes"></div>
+
+      </div>
+</div>
+
+
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 
 <!-- delete chat modal -->

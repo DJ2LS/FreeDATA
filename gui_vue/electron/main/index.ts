@@ -171,12 +171,12 @@ autoUpdater.on("update-downloaded", (info) => {
   // we need to call this at this point.
   // if an update is available and we are force closing the app
   // the entire screen crashes...
-  //console.log.info('quit application and install update');
+  //console.log('quit application and install update');
   //autoUpdater.quitAndInstall();
 });
 
 autoUpdater.on("checking-for-update", () => {
-  console.log.info("checking for update");
+  console.log("checking for update");
   let arg = {
     status: "checking-for-update",
     version: app.getVersion(),
