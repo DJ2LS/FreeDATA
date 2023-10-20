@@ -301,7 +301,7 @@ client.on("data", function (socketdata) {
             displayToast(
               "success",
               "bi-arrow-left-right",
-              "transmitting CQ",
+              "Transmitting CQ",
               5000,
             );
             break;
@@ -319,7 +319,7 @@ client.on("data", function (socketdata) {
             displayToast(
               "info",
               "bi-person-raised-hand",
-              "transmitting QRV ",
+              "Transmitting QRV ",
               5000,
             );
             break;
@@ -334,7 +334,7 @@ client.on("data", function (socketdata) {
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
-            displayToast("success", "bi-broadcast-pin", "BEACON... ", 5000);
+            displayToast("success", "bi-broadcast-pin", "Transmitting beacon", 5000);
             break;
 
           case "received":
@@ -342,7 +342,7 @@ client.on("data", function (socketdata) {
             newBeaconReceived(data);
 
             message =
-              "BEACON from " + data["dxcallsign"] + " | " + data["dxgrid"];
+              "Beacon from " + data["dxcallsign"] + " | " + data["dxgrid"];
             displayToast("info", "bi-broadcast", message, 5000);
             break;
         }
@@ -350,21 +350,21 @@ client.on("data", function (socketdata) {
         switch (data["ping"]) {
           case "transmitting":
             // PING TRANSMITTING
-            message = "PING to " + data["dxcallsign"];
+            message = "Sending ping to " + data["dxcallsign"];
             displayToast("success", "bi-arrow-right", message, 5000);
             break;
 
           case "received":
             // PING RECEIVED
             message =
-              "PING from " + data["dxcallsign"] + " | " + data["dxgrid"];
+              "Ping request from " + data["dxcallsign"] + " | " + data["dxgrid"];
             displayToast("success", "bi-arrow-right-short", message, 5000);
             break;
 
           case "acknowledge":
             // PING ACKNOWLEDGE
             message =
-              "PING ACK from " + data["dxcallsign"] + " | " + data["dxgrid"];
+              "Received ping-ack from " + data["dxcallsign"] + " | " + data["dxgrid"];
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
@@ -398,18 +398,18 @@ client.on("data", function (socketdata) {
           switch (data["status"]) {
             case "opened":
               // ARQ Open
-              message = "ARQ session opened:" + data["dxcallsign"];
+              message = "ARQ session opened: " + data["dxcallsign"];
               displayToast("success", "bi-arrow-left-right", message, 5000);
               break;
 
             case "opening":
               // ARQ Opening IRS/ISS
               if (data["irs"] == "False") {
-                message = "ARQ session opening:" + data["dxcallsign"];
+                message = "ARQ session opening: " + data["dxcallsign"];
                 displayToast("info", "bi-arrow-left-right", message, 5000);
                 break;
               } else {
-                message = data["dxcallsign"] + "is requesting an ARQ session";
+                message = "ARQ sesson request from: " + data["dxcallsign"];
                 displayToast("success", "bi-arrow-left-right", message, 5000);
                 break;
               }
@@ -418,7 +418,7 @@ client.on("data", function (socketdata) {
 
             case "waiting":
               // ARQ waiting
-              message = "busy channel | ARQ protocol is waiting";
+              message = "Channel busy | ARQ protocol is waiting";
               displayToast("warning", "bi-hourglass-split", message, 5000);
               break;
 
@@ -429,13 +429,13 @@ client.on("data", function (socketdata) {
             case "failed":
               // ARQ TX Failed
               if (data["reason"] == "protocol version missmatch") {
-                message = "protocol version missmatch";
+                message = "Protocol version mismatch!";
                 displayToast("danger", "bi-chevron-bar-expand", message, 5000);
                 setStateFailed();
 
                 break;
               } else {
-                message = "transmission failed";
+                message = "Transmission failed";
                 displayToast("danger", "bi-x-octagon", message, 5000);
                 updateTransmissionStatus(data);
                 setStateFailed();
@@ -476,7 +476,7 @@ client.on("data", function (socketdata) {
 
             case "transmitted":
               // ARQ transmitted
-              message = "data transmitted";
+              message = "Data transmitted";
               displayToast("success", "bi-check-sqaure", message, 5000);
               updateTransmissionStatus(data);
               setStateSuccess();
