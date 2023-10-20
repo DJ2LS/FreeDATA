@@ -8,7 +8,7 @@
   "afterSign": "electron-builder-notarize",
   "productName": "FreeDATA",
   "directories": {
-    "output": "release/${version}"
+    "output": "release"
   },
   "files": [
     "dist",
