@@ -1,7 +1,10 @@
 import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { release } from 'node:os'
+import { release, platform } from 'node:os'
 import { join } from 'node:path'
 import { autoUpdater } from "electron-updater"
+import { existsSync } from "fs"
+import { spawn } from "child_process"
+
 
 // The built directory structure
 //
@@ -26,6 +29,7 @@ if (release().startsWith('6.1')) app.disableHardwareAcceleration()
 if (process.platform === 'win32') app.setAppUserModelId(app.getName())
 
 if (!app.requestSingleInstanceLock()) {
+  close_sub_processes()
   app.quit()
   process.exit(0)
 }
@@ -35,6 +39,8 @@ if (!app.requestSingleInstanceLock()) {
 // Read more on https://www.electronjs.org/docs/latest/tutorial/security
 // process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
 
+// set daemon process var
+var daemonProcess = null;
 let win: BrowserWindow | null = null
 // Here, you can also use other preload
 const preload = join(__dirname, '../preload/index.js')
@@ -91,11 +97,76 @@ async function createWindow() {
 
 }
 
-app.whenReady().then(createWindow)
+//app.whenReady().then(
+app.whenReady().then(() => {
+
+createWindow()
+
+  //Generate daemon binary path
+  var daemonPath = "";
+  switch (platform().toLowerCase()) {
+    case "darwin":
+    case "linux":
+      daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
+
+      break;
+    case "win32":
+    case "win64":
+      daemonPath = join(
+        process.resourcesPath,
+        "modem",
+        "freedata-daemon.exe",
+      );
+      break;
+    default:
+      console.log("Unhandled OS Platform: ", platform());
+      break;
+  }
+
+  //Start daemon binary if it exists
+  if (existsSync(daemonPath)) {
+    console.log("Starting freedata-daemon binary");
+    daemonProcess = spawn(daemonPath, [], {
+      cwd: join(daemonPath, ".."),
+    });
+    // return process messages
+    daemonProcess.on("error", (err) => {
+      // daemonProcessLog.error(`error when starting daemon: ${err}`);
+    });
+    daemonProcess.on("message", (data) => {
+      // daemonProcessLog.info(`${data}`);
+    });
+    daemonProcess.stdout.on("data", (data) => {
+      // daemonProcessLog.info(`${data}`);
+    });
+    daemonProcess.stderr.on("data", (data) => {
+      // daemonProcessLog.info(`${data}`);
+      let arg = {
+        entry: `${data}`,
+      };
+    });
+    daemonProcess.on("close", (code) => {
+      // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
+    });
+  } else {
+    daemonProcess = null;
+    daemonPath = null;
+    console.log("Daemon binary doesn't exist--normal for dev environments.");
+  }
+
+
+
+
+//)
+});
+
 
 app.on('window-all-closed', () => {
   win = null
-  if (process.platform !== 'darwin') app.quit()
+  if (process.platform !== 'darwin') app.quit(
+  close_sub_processes()
+
+  )
 })
 
 app.on('second-instance', () => {
@@ -201,3 +272,37 @@ autoUpdater.on("error", (error) => {
   win.webContents.send("action-updater", arg);
   console.log("AUTO UPDATER : " + error);
 });
+
+
+function close_sub_processes() {
+  console.log("closing sub processes");
+
+  // closing the modem binary if not closed when closing application and also our daemon which has been started by the gui
+  try {
+    if (daemonProcess != null) {
+      daemonProcess.kill();
+    }
+  } catch (e) {
+    mainLog.error(e);
+  }
+
+  console.log("closing modem and daemon");
+  try {
+    if (platform() == "win32" || platform() == "win64") {
+      spawn("Taskkill", ["/IM", "freedata-modem.exe", "/F"]);
+      spawn("Taskkill", ["/IM", "freedata-daemon.exe", "/F"]);
+    }
+
+    if (platform() == "linux") {
+      spawn("pkill", ["-9", "freedata-modem"]);
+      spawn("pkill", ["-9", "freedata-daemon"]);
+    }
+
+    if (platform() == "darwin") {
+      spawn("pkill", ["-9", "freedata-modem"]);
+      spawn("pkill", ["-9", "freedata-daemon"]);
+    }
+  } catch (e) {
+    console.log(e);
+  }
+}
