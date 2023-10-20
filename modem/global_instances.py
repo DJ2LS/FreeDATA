@@ -5,7 +5,7 @@ from static import Daemon, ARQ, AudioParam, Beacon, Channel, HamlibParam, ModemP
 # Initialize instances with appropriate default values
 
 # Create single instances of each dataclass
-Daemon = Daemon(tncprocess=None, rigctldprocess=None)
+Daemon = Daemon(modemprocess=None, rigctldprocess=None)
 ARQ = ARQ()
 AudioParam = AudioParam()
 Beacon = Beacon()
