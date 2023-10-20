@@ -21,10 +21,10 @@
   ],
 
 
-      "extraResources": [
+    "extraResources": [
       {
-        "from": "src",
-        "to": "testfolder",
+        "from": "../modem/dist/modem/",
+        "to": "modem",
         "filter": [
           "**/*",
           "!**/.git"
