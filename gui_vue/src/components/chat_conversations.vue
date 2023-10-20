@@ -23,7 +23,6 @@ import chat_conversations_entry from "./chat_conversations_entry.vue";
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
 
-
   // scroll message container to bottom
   var messageBody = document.getElementById("message-container");
   if (messageBody != null ) {
@@ -33,6 +32,8 @@ function chatSelected(callsign) {
 
   if (getNewMessagesByDXCallsign(callsign)[1] > 0){
         let messageArray = getNewMessagesByDXCallsign(callsign)[2]
+        console.log(messageArray)
+
         for (const key in messageArray){
                 resetIsNewMessage(messageArray[key].uuid, false)
             }
@@ -70,7 +71,6 @@ function chatSelected(callsign) {
 
         <div class="row">
           <div class="col-9">{{ item }}
-
             <span class="badge rounded-pill bg-danger" v-if="getNewMessagesByDXCallsign(item)[1] > 0">
                {{getNewMessagesByDXCallsign(item)[1]}} new messages
             </span>

@@ -7,6 +7,7 @@
   "scripts": {
     "start": "git pull && npm i && vite",
     "dev": "vite",
+    "check" : "vue-tsc --noEmit",
     "build": "vue-tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",

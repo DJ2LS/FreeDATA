@@ -13,7 +13,7 @@ import {
   updateTransmissionStatus,
   setStateSuccess,
   setStateFailed,
-} from "./chatHandler.js";
+} from "./chatHandler.ts";
 import { displayToast } from "./popupHandler.js";
 
 // ----------------- init pinia stores -------------

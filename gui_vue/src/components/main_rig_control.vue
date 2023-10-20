@@ -159,7 +159,6 @@ alert("not yet implemented")
       aria-label=".form-select-sm"
       id="hamlib_deviceport"
       style="width: 7rem"
-      @change="saveSettings"
       v-html="settings.getSerialDevices()"
     >
 

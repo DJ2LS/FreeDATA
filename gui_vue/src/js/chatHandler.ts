@@ -11,6 +11,9 @@ setActivePinia(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
 import { sendMessage } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
@@ -21,6 +24,52 @@ import {btoa_FD} from "./freedata.js"
 
 // split character
 const split_char = "0;1;";
+
+// define default message object
+interface Attachment {
+  content_type: string;
+  data: string;
+}
+
+interface messageDefaultObject {
+  command: string;
+  hmac_signed: boolean;
+  percent: number;
+  bytesperminute: number;
+  is_new: boolean;
+  _id: string;
+  timestamp: number;
+  dxcallsign: string;
+  dxgrid: string;
+  msg: string;
+  checksum: string;
+  type: string;
+  status: string;
+  attempt: number;
+  uuid: string;
+  duration: number;
+  nacks: number;
+  speed_list: string;
+  broadcast_sender?: string; // optional for broadcasts
+
+  _attachments: {
+    [filename: string]: Attachment;
+  };
+}
+
+
+interface beaconDefaultObject{
+  command: string;
+  is_new: boolean;
+  _id: string;
+  timestamp: number;
+  dxcallsign: string;
+  dxgrid: string;
+  type: string;
+  status: string;
+  uuid: string;
+  snr: string;
+}
 
 // ---- MessageDB
 try {
@@ -46,26 +95,23 @@ if(typeof process.env["APPDATA"]  !== "undefined"){
     console.log(appDataFolder)
 
 } else {
-        switch (process.platform) {
-        case "darwin":
-            var appDataFolder = process.env["HOME"] + "/Library/Application Support";
-            console.log(appDataFolder)
+    let appDataFolder: string;
 
-            break;
-        case "linux":
-            var appDataFolder = process.env["HOME"] + "/.config";
-            console.log(appDataFolder)
-
-            break;
-        case "linux2":
-            var appDataFolder = "undefined";
-            break;
-        case "windows":
-            var appDataFolder = "undefined";
-            break;
-        default:
-            var appDataFolder = "undefined";
-            break;
+    switch (process.platform) {
+      case "darwin":
+        appDataFolder = process.env["HOME"] + "/Library/Application Support";
+        console.log(appDataFolder);
+        break;
+      case "linux":
+        appDataFolder = process.env["HOME"] + "/.config";
+        console.log(appDataFolder);
+        break;
+      case "win32":
+        appDataFolder = "undefined";
+        break;
+      default:
+        appDataFolder = "undefined";
+        break;
     }
 }
 var configFolder = path.join(appDataFolder, "FreeDATA");
@@ -90,15 +136,11 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   var mode = "";
   var frames = "";
   var data = "";
-  if (typeof chatFile !== "undefined") {
-    var file = chatFile;
-    var filetype = chatFileType;
-    var filename = chatFileName;
-  } else {
+
     var file = "";
     var filetype = "text";
     var filename = "";
-  }
+
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
   var checksum = "";
   var message_type = "broadcast_transmit";
@@ -116,34 +158,33 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   uuid = uuid.slice(-4);
 
 
-  let newChatObj = new Object();
-
-  newChatObj.command = "broadcast";
-  newChatObj.hmac_signed = false;
-  newChatObj.percent = 0;
-  newChatObj.bytesperminute;
-  newChatObj.is_new = false;
-  newChatObj._id = uuid;
-  newChatObj.timestamp = timestamp;
-  newChatObj.dxcallsign = dxcallsign;
-  newChatObj.dxgrid = "null";
-  newChatObj.msg = chatmessage;
-  newChatObj.checksum = file_checksum;
-  newChatObj.type = message_type;
-  newChatObj.status = "transmitting";
-  newChatObj.attempt = 1;
-  newChatObj.uuid = uuid;
-  newChatObj.duration = 0;
-  newChatObj.nacks = 0;
-  newChatObj.speed_list = "null";
-
-
-  newChatObj._attachments = {
+let newChatObj: messageDefaultObject = {
+  command: "broadcast",
+  hmac_signed: false,
+  percent: 0,
+  bytesperminute: 0,  // You need to assign a value here
+  is_new: false,
+  _id: uuid,
+  timestamp: timestamp,
+  dxcallsign: broadcastChannel,
+  dxgrid: "null",
+  msg: chatmessage,
+  checksum: file_checksum,
+  type: message_type,
+  status: "transmitting",
+  attempt: 1,
+  uuid: uuid,
+  duration: 0,
+  nacks: 0,
+  speed_list: "null",
+  _attachments: {
     [filename]: {
       content_type: filetype,
       data: btoa_FD(file),
-    },
-  };
+    }
+  }
+};
+
 
     sendMessage(newChatObj)
 
@@ -162,14 +203,17 @@ export function newMessage(
   var mode = "";
   var frames = "";
   var data = "";
+  var filename = "";
+  var filetype = "";
+  var file=""
   if (typeof chatFile !== "undefined") {
-    var file = chatFile;
-    var filetype = chatFileType;
-    var filename = chatFileName;
+    file = chatFile;
+    filetype = chatFileType;
+    filename = chatFileName;
   } else {
-    var file = "";
-    var filetype = "text";
-    var filename = "";
+    file = "";
+    filetype = "text";
+    filename = "";
   }
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
   var checksum = "";
@@ -188,32 +232,32 @@ export function newMessage(
   uuid = uuid.slice(-8);
 
 
-  let newChatObj = new Object();
-
-  newChatObj.command = "msg";
-  newChatObj.hmac_signed = false;
-  newChatObj.percent = 0;
-  newChatObj.bytesperminute;
-  newChatObj.is_new = false;
-  newChatObj._id = uuid;
-  newChatObj.timestamp = timestamp;
-  newChatObj.dxcallsign = dxcallsign;
-  newChatObj.dxgrid = "null";
-  newChatObj.msg = chatmessage;
-  newChatObj.checksum = file_checksum;
-  newChatObj.type = message_type;
-  newChatObj.status = "transmitting";
-  newChatObj.attempt = 1;
-  newChatObj.uuid = uuid;
-  newChatObj.duration = 0;
-  newChatObj.nacks = 0;
-  newChatObj.speed_list = "null";
-  newChatObj._attachments = {
+let newChatObj: messageDefaultObject = {
+  command: "msg",
+  hmac_signed: false,
+  percent: 0,
+  bytesperminute: 0, // You need to assign a value here
+  is_new: false,
+  _id: uuid,
+  timestamp: timestamp,
+  dxcallsign: dxcallsign,
+  dxgrid: "null",
+  msg: chatmessage,
+  checksum: file_checksum,
+  type: message_type,
+  status: "transmitting",
+  attempt: 1,
+  uuid: uuid,
+  duration: 0,
+  nacks: 0,
+  speed_list: "null",
+  _attachments: {
     [filename]: {
       content_type: filetype,
-      data: btoa_FD(file),
-    },
-  };
+      data: btoa_FD(file)
+    }
+  }
+};
 
   sendMessage(newChatObj);
   addObjToDatabase(newChatObj);
@@ -423,7 +467,7 @@ function getFromUnsortedChatListByUUID(uuid){
     return false;
 }
 
-export function getNewMessagesByDXCallsign(dxcallsign){
+export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any]{
 let new_counter = 0
 let total_counter = 0
 let item_array = []
@@ -641,6 +685,7 @@ function createChatIndex() {
 
 export function deleteChatByCallsign(callsign) {
   chat.callsign_list.delete(callsign);
+  // @ts-expect-error
   delete chat.unsorted_chat_list.callsign;
   delete chat.sorted_chat_list.callsign;
 
@@ -696,17 +741,22 @@ export function newBeaconReceived(obj) {
     "mycallsign": "DJ2LS-0"
 }
 */
-  let newChatObj = new Object();
+let newChatObj: beaconDefaultObject = {
+  command: "beacon",
+  is_new: false,
+  _id: obj["uuid"],
+  timestamp: obj["timestamp"],
+  dxcallsign: obj["dxcallsign"],
+  dxgrid: obj["dxgrid"],
+  type: "beacon",
+  status: obj["beacon"],
+  uuid: obj["uuid"],
+  snr: obj["snr"], // adding the new field
+};
 
-  newChatObj.command = "beacon";
-  newChatObj._id = obj["uuid"];
-  newChatObj.uuid = obj["uuid"];
-  newChatObj.timestamp = obj["timestamp"];
-  newChatObj.dxcallsign = obj["dxcallsign"];
-  newChatObj.dxgrid = obj["dxgrid"];
-  newChatObj.type = "beacon";
-  newChatObj.status = obj["beacon"];
-  newChatObj.snr = obj["snr"];
+
+
+
 
   addObjToDatabase(newChatObj);
 
@@ -813,35 +863,33 @@ export function newMessageReceived(message, protocol) {
     */
   console.log(protocol);
 
-  let newChatObj = new Object();
-
-  newChatObj.command = "msg";
-  newChatObj.hmac_signed = protocol["hmac_signed"];
-  newChatObj.percent = 100;
-  newChatObj.bytesperminute = protocol["bytesperminute"];
-  newChatObj.is_new = true;
-  newChatObj._id = message[3];
-  newChatObj.timestamp = message[4];
-  newChatObj.dxcallsign = protocol["dxcallsign"];
-  newChatObj.dxgrid = protocol["dxgrid"];
-  newChatObj.msg = message[5];
-  newChatObj.checksum = message[2];
-  //newChatObj.type = message[1];
-  newChatObj.type = protocol["status"];
-  newChatObj.status = protocol["status"];
-  newChatObj.attempt = 1;
-  newChatObj.uuid = message[3];
-  newChatObj.duration = protocol["duration"];
-  newChatObj.nacks = protocol["nacks"];
-  newChatObj.speed_list = protocol["speed_list"];
-
-
-  newChatObj._attachments = {
+let newChatObj: messageDefaultObject = {
+  command: "msg",
+  hmac_signed: protocol["hmac_signed"],
+  percent: 100,
+  bytesperminute: protocol["bytesperminute"],
+  is_new: true,
+  _id: message[3],
+  timestamp: message[4],
+  dxcallsign: protocol["dxcallsign"],
+  dxgrid: protocol["dxgrid"],
+  msg: message[5],
+  checksum: message[2],
+  type: protocol["status"],
+  status: protocol["status"],
+  attempt: 1,
+  uuid: message[3],
+  duration: protocol["duration"],
+  nacks: protocol["nacks"],
+  speed_list: protocol["speed_list"],
+  _attachments: {
     [message[6]]: {
       content_type: message[7],
-      data: btoa_FD(message[8]),
-    },
-  };
+      data: btoa_FD(message[8])
+    }
+  }
+};
+
 
   // some tweaks for broadcasts
   if (protocol.fec == "broadcast") {
@@ -874,37 +922,3 @@ console.log(data)
 
 
 }
-
-
-
-
-// CRC CHECKSUMS
-// https://stackoverflow.com/a/50579690
-// crc32 calculation
-//console.log(crc32('abc'));
-//var crc32=function(r){for(var a,o=[],c=0;c<256;c++){a=c;for(var f=0;f<8;f++)a=1&a?3988292384^a>>>1:a>>>1;o[c]=a}for(var n=-1,t=0;t<r.length;t++)n=n>>>8^o[255&(n^r.charCodeAt(t))];return(-1^n)>>>0};
-//console.log(crc32('abc').toString(16).toUpperCase()); // hex
-
-var makeCRCTable = function () {
-  var c;
-  var crcTable = [];
-  for (var n = 0; n < 256; n++) {
-    c = n;
-    for (var k = 0; k < 8; k++) {
-      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-    }
-    crcTable[n] = c;
-  }
-  return crcTable;
-};
-
-var crc32 = function (str) {
-  var crcTable = window.crcTable || (window.crcTable = makeCRCTable());
-  var crc = 0 ^ -1;
-
-  for (var i = 0; i < str.length; i++) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ str.charCodeAt(i)) & 0xff];
-  }
-
-  return (crc ^ -1) >>> 0;
-};
