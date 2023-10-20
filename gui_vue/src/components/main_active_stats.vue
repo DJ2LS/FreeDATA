@@ -336,7 +336,7 @@ export default {
                   'btn-outline-secondary': state.is_codec2_traffic === 'False',
                 }"
               >
-                signal
+                data
               </button>
             </div>
           </div>

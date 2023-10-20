@@ -75,6 +75,7 @@ function openWebExternal(url) {
                   href="#list-tnc"
                   role="tab"
                   aria-controls="list-tnc"
+                  title="Home"
                   ><i class="bi bi-house-door-fill h3"></i
                 ></a>
                 <a
@@ -84,6 +85,7 @@ function openWebExternal(url) {
                   href="#list-chat"
                   role="tab"
                   aria-controls="list-chat"
+                  title="Chat"
                   ><i class="bi bi-chat-text h3"></i
                 ></a>
 
@@ -104,6 +106,7 @@ function openWebExternal(url) {
                   href="#list-info"
                   role="tab"
                   aria-controls="list-info"
+                  title="About"
                   ><i class="bi bi-info h3"></i
                 ></a>
 
@@ -124,6 +127,7 @@ function openWebExternal(url) {
                   href="#list-settings"
                   role="tab"
                   aria-controls="list-settings"
+                  title="Settings"
                   ><i class="bi bi-gear-wide-connected h3"></i
                 ></a>
 

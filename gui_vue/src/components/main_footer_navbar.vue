@@ -25,11 +25,8 @@ const state = useStateStore(pinia);
             }"
             id="ptt_state"
             type="button"
-            data-bs-placement="top"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
-            title="PTT state:<strong class='text-success'>RECEIVING</strong> / <strong class='text-danger'>TRANSMITTING</strong>"
+            title="Rig PTT state"
+            style="pointer-events: auto;"
             disabled
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
@@ -47,8 +44,9 @@ const state = useStateStore(pinia);
               'bg-danger': state.busy_state === 'BUSY',
               'bg-secondary': state.busy_state === 'IDLE',
             }"
-            title="TNC busy state: <strong class='text-success'>IDLE</strong> / <strong class='text-danger'>BUSY</strong>"
+            title="TNC state"
             disabled
+            style="pointer-events: auto;"
           >
             <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
           </button>
@@ -61,12 +59,13 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
-            title="ARQ SESSION state: <strong class='text-warning'>OPEN</strong>"
             v-bind:class="{
               'bg-secondary': state.arq_session_state === 'disconnected',
               'bg-warning': state.arq_session_state === 'connected',
             }"
             disabled
+            style="pointer-events: auto;"
+            title="Session state"
           >
             <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
           </button>
@@ -75,16 +74,13 @@ const state = useStateStore(pinia);
             class="btn btn-sm btn-secondary me-1"
             id="arq_state"
             type="button"
-            data-bs-placement="top"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
-            title="DATA-CHANNEL state: <strong class='text-warning'>OPEN</strong>"
+            title="Data channel state"
             v-bind:class="{
               'bg-secondary': state.arq_state === 'False',
               'bg-warning': state.arq_state === 'True',
             }"
             disabled
+            style=" ointer-events: auto;"
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem"></i>
           </button>
@@ -114,7 +110,8 @@ const state = useStateStore(pinia);
               'btn-warning': state.channel_busy === 'True',
               'btn-secondary': state.channel_busy === 'False',
             }"
-            title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
+            style="pointer-events: auto;"
+            title="Channel busy"
           >
             <i class="bi bi-hourglass"></i>
           </button>
@@ -124,10 +121,8 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-4 disabled"
             type="button"
-            data-bs-placement="top"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
+            title="What's the frequency, Kenneth?"
+            style=" pointer-events: auto;"
           >
             {{ parseInt(state.frequency) / 1000  }} KHz
           </button>
@@ -137,10 +132,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            data-bs-placement="top"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
+            title="Speed level"
           >
             <i class="bi bi-speedometer2" style="font-size: 1rem"></i>
           </button>
@@ -157,11 +149,11 @@ const state = useStateStore(pinia);
               class="bi"
               style="font-size: 1rem"
               v-bind:class="{
-                'bi-reception-0': state.speed_level === '0',
-                'bi-reception-1': state.speed_level === '1',
-                'bi-reception-2': state.speed_level === '2',
-                'bi-reception-3': state.speed_level === '3',
-                'bi-reception-4': state.speed_level === '4',
+                'bi-reception-0': state.speed_level == 0,
+                'bi-reception-1': state.speed_level == 1,
+                'bi-reception-2': state.speed_level == 2,
+                'bi-reception-3': state.speed_level == 3,
+                'bi-reception-4': state.speed_level == 4,
               }"
             ></i>
           </button>
@@ -170,10 +162,7 @@ const state = useStateStore(pinia);
           <button
             class="btn btn-sm btn-secondary me-0"
             type="button"
-            data-bs-placement="top"
-            data-bs-toggle="tooltip"
-            data-bs-trigger="hover"
-            data-bs-html="true"
+            title="Bytes transfered"
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
           </button>
@@ -197,6 +186,7 @@ const state = useStateStore(pinia);
             data-bs-toggle="tooltip"
             data-bs-trigger="hover"
             data-bs-html="true"
+            title="Current or last connected with station"
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 1rem"></i>
           </button>
