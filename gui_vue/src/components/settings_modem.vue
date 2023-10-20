@@ -19,13 +19,13 @@ function saveSettings() {
     <input
       type="text"
       class="form-control"
-      placeholder="tnc port"
-      id="tnc_port"
+      placeholder="modem port"
+      id="modem_port"
       maxlength="5"
       max="65534"
       min="1025"
       @change="saveSettings"
-      v-model="settings.tnc_port"
+      v-model="settings.modem_port"
     />
   </div>
 
@@ -34,10 +34,10 @@ function saveSettings() {
     <input
       type="text"
       class="form-control"
-      placeholder="tnc host"
-      id="tnc_port"
+      placeholder="modem host"
+      id="modem_port"
       @change="saveSettings"
-      v-model="settings.tnc_host"
+      v-model="settings.modem_host"
     />
   </div>
 
