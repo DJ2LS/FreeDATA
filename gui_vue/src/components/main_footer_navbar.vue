@@ -80,7 +80,7 @@ const state = useStateStore(pinia);
               'bg-warning': state.arq_state === 'True',
             }"
             disabled
-            style=" ointer-events: auto;"
+            style="pointer-events: auto;"
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem"></i>
           </button>
