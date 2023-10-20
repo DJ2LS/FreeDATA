@@ -197,24 +197,24 @@ jobs:
         os: [ubuntu-20.04, macos-11, windows-latest]
         include:
           - os: ubuntu-20.04
-            zip_name: ubuntu_tnc
+            zip_name: ubuntu_modem
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
-            tnc_binary_name: freedata-modem
+            modem_binary_name: freedata-modem
             electron_parameters: "-p always"
 
           - os: macos-11
-            zip_name: macos_tnc
+            zip_name: macos_modem
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
-            tnc_binary_name: freedata-modem
+            modem_binary_name: freedata-modem
             electron_parameters: "-p always"
 
           - os: windows-latest
-            zip_name: windows_tnc
+            zip_name: windows_modem
             generator: Visual Studio 16 2019
             daemon_binary_name: freedata-daemon.exe
-            tnc_binary_name: freedata-modem.exe
+            modem_binary_name: freedata-modem.exe
             electron_parameters: "-p always --x64 --ia32"
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
@@ -240,9 +240,9 @@ jobs:
       - name: Create modem/dist/modem
         working-directory: modem
         run: |
-          mkdir -p dist/tnc
+          mkdir -p dist/modem
 
-      ##- name: Download libcodec2 artifact TNC DIST
+      ##- name: Download libcodec2 artifact Modem DIST
       ##  uses: actions/download-artifact@v3
       ##  with:
       ##    path: modem/dist/codec2
@@ -252,7 +252,7 @@ jobs:
         run: |
           mkdir codec2
 
-      - name: Download libcodec2 artifact TNC LIB
+      - name: Download libcodec2 artifact Modem LIB
         uses: actions/download-artifact@v3
         with:
           path: modem/lib/codec2
@@ -287,11 +287,11 @@ jobs:
         if: ${{startsWith(matrix.os, 'macos')}}
         working-directory: modem
         run: |
-          # now build tnc binaries
+          # now build modem binaries
           pyinstaller -y freedata.spec
           # and to some final cleanup
-          # cp -r -f dist/tnc/* dist/
-          # rm -r dist/tnc
+          # cp -r -f dist/modem/* dist/
+          # rm -r dist/modem
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
@@ -299,7 +299,7 @@ jobs:
         run: |
           # pyinstaller freedata.spec
           # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
-          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.tnc_binary_name }}
+          # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile main.py -o ${{ matrix.modem_binary_name }}
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone daemon.py
           python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --standalone main.py
 
@@ -307,24 +307,24 @@ jobs:
         if: ${{startsWith(matrix.os, 'ubuntu')}}
         working-directory: modem
         run: |
-          cp -r -f daemon.dist/* dist/tnc
-          cp -r -f main.dist/* dist/tnc
+          cp -r -f daemon.dist/* dist/modem
+          cp -r -f main.dist/* dist/modem
 
       - name: Copy binaries - Windows
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: modem
         # These are powershell aliases, not UNIX commands.
         run: |
-          cp -r -Force daemon.dist/* dist/tnc
-          cp -r -Force main.dist/* dist/tnc
+          cp -r -Force daemon.dist/* dist/modem
+          cp -r -Force main.dist/* dist/modem
 
       - name: Rename modem binaries
         # we don't need renaming for pyinstaller builds as output name is defined
         if: ${{!startsWith(matrix.os, 'macos')}}
         working-directory: modem
         run: |
-          mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
-          mv dist/tnc/main* dist/tnc/${{ matrix.tnc_binary_name }}
+          mv dist/modem/daemon* dist/modem/${{ matrix.daemon_binary_name }}
+          mv dist/modem/main* dist/modem/${{ matrix.modem_binary_name }}
 
       - uses: actions/download-artifact@v3
         with:
@@ -338,18 +338,18 @@ jobs:
         if: ${{!startsWith(matrix.os, 'windows')}}
         working-directory: modem
         run: |
-          if ! test -d "dist/tnc/_sounddevice_data"; then
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
+          if ! test -d "dist/modem/_sounddevice_data"; then
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
           fi
 
       - name: Download Portaudio binaries Windows
         if: ${{startsWith(matrix.os, 'windows')}}
         working-directory: modem
         run: |
-          if(Test-Path -Path "dist/tnc/_sounddevice_data"){
+          if(Test-Path -Path "dist/modem/_sounddevice_data"){
           echo "sounddevice folder already exists"
           } else {
-          git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
+          git clone https://github.com/spatialaudio/portaudio-binaries dist/modem/_sounddevice_data/portaudio-binaries
           }
 
       - name: LIST ALL FILES
@@ -377,7 +377,7 @@ jobs:
           args: ${{ matrix.electron_parameters }}
           max_attempts: 3
 
-      - name: Compress TNC
+      - name: Compress Modem
         uses: thedoctor0/zip-release@master
         with:
             type: 'zip'
@@ -387,7 +387,7 @@ jobs:
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
 
-      - name: Release TNC
+      - name: Release Modem
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
@@ -397,7 +397,7 @@ jobs:
       - name: LIST ALL FILES
         run: ls -R
 
-      #- name: Upload TNC artifacts
+      #- name: Upload Modem artifacts
       #  uses: actions/upload-artifact@v3
       #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
       #  with:
