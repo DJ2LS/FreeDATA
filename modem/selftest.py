@@ -1,5 +1,5 @@
 """
-simple TNC self tests
+simple Modem self tests
 """
 # -*- coding: utf-8 -*-
 
@@ -15,9 +15,9 @@ class TEST():
     def __init__(self):
         log.info("[selftest] running self tests...")
         if self.run_tests():
-            log.info("[selftest] passed -> starting TNC")
+            log.info("[selftest] passed -> starting Modem")
         else:
-            log.error("[selftest] failed -> closing TNC")
+            log.error("[selftest] failed -> closing Modem")
             sys.exit(0)
 
     def run_tests(self):

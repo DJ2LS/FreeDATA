@@ -5,11 +5,11 @@ Created on Tue Dec 22 16:58:45 2020
 
 @author: DJ2LS
 
-main module for running the tnc
+main module for running the modem
 """
 
 
-# run tnc self test on startup before we are doing other things
+# run modem self test on startup before we are doing other things
 # import selftest
 # selftest.TEST()
 
@@ -29,7 +29,7 @@ import helpers
 import log_handler
 import modem
 import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 import structlog
 import explorer
 import json
@@ -46,7 +46,7 @@ def signal_handler(sig, frame):
     Returns: system exit
 
     """
-    print("Closing TNC...")
+    print("Closing Modem...")
     sock.CLOSE_SIGNAL = True
     sys.exit(0)
 
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # This is for Windows multiprocessing support
     multiprocessing.freeze_support()
     # --------------------------------------------GET PARAMETER INPUTS
-    PARSER = argparse.ArgumentParser(description="FreeDATA TNC")
+    PARSER = argparse.ArgumentParser(description="FreeDATA Modem")
 
     #PARSER.add_argument(
     #    "--use-config",
@@ -205,7 +205,7 @@ if __name__ == "__main__":
         "--explorer",
         dest="enable_explorer",
         action="store_true",
-        help="Enable sending tnc data to https://explorer.freedata.app",
+        help="Enable sending modem data to https://explorer.freedata.app",
     )
 
     PARSER.add_argument(
@@ -295,27 +295,27 @@ if __name__ == "__main__":
             except ValueError:
                 AudioParam.audio_output_device = ARGS.audio_output_device
 
-            TNC.port = ARGS.socket_port
+            Modem.port = ARGS.socket_port
             HamlibParam.hamlib_radiocontrol = ARGS.hamlib_radiocontrol
             HamlibParam.hamlib_rigctld_ip = ARGS.rigctld_ip
             HamlibParam.hamlib_rigctld_port = str(ARGS.rigctld_port)
             ModemParam.enable_scatter = ARGS.send_scatter
             AudioParam.enable_fft = ARGS.send_fft
-            TNC.enable_fsk = ARGS.enable_fsk
-            TNC.low_bandwidth_mode = ARGS.low_bandwidth_mode
+            Modem.enable_fsk = ARGS.enable_fsk
+            Modem.low_bandwidth_mode = ARGS.low_bandwidth_mode
             ModemParam.tuning_range_fmin = ARGS.tuning_range_fmin
             ModemParam.tuning_range_fmax = ARGS.tuning_range_fmax
             AudioParam.tx_audio_level = ARGS.tx_audio_level
-            TNC.respond_to_cq = ARGS.enable_respond_to_cq
+            Modem.respond_to_cq = ARGS.enable_respond_to_cq
             ARQ.rx_buffer_size = ARGS.rx_buffer_size
-            TNC.enable_explorer = ARGS.enable_explorer
+            Modem.enable_explorer = ARGS.enable_explorer
             AudioParam.audio_auto_tune = ARGS.enable_audio_auto_tune
-            TNC.enable_stats = ARGS.enable_stats
+            Modem.enable_stats = ARGS.enable_stats
             TCIParam.ip = ARGS.tci_ip
             TCIParam.port = ARGS.tci_port
             ModemParam.tx_delay = ARGS.tx_delay
             MeshParam.enable_protocol = ARGS.enable_mesh
-            TNC.enable_hmac = ARGS.enable_hmac
+            Modem.enable_hmac = ARGS.enable_hmac
 
 
         except Exception as e:
@@ -348,25 +348,25 @@ if __name__ == "__main__":
             except ValueError:
                 AudioParam.audio_output_device = conf.get('AUDIO', 'tx', '0')
 
-            TNC.port = int(conf.get('NETWORK', 'tncport', '3000'))
+            Modem.port = int(conf.get('NETWORK', 'modemport', '3000'))
             HamlibParam.hamlib_radiocontrol = conf.get('RADIO', 'radiocontrol', 'disabled')
             HamlibParam.hamlib_rigctld_ip = conf.get('RADIO', 'rigctld_ip', '127.0.0.1')
             HamlibParam.hamlib_rigctld_port = str(conf.get('RADIO', 'rigctld_port', '4532'))
-            ModemParam.enable_scatter = conf.get('TNC', 'scatter', 'True')
-            AudioParam.enable_fft = conf.get('TNC', 'fft', 'True')
-            TNC.enable_fsk = conf.get('TNC', 'fsk', 'False')
-            TNC.low_bandwidth_mode = conf.get('TNC', 'narrowband', 'False')
-            ModemParam.tuning_range_fmin = float(conf.get('TNC', 'fmin', '-50.0'))
-            ModemParam.tuning_range_fmax = float(conf.get('TNC', 'fmax', '50.0'))
+            ModemParam.enable_scatter = conf.get('Modem', 'scatter', 'True')
+            AudioParam.enable_fft = conf.get('Modem', 'fft', 'True')
+            Modem.enable_fsk = conf.get('Modem', 'fsk', 'False')
+            Modem.low_bandwidth_mode = conf.get('Modem', 'narrowband', 'False')
+            ModemParam.tuning_range_fmin = float(conf.get('Modem', 'fmin', '-50.0'))
+            ModemParam.tuning_range_fmax = float(conf.get('Modem', 'fmax', '50.0'))
             AudioParam.tx_audio_level = int(conf.get('AUDIO', 'txaudiolevel', '100'))
-            TNC.respond_to_cq = conf.get('TNC', 'qrv', 'True')
-            ARQ.rx_buffer_size = int(conf.get('TNC', 'rx_buffer_size', '16'))
-            TNC.enable_explorer = conf.get('TNC', 'explorer', 'False')
+            Modem.respond_to_cq = conf.get('Modem', 'qrv', 'True')
+            ARQ.rx_buffer_size = int(conf.get('Modem', 'rx_buffer_size', '16'))
+            Modem.enable_explorer = conf.get('Modem', 'explorer', 'False')
             AudioParam.audio_auto_tune = conf.get('AUDIO', 'auto_tune', 'False')
-            TNC.enable_stats = conf.get('TNC', 'stats', 'False')
+            Modem.enable_stats = conf.get('Modem', 'stats', 'False')
             TCIParam.ip = str(conf.get('TCI', 'tci_ip', 'localhost'))
             TCIParam.port = int(conf.get('TCI', 'tci_port', '50001'))
-            ModemParam.tx_delay = int(conf.get('TNC', 'tx_delay', '0'))
+            ModemParam.tx_delay = int(conf.get('Modem', 'tx_delay', '0'))
             MeshParam.enable_protocol = conf.get('MESH','mesh_enable','False')
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
@@ -384,7 +384,7 @@ if __name__ == "__main__":
     # config logging
     try:
         if sys.platform == "linux":
-            logging_path = os.getenv("HOME") + "/.config/" + "FreeDATA/" + "tnc"
+            logging_path = os.getenv("HOME") + "/.config/" + "FreeDATA/" + "modem"
 
         if sys.platform == "darwin":
             logging_path = (
@@ -392,11 +392,11 @@ if __name__ == "__main__":
                 + "/Library/"
                 + "Application Support/"
                 + "FreeDATA/"
-                + "tnc"
+                + "modem"
             )
 
         if sys.platform in ["win32", "win64"]:
-            logging_path = os.getenv("APPDATA") + "/" + "FreeDATA/" + "tnc"
+            logging_path = os.getenv("APPDATA") + "/" + "FreeDATA/" + "modem"
 
         if not os.path.exists(logging_path):
             os.makedirs(logging_path)
@@ -405,7 +405,7 @@ if __name__ == "__main__":
         log.error("[DMN] logger init error", exception=err)
 
     log.info(
-        "[TNC] Starting FreeDATA", author="DJ2LS", version=TNC.version
+        "[Modem] Starting FreeDATA", author="DJ2LS", version=Modem.version
     )
 
     # start data handler
@@ -421,17 +421,17 @@ if __name__ == "__main__":
         mesh = mesh.MeshRouter()
 
     # optionally start explorer module
-    if TNC.enable_explorer:
-        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=TNC.enable_explorer)
+    if Modem.enable_explorer:
+        log.info("[EXPLORER] Publishing to https://explorer.freedata.app", state=Modem.enable_explorer)
         explorer = explorer.explorer()
 
     # --------------------------------------------START CMD SERVER
     try:
-        log.info("[TNC] Starting TCP/IP socket", port=TNC.port)
+        log.info("[Modem] Starting TCP/IP socket", port=Modem.port)
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer(
-            (TNC.host, TNC.port), sock.ThreadedTCPRequestHandler
+            (Modem.host, Modem.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
 
@@ -439,7 +439,7 @@ if __name__ == "__main__":
         server_thread.start()
 
     except Exception as err:
-        log.error("[TNC] Starting TCP/IP socket failed", port=TNC.port, e=err)
+        log.error("[Modem] Starting TCP/IP socket failed", port=Modem.port, e=err)
         sys.exit(1)
     while True:
         threading.Event().wait(1)

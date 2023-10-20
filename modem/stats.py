@@ -12,7 +12,7 @@ import threading
 import time
 import ujson as json
 import structlog
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, TCIParam, Modem
 
 log = structlog.get_logger("stats")
 
@@ -47,7 +47,7 @@ class stats():
             'duration': duration,
             'percentage': ARQ.arq_transmission_percent,
             'status': status,
-            'version': TNC.version
+            'version': Modem.version
         }
 
         station_data = json.dumps(station_data)

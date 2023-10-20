@@ -73,9 +73,9 @@ class Channel:
 
 @dataclass 
 class Daemon:
-    tncprocess: subprocess.Popen
+    modemprocess: subprocess.Popen
     rigctldprocess: subprocess.Popen
-    tncstarted: bool = False
+    modemstarted: bool = False
     rigctldstarted: bool = False
     port: int = 3001
     serial_devices = []
@@ -133,12 +133,12 @@ class TCIParam:
     port: int = '9000'
 
 @dataclass 
-class TNC:
+class Modem:
     version = "0.11.0-alpha.1-vuejs"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
-    tnc_state: str = "IDLE"
+    modem_state: str = "IDLE"
     enable_explorer = False
     enable_stats = False
     transmitting: bool = False

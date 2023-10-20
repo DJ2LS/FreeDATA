@@ -24,7 +24,7 @@ import helpers
 import modem
 import numpy as np
 import sock
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 import structlog
 import stats
 import ujson as json
@@ -145,7 +145,7 @@ class DATA:
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
         # but ability to fall back to low bandwidth modes if needed.
-        if TNC.low_bandwidth_mode:
+        if Modem.low_bandwidth_mode:
             # List of codec2 modes to use in "low bandwidth" mode.
             self.mode_list = self.mode_list_low_bw
             # list of times to wait for corresponding mode in seconds
@@ -280,12 +280,12 @@ class DATA:
             # send transmission queued information once
             if ARQ.arq_state or ModemParam.is_codec2_traffic:
                 self.log.debug(
-                    "[TNC] TX DISPATCHER - waiting with processing command ",
+                    "[Modem] TX DISPATCHER - waiting with processing command ",
                     arq_state=ARQ.arq_state,
                 )
 
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     command=data[0],
                     status="queued",
                 )
@@ -299,7 +299,7 @@ class DATA:
 
             # Dispatch commands known to command_dispatcher
             if data[0] in self.command_dispatcher:
-                self.log.debug(f"[TNC] TX {self.command_dispatcher[data[0]][1]}...")
+                self.log.debug(f"[Modem] TX {self.command_dispatcher[data[0]][1]}...")
                 self.command_dispatcher[data[0]][0]()
 
             # Dispatch commands that need more arguments.
@@ -346,7 +346,7 @@ class DATA:
                 self.send_fec(data[1], data[2], data[3], data[4])
             else:
                 self.log.error(
-                    "[TNC] worker_transmit: received invalid command:", data=data
+                    "[Modem] worker_transmit: received invalid command:", data=data
                 )
 
     def worker_receive(self) -> None:
@@ -373,7 +373,7 @@ class DATA:
 
         """
         self.log.debug(
-            "[TNC] process_data:", n_retries_per_burst=self.n_retries_per_burst
+            "[Modem] process_data:", n_retries_per_burst=self.n_retries_per_burst
         )
 
         # Process data only if broadcast or we are the receiver
@@ -415,7 +415,7 @@ class DATA:
             # Dispatch activity based on received frametype
             if frametype in self.rx_dispatcher:
                 # Process frames "known" by rx_dispatcher
-                # self.log.debug(f"[TNC] {self.rx_dispatcher[frametype][1]} RECEIVED....")
+                # self.log.debug(f"[Modem] {self.rx_dispatcher[frametype][1]} RECEIVED....")
                 self.rx_dispatcher[frametype][0](bytes_out[:-2])
 
             # Process frametypes requiring a different set of arguments.
@@ -424,7 +424,7 @@ class DATA:
                 # FIXME: find a fix for this - after moving to classes, this no longer works
                 # snr = self.calculate_snr(freedv)
                 snr = ModemParam.snr
-                self.log.debug("[TNC] RX SNR", snr=snr)
+                self.log.debug("[Modem] RX SNR", snr=snr)
                 # send payload data to arq checker without CRC16
                 self.arq_data_received(
                     bytes(bytes_out[:-2]), bytes_per_frame, snr, freedv
@@ -432,23 +432,23 @@ class DATA:
 
                 # if we received the last frame of a burst or the last remaining rpt frame, do a modem unsync
                 # if ARQ.rx_burst_buffer.count(None) <= 1 or (frame+1) == n_frames_per_burst:
-                #    self.log.debug(f"[TNC] LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
+                #    self.log.debug(f"[Modem] LAST FRAME OF BURST --> UNSYNC {frame+1}/{n_frames_per_burst}")
                 #    self.c_lib.freedv_set_sync(freedv, 0)
 
             # TESTFRAMES
             elif frametype == FR_TYPE.TEST_FRAME.value:
-                self.log.debug("[TNC] TESTFRAME RECEIVED", frame=bytes_out[:])
+                self.log.debug("[Modem] TESTFRAME RECEIVED", frame=bytes_out[:])
 
             # Unknown frame type
             else:
                 self.log.warning(
-                    "[TNC] ARQ - other frame type", frametype=FR_TYPE(frametype).name
+                    "[Modem] ARQ - other frame type", frametype=FR_TYPE(frametype).name
                 )
 
         else:
             # for debugging purposes to receive all data
             self.log.debug(
-                "[TNC] Foreign frame received",
+                "[Modem] Foreign frame received",
                 frame=bytes_out[:-2].hex(),
                 frame_type=FR_TYPE(int.from_bytes(bytes_out[:1], byteorder="big")).name,
             )
@@ -461,7 +461,7 @@ class DATA:
             repeat_delay=0,
     ) -> None:
         """
-        Send (transmit) supplied frame to TNC
+        Send (transmit) supplied frame to Modem
 
         :param frame_to_tx: Frame data to send
         :type frame_to_tx: list of bytearrays
@@ -475,16 +475,16 @@ class DATA:
         #print(frame_to_tx[0])
         #print(frame_to_tx)
         frame_type = FR_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
-        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
+        self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
         # Set the TRANSMITTING flag before adding an object to the transmit queue
         # TODO: This is not that nice, we could improve this somehow
-        TNC.transmitting = True
+        Modem.transmitting = True
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
-        while TNC.transmitting:
+        while Modem.transmitting:
             threading.Event().wait(0.01)
 
     def send_data_to_socket_queue(self, **jsondata):
@@ -495,7 +495,7 @@ class DATA:
           Dictionary containing the data to be sent, in the format:
           key=value, for each item. E.g.:
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="received",
                 status="success",
                 uuid=self.transmission_uuid,
@@ -515,12 +515,12 @@ class DATA:
             if "dxcallsign" not in jsondata:
                 jsondata["dxcallsign"] = str(Station.dxcallsign, "UTF-8")
         except Exception as e:
-            self.log.debug("[TNC] error adding callsigns to network message", e=e)
+            self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
         # run json dumps
         json_data_out = json.dumps(jsondata)
 
-        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=json_data_out)
+        self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
 
@@ -589,7 +589,7 @@ class DATA:
         rpt_frame[1:2] = self.session_id
         rpt_frame[2:2 + len(missing_frames)] = missing_frames
 
-        self.log.info("[TNC] ARQ | RX | Requesting", frames=missing_frames)
+        self.log.info("[Modem] ARQ | RX | Requesting", frames=missing_frames)
         # Transmit frame
         self.enqueue_frame_for_tx([rpt_frame], c2_mode=FREEDV_MODE.sig1.value, copies=1, repeat_delay=0)
 
@@ -627,7 +627,7 @@ class DATA:
         ARQ.rx_burst_buffer = []
 
         # Create and send ACK frame
-        self.log.info("[TNC] ARQ | RX | SENDING NACK")
+        self.log.info("[Modem] ARQ | RX | SENDING NACK")
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
@@ -684,14 +684,14 @@ class DATA:
         data_in = bytes(data_in)
 
         # only process data if we are in ARQ and BUSY state else return to quit
-        if not ARQ.arq_state and TNC.tnc_state not in ["BUSY"]:
-            self.log.warning("[TNC] wrong tnc state - dropping data", arq_state=ARQ.arq_state,
-                             tnc_state=TNC.tnc_state)
+        if not ARQ.arq_state and Modem.modem_state not in ["BUSY"]:
+            self.log.warning("[Modem] wrong modem state - dropping data", arq_state=ARQ.arq_state,
+                             modem_state=Modem.modem_state)
             return
 
         self.arq_file_transfer = True
 
-        TNC.tnc_state = "BUSY"
+        Modem.modem_state = "BUSY"
         ARQ.arq_state = True
 
         # Update data_channel timestamp
@@ -740,30 +740,30 @@ class DATA:
             # catch possible modem error which leads into false byteorder
             # modem possibly decodes too late - data then is pushed to buffer
             # which leads into wrong byteorder
-            # Lets put this in try/except so we are not crashing tnc as its highly experimental
+            # Lets put this in try/except so we are not crashing modem as its highly experimental
             # This might only work for datac1 and datac3
             try:
                 # area_of_interest = (modem.get_bytes_per_frame(self.mode_list[speed_level] - 1) -3) * 2
                 if ARQ.rx_frame_buffer.endswith(temp_burst_buffer[:246]) and len(temp_burst_buffer) >= 246:
                     self.log.warning(
-                        "[TNC] ARQ | RX | wrong byteorder received - dropping data"
+                        "[Modem] ARQ | RX | wrong byteorder received - dropping data"
                     )
                     # we need to run a return here, so we are not sending an ACK
                     # return
             except Exception as e:
                 self.log.warning(
-                    "[TNC] ARQ | RX | wrong byteorder check failed", e=e
+                    "[Modem] ARQ | RX | wrong byteorder check failed", e=e
                 )
 
-            self.log.debug("[TNC] temp_burst_buffer", buffer=temp_burst_buffer)
-            self.log.debug("[TNC] ARQ.rx_frame_buffer", buffer=ARQ.rx_frame_buffer)
+            self.log.debug("[Modem] temp_burst_buffer", buffer=temp_burst_buffer)
+            self.log.debug("[Modem] ARQ.rx_frame_buffer", buffer=ARQ.rx_frame_buffer)
 
             # if frame buffer ends not with the current frame, we are going to append new data
             # if data already exists, we received the frame correctly,
             # but the ACK frame didn't receive its destination (ISS)
             if ARQ.rx_frame_buffer.endswith(temp_burst_buffer):
                 self.log.info(
-                    "[TNC] ARQ | RX | Frame already received - sending ACK again"
+                    "[Modem] ARQ | RX | Frame already received - sending ACK again"
                 )
 
             else:
@@ -795,12 +795,12 @@ class DATA:
                                              : search_position + get_position
                                              ]
                     self.log.warning(
-                        "[TNC] ARQ | RX | replacing existing buffer data",
+                        "[Modem] ARQ | RX | replacing existing buffer data",
                         area=search_area,
                         pos=get_position,
                     )
                 else:
-                    self.log.debug("[TNC] ARQ | RX | appending data to buffer")
+                    self.log.debug("[Modem] ARQ | RX | appending data to buffer")
 
                 ARQ.rx_frame_buffer += temp_burst_buffer
 
@@ -818,7 +818,7 @@ class DATA:
                 self.data_channel_last_received = int(time.time()) + 6 + 6
                 self.burst_last_received = int(time.time()) + 6 + 6
                 # Create and send ACK frame
-                self.log.info("[TNC] ARQ | RX | SENDING ACK", finished=ARQ.arq_seconds_until_finish,
+                self.log.info("[Modem] ARQ | RX | SENDING ACK", finished=ARQ.arq_seconds_until_finish,
                               bytesperminute=ARQ.bytes_per_minute)
 
                 self.send_burst_ack_frame(snr)
@@ -833,7 +833,7 @@ class DATA:
 
                 # send a network message with information
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="transmission",
                     status="receiving",
                     uuid=self.transmission_uuid,
@@ -853,7 +853,7 @@ class DATA:
         #    # frame of a burst otherwise the entire burst is lost
         #    # TODO: See if a timeout on the send side with re-transmit last burst would help.
         #    self.log.debug(
-        #        "[TNC] last frames of burst received:",
+        #        "[Modem] last frames of burst received:",
         #        frame=self.rx_n_frame_of_burst,
         #        frames=self.rx_n_frames_per_burst,
         #
@@ -864,20 +864,20 @@ class DATA:
 
         # elif self.rx_n_frame_of_burst not in [self.rx_n_frames_per_burst - 1]:
         #    self.log.info(
-        #        "[TNC] data_handler: received burst",
+        #        "[Modem] data_handler: received burst",
         #        frame=self.rx_n_frame_of_burst + 1,
         #        frames=self.rx_n_frames_per_burst,
         #    )
 
         # else:
         #    self.log.error(
-        #        "[TNC] data_handler: Should not reach this point...",
+        #        "[Modem] data_handler: Should not reach this point...",
         #        frame=self.rx_n_frame_of_burst + 1,
         #        frames=self.rx_n_frames_per_burst,
         #    )
         else:
             self.log.warning(
-                "[TNC] data_handler: missing data in burst buffer...",
+                "[Modem] data_handler: missing data in burst buffer...",
                 frame=self.rx_n_frame_of_burst + 1,
                 frames=self.rx_n_frames_per_burst
             )
@@ -898,7 +898,7 @@ class DATA:
                 and None not in ARQ.rx_burst_buffer
         ):
             self.log.debug(
-                "[TNC] arq_data_received:",
+                "[Modem] arq_data_received:",
                 bof_position=bof_position,
                 eof_position=eof_position,
             )
@@ -920,9 +920,9 @@ class DATA:
             data_frame_crc_received = helpers.get_crc_32(data_frame)
 
             # check if hmac signing enabled
-            if TNC.enable_hmac:
+            if Modem.enable_hmac:
                 self.log.info(
-                    "[TNC] [HMAC] Enabled",
+                    "[Modem] [HMAC] Enabled",
                 )
                 # now check if we have valid hmac signature - returns salt or bool
                 salt_found = helpers.search_hmac_salt(self.dxcallsign, self.mycallsign, data_frame_crc, data_frame, token_iters=100)
@@ -937,12 +937,12 @@ class DATA:
                     self.arq_process_received_data_frame(data_frame, snr, signed=False)
             elif data_frame_crc == data_frame_crc_received:
                 self.log.warning(
-                    "[TNC] [HMAC] Disabled, using CRC",
+                    "[Modem] [HMAC] Disabled, using CRC",
                 )
                 self.arq_process_received_data_frame(data_frame, snr, signed=False)
             else:
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="transmission",
                     status="failed",
                     uuid=self.transmission_uuid,
@@ -953,7 +953,7 @@ class DATA:
 
                 duration = time.time() - self.rx_start_of_transmission
                 self.log.warning(
-                    "[TNC] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
+                    "[Modem] ARQ | RX | DATA FRAME NOT SUCCESSFULLY RECEIVED!",
                     e="wrong crc",
                     expected=data_frame_crc.hex(),
                     received=data_frame_crc_received.hex(),
@@ -965,10 +965,10 @@ class DATA:
                     data=data_frame,
 
                 )
-                if TNC.enable_stats:
+                if Modem.enable_stats:
                     self.stats.push(frame_nack_counter=self.frame_nack_counter, status="wrong_crc", duration=duration)
 
-                self.log.info("[TNC] ARQ | RX | Sending NACK", finished=ARQ.arq_seconds_until_finish,
+                self.log.info("[Modem] ARQ | RX | Sending NACK", finished=ARQ.arq_seconds_until_finish,
                               bytesperminute=ARQ.bytes_per_minute)
                 self.send_burst_nack_frame(snr)
 
@@ -1003,7 +1003,7 @@ class DATA:
         mode_slots = FREEDV_MODE_USED_SLOTS[mode_name].value
         if mode_slots in [ModemParam.channel_busy_slot]:
             self.log.warning(
-                "[TNC] busy slot detection",
+                "[Modem] busy slot detection",
                 slots=ModemParam.channel_busy_slot,
                 mode_slots=mode_slots,
             )
@@ -1027,7 +1027,7 @@ class DATA:
 
 
             else:
-                self.log.info("[TNC] ARQ | increasing speed level not possible because of SNR limit",
+                self.log.info("[Modem] ARQ | increasing speed level not possible because of SNR limit",
                               given_snr=ModemParam.snr,
                               needed_snr=self.snr_list[new_speed_level]
                               )
@@ -1054,7 +1054,7 @@ class DATA:
         self.calculate_transfer_rate_rx(
             self.rx_start_of_transmission, len(ARQ.rx_frame_buffer)
         )
-        self.log.info("[TNC] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
+        self.log.info("[Modem] ARQ | RX | DATA FRAME SUCCESSFULLY RECEIVED", nacks=self.frame_nack_counter,
                       bytesperminute=ARQ.bytes_per_minute, total_bytes=ARQ.total_bytes, duration=duration, hmac_signed=signed)
 
         # Decompress the data frame
@@ -1077,7 +1077,7 @@ class DATA:
         else:
             # if full, free space by getting an item
             self.log.info(
-                "[TNC] ARQ | RX | RX_BUFFER FULL - dropping old data",
+                "[Modem] ARQ | RX | RX_BUFFER FULL - dropping old data",
                 buffer_size=RX_BUFFER.qsize(),
                 maxsize=int(ARQ.rx_buffer_size)
             )
@@ -1085,7 +1085,7 @@ class DATA:
 
         # add item to RX_BUFFER
         self.log.info(
-            "[TNC] ARQ | RX | saving data to rx buffer",
+            "[Modem] ARQ | RX | saving data to rx buffer",
             buffer_size=RX_BUFFER.qsize() + 1,
             maxsize=RX_BUFFER.maxsize
         )
@@ -1125,7 +1125,7 @@ class DATA:
             #
             # Occurs on Raspberry Pi and Python 3.7
             self.log.error(
-                "[TNC] ARQ | RX | error occurred when saving data!",
+                "[Modem] ARQ | RX | error occurred when saving data!",
                 e=e,
                 uuid=self.transmission_uuid,
                 timestamp=timestamp,
@@ -1146,7 +1146,7 @@ class DATA:
                 )
             except Exception as e:
                 self.log.error(
-                    "[TNC] ARQ | RX | can't save file to folder",
+                    "[Modem] ARQ | RX | can't save file to folder",
                     e=e,
                     uuid=self.transmission_uuid,
                     timestamp=timestamp,
@@ -1156,7 +1156,7 @@ class DATA:
                 )
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="received",
             uuid=self.transmission_uuid,
@@ -1176,12 +1176,12 @@ class DATA:
             speed_list=ARQ.speed_list
         )
 
-        if TNC.enable_stats:
+        if Modem.enable_stats:
             duration = time.time() - self.rx_start_of_transmission
             self.stats.push(frame_nack_counter=self.frame_nack_counter, status="received", duration=duration)
 
         self.log.info(
-            "[TNC] ARQ | RX | SENDING DATA FRAME ACK")
+            "[Modem] ARQ | RX | SENDING DATA FRAME ACK")
 
         self.send_data_ack_frame(snr)
         # Update statistics AFTER the frame ACK is sent
@@ -1190,7 +1190,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] | RX | DATACHANNEL ["
+            "[Modem] | RX | DATACHANNEL ["
             + str(self.mycallsign, "UTF-8")
             + "]<< >>["
             + str(Station.dxcallsign, "UTF-8")
@@ -1228,7 +1228,7 @@ class DATA:
         compression_factor = bytes([int(ARQ.arq_compression_factor * 10)])
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="transmitting",
             uuid=self.transmission_uuid,
@@ -1242,7 +1242,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] | TX | DATACHANNEL",
+            "[Modem] | TX | DATACHANNEL",
             Bytes=ARQ.total_bytes,
         )
 
@@ -1259,12 +1259,12 @@ class DATA:
             hmac_digest = hmac.new(hmac_salt, data_out, hashlib.sha256).digest()
             # truncate to 32bit
             frame_payload_crc = hmac_digest[:4]
-            self.log.debug("[TNC] frame payload HMAC:", crc=frame_payload_crc.hex())
+            self.log.debug("[Modem] frame payload HMAC:", crc=frame_payload_crc.hex())
 
         else:
             # Append a crc at the beginning and end of file indicators
             frame_payload_crc = helpers.get_crc_32(data_out)
-            self.log.debug("[TNC] frame payload CRC:", crc=frame_payload_crc.hex())
+            self.log.debug("[Modem] frame payload CRC:", crc=frame_payload_crc.hex())
 
         # Assemble the data frame
         data_out = (
@@ -1275,7 +1275,7 @@ class DATA:
                 + data_out
                 + self.data_frame_eof
         )
-        self.log.debug("[TNC] frame raw data:", data=data_out)
+        self.log.debug("[Modem] frame raw data:", data=data_out)
         # Initial bufferposition is 0
         bufferposition = 0
         bufferposition_end = 0
@@ -1295,7 +1295,7 @@ class DATA:
                 data_mode = self.mode_list[self.speed_level]
 
                 self.log.debug(
-                    "[TNC] Speed-level:",
+                    "[Modem] Speed-level:",
                     level=self.speed_level,
                     retry=self.tx_n_retry_of_burst,
                     mode=FREEDV_MODE(data_mode).name,
@@ -1304,7 +1304,7 @@ class DATA:
                 # Payload information
                 payload_per_frame = modem.get_bytes_per_frame(data_mode) - 2
 
-                self.log.info("[TNC] early buffer info",
+                self.log.info("[Modem] early buffer info",
                               bufferposition=bufferposition,
                               bufferposition_end=bufferposition_end,
                               bufferposition_burst_start=bufferposition_burst_start
@@ -1322,7 +1322,7 @@ class DATA:
                             break
                 else:
                     n_frames_per_burst = 1
-                self.log.info("[TNC] calculated frames_per_burst:", n=n_frames_per_burst)
+                self.log.info("[Modem] calculated frames_per_burst:", n=n_frames_per_burst)
 
                 tempbuffer = []
                 self.rpt_request_buffer = []
@@ -1335,14 +1335,14 @@ class DATA:
                     arqheader[2:3] = self.session_id
 
                     # only check for buffer position if at least one NACK received
-                    self.log.info("[TNC] ----- data buffer position:", iss_buffer_pos=bufferposition,
+                    self.log.info("[Modem] ----- data buffer position:", iss_buffer_pos=bufferposition,
                                   irs_bufferposition=self.irs_buffer_position)
                     if self.frame_nack_counter > 0 and self.irs_buffer_position != bufferposition:
-                        self.log.error("[TNC] ----- data buffer offset:", iss_buffer_pos=bufferposition,
+                        self.log.error("[Modem] ----- data buffer offset:", iss_buffer_pos=bufferposition,
                                        irs_bufferposition=self.irs_buffer_position)
                         # only adjust buffer position for experimental versions
-                        if 'exp' in TNC.version:
-                            self.log.warning("[TNC] ----- data adjustment disabled!")
+                        if 'exp' in Modem.version:
+                            self.log.warning("[Modem] ----- data adjustment disabled!")
                             # bufferposition = self.irs_buffer_position
 
                     bufferposition_end = bufferposition + payload_per_frame - len(arqheader)
@@ -1367,9 +1367,9 @@ class DATA:
                     # set new buffer position
                     bufferposition = bufferposition_end
 
-                    self.log.debug("[TNC] tempbuffer:", tempbuffer=tempbuffer)
+                    self.log.debug("[Modem] tempbuffer:", tempbuffer=tempbuffer)
                     self.log.info(
-                        "[TNC] ARQ | TX | FRAMES",
+                        "[Modem] ARQ | TX | FRAMES",
                         mode=FREEDV_MODE(data_mode).name,
                         fpb=n_frames_per_burst,
                         retry=self.tx_n_retry_of_burst,
@@ -1392,7 +1392,7 @@ class DATA:
                     self.burst_ack = False  # reset ack state
                     self.tx_n_retry_of_burst = 0  # reset retries
                     self.log.debug(
-                        "[TNC] arq_transmit: Received BURST ACK. Sending next chunk."
+                        "[Modem] arq_transmit: Received BURST ACK. Sending next chunk."
                         , irs_snr=self.burst_ack_snr)
                     # update temp bufferposition for n frames per burst early calculation
                     bufferposition_burst_start = bufferposition_end
@@ -1400,7 +1400,7 @@ class DATA:
 
                 if self.data_frame_ack_received:
                     self.log.debug(
-                        "[TNC] arq_transmit: Received FRAME ACK. Braking retry loop."
+                        "[Modem] arq_transmit: Received FRAME ACK. Braking retry loop."
                     )
                     break  # break retry loop
 
@@ -1408,7 +1408,7 @@ class DATA:
                     self.tx_n_retry_of_burst += 1
 
                     self.log.warning(
-                        "[TNC] arq_transmit: Received BURST NACK. Resending data",
+                        "[Modem] arq_transmit: Received BURST NACK. Resending data",
                         bufferposition_burst_start=bufferposition_burst_start,
                         bufferposition=bufferposition
                     )
@@ -1422,7 +1422,7 @@ class DATA:
                 # ARQ.arq_state == "DATA" --> when stopping transmission manually
                 if not ARQ.arq_state:
                     self.log.debug(
-                        "[TNC] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
+                        "[Modem] arq_transmit: ARQ State changed to FALSE. Breaking retry loop."
                     )
                     break
 
@@ -1431,7 +1431,7 @@ class DATA:
                 )
                 # NEXT ATTEMPT
                 self.log.debug(
-                    "[TNC] ATTEMPT:",
+                    "[Modem] ATTEMPT:",
                     retry=self.tx_n_retry_of_burst,
                     maxretries=self.tx_n_max_retries_per_burst,
                     overflows=AudioParam.buffer_overflow_counter,
@@ -1446,7 +1446,7 @@ class DATA:
             )
 
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="transmission",
                 status="transmitting",
                 uuid=self.transmission_uuid,
@@ -1464,7 +1464,7 @@ class DATA:
             # the loop exits after sending the last frame only once and doesn't
             # wait for an acknowledgement.
             if self.data_frame_ack_received and bufferposition > len(data_out):
-                self.log.debug("[TNC] arq_tx: Last fragment sent and acknowledged.")
+                self.log.debug("[Modem] arq_tx: Last fragment sent and acknowledged.")
                 break
                 # GOING TO NEXT ITERATION
 
@@ -1475,7 +1475,7 @@ class DATA:
 
         if TESTMODE:
             # Quit after transmission
-            self.log.debug("[TNC] TESTMODE: arq_transmit exiting.")
+            self.log.debug("[Modem] TESTMODE: arq_transmit exiting.")
             sys.exit(0)
 
     def arq_transmit_success(self):
@@ -1488,7 +1488,7 @@ class DATA:
         # so let's sleep a little
         threading.Event().wait(0.2)
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="transmitted",
             uuid=self.transmission_uuid,
@@ -1504,7 +1504,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] ARQ | TX | DATA TRANSMITTED!",
+            "[Modem] ARQ | TX | DATA TRANSMITTED!",
             BytesPerMinute=ARQ.bytes_per_minute,
             total_bytes=ARQ.total_bytes,
             BitsPerSecond=ARQ.arq_bits_per_second,
@@ -1520,7 +1520,7 @@ class DATA:
         will be called if we not successfully transmitted all of queued data
         """
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="failed",
             uuid=self.transmission_uuid,
@@ -1535,7 +1535,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
+            "[Modem] ARQ | TX | TRANSMISSION FAILED OR TIME OUT!",
             overflows=AudioParam.buffer_overflow_counter,
         )
 
@@ -1568,7 +1568,7 @@ class DATA:
             if frametype == FR_TYPE.BURST_ACK.value:
                 # Increase speed level if we received a burst ack
                 # self.speed_level = min(self.speed_level + 1, len(self.mode_list) - 1)
-                # Force data retry loops of TX TNC to stop and continue with next frame
+                # Force data retry loops of TX Modem to stop and continue with next frame
                 self.burst_ack = True
                 # Reset burst nack counter
                 self.burst_nack_counter = 0
@@ -1589,7 +1589,7 @@ class DATA:
                 self.irs_buffer_position = int.from_bytes(data_in[5:9], "big")
 
                 self.log.warning(
-                    "[TNC] ARQ | TX | Burst NACK received",
+                    "[Modem] ARQ | TX | Burst NACK received",
                     burst_nack_counter=self.burst_nack_counter,
                     irs_buffer_position=self.irs_buffer_position,
                 )
@@ -1618,7 +1618,7 @@ class DATA:
                 ModemParam.frequency_offset,
                 HamlibParam.hamlib_frequency,
             )
-            # Force data loops of TNC to stop and continue with next frame
+            # Force data loops of Modem to stop and continue with next frame
             self.data_frame_ack_received = True
             # Update arq_session and data_channel timestamp
             self.data_channel_last_received = int(time.time())
@@ -1634,7 +1634,7 @@ class DATA:
           data_in:bytes:
 
         """
-        self.log.warning("[TNC] ARQ FRAME NACK RECEIVED - cleanup!",
+        self.log.warning("[Modem] ARQ FRAME NACK RECEIVED - cleanup!",
                          arq="transmission",
                          status="failed",
                          uuid=self.transmission_uuid,
@@ -1657,7 +1657,7 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="failed",
             uuid=self.transmission_uuid,
@@ -1684,7 +1684,7 @@ class DATA:
 
         """
         # Only process data if we are in ARQ and BUSY state
-        if not ARQ.arq_state or TNC.tnc_state != "BUSY":
+        if not ARQ.arq_state or Modem.modem_state != "BUSY":
             return
         Station.dxgrid = b'------'
         helpers.add_to_heard_stations(
@@ -1696,7 +1696,7 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
 
-        self.log.info("[TNC] ARQ REPEAT RECEIVED")
+        self.log.info("[Modem] ARQ REPEAT RECEIVED")
 
         # self.rpt_request_received = True
         # Update data_channel timestamp
@@ -1714,7 +1714,7 @@ class DATA:
             missing_frames_buffer_position = missing_area[i] - 1
             tempbuffer_rptframes.append(self.rpt_request_buffer[missing_frames_buffer_position])
 
-        self.log.info("[TNC] SENDING REPEAT....")
+        self.log.info("[Modem] SENDING REPEAT....")
         data_mode = self.mode_list[self.speed_level]
         self.enqueue_frame_for_tx(tempbuffer_rptframes, c2_mode=data_mode)
 
@@ -1745,7 +1745,7 @@ class DATA:
         # TODO: we need to check this, maybe placing it to class init
         self.datachannel_timeout = False
         self.log.info(
-            "[TNC] SESSION ["
+            "[Modem] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]>> <<["
             + str(self.dxcallsign, "UTF-8")
@@ -1755,9 +1755,9 @@ class DATA:
 
         # Let's check if we have a busy channel
         if ModemParam.channel_busy:
-            self.log.warning("[TNC] Channel busy, waiting until free...")
+            self.log.warning("[Modem] Channel busy, waiting until free...")
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="session",
                 status="waiting",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1771,10 +1771,10 @@ class DATA:
 
             # if channel busy timeout reached stop connecting
             if time.time() > channel_busy_timeout:
-                self.log.warning("[TNC] Channel busy, try again later...")
+                self.log.warning("[Modem] Channel busy, try again later...")
                 ARQ.arq_session_state = "failed"
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="session",
                     status="failed",
                     reason="busy",
@@ -1790,7 +1790,7 @@ class DATA:
             threading.Event().wait(0.01)
             ARQ.arq_session_state = "connecting"
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="session",
                 status="connecting",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1799,7 +1799,7 @@ class DATA:
         if ARQ.arq_session and ARQ.arq_session_state == "connected":
             # ARQ.arq_session_state = "connected"
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="session",
                 status="connected",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1808,7 +1808,7 @@ class DATA:
             return True
 
         self.log.warning(
-            "[TNC] SESSION FAILED ["
+            "[Modem] SESSION FAILED ["
             + str(self.mycallsign, "UTF-8")
             + "]>>X<<["
             + str(self.dxcallsign, "UTF-8")
@@ -1819,7 +1819,7 @@ class DATA:
         )
         ARQ.arq_session_state = "failed"
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="session",
             status="failed",
             reason="timeout",
@@ -1853,7 +1853,7 @@ class DATA:
             threading.Event().wait(0.01)
             for attempt in range(self.session_connect_max_retries):
                 self.log.info(
-                    "[TNC] SESSION ["
+                    "[Modem] SESSION ["
                     + str(self.mycallsign, "UTF-8")
                     + "]>>?<<["
                     + str(self.dxcallsign, "UTF-8")
@@ -1863,7 +1863,7 @@ class DATA:
                 )
 
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="session",
                     status="connecting",
                     attempt=attempt + 1,
@@ -1898,7 +1898,7 @@ class DATA:
 
         # Given the while condition, it will only exit when `ARQ.arq_session` is True
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="session",
             status="connected",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1914,7 +1914,7 @@ class DATA:
           data_in:bytes:
         """
         # if we don't want to respond to calls, return False
-        if not TNC.respond_to_call:
+        if not Modem.respond_to_call:
             return False
 
         # ignore channel opener if already in ARQ STATE
@@ -1949,7 +1949,7 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
         self.log.info(
-            "[TNC] SESSION ["
+            "[Modem] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]>>|<<["
             + str(self.dxcallsign, "UTF-8")
@@ -1957,10 +1957,10 @@ class DATA:
             state=ARQ.arq_session_state,
         )
         ARQ.arq_session = True
-        TNC.tnc_state = "BUSY"
+        Modem.modem_state = "BUSY"
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="session",
             status="connected",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -1973,7 +1973,7 @@ class DATA:
         ARQ.arq_session_state = "disconnecting"
 
         self.log.info(
-            "[TNC] SESSION ["
+            "[Modem] SESSION ["
             + str(self.mycallsign, "UTF-8")
             + "]<<X>>["
             + str(self.dxcallsign, "UTF-8")
@@ -1982,7 +1982,7 @@ class DATA:
         )
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="session",
             status="close",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2023,7 +2023,7 @@ class DATA:
                 HamlibParam.hamlib_frequency,
             )
             self.log.info(
-                "[TNC] SESSION ["
+                "[Modem] SESSION ["
                 + str(mycallsign, "UTF-8")
                 + "]<<X>>["
                 + str(self.dxcallsign, "UTF-8")
@@ -2032,7 +2032,7 @@ class DATA:
             )
 
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="session",
                 status="close",
                 mycallsign=str(mycallsign, 'UTF-8'),
@@ -2046,7 +2046,7 @@ class DATA:
     def transmit_session_heartbeat(self) -> None:
         """Send ARQ sesion heartbeat while connected"""
         # ARQ.arq_session = True
-        # TNC.tnc_state = "BUSY"
+        # Modem.modem_state = "BUSY"
         # ARQ.arq_session_state = "connected"
 
         connection_frame = bytearray(self.length_sig0_frame)
@@ -2054,7 +2054,7 @@ class DATA:
         connection_frame[1:2] = self.session_id
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="session",
             status="connected",
             heartbeat="transmitting",
@@ -2075,7 +2075,7 @@ class DATA:
         _valid_crc, _ = helpers.check_callsign(self.dxcallsign, bytes(data_in[4:7]))
         _valid_session = helpers.check_session_id(self.session_id, bytes(data_in[1:2]))
         if _valid_crc or _valid_session and ARQ.arq_session_state in ["connected", "connecting"]:
-            self.log.debug("[TNC] Received session heartbeat")
+            self.log.debug("[Modem] Received session heartbeat")
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
                 self.dxcallsign,
@@ -2087,7 +2087,7 @@ class DATA:
             )
 
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="session",
                 status="connected",
                 heartbeat="received",
@@ -2097,7 +2097,7 @@ class DATA:
 
             ARQ.arq_session = True
             ARQ.arq_session_state = "connected"
-            TNC.tnc_state = "BUSY"
+            Modem.modem_state = "BUSY"
 
             # Update the timeout timestamps
             self.arq_session_last_received = int(time.time())
@@ -2152,7 +2152,7 @@ class DATA:
         # override session connection attempts
         self.data_channel_max_retries = attempts
 
-        TNC.tnc_state = "BUSY"
+        Modem.modem_state = "BUSY"
         self.arq_file_transfer = True
 
         self.transmission_uuid = transmission_uuid
@@ -2172,7 +2172,7 @@ class DATA:
         self.arq_open_data_channel(mycallsign)
 
         # wait until data channel is open
-        while not ARQ.arq_state and not self.datachannel_timeout and TNC.tnc_state in ["BUSY"]:
+        while not ARQ.arq_state and not self.datachannel_timeout and Modem.modem_state in ["BUSY"]:
             threading.Event().wait(0.01)
 
         if ARQ.arq_state:
@@ -2203,13 +2203,13 @@ class DATA:
         # Update data_channel timestamp
         self.data_channel_last_received = int(time.time())
 
-        if TNC.low_bandwidth_mode:
+        if Modem.low_bandwidth_mode:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_N.value])
-            self.log.debug("[TNC] Requesting low bandwidth mode")
+            self.log.debug("[Modem] Requesting low bandwidth mode")
 
         else:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_W.value])
-            self.log.debug("[TNC] Requesting high bandwidth mode")
+            self.log.debug("[Modem] Requesting high bandwidth mode")
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
@@ -2223,7 +2223,7 @@ class DATA:
             for attempt in range(self.data_channel_max_retries):
 
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="transmission",
                     status="opening",
                     mycallsign=str(mycallsign, 'UTF-8'),
@@ -2232,7 +2232,7 @@ class DATA:
                 )
 
                 self.log.info(
-                    "[TNC] ARQ | DATA | TX | ["
+                    "[Modem] ARQ | DATA | TX | ["
                     + str(mycallsign, "UTF-8")
                     + "]>> <<["
                     + str(self.dxcallsign, "UTF-8")
@@ -2242,9 +2242,9 @@ class DATA:
 
                 # Let's check if we have a busy channel and if we are not in a running arq session.
                 if ModemParam.channel_busy and not ARQ.arq_state:
-                    self.log.warning("[TNC] Channel busy, waiting until free...")
+                    self.log.warning("[Modem] Channel busy, waiting until free...")
                     self.send_data_to_socket_queue(
-                        freedata="tnc-message",
+                        freedata="modem-message",
                         arq="transmission",
                         status="waiting",
                         mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2265,17 +2265,17 @@ class DATA:
                     # Stop waiting if data channel is opened
                     if ARQ.arq_state:
                         return True
-                    if TNC.tnc_state in ["IDLE"]:
+                    if Modem.modem_state in ["IDLE"]:
                         return False
 
             # `data_channel_max_retries` attempts have been sent. Aborting attempt & cleaning up
 
             self.log.debug(
-                "[TNC] arq_open_data_channel:", transmission_uuid=self.transmission_uuid
+                "[Modem] arq_open_data_channel:", transmission_uuid=self.transmission_uuid
             )
 
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="transmission",
                 status="failed",
                 reason="unknown",
@@ -2291,7 +2291,7 @@ class DATA:
             )
 
             self.log.warning(
-                "[TNC] ARQ | TX | DATA ["
+                "[Modem] ARQ | TX | DATA ["
                 + str(mycallsign, "UTF-8")
                 + "]>>X<<["
                 + str(self.dxcallsign, "UTF-8")
@@ -2320,12 +2320,12 @@ class DATA:
         # is intended for this station.
 
         # stop processing if we don't want to respond to a call when not in a arq session
-        if not TNC.respond_to_call and not ARQ.arq_session:
+        if not Modem.respond_to_call and not ARQ.arq_session:
             return False
 
-        # stop processing if not in arq session, but tnc state is busy and we have a different session id
+        # stop processing if not in arq session, but modem state is busy and we have a different session id
         # use-case we get a connection request while connecting to another station
-        if not ARQ.arq_session and TNC.tnc_state in ["BUSY"] and data_in[13:14] != self.session_id:
+        if not ARQ.arq_session and Modem.modem_state in ["BUSY"] and data_in[13:14] != self.session_id:
             return False
 
         self.arq_file_transfer = True
@@ -2348,7 +2348,7 @@ class DATA:
         Station.dxcallsign = self.dxcallsign
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="opening",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2367,7 +2367,7 @@ class DATA:
         # ISS(n) <-> IRS(w)
         # ISS(n) <-> IRS(n)
 
-        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value and not TNC.low_bandwidth_mode:
+        if frametype == FR_TYPE.ARQ_DC_OPEN_W.value and not Modem.low_bandwidth_mode:
             # ISS(w) <-> IRS(w)
             constellation = "ISS(w) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = False
@@ -2381,7 +2381,7 @@ class DATA:
             self.mode_list = self.mode_list_low_bw
             self.time_list = self.time_list_low_bw
             self.snr_list = self.snr_list_low_bw
-        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not TNC.low_bandwidth_mode:
+        elif frametype == FR_TYPE.ARQ_DC_OPEN_N.value and not Modem.low_bandwidth_mode:
             # ISS(n) <-> IRS(w)
             constellation = "ISS(n) <-> IRS(w)"
             self.received_LOW_BANDWIDTH_MODE = True
@@ -2418,13 +2418,13 @@ class DATA:
         if mode_slots in [ModemParam.channel_busy_slot]:
             self.speed_level = 0
             self.log.warning(
-                "[TNC] busy slot detection",
+                "[Modem] busy slot detection",
                 slots=ModemParam.channel_busy_slot,
                 mode_slots=mode_slots,
             )
 
         self.log.debug(
-            "[TNC] calculated speed level",
+            "[Modem] calculated speed level",
             speed_level=self.speed_level,
             given_snr=ModemParam.snr,
             min_snr=self.snr_list[self.speed_level],
@@ -2448,7 +2448,7 @@ class DATA:
         _, self.mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
 
         self.log.info(
-            "[TNC] ARQ | DATA | RX | ["
+            "[Modem] ARQ | DATA | RX | ["
             + str(self.mycallsign, "UTF-8")
             + "]>> <<["
             + str(self.dxcallsign, "UTF-8")
@@ -2463,17 +2463,17 @@ class DATA:
         # Set ARQ State AFTER resetting timeouts
         # this avoids timeouts starting too early
         ARQ.arq_state = True
-        TNC.tnc_state = "BUSY"
+        Modem.modem_state = "BUSY"
 
         self.reset_statistics()
 
-        # Select the frame type based on the current TNC mode
-        if TNC.low_bandwidth_mode or self.received_LOW_BANDWIDTH_MODE:
+        # Select the frame type based on the current Modem mode
+        if Modem.low_bandwidth_mode or self.received_LOW_BANDWIDTH_MODE:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_N.value])
-            self.log.debug("[TNC] Responding with low bandwidth mode")
+            self.log.debug("[Modem] Responding with low bandwidth mode")
         else:
             frametype = bytes([FR_TYPE.ARQ_DC_OPEN_ACK_W.value])
-            self.log.debug("[TNC] Responding with high bandwidth mode")
+            self.log.debug("[Modem] Responding with high bandwidth mode")
 
         connection_frame = bytearray(self.length_sig0_frame)
         connection_frame[:1] = frametype
@@ -2484,7 +2484,7 @@ class DATA:
         self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="opened",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2493,7 +2493,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] ARQ | DATA | RX | ["
+            "[Modem] ARQ | DATA | RX | ["
             + str(self.mycallsign, "UTF-8")
             + "]>>|<<["
             + str(self.dxcallsign, "UTF-8")
@@ -2519,7 +2519,7 @@ class DATA:
         protocol_version = int.from_bytes(bytes(data_in[13:14]), "big")
         if protocol_version == ARQ.arq_protocol_version:
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="transmission",
                 status="opened",
                 mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2532,16 +2532,16 @@ class DATA:
                 self.received_LOW_BANDWIDTH_MODE = True
                 self.mode_list = self.mode_list_low_bw
                 self.time_list = self.time_list_low_bw
-                self.log.debug("[TNC] low bandwidth mode", modes=self.mode_list)
+                self.log.debug("[Modem] low bandwidth mode", modes=self.mode_list)
             else:
                 self.received_LOW_BANDWIDTH_MODE = False
                 self.mode_list = self.mode_list_high_bw
                 self.time_list = self.time_list_high_bw
-                self.log.debug("[TNC] high bandwidth mode", modes=self.mode_list)
+                self.log.debug("[Modem] high bandwidth mode", modes=self.mode_list)
 
             # set speed level from session opener frame which is selected by SNR measurement
             self.speed_level = int.from_bytes(bytes(data_in[8:9]), "big")
-            self.log.debug("[TNC] speed level selected for given SNR", speed_level=self.speed_level)
+            self.log.debug("[Modem] speed level selected for given SNR", speed_level=self.speed_level)
             # self.speed_level = len(self.mode_list) - 1
             Station.dxgrid = b'------'
             helpers.add_to_heard_stations(
@@ -2554,7 +2554,7 @@ class DATA:
             )
 
             self.log.info(
-                "[TNC] ARQ | DATA | TX | ["
+                "[Modem] ARQ | DATA | TX | ["
                 + str(self.mycallsign, "UTF-8")
                 + "]>>|<<["
                 + str(self.dxcallsign, "UTF-8")
@@ -2567,10 +2567,10 @@ class DATA:
             # Update data_channel timestamp
             self.data_channel_last_received = int(time.time())
         else:
-            TNC.tnc_state = "IDLE"
+            Modem.modem_state = "IDLE"
             ARQ.arq_state = False
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="transmission",
                 status="failed",
                 reason="protocol version missmatch",
@@ -2580,7 +2580,7 @@ class DATA:
             )
             # TODO: We should display a message to this effect on the UI.
             self.log.warning(
-                "[TNC] protocol version mismatch:",
+                "[Modem] protocol version mismatch:",
                 received=protocol_version,
                 own=ARQ.arq_protocol_version,
             )
@@ -2597,19 +2597,19 @@ class DATA:
         """
         if not str(dxcallsign).strip():
             # TODO: We should display a message to this effect on the UI.
-            self.log.warning("[TNC] Missing required callsign", dxcallsign=dxcallsign)
+            self.log.warning("[Modem] Missing required callsign", dxcallsign=dxcallsign)
             return
         Station.dxcallsign = dxcallsign
         Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             ping="transmitting",
             dxcallsign=str(dxcallsign, "UTF-8"),
             mycallsign=str(mycallsign, "UTF-8"),
             snr=str(ModemParam.snr),
         )
         self.log.info(
-            "[TNC] PING REQ ["
+            "[Modem] PING REQ ["
             + str(mycallsign, "UTF-8")
             + "] >>> ["
             + str(dxcallsign, "UTF-8")
@@ -2622,8 +2622,8 @@ class DATA:
         ping_frame[4:7] = helpers.get_crc_24(mycallsign)
         ping_frame[7:13] = helpers.callsign_to_bytes(mycallsign)
 
-        if TNC.enable_fsk:
-            self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
+        if Modem.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2643,13 +2643,13 @@ class DATA:
         valid, mycallsign = helpers.check_callsign(self.mycallsign, data_in[1:4])
         if not valid:
             # PING packet not for me.
-            self.log.debug("[TNC] received_ping: ping not for this station.")
+            self.log.debug("[Modem] received_ping: ping not for this station.")
             return
 
         Station.dxcallsign_crc = dxcallsign_crc
         Station.dxcallsign = dxcallsign
         self.log.info(
-            "[TNC] PING REQ ["
+            "[Modem] PING REQ ["
             + str(mycallsign, "UTF-8")
             + "] <<< ["
             + str(dxcallsign, "UTF-8")
@@ -2668,7 +2668,7 @@ class DATA:
         )
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             ping="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
@@ -2677,7 +2677,7 @@ class DATA:
             mycallsign=str(mycallsign, "UTF-8"),
             snr=str(ModemParam.snr),
         )
-        if TNC.respond_to_call:
+        if Modem.respond_to_call:
             self.transmit_ping_ack()
 
     def transmit_ping_ack(self):
@@ -2693,7 +2693,7 @@ class DATA:
         ping_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
         ping_frame[13:14] = helpers.snr_to_bytes(ModemParam.snr)
 
-        if TNC.enable_fsk:
+        if Modem.enable_fsk:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([ping_frame], c2_mode=FREEDV_MODE.sig0.value)
@@ -2714,7 +2714,7 @@ class DATA:
             Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
             dxsnr = helpers.snr_from_bytes(data_in[13:14])
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 ping="acknowledge",
                 uuid=str(uuid.uuid4()),
                 timestamp=int(time.time()),
@@ -2736,7 +2736,7 @@ class DATA:
             )
 
             self.log.info(
-                "[TNC] PING ACK ["
+                "[Modem] PING ACK ["
                 + str(mycallsign, "UTF-8")
                 + "] >|< ["
                 + str(Station.dxcallsign, "UTF-8")
@@ -2744,10 +2744,10 @@ class DATA:
                 snr=ModemParam.snr,
                 dxsnr=dxsnr,
             )
-            TNC.tnc_state = "IDLE"
+            Modem.modem_state = "IDLE"
         else:
             self.log.info(
-                "[TNC] FOREIGN PING ACK ["
+                "[Modem] FOREIGN PING ACK ["
                 + str(self.mycallsign, "UTF-8")
                 + "] ??? ["
                 + str(bytes(data_in[4:7]), "UTF-8")
@@ -2759,12 +2759,12 @@ class DATA:
         """
         Force a stop of the running transmission
         """
-        self.log.warning("[TNC] Stopping transmission!")
+        self.log.warning("[Modem] Stopping transmission!")
 
-        TNC.tnc_state = "IDLE"
+        Modem.modem_state = "IDLE"
         ARQ.arq_state = False
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2789,11 +2789,11 @@ class DATA:
         """
         Received a transmission stop
         """
-        self.log.warning("[TNC] Stopping transmission!")
-        TNC.tnc_state = "IDLE"
+        self.log.warning("[Modem] Stopping transmission!")
+        Modem.modem_state = "IDLE"
         ARQ.arq_state = False
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             arq="transmission",
             status="stopped",
             mycallsign=str(self.mycallsign, 'UTF-8'),
@@ -2822,17 +2822,17 @@ class DATA:
                             and not self.arq_file_transfer
                             and not Beacon.beacon_pause
                             #and not ModemParam.channel_busy
-                            and TNC.tnc_state not in ["BUSY"]
+                            and Modem.modem_state not in ["BUSY"]
                             and not ARQ.arq_state
                     ):
                         self.send_data_to_socket_queue(
-                            freedata="tnc-message",
+                            freedata="modem-message",
                             beacon="transmitting",
                             dxcallsign="None",
                             interval=self.beacon_interval,
                         )
                         self.log.info(
-                            "[TNC] Sending beacon!", interval=self.beacon_interval
+                            "[Modem] Sending beacon!", interval=self.beacon_interval
                         )
 
                         beacon_frame = bytearray(self.length_sig0_frame)
@@ -2840,8 +2840,8 @@ class DATA:
                         beacon_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
                         beacon_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
 
-                        if TNC.enable_fsk:
-                            self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
+                        if Modem.enable_fsk:
+                            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
                             self.enqueue_frame_for_tx(
                                 [beacon_frame],
                                 c2_mode=FREEDV_MODE.fsk_ldpc_0.value,
@@ -2859,7 +2859,7 @@ class DATA:
                         threading.Event().wait(0.01)
 
         except Exception as err:
-            self.log.debug("[TNC] run_beacon: ", exception=err)
+            self.log.debug("[Modem] run_beacon: ", exception=err)
 
     def received_beacon(self, data_in: bytes) -> None:
         """
@@ -2872,7 +2872,7 @@ class DATA:
         beacon_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
         Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             beacon="received",
             uuid=str(uuid.uuid4()),
             timestamp=int(time.time()),
@@ -2882,7 +2882,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] BEACON RCVD ["
+            "[Modem] BEACON RCVD ["
             + str(beacon_callsign, "UTF-8")
             + "]["
             + str(Station.dxgrid, "UTF-8")
@@ -2907,9 +2907,9 @@ class DATA:
         Returns:
             Nothing
         """
-        self.log.info("[TNC] CQ CQ CQ")
+        self.log.info("[Modem] CQ CQ CQ")
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             cq="transmitting",
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign="None",
@@ -2919,15 +2919,15 @@ class DATA:
         cq_frame[1:7] = helpers.callsign_to_bytes(self.mycallsign)
         cq_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
 
-        self.log.debug("[TNC] CQ Frame:", data=[cq_frame])
+        self.log.debug("[Modem] CQ Frame:", data=[cq_frame])
 
-        if TNC.enable_fsk:
-            self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
+        if Modem.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
             # FIXME: Remove or change this in later versions for full CW support
-            # TNC.transmitting = True
+            # Modem.transmitting = True
             # modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, "123"])
 
     def received_cq(self, data_in: bytes) -> None:
@@ -2941,18 +2941,18 @@ class DATA:
         """
         # here we add the received station to the heard stations buffer
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
-        self.log.debug("[TNC] received_cq:", dxcallsign=dxcallsign)
+        self.log.debug("[Modem] received_cq:", dxcallsign=dxcallsign)
         Station.dxgrid = bytes(helpers.decode_grid(data_in[7:11]), "UTF-8")
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             cq="received",
             mycallsign=str(self.mycallsign, "UTF-8"),
             dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(Station.dxgrid, "UTF-8"),
         )
         self.log.info(
-            "[TNC] CQ RCVD ["
+            "[Modem] CQ RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
             + str(Station.dxgrid, "UTF-8")
@@ -2968,7 +2968,7 @@ class DATA:
             HamlibParam.hamlib_frequency,
         )
 
-        if TNC.respond_to_cq and TNC.respond_to_call:
+        if Modem.respond_to_cq and Modem.respond_to_call:
             self.transmit_qrv(dxcallsign)
 
     def transmit_qrv(self, dxcallsign: bytes) -> None:
@@ -2986,15 +2986,15 @@ class DATA:
         # in self.duration_sig1_frame increments.
         # FIXME: This causes problems when running ctests - we need to figure out why
         if not TESTMODE:
-            self.log.info("[TNC] Waiting for QRV slot...")
+            self.log.info("[Modem] Waiting for QRV slot...")
             helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             qrv="transmitting",
             dxcallsign=str(dxcallsign, "UTF-8"),
         )
-        self.log.info("[TNC] Sending QRV!")
+        self.log.info("[Modem] Sending QRV!")
 
         qrv_frame = bytearray(self.length_sig0_frame)
         qrv_frame[:1] = bytes([FR_TYPE.QRV.value])
@@ -3002,8 +3002,8 @@ class DATA:
         qrv_frame[7:11] = helpers.encode_grid(Station.mygrid.decode("UTF-8"))
         qrv_frame[11:12] = helpers.snr_to_bytes(ModemParam.snr)
 
-        if TNC.enable_fsk:
-            self.log.info("[TNC] ENABLE FSK", state=TNC.enable_fsk)
+        if Modem.enable_fsk:
+            self.log.info("[Modem] ENABLE FSK", state=Modem.enable_fsk)
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([qrv_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
@@ -3023,7 +3023,7 @@ class DATA:
         combined_snr = f"{ModemParam.snr}/{dxsnr}"
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             qrv="received",
             dxcallsign=str(dxcallsign, "UTF-8"),
             dxgrid=str(Station.dxgrid, "UTF-8"),
@@ -3032,7 +3032,7 @@ class DATA:
         )
 
         self.log.info(
-            "[TNC] QRV RCVD ["
+            "[Modem] QRV RCVD ["
             + str(dxcallsign, "UTF-8")
             + "]["
             + str(Station.dxgrid, "UTF-8")
@@ -3062,13 +3062,13 @@ class DATA:
         dxcallsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             fec="is_writing",
             dxcallsign=str(dxcallsign, "UTF-8")
         )
 
         self.log.info(
-            "[TNC] IS_WRITING RCVD ["
+            "[Modem] IS_WRITING RCVD ["
             + str(dxcallsign, "UTF-8")
             + "] ",
         )
@@ -3122,7 +3122,7 @@ class DATA:
                 ARQ.bytes_per_minute = 0
                 ARQ.arq_seconds_until_finish = 0
         except Exception as err:
-            self.log.error(f"[TNC] calculate_transfer_rate_rx: Exception: {err}")
+            self.log.error(f"[Modem] calculate_transfer_rate_rx: Exception: {err}")
             ARQ.arq_transmission_percent = 0.0
             ARQ.arq_bits_per_second = 0
             ARQ.bytes_per_minute = 0
@@ -3186,7 +3186,7 @@ class DATA:
                 ARQ.arq_seconds_until_finish = 0
 
         except Exception as err:
-            self.log.error(f"[TNC] calculate_transfer_rate_tx: Exception: {err}")
+            self.log.error(f"[Modem] calculate_transfer_rate_tx: Exception: {err}")
             ARQ.arq_transmission_percent = 0.0
             ARQ.arq_bits_per_second = 0
             ARQ.bytes_per_minute = 0
@@ -3203,10 +3203,10 @@ class DATA:
         Cleanup function which clears all ARQ states
         """
         if TESTMODE:
-            self.log.debug("[TNC] TESTMODE: arq_cleanup: Not performing cleanup.")
+            self.log.debug("[Modem] TESTMODE: arq_cleanup: Not performing cleanup.")
             return
 
-        self.log.debug("[TNC] arq_cleanup")
+        self.log.debug("[Modem] arq_cleanup")
         # wait a second for smoother arq behaviour
         helpers.wait(1.0)
 
@@ -3255,7 +3255,7 @@ class DATA:
 
         # we need to keep these values if in ARQ_SESSION
         if not ARQ.arq_session:
-            TNC.tnc_state = "IDLE"
+            Modem.modem_state = "IDLE"
             self.dxcallsign = b"AA0AA-0"
             self.mycallsign = Station.mycallsign
             self.session_id = bytes(1)
@@ -3300,32 +3300,32 @@ class DATA:
             modem.RECEIVE_DATAC3 = False
             modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = False
-            self.log.debug("[TNC] Changing listening data mode", mode="datac1")
+            self.log.debug("[Modem] Changing listening data mode", mode="datac1")
         elif mode == codec2.FREEDV_MODE.datac3.value:
             modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = False
-            self.log.debug("[TNC] Changing listening data mode", mode="datac3")
+            self.log.debug("[Modem] Changing listening data mode", mode="datac3")
         elif mode == codec2.FREEDV_MODE.datac4.value:
             modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = False
             modem.RECEIVE_DATAC4 = True
             modem.RECEIVE_FSK_LDPC_1 = False
-            self.log.debug("[TNC] Changing listening data mode", mode="datac4")
+            self.log.debug("[Modem] Changing listening data mode", mode="datac4")
         elif mode == codec2.FREEDV_MODE.fsk_ldpc_1.value:
             modem.RECEIVE_DATAC1 = False
             modem.RECEIVE_DATAC3 = False
             modem.RECEIVE_DATAC4 = False
             modem.RECEIVE_FSK_LDPC_1 = True
-            self.log.debug("[TNC] Changing listening data mode", mode="fsk_ldpc_1")
+            self.log.debug("[Modem] Changing listening data mode", mode="fsk_ldpc_1")
         else:
             modem.RECEIVE_DATAC1 = True
             modem.RECEIVE_DATAC3 = True
             modem.RECEIVE_DATAC4 = True
             modem.RECEIVE_FSK_LDPC_1 = True
             self.log.debug(
-                "[TNC] Changing listening data mode", mode="datac1/datac3/fsk_ldpc"
+                "[Modem] Changing listening data mode", mode="datac1/datac3/fsk_ldpc"
             )
 
     # ------------------------- WATCHDOG FUNCTIONS FOR TIMER
@@ -3380,7 +3380,7 @@ class DATA:
         # print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
         if timeout <= time.time() or modem_error_state:
             self.log.warning(
-                "[TNC] Burst decoding error or timeout",
+                "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
                 max_attempts=self.rx_n_max_retries_per_burst,
                 speed_level=self.speed_level,
@@ -3439,7 +3439,7 @@ class DATA:
         DATA CHANNEL
         """
         # and not static.ARQ_SEND_KEEP_ALIVE:
-        if ARQ.arq_state and TNC.tnc_state == "BUSY":
+        if ARQ.arq_state and Modem.modem_state == "BUSY":
             threading.Event().wait(0.01)
             if (
                     self.data_channel_last_received + self.transmission_timeout
@@ -3458,14 +3458,14 @@ class DATA:
                 # Clear the timeout timestamp
                 self.data_channel_last_received = 0
                 self.log.info(
-                    "[TNC] DATA ["
+                    "[Modem] DATA ["
                     + str(self.mycallsign, "UTF-8")
                     + "]<<T>>["
                     + str(Station.dxcallsign, "UTF-8")
                     + "]"
                 )
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="transmission",
                     status="failed",
                     uuid=self.transmission_uuid,
@@ -3482,21 +3482,21 @@ class DATA:
         """
         if (
                 ARQ.arq_session
-                and TNC.tnc_state == "BUSY"
+                and Modem.modem_state == "BUSY"
                 and not self.arq_file_transfer
         ):
             if self.arq_session_last_received + self.arq_session_timeout > time.time():
                 threading.Event().wait(0.01)
             else:
                 self.log.info(
-                    "[TNC] SESSION ["
+                    "[Modem] SESSION ["
                     + str(self.mycallsign, "UTF-8")
                     + "]<<T>>["
                     + str(self.dxcallsign, "UTF-8")
                     + "]"
                 )
                 self.send_data_to_socket_queue(
-                    freedata="tnc-message",
+                    freedata="modem-message",
                     arq="session",
                     status="failed",
                     reason="timeout",
@@ -3572,7 +3572,7 @@ class DATA:
 
         # send burst only if channel not busy - but without waiting
         # otherwise burst will be dropped
-        if not ModemParam.channel_busy and not TNC.transmitting:
+        if not ModemParam.channel_busy and not Modem.transmitting:
             self.enqueue_frame_for_tx(
                 frame_to_tx=[fec_frame], c2_mode=codec2.FREEDV_MODE["sig0"].value
             )
@@ -3596,7 +3596,7 @@ class DATA:
 
         try:
 
-            self.log.info("[TNC] ARQ | RX | saving data to folder")
+            self.log.info("[Modem] ARQ | RX | saving data to folder")
 
             mycallsign = str(mycallsign, "UTF-8")
             dxcallsign = str(dxcallsign, "UTF-8")
@@ -3639,7 +3639,7 @@ class DATA:
                 crc = helpers.get_crc_32(data).hex().lower()
                 validity = checksum_delivered == crc
                 self.log.info(
-                    "[TNC] ARQ | RX | checking data crc",
+                    "[Modem] ARQ | RX | checking data crc",
                     crc_delivered=checksum_delivered,
                     crc_calculated=crc,
                     valid=validity,
@@ -3656,4 +3656,4 @@ class DATA:
                     file.write(message)
 
         except Exception as e:
-            self.log.error("[TNC] error saving data to folder", e=e)
+            self.log.error("[Modem] error saving data to folder", e=e)

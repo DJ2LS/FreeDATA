@@ -19,7 +19,7 @@ from typing import Callable
 
 import structlog
 
-sys.path.insert(0, "../tnc")
+sys.path.insert(0, "../modem")
 import data_handler
 import helpers
 import modem

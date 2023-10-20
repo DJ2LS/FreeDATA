@@ -202,8 +202,8 @@ def t_highsnr_arq_short_station1(
         time.sleep(0.5)
     log.info("station1", arq_state=pformat(ARQ.arq_state))
 
-    # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S1 DQT: ", DQ_Tx=pformat(modem.data_queue_transmit.queue))
+    # log.info("S1 DQR: ", DQ_Rx=pformat(modem.data_queue_received.queue))
     log.info("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     assert '"arq":"transmission","status":"transmitting"' in str(

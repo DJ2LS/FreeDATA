@@ -4,7 +4,7 @@ import helpers
 import time
 import modem
 import base64
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 import sock
 import ujson as json
 
@@ -34,7 +34,7 @@ class broadcastHandler:
         modem.RECEIVE_DATAC4 = True
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             fec="wakeup",
             mode=self.wakeup_mode,
             bursts=bursts,
@@ -42,7 +42,7 @@ class broadcastHandler:
         )
 
         self.log.info(
-            "[TNC] FRAME WAKEUP RCVD ["
+            "[Modem] FRAME WAKEUP RCVD ["
             + str(self.fec_wakeup_callsign, "UTF-8")
             + "] ", mode=self.wakeup_mode, bursts=bursts,
         )
@@ -51,13 +51,13 @@ class broadcastHandler:
         print(self.fec_wakeup_callsign)
 
         self.send_data_to_socket_queue(
-            freedata="tnc-message",
+            freedata="modem-message",
             fec="broadcast",
             dxcallsign=str(self.fec_wakeup_callsign, "UTF-8"),
             data=base64.b64encode(data_in[1:]).decode("UTF-8")
         )
 
-        self.log.info("[TNC] FEC DATA RCVD")
+        self.log.info("[Modem] FEC DATA RCVD")
 
     def send_data_to_socket_queue(self, **jsondata):
         """
@@ -67,7 +67,7 @@ class broadcastHandler:
           Dictionary containing the data to be sent, in the format:
           key=value, for each item. E.g.:
             self.send_data_to_socket_queue(
-                freedata="tnc-message",
+                freedata="modem-message",
                 arq="received",
                 status="success",
                 uuid=self.transmission_uuid,
@@ -87,12 +87,12 @@ class broadcastHandler:
             if "dxcallsign" not in jsondata:
                 jsondata["dxcallsign"] = str(Station.dxcallsign, "UTF-8")
         except Exception as e:
-            self.log.debug("[TNC] error adding callsigns to network message", e=e)
+            self.log.debug("[Modem] error adding callsigns to network message", e=e)
 
         # run json dumps
         json_data_out = json.dumps(jsondata)
 
-        self.log.debug("[TNC] send_data_to_socket_queue:", jsondata=json_data_out)
+        self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
 
@@ -106,7 +106,7 @@ class broadcastHandler:
                 self.broadcast_timeout_reached = True
 
                 self.log.info(
-                    "[TNC] closing broadcast slot ["
+                    "[Modem] closing broadcast slot ["
                     + str(self.fec_wakeup_callsign, "UTF-8")
                     + "] ", mode=self.wakeup_mode, bursts=self.broadcast_payload_bursts,
                 )

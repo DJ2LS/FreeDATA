@@ -200,21 +200,21 @@ jobs:
             zip_name: ubuntu_tnc
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
-            tnc_binary_name: freedata-tnc
+            tnc_binary_name: freedata-modem
             electron_parameters: "-p always"
 
           - os: macos-11
             zip_name: macos_tnc
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
-            tnc_binary_name: freedata-tnc
+            tnc_binary_name: freedata-modem
             electron_parameters: "-p always"
 
           - os: windows-latest
             zip_name: windows_tnc
             generator: Visual Studio 16 2019
             daemon_binary_name: freedata-daemon.exe
-            tnc_binary_name: freedata-tnc.exe
+            tnc_binary_name: freedata-modem.exe
             electron_parameters: "-p always --x64 --ia32"
     steps:
       - name: Checkout code for ${{ matrix.platform.name }}
@@ -232,30 +232,30 @@ jobs:
         with:
           node-version: 18.17
 
-      - name: Create tnc/dist
-        working-directory: tnc
+      - name: Create modem/dist
+        working-directory: modem
         run: |
           mkdir -p dist
 
-      - name: Create tnc/dist/tnc
-        working-directory: tnc
+      - name: Create modem/dist/modem
+        working-directory: modem
         run: |
           mkdir -p dist/tnc
 
       ##- name: Download libcodec2 artifact TNC DIST
       ##  uses: actions/download-artifact@v3
       ##  with:
-      ##    path: tnc/dist/codec2
+      ##    path: modem/dist/codec2
 
-      - name: create tnc/lib/codec2
-        working-directory: tnc/lib/
+      - name: create modem/lib/codec2
+        working-directory: modem/lib/
         run: |
           mkdir codec2
 
       - name: Download libcodec2 artifact TNC LIB
         uses: actions/download-artifact@v3
         with:
-          path: tnc/lib/codec2
+          path: modem/lib/codec2
 
 
       - name: Install Linux dependencies
@@ -285,7 +285,7 @@ jobs:
 
       - name: Build binaries macOS
         if: ${{startsWith(matrix.os, 'macos')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           # now build tnc binaries
           pyinstaller -y freedata.spec
@@ -295,7 +295,7 @@ jobs:
 
       - name: Build binaries Linux and Windows
         if: ${{!startsWith(matrix.os, 'macos')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           # pyinstaller freedata.spec
           # python3 -m nuitka --enable-plugin=numpy --assume-yes-for-downloads --onefile daemon.py -o ${{ matrix.daemon_binary_name }}
@@ -305,30 +305,30 @@ jobs:
 
       - name: Copy binaries - Linux
         if: ${{startsWith(matrix.os, 'ubuntu')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           cp -r -f daemon.dist/* dist/tnc
           cp -r -f main.dist/* dist/tnc
 
       - name: Copy binaries - Windows
         if: ${{startsWith(matrix.os, 'windows')}}
-        working-directory: tnc
+        working-directory: modem
         # These are powershell aliases, not UNIX commands.
         run: |
           cp -r -Force daemon.dist/* dist/tnc
           cp -r -Force main.dist/* dist/tnc
 
-      - name: Rename tnc binaries
+      - name: Rename modem binaries
         # we don't need renaming for pyinstaller builds as output name is defined
         if: ${{!startsWith(matrix.os, 'macos')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           mv dist/tnc/daemon* dist/tnc/${{ matrix.daemon_binary_name }}
           mv dist/tnc/main* dist/tnc/${{ matrix.tnc_binary_name }}
 
       - uses: actions/download-artifact@v3
         with:
-           path: tnc/dist/tnc
+           path: modem/dist/modem
 
 
       - name: LIST ALL FILES
@@ -336,7 +336,7 @@ jobs:
 
       - name: Download Portaudio binaries Linux macOS
         if: ${{!startsWith(matrix.os, 'windows')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           if ! test -d "dist/tnc/_sounddevice_data"; then
           git clone https://github.com/spatialaudio/portaudio-binaries dist/tnc/_sounddevice_data/portaudio-binaries
@@ -344,7 +344,7 @@ jobs:
 
       - name: Download Portaudio binaries Windows
         if: ${{startsWith(matrix.os, 'windows')}}
-        working-directory: tnc
+        working-directory: modem
         run: |
           if(Test-Path -Path "dist/tnc/_sounddevice_data"){
           echo "sounddevice folder already exists"
@@ -382,8 +382,8 @@ jobs:
         with:
             type: 'zip'
             filename: '${{ matrix.zip_name }}.zip'
-            # directory: ./tnc/dist/tnc
-            directory: ./tnc/dist/tnc
+            # directory: ./modem/dist/modem
+            directory: ./modem/dist/modem
             path: .
             # exclusions: '*.git* /*node_modules/* .editorconfig'
 
@@ -391,8 +391,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
-          files: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-          #files: ./tnc/dist/${{ matrix.zip_name }}.zip
+          files: ./modem/dist/modem/${{ matrix.zip_name }}.zip
+          #files: ./modem/dist/${{ matrix.zip_name }}.zip
 
       - name: LIST ALL FILES
         run: ls -R
@@ -402,13 +402,13 @@ jobs:
       #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
       #  with:
       #    name: ${{ matrix.zip_name }}.zip
-      #    # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
-      #    path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip#
+      #    # path: ./modem/dist/modem/${{ matrix.zip_name }}.zip
+      #    path: ./modem/dist/modem/${{ matrix.zip_name }}.zip#
 
       #- name: Upload App bundle artifacts
       #  uses: actions/upload-artifact@v3
       #  if: ${{!startsWith(github.ref, 'refs/tags/v')}}
       #  with:
       #    name: app_bundle_${{ matrix.os }}.zip
-      #     # path: ./tnc/dist/tnc/${{ matrix.zip_name }}.zip
+      #     # path: ./modem/dist/modem/${{ matrix.zip_name }}.zip
       #    path: ./gui/dist/*

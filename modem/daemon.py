@@ -5,7 +5,7 @@ daemon.py
 
 Author: DJ2LS, January 2022
 
-daemon for providing basic information for the tnc like audio or serial devices
+daemon for providing basic information for the modem like audio or serial devices
 
 """
 # pylint: disable=invalid-name, line-too-long, c-extension-no-member
@@ -26,7 +26,7 @@ import crcengine
 import log_handler
 import serial.tools.list_ports
 import sock
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 import structlog
 import ujson as json
@@ -83,7 +83,7 @@ class DAEMON:
         """
         while True:
             try:
-                if not Daemon.tncstarted:
+                if not Daemon.modemstarted:
                     (
                         AudioParam.audio_input_devices,
                         AudioParam.audio_output_devices,
@@ -153,8 +153,8 @@ class DAEMON:
                 # data[20] stats
                 # data[21] tx_delay
 
-                if data[0] == "STARTTNC":
-                    self.start_tnc(data)
+                if data[0] == "STARTModem":
+                    self.start_modem(data)
 
                 if data[0] == "TEST_HAMLIB":
                     # data[9] radiocontrol
@@ -387,8 +387,8 @@ class DAEMON:
 
 
 
-    def start_tnc(self, data):
-        self.log.warning("[DMN] Starting TNC", rig=data[5], port=data[6])
+    def start_modem(self, data):
+        self.log.warning("[DMN] Starting Modem", rig=data[5], port=data[6])
 
         # list of parameters, necessary for running subprocess command as a list
         options = ["--port", str(DAEMON.port - 1)]
@@ -467,8 +467,8 @@ class DAEMON:
         # safe data to config file
         config.write_entire_config(data)
 
-        # Try running tnc from binary, else run from source
-        # This helps running the tnc in a developer environment
+        # Try running modem from binary, else run from source
+        # This helps running the modem in a developer environment
         try:
             command = []
 
@@ -477,12 +477,12 @@ class DAEMON:
                 # extends the sys module by a flag frozen=True and sets the app
                 # path into variable _MEIPASS'.
                 application_path = sys._MEIPASS
-                command.append(f'{application_path}/freedata-tnc')
+                command.append(f'{application_path}/freedata-modem')
 
             elif sys.platform in ["linux", "darwin"]:
-                command.append("./freedata-tnc")
+                command.append("./freedata-modem")
             elif sys.platform in ["win32", "win64"]:
-                command.append("freedata-tnc.exe")
+                command.append("freedata-modem.exe")
 
             command += options
 
@@ -490,11 +490,11 @@ class DAEMON:
 
             atexit.register(proc.kill)
 
-            Daemon.tncprocess = proc
-            Daemon.tncstarted = True
+            Daemon.modemprocess = proc
+            Daemon.modemstarted = True
 
 
-            self.log.info("[DMN] TNC started", path="binary")
+            self.log.info("[DMN] Modem started", path="binary")
         except FileNotFoundError as err1:
 
             try:
@@ -511,13 +511,13 @@ class DAEMON:
                 proc = subprocess.Popen(command)
                 atexit.register(proc.kill)
 
-                self.log.info("[DMN] TNC started", path="source")
+                self.log.info("[DMN] Modem started", path="source")
 
-                Daemon.tncprocess = proc
-                Daemon.tncstarted = True
+                Daemon.modemprocess = proc
+                Daemon.modemstarted = True
             except Exception as e:
-                self.log.error("[DMN] TNC not started", error=e)
-                Daemon.tncstarted = False
+                self.log.error("[DMN] Modem not started", error=e)
+                Daemon.modemstarted = False
 
 
 
@@ -569,7 +569,7 @@ if __name__ == "__main__":
         # https://stackoverflow.com/a/16641793
         socketserver.TCPServer.allow_reuse_address = True
         cmdserver = sock.ThreadedTCPServer(
-            (TNC.host, DAEMON.port), sock.ThreadedTCPRequestHandler
+            (Modem.host, DAEMON.port), sock.ThreadedTCPRequestHandler
         )
         server_thread = threading.Thread(target=cmdserver.serve_forever)
         server_thread.daemon = True
@@ -586,7 +586,7 @@ if __name__ == "__main__":
         "[DMN] Starting FreeDATA Daemon",
         author="DJ2LS",
         year="2023",
-        version=TNC.version,
+        version=Modem.version,
     )
     while True:
         threading.Event().wait(1)

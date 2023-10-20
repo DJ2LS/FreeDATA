@@ -37,7 +37,7 @@ SNR: negative --> * 2
 # pylint: disable=import-outside-toplevel, attribute-defined-outside-init
 
 from static import FRAME_TYPE
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 from codec2 import FREEDV_MODE
 import numpy as np
@@ -113,7 +113,7 @@ class MeshRouter():
         heard stations format:
         [dxcallsign,dxgrid,int(time.time()),datatype,snr,offset,frequency]
 
-        TNC.heard_stations.append(
+        Modem.heard_stations.append(
                     [
                         dxcallsign,
                         dxgrid,
@@ -134,7 +134,7 @@ class MeshRouter():
         frequency_position = 6
 
         try:
-            for item in TNC.heard_stations:
+            for item in Modem.heard_stations:
                 #print("-----------")
                 #print(item)
                 #print(item[snr_position])
@@ -222,13 +222,13 @@ class MeshRouter():
                         #print(len(_))
                         frame_list.append(mesh_broadcast_frame_header + _)
 
-                    TNC.transmitting = True
+                    Modem.transmitting = True
                     c2_mode = FREEDV_MODE.datac4.value
                     self.log.info("[MESH] broadcasting routing table", frame_list=frame_list, frames=len(split_result))
                     modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, 1, 0, frame_list])
 
                     # Wait while transmitting
-                    while TNC.transmitting:
+                    while Modem.transmitting:
                         threading.Event().wait(0.01)
                 except Exception as e:
                     self.log.warning("[MESH] broadcasting routing table", e=e)
@@ -522,7 +522,7 @@ class MeshRouter():
             repeat_delay=0,
     ) -> None:
         """
-        Send (transmit) supplied frame to TNC
+        Send (transmit) supplied frame to Modem
 
         :param frame_to_tx: Frame data to send
         :type frame_to_tx: list of bytearrays
@@ -536,16 +536,16 @@ class MeshRouter():
         #print(frame_to_tx[0])
         #print(frame_to_tx)
         frame_type = FRAME_TYPE(int.from_bytes(frame_to_tx[0][:1], byteorder="big")).name
-        self.log.debug("[TNC] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
+        self.log.debug("[Modem] enqueue_frame_for_tx", c2_mode=FREEDV_MODE(c2_mode).name, data=frame_to_tx,
                        type=frame_type)
 
         # Set the TRANSMITTING flag before adding an object to the transmit queue
         # TODO: This is not that nice, we could improve this somehow
-        TNC.transmitting = True
+        Modem.transmitting = True
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 
         # Wait while transmitting
-        while TNC.transmitting:
+        while Modem.transmitting:
             threading.Event().wait(0.01)
 
 

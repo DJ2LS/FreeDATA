@@ -189,8 +189,8 @@ def t_datac13_1(
         time.sleep(0.5)
     log.info("station1, final")
 
-    # log.info("S1 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    # log.info("S1 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S1 DQT: ", DQ_Tx=pformat(modem.data_queue_transmit.queue))
+    # log.info("S1 DQR: ", DQ_Rx=pformat(modem.data_queue_received.queue))
     log.debug("S1 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     for item in final_tx_check:
@@ -298,8 +298,8 @@ def t_datac13_2(
         time.sleep(0.5)
     log.info("station2, final")
 
-    # log.info("S2 DQT: ", DQ_Tx=pformat(tnc.data_queue_transmit.queue))
-    # log.info("S2 DQR: ", DQ_Rx=pformat(tnc.data_queue_received.queue))
+    # log.info("S2 DQT: ", DQ_Tx=pformat(modem.data_queue_transmit.queue))
+    # log.info("S2 DQR: ", DQ_Rx=pformat(modem.data_queue_received.queue))
     log.debug("S2 Socket: ", socket_queue=pformat(sock.SOCKET_QUEUE.queue))
 
     for item in final_rx_check:

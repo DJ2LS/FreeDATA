@@ -13,7 +13,7 @@ import time
 import ujson as json
 import structlog
 import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 
 log = structlog.get_logger("explorer")
@@ -38,8 +38,8 @@ class explorer():
         band = "USB"
         callsign = str(Station.mycallsign, "utf-8")
         gridsquare = str(Station.mygrid, "utf-8")
-        version = str(TNC.version)
-        bandwidth = str(TNC.low_bandwidth_mode)
+        version = str(Modem.version)
+        bandwidth = str(Modem.low_bandwidth_mode)
         beacon = str(Beacon.beacon_state)
         strength = str(HamlibParam.hamlib_strength)
 
@@ -48,7 +48,7 @@ class explorer():
         headers = {"Content-Type": "application/json"}
         station_data = {'callsign': callsign, 'gridsquare': gridsquare, 'frequency': frequency, 'strength': strength, 'band': band, 'version': version, 'bandwidth': bandwidth, 'beacon': beacon, "lastheard": []}
 
-        for i in TNC.heard_stations:
+        for i in Modem.heard_stations:
             try:
                 callsign = str(i[0], "UTF-8")
                 grid = str(i[1], "UTF-8")

@@ -8,7 +8,7 @@ import time
 from datetime import datetime,timezone
 import crcengine
 import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 import structlog
 import numpy as np
 import threading
@@ -139,16 +139,16 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
         Nothing
     """
     # check if buffer empty
-    if len(TNC.heard_stations) == 0:
-        TNC.heard_stations.append(
+    if len(Modem.heard_stations) == 0:
+        Modem.heard_stations.append(
             [dxcallsign, dxgrid, int(datetime.now(timezone.utc).timestamp()), datatype, snr, offset, frequency]
         )
     # if not, we search and update
     else:
-        for i in range(len(TNC.heard_stations)):
+        for i in range(len(Modem.heard_stations)):
             # Update callsign with new timestamp
-            if TNC.heard_stations[i].count(dxcallsign) > 0:
-                TNC.heard_stations[i] = [
+            if Modem.heard_stations[i].count(dxcallsign) > 0:
+                Modem.heard_stations[i] = [
                     dxcallsign,
                     dxgrid,
                     int(time.time()),
@@ -159,8 +159,8 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 ]
                 break
             # Insert if nothing found
-            if i == len(TNC.heard_stations) - 1:
-                TNC.heard_stations.append(
+            if i == len(Modem.heard_stations) - 1:
+                Modem.heard_stations.append(
                     [
                         dxcallsign,
                         dxgrid,
@@ -174,10 +174,10 @@ def add_to_heard_stations(dxcallsign, dxgrid, datatype, snr, offset, frequency):
                 break
 
 
-#    for idx, item in enumerate(TNC.heard_stations):
+#    for idx, item in enumerate(Modem.heard_stations):
 #        if dxcallsign in item:
 #            item = [dxcallsign, int(time.time())]
-#            TNC.heard_stations[idx] = item
+#            Modem.heard_stations[idx] = item
 
 
 def callsign_to_bytes(callsign) -> bytes:
@@ -530,7 +530,7 @@ def get_hmac_salt(dxcallsign: bytes, mycallsign: bytes):
             filepath = subfolder / filename
         except Exception as e:
             log.error(
-                "[TNC] [HMAC] File lookup error", file=filepath,
+                "[Modem] [HMAC] File lookup error", file=filepath,
             )
 
     # check if file exists else return false
@@ -580,13 +580,13 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
             filepath = subfolder / filename
         except Exception as e:
             log.error(
-                "[TNC] [HMAC] File lookup error", file=filepath,
+                "[Modem] [HMAC] File lookup error", file=filepath,
             )
 
     # check if file exists else return false
     if not check_if_file_exists(filepath):
         log.warning(
-            "[TNC] [HMAC] Token file not found", file=filepath,
+            "[Modem] [HMAC] Token file not found", file=filepath,
         )
         return False
 
@@ -611,19 +611,19 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                     token_position = len(token_list) - _
                     delete_last_line_from_hmac_list(filepath, token_position)
                     log.info(
-                        "[TNC] [HMAC] Signature found", expected=search_token.hex(),
+                        "[Modem] [HMAC] Signature found", expected=search_token.hex(),
                     )
                     return True
 
 
         log.warning(
-            "[TNC] [HMAC] Signature not found", expected=search_token.hex(), filepath=filepath,
+            "[Modem] [HMAC] Signature not found", expected=search_token.hex(), filepath=filepath,
         )
         return False
 
     except Exception as e:
         log.warning(
-            "[TNC] [HMAC] Lookup failed", e=e, expected=search_token,
+            "[Modem] [HMAC] Lookup failed", e=e, expected=search_token,
         )
         return False
 
@@ -662,6 +662,6 @@ def check_if_file_exists(path):
             return False
     except Exception as e:
         log.warning(
-            "[TNC] [FILE] Lookup failed", e=e, path=path,
+            "[Modem] [FILE] Lookup failed", e=e, path=path,
         )
         return False

@@ -23,8 +23,8 @@ import sounddevice as sd
 
 # pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
-sys.path.insert(0, "../tnc")
-from tnc import codec2
+sys.path.insert(0, "../modem")
+from modem import codec2
 
 
 def util_rx():

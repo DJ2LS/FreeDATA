@@ -23,7 +23,7 @@ import pytest
 
 # pylint: disable=wrong-import-position
 sys.path.insert(0, "..")
-sys.path.insert(0, "../tnc")
+sys.path.insert(0, "../modem")
 import data_handler
 import helpers
 from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC

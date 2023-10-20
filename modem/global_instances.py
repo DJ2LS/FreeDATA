@@ -1,6 +1,6 @@
 # global_instances.py
 
-from static import Daemon, ARQ, AudioParam, Beacon, Channel, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, MeshParam
+from static import Daemon, ARQ, AudioParam, Beacon, Channel, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 
 # Initialize instances with appropriate default values
 
@@ -15,5 +15,5 @@ ModemParam = ModemParam()
 Station = Station()
 Statistics = Statistics()
 TCIParam = TCIParam()
-TNC = TNC()
+Modem = Modem()
 MeshParam = MeshParam()

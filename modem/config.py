@@ -45,7 +45,7 @@ class CONFIG:
         write entire config
         """
         self.config['NETWORK'] = {'#Network settings': None,
-                                  'TNCPORT': data[50]
+                                  'ModemPORT': data[50]
                                   }
 
         self.config['STATION'] = {'#Station settings': None,
@@ -66,7 +66,7 @@ class CONFIG:
                                 'rigctld_ip': data[6],
                                 'rigctld_port': data[7]
                                 }
-        self.config['TNC'] = {'#TNC settings': None,
+        self.config['Modem'] = {'#Modem settings': None,
                               'scatter': data[8],
                               'fft': data[9],
                               'narrowband': data[10],

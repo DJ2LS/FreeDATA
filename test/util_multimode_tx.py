@@ -22,7 +22,7 @@ import numpy as np
 import pyaudio
 
 sys.path.insert(0, "..")
-from tnc import codec2
+from modem import codec2
 
 
 def test_mm_tx():

@@ -23,7 +23,7 @@ import numpy as np
 import sock
 import sounddevice as sd
 import static
-from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 from static import FRAME_TYPE
 import structlog
 import ujson as json
@@ -37,7 +37,7 @@ TESTMODE = False
 RXCHANNEL = ""
 TXCHANNEL = ""
 
-TNC.transmitting = False
+Modem.transmitting = False
 
 # Receive only specific modes to reduce CPU load
 RECEIVE_SIG0 = True
@@ -287,7 +287,7 @@ class RF:
             )
             fft_thread.start()
 
-        if TNC.enable_fsk:
+        if Modem.enable_fsk:
             audio_thread_fsk_ldpc0 = threading.Thread(
                 target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
             )
@@ -386,8 +386,8 @@ class RF:
                 (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                 (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                 (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                (self.fsk_ldpc_buffer_0, TNC.enable_fsk),
-                (self.fsk_ldpc_buffer_1, TNC.enable_fsk),
+                (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
+                (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
             ]:
                 if (
                         not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -420,8 +420,8 @@ class RF:
                             (self.dat0_datac1_buffer, RECEIVE_DATAC1),
                             (self.dat0_datac3_buffer, RECEIVE_DATAC3),
                             (self.dat0_datac4_buffer, RECEIVE_DATAC4),
-                            (self.fsk_ldpc_buffer_0, TNC.enable_fsk),
-                            (self.fsk_ldpc_buffer_1, TNC.enable_fsk),
+                            (self.fsk_ldpc_buffer_0, Modem.enable_fsk),
+                            (self.fsk_ldpc_buffer_1, Modem.enable_fsk),
                         ]:
                             if (
                                     not (data_buffer.nbuffer + length_x) > data_buffer.size
@@ -468,7 +468,7 @@ class RF:
 
         # Avoid decoding when transmitting to reduce CPU
         # TODO: Overriding this for testing purposes
-        # if not TNC.transmitting:
+        # if not Modem.transmitting:
         length_x = len(x)
         # Avoid buffer overflow by filling only if buffer for
         # selected datachannel mode is not full
@@ -478,14 +478,14 @@ class RF:
             (self.dat0_datac1_buffer, RECEIVE_DATAC1, 2),
             (self.dat0_datac3_buffer, RECEIVE_DATAC3, 3),
             (self.dat0_datac4_buffer, RECEIVE_DATAC4, 4),
-            (self.fsk_ldpc_buffer_0, TNC.enable_fsk, 5),
-            (self.fsk_ldpc_buffer_1, TNC.enable_fsk, 6),
+            (self.fsk_ldpc_buffer_0, Modem.enable_fsk, 5),
+            (self.fsk_ldpc_buffer_1, Modem.enable_fsk, 6),
         ]:
             if (audiobuffer.nbuffer + length_x) > audiobuffer.size:
                 AudioParam.buffer_overflow_counter[index] += 1
             elif receive:
                 audiobuffer.push(x)
-        # end of "not TNC.transmitting" if block
+        # end of "not Modem.transmitting" if block
 
         if not self.modoutqueue or self.mod_out_locked:
             data_out48k = np.zeros(frames, dtype=np.int16)
@@ -541,7 +541,7 @@ class RF:
         else:
             return False
 
-        TNC.transmitting = True
+        Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
         ModemParam.channel_busy = False
 
@@ -729,7 +729,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        TNC.transmitting = False
+        Modem.transmitting = False
         threading.Event().set()
 
         end_of_transmission = time.time()
@@ -737,7 +737,7 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def transmit_morse(self, repeats, repeat_delay, frames):
-        TNC.transmitting = True
+        Modem.transmitting = True
         # if we're transmitting FreeDATA signals, reset channel busy state
         ModemParam.channel_busy = False
         self.log.debug(
@@ -800,7 +800,7 @@ class RF:
         self.mod_out_locked = True
 
         self.modem_transmit_queue.task_done()
-        TNC.transmitting = False
+        Modem.transmitting = False
         threading.Event().set()
 
         end_of_transmission = time.time()
@@ -894,8 +894,8 @@ class RF:
                     if nbytes == bytes_per_frame:
                         print(bytes(bytes_out))
 
-                        # process commands only if TNC.listen = True
-                        if TNC.listen:
+                        # process commands only if Modem.listen = True
+                        if Modem.listen:
 
 
                             # ignore data channel opener frames for avoiding toggle states
@@ -931,7 +931,7 @@ class RF:
                         else:
                             self.log.warning(
                                 "[MDM] [demod_audio] received frame but ignored processing",
-                                listen=TNC.listen
+                                listen=Modem.listen
                             )
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
@@ -1244,7 +1244,7 @@ class RF:
                 threading.Event().wait(0.1)
                 HamlibParam.hamlib_status = self.radio.get_status()
                 threading.Event().wait(0.1)
-                if TNC.transmitting:
+                if Modem.transmitting:
                     HamlibParam.alc = self.radio.get_alc()
                     threading.Event().wait(0.1)
                 # HamlibParam.hamlib_rf = self.radio.get_level()
@@ -1295,7 +1295,7 @@ class RF:
                     # Therefore we are setting it to 100 so it will be highlighted
                     # Have to do this when we are not transmitting so our
                     # own sending data will not affect this too much
-                    if not TNC.transmitting:
+                    if not Modem.transmitting:
                         dfft[dfft > avg + 15] = 100
 
                         # Calculate audio dbfs
@@ -1354,12 +1354,12 @@ class RF:
                         range_start = range[0]
                         range_end = range[1]
                         # define the area, we are detecting busy state
-                        #dfft = dfft[120:176] if TNC.low_bandwidth_mode else dfft[65:231]
+                        #dfft = dfft[120:176] if Modem.low_bandwidth_mode else dfft[65:231]
                         slotdfft = dfft[range_start:range_end]
                         # Check for signals higher than average by checking for "100"
                         # If we have a signal, increment our channel_busy delay counter
                         # so we have a smoother state toggle
-                        if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not TNC.transmitting:
+                        if np.sum(slotdfft[slotdfft > avg + 15]) >= 200 and not Modem.transmitting:
                             addDelay=True
                             ModemParam.channel_busy_slot[slot] = True
                         else:

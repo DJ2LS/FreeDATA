@@ -39,7 +39,7 @@ class RETCODE(Enum):
     RIG_EVFO = 16
     RIG_EDOM = 17
 
-libname = pathlib.Path("../tnc/lib/hamlib/linux/libhamlib.so")
+libname = pathlib.Path("../modem/lib/hamlib/linux/libhamlib.so")
 hamlib = ctypes.CDLL(libname)
 
 class SERIAL(ctypes.Structure):
