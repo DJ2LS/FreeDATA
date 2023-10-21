@@ -81,7 +81,15 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   function getSerialDevices() {
     var html = "";
     for (var key in serial_devices.value) {
-      html += `<option value="${serial_devices.value[key]["port"]}">${serial_devices.value[key]["port"]} - ${serial_devices.value[key]["description"]}</option>`;
+
+    let selected = ''
+      if (serial_devices.value[key]["name"] == hamlib_deviceport){
+        selected = "selected"
+      } else {
+       selected = ''
+      }
+
+      html += `<option value="${serial_devices.value[key]["port"]}" ${selected}>${serial_devices.value[key]["port"]} - ${serial_devices.value[key]["description"]}</option>`;
     }
     return html;
   }

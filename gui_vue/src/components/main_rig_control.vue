@@ -20,7 +20,6 @@ function startStopRigctld() {
 
       settings.hamlib_deviceport = (<HTMLInputElement>document.getElementById("hamlib_deviceport")).value;
 
-
       startRigctld();
 
       break;
