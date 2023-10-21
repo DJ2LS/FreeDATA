@@ -50,7 +50,7 @@
 
 <script>
 import { deleteMessageFromDB, requestMessageInfo, getMessageAttachment } from "../js/chatHandler";
-import {atob_FD} from "../js/freedata.js"
+import {atob_FD} from "../js/freedata"
 
 // pinia store setup
 import { setActivePinia } from "pinia";

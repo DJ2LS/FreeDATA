@@ -1,7 +1,7 @@
 var net = require("net");
 const path = require("path");
 //const FD = require("./src/js/freedata.js");
-import {atob_FD, btoa_FD} from "./freedata.js"
+import {atob_FD, btoa_FD} from "./freedata"
 //import FD from './freedata.js';
 
         import {addDataToWaterfall} from "../js/waterfallHandler.js"
@@ -13,8 +13,8 @@ import {
   updateTransmissionStatus,
   setStateSuccess,
   setStateFailed,
-} from "./chatHandler.ts";
-import { displayToast } from "./popupHandler.js";
+} from "./chatHandler";
+import { displayToast } from "./popupHandler";
 
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";

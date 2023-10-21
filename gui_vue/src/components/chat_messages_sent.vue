@@ -86,7 +86,7 @@
 
 import { Modal } from "bootstrap";
 import { onMounted, ref } from "vue";
-import {atob_FD} from "../js/freedata.js"
+import {atob_FD} from "../js/freedata"
 
 import {
   repeatMessageTransmission,
