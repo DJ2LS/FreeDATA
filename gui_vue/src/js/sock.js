@@ -825,9 +825,15 @@ export function sendFecIsWriting(mycallsign) {
 }
 
 // SEND FEC TO BROADCASTCHANNEL
-export function sendBroadcastChannel(channel, data_out, uuid) {
-  let checksum = "";
-  let command = "";
+//export function sendBroadcastChannel(channel, data_out, uuid) {
+export function sendBroadcastChannel(obj) {
+
+  let checksum = obj.checksum;
+  let command = obj.command;
+  let uuid = obj.uuid;
+  let channel = obj.dxcallsign
+  let data_out = obj.msg
+
   let data = btoa_FD(
     "m" +
       split_char +

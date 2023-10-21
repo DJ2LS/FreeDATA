@@ -14,7 +14,7 @@ const chat = useChatStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { sendMessage } from "./sock.js";
+import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
 
@@ -191,7 +191,8 @@ let newChatObj: messageDefaultObject = {
 };
 
 
-    sendMessage(newChatObj)
+    //sendMessage(newChatObj)
+    sendBroadcastChannel(newChatObj)
 
   addObjToDatabase(newChatObj);
 }
