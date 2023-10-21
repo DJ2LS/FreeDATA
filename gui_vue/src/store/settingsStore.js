@@ -79,11 +79,14 @@ export const useSettingsStore = defineStore("settingsStore", () => {
 
 
   function getSerialDevices() {
-    var html = "";
+    if (this.hamlib_deviceport == "ignore")
+      var html = '<option value ="ignore" selected>None - (use custom options for hamlib)</option>';
+    else
+      var html = '<option value ="ignore">None - (use custom options for hamlib)</option>';
     for (var key in serial_devices.value) {
 
     let selected = ''
-      if (serial_devices.value[key]["name"] == hamlib_deviceport){
+      if (serial_devices.value[key]["port"] == this. hamlib_deviceport){
         selected = "selected"
       } else {
        selected = ''
