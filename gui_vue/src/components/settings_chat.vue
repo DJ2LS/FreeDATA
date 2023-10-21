@@ -100,7 +100,7 @@ function saveSettings() {
           v-model="settings.enable_auto_retry"
           true-value="True"
           false-value="False"
-          disabled
+
         />
       </div>
     </label>

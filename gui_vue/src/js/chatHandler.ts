@@ -14,6 +14,10 @@ const chat = useChatStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
+
 import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
@@ -760,10 +764,6 @@ let newChatObj: beaconDefaultObject = {
   snr: obj["snr"], // adding the new field
 };
 
-
-
-
-
   addObjToDatabase(newChatObj);
 
   console.log(obj);
@@ -788,6 +788,15 @@ let newChatObj: beaconDefaultObject = {
     chat.sorted_beacon_list[dxcallsign].snr.push(snr);
     chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
   });
+
+  // check if auto retry enabled
+  console.log("-----------------------------------------")
+  console.log(settings.enable_auto_retry.toUpperCase())
+    if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
+    checkForWaitingMessages(dxcallsign);
+  }
+
+
 }
 
 // function for handling a received message
@@ -927,4 +936,84 @@ console.log(data)
     chat.selectedMessageObject = data
 
 
+}
+
+function getFromDBByFilter(filter) {
+/*
+USAGE:
+
+let filter = {
+    selector: {
+      dxcallsign: dxcall,
+      type: "transmit",
+      status: "failed",
+      //attempt: { $lt: parseInt(config.max_retry_attempts) }
+    },
+  }
+
+getFromDBByFilter(filter)
+  .then(result => {
+    console.log(result)
+  })
+  .catch(err => {
+    console.log(err)
+  });
+
+*/
+  return new Promise((resolve, reject) => {
+    console.log(filter);
+
+    db.createIndex({
+      index: {
+        fields: [{ dxcallsign: "asc" }, { type: "asc" }, { status: "asc" }, { timestamp: "asc" }],
+      },
+    })
+    .then(result => {
+      return db.find(filter);
+    })
+    .then(result => {
+      console.log(result);
+      resolve(result);
+    })
+    .catch(err => {
+      console.log(err);
+      reject(err);
+    });
+  });
+}
+
+
+
+async function checkForWaitingMessages(dxcall) {
+
+let filter = {
+    selector: {
+      dxcallsign: dxcall,
+      type: "transmit",
+      status: "failed",
+      //attempt: { $lt: parseInt(config.max_retry_attempts) }
+    },
+  }
+
+getFromDBByFilter(filter)
+  .then(result => {
+       let message = "Found " + result.docs.length + " waiting messages for " + dxcall
+        console.log(message);
+       displayToast("info", "bi bi-info-circle", message, 5000);
+
+      // handle result
+      if (result.docs.length > 0) {
+        // only want to process the first available item object, then return
+        // this ensures, we are only sending one message at once
+
+        if (result.docs[0].attempt < config.max_retry_attempts) {
+          repeatMessageTransmission(result.docs[0].uuid)
+        }
+        return;
+      }
+
+  })
+  .catch(err => {
+    console.log(err)
+  });
 }
