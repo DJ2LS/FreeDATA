@@ -10,15 +10,32 @@ const state = useStateStore(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
+import { useAudioStore } from "../store/audioStore.js";
+const audioStore = useAudioStore(pinia);
+
 import { startModem, stopModem } from "../js/daemon.js";
+import { saveSettingsToFile } from "../js/settingsHandler";
 
 function startStopModem() {
   switch (state.modem_running_state) {
     case "stopped":
 
-      settings.rx_audio = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).value;
-      settings.tx_audio = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).value;
+      let startupInputDeviceValue = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).value;
+      let startupOutputDeviceValue = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).value;
 
+      let startupInputDeviceIndex = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).selectedIndex;
+      let startupOutputDeviceIndex = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).selectedIndex;
+
+
+      audioStore.startupInputDevice = startupInputDeviceValue
+      audioStore.startupOutputDevice = startupOutputDeviceValue
+
+      // get full name of audio device
+      settings.rx_audio = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).options[startupInputDeviceIndex].text;
+      settings.tx_audio = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).options[startupOutputDeviceIndex].text;
+
+
+      saveSettingsToFile();
 
       startModem();
 

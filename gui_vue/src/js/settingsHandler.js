@@ -65,11 +65,13 @@ const configDefaultSettings =
                   "modem_port": 3000,\
                   "daemon_host": "127.0.0.1",\
                   "daemon_port": 3001,\
-                  "mycall": "AA0AA",\
+                  "rx_audio" : "",\
+                  "tx_audio" : "",\
+                  "mycall": "AA0AA-0",\
                   "myssid": "0",\
                   "mygrid": "JN40aa",\
                   "radiocontrol" : "disabled",\
-                  "hamlib_deviceid": "RIG_MODEL_DUMMY_NOVFO",\
+                  "hamlib_deviceid": 6,\
                   "hamlib_deviceport": "ignore",\
                   "hamlib_stop_bits": "ignore",\
                   "hamlib_data_bits": "ignore",\

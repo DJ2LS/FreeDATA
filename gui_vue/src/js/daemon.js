@@ -203,8 +203,8 @@ export function startModem() {
       {
         mycall: settings.mycall,
         mygrid: settings.mygrid,
-        rx_audio: settings.rx_audio,
-        tx_audio: settings.tx_audio,
+        rx_audio: audioStore.startupInputDevice,
+        tx_audio: audioStore.startupOutputDevice,
         radiocontrol: settings.radiocontrol,
         devicename: settings.devicename,
         deviceport: settings.deviceport,
