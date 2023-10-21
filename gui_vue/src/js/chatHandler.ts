@@ -530,18 +530,8 @@ export async function updateAllChat(cleanup) {
     if (cleanup) {
         await dbClean()
     }
-  //Ensure we create an index before running db.find
-  //We can't rely on the default index existing before we get here...... :'(
-  await db
-    .createIndex({
-      index: {
-        fields: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
-      },
-    })
-    .then(async function (result) {
-      // handle result
-      await db
-        .find({
+
+  let filter = {
           selector: {
             $and: [
               { dxcallsign: { $exists: true } },
@@ -550,8 +540,9 @@ export async function updateAllChat(cleanup) {
             ],
           },
           sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
-        })
-        .then(async function (result) {
+        }
+  getFromDBByFilter(filter)
+    .then(async function (result) {
           for (var item of result.docs) {
             const dxcallsign = item.dxcallsign;
             // Check if dxcallsign already exists as a property in the result object
@@ -588,30 +579,11 @@ export async function updateAllChat(cleanup) {
            
           }
 
-          
-
-          /*
-          if (typeof result !== "undefined") {
-            for (const item of result.docs) {
-              //await otherwise history will not be in chronological order
-              await db
-                .get(item._id, {
-                  attachments: true,
-                })
-                .then(function (item_with_attachments) {
-                  update_chat(item_with_attachments);
-                });
-            }
-          }
-          */
         })
         .catch(function (err) {
           console.log(err);
         });
-    })
-    .catch(function (err) {
-      console.log(err);
-    });
+
 }
 
 function addObjToDatabase(newobj) {
