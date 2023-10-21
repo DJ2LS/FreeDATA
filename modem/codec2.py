@@ -84,7 +84,7 @@ def freedv_get_mode_name_by_value(mode: int) -> str:
 #else:
 sys.path.append(os.path.abspath("."))
 
-log.info("[C2 ] Searching for libcodec2...")
+#log.info("[C2 ] Searching for libcodec2...")
 if sys.platform == "linux":
     files = glob.glob(r"**/*libcodec2*", recursive=True)
     files.append("libcodec2.so")
@@ -102,14 +102,14 @@ api = None
 for file in files:
     try:
         api = ctypes.CDLL(file)
-        log.info("[C2 ] Libcodec2 loaded", path=file)
+        #log.info("[C2 ] Libcodec2 loaded", path=file)
         break
     except OSError as err:
-        log.warning("[C2 ] Libcodec2 found but not loaded", path=file, e=err)
+        log.warning("[C2 ] Error:  Libcodec2 found but not loaded", path=file, e=err)
 
 # Quit module if codec2 cant be loaded
 if api is None or "api" not in locals():
-    log.critical("[C2 ] Libcodec2 not loaded - Exiting")
+    log.critical("[C2 ] Error:  Libcodec2 not loaded - Exiting")
     sys.exit(1)
 
 # ctypes function init
