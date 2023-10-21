@@ -543,7 +543,7 @@ export async function updateAllChat(cleanup) {
         }
   getFromDBByFilter(filter)
     .then(async function (result) {
-          for (var item of result.docs) {
+          for (var item of (result as any).docs) {
             const dxcallsign = item.dxcallsign;
             // Check if dxcallsign already exists as a property in the result object
             if (!chat.sorted_beacon_list[dxcallsign]) {
@@ -969,16 +969,20 @@ let filter = {
 
 getFromDBByFilter(filter)
   .then(result => {
+  // @ts-expect-error
        let message = "Found " + result.docs.length + " waiting messages for " + dxcall
+
         console.log(message);
        displayToast("info", "bi bi-info-circle", message, 5000);
 
       // handle result
+      // @ts-expect-error
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
         // this ensures, we are only sending one message at once
-
-        if (result.docs[0].attempt < config.max_retry_attempts) {
+// @ts-expect-error
+        if (result.docs[0].attempt < settings.max_retry_attempts) {
+            // @ts-expect-error
           repeatMessageTransmission(result.docs[0].uuid)
         }
         return;

@@ -20,19 +20,19 @@ function startStopModem() {
   switch (state.modem_running_state) {
     case "stopped":
 
-      let startupInputDeviceValue = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).value;
-      let startupOutputDeviceValue = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).value;
+      let startupInputDeviceValue = parseInt((<HTMLSelectElement>document.getElementById("audio_input_selectbox")).value);
+      let startupOutputDeviceValue = parseInt((<HTMLSelectElement>document.getElementById("audio_output_selectbox")).value);
 
-      let startupInputDeviceIndex = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).selectedIndex;
-      let startupOutputDeviceIndex = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).selectedIndex;
+      let startupInputDeviceIndex = (<HTMLSelectElement>document.getElementById("audio_input_selectbox")).selectedIndex;
+      let startupOutputDeviceIndex = (<HTMLSelectElement>document.getElementById("audio_output_selectbox")).selectedIndex;
 
 
       audioStore.startupInputDevice = startupInputDeviceValue
       audioStore.startupOutputDevice = startupOutputDeviceValue
 
       // get full name of audio device
-      settings.rx_audio = (<HTMLInputElement>document.getElementById("audio_input_selectbox")).options[startupInputDeviceIndex].text;
-      settings.tx_audio = (<HTMLInputElement>document.getElementById("audio_output_selectbox")).options[startupOutputDeviceIndex].text;
+      settings.rx_audio = (<HTMLSelectElement>document.getElementById("audio_input_selectbox")).options[startupInputDeviceIndex].text;
+      settings.tx_audio = (<HTMLSelectElement>document.getElementById("audio_output_selectbox")).options[startupOutputDeviceIndex].text;
 
 
       saveSettingsToFile();
