@@ -62,6 +62,10 @@ export const useChatStore = defineStore("chatStore", () => {
   var beaconDataArray = ref([]);
   var beaconLabelArray = ref([]);
 
+  var arq_speed_list_bpm = ref([]);
+  var arq_speed_list_timestamp = ref([]);
+  var arq_speed_list_snr = ref([]);
+
   return {
     selectedCallsign,
     selectedMessageObject,
@@ -81,5 +85,8 @@ export const useChatStore = defineStore("chatStore", () => {
     beaconLabelArray,
     unsorted_beacon_list,
     sorted_beacon_list,
+    arq_speed_list_bpm,
+    arq_speed_list_snr,
+    arq_speed_list_timestamp,
   };
 });

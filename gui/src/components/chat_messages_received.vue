@@ -69,6 +69,15 @@ export default {
     message: Object,
   },
   methods: {
+        showMessageInfo() {
+      requestMessageInfo(this.message._id);
+      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
+      //console.log(this.infoModal)
+      //this.infoModal.show()
+    },
+    deleteMessage() {
+      deleteMessageFromDB(this.message._id);
+    },
     async downloadAttachment() {
       try {
         // reset file store
@@ -110,15 +119,7 @@ export default {
         return "col-9";
       }
     },
-    showMessageInfo() {
-      requestMessageInfo(this.message._id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
-    },
-    deleteMessage() {
-      deleteMessageFromDB(this.message._id);
-    },
+
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
         navigator.language,

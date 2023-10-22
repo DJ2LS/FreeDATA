@@ -29,6 +29,13 @@ function deleteChat() {
   deleteChatByCallsign(chat.selectedCallsign);
 }
 
+function deleteSelectedMessage(){
+  chat.arq_speed_list_bpm = [];
+  chat.arq_speed_list_timestamp = [];
+  chat.arq_speed_list_snr = [];
+  chat.selectedMessageObject = [];
+}
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -51,6 +58,74 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
+
+
+// https://www.chartjs.org/docs/latest/samples/line/segments.html
+const skipped = (speedCtx, value) =>
+  speedCtx.p0.skip || speedCtx.p1.skip ? value : undefined;
+const down = (speedCtx, value) =>
+  speedCtx.p0.parsed.y > speedCtx.p1.parsed.y ? value : undefined;
+
+var transmissionSpeedChartOptionsMessageInfo = {
+  //type: "line",
+  responsive: true,
+  animations: true,
+  maintainAspectRatio: false,
+  cubicInterpolationMode: "monotone",
+  tension: 0.4,
+  scales: {
+    SNR: {
+      type: "linear",
+      ticks: { beginAtZero: false, color: "rgb(255, 99, 132)" },
+      position: "right",
+    },
+    SPEED: {
+      type: "linear",
+      ticks: { beginAtZero: false, color: "rgb(120, 100, 120)" },
+      position: "left",
+      grid: {
+        drawOnChartArea: false, // only want the grid lines for one axis to show up
+      },
+    },
+    x: { ticks: { beginAtZero: true } },
+  },
+};
+
+const transmissionSpeedChartDataMessageInfo = computed(() => ({
+  labels: chat.arq_speed_list_timestamp,
+  datasets: [
+    {
+      type: "line",
+      label: "SNR[dB]",
+      data: chat.arq_speed_list_snr,
+      borderColor: "rgb(75, 192, 192, 1.0)",
+      pointRadius: 1,
+      segment: {
+        borderColor: (speedCtx) =>
+          skipped(speedCtx, "rgb(0,0,0,0.4)") ||
+          down(speedCtx, "rgb(192,75,75)"),
+        borderDash: (speedCtx) => skipped(speedCtx, [3, 3]),
+      },
+      spanGaps: true,
+      backgroundColor: "rgba(75, 192, 192, 0.2)",
+      order: 1,
+      yAxisID: "SNR",
+    },
+    {
+      type: "bar",
+      label: "Speed[bpm]",
+      data: chat.arq_speed_list_bpm,
+      borderColor: "rgb(120, 100, 120, 1.0)",
+      backgroundColor: "rgba(120, 100, 120, 0.2)",
+      order: 0,
+      yAxisID: "SPEED",
+    },
+  ],
+}));
+
+
+
+
 </script>
 
 <template>
@@ -177,7 +252,13 @@ ChartJS.register(
           ></button>
         </div>
         <div class="modal-body">
-          {{ chat.selectedMessageObject }}
+
+
+
+
+
+<div class="container">
+  <div class="d-flex flex-row justify-content-between">
 
           <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Status</span>
@@ -193,7 +274,29 @@ ChartJS.register(
             }}</span>
           </div>
 
-          <div class="input-group mb-3">
+
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="d-flex flex-row justify-content-between">
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">nacks</span>
+      <span class="input-group-text">{{ chat.selectedMessageObject["nacks"] }}</span>
+    </div>
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">hmack</span>
+      <span class="input-group-text">{{ chat.selectedMessageObject["hmac_signed"] }}</span>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="d-flex flex-row justify-content-between">
+    <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1"
               >Bytes per Minute</span
             >
@@ -201,6 +304,28 @@ ChartJS.register(
               chat.selectedMessageObject["bytesperminute"]
             }}</span>
           </div>
+              <div class="input-group mb-3">
+      <span class="input-group-text" id="basic-addon1">Duration [s]</span>
+      <span class="input-group-text">{{ parseInt(chat.selectedMessageObject["duration"]) }}</span>
+    </div>
+  </div>
+</div>
+
+          <div class="card mt-2">
+  <div class="card-header">
+    Statistics
+  </div>
+  <div class="card-body">
+<Line
+            :data="transmissionSpeedChartDataMessageInfo"
+            :options="transmissionSpeedChartOptionsMessageInfo"
+          />
+  </div>
+</div>
+
+
+
+
         </div>
         <div class="modal-footer">
           <button
@@ -210,7 +335,6 @@ ChartJS.register(
           >
             Close
           </button>
-          <button type="button" class="btn btn-primary">Save changes</button>
         </div>
       </div>
     </div>

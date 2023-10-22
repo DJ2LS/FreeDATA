@@ -276,7 +276,7 @@ const speedChartData = computed(() => ({
   <button type="button" class="btn btn-secondary disabled">{{chat.inputFileSize}}</button>
 </div>
 
-<Line :data="speedChartData" :options="speedChartOptions" />
+<Line :data="speedChartData" />
 
       </div>
       <div class="modal-footer">

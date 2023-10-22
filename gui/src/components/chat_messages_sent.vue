@@ -100,6 +100,20 @@ export default {
   },
 
   methods: {
+        repeatMessage() {
+      repeatMessageTransmission(this.message._id);
+    },
+
+    deleteMessage() {
+      deleteMessageFromDB(this.message._id);
+    },
+    showMessageInfo() {
+      console.log("requesting message info.....")
+      requestMessageInfo(this.message._id);
+      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
+      //console.log(this.infoModal)
+      //this.infoModal.show()
+    },
     async downloadAttachment() {
       try {
         // reset file store
@@ -143,19 +157,7 @@ export default {
         return "col-9";
       }
     },
-    repeatMessage() {
-      repeatMessageTransmission(this.message._id);
-    },
 
-    deleteMessage() {
-      deleteMessageFromDB(this.message._id);
-    },
-    showMessageInfo() {
-      requestMessageInfo(this.message._id);
-      //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
-      //console.log(this.infoModal)
-      //this.infoModal.show()
-    },
 
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(
