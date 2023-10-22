@@ -16,12 +16,10 @@ updates:
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
-    directory: "/gui_vue"
+    directory: "/gui"
     schedule:
       interval: "daily"
     target-branch: "ls-gui-single-pager"
-
-
 
   # Maintain dependencies for pip
   - package-ecosystem: "pip"
