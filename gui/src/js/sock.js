@@ -556,52 +556,6 @@ export function setTxAudioLevel(value) {
   writeTncCommand(command);
 }
 
-// Send File
-//exports.sendFile = function (
-function sendFile(
-  dxcallsign,
-  mode,
-  frames,
-  filename,
-  filetype,
-  data,
-  checksum,
-) {
-  console.log(data);
-  console.log(filetype);
-  console.log(filename);
-
-  var datatype = "f";
-
-  data =
-    datatype +
-    split_char +
-    filename +
-    split_char +
-    filetype +
-    split_char +
-    checksum +
-    split_char +
-    data;
-  console.log(data);
-  //console.log(btoa(data))
-  //Btoa / atob will not work with charsets > 8 bits (i.e. the emojis); should probably move away from using it
-  //TODO:  Will need to update anyother occurences and throughly test
-  //data = btoa(data)
-  data = btoa_FD(data);
-
-  command =
-    '{"type" : "arq", "command" : "send_raw",  "parameter" : [{"dxcallsign" : "' +
-    dxcallsign +
-    '", "mode" : "' +
-    mode +
-    '", "n_frames" : "' +
-    frames +
-    '", "data" : "' +
-    data +
-    '"}]}';
-  writeTncCommand(command);
-}
 
 // Send Message
 export function sendMessage(obj) {
