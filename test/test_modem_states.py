@@ -26,7 +26,7 @@ sys.path.insert(0, "..")
 sys.path.insert(0, "../modem")
 import data_handler
 import helpers
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 
 def print_frame(data: bytearray):
@@ -252,7 +252,7 @@ def t_valid_disconnect(mycall: str, dxcall: str):
     create_frame = t_create_start_session(mycall=dxcall, dxcall=mycall)
     print_frame(create_frame)
     modem.received_session_opener(create_frame)
-
+    print(ARQ.arq_session)
     assert ARQ.arq_session is True
     assert Modem.modem_state == "BUSY"
     assert ARQ.arq_session_state == "connecting"

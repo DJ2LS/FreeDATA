@@ -21,7 +21,7 @@ import data_handler
 import helpers
 import modem
 import sock
-from static import ARQ, HamlibParam, ModemParam, Station, Modem as ModemParam
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 from static import FRAME_TYPE as FR_TYPE
 import structlog
 #from static import FRAME_TYPE as FR_TYPE
