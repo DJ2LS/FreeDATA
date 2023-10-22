@@ -13,7 +13,7 @@ const settings = useSettingsStore(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
-import { startModem, stopModem } from "../js/daemon.js";
+import { startModem, stopModem } from "../js/daemon";
 import { saveSettingsToFile } from "../js/settingsHandler";
 
 function startStopModem() {

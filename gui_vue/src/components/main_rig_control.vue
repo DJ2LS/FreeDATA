@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { saveSettingsToFile } from "../js/settingsHandler";
 
-import { startRigctld, stopRigctld } from "../js/daemon.js";
+import { startRigctld, stopRigctld } from "../js/daemon";
 
 
 import { setActivePinia } from "pinia";

@@ -28,6 +28,6 @@ app.use(pinia)
 loadSettings()
 
 //import './js/settingsHandler.js'
-import './js/daemon.js'
+import './js/daemon'
 import './js/sock.js'
 //import './js/settingsHandler.js'
