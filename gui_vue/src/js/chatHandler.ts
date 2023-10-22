@@ -927,8 +927,8 @@ async function checkForWaitingMessages(dxcall) {
 
   getFromDBByFilter(filter)
     .then((result) => {
-      // @ts-expect-error
       let message =
+      // @ts-expect-error
         "Found " + result.docs.length + " waiting messages for " + dxcall;
 
       console.log(message);
