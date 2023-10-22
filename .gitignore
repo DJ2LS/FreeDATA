@@ -25,3 +25,8 @@ coverage.xml
 
 #ignore node_modules
 /gui_vue/node_modules/
+
+#Ignore gui_vue build items
+/gui_vue/dist
+/gui_vue/release
+/gui_vue/dist-electron
