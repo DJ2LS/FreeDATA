@@ -1252,28 +1252,28 @@ def send_daemon_state():
     # at least we are checking the returncode of rigctld
     # None state means, the process is still running
     try:
-        retcode_rigctld = Daemon.rigctldprocess.poll()
+        retcode_rigctld = Daemon.rigctldprocess
         if retcode_rigctld in [None, "None"]:
-            Daemon.rigctldstarted = True
+            Daemon.rigctldstarted = False
             # This is a blocking code ....
             # output, errs = Daemon.rigctldprocess.communicate()
             # print(f"rigctld out: {output}")
             # print(f"rigctld err: {errs}")
         else:
             # print(f"rigctld closed with code: {retcode_rigctld}")
-            Daemon.rigctldstarted = False
+            Daemon.rigctldstarted = True
 
 
-        retcode_modem = Daemon.modemprocess.poll()
+        retcode_modem = Daemon.modemprocess
         if retcode_modem in [None, "None"]:
-            Daemon.modemstarted = True
+            Daemon.modemstarted = False
             # This is a blocking code ....
             # output, errs = Daemon.modemprocess.communicate()
             # print(f"modem out: {output}")
             # print(f"modem err: {errs}")
         else:
             # print(f"modem closed with code: {retcode_modem}")
-            Daemon.modemstarted = False
+            Daemon.modemstarted = True
 
     except Exception as err:
         log.warning("[DMN] error", e=err)
