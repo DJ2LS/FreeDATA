@@ -852,7 +852,7 @@ export function sendBroadcastChannel(obj) {
   );
   console.log(data.length);
   let payload = data;
-  var command =
+  command =
     '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
     payload +
     '"}';

@@ -25,11 +25,11 @@ if (typeof process.env["APPDATA"] !== "undefined") {
     case "darwin":
       appDataFolder = process.env["HOME"] + "/Library/Application Support";
       console.log(appDataFolder);
-
       break;
     case "linux":
       appDataFolder = process.env["HOME"] + "/.config";
       console.log(appDataFolder);
+      break;
     case "win32":
       appDataFolder = "undefined";
       break;
