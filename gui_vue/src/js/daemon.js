@@ -17,7 +17,7 @@ import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
 var daemon = new net.Socket();
-var socketchunk = ""; // Current message, per connection.
+var socketchunk = []; // Current message, per connection.
 
 // global to keep track of daemon connection error emissions
 var daemonShowConnectStateError = 1;
@@ -30,7 +30,7 @@ function connectDAEMON() {
   }
 
   //clear message buffer after reconnecting or initial connection
-  socketchunk = "";
+  socketchunk = [];
 
   daemon.connect(settings.daemon_port, settings.daemon_host);
 
@@ -116,15 +116,18 @@ daemon.on("data", function (socketdata) {
     stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
     */
 
-  socketdata = socketdata.toString("utf8"); // convert data to string
-  socketchunk += socketdata; // append data to buffer so we can stick long data together
+    socketdata = socketchunk.join("\n") + socketdata.toString("utf8");  //append incoming data to socketchunk
+    //socketdata = socketdata.toString("utf8"); // convert data to string
+
+  //socketchunk += socketdata; // append data to buffer so we can stick long data together
 
   // check if we received begin and end of json data
-  if (socketchunk.startsWith('{"') && socketchunk.endsWith('"}\n')) {
+  if (socketdata.startsWith('{"') && socketdata.endsWith('"}\n')) {
+    
     var data = "";
 
     // split data into chunks if we received multiple commands
-    socketchunk = socketchunk.split("\n");
+    socketchunk = socketdata.split("\n");
     data = JSON.parse(socketchunk[0]);
 
     // search for empty entries in socketchunk and remove them
@@ -143,8 +146,8 @@ daemon.on("data", function (socketdata) {
           data = JSON.parse(socketchunk[i]);
         } catch (e) {
           console.log(e); // "SyntaxError
-          daemonLog.debug(socketchunk[i]);
-          socketchunk = "";
+          //daemonLog.debug(socketchunk[i]);
+          socketchunk = [];
         }
       }
 
@@ -176,7 +179,7 @@ daemon.on("data", function (socketdata) {
     }
 
     //finally delete message buffer
-    socketchunk = "";
+    socketchunk = [];
   }
 });
 
@@ -189,7 +192,7 @@ function hexToBytes(hex) {
 //exports.getDaemonState = function () {
 function getDaemonState() {
   //function getDaemonState(){
-  command = '{"type" : "get", "command" : "daemon_state"}';
+  let command = '{"type" : "get", "command" : "daemon_state"}';
   writeDaemonCommand(command);
 }
 
@@ -206,23 +209,23 @@ export function startModem() {
         rx_audio: audioStore.startupInputDevice,
         tx_audio: audioStore.startupOutputDevice,
         radiocontrol: settings.radiocontrol,
-        devicename: settings.devicename,
-        deviceport: settings.deviceport,
-        pttprotocol: settings.pttprotocol,
-        pttport: settings.pttport,
-        serialspeed: settings.serialspeed,
-        data_bits: settings.data_bits,
-        stop_bits: settings.stop_bits,
-        handshake: settings.handshake,
-        rigctld_port: settings.rigctld_port,
-        rigctld_ip: settings.rigctld_ip,
+        devicename: settings.hamlib_deviceid,
+        deviceport: settings.hamlib_deviceport,
+        pttprotocol: settings.hamlib_pttprotocol,
+        pttport: settings.hamlib_ptt_port,
+        serialspeed: settings.hamlib_serialspeed,
+        data_bits: settings.hamlib_data_bits,
+        stop_bits: settings.hamlib_stop_bits,
+        handshake: settings.hamlib_handshake,
+        rigctld_port: settings.hamlib_rigctld_port,
+        rigctld_ip: settings.hamlib_rigctld_ip,
         enable_scatter: settings.enable_scatter,
         enable_fft: settings.enable_fft,
         enable_fsk: settings.enable_fsk,
         low_bandwidth_mode: settings.low_bandwidth_mode,
         tuning_range_fmin: settings.tuning_range_fmin,
         tuning_range_fmax: settings.tuning_range_fmax,
-        tx_audio_level: settings.tx_audio_level,
+        //tx_audio_level: settings.tx_audio_level,
         respond_to_cq: settings.respond_to_cq,
         rx_buffer_size: settings.rx_buffer_size,
         enable_explorer: settings.enable_explorer,
@@ -231,7 +234,7 @@ export function startModem() {
         tx_delay: settings.tx_delay,
         tci_ip: settings.tci_ip,
         tci_port: settings.tci_port,
-        enable_mesh: settings.enable_mesh,
+        enable_mesh: settings.enable_mesh_features,
       },
     ],
   });
