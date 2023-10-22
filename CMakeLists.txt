@@ -24,43 +24,43 @@ set(TESTFRAMES 3)
 
 add_test(NAME audio_buffer
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_audiobuffer.py")
          set_tests_properties(audio_buffer PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME resampler
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_resample_48_8.py")
         set_tests_properties(resampler PROPERTIES PASS_REGULAR_EXPRESSION "PASS")
 
-add_test(NAME tnc_state_machine
+add_test(NAME modem_state_machine
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_tnc_states.py")
-         set_tests_properties(tnc_state_machine PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+                        python3 test_modem_states.py")
+         set_tests_properties(modem_state_machine PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
-add_test(NAME tnc_irs_iss
+add_test(NAME modem_irs_iss
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
-                        python3 test_tnc.py")
-         set_tests_properties(tnc_irs_iss PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
+                        python3 test_modem.py")
+         set_tests_properties(modem_irs_iss PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 # disabled this test as its actually broken since we introduced session IDs
 #add_test(NAME chat_text
 #         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-#                        export PYTHONPATH=../tnc;
+#                        export PYTHONPATH=../modem;
 #                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
 #                        python3 test_chat_text.py")
 #         set_tests_properties(chat_text PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME datac13_frames
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_datac13.py")
          set_tests_properties(datac13_frames PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
@@ -68,21 +68,21 @@ add_test(NAME datac13_frames
 # disabled this test as its actually broken since we introduced dataclasses
 #add_test(NAME datac13_frames_negative
 #         COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-#                        export PYTHONPATH=../tnc;
+#                        export PYTHONPATH=../modem;
 #                        cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
 #                        python3 test_datac13_negative.py")
 #         set_tests_properties(datac13_frames_negative PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME helper_routines
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         cd ${CMAKE_CURRENT_SOURCE_DIR}/test;
                         python3 test_helpers.py")
          set_tests_properties(helper_routines PROPERTIES PASS_REGULAR_EXPRESSION "errors: 0")
 
 add_test(NAME py_highsnr_stdio_P_P_multi
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         export BURSTS=${BURSTS};
                         export FRAMESPERBURST=${FRAMESPERBURST};
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
@@ -92,7 +92,7 @@ add_test(NAME py_highsnr_stdio_P_P_multi
 
 add_test(NAME py_highsnr_stdio_P_P_datacx
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         export BURSTS=${BURSTS};
                         export FRAMESPERBURST=${FRAMESPERBURST};
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
@@ -102,7 +102,7 @@ add_test(NAME py_highsnr_stdio_P_P_datacx
 
 add_test(NAME py_highsnr_stdio_P_C_datacx
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         export BURSTS=${BURSTS};
                         export FRAMESPERBURST=${FRAMESPERBURST};
                         PATH=$PATH:${CODEC2_BUILD_DIR}/src;
@@ -112,7 +112,7 @@ add_test(NAME py_highsnr_stdio_P_C_datacx
 
 add_test(NAME py_highsnr_stdio_C_P_datacx
          COMMAND sh -c "export LD_LIBRARY_PATH=${CODEC2_BUILD_DIR}/src;
-                        export PYTHONPATH=../tnc;
+                        export PYTHONPATH=../modem;
                         export BURSTS=${BURSTS};
                         export FRAMESPERBURST=${FRAMESPERBURST};
                         export TESTFRAMES=${TESTFRAMES};
