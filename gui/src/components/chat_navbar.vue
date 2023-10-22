@@ -194,7 +194,7 @@ function syncWithModem() {
               class="btn btn-outline-secondary"
               @click="syncWithModem()"
             >
-              Modem Sync {{state.rx_buffer_length}}
+              Modem Sync {{ state.rx_buffer_length }}
             </button>
           </div>
         </div>
