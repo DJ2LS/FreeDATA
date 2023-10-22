@@ -2,7 +2,7 @@
   "name": "FreeDATA",
   "description": "FreeDATA ",
   "private": true,
-  "version": "0.11.0-alpha",
+  "version": "0.11.0-alpha.1",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "git pull && npm i && vite",
@@ -18,7 +18,7 @@
     "url": "https://github.com/DJ2LS/FreeDATA.git"
   },
   "keywords": [
-    "TNC",
+    "Modem",
     "GUI",
     "FreeDATA",
     "codec2"

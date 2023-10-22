@@ -13,11 +13,6 @@
   "files": [
     "dist",
     "dist-electron",
-
-    {
-          from: 'src',
-          to: '123'
-        }
   ],
 
 
@@ -60,7 +55,7 @@
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
+    "deleteAppDataOnUninstall": true
   },
   "linux": {
     "category": "Development",
