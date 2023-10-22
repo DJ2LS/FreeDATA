@@ -135,7 +135,7 @@ var db = new PouchDB(chatDB);
 /* -------- RUN A DATABASE CLEANUP ON STARTUP */
 //dbClean()
 
-updateAllChat(false)
+updateAllChat(true)
 
 
 // create callsign set for storing unique callsigns
