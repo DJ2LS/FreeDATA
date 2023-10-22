@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Unit test common helper routines used throughout the TNC.
+Unit test common helper routines used throughout the Modem.
 
 Can be invoked from CMake, pytest, coverage or directly.
 
@@ -14,7 +14,7 @@ import sys
 
 import helpers
 import pytest
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 
 @pytest.mark.parametrize("callsign", ["AA1AA", "DE2DE", "E4AWQ-4"])
