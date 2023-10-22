@@ -59,6 +59,8 @@ export const useStateStore = defineStore("stateStore", () => {
   var python_version = ref();
   var modem_version = ref();
 
+  var rx_buffer_length = ref();
+
   function getChannelBusySlotState(slot) {
     const slot_state = channel_busy_slot.value;
 
@@ -176,5 +178,6 @@ export const useStateStore = defineStore("stateStore", () => {
     rigctld_process,
     python_version,
     modem_version,
+    rx_buffer_length,
   };
 });

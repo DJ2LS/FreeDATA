@@ -1,9 +1,5 @@
 var net = require("net");
-const path = require("path");
-//const FD = require("./src/js/freedata.js");
 import { atob_FD, btoa_FD } from "./freedata";
-//import FD from './freedata.js';
-
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 import {
@@ -32,11 +28,6 @@ var socketchunk = ""; // Current message, per connection.
 //const split_char = "\0;\1;";
 const split_char = "0;1;";
 
-// globals for getting new data only if available so we are saving bandwidth
-var rxBufferLengthTnc = 0;
-var rxBufferLengthGui = 0;
-//var rxMsgBufferLengthTnc = 0;
-//var rxMsgBufferLengthGui = 0;
 
 // global to keep track of Modem connection error emissions
 var modemShowConnectStateError = 1;
@@ -144,14 +135,14 @@ client.on("data", function (socketdata) {
     //data = JSON.parse(socketchunk[0])
 
     // search for empty entries in socketchunk and remove them
-    for (var i = 0; i < socketchunk.length; i++) {
+    for (let i = 0; i < socketchunk.length; i++) {
       if (socketchunk[i] === "") {
         socketchunk.splice(i, 1);
       }
     }
 
     //iterate through socketchunks array to execute multiple commands in row
-    for (var i = 0; i < socketchunk.length; i++) {
+    for (let i = 0; i < socketchunk.length; i++) {
       //check if data is not empty
       if (socketchunk[i].length > 0) {
         //try to parse JSON
@@ -169,10 +160,8 @@ client.on("data", function (socketdata) {
       //console.log(data)
       if (data["command"] == "modem_state") {
         //console.log(data)
-        // set length of RX Buffer to global variable
-        rxBufferLengthTnc = data["rx_buffer_length"];
-        //rxMsgBufferLengthTnc = data["rx_msg_buffer_length"];
 
+        stateStore.rx_buffer_length = data["rx_buffer_length"];
         stateStore.frequency = data["frequency"];
         stateStore.busy_state = data["modem_state"];
         stateStore.arq_state = data["arq_state"];
@@ -234,13 +223,13 @@ client.on("data", function (socketdata) {
         }
 
         // TODO: Remove ported objects
+        /*
         let Data = {
           mycallsign: data["mycallsign"],
           mygrid: data["mygrid"],
           //channel_state: data['CHANNEL_STATE'],
 
           info: data["info"],
-          rx_buffer_length: data["rx_buffer_length"],
           rx_msg_buffer_length: data["rx_msg_buffer_length"],
           tx_n_max_retries: data["tx_n_max_retries"],
           arq_tx_n_frames_per_burst: data["arq_tx_n_frames_per_burst"],
@@ -250,7 +239,7 @@ client.on("data", function (socketdata) {
           arq_rx_frame_n_bursts: data["arq_rx_frame_n_bursts"],
           arq_rx_n_current_arq_frame: data["arq_rx_n_current_arq_frame"],
           arq_n_arq_frames_per_data_frame:
-            data["arq_n_arq_frames_per_data_frame"],
+          data["arq_n_arq_frames_per_data_frame"],
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
           arq_compression_factor: data["arq_compression_factor"],
           routing_table: data["routing_table"],
@@ -258,7 +247,7 @@ client.on("data", function (socketdata) {
           listen: data["listen"],
           //speed_table: [{"bpm" : 5200, "snr": -3, "timestamp":1673555399},{"bpm" : 2315, "snr": 12, "timestamp":1673555500}],
         };
-
+        */
         //continue to next for loop iteration, nothing else needs to be done here
         continue;
       }
@@ -842,7 +831,7 @@ export function set_rf_level(rf_level) {
 //console.log(crc32('abc'));
 //console.log(crc32('abc').toString(16).toUpperCase()); // hex
 
-var crc32 = function (r) {
+function crc32(r) {
   for (var a, o = [], c = 0; c < 256; c++) {
     a = c;
     for (var f = 0; f < 8; f++) a = 1 & a ? 3988292384 ^ (a >>> 1) : a >>> 1;
@@ -858,10 +847,11 @@ function prepareStatsDataForStore(data) {
   // dummy data
   //state.arq_speed_list = [{"snr":0.0,"bpm":104,"timestamp":1696189769},{"snr":0.0,"bpm":80,"timestamp":1696189778},{"snr":0.0,"bpm":70,"timestamp":1696189783},{"snr":0.0,"bpm":58,"timestamp":1696189792},{"snr":0.0,"bpm":52,"timestamp":1696189797},{"snr":"NaN","bpm":42,"timestamp":1696189811},{"snr":0.0,"bpm":22,"timestamp":1696189875},{"snr":0.0,"bpm":21,"timestamp":1696189881},{"snr":0.0,"bpm":17,"timestamp":1696189913},{"snr":0.0,"bpm":15,"timestamp":1696189932},{"snr":0.0,"bpm":15,"timestamp":1696189937},{"snr":0.0,"bpm":14,"timestamp":1696189946},{"snr":-6.1,"bpm":14,"timestamp":1696189954},{"snr":-6.1,"bpm":14,"timestamp":1696189955},{"snr":-5.5,"bpm":28,"timestamp":1696189963},{"snr":-5.5,"bpm":27,"timestamp":1696189963}]
 
+var speed_listSize = 0;
   if (typeof data == "undefined") {
-    var speed_listSize = 0;
+    speed_listSize = 0;
   } else {
-    var speed_listSize = data.length;
+    speed_listSize = data.length;
   }
 
   var speed_list_bpm = [];
