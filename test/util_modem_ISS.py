@@ -25,6 +25,7 @@ import helpers
 import modem
 import sock
 import static
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 ISS_original_arq_cleanup: Callable
 MESSAGE: str
@@ -66,22 +67,22 @@ def t_arq_iss(*args):
     modem.RXCHANNEL = tmp_path / "hfchannel1"
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / "hfchannel2"
-    static.HAMLIB_RADIOCONTROL = "disabled"
+    HamlibParam.hamlib_radiocontrol = "disabled"
     log.info("t_arq_iss:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_arq_iss:", TXCHANNEL=modem.TXCHANNEL)
 
     mycallsign = bytes("DJ2LS-2", "utf-8")
     mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    Station.mycallsign = helpers.bytes_to_callsign(mycallsign)
+    Station.mycallsign_CRC = helpers.get_crc_24(Station.mycallsign)
+    Station.mygrid = bytes("AA12aa", "utf-8")
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     dxcallsign = b"DN2LS-0"
     dxcallsign = helpers.callsign_to_bytes(dxcallsign)
     dxcallsign = helpers.bytes_to_callsign(dxcallsign)
-    static.DXCALLSIGN = dxcallsign
-    static.DXCALLSIGN_CRC = helpers.get_crc_24(static.DXCALLSIGN)
+    Station.dxcallsign = dxcallsign
+    Station.dxcallsign_CRC = helpers.get_crc_24(Station.dxcallsign)
 
     bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/plain;base64,MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=","crc":"123123123"}'
 

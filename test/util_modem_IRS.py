@@ -24,6 +24,7 @@ import helpers
 import modem
 import sock
 import static
+from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 IRS_original_arq_cleanup: Callable
 MESSAGE: str
@@ -65,17 +66,17 @@ def t_arq_irs(*args):
     modem.RXCHANNEL = tmp_path / "hfchannel2"
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / "hfchannel1"
-    static.HAMLIB_RADIOCONTROL = "disabled"
-    static.RESPOND_TO_CQ = True
+    HamlibParam.hamlib_radiocontrol = "disabled"
+    Modem.respond_to_cq = True
     log.info("t_arq_irs:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_arq_irs:", TXCHANNEL=modem.TXCHANNEL)
 
     mycallsign = bytes("DN2LS-2", "utf-8")
     mycallsign = helpers.callsign_to_bytes(mycallsign)
-    static.MYCALLSIGN = helpers.bytes_to_callsign(mycallsign)
-    static.MYCALLSIGN_CRC = helpers.get_crc_24(static.MYCALLSIGN)
-    static.MYGRID = bytes("AA12aa", "utf-8")
-    static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    Station.mycallsign = helpers.bytes_to_callsign(mycallsign)
+    Station.mycallsign_CRC = helpers.get_crc_24(Station.mycallsign)
+    Station.mygrid = bytes("AA12aa", "utf-8")
+    Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     # start data handler
     modem = data_handler.DATA()
