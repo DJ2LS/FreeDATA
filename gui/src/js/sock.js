@@ -555,7 +555,6 @@ export function setTxAudioLevel(value) {
   writeTncCommand(command);
 }
 
-
 // Send Message
 export function sendMessage(obj) {
   let dxcallsign = obj.dxcallsign;
