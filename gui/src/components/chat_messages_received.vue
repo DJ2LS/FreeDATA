@@ -69,7 +69,7 @@ export default {
     message: Object,
   },
   methods: {
-        showMessageInfo() {
+    showMessageInfo() {
       requestMessageInfo(this.message._id);
       //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
       //console.log(this.infoModal)

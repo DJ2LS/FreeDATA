@@ -100,7 +100,7 @@ export default {
   },
 
   methods: {
-        repeatMessage() {
+    repeatMessage() {
       repeatMessageTransmission(this.message._id);
     },
 
@@ -108,7 +108,7 @@ export default {
       deleteMessageFromDB(this.message._id);
     },
     showMessageInfo() {
-      console.log("requesting message info.....")
+      console.log("requesting message info.....");
       requestMessageInfo(this.message._id);
       //let infoModal = Modal.getOrCreateInstance(document.getElementById('messageInfoModal'))
       //console.log(this.infoModal)
@@ -157,7 +157,6 @@ export default {
         return "col-9";
       }
     },
-
 
     getDateTime() {
       var datetime = new Date(this.message.timestamp * 1000).toLocaleString(

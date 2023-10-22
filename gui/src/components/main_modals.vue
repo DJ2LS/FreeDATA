@@ -29,7 +29,7 @@ function deleteChat() {
   deleteChatByCallsign(chat.selectedCallsign);
 }
 
-function deleteSelectedMessage(){
+function deleteSelectedMessage() {
   chat.arq_speed_list_bpm = [];
   chat.arq_speed_list_timestamp = [];
   chat.arq_speed_list_snr = [];
@@ -58,7 +58,6 @@ ChartJS.register(
   Tooltip,
   Legend,
 );
-
 
 // https://www.chartjs.org/docs/latest/samples/line/segments.html
 const skipped = (speedCtx, value) =>
@@ -122,10 +121,6 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
     },
   ],
 }));
-
-
-
-
 </script>
 
 <template>
@@ -252,80 +247,71 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           ></button>
         </div>
         <div class="modal-body">
-
-
-
-
-
-<div class="container">
-  <div class="d-flex flex-row justify-content-between">
-
-          <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Status</span>
-            <span class="input-group-text" id="basic-addon1">{{
-              chat.selectedMessageObject["status"]
-            }}</span>
-          </div>
-
-          <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Attempts</span>
-            <span class="input-group-text" id="basic-addon1">{{
-              chat.selectedMessageObject["attempt"]
-            }}</span>
-          </div>
-
-
-  </div>
-</div>
-
-
-<div class="container">
-  <div class="d-flex flex-row justify-content-between">
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon1">nacks</span>
-      <span class="input-group-text">{{ chat.selectedMessageObject["nacks"] }}</span>
-    </div>
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon1">hmack</span>
-      <span class="input-group-text">{{ chat.selectedMessageObject["hmac_signed"] }}</span>
-    </div>
-
-  </div>
-</div>
-
-
-<div class="container">
-  <div class="d-flex flex-row justify-content-between">
-    <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1"
-              >Bytes per Minute</span
-            >
-            <span class="input-group-text" id="basic-addon1">{{
-              chat.selectedMessageObject["bytesperminute"]
-            }}</span>
-          </div>
+          <div class="container">
+            <div class="d-flex flex-row justify-content-between">
               <div class="input-group mb-3">
-      <span class="input-group-text" id="basic-addon1">Duration [s]</span>
-      <span class="input-group-text">{{ parseInt(chat.selectedMessageObject["duration"]) }}</span>
-    </div>
-  </div>
-</div>
+                <span class="input-group-text" id="basic-addon1">Status</span>
+                <span class="input-group-text" id="basic-addon1">{{
+                  chat.selectedMessageObject["status"]
+                }}</span>
+              </div>
+
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">Attempts</span>
+                <span class="input-group-text" id="basic-addon1">{{
+                  chat.selectedMessageObject["attempt"]
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="container">
+            <div class="d-flex flex-row justify-content-between">
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">nacks</span>
+                <span class="input-group-text">{{
+                  chat.selectedMessageObject["nacks"]
+                }}</span>
+              </div>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1">hmack</span>
+                <span class="input-group-text">{{
+                  chat.selectedMessageObject["hmac_signed"]
+                }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="container">
+            <div class="d-flex flex-row justify-content-between">
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1"
+                  >Bytes per Minute</span
+                >
+                <span class="input-group-text" id="basic-addon1">{{
+                  chat.selectedMessageObject["bytesperminute"]
+                }}</span>
+              </div>
+              <div class="input-group mb-3">
+                <span class="input-group-text" id="basic-addon1"
+                  >Duration [s]</span
+                >
+                <span class="input-group-text">{{
+                  parseInt(chat.selectedMessageObject["duration"])
+                }}</span>
+              </div>
+            </div>
+          </div>
 
           <div class="card mt-2">
-  <div class="card-header">
-    Statistics
-  </div>
-  <div class="card-body">
-<Line
-            :data="transmissionSpeedChartDataMessageInfo"
-            :options="transmissionSpeedChartOptionsMessageInfo"
-          />
-  </div>
-</div>
-
-
-
-
+            <div class="card-header">Statistics</div>
+            <div class="card-body">
+              <Line
+                :data="transmissionSpeedChartDataMessageInfo"
+                :options="transmissionSpeedChartOptionsMessageInfo"
+              />
+            </div>
+          </div>
         </div>
         <div class="modal-footer">
           <button
