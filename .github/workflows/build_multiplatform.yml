@@ -362,24 +362,7 @@ jobs:
           # find . -type d -name .git -exec rm -r {} \;
           find . -type d -o -name ".git" -delete
 
-      - name: Build/release Electron app
-        if: ${{!startsWith(matrix.os, 'macos')}}
-        uses: coparse-inc/action-electron-builder@v1.0.0
-        env:
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
-        with:
-          package_root: "./gui/"
-          github_token: ${{ secrets.github_token }}
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          args: ${{ matrix.electron_parameters }}
-          max_attempts: 3
-
-      - name: Manual Build for MacOS
-        if: ${{startsWith(matrix.os, 'macos')}}
+      - name: Electron Builder
         env: # Setting environment variables for the entire job
           GH_TOKEN: ${{ secrets.github_token }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
