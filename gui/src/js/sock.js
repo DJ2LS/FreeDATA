@@ -425,7 +425,6 @@ client.on("data", function (socketdata) {
                 break;
               }
 
-              break;
 
             case "waiting":
               // ARQ waiting
@@ -536,7 +535,7 @@ export function sendPing(dxcallsign) {
 // Send Mesh Ping
 //exports.sendMeshPing = function (dxcallsign) {
 function sendMeshPing(dxcallsign) {
-  command =
+  var command =
     '{"type" : "mesh", "command" : "ping", "dxcallsign" : "' +
     dxcallsign +
     '"}';
@@ -792,7 +791,7 @@ export function stopBeacon() {
 
 // OPEN ARQ SESSION
 export function connectARQ(dxcallsign) {
-  command =
+  var command =
     '{"type" : "arq", "command" : "connect", "dxcallsign": "' +
     dxcallsign +
     '", "attempts": "10"}';
@@ -853,7 +852,7 @@ export function sendBroadcastChannel(obj) {
   );
   console.log(data.length);
   let payload = data;
-  command =
+  var command =
     '{"type" : "fec", "command" : "transmit", "mode": "datac4", "wakeup": "True", "payload" : "' +
     payload +
     '"}';

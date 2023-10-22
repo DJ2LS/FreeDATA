@@ -1275,8 +1275,8 @@ def send_daemon_state():
             # print(f"modem closed with code: {retcode_modem}")
             Daemon.modemstarted = False
 
-    except Exception:
-        pass
+    except Exception as err:
+        log.warning("[DMN] error", e=err)
 
     try:
         python_version = f"{str(sys.version_info[0])}.{str(sys.version_info[1])}"

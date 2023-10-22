@@ -8,7 +8,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-latest, macos-latest-large, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-latest, macos-12]
         platform: [{name: "native"}, {name: "Windows", file: "dll"}]
         architecture: [i686-w64-mingw32, x86_64-w64-mingw32]
         include:
@@ -30,13 +30,6 @@ jobs:
           - os: macos-latest
             libcodec2_name: libcodec2.1.2.dylib
             libcodec2_os_name: libcodec2_macos-latest
-            libcodec2_filetype: dylib
-            generator: Unix Makefiles
-            shell: bash
-
-          - os: macos-latest-large
-            libcodec2_name: libcodec2.1.2.dylib
-            libcodec2_os_name: libcodec2_macos-latest-m1
             libcodec2_filetype: dylib
             generator: Unix Makefiles
             shell: bash
@@ -201,7 +194,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-latest, macos-latest-large, windows-latest]
+        os: [ubuntu-20.04, macos-latest, windows-latest]
         include:
           - os: ubuntu-20.04
             zip_name: ubuntu_modem
@@ -212,13 +205,6 @@ jobs:
 
           - os: macos-latest
             zip_name: macos_modem
-            generator: Unix Makefiles
-            daemon_binary_name: freedata-daemon
-            modem_binary_name: freedata-modem
-            electron_parameters: "-p always"
-
-          - os: macos-latest-large
-            zip_name: macos_modem_m1
             generator: Unix Makefiles
             daemon_binary_name: freedata-daemon
             modem_binary_name: freedata-modem

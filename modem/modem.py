@@ -28,7 +28,7 @@ from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
-# FIXME: used for def transmit_morse
+# FIXME used for def transmit_morse
 # import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
@@ -1313,7 +1313,7 @@ class RF:
                                     raise ZeroDivisionError
                                 AudioParam.audio_dbfs = 20 * np.log10(rms / 32768)
                             except Exception as e:
-                                # FIXME: Disabled for cli cleanup
+                                # FIXME Disabled for cli cleanup
                                 #self.log.warning(
                                 #    "[MDM] fft calculation error - please check your audio setup",
                                 #    e=e,

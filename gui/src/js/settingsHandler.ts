@@ -16,29 +16,25 @@ const settings = useSettingsStore(pinia);
 // ---------------------------------
 
 console.log(process.env);
+var appDataFolder = "undefined";
 if (typeof process.env["APPDATA"] !== "undefined") {
-  var appDataFolder = process.env["APPDATA"];
+  appDataFolder = process.env["APPDATA"];
   console.log(appDataFolder);
 } else {
   switch (process.platform) {
     case "darwin":
-      var appDataFolder = process.env["HOME"] + "/Library/Application Support";
+      appDataFolder = process.env["HOME"] + "/Library/Application Support";
       console.log(appDataFolder);
 
       break;
     case "linux":
-      var appDataFolder = process.env["HOME"] + "/.config";
+      appDataFolder = process.env["HOME"] + "/.config";
       console.log(appDataFolder);
-
-      break;
-    case "linux":
-      var appDataFolder = "undefined";
-      break;
     case "win32":
-      var appDataFolder = "undefined";
+      appDataFolder = "undefined";
       break;
     default:
-      var appDataFolder = "undefined";
+      appDataFolder = "undefined";
       break;
   }
 }

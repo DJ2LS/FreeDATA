@@ -266,7 +266,7 @@ function close_sub_processes() {
       daemonProcess.kill();
     }
   } catch (e) {
-    mainLog.error(e);
+    console.log(e);
   }
 
   console.log("closing modem and daemon");

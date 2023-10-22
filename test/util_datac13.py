@@ -265,7 +265,7 @@ def t_datac13_2(
     log.info("t_datac13_2:", RXCHANNEL=modem.RXCHANNEL)
     log.info("t_datac13_2:", TXCHANNEL=modem.TXCHANNEL)
 
-    # TODO: Why do we need this when calling CQ?
+    # TODO Why do we need this when calling CQ?
     #if "cq" in data:
     #    t_data = {"type": "arq", "command": "stop_transmission"}
     #    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(t_data, indent=None))
@@ -304,6 +304,6 @@ def t_datac13_2(
         assert item in str(
             sock.SOCKET_QUEUE.queue
         ), f"{item} not found in {str(sock.SOCKET_QUEUE.queue)}"
-    # TODO: Not sure why we need this for every test run
+    # TODO Not sure why we need this for every test run
     # assert '"arq":"session","status":"close"' in str(sock.SOCKET_QUEUE.queue)
     log.warning("station2: Exiting!")
