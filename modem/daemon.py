@@ -261,7 +261,7 @@ class DAEMON:
         try:
             command = []
 
-
+            isWin = False
 
             if sys.platform in ["darwin"]:
                 if data[14] not in [""]:
@@ -280,6 +280,7 @@ class DAEMON:
                     application_path = "rigctld"
                 command.append(f'{application_path}')
             elif sys.platform in ["win32", "win64"]:
+                isWin=True
                 if data[13].lower() == "localhost":
                     data[13]="127.0.0.1"
                 if data[14] not in [""]:
@@ -366,14 +367,17 @@ class DAEMON:
                 for o in data[16].split(" "):
                     options.append(o)
 
-                command += options
-
-
             # append debugging paramter
             options.append(("-vvv"))
+            command += options
 
             self.log.info("[DMN] starting rigctld: ", param=command)
-            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            
+            if not isWin:
+                proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            else:
+                #On windows, open rigctld in new window for easier troubleshooting
+                proc = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE,close_fds=True)
 
             atexit.register(proc.kill)
 
