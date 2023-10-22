@@ -54,6 +54,9 @@ def iss_arq_cleanup():
 
 
 def t_arq_iss(*args):
+    # not sure why importing at top level isn't working
+    import modem
+
     # pylint: disable=global-statement
     global ISS_original_arq_cleanup, MESSAGE
 

@@ -23,7 +23,6 @@ import data_handler
 import helpers
 import modem
 import sock
-import static
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 IRS_original_arq_cleanup: Callable
@@ -53,6 +52,8 @@ def irs_arq_cleanup():
 
 
 def t_arq_irs(*args):
+    # not sure why importing at top level isn't working
+    import modem
     # pylint: disable=global-statement
     global IRS_original_arq_cleanup, MESSAGE
 

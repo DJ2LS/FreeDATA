@@ -867,23 +867,23 @@ function prepareStatsDataForStore(data) {
 
   var speed_list_bpm = [];
 
-  for (var i = 0; i < speed_listSize; i++) {
+  for (let i = 0; i < speed_listSize; i++) {
     speed_list_bpm.push(data[i].bpm);
   }
 
   var speed_list_timestamp = [];
 
-  for (var i = 0; i < speed_listSize; i++) {
-    var timestamp = data[i].timestamp * 1000;
-    var h = new Date(timestamp).getHours();
-    var m = new Date(timestamp).getMinutes();
-    var s = new Date(timestamp).getSeconds();
-    var time = h + ":" + m + ":" + s;
+  for (let i = 0; i < speed_listSize; i++) {
+    let timestamp = data[i].timestamp * 1000;
+    let h = new Date(timestamp).getHours();
+    let m = new Date(timestamp).getMinutes();
+    let s = new Date(timestamp).getSeconds();
+    let time = h + ":" + m + ":" + s;
     speed_list_timestamp.push(time);
   }
 
   var speed_list_snr = [];
-  for (var i = 0; i < speed_listSize; i++) {
+  for (let i = 0; i < speed_listSize; i++) {
     let snr = NaN;
     if (data[i].snr !== 0) {
       snr = data[i].snr;
