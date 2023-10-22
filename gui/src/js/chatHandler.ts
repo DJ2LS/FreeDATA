@@ -22,7 +22,6 @@ import { displayToast } from "./popupHandler.js";
 //const FD = require("./src/js/freedata.js");
 import { btoa_FD } from "./freedata.js";
 
-
 // define default message object
 interface Attachment {
   content_type: string;
@@ -134,7 +133,6 @@ chat.callsign_list = new Set();
 
 // function for creating a new broadcast
 export function newBroadcast(broadcastChannel, chatmessage) {
-
   var file = "";
   var filetype = "text";
   var filename = "";
@@ -196,7 +194,6 @@ export function newMessage(
   chatFileSize,
   chatFileType,
 ) {
-
   var filename = "";
   var filetype = "";
   var file = "";

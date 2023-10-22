@@ -29,8 +29,6 @@ import chat_new_message from "./chat_new_message.vue";
         </div>
       </div>
       <div class="col-9 border-start vh-100 p-0">
-
-
         <!------messages area ---------------------------------------------------------------------->
         <div
           class="container overflow-auto"
