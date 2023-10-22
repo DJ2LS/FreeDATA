@@ -467,7 +467,7 @@ class RF:
             AudioParam.audio_record_file.writeframes(x)
 
         # Avoid decoding when transmitting to reduce CPU
-        # TODO: Overriding this for testing purposes
+        # TODO Overriding this for testing purposes
         # if not Modem.transmitting:
         length_x = len(x)
         # Avoid buffer overflow by filling only if buffer for
@@ -492,7 +492,7 @@ class RF:
             self.fft_data = x
         else:
             if not HamlibParam.ptt_state:
-                # TODO: Moved to this place for testing
+                # TODO Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
                 HamlibParam.ptt_state = self.radio.set_ptt(True)
                 jsondata = {"ptt": "True"}
@@ -546,7 +546,7 @@ class RF:
         ModemParam.channel_busy = False
 
         start_of_transmission = time.time()
-        # TODO: Moved ptt toggle some steps before audio is ready for testing
+        # TODO Moved ptt toggle some steps before audio is ready for testing
         # Toggle ptt early to save some time and send ptt state via socket
         # HamlibParam.ptt_state = self.radio.set_ptt(True)
         # jsondata = {"ptt": "True"}
@@ -1095,7 +1095,7 @@ class RF:
         """Worker for FIFO queue for processing frames to be transmitted"""
         while True:
             # print queue size for debugging purposes
-            # TODO: Lets check why we have several frames in our transmit queue which causes sometimes a double transmission
+            # TODO Lets check why we have several frames in our transmit queue which causes sometimes a double transmission
             # we could do a cleanup after a transmission so theres no reason sending twice
             queuesize = self.modem_transmit_queue.qsize()
             self.log.debug("[MDM] self.modem_transmit_queue", qsize=queuesize)
@@ -1330,7 +1330,7 @@ class RF:
 
                     # Reduce area where the busy detection is enabled
                     # We want to have this in correlation with mode bandwidth
-                    # TODO: This is not correctly and needs to be checked for correct maths
+                    # TODO This is not correctly and needs to be checked for correct maths
                     # dfftlist[0:1] = 10,15Hz
                     # Bandwidth[Hz] / 10,15
                     # narrowband = 563Hz = 56
@@ -1456,7 +1456,7 @@ def get_bytes_per_frame(mode: int) -> int:
     :rtype: int
     """
     freedv = open_codec2_instance(mode)
-    # TODO: add close session
+    # TODO add close session
     # get number of bytes per frame for mode
     return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 

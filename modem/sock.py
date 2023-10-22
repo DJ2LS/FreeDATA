@@ -92,7 +92,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                             client.send(sock_data)
                         except Exception as err:
                             self.log.info("[SCK] Connection lost", e=err)
-                            # TODO: Check if we really should set connection alive to false.
+                            # TODO Check if we really should set connection alive to false.
                             # This might disconnect all other clients as well...
                             self.connection_alive = False
                 except Exception as err:
@@ -722,7 +722,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         # wait some random time
         helpers.wait(randrange(5, 25, 5) / 10.0)
 
-        # TODO: carefully test this
+        # TODO carefully test this
         # avoid sending data while we are receiving codec2 signalling data
         interrupt_time = time.time() + 5
         while ModemParam.is_codec2_traffic and time.time() < interrupt_time:
@@ -854,7 +854,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
     def modem_get_rx_buffer(self, received_json):
         try:
             if not RX_BUFFER.empty():
-                # TODO: REMOVE DEPRECATED MESSAGES
+                # TODO REMOVE DEPRECATED MESSAGES
                 #output = {
                 #    "command": "rx_buffer",
                 #    "data-array": [],

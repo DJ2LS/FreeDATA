@@ -15,7 +15,7 @@ HF mesh networking prototype and testing module
 
 
 
-TODO: SIGNALLING FOR ACK/NACK:
+TODO SIGNALLING FOR ACK/NACK:
 - mesh-signalling burst is datac13
 - mesh-signalling frame contains [message id, status, hops, score, payload]
 - frame type is 1 byte
@@ -29,7 +29,7 @@ TODO: SIGNALLING FOR ACK/NACK:
 - if done already in list, don't reset retry counter
 - delete ACK/NACK if "done" and timestamp older than 1day
 
-TODO: SCORE CALCULATION:
+TODO SCORE CALCULATION:
 SNR: negative --> * 2
 
 """
@@ -412,7 +412,7 @@ class MeshRouter():
             self.add_mesh_ping_to_signalling_table(destination, origin, frametype="PING", status="forwarding")
 
     def received_mesh_ping_ack(self, data_in):
-        # TODO:
+        # TODO
         # Check if we have a ping callsign already in signalling table
         # if PING, then override and make it a PING-ACK
         # if not, then add to table
@@ -540,7 +540,7 @@ class MeshRouter():
                        type=frame_type)
 
         # Set the TRANSMITTING flag before adding an object to the transmit queue
-        # TODO: This is not that nice, we could improve this somehow
+        # TODO This is not that nice, we could improve this somehow
         Modem.transmitting = True
         modem.MODEM_TRANSMIT_QUEUE.put([c2_mode, copies, repeat_delay, frame_to_tx])
 

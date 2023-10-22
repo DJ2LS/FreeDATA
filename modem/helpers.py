@@ -599,7 +599,7 @@ def search_hmac_salt(dxcallsign: bytes, mycallsign: bytes, search_token, data_fr
                 key = token_list[len(token_list) - _][:-1]
                 key = bytes(key, "utf-8")
                 search_digest = hmac.new(key, data_frame, hashlib.sha256).digest()[:4]
-                # TODO: Remove this debugging information if not needed anymore
+                # TODO Remove this debugging information if not needed anymore
                 # print("-----------------------------------------")
                 # print(_)
                 # print(f" key-------------{key}")

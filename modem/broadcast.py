@@ -110,7 +110,7 @@ class broadcastHandler:
                     + str(self.fec_wakeup_callsign, "UTF-8")
                     + "] ", mode=self.wakeup_mode, bursts=self.broadcast_payload_bursts,
                 )
-                # TODO: We need a dynamic way of modifying this
+                # TODO We need a dynamic way of modifying this
                 modem.RECEIVE_DATAC4 = False
                 self.fec_wakeup_callsign = bytes()
                 self.wakeup_received = False
