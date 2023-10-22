@@ -56,7 +56,7 @@ def iss_arq_cleanup():
 def t_arq_iss(*args):
     # not sure why importing at top level isn't working
     import modem
-
+    import data_handler
     # pylint: disable=global-statement
     global ISS_original_arq_cleanup, MESSAGE
 
@@ -90,12 +90,12 @@ def t_arq_iss(*args):
     bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/plain;base64,MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=","crc":"123123123"}'
 
     # start data handler
-    modem = data_handler.DATA()
-    modem.log = structlog.get_logger("util_modem_ISS_DATA")
+    data_handler = data_handler.DATA()
+    data_handler.log = structlog.get_logger("util_modem_ISS_DATA")
 
     # Inject a way to exit the TNC infinite loop
-    ISS_original_arq_cleanup = modem.arq_cleanup
-    modem.arq_cleanup = iss_arq_cleanup
+    ISS_original_arq_cleanup = data_handler.arq_cleanup
+    data_handler.arq_cleanup = iss_arq_cleanup
 
     # start modem
     t_modem = modem.RF()

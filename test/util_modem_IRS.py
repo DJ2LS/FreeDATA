@@ -54,6 +54,7 @@ def irs_arq_cleanup():
 def t_arq_irs(*args):
     # not sure why importing at top level isn't working
     import modem
+    import data_handler
     # pylint: disable=global-statement
     global IRS_original_arq_cleanup, MESSAGE
 
@@ -80,12 +81,12 @@ def t_arq_irs(*args):
     Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     # start data handler
-    modem = data_handler.DATA()
-    modem.log = structlog.get_logger("util_modem_IRS_DATA")
+    data_handler = data_handler.DATA()
+    data_handler.log = structlog.get_logger("util_modem_IRS_DATA")
 
     # Inject a way to exit the TNC infinite loop
-    IRS_original_arq_cleanup = modem.arq_cleanup
-    modem.arq_cleanup = irs_arq_cleanup
+    IRS_original_arq_cleanup = data_handler.arq_cleanup
+    data_handler.arq_cleanup = irs_arq_cleanup
 
     # start modem
     t_modem = modem.RF()
