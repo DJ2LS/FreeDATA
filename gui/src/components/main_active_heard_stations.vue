@@ -2,8 +2,6 @@
 // @ts-nocheck
 const { distance } = require("qth-locator");
 
-import { saveSettingsToFile } from "../js/settingsHandler";
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);

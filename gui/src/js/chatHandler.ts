@@ -1,5 +1,4 @@
 const path = require("path");
-const fs = require("fs");
 
 const { v4: uuidv4 } = require("uuid");
 
@@ -23,8 +22,6 @@ import { displayToast } from "./popupHandler.js";
 //const FD = require("./src/js/freedata.js");
 import { btoa_FD } from "./freedata.js";
 
-// split character
-const split_char = "0;1;";
 
 // define default message object
 interface Attachment {
@@ -137,18 +134,14 @@ chat.callsign_list = new Set();
 
 // function for creating a new broadcast
 export function newBroadcast(broadcastChannel, chatmessage) {
-  var mode = "";
-  var frames = "";
-  var data = "";
 
   var file = "";
   var filetype = "text";
   var filename = "";
 
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
-  var checksum = "";
   var message_type = "broadcast_transmit";
-  var command = "";
+  var command = "broadcast";
 
   var timestamp = Math.floor(Date.now() / 1000);
   var uuid = uuidv4();
@@ -162,7 +155,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   uuid = uuid.slice(-4);
 
   let newChatObj: messageDefaultObject = {
-    command: "broadcast",
+    command: broadcast,
     hmac_signed: false,
     percent: 0,
     bytesperminute: 0, // You need to assign a value here
@@ -203,9 +196,7 @@ export function newMessage(
   chatFileSize,
   chatFileType,
 ) {
-  var mode = "";
-  var frames = "";
-  var data = "";
+
   var filename = "";
   var filetype = "";
   var file = "";
@@ -219,9 +210,8 @@ export function newMessage(
     filename = "";
   }
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
-  var checksum = "";
   var message_type = "transmit";
-  var command = "";
+  var command = "msg";
 
   var timestamp = Math.floor(Date.now() / 1000);
   var uuid = uuidv4();
@@ -235,7 +225,7 @@ export function newMessage(
   uuid = uuid.slice(-8);
 
   let newChatObj: messageDefaultObject = {
-    command: "msg",
+    command: command,
     hmac_signed: false,
     percent: 0,
     bytesperminute: 0, // You need to assign a value here
@@ -598,6 +588,7 @@ function addObjToDatabase(newobj) {
 */
 }
 
+/*
 function createChatIndex() {
   db.createIndex({
     index: {
@@ -631,6 +622,7 @@ function createChatIndex() {
       console.log(err);
     });
 }
+*/
 
 export function deleteChatByCallsign(callsign) {
   chat.callsign_list.delete(callsign);
@@ -655,7 +647,7 @@ function deleteFromDatabaseByCallsign(callsign) {
           db.get(item._id)
             .then(function (doc) {
               db.remove(doc)
-                .then(function (doc) {
+                .then(function () {
                   updateAllChat(false);
                   return true;
                 })

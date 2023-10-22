@@ -126,18 +126,17 @@ app.whenReady().then(() => {
     // return process messages
     daemonProcess.on("error", (err) => {
       // daemonProcessLog.error(`error when starting daemon: ${err}`);
+      console.log(err)
     });
-    daemonProcess.on("message", (data) => {
+    daemonProcess.on("message", () => {
       // daemonProcessLog.info(`${data}`);
     });
-    daemonProcess.stdout.on("data", (data) => {
+    daemonProcess.stdout.on("data", () => {
       // daemonProcessLog.info(`${data}`);
     });
-    daemonProcess.stderr.on("data", (data) => {
+    daemonProcess.stderr.on("data", () => {
       // daemonProcessLog.info(`${data}`);
-      let arg = {
-        entry: `${data}`,
-      };
+
     });
     daemonProcess.on("close", (code) => {
       // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);

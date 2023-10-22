@@ -119,7 +119,7 @@ const beaconHistogramData = computed(() => ({
   ],
 }));
 
-function newChat(obj) {
+function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase();
   chat.callsign_list.add(callsign);

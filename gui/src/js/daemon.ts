@@ -1,7 +1,6 @@
 //var net = require("net");
 var net = require("node:net");
 
-const { ipcRenderer } = require("electron");
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";

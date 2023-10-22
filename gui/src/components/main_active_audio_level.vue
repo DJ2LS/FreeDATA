@@ -6,7 +6,7 @@ setActivePinia(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { record_audio, sendTestFrame } from "../js/sock.js";
+import { record_audio } from "../js/sock.js";
 
 function startStopRecordAudio() {
   record_audio();

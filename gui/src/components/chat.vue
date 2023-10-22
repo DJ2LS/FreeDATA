@@ -29,17 +29,7 @@ import chat_new_message from "./chat_new_message.vue";
         </div>
       </div>
       <div class="col-9 border-start vh-100 p-0">
-        <div
-          class="position-absolute container bottom-0 end-0 mb-5"
-          style="z-index: 100; display: none"
-          id="emojipickercontainer"
-        >
-          <emoji-picker
-            locale="en"
-            class="position-absolute bottom-0 end-0 p-1 mb-2"
-            data-source="../node_modules/emoji-picker-element-data/en/emojibase/data.json"
-          ></emoji-picker>
-        </div>
+
 
         <!------messages area ---------------------------------------------------------------------->
         <div
