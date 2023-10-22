@@ -6,7 +6,7 @@ Near end-to-end test for sending / receiving connection control frames through t
 TNC and modem and back through on the other station. Data injection initiates from the
 queue used by the daemon process into and out of the TNC.
 
-Invoked from test_tnc.py.
+Invoked from test_modem.py.
 
 @author: DJ2LS, N2KIQ
 """
@@ -29,7 +29,7 @@ import static
 ISS_original_arq_cleanup: Callable
 MESSAGE: str
 
-log = structlog.get_logger("util_tnc_ISS")
+log = structlog.get_logger("util_modem_ISS")
 
 
 def iss_arq_cleanup():
@@ -59,7 +59,7 @@ def t_arq_iss(*args):
     MESSAGE = args[0]
     tmp_path = args[1]
 
-    sock.log = structlog.get_logger("util_tnc_ISS_sock")
+    sock.log = structlog.get_logger("util_modem_ISS_sock")
 
     # enable testmode
     data_handler.TESTMODE = True
@@ -86,16 +86,16 @@ def t_arq_iss(*args):
     bytes_out = b'{"dt":"f","fn":"zeit.txt","ft":"text\\/plain","d":"data:text\\/plain;base64,MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=MyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5CgMyBtb2Rlcywgb2huZSBjbGFzcwowLjAwMDk2OTQ4MTE4MDk5MTg0MTcKCjIgbW9kZXMsIG9obmUgY2xhc3MKMC4wMDA5NjY1NDUxODkxMjI1Mzk0CgoxIG1vZGUsIG9obmUgY2xhc3MKMC4wMDA5NjY5NzY1NTU4Nzc4MjA5Cg=","crc":"123123123"}'
 
     # start data handler
-    tnc = data_handler.DATA()
-    tnc.log = structlog.get_logger("util_tnc_ISS_DATA")
+    modem = data_handler.DATA()
+    modem.log = structlog.get_logger("util_modem_ISS_DATA")
 
     # Inject a way to exit the TNC infinite loop
-    ISS_original_arq_cleanup = tnc.arq_cleanup
-    tnc.arq_cleanup = iss_arq_cleanup
+    ISS_original_arq_cleanup = modem.arq_cleanup
+    modem.arq_cleanup = iss_arq_cleanup
 
     # start modem
     t_modem = modem.RF()
-    t_modem.log = structlog.get_logger("util_tnc_ISS_RF")
+    t_modem.log = structlog.get_logger("util_modem_ISS_RF")
 
     # mode = codec2.freedv_get_mode_value_by_name(FREEDV_MODE)
     # n_frames_per_burst = N_FRAMES_PER_BURST
@@ -124,17 +124,17 @@ def t_arq_iss(*args):
 
     time.sleep(2.5)
 
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
 
     time.sleep(7.5)
 
     data = {"type": "arq", "command": "stop_transmission"}
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
 
     time.sleep(2.5)
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
 
     # Set timeout
     timeout = time.time() + 15

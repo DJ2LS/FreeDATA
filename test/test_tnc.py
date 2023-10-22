@@ -4,12 +4,12 @@
 Test connect frame commands over a high quality simulated audio channel.
 
 Near end-to-end test for sending / receiving connection control frames through the
-TNC and modem and back through on the other station. Data injection initiates from the
-queue used by the daemon process into and out of the TNC.
+Modem and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the Modem.
 
 Can be invoked from CMake, pytest, coverage or directly.
 
-Uses util_tnc_I[RS]S.py in separate process to perform the data transfer.
+Uses util_modem_I[RS]S.py in separate process to perform the data transfer.
 
 @author: DJ2LS, N2KIQ
 """
@@ -24,19 +24,19 @@ import pytest
 import structlog
 
 try:
-    import test.util_tnc_IRS as irs
-    import test.util_tnc_ISS as iss
+    import test.util_modem_IRS as irs
+    import test.util_modem_ISS as iss
 except ImportError:
-    import util_tnc_IRS as irs
-    import util_tnc_ISS as iss
+    import util_modem_IRS as irs
+    import util_modem_ISS as iss
 
 
 # This test is currently a little inconsistent.
 @pytest.mark.parametrize("command", ["CONNECT"])
 @pytest.mark.flaky(reruns=2)
-def test_tnc(command, tmp_path):
-    log_handler.setup_logging(filename=tmp_path / "test_tnc", level="INFO")
-    log = structlog.get_logger("test_tnc")
+def test_modem(command, tmp_path):
+    log_handler.setup_logging(filename=tmp_path / "test_modem", level="INFO")
+    log = structlog.get_logger("test_modem")
 
     iss_proc = multiprocessing.Process(target=iss.t_arq_iss, args=[command, tmp_path])
     irs_proc = multiprocessing.Process(target=irs.t_arq_irs, args=[command, tmp_path])

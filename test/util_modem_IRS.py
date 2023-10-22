@@ -6,7 +6,7 @@ Near end-to-end test for sending / receiving connection control frames through t
 TNC and modem and back through on the other station. Data injection initiates from the
 queue used by the daemon process into and out of the TNC.
 
-Invoked from test_tnc.py.
+Invoked from test_modem.py.
 
 @author: N2KIQ
 """
@@ -28,7 +28,7 @@ import static
 IRS_original_arq_cleanup: Callable
 MESSAGE: str
 
-log = structlog.get_logger("util_tnc_IRS")
+log = structlog.get_logger("util_modem_IRS")
 
 
 def irs_arq_cleanup():
@@ -58,7 +58,7 @@ def t_arq_irs(*args):
     MESSAGE = args[0]
     tmp_path = args[1]
 
-    sock.log = structlog.get_logger("util_tnc_IRS_sock")
+    sock.log = structlog.get_logger("util_modem_IRS_sock")
 
     # enable testmode
     data_handler.TESTMODE = True
@@ -78,16 +78,16 @@ def t_arq_irs(*args):
     static.SSID_LIST = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     # start data handler
-    tnc = data_handler.DATA()
-    tnc.log = structlog.get_logger("util_tnc_IRS_DATA")
+    modem = data_handler.DATA()
+    modem.log = structlog.get_logger("util_modem_IRS_DATA")
 
     # Inject a way to exit the TNC infinite loop
-    IRS_original_arq_cleanup = tnc.arq_cleanup
-    tnc.arq_cleanup = irs_arq_cleanup
+    IRS_original_arq_cleanup = modem.arq_cleanup
+    modem.arq_cleanup = irs_arq_cleanup
 
     # start modem
     t_modem = modem.RF()
-    t_modem.log = structlog.get_logger("util_tnc_IRS_RF")
+    t_modem.log = structlog.get_logger("util_modem_IRS_RF")
 
     # Set timeout
     timeout = time.time() + 15

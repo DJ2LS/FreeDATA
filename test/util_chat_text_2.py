@@ -3,8 +3,8 @@
 Receive-side station emulator for connect frame tests over a high quality simulated audio channel.
 
 Near end-to-end test for sending / receiving connection control frames through the
-TNC and modem and back through on the other station. Data injection initiates from the
-queue used by the daemon process into and out of the TNC.
+Modem and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the Modem.
 
 Invoked from test_chat_text.py.
 
@@ -19,7 +19,7 @@ import data_handler
 import helpers
 import modem
 import sock
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 import structlog
 
 
@@ -37,9 +37,9 @@ def t_setup(
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / "hfchannel1"
     HamlibParam.hamlib_radiocontrol = "disabled"
-    TNC.low_bandwidth_mode = lowbwmode
+    Modem.low_bandwidth_mode = lowbwmode
     Station.mygrid = bytes("AA12aa", "utf-8")
-    TNC.respond_to_cq = True
+    Modem.respond_to_cq = True
     Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     # override ARQ SESSION STATE for allowing disconnect command
     ARQ.arq_session_state = "connected"
@@ -54,17 +54,17 @@ def t_setup(
     Station.dxcallsign = dxcallsign
     Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
 
-    # Create the TNC
-    tnc = data_handler.DATA()
+    # Create the Modem
+    modem = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
-    tnc.log = structlog.get_logger("station2_DATA")
+    modem.log = structlog.get_logger("station2_DATA")
     # Limit the frame-ack timeout
-    tnc.time_list_low_bw = [1, 1, 1]
-    tnc.time_list_high_bw = [1, 1, 1]
-    tnc.time_list = [1, 1, 1]
+    modem.time_list_low_bw = [1, 1, 1]
+    modem.time_list_high_bw = [1, 1, 1]
+    modem.time_list = [1, 1, 1]
     # Limit number of retries
-    tnc.rx_n_max_retries_per_burst = 5
+    modem.rx_n_max_retries_per_burst = 5
 
     # Create the modem
     t_modem = modem.RF()
@@ -72,7 +72,7 @@ def t_setup(
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger("station2_RF")
 
-    return tnc, orig_rx_func, orig_tx_func
+    return modem, orig_rx_func, orig_tx_func
 
 
 def t_highsnr_arq_short_station2(
@@ -123,7 +123,7 @@ def t_highsnr_arq_short_station2(
         # original function captured before this one was put in place.
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
-    tnc, orig_rx_func, orig_tx_func = t_setup(
+    modem, orig_rx_func, orig_tx_func = t_setup(
         mycall, dxcall, lowbwmode, t_transmit, t_process_data, tmp_path
     )
 

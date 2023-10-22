@@ -4,8 +4,8 @@
 Test control frame messages over a high quality simulated audio channel.
 
 Near end-to-end test for sending / receiving select control frames through the
-TNC and modem and back through on the other station. Data injection initiates from the
-queue used by the daemon process into and out of the TNC.
+Modem and modem and back through on the other station. Data injection initiates from the
+queue used by the daemon process into and out of the Modem.
 
 Can be invoked from CMake, pytest, coverage or directly.
 
@@ -26,7 +26,7 @@ sys.path.insert(0, "..")
 sys.path.insert(0, "../modem")
 import data_handler
 import helpers
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 
 
 def print_frame(data: bytearray):
@@ -161,23 +161,23 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
     Station.dxcallsign = dxcallsign
     Station.dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
-    # Create the TNC
-    tnc = data_handler.DATA()
-    tnc.arq_cleanup()
+    # Create the Modem
+    modem = data_handler.DATA()
+    modem.arq_cleanup()
 
     # Replace the heartbeat transmit routine with a No-Op.
-    tnc.transmit_session_heartbeat = t_tsh_dummy
+    modem.transmit_session_heartbeat = t_tsh_dummy
 
     # Create frame to be 'received' by this station.
     create_frame = t_create_start_session(mycall=dxcall, dxcall=mycall)
     print_frame(create_frame)
-    tnc.received_session_opener(create_frame)
+    modem.received_session_opener(create_frame)
 
     assert helpers.callsign_to_bytes(Station.mycallsign) == mycallsign_bytes
     assert helpers.callsign_to_bytes(Station.dxcallsign) == dxcallsign_bytes
 
     assert ARQ.arq_session is True
-    assert TNC.tnc_state == "BUSY"
+    assert Modem.modem_state == "BUSY"
     assert ARQ.arq_session_state == "connecting"
 
     # Set up a frame from a non-associated station.
@@ -200,8 +200,8 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
     #     helpers.check_callsign(foreigncall, bytes(close_frame[4:7]))[0] is True
     # ), f"{helpers.get_crc_24(foreigncall)} != {bytes(close_frame[4:7])} but should be equal."
 
-    # Send the non-associated session close frame to the TNC
-    tnc.received_session_close(close_frame)
+    # Send the non-associated session close frame to the Modem
+    modem.received_session_close(close_frame)
 
     assert helpers.callsign_to_bytes(Station.mycallsign) == helpers.callsign_to_bytes(
         mycall
@@ -211,7 +211,7 @@ def t_foreign_disconnect(mycall: str, dxcall: str):
     ), f"{Station.dxcallsign} != {dxcall} but should equal."
 
     assert ARQ.arq_session is True
-    assert TNC.tnc_state == "BUSY"
+    assert Modem.modem_state == "BUSY"
     assert ARQ.arq_session_state == "connecting"
 
 
@@ -241,20 +241,20 @@ def t_valid_disconnect(mycall: str, dxcall: str):
     Station.dxcallsign = dxcallsign
     Station.dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
-    # Create the TNC
-    tnc = data_handler.DATA()
-    tnc.arq_cleanup()
+    # Create the Modem
+    modem = data_handler.DATA()
+    modem.arq_cleanup()
 
     # Replace the heartbeat transmit routine with our own, a No-Op.
-    tnc.transmit_session_heartbeat = t_tsh_dummy
+    modem.transmit_session_heartbeat = t_tsh_dummy
 
     # Create packet to be 'received' by this station.
     create_frame = t_create_start_session(mycall=dxcall, dxcall=mycall)
     print_frame(create_frame)
-    tnc.received_session_opener(create_frame)
+    modem.received_session_opener(create_frame)
 
     assert ARQ.arq_session is True
-    assert TNC.tnc_state == "BUSY"
+    assert Modem.modem_state == "BUSY"
     assert ARQ.arq_session_state == "connecting"
 
     # Create packet to be 'received' by this station.
@@ -265,20 +265,20 @@ def t_valid_disconnect(mycall: str, dxcall: str):
     close_frame = t_create_session_close(open_session, mycall)
     print(close_frame[2:5])
     print_frame(close_frame)
-    tnc.received_session_close(close_frame)
+    modem.received_session_close(close_frame)
 
     assert helpers.callsign_to_bytes(Station.mycallsign) == mycallsign_bytes
     assert helpers.callsign_to_bytes(Station.dxcallsign) == dxcallsign_bytes
 
     assert ARQ.arq_session is False
-    assert TNC.tnc_state == "IDLE"
+    assert Modem.modem_state == "IDLE"
     assert ARQ.arq_session_state == "disconnected"
 
 
 # These tests are pushed into separate processes as a workaround. These tests
 # change the state of one of the static parts of the system. Unfortunately the
 # specific state(s) maintained across tests in the same interpreter are not yet known.
-# The other tests affected are: `test_tnc.py` and the ARQ tests.
+# The other tests affected are: `test_modem.py` and the ARQ tests.
 
 
 @pytest.mark.parametrize("mycall", ["AA1AA-2", "DE2DE-0", "E4AWQ-4"])

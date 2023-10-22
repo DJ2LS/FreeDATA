@@ -15,7 +15,7 @@ import data_handler
 import helpers
 import modem
 import sock
-from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, TNC, FRAME_TYPE as FR_TYPE
+from static import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, FRAME_TYPE as FR_TYPE
 import structlog
 #from static import FRAME_TYPE as FR_TYPE
 
@@ -41,9 +41,9 @@ def t_setup(
     modem.TESTMODE = True
     modem.TXCHANNEL = tmp_path / tx_channel
     HamlibParam.hamlib_radiocontrol = "disabled"
-    TNC.low_bandwidth_mode = lowbwmode or True
+    Modem.low_bandwidth_mode = lowbwmode or True
     Station.mygrid = bytes("AA12aa", "utf-8")
-    TNC.respond_to_cq = True
+    Modem.respond_to_cq = True
     Station.ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     
     mycallsign_bytes = helpers.callsign_to_bytes(mycall)
@@ -56,17 +56,17 @@ def t_setup(
     Station.dxcallsign = dxcallsign
     Station.dxcallsign_crc = helpers.get_crc_24(dxcallsign)
 
-    # Create the TNC
-    tnc_data_handler = data_handler.DATA()
+    # Create the Modem
+    modem_data_handler = data_handler.DATA()
     orig_rx_func = data_handler.DATA.process_data
     data_handler.DATA.process_data = t_process_data
-    tnc_data_handler.log = structlog.get_logger(f"station{station}_DATA")
+    modem_data_handler.log = structlog.get_logger(f"station{station}_DATA")
     # Limit the frame-ack timeout
-    tnc_data_handler.time_list_low_bw = [8, 8, 8]
-    tnc_data_handler.time_list_high_bw = [8, 8, 8]
-    tnc_data_handler.time_list = [8, 8, 8]
+    modem_data_handler.time_list_low_bw = [8, 8, 8]
+    modem_data_handler.time_list_high_bw = [8, 8, 8]
+    modem_data_handler.time_list = [8, 8, 8]
     # Limit number of retries
-    tnc_data_handler.rx_n_max_retries_per_burst = 4
+    modem_data_handler.rx_n_max_retries_per_burst = 4
     ModemParam.tx_delay = 50  # add additional delay time for passing test
     # Create the modem
     t_modem = modem.RF()
@@ -74,7 +74,7 @@ def t_setup(
     modem.RF.transmit = t_transmit
     t_modem.log = structlog.get_logger(f"station{station}_RF")
 
-    return tnc_data_handler, orig_rx_func, orig_tx_func
+    return modem_data_handler, orig_rx_func, orig_tx_func
 
 
 def t_datac13_1(
@@ -125,7 +125,7 @@ def t_datac13_1(
         # original function captured before this one was put in place.
         orig_rx_func(self, bytes_out, freedv, bytes_per_frame)  # type: ignore
 
-    tnc_data_handler, orig_rx_func, orig_tx_func = t_setup(
+    modem_data_handler, orig_rx_func, orig_tx_func = t_setup(
         1,
         mycall,
         dxcall,
@@ -144,16 +144,16 @@ def t_datac13_1(
     if "stop" in data["command"]:
         time.sleep(0.5)
         log.debug(
-            "t_datac13_1: STOP test, setting TNC state",
+            "t_datac13_1: STOP test, setting Modem state",
             mycall=Station.mycallsign,
             dxcall=Station.dxcallsign,
         )
         Station.dxcallsign = helpers.callsign_to_bytes(data["dxcallsign"])
         Station.dxcallsign_CRC = helpers.get_crc_24(Station.dxcallsign)
-        TNC.tnc_state = "BUSY"
+        Modem.modem_state = "BUSY"
         ARQ.arq_state = True
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
@@ -177,14 +177,14 @@ def t_datac13_1(
     # override ARQ SESSION STATE for allowing disconnect command
     ARQ.arq_session_state = "connected"
     data = {"type": "arq", "command": "disconnect", "dxcallsign": dxcall}
-    sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(data, indent=None))
+    sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(data, indent=None))
     time.sleep(0.5)
 
     # Allow enough time for this side to process the disconnect frame.
     timeout = time.time() + timeout_duration
-    while tnc_data_handler.data_queue_transmit.queue:
+    while modem_data_handler.data_queue_transmit.queue:
         if time.time() > timeout:
-            log.warning("station1", TIMEOUT=True, dq_tx=tnc_data_handler.data_queue_transmit.queue)
+            log.warning("station1", TIMEOUT=True, dq_tx=modem_data_handler.data_queue_transmit.queue)
             break
         time.sleep(0.5)
     log.info("station1, final")
@@ -270,8 +270,8 @@ def t_datac13_2(
 
     if "cq" in data:
         t_data = {"type": "arq", "command": "stop_transmission"}
-        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
-        sock.ThreadedTCPRequestHandler.process_tnc_commands(None,json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(t_data, indent=None))
+        sock.ThreadedTCPRequestHandler.process_modem_commands(None,json.dumps(t_data, indent=None))
 
     # Assure the test completes.
     timeout = time.time() + timeout_duration
