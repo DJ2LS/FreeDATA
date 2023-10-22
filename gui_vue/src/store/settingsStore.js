@@ -3,8 +3,8 @@ import { ref } from "vue";
 
 export const useSettingsStore = defineStore("settingsStore", () => {
   // audio
-  var tx_audio = ref()
-  var rx_audio = ref()
+  var tx_audio = ref();
+  var rx_audio = ref();
 
   // network
   var modem_host = ref("127.0.0.1");
@@ -77,19 +77,19 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   var enable_mesh_features = ref("False");
   var serial_devices = ref();
 
-
   function getSerialDevices() {
     if (this.hamlib_deviceport == "ignore")
-      var html = '<option value ="ignore" selected>None - (use custom options for hamlib)</option>';
+      var html =
+        '<option value ="ignore" selected>None - (use custom options for hamlib)</option>';
     else
-      var html = '<option value ="ignore">None - (use custom options for hamlib)</option>';
+      var html =
+        '<option value ="ignore">None - (use custom options for hamlib)</option>';
     for (var key in serial_devices.value) {
-
-    let selected = ''
-      if (serial_devices.value[key]["port"] == this. hamlib_deviceport){
-        selected = "selected"
+      let selected = "";
+      if (serial_devices.value[key]["port"] == this.hamlib_deviceport) {
+        selected = "selected";
       } else {
-       selected = ''
+        selected = "";
       }
 
       html += `<option value="${serial_devices.value[key]["port"]}" ${selected}>${serial_devices.value[key]["port"]} - ${serial_devices.value[key]["description"]}</option>`;
@@ -223,6 +223,6 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     tx_audio,
     rx_audio,
     getSerialDevices,
-    serial_devices
+    serial_devices,
   };
 });

@@ -116,14 +116,13 @@ daemon.on("data", function (socketdata) {
     stackoverflow.com questions 9070700 nodejs-net-createserver-large-amount-of-data-coming-in
     */
 
-    socketdata = socketchunk.join("\n") + socketdata.toString("utf8");  //append incoming data to socketchunk
-    //socketdata = socketdata.toString("utf8"); // convert data to string
+  socketdata = socketchunk.join("\n") + socketdata.toString("utf8"); //append incoming data to socketchunk
+  //socketdata = socketdata.toString("utf8"); // convert data to string
 
   //socketchunk += socketdata; // append data to buffer so we can stick long data together
 
   // check if we received begin and end of json data
   if (socketdata.startsWith('{"') && socketdata.endsWith('"}\n')) {
-    
     var data = "";
 
     // split data into chunks if we received multiple commands
@@ -151,24 +150,18 @@ daemon.on("data", function (socketdata) {
         }
       }
 
-      console.log(data)
+      console.log(data);
       if (data["command"] == "daemon_state") {
-
         // update audio devices by putting them to audio store
         audioStore.inputDevices = data["input_devices"];
         audioStore.outputDevices = data["output_devices"];
         settings.serial_devices = data["serial_devices"];
-        state.python_version = data["python_version"]
-        state.modem_version = data["version"]
+        state.python_version = data["python_version"];
+        state.modem_version = data["version"];
         state.modem_running_state = data["daemon_state"][0]["status"];
         state.rigctld_started = data["rigctld_state"][0]["status"];
         //state.rigctld_process = data["daemon_state"][0]["rigctld_process"];
-
-
       }
-
-
-
 
       if (data["command"] == "test_hamlib") {
         let Data = {
@@ -246,7 +239,8 @@ export function startModem() {
 // STOP Modem
 //exports.stopModem = function () {
 export function stopModem() {
-  var command = '{"type" : "set", "command": "stop_modem" , "parameter": "---" }';
+  var command =
+    '{"type" : "set", "command": "stop_modem" , "parameter": "---" }';
   writeDaemonCommand(command);
 }
 
@@ -289,43 +283,37 @@ function testHamlib(
 }
 
 export function startRigctld() {
-
   var json_command = JSON.stringify({
     type: "set",
     command: "start_rigctld",
     parameter: [
       {
-      hamlib_deviceid: settings.hamlib_deviceid,
-      hamlib_deviceport: settings.hamlib_deviceport,
-      hamlib_stop_bits: settings.hamlib_stop_bits,
-      hamlib_data_bits: settings.hamlib_data_bits,
-      hamlib_handshake: settings.hamlib_handshake,
-      hamlib_serialspeed: settings.hamlib_serialspeed,
-      hamlib_dtrstate: settings.hamlib_dtrstate,
-      hamlib_pttprotocol: settings.hamlib_pttprotocol,
-      hamlib_ptt_port: settings.hamlib_ptt_port,
-      hamlib_dcd: settings.hamlib_dcd,
-      hamlbib_serialspeed_ptt: settings.hamlib_serialspeed,
-      hamlib_rigctld_port: settings.hamlib_rigctld_port,
-      hamlib_rigctld_ip: settings.hamlib_rigctld_ip,
-      hamlib_rigctld_path: settings.hamlib_rigctld_path,
-      hamlib_rigctld_server_port: settings.hamlib_rigctld_server_port,
-      hamlib_rigctld_custom_args: settings.hamlib_rigctld_custom_args
-
+        hamlib_deviceid: settings.hamlib_deviceid,
+        hamlib_deviceport: settings.hamlib_deviceport,
+        hamlib_stop_bits: settings.hamlib_stop_bits,
+        hamlib_data_bits: settings.hamlib_data_bits,
+        hamlib_handshake: settings.hamlib_handshake,
+        hamlib_serialspeed: settings.hamlib_serialspeed,
+        hamlib_dtrstate: settings.hamlib_dtrstate,
+        hamlib_pttprotocol: settings.hamlib_pttprotocol,
+        hamlib_ptt_port: settings.hamlib_ptt_port,
+        hamlib_dcd: settings.hamlib_dcd,
+        hamlbib_serialspeed_ptt: settings.hamlib_serialspeed,
+        hamlib_rigctld_port: settings.hamlib_rigctld_port,
+        hamlib_rigctld_ip: settings.hamlib_rigctld_ip,
+        hamlib_rigctld_path: settings.hamlib_rigctld_path,
+        hamlib_rigctld_server_port: settings.hamlib_rigctld_server_port,
+        hamlib_rigctld_custom_args: settings.hamlib_rigctld_custom_args,
       },
     ],
   });
   console.log(json_command);
   writeDaemonCommand(json_command);
-
 }
-export function stopRigctld(){
+export function stopRigctld() {
   let command = '{"type" : "set", "command": "stop_rigctld"}';
   writeDaemonCommand(command);
-
 }
-
-
 
 //Save myCall
 function saveMyCall(callsign) {
@@ -344,5 +332,3 @@ function saveMyGrid(grid) {
     '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}';
   writeDaemonCommand(command);
 }
-
-

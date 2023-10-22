@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -10,8 +9,10 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import { deleteChatByCallsign, getNewMessagesByDXCallsign } from "../js/chatHandler";
-
+import {
+  deleteChatByCallsign,
+  getNewMessagesByDXCallsign,
+} from "../js/chatHandler";
 
 import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
 
@@ -36,8 +37,8 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js'
+  Legend,
+} from "chart.js";
 import { Line } from "vue-chartjs";
 import { ref, computed } from "vue";
 
@@ -48,113 +49,172 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
-)
-
-
+  Legend,
+);
 </script>
 
 <template>
+  <!-- updater release notes-->
+  <div
+    class="modal fade"
+    ref="modalEle"
+    id="updaterReleaseNotes"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <span class="input-group-text" id="updater_last_version"></span>
+          <span class="input-group-text ms-1" id="updater_last_update"></span>
 
-<!-- updater release notes-->
-<div class="modal fade" ref="modalEle" id="updaterReleaseNotes" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-                    <span class="input-group-text" id="updater_last_version"></span>
-                    <span class="input-group-text ms-1" id="updater_last_update"></span>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-dialog modal-dialog-scrollable">
+            <div class="" id="updater_release_notes"></div>
+          </div>
+        </div>
 
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-<div class="modal-dialog modal-dialog-scrollable">
-
-<div class="" id="updater_release_notes"></div>
-
-      </div>
-</div>
-
-
-
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
-
-<!-- delete chat modal -->
-<div class="modal fade" ref="modalEle" id="deleteChatModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="deleteChatModalLabel">Sub menu for: {{chat.selectedCallsign}}</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-
-
-
-    <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Total Messages</span>
-            <span class="input-group-text" id="basic-addon1">{{getNewMessagesByDXCallsign(chat.selectedCallsign)[0]}}</span>
+  <!-- delete chat modal -->
+  <div
+    class="modal fade"
+    ref="modalEle"
+    id="deleteChatModal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="deleteChatModalLabel">
+            Sub menu for: {{ chat.selectedCallsign }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
         </div>
+        <div class="modal-body">
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1"
+              >Total Messages</span
+            >
+            <span class="input-group-text" id="basic-addon1">{{
+              getNewMessagesByDXCallsign(chat.selectedCallsign)[0]
+            }}</span>
+          </div>
 
-    <div class="input-group mb-3">
+          <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">New Messages</span>
-            <span class="input-group-text" id="basic-addon1">{{getNewMessagesByDXCallsign(chat.selectedCallsign)[1]}}</span>
+            <span class="input-group-text" id="basic-addon1">{{
+              getNewMessagesByDXCallsign(chat.selectedCallsign)[1]
+            }}</span>
+          </div>
         </div>
-
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-danger" @click="deleteChat" data-bs-dismiss="modal">Delete Chat</button>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button
+            type="button"
+            class="btn btn-danger"
+            @click="deleteChat"
+            data-bs-dismiss="modal"
+          >
+            Delete Chat
+          </button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
+  <!-- Message Info Modal -->
+  <div
+    class="modal fade"
+    ref="modalEle"
+    id="messageInfoModal"
+    tabindex="-1"
+    aria-labelledby="exampleModalLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="messageInfoModalLabel">
+            {{ chat.selectedMessageObject["uuid"] }}
+          </h1>
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+            aria-label="Close"
+          ></button>
+        </div>
+        <div class="modal-body">
+          {{ chat.selectedMessageObject }}
 
-
-
-<!-- Message Info Modal -->
-<div class="modal fade" ref="modalEle" id="messageInfoModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="messageInfoModalLabel">{{chat.selectedMessageObject["uuid"]}}</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-
-{{chat.selectedMessageObject}}
-
-        <div class="input-group mb-3">
+          <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Status</span>
-            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["status"]}}</span>
-        </div>
+            <span class="input-group-text" id="basic-addon1">{{
+              chat.selectedMessageObject["status"]
+            }}</span>
+          </div>
 
-        <div class="input-group mb-3">
+          <div class="input-group mb-3">
             <span class="input-group-text" id="basic-addon1">Attempts</span>
-            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["attempt"]}}</span>
-        </div>
+            <span class="input-group-text" id="basic-addon1">{{
+              chat.selectedMessageObject["attempt"]
+            }}</span>
+          </div>
 
-        <div class="input-group mb-3">
-            <span class="input-group-text" id="basic-addon1">Bytes per Minute</span>
-            <span class="input-group-text" id="basic-addon1">{{chat.selectedMessageObject["bytesperminute"]}}</span>
+          <div class="input-group mb-3">
+            <span class="input-group-text" id="basic-addon1"
+              >Bytes per Minute</span
+            >
+            <span class="input-group-text" id="basic-addon1">{{
+              chat.selectedMessageObject["bytesperminute"]
+            }}</span>
+          </div>
         </div>
-
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Save changes</button>
+        <div class="modal-footer">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal"
+          >
+            Close
+          </button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
-
 
   <!-- HELP MODALS AUDIO -->
   <div
@@ -757,7 +817,11 @@ ChartJS.register(
           <div class="card mb-3">
             <div class="card-body">
               <h5 class="card-title">
-                <button type="button" class="btn btn-sm btn-outline-secondary" @click="tuneAudio">
+                <button
+                  type="button"
+                  class="btn btn-sm btn-outline-secondary"
+                  @click="tuneAudio"
+                >
                   Tune
                 </button>
               </h5>

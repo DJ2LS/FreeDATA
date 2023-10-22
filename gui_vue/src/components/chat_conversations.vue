@@ -14,29 +14,30 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import {getNewMessagesByDXCallsign, resetIsNewMessage} from '../js/chatHandler'
-
+import {
+  getNewMessagesByDXCallsign,
+  resetIsNewMessage,
+} from "../js/chatHandler";
 
 import chat_conversations_entry from "./chat_conversations_entry.vue";
-
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
 
   // scroll message container to bottom
   var messageBody = document.getElementById("message-container");
-  if (messageBody != null ) {
+  if (messageBody != null) {
     // needs sensible defaults
     messageBody.scrollTop = messageBody.scrollHeight - messageBody.clientHeight;
   }
 
-  if (getNewMessagesByDXCallsign(callsign)[1] > 0){
-        let messageArray = getNewMessagesByDXCallsign(callsign)[2]
-        console.log(messageArray)
+  if (getNewMessagesByDXCallsign(callsign)[1] > 0) {
+    let messageArray = getNewMessagesByDXCallsign(callsign)[2];
+    console.log(messageArray);
 
-        for (const key in messageArray){
-                resetIsNewMessage(messageArray[key].uuid, false)
-            }
+    for (const key in messageArray) {
+      resetIsNewMessage(messageArray[key].uuid, false);
+    }
   }
 
   try {
@@ -58,7 +59,7 @@ function chatSelected(callsign) {
     <template v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
       <a
         class="list-group-item list-group-item-action border-0 border-bottom rounded-0"
-        :class="{ active: key == 0}"
+        :class="{ active: key == 0 }"
         :id="`list-chat-list-${item}`"
         data-bs-toggle="list"
         :href="`#list-${item}-messages`"
@@ -66,15 +67,15 @@ function chatSelected(callsign) {
         aria-controls="list-{{item}}-messages"
         @click="chatSelected(item)"
       >
-
-
-
         <div class="row">
-          <div class="col-9">{{ item }}
-            <span class="badge rounded-pill bg-danger" v-if="getNewMessagesByDXCallsign(item)[1] > 0">
-               {{getNewMessagesByDXCallsign(item)[1]}} new messages
+          <div class="col-9">
+            {{ item }}
+            <span
+              class="badge rounded-pill bg-danger"
+              v-if="getNewMessagesByDXCallsign(item)[1] > 0"
+            >
+              {{ getNewMessagesByDXCallsign(item)[1] }} new messages
             </span>
-
           </div>
           <div class="col-3">
             <button

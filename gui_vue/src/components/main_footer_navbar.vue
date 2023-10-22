@@ -1,12 +1,10 @@
 <script setup lang="ts">
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
 </script>
 
 <template>
@@ -26,7 +24,7 @@ const state = useStateStore(pinia);
             id="ptt_state"
             type="button"
             title="Rig PTT state"
-            style="pointer-events: auto;"
+            style="pointer-events: auto"
             disabled
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
@@ -46,7 +44,7 @@ const state = useStateStore(pinia);
             }"
             title="Modem state"
             disabled
-            style="pointer-events: auto;"
+            style="pointer-events: auto"
           >
             <i class="bi bi-cpu" style="font-size: 0.8rem"></i>
           </button>
@@ -64,7 +62,7 @@ const state = useStateStore(pinia);
               'bg-warning': state.arq_session_state === 'connected',
             }"
             disabled
-            style="pointer-events: auto;"
+            style="pointer-events: auto"
             title="Session state"
           >
             <i class="bi bi-arrow-left-right" style="font-size: 0.8rem"></i>
@@ -80,7 +78,7 @@ const state = useStateStore(pinia);
               'bg-warning': state.arq_state === 'True',
             }"
             disabled
-            style="pointer-events: auto;"
+            style="pointer-events: auto"
           >
             <i class="bi bi-file-earmark-binary" style="font-size: 0.8rem"></i>
           </button>
@@ -110,7 +108,7 @@ const state = useStateStore(pinia);
               'btn-warning': state.channel_busy === 'True',
               'btn-secondary': state.channel_busy === 'False',
             }"
-            style="pointer-events: auto;"
+            style="pointer-events: auto"
             title="Channel busy"
           >
             <i class="bi bi-hourglass"></i>
@@ -122,9 +120,9 @@ const state = useStateStore(pinia);
             class="btn btn-sm btn-secondary me-4 disabled"
             type="button"
             title="What's the frequency, Kenneth?"
-            style=" pointer-events: auto;"
+            style="pointer-events: auto"
           >
-            {{ parseInt(state.frequency) / 1000  }} KHz
+            {{ parseInt(state.frequency) / 1000 }} KHz
           </button>
         </div>
 
@@ -219,7 +217,9 @@ const state = useStateStore(pinia);
             aria-valuemin="0"
             aria-valuemax="100"
           ></div>
-          <p class="justify-content-center m-0 d-flex position-absolute w-100 text-dark">
+          <p
+            class="justify-content-center m-0 d-flex position-absolute w-100 text-dark"
+          >
             {{ state.arq_seconds_until_finish }}s left
           </p>
         </div>

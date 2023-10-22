@@ -94,7 +94,12 @@ function saveSettings() {
     <label class="input-group-text w-50" for="inputGroupFile02"
       >Received files folder</label
     >
-    <input type="text" class="form-control w-50" id="received_files_folder" disabled/>
+    <input
+      type="text"
+      class="form-control w-50"
+      id="received_files_folder"
+      disabled
+    />
   </div>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text w-50">Update channel</span>

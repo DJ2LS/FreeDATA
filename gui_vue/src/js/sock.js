@@ -1,11 +1,10 @@
 var net = require("net");
 const path = require("path");
 //const FD = require("./src/js/freedata.js");
-import {atob_FD, btoa_FD} from "./freedata"
+import { atob_FD, btoa_FD } from "./freedata";
 //import FD from './freedata.js';
 
-        import {addDataToWaterfall} from "../js/waterfallHandler.js"
-
+import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 import {
   newMessageReceived,
@@ -167,7 +166,7 @@ client.on("data", function (socketdata) {
           continue;
         }
       }
-       //console.log(data)
+      //console.log(data)
       if (data["command"] == "modem_state") {
         //console.log(data)
         // set length of RX Buffer to global variable
@@ -186,9 +185,7 @@ client.on("data", function (socketdata) {
         stateStore.channel_busy = data["channel_busy"];
         stateStore.channel_busy_slot = data["channel_busy_slot"];
 
-        addDataToWaterfall(JSON.parse(data["fft"]))
-
-
+        addDataToWaterfall(JSON.parse(data["fft"]));
 
         if (data["scatter"].length > 0) {
           stateStore.scatter = data["scatter"];
@@ -253,7 +250,7 @@ client.on("data", function (socketdata) {
           arq_rx_frame_n_bursts: data["arq_rx_frame_n_bursts"],
           arq_rx_n_current_arq_frame: data["arq_rx_n_current_arq_frame"],
           arq_n_arq_frames_per_data_frame:
-          data["arq_n_arq_frames_per_data_frame"],
+            data["arq_n_arq_frames_per_data_frame"],
           arq_bytes_per_minute: data["arq_bytes_per_minute"],
           arq_compression_factor: data["arq_compression_factor"],
           routing_table: data["routing_table"],
@@ -272,7 +269,10 @@ client.on("data", function (socketdata) {
       if (data["freedata"] == "modem-message") {
         // break early if we received a dummy callsign
         // thats a kind of hotfix, as long as the modem isnt handling this better
-        if (data["dxcallsign"] == "AA0AA-0" || data["dxcallsign"] == "ZZ9YY-0") {
+        if (
+          data["dxcallsign"] == "AA0AA-0" ||
+          data["dxcallsign"] == "ZZ9YY-0"
+        ) {
           break;
         }
 
@@ -334,7 +334,12 @@ client.on("data", function (socketdata) {
         switch (data["beacon"]) {
           case "transmitting":
             // BEACON TRANSMITTING
-            displayToast("success", "bi-broadcast-pin", "Transmitting beacon", 5000);
+            displayToast(
+              "success",
+              "bi-broadcast-pin",
+              "Transmitting beacon",
+              5000,
+            );
             break;
 
           case "received":
@@ -357,14 +362,20 @@ client.on("data", function (socketdata) {
           case "received":
             // PING RECEIVED
             message =
-              "Ping request from " + data["dxcallsign"] + " | " + data["dxgrid"];
+              "Ping request from " +
+              data["dxcallsign"] +
+              " | " +
+              data["dxgrid"];
             displayToast("success", "bi-arrow-right-short", message, 5000);
             break;
 
           case "acknowledge":
             // PING ACKNOWLEDGE
             message =
-              "Received ping-ack from " + data["dxcallsign"] + " | " + data["dxgrid"];
+              "Received ping-ack from " +
+              data["dxcallsign"] +
+              " | " +
+              data["dxgrid"];
             displayToast("success", "bi-arrow-left-right", message, 5000);
             break;
         }
@@ -485,7 +496,6 @@ client.on("data", function (socketdata) {
           }
         }
       }
-
     }
 
     //finally delete message buffer
@@ -596,24 +606,22 @@ function sendFile(
 
 // Send Message
 export function sendMessage(obj) {
+  let dxcallsign = obj.dxcallsign;
+  let checksum = obj.checksum;
+  let uuid = obj.uuid;
+  let command = obj.command;
 
-let dxcallsign = obj.dxcallsign
-let checksum = obj.checksum
-let uuid = obj.uuid
-let command = obj.command
+  let filename = Object.keys(obj._attachments)[0];
+  //let filetype = filename.split(".")[1]
+  let filetype = obj._attachments[filename].content_type;
+  let file = obj._attachments[filename].data;
 
-let filename = Object.keys(obj._attachments)[0]
-//let filetype = filename.split(".")[1]
-let filetype = obj._attachments[filename].content_type
-let file = obj._attachments[filename].data
+  //console.log(obj._attachments)
+  //console.log(filename)
+  //console.log(filetype)
+  //console.log(file)
 
-//console.log(obj._attachments)
-//console.log(filename)
-//console.log(filetype)
-//console.log(file)
-
-
-let data_with_attachment =
+  let data_with_attachment =
     obj.timestamp +
     split_char +
     obj.msg +
@@ -764,8 +772,7 @@ export function stopTransmission() {
 export function getRxBuffer() {
   var command = '{"type" : "get", "command" : "rx_buffer"}';
 
-    writeTncCommand(command);
-
+  writeTncCommand(command);
 }
 
 // START BEACON
@@ -827,12 +834,11 @@ export function sendFecIsWriting(mycallsign) {
 // SEND FEC TO BROADCASTCHANNEL
 //export function sendBroadcastChannel(channel, data_out, uuid) {
 export function sendBroadcastChannel(obj) {
-
   let checksum = obj.checksum;
   let command = obj.command;
   let uuid = obj.uuid;
-  let channel = obj.dxcallsign
-  let data_out = obj.msg
+  let channel = obj.dxcallsign;
+  let data_out = obj.msg;
 
   let data = btoa_FD(
     "m" +

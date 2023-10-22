@@ -17,14 +17,11 @@ const state = useStateStore(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-
 import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
-
 //const FD = require("./src/js/freedata.js");
-import {btoa_FD} from "./freedata.js"
-
+import { btoa_FD } from "./freedata.js";
 
 // split character
 const split_char = "0;1;";
@@ -61,8 +58,7 @@ interface messageDefaultObject {
   };
 }
 
-
-interface beaconDefaultObject{
+interface beaconDefaultObject {
   command: string;
   is_new: boolean;
   _id: string;
@@ -94,37 +90,36 @@ PouchDB.plugin(require("pouchdb-find"));
 PouchDB.plugin(require("pouchdb-upsert"));
 
 // https://stackoverflow.com/a/26227660
-if(typeof process.env["APPDATA"]  !== "undefined"){
-    var appDataFolder = process.env["APPDATA"]
-    console.log(appDataFolder)
-
+if (typeof process.env["APPDATA"] !== "undefined") {
+  var appDataFolder = process.env["APPDATA"];
+  console.log(appDataFolder);
 } else {
-    var appDataFolder: string;
+  var appDataFolder: string;
 
-    switch (process.platform) {
-      case "darwin":
-        appDataFolder = process.env["HOME"] + "/Library/Application Support";
-        console.log(appDataFolder);
-        break;
-      case "linux":
-        appDataFolder = process.env["HOME"] + "/.config";
-        console.log(appDataFolder);
-        break;
-      case "win32":
-        appDataFolder = "undefined";
-        break;
-      default:
-        appDataFolder = "undefined";
-        break;
-    }
+  switch (process.platform) {
+    case "darwin":
+      appDataFolder = process.env["HOME"] + "/Library/Application Support";
+      console.log(appDataFolder);
+      break;
+    case "linux":
+      appDataFolder = process.env["HOME"] + "/.config";
+      console.log(appDataFolder);
+      break;
+    case "win32":
+      appDataFolder = "undefined";
+      break;
+    default:
+      appDataFolder = "undefined";
+      break;
+  }
 }
-console.log("loading chat database...")
-console.log("appdata folder:" + appDataFolder)
+console.log("loading chat database...");
+console.log("appdata folder:" + appDataFolder);
 var configFolder = path.join(appDataFolder, "FreeDATA");
-console.log("config folder:" + configFolder)
+console.log("config folder:" + configFolder);
 
 var chatDB = path.join(configFolder, "chatDB");
-console.log("database path:" + chatDB)
+console.log("database path:" + chatDB);
 
 var db = new PouchDB(chatDB);
 
@@ -135,8 +130,7 @@ var db = new PouchDB(chatDB);
 /* -------- RUN A DATABASE CLEANUP ON STARTUP */
 //dbClean()
 
-updateAllChat(true)
-
+updateAllChat(true);
 
 // create callsign set for storing unique callsigns
 chat.callsign_list = new Set();
@@ -147,9 +141,9 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   var frames = "";
   var data = "";
 
-    var file = "";
-    var filetype = "text";
-    var filename = "";
+  var file = "";
+  var filetype = "text";
+  var filename = "";
 
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
   var checksum = "";
@@ -167,37 +161,35 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   // slice uuid for reducing overhead
   uuid = uuid.slice(-4);
 
+  let newChatObj: messageDefaultObject = {
+    command: "broadcast",
+    hmac_signed: false,
+    percent: 0,
+    bytesperminute: 0, // You need to assign a value here
+    is_new: false,
+    _id: uuid,
+    timestamp: timestamp,
+    dxcallsign: broadcastChannel,
+    dxgrid: "null",
+    msg: chatmessage,
+    checksum: file_checksum,
+    type: message_type,
+    status: "transmitting",
+    attempt: 1,
+    uuid: uuid,
+    duration: 0,
+    nacks: 0,
+    speed_list: "null",
+    _attachments: {
+      [filename]: {
+        content_type: filetype,
+        data: btoa_FD(file),
+      },
+    },
+  };
 
-let newChatObj: messageDefaultObject = {
-  command: "broadcast",
-  hmac_signed: false,
-  percent: 0,
-  bytesperminute: 0,  // You need to assign a value here
-  is_new: false,
-  _id: uuid,
-  timestamp: timestamp,
-  dxcallsign: broadcastChannel,
-  dxgrid: "null",
-  msg: chatmessage,
-  checksum: file_checksum,
-  type: message_type,
-  status: "transmitting",
-  attempt: 1,
-  uuid: uuid,
-  duration: 0,
-  nacks: 0,
-  speed_list: "null",
-  _attachments: {
-    [filename]: {
-      content_type: filetype,
-      data: btoa_FD(file),
-    }
-  }
-};
-
-
-    //sendMessage(newChatObj)
-    sendBroadcastChannel(newChatObj)
+  //sendMessage(newChatObj)
+  sendBroadcastChannel(newChatObj);
 
   addObjToDatabase(newChatObj);
 }
@@ -216,7 +208,7 @@ export function newMessage(
   var data = "";
   var filename = "";
   var filetype = "";
-  var file=""
+  var file = "";
   if (typeof chatFile !== "undefined") {
     file = chatFile;
     filetype = chatFileType;
@@ -242,33 +234,32 @@ export function newMessage(
   // slice uuid for reducing overhead
   uuid = uuid.slice(-8);
 
-
-let newChatObj: messageDefaultObject = {
-  command: "msg",
-  hmac_signed: false,
-  percent: 0,
-  bytesperminute: 0, // You need to assign a value here
-  is_new: false,
-  _id: uuid,
-  timestamp: timestamp,
-  dxcallsign: dxcallsign,
-  dxgrid: "null",
-  msg: chatmessage,
-  checksum: file_checksum,
-  type: message_type,
-  status: "transmitting",
-  attempt: 1,
-  uuid: uuid,
-  duration: 0,
-  nacks: 0,
-  speed_list: "null",
-  _attachments: {
-    [filename]: {
-      content_type: filetype,
-      data: btoa_FD(file)
-    }
-  }
-};
+  let newChatObj: messageDefaultObject = {
+    command: "msg",
+    hmac_signed: false,
+    percent: 0,
+    bytesperminute: 0, // You need to assign a value here
+    is_new: false,
+    _id: uuid,
+    timestamp: timestamp,
+    dxcallsign: dxcallsign,
+    dxgrid: "null",
+    msg: chatmessage,
+    checksum: file_checksum,
+    type: message_type,
+    status: "transmitting",
+    attempt: 1,
+    uuid: uuid,
+    duration: 0,
+    nacks: 0,
+    speed_list: "null",
+    _attachments: {
+      [filename]: {
+        content_type: filetype,
+        data: btoa_FD(file),
+      },
+    },
+  };
 
   sendMessage(newChatObj);
   addObjToDatabase(newChatObj);
@@ -288,7 +279,9 @@ function sortChatList() {
       }
       reorderedData[dxcallsign].push(obj);
 
-      reorderedData[dxcallsign] = reorderedData[dxcallsign].sort(sortByProperty("timestamp"));
+      reorderedData[dxcallsign] = reorderedData[dxcallsign].sort(
+        sortByProperty("timestamp"),
+      );
     }
   });
   //console.log(reorderedData["2LS-0"])
@@ -296,17 +289,14 @@ function sortChatList() {
 }
 
 //https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
-function sortByProperty(property){  
-  return function(a,b){  
-     if(a[property] > b[property])  
-        return 1;  
-     else if(a[property] < b[property])  
-        return -1;  
- 
-     return 0;  
-  }  
-}
+function sortByProperty(property) {
+  return function (a, b) {
+    if (a[property] > b[property]) return 1;
+    else if (a[property] < b[property]) return -1;
 
+    return 0;
+  };
+}
 
 export function getMessageAttachment(id) {
   return new Promise(async (resolve, reject) => {
@@ -333,28 +323,29 @@ export function getMessageAttachment(id) {
   });
 }
 
-
 //repeat a message
 export function repeatMessageTransmission(id) {
   // 1. get message object by ID
   // 2. Upsert Attempts
   // 3. send message
 
-db.find({
+  db.find({
     selector: {
       _id: id,
     },
-  }).then(function (result){
-    console.log(result)
-    let obj = result.docs[0]
-    console.log(obj)
-    obj.attempt += 1
-    databaseUpsert(obj.uuid, "attempt", obj.attempt);
-    updateUnsortedChatListEntry(obj.uuid, "attempt", obj.attempt);
-    sendMessage(obj)
-  }).catch(function (err) {
-                  console.log(err);
-                });
+  })
+    .then(function (result) {
+      console.log(result);
+      let obj = result.docs[0];
+      console.log(obj);
+      obj.attempt += 1;
+      databaseUpsert(obj.uuid, "attempt", obj.attempt);
+      updateUnsortedChatListEntry(obj.uuid, "attempt", obj.attempt);
+      sendMessage(obj);
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 }
 
 // delete a message from databse and gui
@@ -374,7 +365,6 @@ export function deleteMessageFromDB(id) {
   chat.sorted_chat_list = sortChatList();
 }
 
-
 //Function to clean old beacons and optimize database
 async function dbClean() {
   //Only keep the most x latest days of beacons
@@ -383,7 +373,6 @@ async function dbClean() {
   let timestampPurge = Math.floor(
     (Date.now() - beaconKeep * 24 * 60 * 60 * 1000) / 1000,
   );
-
 
   //Items to purge from database
   var purgeFilter = [
@@ -404,7 +393,7 @@ async function dbClean() {
       //console.log("Purging " + result.docs.length + " beacons received before " + timestampPurge);
       itemCount = result.docs.length;
       result.docs.forEach(async function (item) {
-           await deleteMessageFromDB(item._id)
+        await deleteMessageFromDB(item._id);
       });
     })
     .catch(function (err) {
@@ -415,19 +404,12 @@ async function dbClean() {
   //Too slow on older/slower machines
   //await db.compact();
 
+  let message = "Database maintenance is complete";
+  displayToast("info", "bi bi-info-circle", message, 5000);
 
-
- let message = "Database maintenance is complete"
-              displayToast("info", "bi bi-info-circle", message, 5000);
-
- message = "Removed "+itemCount+" items from database"
-              displayToast("info", "bi bi-info-circle", message, 5000);
-
-
+  message = "Removed " + itemCount + " items from database";
+  displayToast("info", "bi bi-info-circle", message, 5000);
 }
-
-
-
 
 // function to update transmission status
 export function updateTransmissionStatus(obj) {
@@ -436,23 +418,19 @@ export function updateTransmissionStatus(obj) {
   databaseUpsert(obj.uuid, "bytesperminute", obj.bytesperminute);
   databaseUpsert(obj.uuid, "status", obj.status);
 
-
   // update screen rendering / messages
   updateUnsortedChatListEntry(obj.uuid, "percent", obj.percent);
   updateUnsortedChatListEntry(obj.uuid, "bytesperminute", obj.bytesperminute);
   updateUnsortedChatListEntry(obj.uuid, "status", obj.status);
-
 }
 
 export function updateUnsortedChatListEntry(uuid, object, value) {
-
-  var data = getFromUnsortedChatListByUUID(uuid)
-  if(data){
+  var data = getFromUnsortedChatListByUUID(uuid);
+  if (data) {
     data[object] = value;
     console.log("Entry updated:", data[object]);
     chat.sorted_chat_list = sortChatList();
     return data;
-
   }
 
   /*
@@ -470,42 +448,38 @@ export function updateUnsortedChatListEntry(uuid, object, value) {
   return null; // Return null if not found
 }
 
-function getFromUnsortedChatListByUUID(uuid){
-    for (const entry of chat.unsorted_chat_list) {
-        if (entry.uuid === uuid) {
-            return entry;
-        }
+function getFromUnsortedChatListByUUID(uuid) {
+  for (const entry of chat.unsorted_chat_list) {
+    if (entry.uuid === uuid) {
+      return entry;
     }
-    return false;
+  }
+  return false;
 }
 
-export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any]{
-let new_counter = 0
-let total_counter = 0
-let item_array = []
-if (typeof dxcallsign !== 'undefined'){
-    for (const key in chat.sorted_chat_list[dxcallsign]){
-        //console.log(chat.sorted_chat_list[dxcallsign][key])
-        //item_array.push(chat.sorted_chat_list[dxcallsign][key])
-      if(chat.sorted_chat_list[dxcallsign][key].is_new){
-            item_array.push(chat.sorted_chat_list[dxcallsign][key])
-            new_counter += 1
-
+export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any] {
+  let new_counter = 0;
+  let total_counter = 0;
+  let item_array = [];
+  if (typeof dxcallsign !== "undefined") {
+    for (const key in chat.sorted_chat_list[dxcallsign]) {
+      //console.log(chat.sorted_chat_list[dxcallsign][key])
+      //item_array.push(chat.sorted_chat_list[dxcallsign][key])
+      if (chat.sorted_chat_list[dxcallsign][key].is_new) {
+        item_array.push(chat.sorted_chat_list[dxcallsign][key]);
+        new_counter += 1;
       }
-      total_counter += 1
+      total_counter += 1;
     }
+  }
+
+  return [total_counter, new_counter, item_array];
 }
 
-    return [total_counter, new_counter, item_array];
+export function resetIsNewMessage(uuid, value) {
+  databaseUpsert(uuid, "is_new", value);
+  updateUnsortedChatListEntry(uuid, "is_new", value);
 }
-
-
-export function resetIsNewMessage(uuid, value){
-    databaseUpsert(uuid, "is_new", value)
-    updateUnsortedChatListEntry(uuid, "is_new", value);
-}
-
-
 
 export function databaseUpsert(id, object, value) {
   db.upsert(id, function (doc) {
@@ -527,70 +501,61 @@ export function databaseUpsert(id, object, value) {
 
 // function for fetching all messages from chat / updating chat
 export async function updateAllChat(cleanup) {
-
-    // run cleanup if requested
-    if (cleanup) {
-        await dbClean()
-    }
-  let indexFields = [
-    {dxcallsign: "asc"},
-    {timestamp: "asc"}
-  ]
+  // run cleanup if requested
+  if (cleanup) {
+    await dbClean();
+  }
+  let indexFields = [{ dxcallsign: "asc" }, { timestamp: "asc" }];
   let filter = {
-          selector: {
-            $and: [
-              { dxcallsign: { $exists: true } },
-              { timestamp: { $exists: true } },
-              //{ $or: chat.chat_filter },
-            ],
-          },
-          sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
+    selector: {
+      $and: [
+        { dxcallsign: { $exists: true } },
+        { timestamp: { $exists: true } },
+        //{ $or: chat.chat_filter },
+      ],
+    },
+    sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
+  };
+  //"{ dxcallsign: \"asc\" }, { timestamp: \"asc\" }"
+  await createIndex(indexFields);
+  getFromDBByFilter(filter)
+    .then(function (result) {
+      for (var item of (result as any).docs) {
+        const dxcallsign = item.dxcallsign;
+        // Check if dxcallsign already exists as a property in the result object
+        if (!chat.sorted_beacon_list[dxcallsign]) {
+          // If not, initialize it with an empty array for snr values
+          chat.sorted_beacon_list[dxcallsign] = {
+            dxcallsign,
+            snr: [],
+            timestamp: [],
+          };
+          chat.callsign_list.add(dxcallsign);
         }
-        //"{ dxcallsign: \"asc\" }, { timestamp: \"asc\" }"
-        await createIndex(indexFields);
-        getFromDBByFilter(filter)
-          .then(function (result) {
-          for (var item of (result as any).docs) {
-            const dxcallsign = item.dxcallsign;
-            // Check if dxcallsign already exists as a property in the result object
-            if (!chat.sorted_beacon_list[dxcallsign]) {
-              // If not, initialize it with an empty array for snr values
-              chat.sorted_beacon_list[dxcallsign] = {
-                dxcallsign,
-                snr: [],
-                timestamp: [],
-              };
-              chat.callsign_list.add(dxcallsign);
-            }
 
-            if (item.type === "beacon") {
-              //console.log(item);
+        if (item.type === "beacon") {
+          //console.log(item);
 
-              // TODO: sort beacon list .... maybe a part for a separate function
-              const jsonData = [item];
-              
-              // Process each JSON item step by step
-              jsonData.forEach((jsonitem) => {
-                const { snr, timestamp } = item;
+          // TODO: sort beacon list .... maybe a part for a separate function
+          const jsonData = [item];
 
-                // Push the snr value to the corresponding dxcallsign's snr array
-                chat.sorted_beacon_list[dxcallsign].snr.push(snr);
-                chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
-              });
-            } else {
-              
-              chat.unsorted_chat_list.push(item);
-              chat.sorted_chat_list = sortChatList();
-              
-            }
-           
-          }
+          // Process each JSON item step by step
+          jsonData.forEach((jsonitem) => {
+            const { snr, timestamp } = item;
 
-        })
-        .catch(function (err) {
-          console.log(err);
-        });
-
+            // Push the snr value to the corresponding dxcallsign's snr array
+            chat.sorted_beacon_list[dxcallsign].snr.push(snr);
+            chat.sorted_beacon_list[dxcallsign].timestamp.push(timestamp);
+          });
+        } else {
+          chat.unsorted_chat_list.push(item);
+          chat.sorted_chat_list = sortChatList();
+        }
+      }
+    })
+    .catch(function (err) {
+      console.log(err);
+    });
 }
 
 function addObjToDatabase(newobj) {
@@ -610,12 +575,10 @@ function addObjToDatabase(newobj) {
       console.log("new database entry");
       console.log(response);
 
-
       if (newobj.command === "msg") {
         chat.unsorted_chat_list.push(newobj);
         chat.sorted_chat_list = sortChatList();
       }
-
     })
     .catch(function (err) {
       console.log(err);
@@ -624,10 +587,7 @@ function addObjToDatabase(newobj) {
       // try upserting status in case we tried sending a message to our selfes
       databaseUpsert(newobj.uuid, "status", newobj.status);
       updateUnsortedChatListEntry(newobj.uuid, "status", newobj.status);
-
-
     });
-
 
   /*
 // upsert footer ...
@@ -659,7 +619,7 @@ function createChatIndex() {
         "is_new",
         "nacks",
         "duration",
-        "speed_list"
+        "speed_list",
       ],
     },
   })
@@ -680,8 +640,6 @@ export function deleteChatByCallsign(callsign) {
 
   deleteFromDatabaseByCallsign(callsign);
 }
-
-
 
 function deleteFromDatabaseByCallsign(callsign) {
   db.find({
@@ -730,18 +688,18 @@ export function newBeaconReceived(obj) {
     "mycallsign": "DJ2LS-0"
 }
 */
-let newChatObj: beaconDefaultObject = {
-  command: "beacon",
-  is_new: false,
-  _id: obj["uuid"],
-  timestamp: obj["timestamp"],
-  dxcallsign: obj["dxcallsign"],
-  dxgrid: obj["dxgrid"],
-  type: "beacon",
-  status: obj["beacon"],
-  uuid: obj["uuid"],
-  snr: obj["snr"], // adding the new field
-};
+  let newChatObj: beaconDefaultObject = {
+    command: "beacon",
+    is_new: false,
+    _id: obj["uuid"],
+    timestamp: obj["timestamp"],
+    dxcallsign: obj["dxcallsign"],
+    dxgrid: obj["dxgrid"],
+    type: "beacon",
+    status: obj["beacon"],
+    uuid: obj["uuid"],
+    snr: obj["snr"], // adding the new field
+  };
 
   addObjToDatabase(newChatObj);
 
@@ -769,13 +727,11 @@ let newChatObj: beaconDefaultObject = {
   });
 
   // check if auto retry enabled
-  console.log("-----------------------------------------")
-  console.log(settings.enable_auto_retry.toUpperCase())
-    if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
+  console.log("-----------------------------------------");
+  console.log(settings.enable_auto_retry.toUpperCase());
+  if (settings.enable_auto_retry.toUpperCase() == "TRUE") {
     checkForWaitingMessages(dxcallsign);
   }
-
-
 }
 
 // function for handling a received message
@@ -857,33 +813,32 @@ export function newMessageReceived(message, protocol) {
     */
   console.log(protocol);
 
-let newChatObj: messageDefaultObject = {
-  command: "msg",
-  hmac_signed: protocol["hmac_signed"],
-  percent: 100,
-  bytesperminute: protocol["bytesperminute"],
-  is_new: true,
-  _id: message[3],
-  timestamp: message[4],
-  dxcallsign: protocol["dxcallsign"],
-  dxgrid: protocol["dxgrid"],
-  msg: message[5],
-  checksum: message[2],
-  type: protocol["status"],
-  status: protocol["status"],
-  attempt: 1,
-  uuid: message[3],
-  duration: protocol["duration"],
-  nacks: protocol["nacks"],
-  speed_list: protocol["speed_list"],
-  _attachments: {
-    [message[6]]: {
-      content_type: message[7],
-      data: btoa_FD(message[8])
-    }
-  }
-};
-
+  let newChatObj: messageDefaultObject = {
+    command: "msg",
+    hmac_signed: protocol["hmac_signed"],
+    percent: 100,
+    bytesperminute: protocol["bytesperminute"],
+    is_new: true,
+    _id: message[3],
+    timestamp: message[4],
+    dxcallsign: protocol["dxcallsign"],
+    dxgrid: protocol["dxgrid"],
+    msg: message[5],
+    checksum: message[2],
+    type: protocol["status"],
+    status: protocol["status"],
+    attempt: 1,
+    uuid: message[3],
+    duration: protocol["duration"],
+    nacks: protocol["nacks"],
+    speed_list: protocol["speed_list"],
+    _attachments: {
+      [message[6]]: {
+        content_type: message[7],
+        data: btoa_FD(message[8]),
+      },
+    },
+  };
 
   // some tweaks for broadcasts
   if (protocol.fec == "broadcast") {
@@ -906,31 +861,26 @@ export function setStateSuccess() {
   state.arq_seconds_until_timeout_percent = 100;
 }
 
-export function requestMessageInfo(id){
-
-console.log(id)
-// id and uuid are the same
-var data = getFromUnsortedChatListByUUID(id)
-console.log(data)
-    chat.selectedMessageObject = data
-
-
+export function requestMessageInfo(id) {
+  console.log(id);
+  // id and uuid are the same
+  var data = getFromUnsortedChatListByUUID(id);
+  console.log(data);
+  chat.selectedMessageObject = data;
 }
 
-async function createIndex(myIndexFields)
-{
-    db.createIndex({
-      index: {
-        fields: myIndexFields,
-      },
-    })
-    .catch(err => {
-      console.log(err);
-    });
+async function createIndex(myIndexFields) {
+  db.createIndex({
+    index: {
+      fields: myIndexFields,
+    },
+  }).catch((err) => {
+    console.log(err);
+  });
 }
 
-async function  getFromDBByFilter(filter) {
-/*
+async function getFromDBByFilter(filter) {
+  /*
 USAGE:
 
 let filter = {
@@ -951,54 +901,53 @@ getFromDBByFilter(filter)
   });
 
 */
-return new Promise((resolve, reject) => {
-return db.find(filter)
-.then(result => {
-  console.log(result);
-  resolve(result);
-})
-.catch(err => {
-  console.log(err);
-  reject(err);
-})})
+  return new Promise((resolve, reject) => {
+    return db
+      .find(filter)
+      .then((result) => {
+        console.log(result);
+        resolve(result);
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err);
+      });
+  });
 }
 
-
-
 async function checkForWaitingMessages(dxcall) {
-
-let filter = {
+  let filter = {
     selector: {
       dxcallsign: dxcall,
       type: "transmit",
       status: "failed",
       //attempt: { $lt: parseInt(config.max_retry_attempts) }
     },
-  }
+  };
 
-getFromDBByFilter(filter)
-  .then(result => {
-  // @ts-expect-error
-       let message = "Found " + result.docs.length + " waiting messages for " + dxcall
+  getFromDBByFilter(filter)
+    .then((result) => {
+      // @ts-expect-error
+      let message =
+        "Found " + result.docs.length + " waiting messages for " + dxcall;
 
-        console.log(message);
-       displayToast("info", "bi bi-info-circle", message, 5000);
+      console.log(message);
+      displayToast("info", "bi bi-info-circle", message, 5000);
 
       // handle result
       // @ts-expect-error
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
         // this ensures, we are only sending one message at once
-// @ts-expect-error
+        // @ts-expect-error
         if (result.docs[0].attempt < settings.max_retry_attempts) {
-            // @ts-expect-error
-          repeatMessageTransmission(result.docs[0].uuid)
+          // @ts-expect-error
+          repeatMessageTransmission(result.docs[0].uuid);
         }
         return;
       }
-
-  })
-  .catch(err => {
-    console.log(err)
-  });
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }

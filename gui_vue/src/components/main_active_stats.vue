@@ -167,17 +167,10 @@ const scatterChartData = computed(() => ({
     },
   ],
 }));
-
-
-
-
-
-
 </script>
 
 <script lang="ts">
-
-import {initWaterfall} from "../js/waterfallHandler.js"
+import { initWaterfall } from "../js/waterfallHandler.js";
 
 export default {
   mounted() {
@@ -186,16 +179,13 @@ export default {
     //const myElement = this.$refs.waterfall; // Access the DOM element with ref
 
     // init waterfall
-    initWaterfall()
-
+    initWaterfall();
   },
-}
-
+};
 </script>
 
-
 <template>
-  <div class="card mb-1" style="height: calc(var(--variable-height) - 20px);">
+  <div class="card mb-1" style="height: calc(var(--variable-height) - 20px)">
     <div class="card-header p-1">
       <div class="container">
         <div class="row">
@@ -242,7 +232,6 @@ export default {
               </div>
             </div>
             <div class="btn-group" role="group" aria-label="Busy indicators">
-
               <button
                 class="btn btn-sm ms-1 p-1 disabled"
                 type="button"
@@ -252,7 +241,8 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.getChannelBusySlotState(0) === true,
-                  'btn-outline-secondary': state.getChannelBusySlotState(0) === false,
+                  'btn-outline-secondary':
+                    state.getChannelBusySlotState(0) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -268,7 +258,8 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.getChannelBusySlotState(1) === true,
-                  'btn-outline-secondary': state.getChannelBusySlotState(1) === false,
+                  'btn-outline-secondary':
+                    state.getChannelBusySlotState(1) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -284,7 +275,8 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.getChannelBusySlotState(2) === true,
-                  'btn-outline-secondary': state.getChannelBusySlotState(2) === false,
+                  'btn-outline-secondary':
+                    state.getChannelBusySlotState(2) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -300,7 +292,8 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.getChannelBusySlotState(3) === true,
-                  'btn-outline-secondary': state.getChannelBusySlotState(3) === false,
+                  'btn-outline-secondary':
+                    state.getChannelBusySlotState(3) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -316,7 +309,8 @@ export default {
                 data-bs-html="true"
                 v-bind:class="{
                   'btn-warning': state.getChannelBusySlotState(4) === true,
-                  'btn-outline-secondary': state.getChannelBusySlotState(4) === false,
+                  'btn-outline-secondary':
+                    state.getChannelBusySlotState(4) === false,
                 }"
                 title="Channel busy state: <strong class='text-success'>not busy</strong> / <strong class='text-danger'>busy </strong>"
               >
@@ -367,7 +361,7 @@ export default {
           <canvas
             ref="waterfall"
             id="waterfall"
-            style="position: relative; z-index: 2;"
+            style="position: relative; z-index: 2"
             class="force-gpu h-100 w-100"
           ></canvas>
         </div>

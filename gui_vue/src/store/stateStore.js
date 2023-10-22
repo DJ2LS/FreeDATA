@@ -59,24 +59,24 @@ export const useStateStore = defineStore("stateStore", () => {
   var python_version = ref();
   var modem_version = ref();
 
-
-function getChannelBusySlotState(slot){
+  function getChannelBusySlotState(slot) {
     const slot_state = channel_busy_slot.value;
 
-    if (typeof slot_state !== 'undefined') {
+    if (typeof slot_state !== "undefined") {
       // Replace 'False' with 'false' to match JavaScript's boolean representation
-      const string = slot_state.replace(/False/g, 'false').replace(/True/g, 'true');
+      const string = slot_state
+        .replace(/False/g, "false")
+        .replace(/True/g, "true");
 
       // Parse the string to get an array
       const arr = JSON.parse(string);
 
-      return arr[slot]
+      return arr[slot];
     } else {
       // Handle the undefined case
       return false;
     }
-}
-
+  }
 
   function updateTncState(state) {
     modem_connection.value = state;
@@ -175,6 +175,6 @@ function getChannelBusySlotState(slot){
     rigctld_started,
     rigctld_process,
     python_version,
-    modem_version
+    modem_version,
   };
 });

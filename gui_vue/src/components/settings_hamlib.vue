@@ -43,35 +43,31 @@ function saveSettings() {
     />
   </div>
 
-
-    <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px"
-      >Rigctld remote ip</span
-    >
-              <input
-                type="text"
-                class="form-control"
-                placeholder="rigctld IP"
-                id="hamlib_rigctld_ip"
-                aria-label="Device IP"
-                v-model="settings.hamlib_rigctld_ip"
-              />
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="width: 180px">Rigctld remote ip</span>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="rigctld IP"
+      id="hamlib_rigctld_ip"
+      aria-label="Device IP"
+      v-model="settings.hamlib_rigctld_ip"
+    />
   </div>
 
-    <div class="input-group input-group-sm mb-1">
+  <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px"
       >Rigctld remote port</span
     >
-              <input
-                type="text"
-                class="form-control"
-                placeholder="rigctld port"
-                id="hamlib_rigctld_port"
-                aria-label="Device Port"
-                v-model="settings.hamlib_rigctld_port"
-              />
+    <input
+      type="text"
+      class="form-control"
+      placeholder="rigctld port"
+      id="hamlib_rigctld_port"
+      aria-label="Device Port"
+      v-model="settings.hamlib_rigctld_port"
+    />
   </div>
-
 
   <hr class="m-2" />
   <div class="input-group input-group-sm mb-1">

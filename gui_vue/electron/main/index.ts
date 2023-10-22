@@ -1,10 +1,9 @@
-import { app, BrowserWindow, shell, ipcMain } from 'electron'
-import { release, platform } from 'node:os'
-import { join } from 'node:path'
-import { autoUpdater } from "electron-updater"
-import { existsSync } from "fs"
-import { spawn } from "child_process"
-
+import { app, BrowserWindow, shell, ipcMain } from "electron";
+import { release, platform } from "node:os";
+import { join } from "node:path";
+import { autoUpdater } from "electron-updater";
+import { existsSync } from "fs";
+import { spawn } from "child_process";
 
 // The built directory structure
 //
@@ -16,22 +15,22 @@ import { spawn } from "child_process"
 // ├─┬ dist
 // │ └── index.html    > Electron-Renderer
 //
-process.env.DIST_ELECTRON = join(__dirname, '..')
-process.env.DIST = join(process.env.DIST_ELECTRON, '../dist')
+process.env.DIST_ELECTRON = join(__dirname, "..");
+process.env.DIST = join(process.env.DIST_ELECTRON, "../dist");
 process.env.VITE_PUBLIC = process.env.VITE_DEV_SERVER_URL
-  ? join(process.env.DIST_ELECTRON, '../public')
-  : process.env.DIST
+  ? join(process.env.DIST_ELECTRON, "../public")
+  : process.env.DIST;
 
 // Disable GPU Acceleration for Windows 7
-if (release().startsWith('6.1')) app.disableHardwareAcceleration()
+if (release().startsWith("6.1")) app.disableHardwareAcceleration();
 
 // Set application name for Windows 10+ notifications
-if (process.platform === 'win32') app.setAppUserModelId(app.getName())
+if (process.platform === "win32") app.setAppUserModelId(app.getName());
 
 if (!app.requestSingleInstanceLock()) {
-  close_sub_processes()
-  app.quit()
-  process.exit(0)
+  close_sub_processes();
+  app.quit();
+  process.exit(0);
 }
 
 // Remove electron security warnings
@@ -41,18 +40,18 @@ if (!app.requestSingleInstanceLock()) {
 
 // set daemon process var
 var daemonProcess = null;
-let win: BrowserWindow | null = null
+let win: BrowserWindow | null = null;
 // Here, you can also use other preload
-const preload = join(__dirname, '../preload/index.js')
-const url = process.env.VITE_DEV_SERVER_URL
-const indexHtml = join(process.env.DIST, 'index.html')
+const preload = join(__dirname, "../preload/index.js");
+const url = process.env.VITE_DEV_SERVER_URL;
+const indexHtml = join(process.env.DIST, "index.html");
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'FreeDATA',
+    title: "FreeDATA",
     width: 1200,
     height: 670,
-    icon: join(process.env.VITE_PUBLIC, 'icon_cube_border.png'),
+    icon: join(process.env.VITE_PUBLIC, "icon_cube_border.png"),
     autoHideMenuBar: true,
     webPreferences: {
       preload,
@@ -64,28 +63,28 @@ async function createWindow() {
       nodeIntegration: true,
       contextIsolation: false,
     },
-  })
+  });
 
-  if (process.env.VITE_DEV_SERVER_URL) { // electron-vite-vue#298
-    win.loadURL(url)
+  if (process.env.VITE_DEV_SERVER_URL) {
+    // electron-vite-vue#298
+    win.loadURL(url);
     // Open devTool if the app is not packaged
-    win.webContents.openDevTools()
+    win.webContents.openDevTools();
   } else {
-    win.loadFile(indexHtml)
+    win.loadFile(indexHtml);
   }
 
   // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
+  win.webContents.on("did-finish-load", () => {
+    win?.webContents.send("main-process-message", new Date().toLocaleString());
+  });
 
   // Make all links open with the browser, not with the application
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
-    return { action: 'deny' }
-  })
+    if (url.startsWith("https:")) shell.openExternal(url);
+    return { action: "deny" };
+  });
   // win.webContents.on('will-navigate', (event, url) => { }) #344
-
 
   win.once("ready-to-show", () => {
     //autoUpdater.logger = log.scope("updater");
@@ -95,14 +94,11 @@ async function createWindow() {
     autoUpdater.checkForUpdatesAndNotify();
     //autoUpdater.quitAndInstall();
   });
-
-
 }
 
 //app.whenReady().then(
 app.whenReady().then(() => {
-
-createWindow()
+  createWindow();
 
   //Generate daemon binary path
   var daemonPath = "";
@@ -114,11 +110,7 @@ createWindow()
       break;
     case "win32":
     case "win64":
-      daemonPath = join(
-        process.resourcesPath,
-        "modem",
-        "freedata-daemon.exe",
-      );
+      daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
       break;
     default:
       console.log("Unhandled OS Platform: ", platform());
@@ -156,59 +148,49 @@ createWindow()
     console.log("Daemon binary doesn't exist--normal for dev environments.");
   }
 
-
-
-
-//)
+  //)
 });
 
+app.on("window-all-closed", () => {
+  win = null;
+  if (process.platform !== "darwin") app.quit(close_sub_processes());
+});
 
-app.on('window-all-closed', () => {
-  win = null
-  if (process.platform !== 'darwin') app.quit(
-  close_sub_processes()
-
-  )
-})
-
-app.on('second-instance', () => {
+app.on("second-instance", () => {
   if (win) {
     // Focus on the main window if the user tried to open another
-    if (win.isMinimized()) win.restore()
-    win.focus()
+    if (win.isMinimized()) win.restore();
+    win.focus();
   }
-})
+});
 
-app.on('activate', () => {
-  const allWindows = BrowserWindow.getAllWindows()
+app.on("activate", () => {
+  const allWindows = BrowserWindow.getAllWindows();
   if (allWindows.length) {
-    allWindows[0].focus()
+    allWindows[0].focus();
   } else {
-    createWindow()
+    createWindow();
   }
-})
+});
 
 // New window example arg: new windows url
-ipcMain.handle('open-win', (_, arg) => {
+ipcMain.handle("open-win", (_, arg) => {
   const childWindow = new BrowserWindow({
     webPreferences: {
       preload,
       nodeIntegration: true,
       contextIsolation: false,
     },
-  })
+  });
 
   if (process.env.VITE_DEV_SERVER_URL) {
-    childWindow.loadURL(`${url}#${arg}`)
+    childWindow.loadURL(`${url}#${arg}`);
   } else {
-    childWindow.loadFile(indexHtml, { hash: arg })
+    childWindow.loadFile(indexHtml, { hash: arg });
   }
-})
+});
 
-
-
-
-  //restart and install udpate
+//restart and install udpate
 ipcMain.on("request-restart-and-install-update", (event, data) => {
   close_sub_processes();
   autoUpdater.quitAndInstall();
@@ -274,7 +256,6 @@ autoUpdater.on("error", (error) => {
   win.webContents.send("action-updater", arg);
   console.log("AUTO UPDATER : " + error);
 });
-
 
 function close_sub_processes() {
   console.log("closing sub processes");

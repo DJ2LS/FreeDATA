@@ -15,8 +15,8 @@ import settings_exp from "./settings_exp.vue";
   >
     <div class="container">
       <div class="badge text-bg-warning ms-3">
-        <i class="bi bi-exclamation-triangle"></i> Please restart the modem after
-        changing settings!
+        <i class="bi bi-exclamation-triangle"></i> Please restart the modem
+        after changing settings!
       </div>
       <!-- SETTINGS Nav tabs -->
       <ul class="nav nav-tabs" id="myTab" role="tablist">

@@ -16,9 +16,7 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-import {getRxBuffer} from '../js/sock.js'
-
-
+import { getRxBuffer } from "../js/sock.js";
 
 import {
   Chart as ChartJS,
@@ -34,11 +32,9 @@ import {
 
 import { Line, Scatter, Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
-import annotationPlugin from 'chartjs-plugin-annotation';
+import annotationPlugin from "chartjs-plugin-annotation";
 
-const newChatCall=ref(null);
-
-
+const newChatCall = ref(null);
 
 ChartJS.register(
   CategoryScale,
@@ -48,10 +44,8 @@ ChartJS.register(
   Tooltip,
   Legend,
   BarElement,
-  annotationPlugin
+  annotationPlugin,
 );
-
-
 
 var beaconHistogramOptions = {
   type: "bar",
@@ -68,13 +62,13 @@ var beaconHistogramOptions = {
     annotation: {
       annotations: [
         {
-          type: 'line',
-          mode: 'horizontal',
-          scaleID: 'y',
+          type: "line",
+          mode: "horizontal",
+          scaleID: "y",
           value: 0,
-          borderColor: 'darkgrey', // Set the color to dark grey for the zero line
+          borderColor: "darkgrey", // Set the color to dark grey for the zero line
           borderWidth: 0.5, // Set the line width
-        }
+        },
       ],
     },
   },
@@ -121,15 +115,15 @@ try {
 const beaconHistogramData = computed(() => ({
   labels: chat.beaconLabelArray,
   datasets: [
-    { data: chat.beaconDataArray, tension: 0.1, borderColor: "rgb(0, 255, 0)",
+    {
+      data: chat.beaconDataArray,
+      tension: 0.1,
+      borderColor: "rgb(0, 255, 0)",
 
-    backgroundColor: function(context) {
-          var value = context.dataset.data[context.dataIndex];
-          return value >= 0 ? 'green' : 'red';
-        },
-
-
-
+      backgroundColor: function (context) {
+        var value = context.dataset.data[context.dataIndex];
+        return value >= 0 ? "green" : "red";
+      },
     },
   ],
 }));
@@ -138,17 +132,12 @@ function newChat(obj) {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase();
   chat.callsign_list.add(callsign);
-  this.newChatCall.value="";
+  this.newChatCall.value = "";
 }
 
-
-function syncWithModem(){
-
-getRxBuffer()
+function syncWithModem() {
+  getRxBuffer();
 }
-
-
-
 </script>
 
 <template>
@@ -163,7 +152,7 @@ getRxBuffer()
               style="text-transform: uppercase"
               placeholder="callsign"
               @keypress.enter="newChat()"
-             ref="newChatCall"
+              ref="newChatCall"
             />
             <button
               class="btn btn-sm btn-outline-success"
@@ -180,40 +169,35 @@ getRxBuffer()
         <div class="col-5 ms-2 p-0">
           <!-- right side of chat nav bar-->
 
+          <div class="input-group mb-0 p-0 w-50">
+            <button type="button" class="btn btn-outline-secondary" disabled>
+              Beacons
+            </button>
 
-<div class="input-group mb-0 p-0 w-50 ">
-
-
-  <button type="button" class="btn btn-outline-secondary" disabled>
-      Beacons
-    </button>
-
-  <div class="form-floating border border-secondary-subtle border-1 rounded-end">
-
-          <Bar
-            :data="beaconHistogramData"
-            :options="beaconHistogramOptions"
-            width="300"
-            height="50"
-
-          />
-
-  </div>
-
-</div>
-</div>
+            <div
+              class="form-floating border border-secondary-subtle border-1 rounded-end"
+            >
+              <Bar
+                :data="beaconHistogramData"
+                :options="beaconHistogramOptions"
+                width="300"
+                height="50"
+              />
+            </div>
+          </div>
+        </div>
 
         <div class="col-2 ms-2 p-0">
-
-<div class="input-group mb-0 p-0  ">
-
-  <button type="button" class="btn btn-outline-secondary" @click="syncWithModem()">
-      Modem Sync
-    </button>
-</div>
-</div>
-
-
+          <div class="input-group mb-0 p-0">
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              @click="syncWithModem()"
+            >
+              Modem Sync
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </nav>

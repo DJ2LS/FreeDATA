@@ -1,34 +1,34 @@
-import { ipcRenderer } from "electron"
-import { autoUpdater } from "electron-updater"
+import { ipcRenderer } from "electron";
+import { autoUpdater } from "electron-updater";
 
-
-
-function domReady(condition: DocumentReadyState[] = ['complete', 'interactive']) {
+function domReady(
+  condition: DocumentReadyState[] = ["complete", "interactive"],
+) {
   return new Promise((resolve) => {
     if (condition.includes(document.readyState)) {
-      resolve(true)
+      resolve(true);
     } else {
-      document.addEventListener('readystatechange', () => {
+      document.addEventListener("readystatechange", () => {
         if (condition.includes(document.readyState)) {
-          resolve(true)
+          resolve(true);
         }
-      })
+      });
     }
-  })
+  });
 }
 
 const safeDOM = {
   append(parent: HTMLElement, child: HTMLElement) {
-    if (!Array.from(parent.children).find(e => e === child)) {
-      return parent.appendChild(child)
+    if (!Array.from(parent.children).find((e) => e === child)) {
+      return parent.appendChild(child);
     }
   },
   remove(parent: HTMLElement, child: HTMLElement) {
-    if (Array.from(parent.children).find(e => e === child)) {
-      return parent.removeChild(child)
+    if (Array.from(parent.children).find((e) => e === child)) {
+      return parent.removeChild(child);
     }
   },
-}
+};
 
 /**
  * https://tobiasahlin.com/spinkit
@@ -37,7 +37,7 @@ const safeDOM = {
  * https://matejkustec.github.io/SpinThatShit
  */
 function useLoading() {
-  const className = `loaders-css__square-spin`
+  const className = `loaders-css__square-spin`;
   const styleContent = `
 @keyframes square-spin {
   0% {
@@ -82,55 +82,48 @@ function useLoading() {
   background: #282c34;
   z-index: 99999;
 }
-    `
-  const oStyle = document.createElement('style')
-  const oDiv = document.createElement('div')
+    `;
+  const oStyle = document.createElement("style");
+  const oDiv = document.createElement("div");
 
-  oStyle.id = 'app-loading-style'
-  oStyle.innerHTML = styleContent
-  oDiv.className = 'app-loading-wrap'
-  oDiv.innerHTML = `<div class="${className}"><div></div></div>`
+  oStyle.id = "app-loading-style";
+  oStyle.innerHTML = styleContent;
+  oDiv.className = "app-loading-wrap";
+  oDiv.innerHTML = `<div class="${className}"><div></div></div>`;
 
   return {
     appendLoading() {
-      safeDOM.append(document.head, oStyle)
-      safeDOM.append(document.body, oDiv)
+      safeDOM.append(document.head, oStyle);
+      safeDOM.append(document.body, oDiv);
     },
     removeLoading() {
-      safeDOM.remove(document.head, oStyle)
-      safeDOM.remove(document.body, oDiv)
+      safeDOM.remove(document.head, oStyle);
+      safeDOM.remove(document.body, oDiv);
     },
-  }
+  };
 }
 
 // ----------------------------------------------------------------------
 
-const { appendLoading, removeLoading } = useLoading()
-domReady().then(appendLoading)
-
+const { appendLoading, removeLoading } = useLoading();
+domReady().then(appendLoading);
 
 window.onmessage = (ev) => {
-  ev.data.payload === 'removeLoading' && removeLoading()
-}
+  ev.data.payload === "removeLoading" && removeLoading();
+};
 
-setTimeout(removeLoading, 4999)
-
-
-
-
+setTimeout(removeLoading, 4999);
 
 window.addEventListener("DOMContentLoaded", () => {
-    // we are using this area for implementing the electron runUpdater
-    // we need access to DOM for displaying updater results in GUI
-      // close app, update and restart
+  // we are using this area for implementing the electron runUpdater
+  // we need access to DOM for displaying updater results in GUI
+  // close app, update and restart
   document
     .getElementById("update_and_install")
     .addEventListener("click", () => {
       ipcRenderer.send("request-restart-and-install-update");
     });
-
-})
-
+});
 
 // IPC ACTION FOR AUTO UPDATER
 ipcRenderer.on("action-updater", (event, arg) => {
@@ -181,11 +174,12 @@ ipcRenderer.on("action-updater", (event, arg) => {
     //autoUpdater.quitAndInstall();
   }
   if (arg.status == "update-not-available") {
-
-  document.getElementById("updater_last_version").innerHTML = arg.info.releaseName
-  document.getElementById("updater_last_update").innerHTML = arg.info.releaseDate
-  document.getElementById("updater_release_notes").innerHTML = arg.info.releaseNotes
-
+    document.getElementById("updater_last_version").innerHTML =
+      arg.info.releaseName;
+    document.getElementById("updater_last_update").innerHTML =
+      arg.info.releaseDate;
+    document.getElementById("updater_release_notes").innerHTML =
+      arg.info.releaseNotes;
 
     document.getElementById("updater_status").innerHTML =
       '<i class="bi bi-check2-square ms-1 me-1" style="color: white;"></i>';
