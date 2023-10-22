@@ -7,7 +7,7 @@
   "scripts": {
     "start": "git pull && npm i && vite",
     "dev": "vite",
-    "check" : "vue-tsc --noEmit",
+    "check": "vue-tsc --noEmit",
     "build": "vue-tsc --noEmit && vite build && electron-builder",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",
@@ -31,6 +31,7 @@
   "homepage": "https://freedata.app",
   "dependencies": {
     "@electron/notarize": "^2.1.0",
+    "@popperjs/core": "^2.11.8",
     "@vueuse/electron": "^10.4.1",
     "blob-util": "^2.0.2",
     "bootstrap": "^5.3.1",
