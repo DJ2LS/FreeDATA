@@ -425,7 +425,6 @@ client.on("data", function (socketdata) {
                 break;
               }
 
-
             case "waiting":
               // ARQ waiting
               message = "Channel busy | ARQ protocol is waiting";
