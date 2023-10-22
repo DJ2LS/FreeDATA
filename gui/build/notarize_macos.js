@@ -2,7 +2,9 @@ const { notarize } = require('@electron/notarize');
 
 async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context;
+    console.log("platform:" + electronPlatformName)
   if (electronPlatformName !== 'darwin') {
+  console.log("not a APPLE system")
     return;
   }
 
