@@ -380,6 +380,11 @@ jobs:
 
       - name: Manual Build for MacOS
         if: ${{startsWith(matrix.os, 'macos')}}
+        env: # Setting environment variables for the entire job
+          GH_TOKEN: ${{ secrets.github_token }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_ID_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASSWORD }}
         working-directory: gui
         run: |
           npm i
