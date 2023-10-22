@@ -49,7 +49,9 @@ const indexHtml = join(process.env.DIST, 'index.html')
 
 async function createWindow() {
   win = new BrowserWindow({
-    title: 'Main window',
+    title: 'FreeDATA',
+    width: 500,
+    height: 1100,
     icon: join(process.env.VITE_PUBLIC, 'icon_cube_border.png'),
     autoHideMenuBar: true,
     webPreferences: {
