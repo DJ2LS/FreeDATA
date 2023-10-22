@@ -108,10 +108,10 @@ https://stackoverflow.com/a/9622873
   /* default dark theme mods */
 }
 .modal-backdrop {
-   background-color: transparent;
+  background-color: transparent;
 }
 
 .modal-backdrop.in {
-    filter: alpha(opacity=10);
-    opacity: .1
+  filter: alpha(opacity=10);
+  opacity: 0.1;
 }

@@ -80,8 +80,6 @@ PouchDB.plugin(require("pouchdb-find"));
 //PouchDB.plugin(require('pouchdb-replication'));
 PouchDB.plugin(require("pouchdb-upsert"));
 
-
-
 var db = new PouchDB(chatDB);
 var users = new PouchDB(userDB);
 
@@ -673,9 +671,6 @@ ipcRenderer.on("return-select-user-image", (event, arg) => {
     });
 });
 
-
-
-
 ipcRenderer.on("action-update-transmission-status", (event, arg) => {
   var data = arg["data"][0];
 
@@ -1056,7 +1051,6 @@ update_chat = function (obj) {
     var attempt = obj.attempt;
   }
 
-
   // add percent and bytes per minute if not existing
   //console.log(obj.percent)
   if (typeof obj.percent == "undefined") {
@@ -1385,17 +1379,16 @@ update_chat = function (obj) {
         showOsPopUp("Message received from " + obj.dxcallsign, obj.msg);
       }
 
-
-     // check if message is signed or not for adjusting icon
-     if(typeof obj.hmac_signed !== "undefined" && obj.hmac_signed !== "False"){
-         console.log(hmac_signed)
-         var hmac_signed = '<i class="bi bi-shield-fill-check"></i>';
-     } else {
-
-     var hmac_signed = '<i class="bi bi-shield-x"></i>';
-
-     }
-
+      // check if message is signed or not for adjusting icon
+      if (
+        typeof obj.hmac_signed !== "undefined" &&
+        obj.hmac_signed !== "False"
+      ) {
+        console.log(hmac_signed);
+        var hmac_signed = '<i class="bi bi-shield-fill-check"></i>';
+      } else {
+        var hmac_signed = '<i class="bi bi-shield-x"></i>';
+      }
 
       var new_message = `
              <div class="d-flex align-items-center" style="margin-left: auto;"> <!-- max-width: 75%;  -->
@@ -1412,13 +1405,9 @@ update_chat = function (obj) {
                         </p>
 
 
-                        <span id="msg-${
-                          obj._id
-                        }-hmac-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
+                        <span id="msg-${obj._id}-hmac-badge" class="position-absolute top-0 start-100 translate-middle badge rounded-1 bg-secondary border border-white">
 
-                            <span id="msg-${
-                              obj._id
-                            }-hmac-signed" class="">${hmac_signed}</span>
+                            <span id="msg-${obj._id}-hmac-signed" class="">${hmac_signed}</span>
                         </span>
 
                       </div>
@@ -2902,8 +2891,6 @@ function clearUnreadMessages(dxcall) {
     .catch(function (err) {
       console.log(err);
     });
-
-
 }
 
 //Have the operating system show a notification popup

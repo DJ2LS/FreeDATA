@@ -2,13 +2,10 @@ const path = require("path");
 const { shell, clipboard } = require("electron");
 const exec = require("child_process").spawn;
 
-
 //import { useIpcRenderer } from '@vueuse/electron'
 //const ipcRenderer = useIpcRenderer()
 
-
 //import * as bootstrap from 'bootstrap'
-
 
 //require("./preload-chat.js");
 //require("./preload-mesh.js");
@@ -16,7 +13,6 @@ const exec = require("child_process").spawn;
 
 //const daemon = require("./daemon.js");
 //const sock = require("./sock.js");
-
 
 const fs = require("fs");
 const FD = require("./freedata");
@@ -1649,7 +1645,6 @@ window.addEventListener("DOMContentLoaded", () => {
     );
   });
 
-
   // stopTNC button clicked
   document.getElementById("stopTNC").addEventListener("click", () => {
     if (!confirm("Stop the TNC?")) return;
@@ -1753,8 +1748,6 @@ window.addEventListener("DOMContentLoaded", () => {
       ipcRenderer.send("run-tnc-command", Data);
       sock.disconnectARQ();
     });
-
-
 
   document.getElementById("thTime").addEventListener("click", () => {
     if (hslLastSort == 0 && hslLastSortDir == "asc") hslLastSortDir = "desc";
@@ -2895,9 +2888,13 @@ ipcRenderer.on("action-update-unread-messages-main", (event, data) => {
   //Do something
   if (data == true) {
     document.getElementById("list-messages-list").classList.add("bg-warning");
-    document.getElementById("list-messages-list").classList.remove("bg-secondary");
+    document
+      .getElementById("list-messages-list")
+      .classList.remove("bg-secondary");
   } else {
-    document.getElementById("list-messages-list").classList.remove("bg-warning");
+    document
+      .getElementById("list-messages-list")
+      .classList.remove("bg-warning");
     document.getElementById("list-messages-list").classList.add("bg-secondary");
   }
 });

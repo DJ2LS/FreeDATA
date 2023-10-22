@@ -7,9 +7,8 @@ https://github.com/vuejs/create-vue
 https://vue-community.org/guide/ecosystem/desktop-apps.html#electron
 https://blog.logrocket.com/building-app-electron-vue/
 
-
 Folder structure
 dist-electron: Automatically compiled source from vite
 electron: Source code folder for Electron stuff
-public: Public data 
+public: Public data
 src: VueJS source code
