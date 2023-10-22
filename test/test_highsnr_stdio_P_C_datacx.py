@@ -59,9 +59,9 @@ def t_HighSNR_P_C_DATACx(bursts: int, frames_per_burst: int, mode: str):
     # Facilitate running from main directory as well as inside test/
     rx_side = "freedv_data_raw_rx"
     _rxpath = (
-        os.path.join("..", "tnc")
-        if os.path.exists(os.path.join("..", "tnc"))
-        else "tnc"
+        os.path.join("..", "modem")
+        if os.path.exists(os.path.join("..", "modem"))
+        else "modem"
     )
     _rxpaths = glob.glob(rf"{_rxpath}/**/{rx_side}", recursive=True)
     for path in _rxpaths:

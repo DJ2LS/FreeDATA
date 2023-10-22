@@ -66,9 +66,9 @@ def t_HighSNR_C_P_DATACx(
 
     tx_side = "freedv_data_raw_tx"
     _txpaths = (
-        os.path.join("..", "tnc")
-        if os.path.exists(os.path.join("..", "tnc"))
-        else "tnc"
+        os.path.join("..", "modem")
+        if os.path.exists(os.path.join("..", "modem"))
+        else "modem"
     )
     _txpaths = glob.glob(rf"{_txpaths}/**/{tx_side}", recursive=True)
     for path in _txpaths:

@@ -1,0 +1,67 @@
+/**
+ * @see https://www.electron.build/configuration/configuration
+ */
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "app.freedata",
+  "asar": true,
+  "afterSign": "build/notarize_macos.js",
+  "productName": "FreeDATA",
+  "directories": {
+    "output": "release"
+  },
+  "files": [
+    "dist",
+    "dist-electron",
+  ],
+
+
+    "extraResources": [
+      {
+        "from": "../modem/dist/modem/",
+        "to": "modem",
+        "filter": [
+          "**/*",
+          "!**/.git"
+        ]
+      }
+    ],
+
+
+  "mac": {
+    "target": [
+      "dmg"
+    ],
+      "icon": "build/icon.png",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.plist",
+      "entitlementsInherit": "build/entitlements.plist",
+      "gatekeeperAssess": false,
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+  },
+  "win": {
+    "icon": "build/icon.png",
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": true
+  },
+  "linux": {
+    "category": "Development",
+    "target": [
+      "AppImage"
+    ],
+    "artifactName": "${productName}-${version}.${ext}"
+  }
+        }

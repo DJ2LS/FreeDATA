@@ -21,7 +21,7 @@ import numpy as np
 import sounddevice as sd
 
 sys.path.insert(0, "..")
-from tnc import codec2
+from modem import codec2
 
 
 def util_tx():

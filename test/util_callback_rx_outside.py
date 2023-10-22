@@ -15,7 +15,7 @@ import numpy as np
 import pyaudio
 
 sys.path.insert(0, "..")
-from tnc import codec2
+from modem import codec2
 
 # --------------------------------------------GET PARAMETER INPUTS
 parser = argparse.ArgumentParser(description="FreeDATA audio test")

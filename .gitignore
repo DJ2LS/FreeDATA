@@ -1,5 +1,5 @@
-# possible installation of codec2 within tnc
-tnc/codec2
+# possible installation of codec2 within modem
+modem/codec2
 
 # temporary test artifacts
 **/build
@@ -22,3 +22,11 @@ package-lock.json
 *.raw
 coverage.sh
 coverage.xml
+
+#ignore node_modules
+/gui/node_modules/
+
+#Ignore gui build items
+/gui/dist
+/gui/release
+/gui/dist-electron

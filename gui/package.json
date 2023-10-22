@@ -1,36 +1,38 @@
 {
   "name": "FreeDATA",
-  "version": "0.10.2-alpha.1",
   "description": "FreeDATA ",
-  "main": "main.js",
+  "private": true,
+  "version": "0.11.0-alpha.1",
+  "main": "dist-electron/main/index.js",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "engines": {
-    "node": ">=18.17.0",
-    "npm": ">=9.0.0"
+    "start": "git pull && npm i && vite",
+    "dev": "vite",
+    "check": "vue-tsc --noEmit",
+    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "preview": "vite preview",
+    "lint": "eslint --ext .js,.vue src",
+    "lint-fix": "eslint --ext .js,.vue --fix src"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/DJ2LS/FreeDATA.git"
   },
   "keywords": [
-    "TNC",
+    "Modem",
     "GUI",
     "FreeDATA",
     "codec2"
   ],
   "author": "DJ2LS",
-  "license": "LGPL-2.1",
+  "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/DJ2LS/FreeDATA/issues"
   },
   "homepage": "https://freedata.app",
   "dependencies": {
-    "@electron/asar": "^3.2.4",
-    "@electron/osx-sign": "^1.0.4",
+    "@electron/notarize": "^2.1.0",
     "@popperjs/core": "^2.11.8",
+    "@vueuse/electron": "^10.4.1",
     "blob-util": "^2.0.2",
     "bootstrap": "^5.3.1",
     "bootstrap-icons": "^1.10.5",
@@ -39,72 +41,42 @@
     "chart.js": "^4.3.3",
     "chartjs-plugin-annotation": "^3.0.1",
     "electron-log": "^4.4.8",
-    "electron-updater": "^6.1.1",
+    "electron-updater": "^6.1.6",
     "emoji-picker-element": "^1.18.3",
     "emoji-picker-element-data": "^1.4.0",
-    "express-pouchdb": "^4.2.0",
+    "file-saver": "^2.0.5",
     "mime": "^3.0.0",
+    "pinia": "^2.1.6",
     "pouchdb": "^8.0.1",
     "pouchdb-browser": "^8.0.1",
-    "pouchdb-express-router": "^0.0.11",
     "pouchdb-find": "^8.0.1",
-    "pouchdb-replication": "^8.0.1",
     "pouchdb-upsert": "^2.2.0",
     "qth-locator": "^2.1.0",
-    "utf8": "^3.0.0",
-    "uuid": "^9.0.0"
+    "sass": "^1.66.1",
+    "socket.io": "^4.7.2",
+    "uuid": "^9.0.0",
+    "vue": "^3.3.4",
+    "vue-chartjs": "^5.2.0",
+    "vuemoji-picker": "^0.2.0"
   },
   "devDependencies": {
-    "@electron/notarize": "^2.1.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@vitejs/plugin-vue": "^4.4.0",
     "electron": "^27.0.0",
     "electron-builder": "^24.6.3",
-    "electron-builder-notarize": "^1.5.1"
-  },
-  "build": {
-    "productName": "FreeDATA",
-    "appId": "app.freedata",
-    "afterSign": "electron-builder-notarize",
-    "npmRebuild": "false",
-    "directories": {
-      "buildResources": "build",
-      "output": "dist"
-    },
-    "mac": {
-      "target": [
-        "default"
-      ],
-      "icon": "build/icon.png",
-      "hardenedRuntime": true,
-      "entitlements": "build/entitlements.plist",
-      "entitlementsInherit": "build/entitlements.plist",
-      "gatekeeperAssess": false
-    },
-    "win": {
-      "icon": "build/icon.png",
-      "target": [
-        "nsis"
-      ]
-    },
-    "linux": {
-      "icon": "build/icon.png",
-      "target": [
-        "AppImage"
-      ],
-      "category": "Development"
-    },
-    "publish": {
-      "provider": "github",
-      "releaseType": "release"
-    },
-    "extraResources": [
-      {
-        "from": "../tnc/dist/tnc/",
-        "to": "tnc",
-        "filter": [
-          "**/*",
-          "!**/.git"
-        ]
-      }
-    ]
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-standard-with-typescript": "^39.1.0",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-n": "^16.1.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-vue": "^9.17.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.3.2",
+    "vite-plugin-electron": "^0.14.0",
+    "vite-plugin-electron-renderer": "^0.14.5",
+    "vue": "^3.3.4",
+    "vue-tsc": "^1.4.2"
   }
 }
