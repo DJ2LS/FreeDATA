@@ -421,7 +421,7 @@ class DATA:
             # Process frametypes requiring a different set of arguments.
             elif FR_TYPE.BURST_51.value >= frametype >= FR_TYPE.BURST_01.value:
                 # get snr of received data
-                # FIXME: find a fix for this - after moving to classes, this no longer works
+                # FIXME find a fix for this - after moving to classes, this no longer works
                 # snr = self.calculate_snr(freedv)
                 snr = ModemParam.snr
                 self.log.debug("[Modem] RX SNR", snr=snr)
@@ -576,7 +576,7 @@ class DATA:
 
     def send_retransmit_request_frame(self) -> None:
         # check where a None is in our burst buffer and do frame+1, because lists start at 0
-        # FIXME: Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
+        # FIXME Check to see if there's a `frame - 1` in the receive portion. Remove both if there is.
         #print(ARQ.rx_burst_buffer)
         missing_frames = [
             frame + 1
@@ -2926,7 +2926,7 @@ class DATA:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-            # FIXME: Remove or change this in later versions for full CW support
+            # FIXME Remove or change this in later versions for full CW support
             # Modem.transmitting = True
             # modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, "123"])
 
@@ -2984,7 +2984,7 @@ class DATA:
         # duration, plus overhead. Set the wait interval to be random between 0 and
         # self.duration_sig1_frame * 4 == 4 slots
         # in self.duration_sig1_frame increments.
-        # FIXME: This causes problems when running ctests - we need to figure out why
+        # FIXME This causes problems when running ctests - we need to figure out why
         if not TESTMODE:
             self.log.info("[Modem] Waiting for QRV slot...")
             helpers.wait(randrange(0, int(self.duration_sig1_frame * 4), self.duration_sig1_frame * 10 // 10.0))
