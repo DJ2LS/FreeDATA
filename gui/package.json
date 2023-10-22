@@ -40,7 +40,6 @@
     "browser-image-compression": "^2.0.2",
     "chart.js": "^4.3.3",
     "chartjs-plugin-annotation": "^3.0.1",
-    "electron-builder-notarize": "^1.5.1",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.6",
     "emoji-picker-element": "^1.18.3",
