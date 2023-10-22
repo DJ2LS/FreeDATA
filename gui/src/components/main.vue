@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -7,9 +6,6 @@ setActivePinia(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
-
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";

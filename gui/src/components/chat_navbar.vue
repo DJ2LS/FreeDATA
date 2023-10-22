@@ -1,14 +1,9 @@
 <script setup lang="ts">
 // @ts-nocheck
 
-import { saveSettingsToFile } from "../js/settingsHandler";
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
 
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
@@ -23,14 +18,13 @@ import {
   CategoryScale,
   LinearScale,
   PointElement,
-  LineElement,
   Title,
   Tooltip,
   Legend,
   BarElement,
 } from "chart.js";
 
-import { Line, Scatter, Bar } from "vue-chartjs";
+import { Bar } from "vue-chartjs";
 import { ref, computed } from "vue";
 import annotationPlugin from "chartjs-plugin-annotation";
 
@@ -108,8 +102,6 @@ try {
 } catch (e) {
   console.log(e);
 
-  var beaconLabels = [];
-  var beaconData = [];
 }
 
 const beaconHistogramData = computed(() => ({

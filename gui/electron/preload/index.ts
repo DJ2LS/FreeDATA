@@ -1,5 +1,4 @@
 import { ipcRenderer } from "electron";
-import { autoUpdater } from "electron-updater";
 
 function domReady(
   condition: DocumentReadyState[] = ["complete", "interactive"],

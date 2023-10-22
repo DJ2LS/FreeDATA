@@ -1,7 +1,6 @@
 //var net = require("net");
 var net = require("node:net");
 
-const path = require("path");
 const { ipcRenderer } = require("electron");
 // ----------------- init pinia stores -------------
 import { setActivePinia } from "pinia";
@@ -37,13 +36,8 @@ function connectDAEMON() {
   //client.setTimeout(5000);
 }
 
-daemon.on("connect", function (err) {
+daemon.on("connect", function () {
   console.log("daemon connection established");
-  let Data = {
-    daemon_connection: daemon.readyState,
-  };
-  ipcRenderer.send("request-update-daemon-connection", Data);
-
   daemonShowConnectStateError = 1;
 });
 
@@ -52,15 +46,12 @@ daemon.on("error", function (err) {
     console.log("daemon connection error");
     console.log("Make sure the daemon is started.");
     console.log('Run "python daemon.py" in the modem directory.');
-
+    console.log(err)
     daemonShowConnectStateError = 0;
   }
   setTimeout(connectDAEMON, 500);
   daemon.destroy();
-  let Data = {
-    daemon_connection: daemon.readyState,
-  };
-  ipcRenderer.send("request-update-daemon-connection", Data);
+
 });
 
 /*
@@ -76,12 +67,10 @@ client.on('close', function(data) {
 
 daemon.on("end", function (data) {
   console.log("daemon connection ended");
+  console.log(data)
   daemon.destroy();
   setTimeout(connectDAEMON, 500);
-  let Data = {
-    daemon_connection: daemon.readyState,
-  };
-  ipcRenderer.send("request-update-daemon-connection", Data);
+
 });
 
 //exports.writeDaemonCommand = function(command){
@@ -102,10 +91,6 @@ function writeDaemonCommand(command) {
     //uiMain.setDAEMONconnection('opening')
   }
 
-  let Data = {
-    daemon_connection: daemon.readyState,
-  };
-  ipcRenderer.send("request-update-daemon-connection", Data);
 }
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
@@ -164,10 +149,7 @@ daemon.on("data", function (socketdata) {
       }
 
       if (data["command"] == "test_hamlib") {
-        let Data = {
-          hamlib_result: data["result"],
-        };
-        ipcRenderer.send("request-update-hamlib-test", Data);
+            //
       }
     }
 
@@ -176,18 +158,6 @@ daemon.on("data", function (socketdata) {
   }
 });
 
-function hexToBytes(hex) {
-  for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
-  return bytes;
-}
-
-//exports.getDaemonState = function () {
-function getDaemonState() {
-  //function getDaemonState(){
-  let command = '{"type" : "get", "command" : "daemon_state"}';
-  writeDaemonCommand(command);
-}
 
 // START Modem
 // ` `== multi line string
@@ -312,23 +282,5 @@ export function startRigctld() {
 }
 export function stopRigctld() {
   let command = '{"type" : "set", "command": "stop_rigctld"}';
-  writeDaemonCommand(command);
-}
-
-//Save myCall
-function saveMyCall(callsign) {
-  //exports.saveMyCall = function (callsign) {
-  let command =
-    '{"type" : "set", "command": "mycallsign" , "parameter": "' +
-    callsign +
-    '"}';
-  writeDaemonCommand(command);
-}
-
-// Save myGrid
-//exports.saveMyGrid = function (grid) {
-function saveMyGrid(grid) {
-  let command =
-    '{"type" : "set", "command": "mygrid" , "parameter": "' + grid + '"}';
   writeDaemonCommand(command);
 }

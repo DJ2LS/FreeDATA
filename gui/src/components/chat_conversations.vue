@@ -1,15 +1,9 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
-
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
@@ -19,7 +13,6 @@ import {
   resetIsNewMessage,
 } from "../js/chatHandler";
 
-import chat_conversations_entry from "./chat_conversations_entry.vue";
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();
@@ -90,6 +83,5 @@ function chatSelected(callsign) {
         </div>
       </a>
     </template>
-    <!--<chat_conversations_entry/>-->
   </div>
 </template>

@@ -45,7 +45,7 @@ function connectModem() {
   client.connect(settings.modem_port, settings.modem_host);
 }
 
-client.on("connect", function (data) {
+client.on("connect", function () {
   console.log("Modem connection established");
 
   stateStore.busy_state = "-";
@@ -59,9 +59,10 @@ client.on("connect", function (data) {
   modemShowConnectStateError = 1;
 });
 
-client.on("error", function (data) {
+client.on("error", function (err) {
   if (modemShowConnectStateError == 1) {
     console.log("Modem connection error");
+    console.log(err)
     modemShowConnectStateError = 0;
   }
   setTimeout(connectModem, 500);
@@ -84,6 +85,7 @@ client.on('close', function(data) {
 
 client.on("end", function (data) {
   console.log("Modem connection ended");
+  console.log(data)
   stateStore.busy_state = "-";
   stateStore.arq_state = "-";
   stateStore.frequency = "-";
@@ -490,25 +492,6 @@ client.on("data", function (socketdata) {
   }
 });
 
-function hexToBytes(hex) {
-  for (var bytes = [], c = 0; c < hex.length; c += 2)
-    bytes.push(parseInt(hex.substr(c, 2), 16));
-  return bytes;
-}
-
-//Get Modem State
-//exports.getTncState = function () {
-function getTncState() {
-  var command = '{"type" : "get", "command" : "modem_state"}';
-  writeTncCommand(command);
-}
-
-//Get DATA State
-//exports.getDataState = function () {
-function getDataState() {
-  var command = '{"type" : "get", "command" : "data_state"}';
-  //writeTncCommand(command)
-}
 
 // Send Ping
 //exports.sendPing = function (dxcallsign) {
@@ -603,7 +586,7 @@ export function sendMessage(obj) {
   console.log(command);
   writeTncCommand(command);
 }
-
+/*
 // Send Request message
 //It would be then „m + split + request + split + request-type“
 function sendRequest(dxcallsign, mode, frames, data, command) {
@@ -701,7 +684,7 @@ function sendResponseSharedFile(dxcallsign, sharedFile, sharedFileData) {
   //Command 2 = shared file transfer
   sendResponse(dxcallsign, 255, 1, sharedFile + "/" + sharedFileData, "res-2");
 }
-
+*/
 //STOP TRANSMISSION
 export function stopTransmission() {
   var command = '{"type" : "arq", "command": "stop_transmission"}';
@@ -774,7 +757,7 @@ export function sendFecIsWriting(mycallsign) {
 // SEND FEC TO BROADCASTCHANNEL
 //export function sendBroadcastChannel(channel, data_out, uuid) {
 export function sendBroadcastChannel(obj) {
-  let checksum = obj.checksum;
+  //let checksum = obj.checksum;
   let command = obj.command;
   let uuid = obj.uuid;
   let channel = obj.dxcallsign;

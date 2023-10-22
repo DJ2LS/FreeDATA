@@ -29,12 +29,6 @@ function deleteChat() {
   deleteChatByCallsign(chat.selectedCallsign);
 }
 
-function deleteSelectedMessage() {
-  chat.arq_speed_list_bpm = [];
-  chat.arq_speed_list_timestamp = [];
-  chat.arq_speed_list_snr = [];
-  chat.selectedMessageObject = [];
-}
 
 import {
   Chart as ChartJS,
@@ -47,7 +41,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "vue-chartjs";
-import { ref, computed } from "vue";
+import { computed } from "vue";
 
 ChartJS.register(
   CategoryScale,

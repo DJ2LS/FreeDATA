@@ -1,10 +1,7 @@
 <script setup lang="ts">
 // @ts-nocheck
 const {
-  locatorToLatLng,
   distance,
-  bearingDistance,
-  latLngToLocator,
 } = require("qth-locator");
 
 import { saveSettingsToFile } from "../js/settingsHandler";

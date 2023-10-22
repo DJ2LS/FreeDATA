@@ -1,25 +1,11 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
 
-import { setActivePinia } from "pinia";
-import pinia from "../store/index";
-setActivePinia(pinia);
 
-import { useSettingsStore } from "../store/settingsStore.js";
-const settings = useSettingsStore(pinia);
-
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
-
-import { useChatStore } from "../store/chatStore.js";
-const chat = useChatStore(pinia);
 
 import chat_navbar from "./chat_navbar.vue";
 import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";
 import chat_new_message from "./chat_new_message.vue";
-
-import { updateAllChat, newMessage } from "../js/chatHandler";
 
 //updateAllChat();
 </script>

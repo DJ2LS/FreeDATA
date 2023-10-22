@@ -1,10 +1,6 @@
-//const path = require("path");
-//const fs = require("fs");
-//const os = require("os");
 
 import path from "node:path";
 import fs from "fs";
-import os from "os";
 
 // pinia store setup
 import { setActivePinia } from "pinia";

@@ -23,7 +23,7 @@ import {
   Legend,
 } from "chart.js";
 import { Line, Scatter } from "vue-chartjs";
-import { ref, computed } from "vue";
+import {  computed } from "vue";
 
 function selectStatsControl(obj) {
   switch (obj.delegateTarget.id) {
