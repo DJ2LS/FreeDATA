@@ -363,6 +363,7 @@ jobs:
           find . -type d -o -name ".git" -delete
 
       - name: Build/release Electron app
+        if: ${{!startsWith(matrix.os, 'macos')}}
         uses: coparse-inc/action-electron-builder@v1.0.0
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
@@ -376,7 +377,9 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: ${{ matrix.electron_parameters }}
           max_attempts: 3
-
+      - name: Manual Build for MacOS
+        if: ${{startsWith(matrix.os, 'macos')}}
+        run: npm run build
       - name: Compress Modem
         uses: thedoctor0/zip-release@master
         with:
