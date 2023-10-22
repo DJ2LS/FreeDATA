@@ -139,7 +139,6 @@ export function newBroadcast(broadcastChannel, chatmessage) {
 
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
   var message_type = "broadcast_transmit";
-  var command = "broadcast";
 
   var timestamp = Math.floor(Date.now() / 1000);
   var uuid = uuidv4();
@@ -153,7 +152,7 @@ export function newBroadcast(broadcastChannel, chatmessage) {
   uuid = uuid.slice(-4);
 
   let newChatObj: messageDefaultObject = {
-    command: broadcast,
+    command: "broadcast",
     hmac_signed: false,
     percent: 0,
     bytesperminute: 0, // You need to assign a value here
@@ -856,11 +855,11 @@ export function requestMessageInfo(id) {
   chat.arq_speed_list_bpm = [];
   chat.arq_speed_list_timestamp = [];
   chat.arq_speed_list_snr = [];
+  //@ts-expect-error
   chat.selectedMessageObject = [];
 
   // id and uuid are the same
   var data = getFromUnsortedChatListByUUID(id);
-  console.log(data);
   chat.selectedMessageObject = data;
 
   if (
