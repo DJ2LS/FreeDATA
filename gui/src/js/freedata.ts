@@ -1,4 +1,3 @@
-
 /**
  * Binary to ASCII replacement
  * @param {string} data in normal/usual utf-8 format

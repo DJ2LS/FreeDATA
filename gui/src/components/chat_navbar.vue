@@ -101,7 +101,6 @@ try {
   chat.beaconDataArray = Object.values(chat.sorted_beacon_list["DJ2LS-0"].snr);
 } catch (e) {
   console.log(e);
-
 }
 
 const beaconHistogramData = computed(() => ({

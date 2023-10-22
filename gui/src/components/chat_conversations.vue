@@ -1,9 +1,7 @@
 <script setup lang="ts">
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
@@ -12,7 +10,6 @@ import {
   getNewMessagesByDXCallsign,
   resetIsNewMessage,
 } from "../js/chatHandler";
-
 
 function chatSelected(callsign) {
   chat.selectedCallsign = callsign.toUpperCase();

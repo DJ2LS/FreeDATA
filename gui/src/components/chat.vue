@@ -1,7 +1,4 @@
 <script setup lang="ts">
-
-
-
 import chat_navbar from "./chat_navbar.vue";
 import chat_conversations from "./chat_conversations.vue";
 import chat_messages from "./chat_messages.vue";

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 // @ts-nocheck
-const {
-  distance,
-} = require("qth-locator");
+const { distance } = require("qth-locator");
 
 import { saveSettingsToFile } from "../js/settingsHandler";
 

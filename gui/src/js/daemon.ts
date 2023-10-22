@@ -46,12 +46,11 @@ daemon.on("error", function (err) {
     console.log("daemon connection error");
     console.log("Make sure the daemon is started.");
     console.log('Run "python daemon.py" in the modem directory.');
-    console.log(err)
+    console.log(err);
     daemonShowConnectStateError = 0;
   }
   setTimeout(connectDAEMON, 500);
   daemon.destroy();
-
 });
 
 /*
@@ -67,10 +66,9 @@ client.on('close', function(data) {
 
 daemon.on("end", function (data) {
   console.log("daemon connection ended");
-  console.log(data)
+  console.log(data);
   daemon.destroy();
   setTimeout(connectDAEMON, 500);
-
 });
 
 //exports.writeDaemonCommand = function(command){
@@ -90,7 +88,6 @@ function writeDaemonCommand(command) {
   if (daemon.readyState == "opening") {
     //uiMain.setDAEMONconnection('opening')
   }
-
 }
 
 // "https://stackoverflow.com/questions/9070700/nodejs-net-createserver-large-amount-of-data-coming-in"
@@ -149,7 +146,7 @@ daemon.on("data", function (socketdata) {
       }
 
       if (data["command"] == "test_hamlib") {
-            //
+        //
       }
     }
 
@@ -157,7 +154,6 @@ daemon.on("data", function (socketdata) {
     socketchunk = [];
   }
 });
-
 
 // START Modem
 // ` `== multi line string

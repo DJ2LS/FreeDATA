@@ -29,7 +29,6 @@ function deleteChat() {
   deleteChatByCallsign(chat.selectedCallsign);
 }
 
-
 import {
   Chart as ChartJS,
   CategoryScale,
