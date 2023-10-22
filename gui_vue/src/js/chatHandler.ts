@@ -129,12 +129,13 @@ console.log("database path:" + chatDB)
 var db = new PouchDB(chatDB);
 
 /* -------- CREATE DATABASE INDEXES */
-createChatIndex();
+//These aren't needed anylonger aslong as we await createIndex() where necessary
+//createChatIndex();
 
 /* -------- RUN A DATABASE CLEANUP ON STARTUP */
 //dbClean()
 
-updateAllChat(true)
+updateAllChat(false)
 
 
 // create callsign set for storing unique callsigns
@@ -411,7 +412,8 @@ async function dbClean() {
     });
 
   //Compact database
-  await db.compact();
+  //Too slow on older/slower machines
+  //await db.compact();
 
 
 
@@ -530,7 +532,10 @@ export async function updateAllChat(cleanup) {
     if (cleanup) {
         await dbClean()
     }
-
+  let indexFields = [
+    {dxcallsign: "asc"},
+    {timestamp: "asc"}
+  ]
   let filter = {
           selector: {
             $and: [
@@ -541,8 +546,10 @@ export async function updateAllChat(cleanup) {
           },
           sort: [{ dxcallsign: "asc" }, { timestamp: "asc" }],
         }
-  getFromDBByFilter(filter)
-    .then(async function (result) {
+        //"{ dxcallsign: \"asc\" }, { timestamp: \"asc\" }"
+        await createIndex(indexFields);
+        getFromDBByFilter(filter)
+          .then(function (result) {
           for (var item of (result as any).docs) {
             const dxcallsign = item.dxcallsign;
             // Check if dxcallsign already exists as a property in the result object
@@ -910,7 +917,19 @@ console.log(data)
 
 }
 
-function getFromDBByFilter(filter) {
+async function createIndex(myIndexFields)
+{
+    db.createIndex({
+      index: {
+        fields: myIndexFields,
+      },
+    })
+    .catch(err => {
+      console.log(err);
+    });
+}
+
+async function  getFromDBByFilter(filter) {
 /*
 USAGE:
 
@@ -932,26 +951,16 @@ getFromDBByFilter(filter)
   });
 
 */
-  return new Promise((resolve, reject) => {
-    console.log(filter);
-
-    db.createIndex({
-      index: {
-        fields: [{ dxcallsign: "asc" }, { type: "asc" }, { status: "asc" }, { timestamp: "asc" }],
-      },
-    })
-    .then(result => {
-      return db.find(filter);
-    })
-    .then(result => {
-      console.log(result);
-      resolve(result);
-    })
-    .catch(err => {
-      console.log(err);
-      reject(err);
-    });
-  });
+return new Promise((resolve, reject) => {
+return db.find(filter)
+.then(result => {
+  console.log(result);
+  resolve(result);
+})
+.catch(err => {
+  console.log(err);
+  reject(err);
+})})
 }
 
 
