@@ -381,7 +381,9 @@ jobs:
       - name: Manual Build for MacOS
         if: ${{startsWith(matrix.os, 'macos')}}
         working-directory: gui
-        run: npm run build
+        run: |
+          npm i
+          npm run build
 
       - name: Compress Modem
         uses: thedoctor0/zip-release@master
