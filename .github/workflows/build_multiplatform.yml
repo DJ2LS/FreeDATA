@@ -377,9 +377,12 @@ jobs:
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           args: ${{ matrix.electron_parameters }}
           max_attempts: 3
+
       - name: Manual Build for MacOS
         if: ${{startsWith(matrix.os, 'macos')}}
+        working-directory: gui
         run: npm run build
+
       - name: Compress Modem
         uses: thedoctor0/zip-release@master
         with:
