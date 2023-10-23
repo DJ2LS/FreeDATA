@@ -34,7 +34,7 @@
         "target": "default",
       }
     ],
-    "notarize": {
+    "notarization": {
       "tool": "notarytool"
     },
 
