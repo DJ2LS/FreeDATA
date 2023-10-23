@@ -34,6 +34,7 @@
         "target": "default",
       }
     ],
+    "notarize": "notarytool",
 
       "icon": "build/icon.png",
       "hardenedRuntime": true,
