@@ -5,7 +5,7 @@
   "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
   "appId": "app.freedata",
   "asar": true,
-  "afterSign": "build/notarize_macos.js",
+  "afterPack": "build/notarize_macos.js",
   "productName": "FreeDATA",
   "directories": {
     "output": "release"
