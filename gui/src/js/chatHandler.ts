@@ -644,7 +644,7 @@ function deleteFromDatabaseByCallsign(callsign) {
             .then(function (doc) {
               db.remove(doc)
                 .then(function () {
-                  updateAllChat(false);
+                  //updateAllChat(false);
                   return true;
                 })
                 .catch(function (err) {

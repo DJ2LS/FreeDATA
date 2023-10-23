@@ -5,7 +5,7 @@
   "version": "0.11.0-alpha.6",
   "main": "dist-electron/main/index.js",
   "scripts": {
-    "start": "git pull && npm i && vite",
+    "start": "vite",
     "dev": "vite",
     "check": "vue-tsc --noEmit",
     "build": "vue-tsc --noEmit && vite build && electron-builder -p never",
