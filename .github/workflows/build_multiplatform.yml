@@ -388,6 +388,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/v')
         with:
+          draft: true
           files: ./modem/dist/modem/${{ matrix.zip_name }}.zip
           #files: ./modem/dist/${{ matrix.zip_name }}.zip
 
