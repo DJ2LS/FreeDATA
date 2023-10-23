@@ -35,7 +35,6 @@
       }
     ],
     "notarize": "false",
-
       "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.plist",
