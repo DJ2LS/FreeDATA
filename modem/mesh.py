@@ -143,10 +143,13 @@ class MeshRouter():
                     snr = bytes(item[snr_position], "utf-8").split(b"/")
                     snr = int(float(snr[0]))
                 except Exception as err:
+                    self.log.debug("[MESH] error handling SNR calculation", e=err)
                     snr = int(float(item[snr_position]))
 
+                snr = np.clip(snr, -12, 12)  # limit to max value of -12/12
                 new_router = [helpers.get_crc_24(item[dxcallsign_position]), helpers.get_crc_24(b'direct'), 0, snr, self.calculate_score_by_snr(snr), item[timestamp_position]]
                 self.add_router_to_routing_table(new_router)
+
         except Exception as e:
             self.log.warning("[MESH] error fetching data from heard station list", e=e)
 
@@ -171,7 +174,7 @@ class MeshRouter():
         except Exception as e:
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
-    def broadcast_routing_table(self, interval=600):
+    def broadcast_routing_table(self, interval=10):
 
         while True:
             # always enable receiving for datac4 if broadcasting
