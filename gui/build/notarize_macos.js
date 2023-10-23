@@ -2,12 +2,13 @@ const { notarize } = require('@electron/notarize');
 
 async function notarizing(context) {
   const { electronPlatformName, appOutDir } = context;
-    console.log("platform:" + electronPlatformName)
+    console.log("Notarization...")
   if (electronPlatformName !== 'darwin') {
-  console.log("not a APPLE system")
+  console.log("--> Platform:" + electronPlatformName + " detected: not a APPLE system. Skipping")
     return;
   }
 
+  console.log("--> Platform:" + electronPlatformName + " detected: Trying to notarize app.")
   const appName = context.packager.appInfo.productFilename;
 
   return await notarize({

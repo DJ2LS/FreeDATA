@@ -188,7 +188,7 @@ jobs:
           path: artifacts/*
 
   build_i686_x64_release:
-    needs: [BUILD_AMD64]
+    needs: [BUILD_AMD64, BUILD_ARM]
     name: Build FreeDATA packages
     runs-on: ${{ matrix.os }}
     strategy:
@@ -372,7 +372,7 @@ jobs:
         working-directory: gui
         run: |
           npm i
-          npm run build
+          npm run release
 
       - name: Compress Modem
         uses: thedoctor0/zip-release@master

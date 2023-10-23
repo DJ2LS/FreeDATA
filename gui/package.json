@@ -1,14 +1,15 @@
 {
   "name": "FreeDATA",
-  "description": "FreeDATA ",
+  "description": "FreeDATA",
   "private": true,
-  "version": "0.11.0-alpha.1",
+  "version": "0.11.0-alpha.5",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "git pull && npm i && vite",
     "dev": "vite",
     "check": "vue-tsc --noEmit",
-    "build": "vue-tsc --noEmit && vite build && electron-builder",
+    "build": "vue-tsc --noEmit && vite build && electron-builder -p never",
+    "release": "vue-tsc --noEmit && vite build && electron-builder -p onTag",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue src",
     "lint-fix": "eslint --ext .js,.vue --fix src"
