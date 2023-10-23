@@ -30,12 +30,15 @@
 
   "mac": {
     "target": [
-      "default"
+      {
+        "target": "default",
+        "arch": [
+          "x64",
+          "universal"
+        ]
+      }
     ],
-    "arch": [
-        "x64",
-        "universal"
-      ],
+
       "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.plist",
