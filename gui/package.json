@@ -2,7 +2,7 @@
   "name": "FreeDATA",
   "description": "FreeDATA",
   "private": true,
-  "version": "0.11.0-alpha.2",
+  "version": "0.11.0-alpha.3",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "start": "git pull && npm i && vite",

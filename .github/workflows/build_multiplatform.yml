@@ -372,7 +372,7 @@ jobs:
         working-directory: gui
         run: |
           npm i
-          npm run build
+          npm run release
 
       - name: Compress Modem
         uses: thedoctor0/zip-release@master
