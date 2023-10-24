@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-if [ ! -d "tnc" ]; then
+if [ ! -d "modem" ]; then
     echo "Error: Run this script from the main FreeDATA directory."
     exit 1
 fi

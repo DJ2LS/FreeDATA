@@ -46,7 +46,7 @@ function connectModem() {
 
 client.on("connect", function () {
   console.log("Modem connection established");
-
+  stateStore.modem_running_state = "running";
   stateStore.busy_state = "-";
   stateStore.arq_state = "-";
   stateStore.frequency = "-";
@@ -63,7 +63,9 @@ client.on("error", function (err) {
     console.log("Modem connection error");
     console.log(err);
     modemShowConnectStateError = 0;
+    stateStore.modem_running_state = "stopped";
   }
+
   setTimeout(connectModem, 500);
   client.destroy();
   stateStore.busy_state = "-";
@@ -93,6 +95,7 @@ client.on("end", function (data) {
   stateStore.dbfs_level = 0;
   stateStore.updateTncState(client.readyState);
   client.destroy();
+  stateStore.modem_running_state = "stopped";
 
   setTimeout(connectModem, 500);
 });
