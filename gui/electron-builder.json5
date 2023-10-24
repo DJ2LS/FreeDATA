@@ -42,7 +42,7 @@
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
       "mergeASARs": true,
-      "x64ArchFiles": "Contents/Resources/x64/",
+      "x64ArchFiles": "**/*",
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
   "win": {
