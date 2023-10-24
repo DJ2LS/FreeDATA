@@ -13,11 +13,7 @@
   "files": [
     "dist",
     "dist-electron",
-  ],
-
-
-    "extraResources": [
-      {
+    {
         "from": "../modem/dist/modem/",
         "to": "modem",
         "filter": [
@@ -25,7 +21,9 @@
           "!**/.git"
         ]
       }
-    ],
+  ],
+
+
 
 
   "mac": {
@@ -41,7 +39,7 @@
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
-      "mergeASARs": false,
+      "mergeASARs": true,
       "x64ArchFiles": "**/*",
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
