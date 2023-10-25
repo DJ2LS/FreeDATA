@@ -39,7 +39,7 @@
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
-      "mergeASARs": true,
+      "mergeASARs": false,
       "x64ArchFiles": "**/*",
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
