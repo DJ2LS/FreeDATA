@@ -174,7 +174,7 @@ class MeshRouter():
         except Exception as e:
             self.log.warning("[MESH] error adding data to routing table", e=e, router=new_router)
 
-    def broadcast_routing_table(self, interval=10):
+    def broadcast_routing_table(self, interval=600):
 
         while True:
             # always enable receiving for datac4 if broadcasting
