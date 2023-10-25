@@ -13,11 +13,7 @@
   "files": [
     "dist",
     "dist-electron",
-  ],
-
-
-    "extraResources": [
-      {
+    {
         "from": "../modem/dist/modem/",
         "to": "modem",
         "filter": [
@@ -25,22 +21,26 @@
           "!**/.git"
         ]
       }
-    ],
+  ],
+
+
 
 
   "mac": {
     "target": [
       {
         "target": "default",
-        "arch": ["arm64", "x64"]
+        "arch": ["universal"]
       }
     ],
-    "notarize": "false",
+      "notarize": "false",
       "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
+      "mergeASARs": false,
+      "x64ArchFiles": "**/*",
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
   "win": {
