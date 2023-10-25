@@ -105,12 +105,12 @@ app.whenReady().then(() => {
   switch (platform().toLowerCase()) {
     case "darwin":
     case "linux":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
+      daemonPath = join(__dirname, "modem", "freedata-daemon");
 
       break;
     case "win32":
     case "win64":
-      daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
+      daemonPath = join(__dirname, "modem", "freedata-daemon.exe");
       break;
     default:
       console.log("Unhandled OS Platform: ", platform());
