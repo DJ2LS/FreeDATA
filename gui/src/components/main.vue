@@ -30,7 +30,6 @@ function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
 }
-
 </script>
 
 <template>
@@ -351,11 +350,7 @@ function stopAllTransmissions() {
             role="tabpanel"
             aria-labelledby="list-info-list"
           >
-
             <info />
-
-
-
           </div>
           <div
             class="tab-pane fade"
