@@ -1407,8 +1407,12 @@ def send_modem_state():
             }
         )
 
-    #print(output)
-    return json.dumps(output)
+    try:
+        json_out = json.dumps(output)
+    except Exception as e:
+        log.warning("[SCK] error while json conversion for modem state", e=e)
+
+    return json_out
 
 
 def command_response(command, status):
