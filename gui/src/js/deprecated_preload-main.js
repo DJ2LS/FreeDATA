@@ -41,7 +41,7 @@ var configPath = path.join(configFolder, "config.json");
 var config = require(configPath);
 
 const contrib = [
-  "DK5SM",
+  "DK5SM",-
   "DL4IAZ",
   "DB1UJ",
   "EI3HIB",
@@ -49,10 +49,10 @@ const contrib = [
   "EI7IG",
   "N2KIQ",
   "KT4WO",
-  "DF7MH",
-  "G0HWW",
-  "N1QM",
-  "LA3QMA",
+  "DF7MH",-
+  "G0HWW",-
+  "N1QM", -
+  "LA3QMA", -
 ];
 
 //let elements = document.querySelectorAll('[id^="hamlib_"]'); // get all elements starting with...
