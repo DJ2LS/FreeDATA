@@ -138,8 +138,8 @@ onMounted(shuffleCards);
       <h6>Special thanks to</h6>
     </div>
 
-    <div class="d-flex flex-nowrap overflow-x-auto">
-      <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="d-flex flex-nowrap overflow-x-auto vh-100">
+      <div class="row row-cols-1 row-cols-md-3 g-4 h-100">
         <div class="d-inline-block" v-for="card in cards" :key="card.title">
           <div class="col">
             <div
