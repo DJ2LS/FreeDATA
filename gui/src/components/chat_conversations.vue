@@ -45,7 +45,11 @@ function chatSelected(callsign) {
 }
 </script>
 <template>
-  <div class="list-group bg-body-tertiary m-0 p-1" id="chat-list-tab" role="chat-tablist">
+  <div
+    class="list-group bg-body-tertiary m-0 p-1"
+    id="chat-list-tab"
+    role="chat-tablist"
+  >
     <template v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
       <a
         class="list-group-item list-group-item-action list-group-item-dark rounded-2 border-0 mb-2"
