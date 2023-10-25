@@ -32,16 +32,17 @@
     "target": [
       {
         "target": "default",
-        "arch": ["arm64", "x64"]
+        "arch": ["universal"]
       }
     ],
-    "notarize": "false",
+      "notarize": "false",
       "icon": "build/icon.png",
       "hardenedRuntime": true,
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
-      "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+      "mergeASARs": true,
+      "artifactName": "${productName}-Mac-${version}.${ext}"
   },
   "win": {
     "icon": "build/icon.png",
@@ -51,7 +52,7 @@
         "arch": ["arm64", "x64"]
       }
     ],
-    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+    "artifactName": "${productName}-Windows-${version}.${ext}"
   },
   "nsis": {
     "oneClick": false,

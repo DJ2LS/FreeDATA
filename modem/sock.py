@@ -1128,12 +1128,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
 
     def daemon_stop_modem(self, received_json):
         try:
+            log.warning("[SCK] Stopping Modem")
+            Daemon.modemstarted = False
             Daemon.modemprocess.kill()
             # unregister process from atexit to avoid process zombies
             atexit.unregister(Daemon.modemprocess.kill)
 
-            log.warning("[SCK] Stopping Modem")
-            Daemon.modemstarted = False
             command_response("stop_modem", True)
         except Exception as err:
             command_response("stop_modem", False)
@@ -1407,8 +1407,12 @@ def send_modem_state():
             }
         )
 
-    #print(output)
-    return json.dumps(output)
+    try:
+        json_out = json.dumps(output)
+    except Exception as e:
+        log.warning("[SCK] error while json conversion for modem state", e=e)
+
+    return json_out
 
 
 def command_response(command, status):
