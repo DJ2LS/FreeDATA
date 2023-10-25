@@ -81,7 +81,8 @@ function set_hamlib_rf_level() {
                 <option value="14093000">20m | USB | EU, US</option>
                 <option value="21093000">15m | USB | EU, US</option>
                 <option value="24908000">12m | USB | EU, US</option>
-                <option value="27245000">11m | USB | EU</option>
+                <option value="27245000">11m | USB | Ch 25 </option>
+                <option value="27265000">11m | USB | Ch 26 </option>
                 <option value="28093000">10m | USB | EU, US</option>
                 <option value="50308000">6m | USB | US</option>
                 <option value="50616000">6m | USB | EU, US</option>
