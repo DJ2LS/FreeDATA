@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -11,6 +13,29 @@ const version = import.meta.env.PACKAGE_VERSION;
 function openWebExternal(url) {
   open(url);
 }
+const cards = ref([
+    { title: 'Simon - DJ2LS', role: 'Founder & Core developer', imgSrc: 'dj2ls.png' },
+    { title: 'Alan - N1QM', role: 'developer', imgSrc: '' },
+    { title: 'Stefan - DK5SM', role: 'developer', imgSrc: '' },
+    { title: 'Wolfgang - DL4IAZ', role: 'developer', imgSrc: '' },
+    { title: 'David - VK5DGR', role: 'developer', imgSrc: '' },
+    { title: 'John - EI7IG', role: 'developer', imgSrc: '' },
+    { title: 'John - N2KIQ', role: 'developer', imgSrc: '' },
+    { title: 'Trip - KT4WO', role: 'developer', imgSrc: '' },
+    { title: 'Manuel - DF7MH', role: 'developer', imgSrc: '' },
+    { title: 'Darren - G0HWW', role: 'developer', imgSrc: '' },
+    { title: 'Kai - LA3QMA', role: 'developer', imgSrc: '' }
+  ]);
+
+// Shuffle cards
+  function shuffleCards(){
+    cards.value = cards.value.sort(() => Math.random() - 0.5);
+  };
+
+  onMounted(shuffleCards);
+
+
+
 </script>
 
 
@@ -118,154 +143,29 @@ function openWebExternal(url) {
               </div>
 
 
+<div class="d-flex flex-nowrap overflow-x-auto">
+<div class="row row-cols-1 row-cols-md-3 g-4">
 
-<div class="row row-cols-1 row-cols-md-3 g-4 scrollable-row">
-  <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">DJ2LS</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    Core developer
-  </div>
-</div>
-  </div>
-  <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-  <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-  <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
+  <div class="d-inline-block" v-for="card in cards" :key="card.title">
 
   <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
+
+    <div class="card border-dark mb-3 ms-1 me-1" style="max-width: 15rem;">
+      <img :src="card.imgSrc" class="card-img-top">
+      <div class="card-body">
+        <p class="card-text text-center">{{ card.role }}</p>
+      </div>
+      <div class="card-footer text-body-secondary text-center">
+        <strong>{{ card.title }}</strong>
+      </div>
+    </div>
   </div>
 </div>
-  </div>
 
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
-
-    <div class="col">
-    <div class="card border-dark mb-3" style="max-width: 18rem;">
-  <div class="card-header">Header</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
-</div>
-  </div>
+            </div>
+            </div>
 
 
-
-
-
-
-</div>
             </div>
 </template>
 
