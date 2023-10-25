@@ -192,14 +192,14 @@ export default {
       <div class="container">
         <div class="row">
           <div class="col-11">
-            <div class="btn-group" role="group">
+            <div class="btn-group h-100" role="group">
               <div
-                class="list-group list-group-horizontal"
+                class="list-group bg-body-tertiary list-group-horizontal"
                 id="list-tab"
                 role="tablist"
               >
                 <a
-                  class="py-1 list-group-item list-group-item-action"
+                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
                   id="list-waterfall-list"
                   data-bs-toggle="list"
                   href="#list-waterfall"
@@ -210,7 +210,7 @@ export default {
                   ><strong><i class="bi bi-water"></i></strong
                 ></a>
                 <a
-                  class="py-1 list-group-item list-group-item-action"
+                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
                   id="list-scatter-list"
                   data-bs-toggle="list"
                   href="#list-scatter"
@@ -221,7 +221,7 @@ export default {
                   ><strong><i class="bi bi-border-outer"></i></strong
                 ></a>
                 <a
-                  class="py-1 list-group-item list-group-item-action"
+                  class="py-0 list-group-item list-group-item-dark list-group-item-action"
                   id="list-chart-list"
                   data-bs-toggle="list"
                   href="#list-chart"

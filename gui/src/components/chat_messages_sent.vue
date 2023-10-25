@@ -33,7 +33,7 @@
 
     <!-- message area -->
     <div :class="messageWidthClass">
-      <div class="card bg-primary text-white">
+      <div class="card bg-secondary text-white">
         <div class="card-header" v-if="getFileContent['filesize'] !== 0">
           <p class="card-text">
             {{ getFileContent["filename"] }} |
@@ -46,7 +46,7 @@
           <p class="card-text">{{ message.msg }}</p>
         </div>
 
-        <div class="card-footer p-0 bg-primary border-top-0">
+        <div class="card-footer p-0 bg-secondary border-top-0">
           <p class="text p-0 m-0 me-1 text-end">{{ getDateTime }}</p>
           <!-- Display formatted timestamp in card-footer -->
         </div>

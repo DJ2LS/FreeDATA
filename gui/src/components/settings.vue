@@ -14,12 +14,19 @@ import settings_exp from "./settings_exp.vue";
     aria-labelledby="list-settings-list"
   >
     <div class="container">
-      <div class="badge text-bg-warning ms-3">
+      <div class="badge text-bg-warning m-1">
+      <h5>
         <i class="bi bi-exclamation-triangle"></i> Please restart the modem
-        after changing settings!
+        after changing settings <i class="bi bi-exclamation-triangle"></i>
+      </h5>
       </div>
+
+
+      <div class="card text-center">
+  <div class="card-header">
+
       <!-- SETTINGS Nav tabs -->
-      <ul class="nav nav-tabs" id="myTab" role="tablist">
+      <ul class="nav nav-tabs card-header-tabs" id="myTab" role="tablist">
         <li class="nav-item" role="presentation">
           <button
             class="nav-link active"
@@ -106,8 +113,12 @@ import settings_exp from "./settings_exp.vue";
         </li>
       </ul>
 
+  </div>
+  <div class="card-body">
+
+
       <!-- SETTINGS Nav Tab panes -->
-      <div class="tab-content mt-1">
+      <div class="tab-content">
         <!-- GUI tab contents-->
         <div
           class="tab-pane active"
@@ -166,6 +177,16 @@ import settings_exp from "./settings_exp.vue";
           <settings_exp />
         </div>
       </div>
+
+
+
+
+
+  </div>
+</div>
+
+
+
     </div>
   </div>
 </template>

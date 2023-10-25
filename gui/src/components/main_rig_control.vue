@@ -73,12 +73,12 @@ alert("not yet implemented")
 
           <div class="col-6">
             <div
-              class="list-group list-group-horizontal"
+              class="list-group bg-body-tertiary list-group-horizontal w-75"
               id="rig-control-list-tab"
               role="rig-control-tablist"
             >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-none-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-none"
@@ -89,7 +89,7 @@ alert("not yet implemented")
                 >None/Vox</a
               >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-rigctld-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-rigctld"
@@ -100,7 +100,7 @@ alert("not yet implemented")
                 >Rigctld</a
               >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-tci-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-tci"
