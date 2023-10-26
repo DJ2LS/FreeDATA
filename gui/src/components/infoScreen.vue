@@ -216,12 +216,12 @@ onMounted(shuffleCards);
 </template>
 
 <style>
-  .grayscale {
-    filter: grayscale(100%);
-    transition: filter 0.3s ease-in-out;
-  }
+.grayscale {
+  filter: grayscale(100%);
+  transition: filter 0.3s ease-in-out;
+}
 
-  .grayscale:hover {
-    filter: grayscale(0);
-  }
+.grayscale:hover {
+  filter: grayscale(0);
+}
 </style>
