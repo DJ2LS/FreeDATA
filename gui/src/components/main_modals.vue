@@ -6,8 +6,6 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 import { saveSettingsToFile } from "../js/settingsHandler";
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
