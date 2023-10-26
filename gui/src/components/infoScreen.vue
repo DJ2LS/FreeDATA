@@ -191,7 +191,7 @@ onMounted(shuffleCards);
 
     <div class="d-flex flex-nowrap overflow-x-auto vh-100">
       <div class="row row-cols-1 row-cols-md-6 g-4 h-100">
-        <div class="d-inline-block" v-for="card in cards" :key="card.title">
+        <div class="d-inline-block" v-for="card in cards" :key="card.titleName">
           <div class="col">
             <div
               class="card border-dark mb-3 ms-1 me-1"
