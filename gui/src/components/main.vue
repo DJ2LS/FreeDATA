@@ -3,9 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";

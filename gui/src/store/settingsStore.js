@@ -5,6 +5,7 @@ export const useSettingsStore = defineStore("settingsStore", () => {
   // audio
   var tx_audio = ref();
   var rx_audio = ref();
+  var tx_audio_level = ref();
 
   // network
   var modem_host = ref("127.0.0.1");
@@ -157,6 +158,7 @@ export const useSettingsStore = defineStore("settingsStore", () => {
       enable_mesh_features: enable_mesh_features.value,
       tx_audio: tx_audio.value,
       rx_audio: rx_audio.value,
+      tx_audio_level: tx_audio_level.value,
     };
 
     return config_export;
@@ -224,5 +226,6 @@ export const useSettingsStore = defineStore("settingsStore", () => {
     rx_audio,
     getSerialDevices,
     serial_devices,
+    tx_audio_level,
   };
 });
