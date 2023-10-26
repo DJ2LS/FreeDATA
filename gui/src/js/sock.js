@@ -181,6 +181,7 @@ client.on("data", function (socketdata) {
           setTxAudioLevelOnce === true
         ) {
            setTxAudioLevelOnce = false
+           console.log(setTxAudioLevelOnce)
             setTxAudioLevel(settings.tx_audio_level);
         }
 

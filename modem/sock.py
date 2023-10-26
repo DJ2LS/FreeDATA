@@ -1005,7 +1005,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         if (
                 received_json["type"] == "set"
                 and received_json["command"] == "start_modem"
-                and not Daemon.modemstarted
+                #  and not Daemon.modemstarted
         ):
             self.daemon_start_modem(received_json)
 
