@@ -1409,10 +1409,11 @@ def send_modem_state():
 
     try:
         json_out = json.dumps(output)
-    except Exception as e:
-        log.warning("[SCK] error while json conversion for modem state", e=e)
+        return json_out
 
-    return json_out
+    except Exception as e:
+        log.warning("[SCK] error while json conversion for modem state", e=e, data=output)
+
 
 
 def command_response(command, status):
