@@ -81,22 +81,33 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 threading.Event().wait(0.5)
 
             while not SOCKET_QUEUE.empty():
-                data = SOCKET_QUEUE.get()
-                sock_data = bytes(data, "utf-8")
-                sock_data += b"\n"  # append line limiter
 
-                # send data to all clients
                 try:
+
+                    data = SOCKET_QUEUE.get()
+                    sock_data = bytes(data, "utf-8")
+                    sock_data += b"\n"  # append line limiter
+
+                    # send data to all connected clients
                     for client in CONNECTED_CLIENTS:
                         try:
                             client.send(sock_data)
                         except Exception as err:
                             self.log.info("[SCK] Connection lost", e=err)
-                            # TODO Check if we really should set connection alive to false.
-                            # This might disconnect all other clients as well...
-                            self.connection_alive = False
+
+                            try:
+                                self.log.warning("[SCK] removing client from sock", client=client, set=CONNECTED_CLIENTS)
+                                CONNECTED_CLIENTS.remove(client)
+                            except Exception as sockerr:
+                                self.log.warning("[SCK] Err remove client from CONNECTED_CLIENTS", e=sockerr, client=client, set=CONNECTED_CLIENTS)
+                                self.log.info("[SCK] resetting sock")
+
+                                # TODO Check if we really should set connection alive to false.
+                                # This might disconnect all other clients as well...
+                                self.connection_alive = False
+
                 except Exception as err:
-                    self.log.debug("[SCK] catch harmless RuntimeError: Set changed size during iteration", e=err)
+                    self.log.debug("[SCK] err while sending data to sock", e=err)
 
             # we want to transmit scatter data only once to reduce network traffic
             ModemParam.scatter = []
@@ -237,12 +248,15 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     ThreadedTCPRequestHandler.modem_set_record_audio(None, received_json)
                 else:
                     self.modem_set_record_audio(received_json)
+
             # SET TX AUDIO LEVEL
             if received_json["type"] == "set" and received_json["command"] == "tx_audio_level":
                 if TESTMODE:
                     ThreadedTCPRequestHandler.modem_set_tx_audio_level(None, received_json)
                 else:
                     self.modem_set_tx_audio_level(received_json)
+
+
             # TRANSMIT TEST FRAME
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
                 if TESTMODE:
