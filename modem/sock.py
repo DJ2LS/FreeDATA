@@ -1144,6 +1144,9 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
         try:
             log.warning("[SCK] Stopping Modem")
             Daemon.modemstarted = False
+            # we need to run this twice, otherwise process won't be stopped
+            Daemon.modemprocess.kill()
+            threading.Event().wait(0.3)
             Daemon.modemprocess.kill()
             # unregister process from atexit to avoid process zombies
             atexit.unregister(Daemon.modemprocess.kill)

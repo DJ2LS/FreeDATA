@@ -32,7 +32,6 @@ import structlog
 import ujson as json
 import config
 
-
 # signal handler for closing application
 def signal_handler(sig, frame):
     """
@@ -76,6 +75,44 @@ class DAEMON:
 
         worker = threading.Thread(target=self.worker, name="WORKER", daemon=True)
         worker.start()
+
+        rigctld_watchdog_thread = threading.Thread(target=self.rigctld_watchdog, name="WORKER", daemon=True)
+        rigctld_watchdog_thread.start()
+
+
+    def rigctld_watchdog(self):
+        """
+        Check for rigctld status
+        Returns:
+
+        """
+        while True:
+            threading.Event().wait(0.3)
+            # only continue, if we have a process object initialized
+            if hasattr(Daemon.rigctldprocess, "returncode"):
+
+                if Daemon.rigctldprocess.returncode in [None, "None"] or not Daemon.rigctldstarted:
+                    Daemon.rigctldstarted = True
+                    outs, errs = Daemon.rigctldprocess.communicate(timeout=30)
+                    print(f"outs: {outs}")
+                    print(f"errs: {errs}")
+                    #print(Daemon.rigctldprocess.stderr.read())
+                else:
+                    self.log.warning("[DMN] [RIGCTLD] [Watchdog] returncode detected",process=Daemon.rigctldprocess)
+                    Daemon.rigctldstarted = False
+                    # triggering another kill
+                    Daemon.rigctldprocess.kill()
+                    # erase process object
+                    Daemon.rigctldprocess = None
+            else:
+                Daemon.rigctldstarted = False
+
+            #try:
+            #    outs, errs = proc.communicate(timeout=15)
+            #except TimeoutExpired:
+            #    proc.kill()
+            #    outs, errs = proc.communicate()
+
 
     def update_audio_devices(self):
         """
@@ -374,7 +411,7 @@ class DAEMON:
             self.log.info("[DMN] starting rigctld: ", param=command)
             
             if not isWin:
-                proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             else:
                 #On windows, open rigctld in new window for easier troubleshooting
                 proc = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE,close_fds=True)
