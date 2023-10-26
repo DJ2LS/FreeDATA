@@ -197,7 +197,7 @@ onMounted(shuffleCards);
               class="card border-dark mb-3 ms-1 me-1"
               style="max-width: 15rem"
             >
-              <img :src="card.imgSrc" class="card-img-top" />
+              <img :src="card.imgSrc" class="card-img-top grayscale" />
               <div class="card-body">
                 <p class="card-text text-center">{{ card.role }}</p>
               </div>
@@ -214,3 +214,14 @@ onMounted(shuffleCards);
     </div>
   </div>
 </template>
+
+<style>
+  .grayscale {
+    filter: grayscale(100%);
+    transition: filter 0.3s ease-in-out;
+  }
+
+  .grayscale:hover {
+    filter: grayscale(0);
+  }
+</style>
