@@ -12,7 +12,6 @@ const state = useStateStore(pinia);
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
 
-
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
@@ -28,7 +27,7 @@ function tuneAudio() {
 }
 
 function set_audio_level() {
-  saveSettingsToFile()
+  saveSettingsToFile();
   setTxAudioLevel(settings.tx_audio_level);
 }
 
@@ -1210,7 +1209,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 step="1"
                 id="audioLevelTX"
                 @click="set_audio_level()"
-                v-model="settings.tx_audio_level "
+                v-model="settings.tx_audio_level"
             /></span>
           </div>
         </div>
