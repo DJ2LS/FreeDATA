@@ -174,10 +174,11 @@ client.on("data", function (socketdata) {
         stateStore.tx_audio_level = data["audio_level"];
 
         // if audio level is different from config one, send new audio level to modem
-        if (parseInt(stateStore.audio_level) !== parseInt(settings.tx_audio_level)){
-            setTxAudioLevel(settings.tx_audio_level);
+        if (
+          parseInt(stateStore.audio_level) !== parseInt(settings.tx_audio_level)
+        ) {
+          setTxAudioLevel(settings.tx_audio_level);
         }
-
 
         stateStore.dbfs_level = data["audio_dbfs"];
         stateStore.ptt_state = data["ptt_state"];
