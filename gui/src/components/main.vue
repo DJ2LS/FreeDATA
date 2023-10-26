@@ -3,9 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";
@@ -22,7 +19,7 @@ import main_active_heard_stations from "./main_active_heard_stations.vue";
 import main_active_audio_level from "./main_active_audio_level.vue";
 
 import chat from "./chat.vue";
-import info from "./info.vue";
+import infoScreen from "./infoScreen.vue";
 
 import { stopTransmission } from "../js/sock.js";
 
@@ -350,7 +347,7 @@ function stopAllTransmissions() {
             role="tabpanel"
             aria-labelledby="list-info-list"
           >
-            <info />
+            <infoScreen />
           </div>
           <div
             class="tab-pane fade"

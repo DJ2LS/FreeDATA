@@ -53,8 +53,13 @@
 
         <div class="card-footer p-0 border-top-0" v-if="message.percent < 100">
           <div
-            class="progress bg-secondary rounded-0 rounded-bottom"
+            class="progress rounded-0 rounded-bottom"
             :style="{ height: '10px' }"
+            v-bind:class="{
+              'bg-danger': message.status == 'failed',
+              'bg-primary': message.status == 'transmitting',
+              'bg-secondary': message.status == 'transmitted',
+            }"
           >
             <div
               class="progress-bar progress-bar-striped overflow-visible"
@@ -64,7 +69,8 @@
               aria-valuemin="0"
               aria-valuemax="100"
             >
-              {{ message.percent }} % with {{ message.bytesperminute }} bpm
+              {{ message.percent }} % with {{ message.bytesperminute }} bpm (
+              {{ message.status }} )
             </div>
           </div>
         </div>

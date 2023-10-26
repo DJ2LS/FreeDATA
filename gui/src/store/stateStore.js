@@ -40,7 +40,7 @@ export const useStateStore = defineStore("stateStore", () => {
   var audio_recording = ref("");
 
   var hamlib_status = ref("");
-  var audio_level = ref("");
+  var tx_audio_level = ref("");
   var alc = ref("");
 
   var is_codec2_traffic = ref("");
@@ -158,7 +158,7 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_total_bytes,
     audio_recording,
     hamlib_status,
-    audio_level,
+    tx_audio_level,
     alc,
     updateTncState,
     arq_transmission_percent,

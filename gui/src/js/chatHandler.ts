@@ -536,6 +536,20 @@ export async function updateAllChat(cleanup) {
         } else {
           chat.unsorted_chat_list.push(item);
           chat.sorted_chat_list = sortChatList();
+
+          // check if message is expired
+          let timeNow = Math.floor(Date.now() / 1000);
+          let expireTimestamp = timeNow - 10 * 60;
+          let isExpired = false;
+          if (expireTimestamp >= item.timestamp) {
+            isExpired = true;
+          }
+          if (item.status == "transmitting" && isExpired) {
+            console.log("message expired - resetting status");
+            console.log(item);
+            databaseUpsert(item.uuid, "status", "failed");
+            updateUnsortedChatListEntry(item.uuid, "status", "failed");
+          }
         }
       }
     })

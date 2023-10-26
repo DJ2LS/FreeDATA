@@ -55,6 +55,7 @@ const configDefaultSettings =
                   "daemon_port": 3001,\
                   "rx_audio" : "",\
                   "tx_audio" : "",\
+                  "tx_audio_level" : 100,\
                   "mycall": "AA0AA-0",\
                   "myssid": "0",\
                   "mygrid": "JN40aa",\
