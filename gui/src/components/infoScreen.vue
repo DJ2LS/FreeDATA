@@ -15,20 +15,21 @@ function openWebExternal(url) {
 }
 const cards = ref([
   {
-    title: "Simon - DJ2LS",
+    titleName: "Simon",
+    titleCall: "DJ2LS",
     role: "Founder & Core developer",
     imgSrc: "dj2ls.png",
   },
-  { title: "Alan - N1QM", role: "developer", imgSrc: "" },
-  { title: "Stefan - DK5SM", role: "tester", imgSrc: "" },
-  { title: "Wolfgang - DL4IAZ", role: "supporter", imgSrc: "" },
-  { title: "David - VK5DGR", role: "codec2 founder", imgSrc: "" },
-  { title: "John - EI7IG", role: "tester", imgSrc: "" },
-  { title: "John - N2KIQ", role: "developer", imgSrc: "" },
-  { title: "Trip - KT4WO", role: "tester", imgSrc: "" },
-  { title: "Manuel - DF7MH", role: "tester", imgSrc: "" },
-  { title: "Darren - G0HWW", role: "tester", imgSrc: "" },
-  { title: "Kai - LA3QMA", role: "developer", imgSrc: "" },
+  { titleName: "Alan", titleCall: "N1QM", role: "developer", imgSrc: "person-fill.svg" },
+  { titleName: "Stefan", titleCall: "DK5SM",role: "tester", imgSrc: "person-fill.svg" },
+  { titleName: "Wolfgang", titleCall: "DL4IAZ",role: "supporter", imgSrc: "person-fill.svg" },
+  { titleName: "David", titleCall: "VK5DGR",role: "codec2 founder", imgSrc: "person-fill.svg" },
+  { titleName: "John", titleCall: "EI7IG",role: "tester", imgSrc: "person-fill.svg" },
+  { titleName: "Paul", titleCall: "N2KIQ",role: "developer", imgSrc: "person-fill.svg" },
+  { titleName: "Trip", titleCall: "KT4WO",role: "tester", imgSrc: "person-fill.svg" },
+  { titleName: "Manuel", titleCall: "DF7MH",role: "tester", imgSrc: "person-fill.svg" },
+  { titleName: "Darren", titleCall: "G0HWW",role: "tester", imgSrc: "person-fill.svg" },
+  { titleName: "Kai", titleCall: "LA3QMA", role: "developer", imgSrc: "person-fill.svg" },
 ]);
 
 // Shuffle cards
@@ -139,7 +140,7 @@ onMounted(shuffleCards);
     </div>
 
     <div class="d-flex flex-nowrap overflow-x-auto vh-100">
-      <div class="row row-cols-1 row-cols-md-3 g-4 h-100">
+      <div class="row row-cols-1 row-cols-md-6 g-4 h-100">
         <div class="d-inline-block" v-for="card in cards" :key="card.title">
           <div class="col">
             <div
@@ -151,7 +152,10 @@ onMounted(shuffleCards);
                 <p class="card-text text-center">{{ card.role }}</p>
               </div>
               <div class="card-footer text-body-secondary text-center">
-                <strong>{{ card.title }}</strong>
+                <strong>{{ card.titleCall }}</strong>
+              </div>
+              <div class="card-footer text-body-secondary text-center">
+                <strong>{{ card.titleName }}</strong>
               </div>
             </div>
           </div>
