@@ -224,13 +224,7 @@ class DAEMON:
         radiocontrol = data[1]
 
         # check how we want to control the radio
-        if radiocontrol == "direct":
-            print("direct hamlib support deprecated - not usable anymore")
-            sys.exit(1)
-        elif radiocontrol == "rigctl":
-            print("rigctl support deprecated - not usable anymore")
-            sys.exit(1)
-        elif radiocontrol == "rigctld":
+        if radiocontrol == "rigctld":
             import rigctld as rig
             rigctld_ip = data[2]
             rigctld_port = data[3]
@@ -501,7 +495,7 @@ class DAEMON:
         print(data[24])
         if data[24] == "True":
             options.append("--mesh")
-        print(options)
+
         # safe data to config file
         config.write_entire_config(data)
 

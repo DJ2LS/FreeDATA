@@ -98,7 +98,7 @@ const state = useStateStore(pinia);
 -->
 
           <button
-            class="btn btn-sm disabled me-3"
+            class="btn btn-sm btn-secondary disabled me-3"
             type="button"
             data-bs-placement="top"
             data-bs-toggle="tooltip"

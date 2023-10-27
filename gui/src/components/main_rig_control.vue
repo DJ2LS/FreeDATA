@@ -87,7 +87,7 @@ alert("not yet implemented")
                 aria-controls="list-rig-control-none"
                 v-bind:class="{ active: settings.radiocontrol === 'disabled' }"
                 @click="selectRadioControl()"
-                >None/Vox</a
+                >None</a
               >
               <a
                 class="p-1 list-group-item list-group-item-dark list-group-item-action"
@@ -139,7 +139,8 @@ alert("not yet implemented")
         >
           <p class="small">
             Modem will not utilize rig control and features will be limited. While
-            functional; it is recommended to configure hamlib.
+            functional; it is recommended to configure hamlib. <br>
+            Use this setting also for <strong> VOX </strong>
           </p>
         </div>
         <div
