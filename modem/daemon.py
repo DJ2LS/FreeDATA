@@ -94,9 +94,9 @@ class DAEMON:
 
                 if Daemon.rigctldprocess.returncode in [None, "None"] or not Daemon.rigctldstarted:
                     Daemon.rigctldstarted = True
-                    outs, errs = Daemon.rigctldprocess.communicate(timeout=10)
-                    print(f"outs: {outs}")
-                    print(f"errs: {errs}")
+                    # outs, errs = Daemon.rigctldprocess.communicate(timeout=10)
+                    # print(f"outs: {outs}")
+                    # print(f"errs: {errs}")
 
                 else:
                     self.log.warning("[DMN] [RIGCTLD] [Watchdog] returncode detected",process=Daemon.rigctldprocess)
