@@ -88,28 +88,15 @@ class DAEMON:
         """
         while True:
             threading.Event().wait(0.01)
-            try:
-                print(Daemon.rigctldprocess)
-                result = Daemon.rigctldprocess
-                print(f'Standard Output: {result.stdout}')
-                print(f'Standard Error: {result.stderr}')
-            except Exception:
-                pass
-
 
             # only continue, if we have a process object initialized
             if hasattr(Daemon.rigctldprocess, "returncode"):
 
                 if Daemon.rigctldprocess.returncode in [None, "None"] or not Daemon.rigctldstarted:
                     Daemon.rigctldstarted = True
-                    #outs, errs = Daemon.rigctldprocess.communicate(timeout=10)
-                    #print(f"outs: {outs}")
-                    #print(f"errs: {errs}")
-                    print(Daemon.rigctldprocess)
-                    result = Daemon.rigctldprocess
-                    print(f'Standard Output: {result.stdout}')
-                    print(f'Standard Error: {result.stderr}')
-
+                    outs, errs = Daemon.rigctldprocess.communicate(timeout=10)
+                    print(f"outs: {outs}")
+                    print(f"errs: {errs}")
 
                 else:
                     self.log.warning("[DMN] [RIGCTLD] [Watchdog] returncode detected",process=Daemon.rigctldprocess)
@@ -119,8 +106,8 @@ class DAEMON:
                     # erase process object
                     Daemon.rigctldprocess = None
             else:
-                #Daemon.rigctldstarted = False
-                pass
+                Daemon.rigctldstarted = False
+
             #try:
             #    outs, errs = proc.communicate(timeout=15)
             #except TimeoutExpired:
@@ -428,18 +415,14 @@ class DAEMON:
                 #proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
                 #proc = subprocess.Popen(command)
                 proc = subprocess.run(command, shell=False, check=True, text=True, capture_output=True)
-                print(f'Standard Output: {proc.stdout}')
-                print(f'Standard Error: {proc.stderr}')
             else:
                 #On windows, open rigctld in new window for easier troubleshooting
                 proc = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE,close_fds=True)
 
-            atexit.register(proc.kill)
-
             Daemon.rigctldstarted = True
             Daemon.rigctldprocess = proc
 
-
+            atexit.register(proc.kill)
 
         except Exception as err:
             self.log.warning("[DMN] err starting rigctld: ", e=err)
