@@ -400,7 +400,8 @@ class DAEMON:
                     options.append(o)
 
             # append debugging paramter
-            options.append(("-vvv"))
+            # disabled as this could be set via gui
+            #options.append(("-vvv"))
             command += options
 
             self.log.info("[DMN] starting rigctld: ", param=command)
