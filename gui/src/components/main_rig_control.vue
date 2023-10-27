@@ -25,7 +25,8 @@ function startStopRigctld() {
       break;
     case "running":
       stopRigctld();
-
+      // dirty hack for calling this command twice, otherwise modem won't stop rigctld from time to time
+      stopRigctld();
       break;
     default:
   }
