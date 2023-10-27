@@ -108,12 +108,6 @@ class DAEMON:
             else:
                 Daemon.rigctldstarted = False
 
-            #try:
-            #    outs, errs = proc.communicate(timeout=15)
-            #except TimeoutExpired:
-            #    proc.kill()
-            #    outs, errs = proc.communicate()
-
 
     def update_audio_devices(self):
         """
@@ -412,9 +406,10 @@ class DAEMON:
             self.log.info("[DMN] starting rigctld: ", param=command)
             
             if not isWin:
+                # NOTE --> It seems Popen is non blocking, while run is blocking
                 #proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-                #proc = subprocess.Popen(command)
-                proc = subprocess.run(command, shell=False, check=True, text=True, capture_output=True)
+                proc = subprocess.Popen(command)
+                #proc = subprocess.run(command, shell=False, check=True, text=True, capture_output=True)
             else:
                 #On windows, open rigctld in new window for easier troubleshooting
                 proc = subprocess.Popen(command, creationflags=subprocess.CREATE_NEW_CONSOLE,close_fds=True)
