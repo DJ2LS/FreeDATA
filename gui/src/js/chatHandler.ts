@@ -1015,16 +1015,20 @@ async function checkForWaitingMessages(dxcall) {
       console.log(message);
       displayToast("info", "bi bi-info-circle", message, 5000);
       console.log(result);
+      // @ts-expect-error
       console.log(result.docs);
+      // @ts-expect-error
       console.log(result.docs.length);
       // handle result
       // @ts-expect-error
       if (result.docs.length > 0) {
         // only want to process the first available item object, then return
         // this ensures, we are only sending one message at once
+        // @ts-expect-error
         console.log(result.docs[0]);
         console.log(
           "attempt: " +
+          // @ts-expect-error
             result.docs[0].attempt +
             "/" +
             settings.max_retry_attempts,

@@ -25,6 +25,7 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 const tooltipTriggerList = document.querySelectorAll(
   '[data-bs-toggle="tooltip"]',
 );
+// @ts-expect-error
 const tooltipList = [...tooltipTriggerList].map(
   (tooltipTriggerEl) => new bootstrap.Tooltip(tooltipTriggerEl),
 );
