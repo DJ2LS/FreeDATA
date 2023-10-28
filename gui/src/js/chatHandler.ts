@@ -202,9 +202,14 @@ export function newMessage(
     filename = chatFileName;
   } else {
     file = "";
-    filetype = "text";
+    filetype = "";
     filename = "";
   }
+
+  console.log(file)
+  console.log(filetype)
+  console.log(filename)
+
   var file_checksum = ""; //crc32(file).toString(16).toUpperCase();
   var message_type = "transmit";
   var command = "msg";
@@ -549,7 +554,17 @@ export async function updateAllChat(cleanup) {
             console.log(item);
             databaseUpsert(item.uuid, "status", "failed");
             updateUnsortedChatListEntry(item.uuid, "status", "failed");
+            databaseUpsert(item.uuid, "percent", 0);
+            updateUnsortedChatListEntry(item.uuid, "percent", 0);
           }
+          // lets update the message if it is failed. Then its always 0 percent
+          if (item.status == "failed") {
+            databaseUpsert(item.uuid, "percent", 0);
+            updateUnsortedChatListEntry(item.uuid, "percent", 0);
+            databaseUpsert(item.uuid, "bytesperminute", 0);
+            updateUnsortedChatListEntry(item.uuid, "bytesperminute", 0);
+          }
+
         }
       }
     })
@@ -875,7 +890,7 @@ export function requestMessageInfo(id) {
   // id and uuid are the same
   var data = getFromUnsortedChatListByUUID(id);
   chat.selectedMessageObject = data;
-
+    console.log(data)
   if (
     typeof data["speed_list"] !== "undefined" &&
     data["speed_list"].length > 0

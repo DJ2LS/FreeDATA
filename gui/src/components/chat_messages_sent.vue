@@ -51,7 +51,8 @@
           <!-- Display formatted timestamp in card-footer -->
         </div>
 
-        <div class="card-footer p-0 border-top-0" v-if="message.percent < 100">
+        <div class="card-footer p-0 border-top-0" v-if="message.percent < 100 || message.status === 'failed'"
+>
           <div
             class="progress rounded-0 rounded-bottom"
             :style="{ height: '10px' }"
