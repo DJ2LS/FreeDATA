@@ -83,13 +83,33 @@ function getMaidenheadDistance(dxGrid) {
           <tbody id="heardstations">
             <!--https://vuejs.org/guide/essentials/list.html-->
             <tr v-for="item in state.heard_stations" :key="item.timestamp">
-              <td><span class="badge bg-secondary">{{ getDateTime(item.timestamp) }}</span></td>
-              <td><span class="badge bg-secondary">{{ item.frequency/1000 }} kHz</span></td>
-              <td><span class="badge bg-secondary">{{ item.dxcallsign }}</span></td>
-              <td><span class="badge bg-secondary">{{ item.dxgrid }}</span></td>
-              <td><span class="badge bg-secondary">{{ getMaidenheadDistance(item.dxgrid) }} km</span></td>
-              <td><span class="badge bg-secondary">{{ item.datatype }}</span></td>
-              <td><span class="badge bg-secondary">{{ item.snr }}</span></td>
+              <td>
+                <span class="badge bg-secondary">{{
+                  getDateTime(item.timestamp)
+                }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary"
+                  >{{ item.frequency / 1000 }} kHz</span
+                >
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.dxcallsign }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.dxgrid }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary"
+                  >{{ getMaidenheadDistance(item.dxgrid) }} km</span
+                >
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.datatype }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.snr }}</span>
+              </td>
               <!--<td>{{ item.offset }}</td>-->
             </tr>
           </tbody>

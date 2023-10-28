@@ -25,7 +25,9 @@ const state = useStateStore(pinia);
             type="button"
             style="pointer-events: auto"
             disabled
-            data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="PTT trigger state"
+            data-bs-toggle="tooltip"
+            data-bs-placement="top"
+            data-bs-title="PTT trigger state"
           >
             <i class="bi bi-broadcast-pin" style="font-size: 0.8rem"></i>
           </button>
