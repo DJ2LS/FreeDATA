@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from typing import List
 import subprocess
 from enum import Enum
+import threading
 
 
 # CHANNEL_STATE = 'RECEIVING_SIGNALLING'
@@ -33,6 +34,7 @@ class ARQ:
     arq_session_state: str = "disconnected" # can be: disconnected, disconnecting, connected, connecting, failed
     arq_session: bool = False
     arq_state: bool = False
+    arq_state_event: threading.Event = field(default_factory=threading.Event)
     # ARQ PROTOCOL VERSION
     # v.5 - signalling frame uses datac0
     # v.6 - signalling frame uses datac13
@@ -134,7 +136,7 @@ class TCIParam:
 
 @dataclass 
 class Modem:
-    version = "0.11.1-alpha.1"
+    version = "0.11.2-alpha.1"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
