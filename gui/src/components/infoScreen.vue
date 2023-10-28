@@ -48,7 +48,7 @@ const cards = ref([
     titleName: "John",
     titleCall: "EI7IG",
     role: "tester",
-    imgSrc: "person-fill.svg",
+    imgSrc: "ei7ig.jpeg",
   },
   {
     titleName: "Paul",

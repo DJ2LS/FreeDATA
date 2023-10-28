@@ -156,9 +156,9 @@ function stopAllTransmissions() {
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
-              <div class="container">
+              <div class="container p-3">
                 <div
-                  class="row collapse multi-collapse show mt-3"
+                  class="row collapse multi-collapse show mt-4"
                   id="collapseFirstRow"
                 >
                   <div class="col">

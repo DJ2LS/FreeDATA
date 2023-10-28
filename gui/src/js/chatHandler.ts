@@ -1008,6 +1008,8 @@ async function checkForWaitingMessages(dxcall) {
         // this ensures, we are only sending one message at once
         // @ts-expect-error
         if (result.docs[0].attempt < settings.max_retry_attempts) {
+          console.log(result.docs[0])
+          console.log("attempt: " + result.docs[0].attempt + "/" + settings.max_retry_attempts)
           // @ts-expect-error
           repeatMessageTransmission(result.docs[0].uuid);
         }
