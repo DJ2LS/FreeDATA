@@ -122,10 +122,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(50616000)"
-                    ><strong>50616 kHz</strong>
-                    <span class="badge bg-secondary">6m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>50616 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">6m | USB</span>&nbsp;
+                                        <span class="badge bg-info">EU | US</span>
+</a
                   >
                 </li>
                 <li>
@@ -133,9 +133,9 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(50308000)"
-                    ><strong>50308 kHz</strong>
-                    <span class="badge bg-secondary">6m | USB</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>50308 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">6m | USB</span>&nbsp;
+                    <span class="badge bg-info">US</span></a
                   >
                 </li>
                 <li>
@@ -143,10 +143,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(28093000)"
-                    ><strong>28093 kHz</strong>
-                    <span class="badge bg-secondary">10m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>28093 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">10m | USB</span>&nbsp;
+                                        <span class="badge bg-info">EU | US</span>
+</a
                   >
                 </li>
                 <li>
@@ -154,8 +154,8 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(27265000)"
-                    ><strong>27265 kHz</strong>
-                    <span class="badge bg-secondary">11m | USB</span>
+                    ><strong>27265 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">11m | USB</span>&nbsp;
                     <span class="badge bg-dark">Ch 26</span></a
                   >
                 </li>
@@ -164,8 +164,8 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(27245000)"
-                    ><strong>27245 kHz</strong>
-                    <span class="badge bg-secondary">11m | USB</span>
+                    ><strong>27245 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">11m | USB</span>&nbsp;
                     <span class="badge bg-dark">Ch 25</span></a
                   >
                 </li>
@@ -174,10 +174,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(24908000)"
-                    ><strong>24908 kHz</strong>
-                    <span class="badge bg-secondary">12m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>24908 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">12m | USB</span>&nbsp;
+                                        <span class="badge bg-info">EU | US</span>
+</a
                   >
                 </li>
                 <li>
@@ -185,10 +185,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(21093000)"
-                    ><strong>21093 kHz</strong>
-                    <span class="badge bg-secondary">15m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>21093 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">15m | USB</span>&nbsp;
+                                        <span class="badge bg-info">EU | US</span>
+</a
                   >
                 </li>
                 <li>
@@ -196,10 +196,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(14093000)"
-                    ><strong>14093 kHz</strong>
-                    <span class="badge bg-secondary">20m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>14093 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">20m | USB</span>&nbsp;
+                                        <span class="badge bg-info">EU | US</span>
+</a
                   >
                 </li>
                 <li>
@@ -207,10 +207,10 @@ function set_hamlib_rf_level() {
                     class="dropdown-item"
                     href="#"
                     @click="updateFrequencyAndApply(7053000)"
-                    ><strong>7053 kHz</strong>
-                    <span class="badge bg-secondary">40m | USB</span>
-                    <span class="badge bg-info">EU</span>
-                    <span class="badge bg-warning">US</span></a
+                    ><strong>7053 kHz</strong>&nbsp;
+                    <span class="badge bg-secondary">40m | USB</span>&nbsp;
+                    <span class="badge bg-info">EU | US</span>
+                    </a
                   >
                 </li>
               </ul>
