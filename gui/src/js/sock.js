@@ -30,7 +30,7 @@ const split_char = "0;1;";
 
 // global to keep track of Modem connection error emissions
 var modemShowConnectStateError = 1;
-
+var setTxAudioLevelOnce = true;
 // network connection Timeout
 setTimeout(connectModem, 2000);
 
@@ -171,6 +171,20 @@ client.on("data", function (socketdata) {
         stateStore.arq_state = data["arq_state"];
         stateStore.mode = data["mode"];
         stateStore.bandwidth = data["bandwidth"];
+        stateStore.tx_audio_level = data["audio_level"];
+        // if audio level is different from config one, send new audio level to modem
+        //console.log(parseInt(stateStore.tx_audio_level))
+        //console.log(parseInt(settings.tx_audio_level))
+        if (
+          parseInt(stateStore.tx_audio_level) !==
+            parseInt(settings.tx_audio_level) &&
+          setTxAudioLevelOnce === true
+        ) {
+          setTxAudioLevelOnce = false;
+          console.log(setTxAudioLevelOnce);
+          setTxAudioLevel(settings.tx_audio_level);
+        }
+
         stateStore.dbfs_level = data["audio_dbfs"];
         stateStore.ptt_state = data["ptt_state"];
         stateStore.speed_level = data["speed_level"];

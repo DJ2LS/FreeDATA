@@ -43,7 +43,8 @@
               aria-valuemin="0"
               aria-valuemax="100"
             >
-              {{ message.percent }} % with {{ message.bytesperminute }} bpm
+              {{ message.percent }} % with {{ message.bytesperminute }} bpm (
+              {{ message.status }} )
             </div>
           </div>
         </div>

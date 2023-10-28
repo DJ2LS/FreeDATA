@@ -45,10 +45,14 @@ function chatSelected(callsign) {
 }
 </script>
 <template>
-  <div class="list-group m-0 p-0" id="chat-list-tab" role="chat-tablist">
+  <div
+    class="list-group bg-body-tertiary m-0 p-1"
+    id="chat-list-tab"
+    role="chat-tablist"
+  >
     <template v-for="(item, key) in chat.callsign_list" :key="item.dxcallsign">
       <a
-        class="list-group-item list-group-item-action border-0 border-bottom rounded-0"
+        class="list-group-item list-group-item-action list-group-item-dark rounded-2 border-0 mb-2"
         :class="{ active: key == 0 }"
         :id="`list-chat-list-${item}`"
         data-bs-toggle="list"
@@ -59,7 +63,7 @@ function chatSelected(callsign) {
       >
         <div class="row">
           <div class="col-9">
-            {{ item }}
+            <strong>{{ item }}</strong>
             <span
               class="badge rounded-pill bg-danger"
               v-if="getNewMessagesByDXCallsign(item)[1] > 0"

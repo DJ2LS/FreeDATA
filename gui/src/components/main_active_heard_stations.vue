@@ -71,29 +71,45 @@ function getMaidenheadDistance(dxGrid) {
               <th scope="col" id="thTime">
                 <i id="hslSort" class="bi bi-sort-up"></i>Time
               </th>
-              <th scope="col" id="thFreq">Frequency</th>
-              <th>&nbsp;</th>
+              <th scope="col" id="thFreq">Freq</th>
               <th scope="col" id="thDxcall">DXCall</th>
-              <th scope="col" id="thDxgrid">DXGrid</th>
-              <th scope="col" id="thDist">Distance</th>
+              <th scope="col" id="thDxgrid">Grid</th>
+              <th scope="col" id="thDist">Dist</th>
               <th scope="col" id="thType">Type</th>
-              <th scope="col" id="thSnr">SNR (rx/dx)</th>
+              <th scope="col" id="thSnr">SNR</th>
               <!--<th scope="col">Off</th>-->
             </tr>
           </thead>
           <tbody id="heardstations">
             <!--https://vuejs.org/guide/essentials/list.html-->
             <tr v-for="item in state.heard_stations" :key="item.timestamp">
-              <td>{{ getDateTime(item.timestamp) }}</td>
-              <td>{{ item.frequency }}</td>
-              <td>&nbsp;</td>
+              <td>
+                <span class="badge bg-secondary">{{
+                  getDateTime(item.timestamp)
+                }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary"
+                  >{{ item.frequency / 1000 }} kHz</span
+                >
+              </td>
               <td>
                 <span class="badge bg-secondary">{{ item.dxcallsign }}</span>
               </td>
-              <td>{{ item.dxgrid }}</td>
-              <td>{{ getMaidenheadDistance(item.dxgrid) }} km</td>
-              <td>{{ item.datatype }}</td>
-              <td>{{ item.snr }}</td>
+              <td>
+                <span class="badge bg-secondary">{{ item.dxgrid }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary"
+                  >{{ getMaidenheadDistance(item.dxgrid) }} km</span
+                >
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.datatype }}</span>
+              </td>
+              <td>
+                <span class="badge bg-secondary">{{ item.snr }}</span>
+              </td>
               <!--<td>{{ item.offset }}</td>-->
             </tr>
           </tbody>

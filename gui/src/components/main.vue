@@ -3,9 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";
@@ -22,17 +19,13 @@ import main_active_heard_stations from "./main_active_heard_stations.vue";
 import main_active_audio_level from "./main_active_audio_level.vue";
 
 import chat from "./chat.vue";
+import infoScreen from "./infoScreen.vue";
 
 import { stopTransmission } from "../js/sock.js";
-
-const version = import.meta.env.PACKAGE_VERSION;
 
 function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
-}
-function openWebExternal(url) {
-  open(url);
 }
 </script>
 
@@ -63,7 +56,7 @@ function openWebExternal(url) {
             style="margin-top: 100px"
           >
             <a
-              class="list-group-item list-group-item-action active"
+              class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2 active"
               id="list-modem-list"
               data-bs-toggle="list"
               href="#list-modem"
@@ -73,7 +66,7 @@ function openWebExternal(url) {
               ><i class="bi bi-house-door-fill h3"></i
             ></a>
             <a
-              class="list-group-item list-group-item-action"
+              class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-chat-list"
               data-bs-toggle="list"
               href="#list-chat"
@@ -84,7 +77,7 @@ function openWebExternal(url) {
             ></a>
 
             <a
-              class="list-group-item list-group-item-action d-none"
+              class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
               id="list-mesh-list"
               data-bs-toggle="list"
               href="#list-mesh"
@@ -94,7 +87,7 @@ function openWebExternal(url) {
             ></a>
 
             <a
-              class="list-group-item list-group-item-action mt-2 border"
+              class="list-group-item list-group-item-dark list-group-item-action border border-0 rounded-3 mb-2"
               id="list-info-list"
               data-bs-toggle="list"
               href="#list-info"
@@ -105,7 +98,7 @@ function openWebExternal(url) {
             ></a>
 
             <a
-              class="list-group-item list-group-item-action d-none"
+              class="list-group-item list-group-item-dark list-group-item-action d-none border-0 rounded-3 mb-2"
               id="list-logger-list"
               data-bs-toggle="list"
               href="#list-logger"
@@ -115,7 +108,7 @@ function openWebExternal(url) {
             ></a>
 
             <a
-              class="list-group-item list-group-item-action rounded-bottom"
+              class="list-group-item list-group-item-dark list-group-item-action border-0 rounded-3 mb-2"
               id="list-settings-list"
               data-bs-toggle="list"
               href="#list-settings"
@@ -354,109 +347,7 @@ function openWebExternal(url) {
             role="tabpanel"
             aria-labelledby="list-info-list"
           >
-            <h1 class="modal-title fs-5" id="aboutModalLabel">
-              FreeDATA - {{ version }}
-            </h1>
-
-            <h4 class="fs-5">modem version - {{ state.modem_version }}</h4>
-
-            <div class="container-fluid">
-              <div class="row mt-2">
-                <div
-                  class="btn-toolbar mx-auto"
-                  role="toolbar"
-                  aria-label="Toolbar with button groups"
-                >
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-sm bi bi-geo-alt btn-secondary me-2"
-                      id="openExplorer"
-                      type="button"
-                      data-bs-placement="bottom"
-                      @click="openWebExternal('https://explorer.freedata.app')"
-                    >
-                      Explorer map
-                    </button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-sm btn-secondary me-2 bi bi-graph-up"
-                      id="btnStats"
-                      type="button"
-                      data-bs-placement="bottom"
-                      @click="
-                        openWebExternal('https://statistics.freedata.app/')
-                      "
-                    >
-                      Statistics
-                    </button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-bookmarks me-2"
-                      id="fdWww"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="FreeDATA website"
-                      role="button"
-                      @click="openWebExternal('https://freedata.app')"
-                    >
-                      Website
-                    </button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-github me-2"
-                      id="ghUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Github"
-                      role="button"
-                      @click="
-                        openWebExternal('https://github.com/dj2ls/freedata')
-                      "
-                    >
-                      Github
-                    </button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-wikipedia me-2"
-                      id="wikiUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Wiki"
-                      role="button"
-                      @click="openWebExternal('https://wiki.freedata.app')"
-                    >
-                      Wiki
-                    </button>
-                  </div>
-                  <div class="btn-group">
-                    <button
-                      class="btn btn-secondary bi bi-discord"
-                      id="discordUrl"
-                      data-bs-toggle="tooltip"
-                      data-bs-trigger="hover"
-                      title="Discord"
-                      role="button"
-                      @click="openWebExternal('https://discord.freedata.app')"
-                    >
-                      Discord
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="row mt-5">
-                <h6>Special thanks to</h6>
-                <hr />
-              </div>
-              <div class="row">
-                <div class="col-4" id="divContrib"></div>
-                <div class="col-4" id="divContrib2"></div>
-                <div class="col-4" id="divContrib3"></div>
-              </div>
-            </div>
+            <infoScreen />
           </div>
           <div
             class="tab-pane fade"

@@ -4,12 +4,13 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
+import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { useChatStore } from "../store/chatStore.js";
 const chat = useChatStore(pinia);
+
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
 
 import {
   deleteChatByCallsign,
@@ -23,7 +24,8 @@ function tuneAudio() {
 }
 
 function set_audio_level() {
-  setTxAudioLevel(state.audio_level);
+  saveSettingsToFile();
+  setTxAudioLevel(settings.tx_audio_level);
 }
 
 function deleteChat() {
@@ -1194,7 +1196,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
           </div>
           <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">TX Level</span>
-            <span class="input-group-text">{{ state.audio_level }}</span>
+            <span class="input-group-text">{{ settings.tx_audio_level }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
@@ -1204,7 +1206,7 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
                 step="1"
                 id="audioLevelTX"
                 @click="set_audio_level()"
-                v-model="state.audio_level"
+                v-model="settings.tx_audio_level"
             /></span>
           </div>
         </div>

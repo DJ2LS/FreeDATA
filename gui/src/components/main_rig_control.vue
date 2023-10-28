@@ -25,7 +25,8 @@ function startStopRigctld() {
       break;
     case "running":
       stopRigctld();
-
+      // dirty hack for calling this command twice, otherwise modem won't stop rigctld from time to time
+      stopRigctld();
       break;
     default:
   }
@@ -73,12 +74,12 @@ alert("not yet implemented")
 
           <div class="col-6">
             <div
-              class="list-group list-group-horizontal"
+              class="list-group bg-body-tertiary list-group-horizontal w-75"
               id="rig-control-list-tab"
               role="rig-control-tablist"
             >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-none-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-none"
@@ -86,10 +87,10 @@ alert("not yet implemented")
                 aria-controls="list-rig-control-none"
                 v-bind:class="{ active: settings.radiocontrol === 'disabled' }"
                 @click="selectRadioControl()"
-                >None/Vox</a
+                >None</a
               >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-rigctld-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-rigctld"
@@ -100,7 +101,7 @@ alert("not yet implemented")
                 >Rigctld</a
               >
               <a
-                class="py-1 ps-1 pe-1 list-group-item list-group-item-action"
+                class="p-1 list-group-item list-group-item-dark list-group-item-action"
                 id="list-rig-control-tci-list"
                 data-bs-toggle="list"
                 href="#list-rig-control-tci"
@@ -138,7 +139,8 @@ alert("not yet implemented")
         >
           <p class="small">
             Modem will not utilize rig control and features will be limited. While
-            functional; it is recommended to configure hamlib.
+            functional; it is recommended to configure hamlib. <br>
+            Use this setting also for <strong> VOX </strong>
           </p>
         </div>
         <div
