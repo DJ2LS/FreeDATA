@@ -1028,7 +1028,7 @@ async function checkForWaitingMessages(dxcall) {
         console.log(result.docs[0]);
         console.log(
           "attempt: " +
-          // @ts-expect-error
+            // @ts-expect-error
             result.docs[0].attempt +
             "/" +
             settings.max_retry_attempts,
