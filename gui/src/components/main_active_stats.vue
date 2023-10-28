@@ -191,7 +191,7 @@ export default {
     <div class="card-header p-1">
       <div class="container">
         <div class="row">
-          <div class="col-11 p-1">
+          <div class="col-11 p-0">
             <div class="btn-group h-100" role="group">
               <div
                 class="list-group bg-body-tertiary list-group-horizontal"
