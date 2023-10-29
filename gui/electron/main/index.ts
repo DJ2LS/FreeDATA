@@ -100,8 +100,6 @@ async function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-console.log("kommen wir hier her???????")
-
 console.log(platform())
   //Generate daemon binary path
   var daemonPath = "";
