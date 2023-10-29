@@ -29,7 +29,7 @@ import structlog
 import ujson as json
 import tci
 # FIXME used for def transmit_morse
-# import cw
+import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 
@@ -745,18 +745,7 @@ class RF:
         )
         start_of_transmission = time.time()
 
-        txbuffer = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
-        print(txbuffer)
-        print(type(txbuffer))
-        x = np.frombuffer(txbuffer, dtype=np.int16)
-        print(type(x))
-        txbuffer_out = x
-        print(txbuffer_out)
-
-        #if not HamlibParam.hamlib_radiocontrol in ["tci"]:
-        #    txbuffer_out = self.resampler.resample8_to_48(x)
-        #else:
-        #    txbuffer_out = x
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
 
         self.mod_out_locked = True
         self.enqueue_modulation(txbuffer_out)
@@ -808,6 +797,8 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def enqueue_modulation(self, txbuffer_out):
+
+
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
         chunk = [
             txbuffer_out[i: i + chunk_length]
