@@ -100,17 +100,22 @@ async function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
+console.log("kommen wir hier her???????")
+
+console.log(platform())
   //Generate daemon binary path
   var daemonPath = "";
   switch (platform().toLowerCase()) {
     case "darwin":
+       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
     case "linux":
-      daemonPath = join(__dirname, "modem", "freedata-daemon");
-
+       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon");
       break;
     case "win32":
+       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
+       break;
     case "win64":
-      daemonPath = join(__dirname, "modem", "freedata-daemon.exe");
+       daemonPath = join(process.resourcesPath, "modem", "freedata-daemon.exe");
       break;
     default:
       console.log("Unhandled OS Platform: ", platform());
@@ -120,12 +125,27 @@ app.whenReady().then(() => {
   //Start daemon binary if it exists
   if (existsSync(daemonPath)) {
     console.log("Starting freedata-daemon binary");
-    daemonProcess = spawn(daemonPath, [], {
-      cwd: join(daemonPath, ".."),
+    console.log("daemonPath:", daemonPath);
+    console.log("CWD:", join(daemonPath, ".."));
+/*
+    var daemonProcess = spawn("freedata-daemon", [], {
+      cwd: join(process.env.DIST, "modem"),
+      shell: true
     });
+*/
+/*
+daemonProcess = spawn(daemonPath, [], {
+      shell: true
+    });
+    console.log(daemonProcess)
+*/
+    daemonProcess = spawn(daemonPath, [], {
+    });
+
+
     // return process messages
     daemonProcess.on("error", (err) => {
-      // daemonProcessLog.error(`error when starting daemon: ${err}`);
+      //daemonProcessLog.error(`error when starting daemon: ${err}`);
       console.log(err);
     });
     daemonProcess.on("message", () => {
@@ -134,8 +154,9 @@ app.whenReady().then(() => {
     daemonProcess.stdout.on("data", () => {
       // daemonProcessLog.info(`${data}`);
     });
-    daemonProcess.stderr.on("data", () => {
+    daemonProcess.stderr.on("data", (data) => {
       // daemonProcessLog.info(`${data}`);
+      console.log(data)
     });
     daemonProcess.on("close", (code) => {
       // daemonProcessLog.warn(`daemonProcess exited with code ${code}`);
