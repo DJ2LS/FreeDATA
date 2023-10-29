@@ -50,7 +50,7 @@
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
       "mergeASARs": false,
-      "x64ArchFiles": ["Contents/Resources/modem/**/*", "Contents/Resources/modem/_internal/numpy/.dylibs/libgcc_s.1.1.dylib"],
+      "x64ArchFiles": ["Contents/Resources/modem/**/*", "!Contents/Resources/modem/_internal/numpy/.dylibs/libgcc_s.1.1.dylib"],
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
   "win": {
