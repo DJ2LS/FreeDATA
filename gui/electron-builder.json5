@@ -10,10 +10,16 @@
   "directories": {
     "output": "release"
   },
+
+  "asarUnpack": [
+      "**/*.wav"
+    ],
+
+
   "files": [
     "dist",
     "dist-electron",
-
+    "../modem/dist/modem/",
   ],
 
     "extraResources": [
@@ -34,7 +40,9 @@
     "target": [
       {
         "target": "default",
-        "arch": ["universal"]
+        //"arch": ["universal"],
+        "arch": ["arm64", "x64"],
+
       }
     ],
       "notarize": "false",
@@ -43,7 +51,7 @@
       "entitlements": "build/entitlements.plist",
       "entitlementsInherit": "build/entitlements.plist",
       "gatekeeperAssess": false,
-      "mergeASARs": false,
+      "mergeASARs": true,
       "x64ArchFiles": "**/*",
       "artifactName": "${productName}-Mac-${version}.${ext}"
   },
