@@ -10,10 +10,16 @@
   "directories": {
     "output": "release"
   },
+
+  "asarUnpack": [
+      "**/*.wav"
+    ],
+
+
   "files": [
     "dist",
     "dist-electron",
-
+    "../modem/dist/modem/",
   ],
 
     "extraResources": [
@@ -34,7 +40,7 @@
     "target": [
       {
         "target": "default",
-        "arch": ["universal"]
+        "arch": ["universal"],
       }
     ],
       "notarize": "false",
