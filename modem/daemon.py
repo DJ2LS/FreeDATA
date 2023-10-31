@@ -212,7 +212,7 @@ class DAEMON:
                     data[13] hamlib_rigctld_ip,
                     data[14] hamlib_rigctld_path,
                     data[15] hamlib_rigctld_server_port,
-                    data[16] hamlib_rigctld_custom_args
+                    data[16] hamlib_rigctld_custom_args                    
                     """
                     self.start_rigctld(data)
 
@@ -417,11 +417,8 @@ class DAEMON:
         except Exception as err:
             self.log.warning("[DMN] err starting rigctld: ", e=err)
 
-
-
     def start_modem(self, data):
         self.log.warning("[DMN] Starting Modem", rig=data[5], port=data[6])
-
         # list of parameters, necessary for running subprocess command as a list
         options = ["--port", str(DAEMON.port - 1)]
 
@@ -492,17 +489,18 @@ class DAEMON:
         options.append(data[21])
 
         #Mesh
-        print(data[24])
         if data[24] == "True":
             options.append("--mesh")
 
-        #Morse identifier
-        print(data[25])
-        if data[25] == "True":
-            options.append("--morse")
+
 
         options.append("--rx-audio-level")
-        options.append(data[26])
+        options.append(data[25])
+
+        #Morse identifier
+        if data[26] == "True":
+            options.append("--morse")
+
 
         # safe data to config file
         config.write_entire_config(data)

@@ -173,8 +173,8 @@ client.on("data", function (socketdata) {
         stateStore.arq_state = data["arq_state"];
         stateStore.mode = data["mode"];
         stateStore.bandwidth = data["bandwidth"];
-        stateStore.tx_audio_level = data["audio_level"];
-        stateStore.rx_audio_level = data["audio_level"];
+        stateStore.tx_audio_level = data["tx_audio_level"];
+        stateStore.rx_audio_level = data["rx_audio_level"];
         // if audio level is different from config one, send new audio level to modem
         //console.log(parseInt(stateStore.tx_audio_level))
         //console.log(parseInt(settings.tx_audio_level))
