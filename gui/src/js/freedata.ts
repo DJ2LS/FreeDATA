@@ -25,3 +25,22 @@ export function atob(data) {
   //exports.atob = function (data) {
   return window.btoa(Buffer.from(data, "base64").toString("utf8"));
 }
+//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
+export function sortByProperty(property) {
+  return function (a, b) {
+    if (a[property] > b[property]) return 1;
+    else if (a[property] < b[property]) return -1;
+
+    return 0;
+  };
+}
+
+//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
+export function sortByPropertyDesc(property) {
+  return function (a, b) {
+    if (a[property] < b[property]) return 1;
+    else if (a[property] > b[property]) return -1;
+
+    return 0;
+  };
+}
