@@ -3337,15 +3337,35 @@ class DATA:
         # timeout is reached, if we didnt receive data, while we waited
         # for the corresponding data frame + the transmitted signalling frame of ack/nack
         # + a small offset of about 1 second
-        timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
+        timeout = \
+            (
+                    self.burst_last_received
+                    + (self.time_list[self.speed_level] * frames_left)
+                    + self.duration_sig0_frame
+                    + self.channel_busy_timeout
+                    + 1
+            )
+
+
+        # override calculation
+        # if we reached 2/3 of the waiting time and didnt received a signal
+        # then send NACK earlier
+        time_left = timeout - time.time()
+        waiting_time = (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
+        timeout_percent = 100 - (time_left / waiting_time * 100)
+        #timeout_percent = 0
+        if timeout_percent >= 75 and not ModemParam.is_codec2_traffic and not Modem.transmitting:
+            override = True
+        else:
+            override = False
 
         # TODO Enable this for development
-        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
-        # if timeout is expired, but we are receiving codec2 data,
+        print(f"timeout expected in:{round(timeout - time.time())} | timeout percent: {timeout_percent} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
+        # if timeout is expired, but we are receivingt codec2 data,
         # better wait some more time because data might be important for us
         # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
         # Nevertheless, we need to keep timeouts short for efficiency
-        if timeout <= time.time() or modem_error_state and not ModemParam.is_codec2_traffic and not Modem.transmitting:
+        if timeout <= time.time() or modem_error_state and not ModemParam.is_codec2_traffic and not Modem.transmitting or override:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,

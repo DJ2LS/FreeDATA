@@ -117,10 +117,10 @@ class ModemParam:
 
 @dataclass
 class Station:
-    mycallsign: bytes = b"AA0AA"
+    mycallsign: bytes = b"AA0AA-0"
     mycallsign_crc: bytes = b"A"
-    dxcallsign: bytes = b"ZZ9YY"
-    dxcallsign_crc: bytes = b"A"
+    dxcallsign: bytes = b"ZZ9YY-0"
+    dxcallsign_crc: bytes = b"B"
     mygrid: bytes = b""
     dxgrid: bytes = b""
     ssid_list = []  # ssid list we are responding to
@@ -137,7 +137,7 @@ class TCIParam:
 
 @dataclass 
 class Modem:
-    version = "0.11.2-alpha.2"
+    version = "0.11.2-alpha.3"
     host: str = "0.0.0.0"
     port: int = 3000
     SOCKET_TIMEOUT: int = 1  # seconds
