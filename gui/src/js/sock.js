@@ -1,5 +1,5 @@
 var net = require("net");
-import { atob_FD, btoa_FD } from "./freedata";
+import { atob_FD, btoa_FD, sortByProperty, sortByPropertyDesc } from "./freedata";
 import { addDataToWaterfall } from "../js/waterfallHandler.js";
 
 import {
@@ -215,6 +215,7 @@ client.on("data", function (socketdata) {
         stateStore.dbfs_level = Math.round(stateStore.dbfs_level);
 
         stateStore.arq_total_bytes = data["total_bytes"];
+        data["stations"] = data["stations"].sort(sortByPropertyDesc("timestamp"));
         stateStore.heard_stations = data["stations"];
         stateStore.dxcallsign = data["dxcallsign"];
 
