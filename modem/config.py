@@ -77,14 +77,15 @@ class CONFIG:
                               'explorer': data[17],
                               'stats': data[19],
                               'fsk': data[13],
-                              'tx_delay': data[21]
-                              }
+                              'tx_delay': data[21],
+                              'transmit_morse_identifier' : data[25]
+        }
         self.config['TCI'] = {'#TCI settings': None,
                               'ip': data[22],
                               'port': data[23]
                               }
 
-        self.config['MESH'] = {'#TCI settings': None,
+        self.config['MESH'] = {'#Mesh settings': None,
                               'enable_protocol': data[24]
                               }
 

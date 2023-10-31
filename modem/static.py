@@ -151,6 +151,7 @@ class Modem:
     heard_stations = []
     listen: bool = True
     enable_hmac: bool = True
+    transmit_morse_identifier: bool = False
 
     # ------------
 

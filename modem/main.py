@@ -261,6 +261,15 @@ if __name__ == "__main__":
         help="Enable and set hmac message salt",
     )
 
+    PARSER.add_argument(
+        "--morse",
+        dest="transmit_morse_identifier",
+        action="store_true",
+        default=True,
+        help="Enable and send a morse identifier on disconnect an beacon",
+    )
+
+
     ARGS = PARSER.parse_args()
 
     # set save to folder state for allowing downloading files to local file system
@@ -316,7 +325,7 @@ if __name__ == "__main__":
             ModemParam.tx_delay = ARGS.tx_delay
             MeshParam.enable_protocol = ARGS.enable_mesh
             Modem.enable_hmac = ARGS.enable_hmac
-
+            Modem.transmit_morse_identifier = ARGS.transmit_morse_identifier
 
         except Exception as e:
             log.error("[DMN] Error reading config file", exception=e)
@@ -368,6 +377,8 @@ if __name__ == "__main__":
             TCIParam.port = int(conf.get('TCI', 'tci_port', '50001'))
             ModemParam.tx_delay = int(conf.get('Modem', 'tx_delay', '0'))
             MeshParam.enable_protocol = conf.get('MESH','mesh_enable','False')
+            MeshParam.transmit_morse_identifier = conf.get('Modem','transmit_morse_identifier','False')
+
         except KeyError as e:
             log.warning("[CFG] Error reading config file near", key=str(e))
         except Exception as e:

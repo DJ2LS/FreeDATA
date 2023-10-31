@@ -1966,6 +1966,10 @@ class DATA:
         # we need to send disconnect frame before doing arq cleanup
         # we would lose our session id then
         self.send_disconnect_frame()
+
+        # transmit morse identifier if configured
+        if Modem.transmit_morse_identifier:
+            modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
         self.arq_cleanup()
 
     def received_session_close(self, data_in: bytes):
@@ -2856,7 +2860,8 @@ class DATA:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-            #modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
+            if Modem.transmit_morse_identifier:
+                modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
 
     def received_cq(self, data_in: bytes) -> None:
         """
