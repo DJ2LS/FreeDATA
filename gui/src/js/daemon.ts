@@ -162,7 +162,7 @@ export function startModem() {
     command: "start_modem",
     parameter: [
       {
-        mycall: settings.mycall,
+        mycall: settings.mycall + "-" + settings.myssid,
         mygrid: settings.mygrid,
         rx_audio: audioStore.startupInputDevice,
         tx_audio: audioStore.startupOutputDevice,
