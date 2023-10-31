@@ -80,6 +80,8 @@ class RF:
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
 
+        self.is_codec2_traffic_cooldown = 20
+        self.is_codec2_traffic_counter = 0
         # Locking state for mod out so buffer will be filled before we can use it
         # https://github.com/DJ2LS/FreeDATA/issues/127
         # https://github.com/DJ2LS/FreeDATA/issues/99
@@ -845,6 +847,8 @@ class RF:
         :return: NIN from freedv instance
         :rtype: int
         """
+
+
         nbytes = 0
         try:
             while self.stream.active:
@@ -862,10 +866,11 @@ class RF:
                     # 10 error decoding == NACK
                     rx_status = codec2.api.freedv_get_rx_status(freedv)
 
-                    if rx_status != 0:
+                    if rx_status not in [0]:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
                             ModemParam.is_codec2_traffic = True
+                            self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
                             if not ModemParam.channel_busy:
                                 self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
                                 ModemParam.channel_busy=True
@@ -874,6 +879,15 @@ class RF:
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
+                    else:
+                        ModemParam.is_codec2_traffic = False
+
+                    # decrement codec traffic counter for making state smoother
+
+                    print(f"{mode_name}: {self.is_codec2_traffic_counter}")
+                    if self.is_codec2_traffic_counter > 0:
+                        self.is_codec2_traffic_counter -= 1
+                        ModemParam.is_codec2_traffic = True
                     else:
                         ModemParam.is_codec2_traffic = False
 
@@ -1357,7 +1371,7 @@ class RF:
                             ModemParam.channel_busy_slot[slot] = False
                         # increment slot
                         slot += 1
-                    if (addDelay):
+                    if addDelay:
                         # Limit delay counter to a maximum of 200. The higher this value,
                         # the longer we will wait until releasing state
                         ModemParam.channel_busy = True

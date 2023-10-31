@@ -56,10 +56,16 @@ class DATA:
         self.length_sig0_frame = 14
         self.length_sig1_frame = 14
 
-        # duration of signalling frame
-        self.duration_sig0_frame = 2.3
-        self.duration_sig1_frame = 2.3
-        self.longest_duration = 5.8  # datac5
+        # duration of frames
+        self.duration_datac4 = 5.17
+        self.duration_datac13 = 2.0
+        self.duration_datac1 = 4.18
+        self.duration_datac3 = 3.19
+        self.duration_sig0_frame = self.duration_datac13
+        self.duration_sig1_frame = self.duration_datac13
+        self.longest_duration =  self.duration_datac4
+
+
 
         # hold session id
         self.session_id = bytes(1)
@@ -123,7 +129,7 @@ class DATA:
         # List for minimum SNR operating level for the corresponding mode in self.mode_list
         self.snr_list_low_bw = [-100]
         # List for time to wait for corresponding mode in seconds
-        self.time_list_low_bw = [6 + self.duration_sig0_frame + 1]
+        self.time_list_low_bw = [self.duration_datac4]
 
         # --------------------- HIGH BANDWIDTH
 
@@ -139,7 +145,7 @@ class DATA:
         # test with 6,7 --> caused sometimes a frame timeout if ack frame takes longer
         # TODO Need to check why ACK frames needs more time
         # TODO Adjust these times
-        self.time_list_high_bw = [6 + self.duration_sig0_frame + 1, 6 + self.duration_sig0_frame + 1, 6 + self.duration_sig0_frame + 1]
+        self.time_list_high_bw = [self.duration_datac4, self.duration_datac3, self.duration_datac1]
         # -------------- AVAILABLE MODES END-----------
 
         # Mode list for selecting between low bandwidth ( 500Hz ) and modes with higher bandwidth
@@ -566,11 +572,7 @@ class DATA:
         if ModemParam.channel_busy:
             self.channel_busy_handler()
 
-        # reset burst timeout in case we had to wait too long
-        self.burst_last_received = time.time() + self.channel_busy_timeout + 8
         # Transmit frame
-        # TODO Do we have to send , self.send_ident_frame(False) ?
-        # self.enqueue_frame_for_tx([ack_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
         self.enqueue_frame_for_tx([ack_frame], c2_mode=FREEDV_MODE.sig1.value, copies=3, repeat_delay=0)
 
     def send_retransmit_request_frame(self) -> None:
@@ -614,7 +616,7 @@ class DATA:
         # reset burst timeout in case we had to wait too long
         self.burst_last_received = time.time()
 
-    def send_burst_nack_frame_watchdog(self, snr: bytes, tx_n_frames_per_burst) -> None:
+    def send_burst_nack_frame_watchdog(self, tx_n_frames_per_burst) -> None:
         """Build and send NACK frame for watchdog timeout"""
 
         # increment nack counter for transmission stats
@@ -628,7 +630,7 @@ class DATA:
         nack_frame = bytearray(self.length_sig1_frame)
         nack_frame[:1] = bytes([FR_TYPE.BURST_NACK.value])
         nack_frame[1:2] = self.session_id
-        nack_frame[2:3] = helpers.snr_to_bytes(snr)
+        nack_frame[2:3] = helpers.snr_to_bytes(0)
         nack_frame[3:4] = bytes([int(self.speed_level)])
         nack_frame[4:5] = bytes([int(tx_n_frames_per_burst)])
         nack_frame[5:9] = len(ARQ.rx_frame_buffer).to_bytes(4, byteorder="big")
@@ -649,11 +651,6 @@ class DATA:
         disconnection_frame[:1] = bytes([FR_TYPE.ARQ_SESSION_CLOSE.value])
         disconnection_frame[1:2] = self.session_id
         disconnection_frame[2:5] = Station.dxcallsign_crc
-        # TODO Needed? disconnection_frame[7:13] = helpers.callsign_to_bytes(self.mycallsign)
-        # self.enqueue_frame_for_tx([disconnection_frame, self.send_ident_frame(False)], c2_mode=FREEDV_MODE.sig0.value, copies=5, repeat_delay=0)
-        # TODO We need to add the ident frame feature with a seperate PR after publishing latest protocol
-        # TODO We need to wait some time between last arq related signalling frame and ident frame
-        # TODO Maybe about 500ms - 1500ms to avoid confusion and too much PTT toggles
 
         # wait if  we have a channel busy condition
         if ModemParam.channel_busy:
@@ -809,8 +806,12 @@ class DATA:
             ):
                 self.arq_calculate_speed_level(snr)
 
-                self.data_channel_last_received = int(time.time()) + 6 + 6
-                self.burst_last_received = int(time.time()) + 6 + 6
+                # TIMING TEST
+                #self.data_channel_last_received = int(time.time()) + 6 + 6
+                #self.burst_last_received = int(time.time()) + 6 + 6
+                self.data_channel_last_received = int(time.time())
+                self.burst_last_received = int(time.time())
+
                 # Create and send ACK frame
                 self.log.info("[Modem] ARQ | RX | SENDING ACK", finished=ARQ.arq_seconds_until_finish,
                               bytesperminute=ARQ.bytes_per_minute)
@@ -2393,6 +2394,7 @@ class DATA:
         )
 
         # Reset data_channel/burst timestamps
+        # TIMING TEST
         self.data_channel_last_received = int(time.time())
         self.burst_last_received = int(time.time() + 10)  # we might need some more time so lets increase this
 
@@ -2441,7 +2443,9 @@ class DATA:
         # set start of transmission for our statistics
         self.rx_start_of_transmission = time.time()
 
+        # TIMING TEST
         # Reset data_channel/burst timestamps once again for avoiding running into timeout
+        # and therefore sending a NACK
         self.data_channel_last_received = int(time.time())
         self.burst_last_received = int(time.time() + 10)  # we might need some more time so lets increase this
 
@@ -2783,6 +2787,8 @@ class DATA:
                         else:
                             self.enqueue_frame_for_tx([beacon_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1,
                                                       repeat_delay=0)
+                            if Modem.transmit_morse_identifier:
+                                modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
 
                     self.beacon_interval_timer = time.time() + self.beacon_interval
                     while (
@@ -2860,8 +2866,7 @@ class DATA:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.fsk_ldpc_0.value)
         else:
             self.enqueue_frame_for_tx([cq_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
-            if Modem.transmit_morse_identifier:
-                modem.MODEM_TRANSMIT_QUEUE.put(["morse", 1, 0, self.mycallsign])
+
 
     def received_cq(self, data_in: bytes) -> None:
         """
@@ -3329,10 +3334,18 @@ class DATA:
         if frames_left == 0:
             frames_left = 1
 
-        timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left)
+        # timeout is reached, if we didnt receive data, while we waited
+        # for the corresponding data frame + the transmitted signalling frame of ack/nack
+        # + a small offset of about 1 second
+        timeout = self.burst_last_received + (self.time_list[self.speed_level] * frames_left) + self.duration_sig0_frame + self.channel_busy_timeout + 1
+
         # TODO Enable this for development
-        # print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
-        if timeout <= time.time() or modem_error_state:
+        print(f"timeout expected in:{round(timeout - time.time())} | frames left: {frames_left} of {self.rx_n_frames_per_burst} | speed level: {self.speed_level}")
+        # if timeout is expired, but we are receiving codec2 data,
+        # better wait some more time because data might be important for us
+        # reason for this situation can be delays on IRS and ISS, maybe because both had a busy channel condition.
+        # Nevertheless, we need to keep timeouts short for efficiency
+        if timeout <= time.time() or modem_error_state and not ModemParam.is_codec2_traffic and not Modem.transmitting:
             self.log.warning(
                 "[Modem] Burst decoding error or timeout",
                 attempt=self.n_retries_per_burst,
@@ -3343,7 +3356,7 @@ class DATA:
 
             print(
                 f"frames_per_burst {self.rx_n_frame_of_burst} / {self.rx_n_frames_per_burst}, Repeats: {self.burst_rpt_counter} Nones: {ARQ.rx_burst_buffer.count(None)}")
-
+            # check if we have N frames per burst > 1
             if self.rx_n_frames_per_burst > 1 and self.burst_rpt_counter < 3 and ARQ.rx_burst_buffer.count(None) > 0:
                 # reset self.burst_last_received
                 self.burst_last_received = time.time() + self.time_list[self.speed_level] * frames_left
@@ -3352,8 +3365,8 @@ class DATA:
 
             else:
 
-                # reset self.burst_last_received
-                self.burst_last_received = time.time() + self.time_list[self.speed_level]
+                # reset self.burst_last_received counter
+                self.burst_last_received = time.time()
 
                 # reduce speed level if nack counter increased
                 self.frame_received_counter = 0
@@ -3374,13 +3387,14 @@ class DATA:
                 self.set_listening_modes(True, True, self.mode_list[self.speed_level])
 
                 # TODO Does SNR make sense for NACK if we dont have an actual SNR information?
-                self.send_burst_nack_frame_watchdog(0, tx_n_frames_per_burst)
+                self.send_burst_nack_frame_watchdog(tx_n_frames_per_burst)
 
                 # Update data_channel timestamp
                 # TODO Disabled this one for testing.
                 # self.data_channel_last_received = time.time()
                 self.n_retries_per_burst += 1
         else:
+            # debugging output
             # print((self.data_channel_last_received + self.time_list[self.speed_level])-time.time())
             pass
 

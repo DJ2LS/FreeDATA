@@ -265,7 +265,7 @@ if __name__ == "__main__":
         "--morse",
         dest="transmit_morse_identifier",
         action="store_true",
-        default=True,
+        default=False,
         help="Enable and send a morse identifier on disconnect an beacon",
     )
 
