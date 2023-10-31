@@ -80,7 +80,7 @@ function set_hamlib_rf_level() {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Select Frequency
+                
               </button>
 
               <!-- Dropdown Menu -->
