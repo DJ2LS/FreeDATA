@@ -256,6 +256,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 else:
                     self.modem_set_tx_audio_level(received_json)
 
+            # SET RX AUDIO LEVEL
+            if received_json["type"] == "set" and received_json["command"] == "rx_audio_level":
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.modem_set_rx_audio_level(None, received_json)
+                else:
+                    self.modem_set_rx_audio_level(received_json)
 
             # TRANSMIT TEST FRAME
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
@@ -493,6 +499,18 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command=received_json,
             )
 
+    def modem_set_rx_audio_level(self, received_json):
+        try:
+            AudioParam.rx_audio_level = int(received_json["value"])
+            command_response("rx_audio_level", True)
+
+        except Exception as err:
+            command_response("rx_audio_level", False)
+            log.warning(
+                "[SCK] TX audio command execution error",
+                e=err,
+                command=received_json,
+            )
     def modem_set_send_test_frame(self, received_json):
         try:
             DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])

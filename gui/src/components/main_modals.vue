@@ -17,15 +17,20 @@ import {
   getNewMessagesByDXCallsign,
 } from "../js/chatHandler";
 
-import { sendTestFrame, setTxAudioLevel } from "../js/sock.js";
+import { sendTestFrame, setTxAudioLevel, setRxAudioLevel } from "../js/sock.js";
 
 function tuneAudio() {
   sendTestFrame();
 }
 
-function set_audio_level() {
+function set_tx_audio_level() {
   saveSettingsToFile();
   setTxAudioLevel(settings.tx_audio_level);
+}
+
+function set_rx_audio_level() {
+  saveSettingsToFile();
+  setRxAudioLevel(settings.rx_audio_level);
 }
 
 function deleteChat() {
@@ -1195,17 +1200,32 @@ const transmissionSpeedChartDataMessageInfo = computed(() => ({
             </button>
           </div>
           <div class="input-group input-group-sm mb-1">
+            <span class="input-group-text">RX Level</span>
+            <span class="input-group-text">{{ settings.rx_audio_level }}</span>
+            <span class="input-group-text w-75">
+              <input
+                type="range"
+                class="form-range"
+                min="-30"
+                max="20"
+                step="1"
+                id="audioLevelRX"
+                @click="set_rx_audio_level()"
+                v-model="settings.rx_audio_level"
+            /></span>
+          </div>
+          <div class="input-group input-group-sm mb-1">
             <span class="input-group-text">TX Level</span>
             <span class="input-group-text">{{ settings.tx_audio_level }}</span>
             <span class="input-group-text w-75">
               <input
                 type="range"
                 class="form-range"
-                min="0"
-                max="250"
+                min="-30"
+                max="20"
                 step="1"
                 id="audioLevelTX"
-                @click="set_audio_level()"
+                @click="set_tx_audio_level()"
                 v-model="settings.tx_audio_level"
             /></span>
           </div>

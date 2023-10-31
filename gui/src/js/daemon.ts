@@ -184,6 +184,7 @@ export function startModem() {
         tuning_range_fmin: settings.tuning_range_fmin,
         tuning_range_fmax: settings.tuning_range_fmax,
         tx_audio_level: settings.tx_audio_level,
+        rx_audio_level: settings.rx_audio_level,
         respond_to_cq: settings.respond_to_cq,
         rx_buffer_size: settings.rx_buffer_size,
         enable_explorer: settings.enable_explorer,

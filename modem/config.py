@@ -58,6 +58,7 @@ class CONFIG:
                                 'rx': data[3],
                                 'tx': data[4],
                                 'txaudiolevel': data[14],
+                                'rxaudiolevel': data[26],
                                 'auto_tune': data[19]
 
                                 }

@@ -501,6 +501,8 @@ class DAEMON:
         if data[25] == "True":
             options.append("--morse")
 
+        options.append("--rx-audio-level")
+        options.append(data[26])
 
         # safe data to config file
         config.write_entire_config(data)

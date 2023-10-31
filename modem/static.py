@@ -50,7 +50,8 @@ class ARQ:
 
 @dataclass
 class AudioParam:
-    tx_audio_level: int = 50
+    tx_audio_level: int = 0
+    rx_audio_level: int = 0
     audio_input_devices = []
     audio_output_devices = []
     audio_input_device: int = -2

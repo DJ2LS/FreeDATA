@@ -190,8 +190,15 @@ if __name__ == "__main__":
     PARSER.add_argument(
         "--tx-audio-level",
         dest="tx_audio_level",
-        default=50,
+        default=0,
         help="Set the tx audio level at an early stage",
+        type=int,
+    )
+    PARSER.add_argument(
+        "--rx-audio-level",
+        dest="rx_audio_level",
+        default=0,
+        help="Set the rx audio level at an early stage",
         type=int,
     )
     PARSER.add_argument(
@@ -315,6 +322,7 @@ if __name__ == "__main__":
             ModemParam.tuning_range_fmin = ARGS.tuning_range_fmin
             ModemParam.tuning_range_fmax = ARGS.tuning_range_fmax
             AudioParam.tx_audio_level = ARGS.tx_audio_level
+            AudioParam.rx_audio_level = ARGS.rx_audio_level
             Modem.respond_to_cq = ARGS.enable_respond_to_cq
             ARQ.rx_buffer_size = ARGS.rx_buffer_size
             Modem.enable_explorer = ARGS.enable_explorer
@@ -367,7 +375,8 @@ if __name__ == "__main__":
             Modem.low_bandwidth_mode = conf.get('Modem', 'narrowband', 'False')
             ModemParam.tuning_range_fmin = float(conf.get('Modem', 'fmin', '-50.0'))
             ModemParam.tuning_range_fmax = float(conf.get('Modem', 'fmax', '50.0'))
-            AudioParam.tx_audio_level = int(conf.get('AUDIO', 'txaudiolevel', '100'))
+            AudioParam.tx_audio_level = int(conf.get('AUDIO', 'txaudiolevel', '0'))
+            AudioParam.rx_audio_level = int(conf.get('AUDIO', 'rxaudiolevel', '0'))
             Modem.respond_to_cq = conf.get('Modem', 'qrv', 'True')
             ARQ.rx_buffer_size = int(conf.get('Modem', 'rx_buffer_size', '16'))
             Modem.enable_explorer = conf.get('Modem', 'explorer', 'False')
