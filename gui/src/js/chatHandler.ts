@@ -452,7 +452,7 @@ export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any] {
   let new_counter = 0;
   let total_counter = 0;
   let item_array = [];
-  if (typeof dxcallsign !== "undefined") {
+  if (typeof dxcallsign !== "undefined" && typeof chat.sorted_chat_list[dxcallsign] !== "undefined" ) {
     for (const key in chat.sorted_chat_list[dxcallsign]) {
       //console.log(chat.sorted_chat_list[dxcallsign][key])
       //item_array.push(chat.sorted_chat_list[dxcallsign][key])
