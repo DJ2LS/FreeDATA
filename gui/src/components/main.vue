@@ -3,7 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";
@@ -28,12 +27,7 @@ function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
 }
-
-
-
-
 </script>
-
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
@@ -163,24 +157,22 @@ function stopAllTransmissions() {
 
               <!------------------------------------------------------------------------------------------>
 
-<main_active_rig_control />
+              <main_active_rig_control />
 
-<div class="row row-cols-1 row-cols-md-2 g-4">
-  <div class="col">
-    <main_active_audio_level />
-  </div>
-  <div class="col">
-    <main_active_broadcasts />
-  </div>
-  <div class="col">
-    <main_active_stats />
-  </div>
-  <div class="col">
-    <main_active_heard_stations />
-  </div>
-</div>
-
-
+              <div class="row row-cols-1 row-cols-md-2 g-4">
+                <div class="col">
+                  <main_active_audio_level />
+                </div>
+                <div class="col">
+                  <main_active_broadcasts />
+                </div>
+                <div class="col">
+                  <main_active_stats />
+                </div>
+                <div class="col">
+                  <main_active_heard_stations />
+                </div>
+              </div>
             </div>
           </div>
 
