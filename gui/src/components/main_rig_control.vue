@@ -151,22 +151,6 @@ alert("not yet implemented")
           aria-labelledby="list-rig-control-rigctld-list"
         >
           <div class="input-group input-group-sm mb-1">
-            <div class="input-group input-group-sm mb-1">
-
-<span class="input-group-text"> Radio port </span>
-
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      id="hamlib_deviceport"
-      style="width: 7rem"
-      v-html="settings.getSerialDevices()"
-    >
-
-    </select>
-
-
-            </div>
 
             <div class="input-group input-group-sm mb-1">
               <span class="input-group-text">Rigctld service</span>
