@@ -12,7 +12,7 @@ var spectrum = new Object();
 export function initWaterfall() {
   spectrum = new Spectrum("waterfall", {
     spectrumPercent: 0,
-    wf_rows: 192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
+    wf_rows: 100,//192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
   });
 
   console.log(settings.wftheme);

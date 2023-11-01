@@ -63,7 +63,7 @@ function startStopRecordAudio() {
     <div class="card-body p-2">
       <div class="container">
         <div class="row">
-          <div class="col-sm">
+          <div class="col">
             <div
               class="progress mb-0 rounded-0 rounded-top"
               style="height: 22px"
@@ -84,6 +84,11 @@ function startStopRecordAudio() {
                 S-Meter(dB): {{ state.s_meter_strength_raw }}
               </p>
             </div>
+
+
+
+
+
             <div
               class="progress mb-0 rounded-0 rounded-bottom"
               style="height: 8px"
@@ -122,7 +127,13 @@ function startStopRecordAudio() {
               ></div>
             </div>
           </div>
-          <div class="col-sm">
+
+                      </div>
+
+           <div class="row mt-3">
+
+
+          <div class="col">
             <div
               class="progress mb-0 rounded-0 rounded-top"
               style="height: 22px"

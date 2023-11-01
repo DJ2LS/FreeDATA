@@ -3,6 +3,12 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
@@ -18,6 +24,9 @@ import main_active_stats from "./main_active_stats.vue";
 import main_active_broadcasts from "./main_active_broadcasts.vue";
 import main_active_heard_stations from "./main_active_heard_stations.vue";
 import main_active_audio_level from "./main_active_audio_level.vue";
+import main_active_broadcast_chat from "./main_active_broadcast_chat.vue";
+
+
 
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
@@ -148,14 +157,14 @@ function stopAllTransmissions() {
             aria-labelledby="list-modem-list"
           >
             <!-- TOP NAVBAR -->
-            <main_top_navbar />
+            <!--<main_top_navbar />-->
 
             <div
               id="blurdiv"
+              class="container h-100"
               style="
                 -webkit-filter: blur(0px);
                 filter: blur(0px);
-                height: 100vh;
               "
             >
               <!--beginn of blur div -->
@@ -163,22 +172,86 @@ function stopAllTransmissions() {
 
               <!------------------------------------------------------------------------------------------>
 
+
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+  <div class="col">
 <main_active_rig_control />
 
+  </div>
+  <div class="col">
+<div class="card text-bg-light mb-3">
+  <div class="card-header">                 <span class="badge bg-secondary">Modem location | {{ settings.modem_host }}</span>
+</div>
+  <div class="card-body">
+<span
+                class="badge"
+                v-bind:class="{
+                  'text-bg-success': state.hamlib_status === 'connected',
+                  'text-bg-danger disabled':
+                    state.hamlib_status === 'disconnected',
+                }"
+                >Radio connection | {{ state.hamlib_status }} | {{ settings.hamlib_deviceid }}</span
+              >
+
+
+
+
+      <span class="badge bg-secondary"
+        >Modem service | {{ state.modem_running_state }}</span
+      >
+
+
+  </div>
+</div>
+  </div>
+  <div class="col">
+<main_active_broadcasts />
+  </div>
+
+</div>
+
+
+
+
 <div class="row row-cols-1 row-cols-md-2 g-4">
+
+
   <div class="col">
     <main_active_audio_level />
   </div>
   <div class="col">
-    <main_active_broadcasts />
+        <main_active_stats />
   </div>
   <div class="col">
-    <main_active_stats />
+    <main_active_broadcast_chat />
   </div>
   <div class="col">
     <main_active_heard_stations />
   </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
             </div>

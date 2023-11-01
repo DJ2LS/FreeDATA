@@ -187,7 +187,7 @@ export default {
 </script>
 
 <template>
-  <div class="card mb-1" style="height: calc(var(--variable-height) - 20px)">
+  <div class="card mb-1">
     <div class="card-header p-1">
       <div class="container">
         <div class="row">
@@ -354,17 +354,17 @@ export default {
     <div class="card-body p-1">
       <div class="tab-content" id="nav-stats-tabContent">
         <div
-          class="tab-pane fade"
+          class="tab-pane fade w-100 h-100"
           v-bind:class="{ 'show active': settings.spectrum === 'waterfall' }"
           id="list-waterfall"
           role="stats_tabpanel"
           aria-labelledby="list-waterfall-list"
         >
           <canvas
+            class="w-100"
             ref="waterfall"
             id="waterfall"
             style="position: relative; z-index: 2"
-            class="force-gpu h-100 w-100"
           ></canvas>
         </div>
         <div

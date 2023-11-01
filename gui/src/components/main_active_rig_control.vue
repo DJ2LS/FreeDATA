@@ -3,6 +3,9 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+import { useSettingsStore } from "../store/settingsStore.js";
+const settings = useSettingsStore(pinia);
+
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
@@ -35,18 +38,11 @@ function set_hamlib_rf_level() {
             <div class="col-1">
               <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
             </div>
-            <div class="col-10">
-              <strong class="fs-5 me-2">Radio control</strong>
-              <span
-                class="badge"
-                v-bind:class="{
-                  'text-bg-success': state.hamlib_status === 'connected',
-                  'text-bg-danger disabled':
-                    state.hamlib_status === 'disconnected',
-                }"
-                >{{ state.hamlib_status }}</span
-              >
+            <div class="col-9">
+              <strong class="fs-5 me-2">{{settings.mycall}} - {{settings.myssid}}</strong>
             </div>
+
+
             <div class="col-1 text-end">
               <button
                 type="button"
@@ -66,8 +62,6 @@ function set_hamlib_rf_level() {
         <div class="input-group input-group-sm bottom-0 m-0">
           <div class="me-2">
             <div class="input-group input-group-sm">
-              <span class="input-group-text">QRG</span>
-              <span class="input-group-text">{{ state.frequency }} Hz</span>
 
               <!-- Dropdown Button -->
               <button
@@ -80,7 +74,7 @@ function set_hamlib_rf_level() {
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
               >
-                Select Frequency
+                {{ state.frequency }}
               </button>
 
               <!-- Dropdown Menu -->
@@ -213,7 +207,6 @@ function set_hamlib_rf_level() {
 
           <div class="me-2">
             <div class="input-group input-group-sm">
-              <span class="input-group-text">Mode</span>
               <select
                 class="form-control"
                 v-model="state.mode"
@@ -233,32 +226,21 @@ function set_hamlib_rf_level() {
             </div>
           </div>
 
-          <div class="me-2">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">Power</span>
-              <select
-                class="form-control"
-                v-model="state.rf_level"
-                @click="set_hamlib_rf_level()"
-                v-bind:class="{
-                  disabled: state.hamlib_status === 'disconnected',
-                }"
-              >
-                <option value="0">-</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="40">40</option>
-                <option value="50">50</option>
-                <option value="60">60</option>
-                <option value="70">70</option>
-                <option value="80">80</option>
-                <option value="90">90</option>
-                <option value="100">100</option>
-              </select>
-              <span class="input-group-text">%</span>
-            </div>
-          </div>
+      <button
+              type="button"
+              id="startBeacon"
+              class="btn btn-sm mt-1"
+              @click="startStopBeacon()"
+              v-bind:class="{
+                'btn-success': state.beacon_state === 'True',
+                'btn-outline-secondary': state.beacon_state === 'False',
+              }"
+              title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+            >
+              <i class="bi bi-soundwave"></i> Toggle beacon
+            </button>
+
+
         </div>
       </div>
     </div>

@@ -43,7 +43,7 @@ function startStopBeacon() {
           <div class="col-1">
             <i class="bi bi-broadcast" style="font-size: 1.2rem"></i>
           </div>
-          <div class="col-10">
+          <div class="col-9">
             <strong class="fs-5">Broadcasts</strong>
           </div>
           <div class="col-1 text-end">
@@ -62,12 +62,24 @@ function startStopBeacon() {
     </div>
     <div class="card-body p-2">
       <div class="row">
-        <div class="col-md-auto">
-          <div class="input-group input-group-sm mb-0">
+        <div class="col-md-auto w-100">
+
+                    <button
+              class="btn btn-sm btn-outline-secondary ms-1 w-100"
+              id="sendCQ"
+              type="button"
+              title="Send a CQ to the world"
+              @click="transmitCQ()"
+            >
+              Call CQ
+            </button>
+
+
+          <div class="input-group input-group-sm mb-0 mt-1">
             <input
               type="text"
-              class="form-control"
-              style="max-width: 6rem; text-transform: uppercase"
+              class="form-control w-25"
+              style="text-transform: uppercase"
               placeholder="DXcall"
               pattern="[A-Z]*"
               id="dxCall"
@@ -76,7 +88,7 @@ function startStopBeacon() {
               aria-describedby="btnGroupAddon"
             />
             <button
-              class="btn btn-sm btn-outline-secondary ms-1"
+              class="btn btn-sm btn-outline-secondary ms-1 w-50"
               id="sendPing"
               type="button"
               data-bs-placement="bottom"
@@ -89,29 +101,9 @@ function startStopBeacon() {
               Ping
             </button>
 
-            <button
-              class="btn btn-sm btn-outline-secondary ms-1"
-              id="sendCQ"
-              type="button"
-              title="Send a CQ to the world"
-              @click="transmitCQ()"
-            >
-              Call CQ
-            </button>
 
-            <button
-              type="button"
-              id="startBeacon"
-              class="btn btn-sm ms-1"
-              @click="startStopBeacon()"
-              v-bind:class="{
-                'btn-success': state.beacon_state === 'True',
-                'btn-outline-secondary': state.beacon_state === 'False',
-              }"
-              title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
-            >
-              <i class="bi bi-soundwave"></i> Toggle beacon
-            </button>
+
+
           </div>
         </div>
       </div>

@@ -82,7 +82,7 @@ export const useStateStore = defineStore("stateStore", () => {
 
   function updateTncState(state) {
     modem_connection.value = state;
-
+/*
     if (modem_connection.value == "open") {
       // collapse settings screen
       var collapseFirstRow = new bootstrap.Collapse(
@@ -110,6 +110,7 @@ export const useStateStore = defineStore("stateStore", () => {
       //set_CPU_mode();
 
       //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
+
       if (modemStartCount.value == 0) modemStartCount.value++;
     } else {
       // collapse settings screen
@@ -134,6 +135,8 @@ export const useStateStore = defineStore("stateStore", () => {
       );
       //collapseFourthRow.hide();
     }
+
+*/
   }
 
   return {
