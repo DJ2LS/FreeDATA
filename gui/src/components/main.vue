@@ -5,7 +5,6 @@ setActivePinia(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
-import main_audio from "./main_audio.vue";
 import main_rig_control from "./main_rig_control.vue";
 import main_updater from "./main_updater.vue";
 import settings_view from "./settings.vue";
@@ -161,7 +160,6 @@ function stopAllTransmissions() {
                   id="collapseFirstRow"
                 >
                   <div class="col">
-                    <main_audio />
                   </div>
                   <div class="col">
                     <main_rig_control />
