@@ -152,6 +152,90 @@ function stopAllTransmissions() {
             >
               <!--beginn of blur div -->
               <!-------------------------------- MAIN AREA ---------------->
+<div class="row row-cols-1 row-cols-md-4 g-4 border border-2 m-2">
+  <div class="col">
+<div class="card border-dark mb-3">
+  <div class="card-header">CAllsign and Grid and Beacon</div>
+  <div class="card-body">
+    <h5 class="card-title">Dark card title</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col">
+<div class="card border-dark mb-3">
+  <div class="card-header">Frequency selection</div>
+  <div class="card-body">
+    <h5 class="card-title">Dark card title</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col">
+<div class="card border-dark mb-3">
+  <div class="card-header">Send CQ and so</div>
+  <div class="card-body">
+    <h5 class="card-title">Dark card title</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col">
+    <div class="card border-dark mb-3">
+  <div class="card-header">Stop transmission and tune</div>
+  <div class="card-body">
+    <h5 class="card-title">Dark card title</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+</div>
+
+
+
+<div class="row row-cols-1 row-cols-md-2 g-4 m-2 border border-4">
+  <div class="col border border-2">
+    <div class="card border-dark mb-3">
+  <div class="card-header">AUdio stuff</div>
+  <div class="card-body">
+    <h5 class="card-title">AUdio stuff</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col border border-2">
+<div class="card border-dark mb-3">
+  <div class="card-header">Waterfall and stats</div>
+  <div class="card-body">
+    <h5 class="card-title">Waterfall and stats</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col border border-2">
+    <div class="card border-dark mb-3">
+  <div class="card-header">Broadcast chat</div>
+  <div class="card-body">
+    <h5 class="card-title">Broadcast chat</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+  <div class="col border border-2">
+    <div class="card border-dark mb-3">
+  <div class="card-header">Activity / Heard stations area</div>
+  <div class="card-body">
+    <h5 class="card-title">Activity / Heard stations area</h5>
+    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+  </div>
+</div>
+  </div>
+</div>
+
+
+
+
+
 
               <!------------------------------------------------------------------------------------------>
               <div class="container p-3">
