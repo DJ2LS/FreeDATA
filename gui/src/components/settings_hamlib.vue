@@ -349,6 +349,20 @@ function saveSettings() {
   </div>
 
   <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="width: 180px">Radio port</span>
+
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      id="hamlib_deviceport"
+      style="width: 7rem"
+      @change="saveSettings"
+      v-html="settings.getSerialDevices()"
+    >
+    </select>
+  </div>
+
+  <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Serial speed</span>
 
     <select
