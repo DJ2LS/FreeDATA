@@ -19,6 +19,12 @@ export function initWaterfall() {
   spectrum.setColorMap(settings.wftheme);
 }
 
+export function setColormap(index)
+{
+  //console.log("Setting waterfall colormap to " + index)
+  spectrum.setColorMap(index);
+}
+
 export function addDataToWaterfall(data) {
   //console.log(spectrum)
   try {

@@ -7,6 +7,7 @@ import pinia from "../store/index";
 setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
+import { setColormap } from "./waterfallHandler";
 const settings = useSettingsStore(pinia);
 // ---------------------------------
 
@@ -138,6 +139,9 @@ export function loadSettings() {
         settings.myssid = config[key].split("-")[1];
       } else {
         settings[key] = config[key];
+      }
+      if (key=="wftheme") {
+        setColormap(config[key]);
       }
     } catch (e) {
       console.log(e);
