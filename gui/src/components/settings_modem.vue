@@ -8,14 +8,18 @@ setActivePinia(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
+import { useAudioStore } from "../store/audioStore.js";
+const audio = useAudioStore(pinia);
+
 function saveSettings() {
   saveSettingsToFile();
 }
 </script>
 
 <template>
+
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">modem port</span>
+    <span class="input-group-text" style="width: 180px">Modem port</span>
     <input
       type="text"
       class="form-control"
@@ -30,7 +34,7 @@ function saveSettings() {
   </div>
 
   <div class="input-group input-group-sm mb-1">
-    <span class="input-group-text" style="width: 180px">modem host</span>
+    <span class="input-group-text" style="width: 180px">Modem host</span>
     <input
       type="text"
       class="form-control"
@@ -39,6 +43,32 @@ function saveSettings() {
       @change="saveSettings"
       v-model="settings.modem_host"
     />
+  </div>
+
+  <!-- Audio Input Device -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Input device</label>
+    <select
+          class="form-select form-select-sm"
+          id="audio_input_selectbox"
+          aria-label=".form-select-sm"
+          @change="saveSettings"
+          v-html="audio.getInputDevices()"
+        >  
+    </select>
+  </div>
+
+  <!-- Audio Output Device -->
+  <div class="input-group input-group-sm mb-1">
+    <label class="input-group-text w-50">Audio Output device</label>
+    <select
+          class="form-select form-select-sm"
+          id="audio_output_selectbox"
+          aria-label=".form-select-sm"
+          @change="saveSettings"
+          v-html="audio.getOutputDevices()"
+        >  
+    </select>
   </div>
 
   <div class="input-group input-group-sm mb-1">

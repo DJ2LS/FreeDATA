@@ -37,7 +37,7 @@ import settings_exp from "./settings_exp.vue";
                 aria-controls="home"
                 aria-selected="true"
               >
-                STATION
+                Station
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -128,6 +128,8 @@ import settings_exp from "./settings_exp.vue";
         </div>
         <div class="card-body">
           <!-- SETTINGS Nav Tab panes -->
+
+          <!-- Station tab contents-->
           <div class="tab-content">
             <div
               class="tab-pane active"
@@ -138,6 +140,7 @@ import settings_exp from "./settings_exp.vue";
             >
               <settings_station />
             </div>
+
             <!-- GUI tab contents-->
             <div
               class="tab-pane"
