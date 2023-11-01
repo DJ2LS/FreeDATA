@@ -39,9 +39,10 @@ function set_hamlib_rf_level() {
               <i class="bi bi-house-door" style="font-size: 1.2rem"></i>
             </div>
             <div class="col-9">
-              <strong class="fs-5 me-2">{{settings.mycall}} - {{settings.myssid}}</strong>
+              <strong class="fs-5 me-2"
+                >{{ settings.mycall }} - {{ settings.myssid }}</strong
+              >
             </div>
-
 
             <div class="col-1 text-end">
               <button
@@ -62,7 +63,6 @@ function set_hamlib_rf_level() {
         <div class="input-group input-group-sm bottom-0 m-0">
           <div class="me-2">
             <div class="input-group input-group-sm">
-
               <!-- Dropdown Button -->
               <button
                 v-bind:class="{
@@ -226,21 +226,19 @@ function set_hamlib_rf_level() {
             </div>
           </div>
 
-      <button
-              type="button"
-              id="startBeacon"
-              class="btn btn-sm mt-1"
-              @click="startStopBeacon()"
-              v-bind:class="{
-                'btn-success': state.beacon_state === 'True',
-                'btn-outline-secondary': state.beacon_state === 'False',
-              }"
-              title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
-            >
-              <i class="bi bi-soundwave"></i> Toggle beacon
-            </button>
-
-
+          <button
+            type="button"
+            id="startBeacon"
+            class="btn btn-sm mt-1"
+            @click="startStopBeacon()"
+            v-bind:class="{
+              'btn-success': state.beacon_state === 'True',
+              'btn-outline-secondary': state.beacon_state === 'False',
+            }"
+            title="Toggle beacon mode. The interval can be set in settings. While sending a beacon, you can receive ping requests and open a datachannel. If a datachannel is opened, the beacon pauses."
+          >
+            <i class="bi bi-soundwave"></i> Toggle beacon
+          </button>
         </div>
       </div>
     </div>
