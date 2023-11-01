@@ -85,10 +85,6 @@ function startStopRecordAudio() {
               </p>
             </div>
 
-
-
-
-
             <div
               class="progress mb-0 rounded-0 rounded-bottom"
               style="height: 8px"
@@ -127,12 +123,9 @@ function startStopRecordAudio() {
               ></div>
             </div>
           </div>
+        </div>
 
-                      </div>
-
-           <div class="row mt-3">
-
-
+        <div class="row mt-3">
           <div class="col">
             <div
               class="progress mb-0 rounded-0 rounded-top"

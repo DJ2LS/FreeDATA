@@ -82,7 +82,7 @@ export const useStateStore = defineStore("stateStore", () => {
 
   function updateTncState(state) {
     modem_connection.value = state;
-/*
+    /*
     if (modem_connection.value == "open") {
       // collapse settings screen
       var collapseFirstRow = new bootstrap.Collapse(
