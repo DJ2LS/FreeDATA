@@ -3,7 +3,6 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";
@@ -28,12 +27,7 @@ function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
 }
-
-
-
-
 </script>
-
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
@@ -163,11 +157,9 @@ function stopAllTransmissions() {
 
               <!------------------------------------------------------------------------------------------>
 
-
-
               <div class="container p-3">
                 <div
-                  class="row collapse multi-collapse  mt-4"
+                  class="row collapse multi-collapse mt-4"
                   id="collapseFirstRow"
                 >
                   <div class="col">
@@ -190,7 +182,10 @@ function stopAllTransmissions() {
                 </div>
               </div>
               <div class="container">
-                <div class="row collapse multi-collapse show" id="collapseThirdRow">
+                <div
+                  class="row collapse multi-collapse show"
+                  id="collapseThirdRow"
+                >
                   <main_active_rig_control />
 
                   <div class="col-5">
