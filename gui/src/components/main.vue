@@ -163,55 +163,24 @@ function stopAllTransmissions() {
 
               <!------------------------------------------------------------------------------------------>
 
+<main_active_rig_control />
+
+<div class="row row-cols-1 row-cols-md-2 g-4">
+  <div class="col">
+    <main_active_audio_level />
+  </div>
+  <div class="col">
+    <main_active_broadcasts />
+  </div>
+  <div class="col">
+    <main_active_stats />
+  </div>
+  <div class="col">
+    <main_active_heard_stations />
+  </div>
+</div>
 
 
-              <div class="container p-3">
-                <div
-                  class="row collapse multi-collapse  mt-4"
-                  id="collapseFirstRow"
-                >
-                  <div class="col">
-                    <!--<main_audio />-->
-                  </div>
-                  <div class="col">
-                    <!--<main_rig_control />-->
-                  </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseSecondRow"
-                >
-                  <div class="col">
-                    <!--<main_my_station />-->
-                  </div>
-                  <div class="col">
-                    <!--<main_updater />-->
-                  </div>
-                </div>
-              </div>
-              <div class="container">
-                <div class="row collapse multi-collapse show" id="collapseThirdRow">
-                  <main_active_rig_control />
-
-                  <div class="col-5">
-                    <main_active_audio_level />
-                  </div>
-                  <div class="col">
-                    <main_active_broadcasts />
-                  </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse show mt-3"
-                  id="collapseFourthRow"
-                >
-                  <div class="col-5">
-                    <main_active_stats />
-                  </div>
-                  <div class="col">
-                    <main_active_heard_stations />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
 

@@ -62,7 +62,7 @@ function startStopModem() {
     <div class="mx-auto">
 
 
-      <div class="input-group input-group-sm mb-1">
+      <div class="input-group input-group-sm mb-1 w-50">
         <span class="input-group-text">
           <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
         </span>
@@ -84,10 +84,8 @@ function startStopModem() {
         ></select>
       </div>
 
-
-
-
-      <span class="badge bg-secondary me-4"
+<!--
+   <span class="badge bg-secondary me-4"
         >Modem location | {{ settings.modem_host }}</span
       >
 
@@ -95,7 +93,8 @@ function startStopModem() {
         >Service | {{ state.modem_running_state }}</span
       >
 
-      <div class="btn-group" role="group"></div>
+-->
+
       <div class="btn-group me-4" role="group">
         <button
           type="button"
