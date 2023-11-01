@@ -117,22 +117,22 @@ export const useStateStore = defineStore("stateStore", () => {
         document.getElementById("collapseFirstRow"),
         { toggle: false },
       );
-      collapseFirstRow.show();
+      //collapseFirstRow.show();
       var collapseSecondRow = new bootstrap.Collapse(
         document.getElementById("collapseSecondRow"),
         { toggle: false },
       );
-      collapseSecondRow.show();
+      //collapseSecondRow.show();
       var collapseThirdRow = new bootstrap.Collapse(
         document.getElementById("collapseThirdRow"),
         { toggle: false },
       );
-      collapseThirdRow.hide();
+      //collapseThirdRow.hide();
       var collapseFourthRow = new bootstrap.Collapse(
         document.getElementById("collapseFourthRow"),
         { toggle: false },
       );
-      collapseFourthRow.hide();
+      //collapseFourthRow.hide();
     }
   }
 

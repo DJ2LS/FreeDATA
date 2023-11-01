@@ -16,6 +16,7 @@ const audioStore = useAudioStore(pinia);
 import { startModem, stopModem } from "../js/daemon";
 import { saveSettingsToFile } from "../js/settingsHandler";
 
+
 function startStopModem() {
   switch (state.modem_running_state) {
     case "stopped":
@@ -51,7 +52,41 @@ function startStopModem() {
 
 <template>
   <nav class="navbar bg-body-tertiary border-bottom">
+
+
+
+
+
+
+
     <div class="mx-auto">
+
+
+      <div class="input-group input-group-sm mb-1">
+        <span class="input-group-text">
+          <i class="bi bi-mic-fill" style="font-size: 1rem"></i>
+        </span>
+        <select
+          class="form-select form-select-sm"
+          id="audio_input_selectbox"
+          aria-label=".form-select-sm"
+          v-html="audioStore.getInputDevices()"
+        ></select>
+
+        <span class="input-group-text">
+          <i class="bi bi-volume-up" style="font-size: 1rem"></i>
+        </span>
+        <select
+          class="form-select form-select-sm"
+          id="audio_output_selectbox"
+          aria-label=".form-select-sm"
+          v-html="audioStore.getOutputDevices()"
+        ></select>
+      </div>
+
+
+
+
       <span class="badge bg-secondary me-4"
         >Modem location | {{ settings.modem_host }}</span
       >

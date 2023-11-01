@@ -3,6 +3,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
+
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_audio from "./main_audio.vue";
@@ -27,7 +28,12 @@ function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();
 }
+
+
+
+
 </script>
+
 
 <template>
   <!-------------------------------- INFO TOASTS ---------------->
@@ -156,16 +162,19 @@ function stopAllTransmissions() {
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
+
+
+
               <div class="container p-3">
                 <div
-                  class="row collapse multi-collapse show mt-4"
+                  class="row collapse multi-collapse  mt-4"
                   id="collapseFirstRow"
                 >
                   <div class="col">
-                    <main_audio />
+                    <!--<main_audio />-->
                   </div>
                   <div class="col">
-                    <main_rig_control />
+                    <!--<main_rig_control />-->
                   </div>
                 </div>
                 <div
@@ -173,15 +182,15 @@ function stopAllTransmissions() {
                   id="collapseSecondRow"
                 >
                   <div class="col">
-                    <main_my_station />
+                    <!--<main_my_station />-->
                   </div>
                   <div class="col">
-                    <main_updater />
+                    <!--<main_updater />-->
                   </div>
                 </div>
               </div>
               <div class="container">
-                <div class="row collapse multi-collapse" id="collapseThirdRow">
+                <div class="row collapse multi-collapse show" id="collapseThirdRow">
                   <main_active_rig_control />
 
                   <div class="col-5">
@@ -192,7 +201,7 @@ function stopAllTransmissions() {
                   </div>
                 </div>
                 <div
-                  class="row collapse multi-collapse mt-3"
+                  class="row collapse multi-collapse show mt-3"
                   id="collapseFourthRow"
                 >
                   <div class="col-5">

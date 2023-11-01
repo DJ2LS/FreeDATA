@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
 import settings_hamlib from "./settings_hamlib.vue";
@@ -28,6 +29,20 @@ import settings_exp from "./settings_exp.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link active"
+                id="station-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#station"
+                type="button"
+                role="tab"
+                aria-controls="home"
+                aria-selected="true"
+              >
+                STATION
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
                 id="gui-tab"
                 data-bs-toggle="tab"
                 data-bs-target="#gui"
@@ -114,9 +129,18 @@ import settings_exp from "./settings_exp.vue";
         <div class="card-body">
           <!-- SETTINGS Nav Tab panes -->
           <div class="tab-content">
-            <!-- GUI tab contents-->
             <div
               class="tab-pane active"
+              id="station"
+              role="tabpanel"
+              aria-labelledby="station-tab"
+              tabindex="0"
+            >
+              <settings_station />
+            </div>
+            <!-- GUI tab contents-->
+            <div
+              class="tab-pane"
               id="gui"
               role="tabpanel"
               aria-labelledby="gui-tab"
