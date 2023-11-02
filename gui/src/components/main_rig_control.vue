@@ -61,8 +61,9 @@ alert("not yet implemented")
 </script>
 
 <template>
-  <div class="card mb-0">
-    <div class="card-header p-1">
+  <div class="mb-3">
+    <div class="card mb-1">
+      <div class="card-header p-1">
       <div class="container">
         <div class="row">
           <div class="col-1">
@@ -258,5 +259,6 @@ alert("not yet implemented")
                 Define Modem rig control mode (none/hamlib)
               </div>
               -->
+  </div>
   </div>
 </template>
