@@ -2246,14 +2246,17 @@ class DATA:
             )
 
             # Let's check if we have a busy channel and if we are not in a running arq session.
-            if ModemParam.channel_busy and not ARQ.arq_state_event.is_set():
+            if ModemParam.channel_busy and not ARQ.arq_state_event.is_set() or ModemParam.is_codec2_traffic:
                 self.channel_busy_handler()
 
             # if channel free, enqueue frame for tx
-            self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
+            if not ARQ.arq_state_event.is_set():
+                self.enqueue_frame_for_tx([connection_frame], c2_mode=FREEDV_MODE.sig0.value, copies=1, repeat_delay=0)
 
             # wait until timeout or event set
-            ARQ.arq_state_event.wait(timeout=self.datachannel_opening_interval)
+
+            random_wait_time = randrange(int(self.duration_sig1_frame * 10), int(self.datachannel_opening_interval * 10), 5)
+            ARQ.arq_state_event.wait(timeout=random_wait_time)
 
             if ARQ.arq_state_event.is_set():
                 return True
