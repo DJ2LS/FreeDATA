@@ -2255,7 +2255,7 @@ class DATA:
 
             # wait until timeout or event set
 
-            random_wait_time = randrange(int(self.duration_sig1_frame * 10), int(self.datachannel_opening_interval * 10), 5)
+            random_wait_time = randrange(int(self.duration_sig1_frame * 10), int(self.datachannel_opening_interval * 10), 1)  / 10
             ARQ.arq_state_event.wait(timeout=random_wait_time)
 
             if ARQ.arq_state_event.is_set():
