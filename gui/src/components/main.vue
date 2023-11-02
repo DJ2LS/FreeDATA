@@ -159,18 +159,7 @@ function stopAllTransmissions() {
                   id="collapseFirstRow"
                 >
                   <div class="col">
-                  </div>
-                  <div class="col">
                     <main_rig_control />
-                  </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseSecondRow"
-                >
-                  <div class="col">
-                  </div>
-                  <div class="col">
                   </div>
                 </div>
               </div>
