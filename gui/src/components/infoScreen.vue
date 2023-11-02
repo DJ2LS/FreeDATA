@@ -5,8 +5,7 @@ import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
 
-import { useStateStore } from "../store/stateStore.js";
-const state = useStateStore(pinia);
+import infoScreen_updater from "./infoScreen_updater.vue";
 
 const version = import.meta.env.PACKAGE_VERSION;
 
@@ -91,13 +90,7 @@ onMounted(shuffleCards);
 </script>
 
 <template>
-  <h3 class="m-2">
-    <span class="badge bg-secondary">FreeDATA: {{ version }}</span>
-    <span class="ms-2 badge bg-secondary"
-      >Modem: {{ state.modem_version }}</span
-    >
-  </h3>
-
+  <infoScreen_updater />
   <div class="container-fluid">
     <div class="row mt-2">
       <hr />

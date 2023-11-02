@@ -72,16 +72,13 @@ function saveSettings() {
   <hr class="m-2" />
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px"> Radio model </span>
-    <input
-      class="form-control"
-      list="datalistOptions"
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
       id="hamlib_deviceid"
-      placeholder="Search radio..."
-      style="width: 7rem"
       @change="saveSettings"
       v-model="settings.hamlib_deviceid"
-    />
-    <datalist id="datalistOptions">
+    >
       <option selected value="-- ignore --">-- ignore --</option>
       <option value="2028">Kenwood TS480</option>
       <option value="1">Hamlib Dummy</option>
@@ -345,7 +342,21 @@ function saveSettings() {
       <option value="32001">Barrett 2050</option>
       <option value="32002">Barrett 950</option>
       <option value="33001">ELAD FDM-DUO</option>
-    </datalist>
+    </select>
+  </div>
+
+  <div class="input-group input-group-sm mb-1">
+    <span class="input-group-text" style="width: 180px">Radio port</span>
+
+    <select
+      class="form-select form-select-sm"
+      aria-label=".form-select-sm"
+      id="hamlib_deviceport"
+      style="width: 7rem"
+      @change="saveSettings"
+      v-html="settings.getSerialDevices()"
+    >
+    </select>
   </div>
 
   <div class="input-group input-group-sm mb-1">

@@ -5,10 +5,7 @@ setActivePinia(pinia);
 
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
-import main_audio from "./main_audio.vue";
 import main_rig_control from "./main_rig_control.vue";
-import main_my_station from "./main_my_station.vue";
-import main_updater from "./main_updater.vue";
 import settings_view from "./settings.vue";
 import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
@@ -156,33 +153,10 @@ function stopAllTransmissions() {
               <!-------------------------------- MAIN AREA ---------------->
 
               <!------------------------------------------------------------------------------------------>
-              <div class="container p-3">
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseFirstRow"
-                >
-                  <div class="col">
-                    <main_audio />
-                  </div>
-                  <div class="col">
-                    <main_rig_control />
-                  </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse show mt-4"
-                  id="collapseSecondRow"
-                >
-                  <div class="col">
-                    <main_my_station />
-                  </div>
-                  <div class="col">
-                    <main_updater />
-                  </div>
-                </div>
-              </div>
               <div class="container">
-                <div class="row collapse multi-collapse" id="collapseThirdRow">
+                <div class="row">
                   <main_active_rig_control />
+                  <main_rig_control />
 
                   <div class="col-5">
                     <main_active_audio_level />
@@ -190,11 +164,6 @@ function stopAllTransmissions() {
                   <div class="col">
                     <main_active_broadcasts />
                   </div>
-                </div>
-                <div
-                  class="row collapse multi-collapse mt-3"
-                  id="collapseFourthRow"
-                >
                   <div class="col-5">
                     <main_active_stats />
                   </div>

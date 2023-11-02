@@ -61,8 +61,9 @@ alert("not yet implemented")
 </script>
 
 <template>
-  <div class="card mb-0">
-    <div class="card-header p-1">
+  <div class="mb-3">
+    <div class="card mb-1">
+      <div class="card-header p-1">
       <div class="container">
         <div class="row">
           <div class="col-1">
@@ -151,22 +152,6 @@ alert("not yet implemented")
           aria-labelledby="list-rig-control-rigctld-list"
         >
           <div class="input-group input-group-sm mb-1">
-            <div class="input-group input-group-sm mb-1">
-
-<span class="input-group-text"> Radio port </span>
-
-    <select
-      class="form-select form-select-sm"
-      aria-label=".form-select-sm"
-      id="hamlib_deviceport"
-      style="width: 7rem"
-      v-html="settings.getSerialDevices()"
-    >
-
-    </select>
-
-
-            </div>
 
             <div class="input-group input-group-sm mb-1">
               <span class="input-group-text">Rigctld service</span>
@@ -274,5 +259,6 @@ alert("not yet implemented")
                 Define Modem rig control mode (none/hamlib)
               </div>
               -->
+  </div>
   </div>
 </template>

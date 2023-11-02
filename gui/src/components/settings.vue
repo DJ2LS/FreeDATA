@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
+import settings_rigcontrol from "./settings_rigcontrol.vue";
 import settings_hamlib from "./settings_hamlib.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
@@ -28,6 +30,20 @@ import settings_exp from "./settings_exp.vue";
             <li class="nav-item" role="presentation">
               <button
                 class="nav-link active"
+                id="station-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#station"
+                type="button"
+                role="tab"
+                aria-controls="home"
+                aria-selected="true"
+              >
+                Station
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
                 id="gui-tab"
                 data-bs-toggle="tab"
                 data-bs-target="#gui"
@@ -51,6 +67,20 @@ import settings_exp from "./settings_exp.vue";
                 aria-selected="true"
               >
                 Chat
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="rigcontrol-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#rigcontrol"
+                type="button"
+                role="tab"
+                aria-controls="profile"
+                aria-selected="false"
+              >
+                Rig Control
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -113,10 +143,22 @@ import settings_exp from "./settings_exp.vue";
         </div>
         <div class="card-body">
           <!-- SETTINGS Nav Tab panes -->
+
+          <!-- Station tab contents-->
           <div class="tab-content">
-            <!-- GUI tab contents-->
             <div
               class="tab-pane active"
+              id="station"
+              role="tabpanel"
+              aria-labelledby="station-tab"
+              tabindex="0"
+            >
+              <settings_station />
+            </div>
+
+            <!-- GUI tab contents-->
+            <div
+              class="tab-pane"
               id="gui"
               role="tabpanel"
               aria-labelledby="gui-tab"
@@ -133,6 +175,16 @@ import settings_exp from "./settings_exp.vue";
               tabindex="0"
             >
               <settings_chat />
+            </div>
+
+            <div
+              class="tab-pane"
+              id="rigcontrol"
+              role="tabpanel"
+              aria-labelledby="rigcontrol-tab"
+              tabindex="0"
+            >
+              <settings_rigcontrol />
             </div>
 
             <div

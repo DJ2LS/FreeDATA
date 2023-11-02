@@ -86,55 +86,11 @@ export const useStateStore = defineStore("stateStore", () => {
     modem_connection.value = state;
 
     if (modem_connection.value == "open") {
-      // collapse settings screen
-      var collapseFirstRow = new bootstrap.Collapse(
-        document.getElementById("collapseFirstRow"),
-        { toggle: false },
-      );
-      collapseFirstRow.hide();
-      var collapseSecondRow = new bootstrap.Collapse(
-        document.getElementById("collapseSecondRow"),
-        { toggle: false },
-      );
-      collapseSecondRow.hide();
-      var collapseThirdRow = new bootstrap.Collapse(
-        document.getElementById("collapseThirdRow"),
-        { toggle: false },
-      );
-      collapseThirdRow.show();
-      var collapseFourthRow = new bootstrap.Collapse(
-        document.getElementById("collapseFourthRow"),
-        { toggle: false },
-      );
-      collapseFourthRow.show();
-
       //Set tuning for fancy graphics mode (high/low CPU)
       //set_CPU_mode();
 
       //GUI will auto connect to TNC if already running, if that is the case increment start count if 0
       if (modemStartCount.value == 0) modemStartCount.value++;
-    } else {
-      // collapse settings screen
-      var collapseFirstRow = new bootstrap.Collapse(
-        document.getElementById("collapseFirstRow"),
-        { toggle: false },
-      );
-      collapseFirstRow.show();
-      var collapseSecondRow = new bootstrap.Collapse(
-        document.getElementById("collapseSecondRow"),
-        { toggle: false },
-      );
-      collapseSecondRow.show();
-      var collapseThirdRow = new bootstrap.Collapse(
-        document.getElementById("collapseThirdRow"),
-        { toggle: false },
-      );
-      collapseThirdRow.hide();
-      var collapseFourthRow = new bootstrap.Collapse(
-        document.getElementById("collapseFourthRow"),
-        { toggle: false },
-      );
-      collapseFourthRow.hide();
     }
   }
 
