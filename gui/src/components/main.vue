@@ -8,13 +8,16 @@ import main_top_navbar from "./main_top_navbar.vue";
 import main_rig_control from "./main_rig_control.vue";
 import main_updater from "./main_updater.vue";
 import settings_view from "./settings.vue";
-import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
 
 import main_active_stats from "./main_active_stats.vue";
-import main_active_broadcasts from "./main_active_broadcasts.vue";
 import main_active_heard_stations from "./main_active_heard_stations.vue";
 import main_active_audio_level from "./main_active_audio_level.vue";
+
+import main_active_actions_card from "./main_active_actions_card.vue"
+import main_active_frequency_card from "./main_active_frequency_card.vue"
+
+
 
 import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
@@ -163,22 +166,10 @@ function stopAllTransmissions() {
 </div>
   </div>
   <div class="col">
-<div class="card border-dark mb-3">
-  <div class="card-header">Frequency selection</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+   <main_active_frequency_card />
   </div>
-</div>
-  </div>
-  <div class="col">
-<div class="card border-dark mb-3">
-  <div class="card-header">Send CQ and so</div>
-  <div class="card-body">
-    <h5 class="card-title">Dark card title</h5>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-  </div>
-</div>
+    <div class="col">
+        <main_active_actions_card />
   </div>
   <div class="col">
     <div class="card border-dark mb-3">
@@ -262,13 +253,11 @@ function stopAllTransmissions() {
               </div>
               <div class="container">
                 <div class="row collapse multi-collapse" id="collapseThirdRow">
-                  <main_active_rig_control />
 
                   <div class="col-5">
                     <main_active_audio_level />
                   </div>
                   <div class="col">
-                    <main_active_broadcasts />
                   </div>
                 </div>
                 <div
