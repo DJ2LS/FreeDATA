@@ -2,6 +2,7 @@
 import settings_station from "./settings_station.vue";
 import settings_gui from "./settings_gui.vue";
 import settings_chat from "./settings_chat.vue";
+import settings_rigcontrol from "./settings_rigcontrol.vue";
 import settings_hamlib from "./settings_hamlib.vue";
 import settings_modem from "./settings_modem.vue";
 import settings_web from "./settings_web.vue";
@@ -66,6 +67,20 @@ import settings_exp from "./settings_exp.vue";
                 aria-selected="true"
               >
                 Chat
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button
+                class="nav-link"
+                id="rigcontrol-tab"
+                data-bs-toggle="tab"
+                data-bs-target="#rigcontrol"
+                type="button"
+                role="tab"
+                aria-controls="profile"
+                aria-selected="false"
+              >
+                Rig Control
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -160,6 +175,16 @@ import settings_exp from "./settings_exp.vue";
               tabindex="0"
             >
               <settings_chat />
+            </div>
+
+            <div
+              class="tab-pane"
+              id="rigcontrol"
+              role="tabpanel"
+              aria-labelledby="rigcontrol-tab"
+              tabindex="0"
+            >
+              <settings_rigcontrol />
             </div>
 
             <div
