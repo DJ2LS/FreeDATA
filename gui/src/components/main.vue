@@ -6,7 +6,6 @@ setActivePinia(pinia);
 import main_modals from "./main_modals.vue";
 import main_top_navbar from "./main_top_navbar.vue";
 import main_rig_control from "./main_rig_control.vue";
-import main_updater from "./main_updater.vue";
 import settings_view from "./settings.vue";
 import main_active_rig_control from "./main_active_rig_control.vue";
 import main_footer_navbar from "./main_footer_navbar.vue";
@@ -172,7 +171,6 @@ function stopAllTransmissions() {
                   <div class="col">
                   </div>
                   <div class="col">
-                    <main_updater />
                   </div>
                 </div>
               </div>

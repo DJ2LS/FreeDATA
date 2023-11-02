@@ -5,10 +5,15 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
+
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
+
 </script>
 
 <template>
-  <div class="card mb-0">
+  <div class="card m-2">
     <div class="card-header p-1 d-flex">
       <div class="container">
         <div class="row">
@@ -49,13 +54,31 @@ const settings = useSettingsStore(pinia);
       </div>
     </div>
     <div class="card-body p-2 mb-1">
+
+      <button
+        class="btn btn-secondary btn-sm ms-1 me-1"
+        type="button"
+        disabled
+      >
+        GUI version | {{ version }}
+      </button>
+
+      <button
+        class="btn btn-secondary btn-sm ms-1 me-1"
+        type="button"
+        disabled
+      >
+        Modem version | {{ state.modem_version }}
+      </button>
+
+
       <button
         class="btn btn-secondary btn-sm ms-1 me-1"
         id="updater_channel"
         type="button"
         disabled
       >
-        {{ settings.update_channel }}
+        Update channel | {{ settings.update_channel }}
       </button>
       <button
         class="btn btn-secondary btn-sm ms-1"
