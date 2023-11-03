@@ -131,6 +131,8 @@ function stopAllTransmissions() {
       <div class="col-sm min-vh-100 m-0 p-0">
         <!-- content -->
 
+        <main_top_navbar />
+
         <div class="tab-content" id="nav-tabContent-settings">
           <div
             class="tab-pane fade show active"
@@ -139,8 +141,6 @@ function stopAllTransmissions() {
             aria-labelledby="list-modem-list"
           >
             <!-- TOP NAVBAR -->
-            <main_top_navbar />
-
             <div
               id="blurdiv"
               style="
