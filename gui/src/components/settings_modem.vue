@@ -99,9 +99,10 @@ function saveSettings() {
     <label class="input-group-text w-50">Audio Input device</label>
     <select
           class="form-select form-select-sm"
-          id="audio_input_selectbox"
+          id="rx_audio"
           aria-label=".form-select-sm"
           @change="saveSettings"
+          v-model="settings.rx_audio"
           v-html="audio.getInputDevices()"
         >  
     </select>
@@ -112,9 +113,10 @@ function saveSettings() {
     <label class="input-group-text w-50">Audio Output device</label>
     <select
           class="form-select form-select-sm"
-          id="audio_output_selectbox"
+          id="tx_audio"
           aria-label=".form-select-sm"
           @change="saveSettings"
+          v-model="settings.tx_audio"
           v-html="audio.getOutputDevices()"
         >  
     </select>

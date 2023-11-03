@@ -37,6 +37,7 @@ function connectDAEMON() {
 
 daemon.on("connect", function () {
   console.log("daemon connection established");
+  state.modem_connection = "connected";
   daemonShowConnectStateError = 1;
 });
 
@@ -147,6 +148,16 @@ daemon.on("data", function (socketdata) {
       if (data["command"] == "test_hamlib") {
         //
       }
+
+      if (data["command_response"] == "stop_modem") {
+        switch (data["status"]) {
+          case "OK":
+            state.modem_running_state = "running";
+            break;
+          default:
+            state.modem_running_state = "stopped";
+        }
+      }
     }
 
     //finally delete message buffer
@@ -164,8 +175,8 @@ export function startModem() {
       {
         mycall: settings.mycall + "-" + settings.myssid,
         mygrid: settings.mygrid,
-        rx_audio: audioStore.startupInputDevice,
-        tx_audio: audioStore.startupOutputDevice,
+        rx_audio: settings.rx_audio,
+        tx_audio: settings.tx_audio,
         radiocontrol: settings.radiocontrol,
         devicename: settings.hamlib_deviceid,
         deviceport: settings.hamlib_deviceport,

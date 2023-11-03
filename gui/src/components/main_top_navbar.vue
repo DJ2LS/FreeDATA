@@ -20,13 +20,15 @@ import { saveSettingsToFile } from "../js/settingsHandler";
 <template>
   <nav class="navbar bg-body-tertiary border-bottom">
     <div class="mx-auto">
-      <span class="badge bg-secondary me-4"
-        >Modem location | {{ settings.modem_host }}</span
-      >
-
-      <span class="badge bg-secondary me-4"
-        >Service | {{ state.modem_running_state }}</span
-      >
+      <span class="badge bg-secondary me-4">
+        Modem Connection {{ state.modem_connection }}
+      </span>
+      <span class="badge bg-secondary me-4">
+        Modem {{ state.modem_running_state }}
+      </span>
+      <span class="badge bg-secondary me-4">
+        RIG Control {{ state.rigctld_started }}
+      </span>
     </div>
-	 </nav>
+  </nav>
 </template>
