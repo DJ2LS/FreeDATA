@@ -127,6 +127,7 @@ export const useStateStore = defineStore("stateStore", () => {
     arq_seconds_until_finish,
     arq_seconds_until_timeout,
     arq_seconds_until_timeout_percent,
+    modem_connection,
     modem_running_state,
     arq_session_state,
     is_codec2_traffic,
