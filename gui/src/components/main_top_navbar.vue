@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
@@ -14,7 +13,6 @@ import { useAudioStore } from "../store/audioStore.js";
 const audioStore = useAudioStore(pinia);
 
 import { saveSettingsToFile } from "../js/settingsHandler";
-
 </script>
 
 <template>

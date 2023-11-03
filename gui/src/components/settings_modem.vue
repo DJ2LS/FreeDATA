@@ -38,34 +38,33 @@ function saveSettings() {
 <template>
   <div>
     <button
-          type="button"
-          id="startModem"
-          class="btn btn-sm btn-outline-success"
-          data-bs-toggle="tooltip"
-          data-bs-trigger="hover"
-          data-bs-html="false"
-          title="Start the Modem. Please set your audio and radio settings first!"
-          @click="startStopModem()"
-          v-bind:class="{ disabled: state.modem_running_state === 'running' }"
-        >
-          <i class="bi bi-play-fill"></i>
-          <span class="ms-2">start modem</span>
-        </button>
-        <button
-          type="button"
-          id="stopModem"
-          class="btn btn-sm btn-outline-danger"
-          data-bs-toggle="tooltip"
-          data-bs-trigger="hover"
-          data-bs-html="false"
-          title="Stop the Modem."
-          @click="startStopModem()"
-          v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
-        >
-          <i class="bi bi-stop-fill"></i>
-          <span class="ms-2">stop modem</span>
-        </button>
-
+      type="button"
+      id="startModem"
+      class="btn btn-sm btn-outline-success"
+      data-bs-toggle="tooltip"
+      data-bs-trigger="hover"
+      data-bs-html="false"
+      title="Start the Modem. Please set your audio and radio settings first!"
+      @click="startStopModem()"
+      v-bind:class="{ disabled: state.modem_running_state === 'running' }"
+    >
+      <i class="bi bi-play-fill"></i>
+      <span class="ms-2">start modem</span>
+    </button>
+    <button
+      type="button"
+      id="stopModem"
+      class="btn btn-sm btn-outline-danger"
+      data-bs-toggle="tooltip"
+      data-bs-trigger="hover"
+      data-bs-html="false"
+      title="Stop the Modem."
+      @click="startStopModem()"
+      v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
+    >
+      <i class="bi bi-stop-fill"></i>
+      <span class="ms-2">stop modem</span>
+    </button>
   </div>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Modem port</span>
@@ -98,28 +97,26 @@ function saveSettings() {
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Audio Input device</label>
     <select
-          class="form-select form-select-sm"
-          id="rx_audio"
-          aria-label=".form-select-sm"
-          @change="saveSettings"
-          v-model="settings.rx_audio"
-          v-html="audio.getInputDevices()"
-        >  
-    </select>
+      class="form-select form-select-sm"
+      id="rx_audio"
+      aria-label=".form-select-sm"
+      @change="saveSettings"
+      v-model="settings.rx_audio"
+      v-html="audio.getInputDevices()"
+    ></select>
   </div>
 
   <!-- Audio Output Device -->
   <div class="input-group input-group-sm mb-1">
     <label class="input-group-text w-50">Audio Output device</label>
     <select
-          class="form-select form-select-sm"
-          id="tx_audio"
-          aria-label=".form-select-sm"
-          @change="saveSettings"
-          v-model="settings.tx_audio"
-          v-html="audio.getOutputDevices()"
-        >  
-    </select>
+      class="form-select form-select-sm"
+      id="tx_audio"
+      aria-label=".form-select-sm"
+      @change="saveSettings"
+      v-model="settings.tx_audio"
+      v-html="audio.getOutputDevices()"
+    ></select>
   </div>
 
   <div class="input-group input-group-sm mb-1">
