@@ -11,13 +11,62 @@ const settings = useSettingsStore(pinia);
 import { useAudioStore } from "../store/audioStore.js";
 const audio = useAudioStore(pinia);
 
+import { useStateStore } from "../store/stateStore.js";
+const state = useStateStore(pinia);
+
+import { startModem, stopModem } from "../js/daemon";
+
+function startStopModem() {
+  switch (state.modem_running_state) {
+    case "stopped":
+      startModem();
+
+      break;
+    case "running":
+      stopModem();
+
+      break;
+    default:
+  }
+}
+
 function saveSettings() {
   saveSettingsToFile();
 }
 </script>
 
 <template>
+  <div>
+    <button
+          type="button"
+          id="startModem"
+          class="btn btn-sm btn-outline-success"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="false"
+          title="Start the Modem. Please set your audio and radio settings first!"
+          @click="startStopModem()"
+          v-bind:class="{ disabled: state.modem_running_state === 'running' }"
+        >
+          <i class="bi bi-play-fill"></i>
+          <span class="ms-2">start modem</span>
+        </button>
+        <button
+          type="button"
+          id="stopModem"
+          class="btn btn-sm btn-outline-danger"
+          data-bs-toggle="tooltip"
+          data-bs-trigger="hover"
+          data-bs-html="false"
+          title="Stop the Modem."
+          @click="startStopModem()"
+          v-bind:class="{ disabled: state.modem_running_state === 'stopped' }"
+        >
+          <i class="bi bi-stop-fill"></i>
+          <span class="ms-2">stop modem</span>
+        </button>
 
+  </div>
   <div class="input-group input-group-sm mb-1">
     <span class="input-group-text" style="width: 180px">Modem port</span>
     <input
