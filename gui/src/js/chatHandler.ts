@@ -20,7 +20,7 @@ import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD,sortByProperty } from "./freedata.js";
+import { btoa_FD, sortByProperty } from "./freedata.js";
 
 // define default message object
 interface Attachment {
@@ -278,8 +278,6 @@ function sortChatList() {
   //console.log(reorderedData["2LS-0"])
   return reorderedData;
 }
-
-
 
 export function getMessageAttachment(id) {
   return new Promise(async (resolve, reject) => {

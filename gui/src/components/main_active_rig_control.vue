@@ -79,9 +79,7 @@ function set_hamlib_rf_level() {
                 id="dropdownMenuButton"
                 data-bs-toggle="dropdown"
                 aria-expanded="false"
-              >
-                
-              </button>
+              ></button>
 
               <!-- Dropdown Menu -->
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">

@@ -140,7 +140,7 @@ export function loadSettings() {
       } else {
         settings[key] = config[key];
       }
-      if (key=="wftheme") {
+      if (key == "wftheme") {
         setColormap(config[key]);
       }
     } catch (e) {

@@ -62,7 +62,6 @@ function saveSettings() {
       id="wftheme_selector"
       @change="saveSettings"
       v-model="settings.wftheme"
-      
     >
       <option value="2">Default</option>
       <option value="0">Turbo</option>
