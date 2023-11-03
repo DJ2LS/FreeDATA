@@ -452,22 +452,28 @@ export function getNewMessagesByDXCallsign(dxcallsign): [number, number, any] {
   let new_counter = 0;
   let total_counter = 0;
   let item_array = [];
+  try{
+
   if (
     typeof dxcallsign !== "undefined" &&
     typeof chat.sorted_chat_list[dxcallsign] !== "undefined"
   ) {
-    for (const key in chat.sorted_chat_list[dxcallsign]) {
-      //console.log(chat.sorted_chat_list[dxcallsign][key])
-      //item_array.push(chat.sorted_chat_list[dxcallsign][key])
-      if (chat.sorted_chat_list[dxcallsign][key].is_new) {
-        item_array.push(chat.sorted_chat_list[dxcallsign][key]);
-        new_counter += 1;
+        for (const key in chat.sorted_chat_list[dxcallsign]) {
+          //console.log(chat.sorted_chat_list[dxcallsign][key])
+          //item_array.push(chat.sorted_chat_list[dxcallsign][key])
+          if (chat.sorted_chat_list[dxcallsign][key].is_new) {
+            item_array.push(chat.sorted_chat_list[dxcallsign][key]);
+            new_counter += 1;
+          }
+          total_counter += 1;
+        }
       }
-      total_counter += 1;
-    }
-  }
 
-  return [total_counter, new_counter, item_array];
+      return [total_counter, new_counter, item_array];
+  } catch(e){
+      console.log(e)
+      return [0, 0, item_array];
+  }
 }
 
 export function resetIsNewMessage(uuid, value) {
