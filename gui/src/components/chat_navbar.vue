@@ -94,14 +94,15 @@ var beaconHistogramOptions = {
 //console.log(dataArray1)
 //[-3, 10, 8, 5, 3, 0, -5]
 
-try {
-  chat.beaconLabelArray = Object.values(
-    chat.sorted_beacon_list["DJ2LS-0"].timestamp,
-  );
-  chat.beaconDataArray = Object.values(chat.sorted_beacon_list["DJ2LS-0"].snr);
-} catch (e) {
-  console.log(e);
-}
+//Think Simon might have been testing and forgot to remove?
+// try {
+//   chat.beaconLabelArray = Object.values(
+//     chat.sorted_beacon_list["DJ2LS-0"].timestamp,
+//   );
+//   chat.beaconDataArray = Object.values(chat.sorted_beacon_list["DJ2LS-0"].snr);
+// } catch (e) {
+//   console.log(e);
+// }
 
 const beaconHistogramData = computed(() => ({
   labels: chat.beaconLabelArray,
