@@ -256,6 +256,12 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 else:
                     self.modem_set_tx_audio_level(received_json)
 
+            # SET RX AUDIO LEVEL
+            if received_json["type"] == "set" and received_json["command"] == "rx_audio_level":
+                if TESTMODE:
+                    ThreadedTCPRequestHandler.modem_set_rx_audio_level(None, received_json)
+                else:
+                    self.modem_set_rx_audio_level(received_json)
 
             # TRANSMIT TEST FRAME
             if received_json["type"] == "set" and received_json["command"] == "send_test_frame":
@@ -493,6 +499,18 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                 command=received_json,
             )
 
+    def modem_set_rx_audio_level(self, received_json):
+        try:
+            AudioParam.rx_audio_level = int(received_json["value"])
+            command_response("rx_audio_level", True)
+
+        except Exception as err:
+            command_response("rx_audio_level", False)
+            log.warning(
+                "[SCK] TX audio command execution error",
+                e=err,
+                command=received_json,
+            )
     def modem_set_send_test_frame(self, received_json):
         try:
             DATA_QUEUE_TRANSMIT.put(["SEND_TEST_FRAME"])
@@ -1078,7 +1096,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             low_bandwidth_mode = str(helpers.return_key_from_object("False", startparam, "low_bandwidth_mode"))
             tuning_range_fmin = str(helpers.return_key_from_object("-50", startparam, "tuning_range_fmin"))
             tuning_range_fmax = str(helpers.return_key_from_object("50", startparam, "tuning_range_fmax"))
-            tx_audio_level = str(helpers.return_key_from_object("100", startparam, "tx_audio_level"))
+            tx_audio_level = str(helpers.return_key_from_object("0", startparam, "tx_audio_level"))
+            rx_audio_level = str(helpers.return_key_from_object("0", startparam, "rx_audio_level"))
             respond_to_cq = str(helpers.return_key_from_object("False", startparam, "respond_to_cq"))
             rx_buffer_size = str(helpers.return_key_from_object("16", startparam, "rx_buffer_size"))
             enable_explorer = str(helpers.return_key_from_object("False", startparam, "enable_explorer"))
@@ -1131,7 +1150,8 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
                     tx_delay,
                     tci_ip,
                     tci_port,
-                    enable_mesh
+                    enable_mesh,
+                    rx_audio_level,
                 ]
             )
             command_response("start_modem", True)
@@ -1345,7 +1365,8 @@ def send_modem_state():
         "rf_level": str(HamlibParam.hamlib_rf),
         "strength": str(HamlibParam.hamlib_strength),
         "alc": str(HamlibParam.alc),
-        "audio_level": str(AudioParam.tx_audio_level),
+        "tx_audio_level": str(AudioParam.tx_audio_level),
+        "rx_audio_level": str(AudioParam.tx_audio_level),
         "audio_auto_tune": str(AudioParam.audio_auto_tune),
         "speed_level": str(ARQ.arq_speed_level),
         "mode": str(HamlibParam.hamlib_mode),

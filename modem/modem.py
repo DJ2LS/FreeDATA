@@ -16,20 +16,17 @@ import sys
 import threading
 import time
 from collections import deque
-import wave
 import codec2
 import itertools
 import numpy as np
 import sock
 import sounddevice as sd
-import static
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem
 from static import FRAME_TYPE
 import structlog
 import ujson as json
 import tci
-# FIXME used for def transmit_morse
-# import cw
+import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 
@@ -80,6 +77,8 @@ class RF:
         self.AUDIO_CHANNELS = 1
         self.MODE = 0
 
+        self.is_codec2_traffic_cooldown = 20
+        self.is_codec2_traffic_counter = 0
         # Locking state for mod out so buffer will be filled before we can use it
         # https://github.com/DJ2LS/FreeDATA/issues/127
         # https://github.com/DJ2LS/FreeDATA/issues/99
@@ -460,6 +459,7 @@ class RF:
         # self.log.debug("[MDM] callback")
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
+        x = set_audio_volume(x, AudioParam.rx_audio_level)
 
         # audio recording for debugging purposes
         if AudioParam.audio_record:
@@ -745,18 +745,7 @@ class RF:
         )
         start_of_transmission = time.time()
 
-        txbuffer = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
-        print(txbuffer)
-        print(type(txbuffer))
-        x = np.frombuffer(txbuffer, dtype=np.int16)
-        print(type(x))
-        txbuffer_out = x
-        print(txbuffer_out)
-
-        #if not HamlibParam.hamlib_radiocontrol in ["tci"]:
-        #    txbuffer_out = self.resampler.resample8_to_48(x)
-        #else:
-        #    txbuffer_out = x
+        txbuffer_out = cw.MorseCodePlayer().text_to_signal("DJ2LS-1")
 
         self.mod_out_locked = True
         self.enqueue_modulation(txbuffer_out)
@@ -808,6 +797,8 @@ class RF:
         self.log.debug("[MDM] ON AIR TIME", time=transmission_time)
 
     def enqueue_modulation(self, txbuffer_out):
+
+
         chunk_length = self.AUDIO_FRAMES_PER_BUFFER_TX  # 4800
         chunk = [
             txbuffer_out[i: i + chunk_length]
@@ -821,7 +812,6 @@ class RF:
                 c = np.append(c, delta_zeros)
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
             self.modoutqueue.append(c)
-
 
     def demodulate_audio(
             self,
@@ -854,6 +844,7 @@ class RF:
         :return: NIN from freedv instance
         :rtype: int
         """
+
         nbytes = 0
         try:
             while self.stream.active:
@@ -871,18 +862,26 @@ class RF:
                     # 10 error decoding == NACK
                     rx_status = codec2.api.freedv_get_rx_status(freedv)
 
-                    if rx_status != 0:
+                    if rx_status not in [0]:
                         # we need to disable this if in testmode as its causing problems with FIFO it seems
                         if not TESTMODE:
                             ModemParam.is_codec2_traffic = True
+                            self.is_codec2_traffic_counter = self.is_codec2_traffic_cooldown
                             if not ModemParam.channel_busy:
                                 self.log.debug("[MDM] Setting channel_busy since codec2 data detected")
                                 ModemParam.channel_busy=True
-                                ModemParam.channel_busy_delay+=10
+                                ModemParam.channel_busy_delay += 10
                         self.log.debug(
                             "[MDM] [demod_audio] modem state", mode=mode_name, rx_status=rx_status,
                             sync_flag=codec2.api.rx_sync_flags_to_text[rx_status]
                         )
+                    else:
+                        ModemParam.is_codec2_traffic = False
+
+                    # decrement codec traffic counter for making state smoother
+                    if self.is_codec2_traffic_counter > 0:
+                        self.is_codec2_traffic_counter -= 1
+                        ModemParam.is_codec2_traffic = True
                     else:
                         ModemParam.is_codec2_traffic = False
 
@@ -896,7 +895,6 @@ class RF:
 
                         # process commands only if Modem.listen = True
                         if Modem.listen:
-
 
                             # ignore data channel opener frames for avoiding toggle states
                             # use case: opener already received, but ack got lost and we are receiving
@@ -1139,7 +1137,7 @@ class RF:
     def get_scatter(self, freedv: ctypes.c_void_p) -> None:
         """
         Ask codec2 for data about the received signal and calculate the scatter plot.
-        Side-effect: sets ModemParam.scatter
+        Side effect: sets ModemParam.scatter
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1181,7 +1179,7 @@ class RF:
         """
         Ask codec2 for data about the received signal and calculate
         the signal-to-noise ratio.
-        Side-effect: sets ModemParam.snr
+        Side effect: sets ModemParam.snr
 
         :param freedv: codec2 instance to query
         :type freedv: ctypes.c_void_p
@@ -1227,7 +1225,7 @@ class RF:
     def update_rig_data(self) -> None:
         """
         Request information about the current state of the radio via hamlib
-        Side-effect: sets
+        Side effect: sets
           - HamlibParam.hamlib_frequency
           - HamlibParam.hamlib_mode
           - HamlibParam.hamlib_bandwidth
@@ -1258,6 +1256,7 @@ class RF:
                     e=e,
                 )
                 threading.Event().wait(1)
+
     def calculate_fft(self) -> None:
         """
         Calculate an average signal strength of the channel to assess
@@ -1366,7 +1365,7 @@ class RF:
                             ModemParam.channel_busy_slot[slot] = False
                         # increment slot
                         slot += 1
-                    if (addDelay):
+                    if addDelay:
                         # Limit delay counter to a maximum of 200. The higher this value,
                         # the longer we will wait until releasing state
                         ModemParam.channel_busy = True
@@ -1460,31 +1459,39 @@ def get_bytes_per_frame(mode: int) -> int:
     # get number of bytes per frame for mode
     return int(codec2.api.freedv_get_bits_per_modem_frame(freedv) / 8)
 
-
-def set_audio_volume(datalist, volume: float) -> np.int16:
+def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
     """
-    Scale values for the provided audio samples by volume,
-    `volume` is clipped to the range of 0-200
+    Scale values for the provided audio samples by dB.
 
     :param datalist: Audio samples to scale
-    :type datalist: NDArray[np.int16]
-    :param volume: "Percentage" (0-200) to scale samples
-    :type volume: float
+    :type datalist: np.ndarray
+    :param dB: Decibels to scale samples, constrained to the range [-50, 50]
+    :type dB: float
     :return: Scaled audio samples
-    :rtype: np.int16
+    :rtype: np.ndarray
     """
-    # make sure we have float as data type to avoid crash
     try:
-        volume = float(volume)
-    except Exception as e:
-        print(f"[MDM] changing audio volume failed with error: {e}")
-        volume = 100.0
+        dB = float(dB)
+    except ValueError as e:
+        print(f"[MDM] Changing audio volume failed with error: {e}")
+        dB = 0.0  # 0 dB means no change
 
-    # Clip volume provided to acceptable values
-    volume = np.clip(volume, 0, 200)  # limit to max value of 255
-    # Scale samples by the ratio of volume / 100.0
-    data = np.fromstring(datalist, np.int16) * (volume / 100.0)  # type: ignore
-    return data.astype(np.int16)
+    # Clip dB value to the range [-50, 50]
+    dB = np.clip(dB, -30, 20)
+
+    # Ensure datalist is an np.ndarray
+    if not isinstance(datalist, np.ndarray):
+        print("[MDM] Invalid data type for datalist. Expected np.ndarray.")
+        return datalist
+
+    # Convert dB to linear scale
+    scale_factor = 10 ** (dB / 20)
+
+    # Scale samples
+    scaled_data = datalist * scale_factor
+
+    # Clip values to int16 range and convert data type
+    return np.clip(scaled_data, -32768, 32767).astype(np.int16)
 
 
 def get_modem_error_state():

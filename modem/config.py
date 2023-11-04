@@ -58,6 +58,7 @@ class CONFIG:
                                 'rx': data[3],
                                 'tx': data[4],
                                 'txaudiolevel': data[14],
+                                'rxaudiolevel': data[25],
                                 'auto_tune': data[19]
 
                                 }
@@ -77,14 +78,15 @@ class CONFIG:
                               'explorer': data[17],
                               'stats': data[19],
                               'fsk': data[13],
-                              'tx_delay': data[21]
-                              }
+                              'tx_delay': data[21],
+                              'transmit_morse_identifier' : data[26]
+        }
         self.config['TCI'] = {'#TCI settings': None,
                               'ip': data[22],
                               'port': data[23]
                               }
 
-        self.config['MESH'] = {'#TCI settings': None,
+        self.config['MESH'] = {'#Mesh settings': None,
                               'enable_protocol': data[24]
                               }
 
