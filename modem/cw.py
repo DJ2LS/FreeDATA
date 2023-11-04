@@ -6,8 +6,10 @@ import numpy as np
 
  
  """
+
+
 class MorseCodePlayer:
-    def __init__(self, wpm=150, f=1500, fs=48000):
+    def __init__(self, wpm=25, f=1500, fs=48000):
         self.wpm = wpm
         self.f0 = f
         self.fs = fs
@@ -39,28 +41,26 @@ class MorseCodePlayer:
         signal = np.array([], dtype=np.int16)
         for char in morse:
             if char == '.':
-                duration = int(self.dot_duration * self.fs)
-                s = np.sin(2 * np.pi * self.f0 * np.arange(duration) / self.fs)
-                signal = np.concatenate((signal, s * 32767))
-                pause_duration = int(self.pause_duration * self.fs)
-                signal = np.concatenate((signal, np.zeros(pause_duration, dtype=np.int16)))
+                duration = self.dot_duration  # Using class-defined duration
+                t = np.linspace(0, duration, int(self.fs * duration), endpoint=False)
+                s = 0.5 * np.sin(2 * np.pi * self.f0 * t)
+                signal = np.concatenate((signal, np.int16(s * 32767)))
+                pause_samples = int(self.pause_duration * self.fs)
+                signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
+
             elif char == '-':
-                duration = int(self.dash_duration * self.fs)
-                s = np.sin(2 * np.pi * self.f0 * np.arange(duration) / self.fs)
-                signal = np.concatenate((signal, s * 32767))
-                pause_duration = int(self.pause_duration * self.fs)
-                signal = np.concatenate((signal, np.zeros(pause_duration, dtype=np.int16)))
+                duration = self.dash_duration  # Using class-defined duration
+                t = np.linspace(0, duration, int(self.fs * duration), endpoint=False)
+                s = 0.5 * np.sin(2 * np.pi * self.f0 * t)
+                signal = np.concatenate((signal, np.int16(s * 32767)))
+                pause_samples = int(self.pause_duration * self.fs)
+                signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
+
             elif char == ' ':
-                pause_duration = int(self.word_pause_duration * self.fs)
-                signal = np.concatenate((signal, np.zeros(pause_duration, dtype=np.int16)))
-                pause_duration = int(self.pause_duration * self.fs)
-                signal = np.concatenate((signal, np.zeros(pause_duration, dtype=np.int16)))
-
-        pause_duration = int(self.word_pause_duration * self.fs)
-        #signal = np.concatenate((signal, np.zeros(pause_duration, dtype=np.int16)))
-
-        # Convert the signal to mono (single-channel)
-        #signal = signal.reshape(-1, 1)
+                pause_samples = int(self.word_pause_duration * self.fs)
+                signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
+                pause_samples = int(self.pause_duration * self.fs)
+                signal = np.concatenate((signal, np.zeros(pause_samples, dtype=np.int16)))
 
         return signal
 
