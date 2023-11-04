@@ -20,7 +20,7 @@ import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD } from "./freedata.js";
+import { btoa_FD,sortByProperty } from "./freedata.js";
 
 // define default message object
 interface Attachment {
@@ -277,16 +277,6 @@ function sortChatList() {
   });
   //console.log(reorderedData["2LS-0"])
   return reorderedData;
-}
-
-//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
-function sortByProperty(property) {
-  return function (a, b) {
-    if (a[property] > b[property]) return 1;
-    else if (a[property] < b[property]) return -1;
-
-    return 0;
-  };
 }
 
 export function getMessageAttachment(id) {
