@@ -1,6 +1,6 @@
 import path from "node:path";
 import fs from "fs";
-
+import { setColormap } from "./waterfallHandler";
 // pinia store setup
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -133,6 +133,9 @@ export function loadSettings() {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     }
     try {
+      if (key=="wftheme") {
+        setColormap(config[key]);
+      }
       if (key == "mycall") {
         settings.mycall = config[key].split("-")[0];
         settings.myssid = config[key].split("-")[1];
