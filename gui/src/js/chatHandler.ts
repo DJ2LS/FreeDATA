@@ -694,8 +694,12 @@ function deleteFromDatabaseByCallsign(callsign) {
       console.log(err);
     });
 }
-
-export function newChatCreate(call) {
+//Function creates a new 'newchat' database entry when user initates a new chat, otherwise cannot send messages unless receiving a message/beacon from user first
+/**
+ * Add a newuser to the database, for when newuser button is clicked
+ * @param {string} call callsign of new user
+  */
+export function startChatWithNewStation(call) {
   let newchat: newChatDefaultObject = {
   command: "newchat",
   is_new: false,
