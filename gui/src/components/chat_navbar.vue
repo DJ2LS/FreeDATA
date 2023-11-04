@@ -121,7 +121,8 @@ const beaconHistogramData = computed(() => ({
 
 function newChat() {
   let callsign = this.newChatCall.value;
-  callsign = callsign.toUpperCase();
+  callsign = callsign.toUpperCase().trim();
+  if (callsign === "") return;
   chat.callsign_list.add(callsign);
   this.newChatCall.value = "";
 }
