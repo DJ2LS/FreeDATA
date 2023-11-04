@@ -67,6 +67,13 @@ interface beaconDefaultObject {
   snr: string;
 }
 
+interface newChatDefaultObject {
+  command: string;
+  is_new: boolean;
+  timestamp: number;
+  dxcallsign: string;
+}
+
 // ---- MessageDB
 try {
   var PouchDB = require("pouchdb");
@@ -587,7 +594,7 @@ function addObjToDatabase(newobj) {
       console.log("new database entry");
       console.log(response);
 
-      if (newobj.command === "msg") {
+      if (newobj.command === "msg" || newobj.command==="newchat") {
         chat.unsorted_chat_list.push(newobj);
         chat.sorted_chat_list = sortChatList();
       }
@@ -686,6 +693,28 @@ function deleteFromDatabaseByCallsign(callsign) {
     .catch(function (err) {
       console.log(err);
     });
+}
+
+export function newChatCreate(call) {
+  let newchat: newChatDefaultObject = {
+  command: "newchat",
+  is_new: false,
+  timestamp: Math.floor((new Date()).getTime() / 1000),
+  dxcallsign: call,
+};
+addObjToDatabase(newchat);
+if (!chat.sorted_beacon_list[call]) {
+  // If not, initialize it with an empty array for snr values
+  chat.sorted_beacon_list[call] = {
+    call,
+    snr: [],
+    timestamp: [],
+  };
+  chat.callsign_list.add(call);
+}
+//chat.unsorted_chat_list.push(newchat);
+//chat.sorted_chat_list = sortChatList();
+
 }
 
 // function for handling a received beacon

@@ -13,6 +13,8 @@ const chat = useChatStore(pinia);
 
 import { getRxBuffer } from "../js/sock.js";
 
+import { newChatCreate } from "../js/chatHandler";
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -124,7 +126,8 @@ function newChat() {
   let callsign = this.newChatCall.value;
   callsign = callsign.toUpperCase().trim();
   if (callsign === "") return;
-  chat.callsign_list.add(callsign);
+  newChatCreate(callsign);  
+  //updateAllChat(false);
   this.newChatCall.value = "";
 }
 
