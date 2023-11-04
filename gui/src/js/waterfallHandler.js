@@ -25,10 +25,13 @@ export function addDataToWaterfall(data) {
     //console.log(e);
   }
 }
-
+/**
+ * Setwaterfall colormap array by index
+ * @param {number} index colormap index to use
+  */
 export function setColormap(index)
 {
   if (isNaN(index)) index=0;
-  console.log("Setting waterfall colormap to " + index)
+  //console.log("Setting waterfall colormap to " + index)
   spectrum.setColorMap(index);
 }

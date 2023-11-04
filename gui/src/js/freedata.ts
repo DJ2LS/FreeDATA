@@ -26,6 +26,11 @@ export function atob(data) {
   return window.btoa(Buffer.from(data, "base64").toString("utf8"));
 }
 //https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
+/**
+ * Sort a json collection by a property ascending
+ * @param {string} property property to sort on
+ * @returns sorted json collection
+ */
 export function sortByProperty(property) {
   return function (a, b) {
     if (a[property] > b[property]) return 1;
@@ -36,6 +41,11 @@ export function sortByProperty(property) {
 }
 
 //https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
+/**
+ * Sort a json collection by a property descending
+ * @param {string} property property to sort on
+ * @returns sorted json collection
+ */
 export function sortByPropertyDesc(property) {
   return function (a, b) {
     if (a[property] < b[property]) return 1;
