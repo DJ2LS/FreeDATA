@@ -10,7 +10,6 @@ log = structlog.get_logger("REST")
 
 app_name = "FreeDATA REST API"
 app = Flask(app_name)
-conf = config.CONFIG('config.ini')
 encoding = 'utf-8'
 
 @app.route('/', methods=['GET'])
