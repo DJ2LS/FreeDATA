@@ -15,8 +15,6 @@ export function initWaterfall() {
     wf_rows: 192, //Assuming 1 row = 1 pixe1, 192 is the height of the spectrum container
   });
 
-  console.log(settings.wftheme);
-  spectrum.setColorMap(settings.wftheme);
 }
 
 export function addDataToWaterfall(data) {
@@ -26,4 +24,14 @@ export function addDataToWaterfall(data) {
   } catch (e) {
     //console.log(e);
   }
+}
+/**
+ * Setwaterfall colormap array by index
+ * @param {number} index colormap index to use
+  */
+export function setColormap(index)
+{
+  if (isNaN(index)) index=0;
+  //console.log("Setting waterfall colormap to " + index)
+  spectrum.setColorMap(index);
 }

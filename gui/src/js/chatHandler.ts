@@ -20,7 +20,7 @@ import { sendMessage, sendBroadcastChannel } from "./sock.js";
 import { displayToast } from "./popupHandler.js";
 
 //const FD = require("./src/js/freedata.js");
-import { btoa_FD } from "./freedata.js";
+import { btoa_FD,sortByProperty } from "./freedata.js";
 
 // define default message object
 interface Attachment {
@@ -65,6 +65,13 @@ interface beaconDefaultObject {
   status: string;
   uuid: string;
   snr: string;
+}
+
+interface newChatDefaultObject {
+  command: string;
+  is_new: boolean;
+  timestamp: number;
+  dxcallsign: string;
 }
 
 // ---- MessageDB
@@ -277,16 +284,6 @@ function sortChatList() {
   });
   //console.log(reorderedData["2LS-0"])
   return reorderedData;
-}
-
-//https://medium.com/@asadise/sorting-a-json-array-according-one-property-in-javascript-18b1d22cd9e9
-function sortByProperty(property) {
-  return function (a, b) {
-    if (a[property] > b[property]) return 1;
-    else if (a[property] < b[property]) return -1;
-
-    return 0;
-  };
 }
 
 export function getMessageAttachment(id) {
@@ -597,7 +594,7 @@ function addObjToDatabase(newobj) {
       console.log("new database entry");
       console.log(response);
 
-      if (newobj.command === "msg") {
+      if (newobj.command === "msg" || newobj.command==="newchat") {
         chat.unsorted_chat_list.push(newobj);
         chat.sorted_chat_list = sortChatList();
       }
@@ -696,6 +693,32 @@ function deleteFromDatabaseByCallsign(callsign) {
     .catch(function (err) {
       console.log(err);
     });
+}
+//Function creates a new 'newchat' database entry when user initates a new chat, otherwise cannot send messages unless receiving a message/beacon from user first
+/**
+ * Add a newuser to the database, for when newuser button is clicked
+ * @param {string} call callsign of new user
+  */
+export function startChatWithNewStation(call) {
+  let newchat: newChatDefaultObject = {
+  command: "newchat",
+  is_new: false,
+  timestamp: Math.floor((new Date()).getTime() / 1000),
+  dxcallsign: call,
+};
+addObjToDatabase(newchat);
+if (!chat.sorted_beacon_list[call]) {
+  // If not, initialize it with an empty array for snr values
+  chat.sorted_beacon_list[call] = {
+    call,
+    snr: [],
+    timestamp: [],
+  };
+  chat.callsign_list.add(call);
+}
+//chat.unsorted_chat_list.push(newchat);
+//chat.sorted_chat_list = sortChatList();
+
 }
 
 // function for handling a received beacon

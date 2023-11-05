@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { setColormap } from "../js/waterfallHandler";
 import { saveSettingsToFile } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
@@ -10,6 +11,7 @@ const settings = useSettingsStore(pinia);
 
 function saveSettings() {
   saveSettingsToFile();
+  setColormap(settings.wftheme);
 }
 </script>
 <template>
@@ -59,7 +61,7 @@ function saveSettings() {
       id="wftheme_selector"
       @change="saveSettings"
       v-model="settings.wftheme"
-      disabled
+      
     >
       <option value="2">Default</option>
       <option value="0">Turbo</option>

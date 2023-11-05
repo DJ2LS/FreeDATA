@@ -33,7 +33,7 @@ import chat_new_message from "./chat_new_message.vue";
         <div
           class="container overflow-auto"
           id="message-container"
-          style="height: calc(100% - 200px)"
+          style="height: calc(100% - 225px)"
         >
           <chat_messages />
         </div>
