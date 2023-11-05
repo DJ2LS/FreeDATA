@@ -127,8 +127,6 @@ class CONFIG:
         self.log.info("[CFG] reading...", parameter=parameter, key=key)
         return parameter
 
-        # ... [rest of the CONFIG class] ...
-
     def get_as_dict(self, modules: list = None):
         """
         Get config as a dictionary
