@@ -46,6 +46,7 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method == 'POST':
+        print(request.form)
         new_config = json.loads(request.form['config'])
         set_config = config.write(new_config)
         if not set_config:
@@ -62,5 +63,3 @@ def echo(sock):
     while True:
         data = sock.receive()
         sock.send(data)
-
-

@@ -1,5 +1,6 @@
 import configparser
 import structlog
+import json
 
 class CONFIG:
     """
@@ -56,6 +57,18 @@ class CONFIG:
                         raise Exception("'%s' needs to be a list" % setting)
         # TODO finish this for all config settings!
     
+    # Handle special setting data type conversion 
+    # is_writing means data from a dict being writen to the config file
+    # if False, it means the opposite direction
+    def handle_setting(self, section, setting, value, is_writing = False):
+        if (section == 'STATION' and setting == 'ssid_list'):
+            if (is_writing):
+                return json.dumps(value)
+            else:
+                return json.loads(value)
+        else: 
+            return value
+
     # Sets and writes config data from a dict containing data settings
     def write(self, data):
 
@@ -68,74 +81,17 @@ class CONFIG:
                 self.config[section] = {}
 
             for setting in data[section]:
-                self.config[section][setting] = data[section][setting]
+                self.config[section][setting] = self.handle_setting(
+                    section, setting, data[section][setting], True)
         
         # Write config data to file
         try:
             with open(self.config_name, 'w') as configfile:
                 self.config.write(configfile)
-                return self.config
+                return self.read()
         except Exception as conferror:
             self.log.error("[CFG] reading logfile", e=conferror)
             return False
-
-    # TODO remove this method when ready
-    def write_entire_config(self, data):
-        """
-        write entire config
-        """
-        self.config['NETWORK'] = {'#Network settings': None,
-                                  'ModemPORT': data[50]
-                                  }
-
-        self.config['STATION'] = {'#Station settings': None,
-                                  'mycall': data[1],
-                                  'mygrid': data[2],
-                                  'ssid_list': list(data[18])# [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] # list(data[18])
-                                  }
-
-        self.config['AUDIO'] = {'#Audio settings': None,
-                                'rx': data[3],
-                                'tx': data[4],
-                                'txaudiolevel': data[14],
-                                'rxaudiolevel': data[25],
-                                'auto_tune': data[19]
-
-                                }
-        self.config['RADIO'] = {'#Radio settings': None,
-                                'radiocontrol': data[5],
-                                'rigctld_ip': data[6],
-                                'rigctld_port': data[7]
-                                }
-        self.config['Modem'] = {'#Modem settings': None,
-                              'scatter': data[8],
-                              'fft': data[9],
-                              'narrowband': data[10],
-                              'fmin': data[11],
-                              'fmax': data[12],
-                              'qrv': data[15],
-                              'rx_buffer_size': data[16],
-                              'explorer': data[17],
-                              'stats': data[19],
-                              'fsk': data[13],
-                              'tx_delay': data[21],
-                              'transmit_morse_identifier' : data[26]
-        }
-        self.config['TCI'] = {'#TCI settings': None,
-                              'ip': data[22],
-                              'port': data[23]
-                              }
-
-        self.config['MESH'] = {'#Mesh settings': None,
-                              'enable_protocol': data[24]
-                              }
-
-        try:
-            with open(self.config_name, 'w') as configfile:
-                self.config.write(configfile)
-        except Exception as conferror:
-            self.log.error("[CFG] reading logfile", e=conferror)
-
 
     def read(self):
         """
@@ -143,8 +99,17 @@ class CONFIG:
         """
         if not self.config_exists():
             return False
+        
+        # at first just copy the config as read from file
+        result = {s:dict(self.config.items(s)) for s in self.config.sections()}
 
-        return {s:dict(self.config.items(s)) for s in self.config.sections()}
+        # handle the special settings (like 'ssid_list')
+        for section in result:
+            for setting in result[section]:
+                result[section][setting] = self.handle_setting(
+                    section, setting, result[section][setting], False)
+
+        return result
 
     def get(self, area, key, default):
         """
