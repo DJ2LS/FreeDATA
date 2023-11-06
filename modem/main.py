@@ -21,13 +21,12 @@ import signal
 import socketserver
 import sys
 import threading
-import time
+import argparse
 import config
 import data_handler
 import helpers
 import log_handler
 import modem
-import static
 from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibParam, ModemParam, Station, Statistics, TCIParam, Modem, MeshParam
 import structlog
 import explorer
@@ -57,15 +56,14 @@ signal.signal(signal.SIGINT, signal_handler)
 # This is for Windows multiprocessing support
 multiprocessing.freeze_support()
 
-    #PARSER.add_argument(
-    #    "--use-config",
-    #    dest="configfile",
-    #    action="store_true",
-    #    help="Use the default config file config.ini",
-    #)
+parser = argparse.ArgumentParser()
+parser.add_argument("--use-config", 
+                    help = "Specify a config file", 
+                    default = 'config.ini')
+args = parser.parse_args()
 
 # init config
-config_file = 'config.ini'
+config_file = args.use_config
 if not exists(config_file):
     print("Config file %s not found. Exiting." % config_file)
     exit(1)
