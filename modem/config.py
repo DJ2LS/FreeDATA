@@ -42,6 +42,46 @@ class CONFIG:
         write values to config
         """
 
+    # Validates config data
+    def validate(self, data):
+        for section in data:
+            for setting in data[section]:
+                if section == 'NETWORK':
+                    if setting == 'modemport' and int(data[section][setting]) == 0:
+                        raise Exception("'modemport' should be an integer")
+                if section == 'STATION':
+                    if setting == 'mycall' and len(data[section][setting]) <= 0:
+                        raise Exception("'%s' can't be empty" % setting)
+                    if setting == 'mygrid' and len(data[section][setting]) <= 0:
+                        raise Exception("'%s' can't be empty" % setting)
+                    if setting == 'ssid_list' and not isinstance(data[section][setting], list):
+                        raise Exception("'%s' needs to be a list" % setting)
+        # TODO finish this for all config settings!
+    
+    # Sets and writes config data from a dict containing data settings
+    def write(self, data):
+
+        # Validate config data before writing
+        self.validate(data)
+
+        for section in data:
+            # init section if it doesn't exist yet
+            if not section.upper() in self.config.keys():
+                self.config[section] = {}
+
+            for setting in data[section]:
+                self.config[section][setting] = data[section][setting]
+        
+        # Write config data to file
+        try:
+            with open(self.config_name, 'w') as configfile:
+                self.config.write(configfile)
+                return self.config
+        except Exception as conferror:
+            self.log.error("[CFG] reading logfile", e=conferror)
+            return False
+
+    # TODO remove this method when ready
     def write_entire_config(self, data):
         """
         write entire config
