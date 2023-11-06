@@ -1,11 +1,11 @@
 import unittest
 from subprocess import Popen, PIPE
-import shlex
+import shlex, os
 import requests
 import time
-import json
 
-class TestConfigAPI(unittest.TestCase):
+# API Server integration testst
+class TestIntegration(unittest.TestCase):
 
     process = None
     url = "http://127.0.0.1:5000"
@@ -13,22 +13,39 @@ class TestConfigAPI(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cmd = "flask --app modem/server run"
-        cls.process = Popen(shlex.split(cmd), stdin=PIPE)
+        my_env = os.environ.copy()
+        my_env["FREEDATA_CONFIG"] = "modem/config.ini"
+        cls.process = Popen(shlex.split(cmd), stdin=PIPE, env=my_env)
         time.sleep(1)
 
     @classmethod
     def tearDownClass(cls):
         cls.process.stdin.close()
         cls.process.terminate()
-        if cls.process.wait() != 0:
-            print("There were some errors closing the process.")
+        cls.process.wait()
 
     def test_index(self):
         r = requests.get(self.url)
         self.assertEqual(r.status_code, 200)
 
         data = r.json()
-        self.assertEqual(data['api_version'], 1)
+        self.assertEqual(data['data']['api_version'], 1)
+
+    def test_config(self):
+        r = requests.get(self.url + '/config')
+        self.assertEqual(r.status_code, 200)
+
+        payload = r.json()
+        self.assertIn('data', payload)
+        self.assertIn('status', payload)
+
+        config = payload['data']
+        self.assertIsInstance(config, dict)
+
+        self.assertIn('NETWORK', config)
+        self.assertIn('STATION', config)
+        self.assertIn('AUDIO', config)
+        self.assertIn('Modem', config)
 
 
 if __name__ == '__main__':

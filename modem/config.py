@@ -137,15 +137,14 @@ class CONFIG:
             self.log.error("[CFG] reading logfile", e=conferror)
 
 
-    def read_config(self):
+    def read(self):
         """
         read config file
         """
-        if self.config_exists():
-            #print(self.config.read(self.config_name))
-            #print(self.config.sections())
+        if not self.config_exists():
+            return False
 
-            return self.config
+        return {s:dict(self.config.items(s)) for s in self.config.sections()}
 
     def get(self, area, key, default):
         """
