@@ -1,8 +1,9 @@
 from flask import Flask, request, jsonify
 from flask_sock import Sock
 import os
-import json
+import serial_ports
 from config import CONFIG
+import audio
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -54,6 +55,17 @@ def config():
         return response
     elif request.method == 'GET':
         return api_response(app.config_manager.read())
+
+@app.route('/devices/audio', methods=['GET'])
+def get_audio_devices():
+    dev_in, dev_out = audio.get_audio_devices()
+    devices = { 'in': dev_in, 'out': dev_out }
+    return api_response(devices)
+
+@app.route('/devices/serial', methods=['GET'])
+def get_serial_devices():
+    devices = serial_ports.get_ports()
+    return api_response(devices)
 
 # Event websocket
 @sock.route('/events')
