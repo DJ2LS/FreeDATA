@@ -126,39 +126,3 @@ class CONFIG:
 
         self.log.info("[CFG] reading...", parameter=parameter, key=key)
         return parameter
-
-    def get_as_dict(self, modules: list = None):
-        """
-        Get config as a dictionary
-        We return it as dictionary, because we want to use Flasks built-in jsonify function
-        If module list is empty, return entire config, else the specified modules
-        """
-        module_list = set()
-        config_dict = {}
-        try:
-            # check if module entries available in config sections
-            # otherwise use all sections
-            if modules:
-                for module in modules:
-                    config_sections = self.config.sections()
-                    if module in config_sections:
-                        module_list.add(module)
-            else:
-                module_list = self.config.sections()
-
-            # Iterate over all sections in config
-            for section in module_list:
-                section_dict = {}
-
-                # Iterate over all options in section
-                for key in self.config[section]:
-                    # Add key value to section key
-                    section_dict[key] = self.config[section][key]
-
-                # Add section to config dictionary
-                config_dict[section] = section_dict
-            return config_dict
-
-        except Exception as e:
-            self.log.info("[CFG] Error while converting config to dict", modules=modules, e=e)
-            return {}
