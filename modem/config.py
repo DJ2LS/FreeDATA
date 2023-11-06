@@ -81,8 +81,9 @@ class CONFIG:
                 self.config[section] = {}
 
             for setting in data[section]:
-                self.config[section][setting] = self.handle_setting(
+                new_value = self.handle_setting(
                     section, setting, data[section][setting], True)
+                self.config[section][setting] = str(new_value)
         
         # Write config data to file
         try:

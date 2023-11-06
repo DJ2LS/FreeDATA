@@ -3,6 +3,7 @@ from subprocess import Popen, PIPE
 import shlex, os
 import requests
 import time
+import json
 
 # API Server integration testst
 class TestIntegration(unittest.TestCase):
@@ -47,16 +48,18 @@ class TestIntegration(unittest.TestCase):
         self.assertIn('AUDIO', config)
         self.assertIn('Modem', config)
 
-"""     def test_config_post(self):
-        config = {'NETWORK': {'modemport' : 3050}}
-        r = requests.post(self.url + '/config', data=config)
+    def test_config_post(self):
+        config = {'NETWORK': {'modemport' : '3050'}}
+        r = requests.post(self.url + '/config', 
+                          headers={'Content-type': 'application/json'},
+                          data = json.dumps(config))
         self.assertEqual(r.status_code, 200)
 
         r = requests.get(self.url + '/config')
         self.assertEqual(r.status_code, 200)
         payload = r.json()
         config = payload['data']
-        self.assertEqual(config['NETWORK']['modemport'], 3050)
- """
+        self.assertEqual(config['NETWORK']['modemport'], '3050')
+
 if __name__ == '__main__':
     unittest.main()

@@ -46,9 +46,7 @@ def index():
 @app.route('/config', methods=['GET', 'POST'])
 def config():
     if request.method == 'POST':
-        print(request.form)
-        new_config = json.loads(request.form['config'])
-        set_config = config.write(new_config)
+        set_config = app.config_manager.write(request.json)
         if not set_config:
             response = api_response(None, 'error writing config')
         else:
