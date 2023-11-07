@@ -61,10 +61,18 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self) -> None:
+    def __init__(self, config) -> None:
         """ """
         self.sampler_avg = 0
         self.buffer_avg = 0
+
+        self.config = config
+
+        self.audio_input_device = config['AUDIO']['rx']
+        self.audio_output_device = config['AUDIO']['tx']
+
+        self.rx_audio_level = config['AUDIO']['rxaudiolevel']
+        self.tx_audio_level = config['AUDIO']['txaudiolevel']
 
         self.AUDIO_SAMPLE_RATE_RX = 48000
         self.AUDIO_SAMPLE_RATE_TX = 48000
@@ -185,7 +193,7 @@ class RF:
                     channels=1,
                     dtype="int16",
                     callback=self.callback,
-                    device=(AudioParam.audio_input_device, AudioParam.audio_output_device),
+                    device=(self.audio_input_device, self.audio_output_device),
                     samplerate=self.AUDIO_SAMPLE_RATE_RX,
                     blocksize=4800,
                 )
@@ -459,7 +467,7 @@ class RF:
         # self.log.debug("[MDM] callback")
         x = np.frombuffer(data_in48k, dtype=np.int16)
         x = self.resampler.resample48_to_8(x)
-        x = set_audio_volume(x, AudioParam.rx_audio_level)
+        x = set_audio_volume(x, self.rx_audio_level)
 
         # audio recording for debugging purposes
         if AudioParam.audio_record:

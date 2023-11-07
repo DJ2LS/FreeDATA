@@ -41,12 +41,11 @@ class DATA:
 
     log = structlog.get_logger("DATA")
 
-    def __init__(self) -> None:
+    def __init__(self, config) -> None:
 
         self.stats = stats.stats()
 
-        # Initial call sign. Will be overwritten later
-        self.mycallsign = Station.mycallsign
+        self.mycallsign = config['STATION']['mycall']
         self.dxcallsign = Station.dxcallsign
 
         self.data_queue_transmit = DATA_QUEUE_TRANSMIT
@@ -3218,7 +3217,7 @@ class DATA:
         if not ARQ.arq_session:
             Modem.modem_state = "IDLE"
             self.dxcallsign = b"AA0AA-0"
-            self.mycallsign = Station.mycallsign
+            self.mycallsign = self.mycallsign
             self.session_id = bytes(1)
 
         ARQ.arq_session_state = "disconnected"

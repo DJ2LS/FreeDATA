@@ -4,6 +4,8 @@ import os
 import serial_ports
 from config import CONFIG
 import audio
+import data_handler
+import modem
 
 app = Flask(__name__)
 sock = Sock(app)
@@ -32,6 +34,10 @@ def api_response(data, status = 'ok'):
     return jsonify(response)
 
 set_config()
+
+# start modem
+d = data_handler.DATA(app.config_manager.config)
+m = modem.RF(app.config_manager.config)
 
 ## REST API
 @app.route('/', methods=['GET'])

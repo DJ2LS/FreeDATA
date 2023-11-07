@@ -217,10 +217,10 @@ log.info(
 )
 
 # start data handler
-data_handler.DATA()
+data_handler.DATA(conf.config)
 
 # start modem
-modem = modem.RF()
+modem = modem.RF(conf.config)
 
 # start mesh protocol only if enabled
 if MeshParam.enable_protocol:
