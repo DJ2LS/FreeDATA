@@ -49,15 +49,10 @@ def get_audio_devices():
 
 
 def device_crc(device) -> str:
-
     crc_hwid = crc_algorithm(bytes(f"{device}", encoding="utf-8"))
     crc_hwid = crc_hwid.to_bytes(2, byteorder="big")
     crc_hwid = crc_hwid.hex()
-
-    hostapi_name = sd.query_hostapis(device['hostapi'])['name']
-
-    return f"{device['name']} [{hostapi_name}] [{crc_hwid}]"
-
+    return crc_hwid
 
 def fetch_audio_devices(input_devices, output_devices):
     """
@@ -91,13 +86,39 @@ def fetch_audio_devices(input_devices, output_devices):
             max_output_channels = 0
 
         if max_input_channels > 0:
-            new_input_device = {"id": index, "name": device_crc(device)}
+            hostapi_name = sd.query_hostapis(device['hostapi'])['name']
+
+            new_input_device = {"id": device_crc(device), 
+                                "name": device['name'], 
+                                "api": hostapi_name}
             # check if device not in device list
             if new_input_device not in input_devices:
                 input_devices.append(new_input_device)
 
         if max_output_channels > 0:
-            new_output_device = {"id": index, "name": device_crc(device)}
+            new_output_device = {"id": device_crc(device), 
+                                 "name": device['name'], 
+                                 "api": hostapi_name}
             # check if device not in device list
             if new_output_device not in output_devices:
                 output_devices.append(new_output_device)
+
+# FreeData uses the crc as id inside the configuration
+# SD lib uses a numerical id which is essentially an 
+# index of the device within the list
+def get_device_index_from_crc(crc, isInput: bool):
+    in_devices = []
+    out_devices = []
+
+    fetch_audio_devices(in_devices, out_devices)
+
+    if isInput:
+        detected_devices = in_devices
+    else:
+        detected_devices = out_devices
+
+    for i, dev in enumerate(detected_devices):
+        if dev['id'] == crc:
+            return i
+
+    raise Exception("Audio device %s not detected." % crc)
