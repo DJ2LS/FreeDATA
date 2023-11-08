@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sock import Sock
+from flask_cors import CORS
 import os
 import serial_ports
 from config import CONFIG
@@ -8,6 +9,8 @@ import data_handler
 import modem
 
 app = Flask(__name__)
+CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
 
 # set config file to use
