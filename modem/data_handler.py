@@ -41,9 +41,11 @@ class DATA:
 
     log = structlog.get_logger("DATA")
 
-    def __init__(self, config) -> None:
+    def __init__(self, config, event_queue) -> None:
 
         self.stats = stats.stats()
+
+        self.event_queue = event_queue
 
         self.mycallsign = config['STATION']['mycall']
         self.dxcallsign = Station.dxcallsign
@@ -109,7 +111,7 @@ class DATA:
         self.rx_n_frames_per_burst = 0
         self.max_n_frames_per_burst = 1
 
-        self.broadcast = broadcast.broadcastHandler()
+        self.broadcast = broadcast.broadcastHandler(self.event_queue)
 
         # Flag to indicate if we received a low bandwidth mode channel opener
         self.received_LOW_BANDWIDTH_MODE = False
@@ -529,6 +531,7 @@ class DATA:
         self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
+        self.event_queue.put(json_data_out)
 
     def send_ident_frame(self, transmit) -> None:
         """Build and send IDENT frame """

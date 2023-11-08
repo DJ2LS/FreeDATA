@@ -31,7 +31,6 @@ from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUE
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 import audio
 import event_manager
-import queue
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -64,7 +63,7 @@ class RF:
 
     log = structlog.get_logger("RF")
 
-    def __init__(self, config) -> None:
+    def __init__(self, config, event_queue) -> None:
         self.config = config
 
         self.sampler_avg = 0
@@ -113,9 +112,8 @@ class RF:
         # Define fft_data buffer
         self.fft_data = bytes()
 
-        self.modem_events = queue.Queue()
         self.event_manager = event_manager.EventManager([
-            self.modem_events, 
+            event_queue, 
             sock.SOCKET_QUEUE])
 
         self.init_codec2()

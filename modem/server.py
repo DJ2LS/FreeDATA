@@ -7,6 +7,7 @@ from config import CONFIG
 import audio
 import data_handler
 import modem
+import queue
 
 app = Flask(__name__)
 CORS(app)
@@ -39,8 +40,9 @@ def api_response(data, status = 'ok'):
 set_config()
 
 # start modem
-data_handler.DATA(app.config_manager.config)
-app.modem = modem.RF(app.config_manager.config)
+app.modem_events = queue.Queue()
+app.modem = modem.RF(app.config_manager.config, app.modem_events)
+data_handler.DATA(app.config_manager.config, app.modem_events)
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -79,5 +81,5 @@ def get_serial_devices():
 # Event websocket
 @sock.route('/events')
 def echo(sock):
-        ev = app.modem.modem_events.get()
+        ev = app.modem_events.get()
         sock.send(ev)
