@@ -78,6 +78,34 @@ def get_serial_devices():
     devices = serial_ports.get_ports()
     return api_response(devices)
 
+# @app.route('/modem/listen', methods=['POST'])
+# @app.route('/modem/record_audio', methods=['POST'])
+# @app.route('/modem/responde_to_call', methods=['POST'])
+# @app.route('/modem/responde_to_cq', methods=['POST'])
+# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx
+# @app.route('/modem/send_test_frame', methods=['POST'])
+# @app.route('/modem/fec_transmit', methods=['POST'])
+# @app.route('/modem/fec_is_writing', methods=['POST'])
+# @app.route('/modem/cqcqcq', methods=['POST'])
+# @app.route('/modem/beacon', methods=['POST']) # on/off
+# @app.route('/modem/mesh_ping', methods=['POST'])
+# @app.route('/modem/ping_ping', methods=['POST'])
+# @app.route('/modem/arc_connect', methods=['POST'])
+# @app.route('/modem/arc_disconnect', methods=['POST'])
+# @app.route('/modem/send_raw', methods=['POST'])
+# @app.route('/modem/stop_transmission', methods=['POST'])
+
+# @app.route('/mesh/routing_table', methods=['GET'])
+# @app.route('/modem/get_rx_buffer', methods=['GET'])
+# @app.route('/modem/del_rx_buffer', methods=['POST'])
+# @app.route('/modem/start', methods=['POST'])
+# @app.route('/modem/stop', methods=['POST'])
+
+# @app.route('/rig/status', methods=['GET'])
+# @app.route('/rig/mode', methods=['POST'])
+# @app.route('/rig/frequency', methods=['POST'])
+# @app.route('/rig/test_hamlib', methods=['POST'])
+
 # Event websocket
 @sock.route('/events')
 def echo(sock):
