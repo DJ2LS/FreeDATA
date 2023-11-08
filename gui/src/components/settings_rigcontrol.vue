@@ -7,7 +7,6 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
-
 </script>
 
 <template>
@@ -21,7 +20,9 @@ const settings = useSettingsStore(pinia);
       @change="saveSettings"
       v-model="settings.radiocontrol"
     >
-      <option selected value="disabled">Disabled / VOX (no rig control - use with VOX)</option>
+      <option selected value="disabled">
+        Disabled / VOX (no rig control - use with VOX)
+      </option>
       <option selected value="rigctld">Rigctld (Hamlib)</option>
       <option selected value="tci">TCI</option>
     </select>

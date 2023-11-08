@@ -7,23 +7,23 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
-
 </script>
 <template>
-
   <!-- station callsign -->
   <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Your station callsign</span>
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Enter your callsign and save it"
-        id="myCall"
-        aria-label="Station Callsign"
-        aria-describedby="basic-addon1"
-        @change="saveSettings"
-        v-model="settings.mycall"
-      />
+    <span class="input-group-text" style="width: 180px"
+      >Your station callsign</span
+    >
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Enter your callsign and save it"
+      id="myCall"
+      aria-label="Station Callsign"
+      aria-describedby="basic-addon1"
+      @change="saveSettings"
+      v-model="settings.mycall"
+    />
   </div>
 
   <!-- station ssid -->
@@ -56,18 +56,17 @@ const settings = useSettingsStore(pinia);
 
   <!-- station grid locator -->
   <div class="input-group input-group-sm mb-1">
-      <span class="input-group-text" style="width: 180px">Grid Locator</span>
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Your grid locator"
-        id="myGrid"
-        maxlength="6"
-        aria-label="Station Grid Locator"
-        aria-describedby="basic-addon1"
-        @change="saveSettings"
-        v-model="settings.mygrid"
-      />
+    <span class="input-group-text" style="width: 180px">Grid Locator</span>
+    <input
+      type="text"
+      class="form-control"
+      placeholder="Your grid locator"
+      id="myGrid"
+      maxlength="6"
+      aria-label="Station Grid Locator"
+      aria-describedby="basic-addon1"
+      @change="saveSettings"
+      v-model="settings.mygrid"
+    />
   </div>
-
 </template>

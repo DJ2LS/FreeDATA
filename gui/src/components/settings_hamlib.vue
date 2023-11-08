@@ -7,7 +7,6 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
-
 </script>
 
 <template>
@@ -353,8 +352,7 @@ const settings = useSettingsStore(pinia);
       style="width: 7rem"
       @change="saveSettings"
       v-html="settings.getSerialDevices()"
-    >
-    </select>
+    ></select>
   </div>
 
   <div class="input-group input-group-sm mb-1">

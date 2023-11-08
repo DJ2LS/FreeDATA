@@ -2,7 +2,10 @@
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
 setActivePinia(pinia);
-import { processModemConfig, getModemConfigAsJSON } from "../js/settingsHandler.ts";
+import {
+  processModemConfig,
+  getModemConfigAsJSON,
+} from "../js/settingsHandler.ts";
 
 export async function getFromServer(host, port, endpoint) {
   // our central function for fetching the modems REST API by a specific endpoint
@@ -11,8 +14,8 @@ export async function getFromServer(host, port, endpoint) {
   const url = `http://${host}:${port}/${endpoint}`;
   const response = await fetch(url);
   if (!response.ok) {
-      throw new Error(`REST response not ok: ${response.statusText}`);
-    }
+    throw new Error(`REST response not ok: ${response.statusText}`);
+  }
   const data = await response.json();
 
   // move received data to our data dispatcher
@@ -26,21 +29,20 @@ export async function postToServer(host, port, endpoint, data) {
   const url = `http://${host}:${port}/${endpoint}`;
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
     });
 
     if (!response.ok) {
       throw new Error(`REST response not ok: ${response.statusText}`);
     }
   } catch (error) {
-    console.error('Error posting to REST:', error);
+    console.error("Error posting to REST:", error);
   }
 }
-
 
 function restDataDispatcher(endpoint, data) {
   // dispatch received data by endpoint

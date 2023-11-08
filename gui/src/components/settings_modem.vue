@@ -29,7 +29,6 @@ function startStopModem() {
     default:
   }
 }
-
 </script>
 
 <template>
