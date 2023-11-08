@@ -9,7 +9,6 @@ setActivePinia(pinia);
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
 
-
 // ---------------------------------
 
 console.log(process.env);
@@ -84,7 +83,7 @@ export function loadSettings() {
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
     }
     try {
-      if (key=="wftheme") {
+      if (key == "wftheme") {
         setColormap(config[key]);
       }
       if (key == "mycall") {
@@ -106,13 +105,11 @@ export function saveSettingsToFile() {
   fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
 }
 
-export function processModemConfig(data){
-    console.log(data)
-    // basic test if we received settings
-    // we should iterate through JSON, by using equal variables here like in modem config
-    // STATION SETTINGS
-    settings.mycall = data["STATION"].mycall
-    settings.mygrid = data["STATION"].mygrid
-
-
+export function processModemConfig(data) {
+  console.log(data);
+  // basic test if we received settings
+  // we should iterate through JSON, by using equal variables here like in modem config
+  // STATION SETTINGS
+  settings.mycall = data["STATION"].mycall;
+  settings.mygrid = data["STATION"].mygrid;
 }
