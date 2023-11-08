@@ -19,7 +19,8 @@ import chat from "./chat.vue";
 import infoScreen from "./infoScreen.vue";
 
 import { stopTransmission } from "../js/sock.js";
-import { fetchSettings } from "../js/rest.js";
+import { fetchSettings } from "../js/settingsHandler.js";
+
 function stopAllTransmissions() {
   console.log("stopping transmissions");
   stopTransmission();

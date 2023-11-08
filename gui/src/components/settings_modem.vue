@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
+import { saveSettings } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -30,9 +30,6 @@ function startStopModem() {
   }
 }
 
-function saveSettings() {
-  saveSettingsToFile();
-}
 </script>
 
 <template>
@@ -76,7 +73,7 @@ function saveSettings() {
       maxlength="5"
       max="65534"
       min="1025"
-      @change="saveSettings"
+      @change="saveSettings()"
       v-model="settings.modem_port"
     />
   </div>

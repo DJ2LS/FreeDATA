@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { saveSettingsToFile } from "../js/settingsHandler";
+import { saveSettings } from "../js/settingsHandler";
 
 import { setActivePinia } from "pinia";
 import pinia from "../store/index";
@@ -7,9 +7,7 @@ setActivePinia(pinia);
 
 import { useSettingsStore } from "../store/settingsStore.js";
 const settings = useSettingsStore(pinia);
-function saveSettings() {
-  saveSettingsToFile();
-}
+
 </script>
 
 <template>
