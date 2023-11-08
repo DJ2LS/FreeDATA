@@ -106,6 +106,7 @@ def fetch_audio_devices(input_devices, output_devices):
 # FreeData uses the crc as id inside the configuration
 # SD lib uses a numerical id which is essentially an 
 # index of the device within the list
+# returns (id, name)
 def get_device_index_from_crc(crc, isInput: bool):
     in_devices = []
     out_devices = []
@@ -119,6 +120,6 @@ def get_device_index_from_crc(crc, isInput: bool):
 
     for i, dev in enumerate(detected_devices):
         if dev['id'] == crc:
-            return i
+            return (i, dev['name'])
 
     raise Exception("Audio device %s not detected." % crc)

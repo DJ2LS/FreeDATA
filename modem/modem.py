@@ -191,8 +191,10 @@ class RF:
         # --------------------------------------------CREATE PORTAUDIO INSTANCE
         if not TESTMODE and not HamlibParam.hamlib_radiocontrol in ["tci"]:
             try:
-                in_dev_index = audio.get_device_index_from_crc(self.audio_input_device, True)
-                out_dev_index = audio.get_device_index_from_crc(self.audio_output_device, False)
+                (in_dev_index, in_dev_name) = audio.get_device_index_from_crc(
+                    self.audio_input_device, True)
+                (out_dev_index, out_dev_name) = audio.get_device_index_from_crc(
+                    self.audio_output_device, False)
 
                 self.stream = sd.RawStream(
                     channels=1,
@@ -203,7 +205,8 @@ class RF:
                     blocksize=4800,
                 )
                 atexit.register(self.stream.stop)
-                self.log.info("[MDM] init: opened audio devices")
+                self.log.info("[MDM] init: receiving audio from '%s'" % in_dev_name)
+                self.log.info("[MDM] init: transmiting audio on '%s'" % out_dev_name)
             except Exception as err:
                 self.log.error("[MDM] init: can't open audio device. Exit", e=err)
                 # TODO Disabled sys.exit in case of wrong audio devices. We need to ensure flask server is running.
