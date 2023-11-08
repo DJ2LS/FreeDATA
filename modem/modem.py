@@ -30,6 +30,8 @@ import cw
 from queues import DATA_QUEUE_RECEIVED, MODEM_RECEIVED_QUEUE, MODEM_TRANSMIT_QUEUE, RIGCTLD_COMMAND_QUEUE, \
     AUDIO_RECEIVED_QUEUE, AUDIO_TRANSMIT_QUEUE, MESH_RECEIVED_QUEUE
 import audio
+import event_manager
+import queue
 
 TESTMODE = False
 RXCHANNEL = ""
@@ -111,6 +113,11 @@ class RF:
         # Define fft_data buffer
         self.fft_data = bytes()
 
+        self.modem_events = queue.Queue()
+        self.event_manager = event_manager.EventManager([
+            self.modem_events, 
+            sock.SOCKET_QUEUE])
+
         self.init_codec2()
         self.init_audio()
         self.init_rig_control()
@@ -127,9 +134,7 @@ class RF:
 
             if len(self.modoutqueue) > 0 and not self.mod_out_locked:
                 HamlibParam.ptt_state = self.radio.set_ptt(True)
-                jsondata = {"ptt": "True"}
-                data_out = json.dumps(jsondata)
-                sock.SOCKET_QUEUE.put(data_out)
+                self.event_manager.send_ptt_change(True)
 
                 data_out = self.modoutqueue.popleft()
                 self.tci_module.push_audio(data_out)
@@ -312,7 +317,7 @@ class RF:
                     fifo_write.flush()
                     fifo_write.flush()
 
-    # --------------------------------------------------------------------
+    # Callback for the audio streaming devices
     def callback(self, data_in48k, outdata, frames, time, status) -> None:
         """
         Receive data into appropriate queue.
@@ -364,9 +369,7 @@ class RF:
                 # TODO Moved to this place for testing
                 # Maybe we can avoid moments of silence before transmitting
                 HamlibParam.ptt_state = self.radio.set_ptt(True)
-                jsondata = {"ptt": "True"}
-                data_out = json.dumps(jsondata)
-                sock.SOCKET_QUEUE.put(data_out)
+                self.event_manager.send_ptt_change(True)
 
             data_out48k = self.modoutqueue.popleft()
             self.fft_data = data_out48k
@@ -590,9 +593,7 @@ class RF:
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
-        jsondata = {"ptt": "False"}
-        data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(data_out)
+        self.event_manager.send_ptt_change(False)
 
         # After processing, set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
@@ -650,9 +651,7 @@ class RF:
         HamlibParam.ptt_state = self.radio.set_ptt(False)
 
         # Push ptt state to socket stream
-        jsondata = {"ptt": "False"}
-        data_out = json.dumps(jsondata)
-        sock.SOCKET_QUEUE.put(data_out)
+        self.event_manager.send_ptt_change(False)
 
         # After processing, set the locking state back to true to be prepared for next transmission
         self.mod_out_locked = True
@@ -1471,7 +1470,6 @@ def open_codec2_instance(mode: int) -> ctypes.c_void_p:
 
     return ctypes.cast(codec2.api.freedv_open(mode), ctypes.c_void_p)
 
-
 def get_bytes_per_frame(mode: int) -> int:
     """
     Provide bytes per frame information for accessing from data handler
@@ -1520,7 +1518,6 @@ def set_audio_volume(datalist: np.ndarray, dB: float) -> np.ndarray:
     # Clip values to int16 range and convert data type
     return np.clip(scaled_data, -32768, 32767).astype(np.int16)
 
-
 def get_modem_error_state():
     """
     get current state buffer and return True of contains 10
@@ -1538,4 +1535,3 @@ def get_modem_error_state():
         return True
 
     return False
-

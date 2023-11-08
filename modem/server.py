@@ -39,8 +39,8 @@ def api_response(data, status = 'ok'):
 set_config()
 
 # start modem
-d = data_handler.DATA(app.config_manager.config)
-m = modem.RF(app.config_manager.config)
+data_handler.DATA(app.config_manager.config)
+app.modem = modem.RF(app.config_manager.config)
 
 ## REST API
 @app.route('/', methods=['GET'])
@@ -79,6 +79,5 @@ def get_serial_devices():
 # Event websocket
 @sock.route('/events')
 def echo(sock):
-    while True:
-        data = sock.receive()
-        sock.send(data)
+        ev = app.modem.modem_events.get()
+        sock.send(ev)
