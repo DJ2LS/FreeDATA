@@ -206,7 +206,11 @@ class RF:
                 self.log.info("[MDM] init: opened audio devices")
             except Exception as err:
                 self.log.error("[MDM] init: can't open audio device. Exit", e=err)
-                sys.exit(1)
+                # TODO Disabled sys.exit in case of wrong audio devices. We need to ensure flask server is running.
+                # This needs to be optimized when working on modem startup without daemon
+                # We also get problems with old configs, using ID instead of CRC as identifier, so
+                # we need some error handling here
+                #sys.exit(1)
 
             try:
                 self.log.debug("[MDM] init: starting pyaudio callback")

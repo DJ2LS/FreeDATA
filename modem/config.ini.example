@@ -4,15 +4,16 @@ modemport = 3000
 
 [STATION]
 #station settings
-mycall = F4JAW-0
-mygrid = JN18cv
+mycall = DJ2LS
+mygrid = JN20aa
 ssid_list = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 [AUDIO]
 #audio settings
-rx = 2
-tx = 3
-txaudiolevel = 28
+rx = 0
+tx = 0
+rxaudiolevel = 0
+txaudiolevel = 0
 auto_tune = False
 
 [RADIO]
@@ -21,27 +22,18 @@ radiocontrol = disabled
 rigctld_ip = 127.0.0.1
 rigctld_port = 4532
 
-[Modem]
-# Send scatter information via network
+[TNC]
 scatter = False
 fft = True
-# AKA low_bandwidth_mode
 narrowband = False
-# Tuning range fmin and fmax
-fmin = -50.0
-fmax = 50.0
-# Enable sending a QRV frame if CQ received - AKA respond_to_cq
+fmin = -50
+fmax = 50
 qrv = True
 rx_buffer_size = 16
 explorer = False
 stats = False
-# Enable FSK mode for ping, beacon and CQ
 fsk = False
 tx_delay = 0
-# Save received data to local folder
-save_to_folder = False 
-# Enable and set hmac message salt
-enable_hmac = False
 
 [TCI]
 #tci settings
@@ -49,5 +41,20 @@ ip = 127.0.0.1
 port = 50001
 
 [MESH]
-enable_protocol = False
+#tci settings
+enable_protocol = True
+
+[Modem]
+#modem settings
+scatter = False
+fft = True
+narrowband = False
+fmin = -50
+fmax = 50
+qrv = True
+rx_buffer_size = 16
+explorer = False
+stats = False
+fsk = False
+tx_delay = 0
 
