@@ -8,13 +8,12 @@ from global_instances import ARQ, AudioParam, Beacon, Channel, Daemon, HamlibPar
 import sock
 import ujson as json
 
-
 class broadcastHandler:
     """Terminal Node Controller for FreeDATA"""
 
     log = structlog.get_logger("BROADCAST")
 
-    def __init__(self) -> None:
+    def __init__(self, event_queue) -> None:
         self.fec_wakeup_callsign = bytes()
         self.longest_duration = 6
         self.wakeup_received = False
@@ -24,6 +23,7 @@ class broadcastHandler:
             target=self.watchdog, name="watchdog thread", daemon=True
         )
         self.broadcast_watchdog.start()
+        self.event_queue = event_queue
 
     def received_fec_wakeup(self, data_in: bytes):
         self.fec_wakeup_callsign = helpers.bytes_to_callsign(bytes(data_in[1:7]))
@@ -95,6 +95,7 @@ class broadcastHandler:
         self.log.debug("[Modem] send_data_to_socket_queue:", jsondata=json_data_out)
         # finally push data to our network queue
         sock.SOCKET_QUEUE.put(json_data_out)
+        self.event_queue.put(json_data_out)
 
     def watchdog(self):
         while 1:

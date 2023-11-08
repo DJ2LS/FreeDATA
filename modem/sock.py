@@ -114,6 +114,7 @@ class ThreadedTCPRequestHandler(socketserver.StreamRequestHandler):
             # self.request.sendall(sock_data)
             threading.Event().wait(0.15)
 
+    # This will disapear because commands will come from the REST API
     def receive_from_client(self):
         """
         function which is called by the socket handler
