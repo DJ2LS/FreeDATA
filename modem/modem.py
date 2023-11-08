@@ -63,11 +63,10 @@ class RF:
     log = structlog.get_logger("RF")
 
     def __init__(self, config) -> None:
-        """ """
+        self.config = config
+
         self.sampler_avg = 0
         self.buffer_avg = 0
-
-        self.config = config
 
         # these are crc ids now
         self.audio_input_device = config['AUDIO']['rx']
@@ -112,82 +111,30 @@ class RF:
         # Define fft_data buffer
         self.fft_data = bytes()
 
-        # Open codec2 instances
+        self.init_codec2()
+        self.init_audio()
+        self.init_rig_control()
+        self.init_decoders()
+        self.init_data_threads()
 
-        # DATAC13
-        # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
-        self.sig0_datac13_freedv, \
-                self.sig0_datac13_bytes_per_frame, \
-                self.sig0_datac13_bytes_out, \
-                self.sig0_datac13_buffer, \
-                self.sig0_datac13_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
+    # --------------------------------------------------------------------------------------------------------
+    def tci_tx_callback(self) -> None:
+        """
+        Callback for TCI TX
+        """
+        while True:
+            threading.Event().wait(0.01)
 
-        # DATAC13
-        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
-        self.sig1_datac13_freedv, \
-                self.sig1_datac13_bytes_per_frame, \
-                self.sig1_datac13_bytes_out, \
-                self.sig1_datac13_buffer, \
-                self.sig1_datac13_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
+            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
+                HamlibParam.ptt_state = self.radio.set_ptt(True)
+                jsondata = {"ptt": "True"}
+                data_out = json.dumps(jsondata)
+                sock.SOCKET_QUEUE.put(data_out)
 
-        # DATAC1
-        self.dat0_datac1_freedv, \
-                self.dat0_datac1_bytes_per_frame, \
-                self.dat0_datac1_bytes_out, \
-                self.dat0_datac1_buffer, \
-                self.dat0_datac1_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac1.value, None)
+                data_out = self.modoutqueue.popleft()
+                self.tci_module.push_audio(data_out)
 
-        # DATAC3
-        self.dat0_datac3_freedv, \
-                self.dat0_datac3_bytes_per_frame, \
-                self.dat0_datac3_bytes_out, \
-                self.dat0_datac3_buffer, \
-                self.dat0_datac3_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac3.value, None)
-
-        # DATAC4
-        self.dat0_datac4_freedv, \
-                self.dat0_datac4_bytes_per_frame, \
-                self.dat0_datac4_bytes_out, \
-                self.dat0_datac4_buffer, \
-                self.dat0_datac4_nin = \
-                self.init_codec2_mode(codec2.FREEDV_MODE.datac4.value, None)
-
-
-        # FSK LDPC - 0
-        self.fsk_ldpc_freedv_0, \
-                self.fsk_ldpc_bytes_per_frame_0, \
-                self.fsk_ldpc_bytes_out_0, \
-                self.fsk_ldpc_buffer_0, \
-                self.fsk_ldpc_nin_0 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
-            )
-
-        # FSK LDPC - 1
-        self.fsk_ldpc_freedv_1, \
-                self.fsk_ldpc_bytes_per_frame_1, \
-                self.fsk_ldpc_bytes_out_1, \
-                self.fsk_ldpc_buffer_1, \
-                self.fsk_ldpc_nin_1 = \
-                self.init_codec2_mode(
-                codec2.FREEDV_MODE.fsk_ldpc.value,
-                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
-            )
-
-        # INIT TX MODES - here we need all modes. 
-        self.freedv_datac0_tx = open_codec2_instance(codec2.FREEDV_MODE.datac0.value)
-        self.freedv_datac1_tx = open_codec2_instance(codec2.FREEDV_MODE.datac1.value)
-        self.freedv_datac3_tx = open_codec2_instance(codec2.FREEDV_MODE.datac3.value)
-        self.freedv_datac4_tx = open_codec2_instance(codec2.FREEDV_MODE.datac4.value)
-        self.freedv_datac13_tx = open_codec2_instance(codec2.FREEDV_MODE.datac13.value)
-        self.freedv_ldpc0_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
-        self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
-        
+    def init_audio(self):
         # --------------------------------------------CREATE PORTAUDIO INSTANCE
         if not TESTMODE and not HamlibParam.hamlib_radiocontrol in ["tci"]:
             try:
@@ -282,104 +229,6 @@ class RF:
                 daemon=True,
             )
             mkfifo_read_callback_thread.start()
-
-        # --------------------------------------------INIT AND OPEN HAMLIB
-        # Check how we want to control the radio
-        if HamlibParam.hamlib_radiocontrol == "rigctld":
-            import rigctld as rig
-        elif HamlibParam.hamlib_radiocontrol == "tci":
-            self.radio = self.tci_module
-        else:
-            import rigdummy as rig
-
-        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
-            self.radio = rig.radio()
-            self.radio.open_rig(
-                rigctld_ip=HamlibParam.hamlib_rigctld_ip,
-                rigctld_port=HamlibParam.hamlib_rigctld_port,
-            )
-
-        # --------------------------------------------START DECODER THREAD
-        if AudioParam.enable_fft:
-            fft_thread = threading.Thread(
-                target=self.calculate_fft, name="FFT_THREAD", daemon=True
-            )
-            fft_thread.start()
-
-        if Modem.enable_fsk:
-            audio_thread_fsk_ldpc0 = threading.Thread(
-                target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
-            )
-            audio_thread_fsk_ldpc0.start()
-
-            audio_thread_fsk_ldpc1 = threading.Thread(
-                target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
-            )
-            audio_thread_fsk_ldpc1.start()
-
-        else:
-            audio_thread_sig0_datac13 = threading.Thread(
-                target=self.audio_sig0_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
-            )
-            audio_thread_sig0_datac13.start()
-
-            audio_thread_sig1_datac13 = threading.Thread(
-                target=self.audio_sig1_datac13, name="AUDIO_THREAD DATAC13 - 1", daemon=True
-            )
-            audio_thread_sig1_datac13.start()
-
-            audio_thread_dat0_datac1 = threading.Thread(
-                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
-            )
-            audio_thread_dat0_datac1.start()
-
-            audio_thread_dat0_datac3 = threading.Thread(
-                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
-            )
-            audio_thread_dat0_datac3.start()
-
-            audio_thread_dat0_datac4 = threading.Thread(
-                target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
-            )
-            audio_thread_dat0_datac4.start()
-
-        hamlib_thread = threading.Thread(
-            target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
-        )
-        hamlib_thread.start()
-
-        hamlib_set_thread = threading.Thread(
-            target=self.set_rig_data, name="HAMLIB_SET_THREAD", daemon=True
-        )
-        hamlib_set_thread.start()
-
-        # self.log.debug("[MDM] Starting worker_receive")
-        worker_received = threading.Thread(
-            target=self.worker_received, name="WORKER_THREAD", daemon=True
-        )
-        worker_received.start()
-
-        worker_transmit = threading.Thread(
-            target=self.worker_transmit, name="WORKER_THREAD", daemon=True
-        )
-        worker_transmit.start()
-
-    # --------------------------------------------------------------------------------------------------------
-    def tci_tx_callback(self) -> None:
-        """
-        Callback for TCI TX
-        """
-        while True:
-            threading.Event().wait(0.01)
-
-            if len(self.modoutqueue) > 0 and not self.mod_out_locked:
-                HamlibParam.ptt_state = self.radio.set_ptt(True)
-                jsondata = {"ptt": "True"}
-                data_out = json.dumps(jsondata)
-                sock.SOCKET_QUEUE.put(data_out)
-
-                data_out = self.modoutqueue.popleft()
-                self.tci_module.push_audio(data_out)
 
     def tci_rx_callback(self) -> None:
         """
@@ -833,6 +682,50 @@ class RF:
                 # self.log.debug("[MDM] mod out shorter than audio buffer", delta=delta)
             self.modoutqueue.append(c)
 
+    def init_decoders(self):
+        if AudioParam.enable_fft:
+            fft_thread = threading.Thread(
+                target=self.calculate_fft, name="FFT_THREAD", daemon=True
+            )
+            fft_thread.start()
+
+        if Modem.enable_fsk:
+            audio_thread_fsk_ldpc0 = threading.Thread(
+                target=self.audio_fsk_ldpc_0, name="AUDIO_THREAD FSK LDPC0", daemon=True
+            )
+            audio_thread_fsk_ldpc0.start()
+
+            audio_thread_fsk_ldpc1 = threading.Thread(
+                target=self.audio_fsk_ldpc_1, name="AUDIO_THREAD FSK LDPC1", daemon=True
+            )
+            audio_thread_fsk_ldpc1.start()
+
+        else:
+            audio_thread_sig0_datac13 = threading.Thread(
+                target=self.audio_sig0_datac13, name="AUDIO_THREAD DATAC13 - 0", daemon=True
+            )
+            audio_thread_sig0_datac13.start()
+
+            audio_thread_sig1_datac13 = threading.Thread(
+                target=self.audio_sig1_datac13, name="AUDIO_THREAD DATAC13 - 1", daemon=True
+            )
+            audio_thread_sig1_datac13.start()
+
+            audio_thread_dat0_datac1 = threading.Thread(
+                target=self.audio_dat0_datac1, name="AUDIO_THREAD DATAC1", daemon=True
+            )
+            audio_thread_dat0_datac1.start()
+
+            audio_thread_dat0_datac3 = threading.Thread(
+                target=self.audio_dat0_datac3, name="AUDIO_THREAD DATAC3", daemon=True
+            )
+            audio_thread_dat0_datac3.start()
+
+            audio_thread_dat0_datac4 = threading.Thread(
+                target=self.audio_dat0_datac4, name="AUDIO_THREAD DATAC4", daemon=True
+            )
+            audio_thread_dat0_datac4.start()
+
     def demodulate_audio(
             self,
             audiobuffer: codec2.audio_buffer,
@@ -954,6 +847,83 @@ class RF:
         except Exception as e:
             self.log.warning("[MDM] [demod_audio] Stream not active anymore", e=e)
         return nin
+
+    def init_codec2(self):
+        # Open codec2 instances
+
+        # DATAC13
+        # SIGNALLING MODE 0 - Used for Connecting - Payload 14 Bytes
+        self.sig0_datac13_freedv, \
+                self.sig0_datac13_bytes_per_frame, \
+                self.sig0_datac13_bytes_out, \
+                self.sig0_datac13_buffer, \
+                self.sig0_datac13_nin = \
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
+
+        # DATAC13
+        # SIGNALLING MODE 1 - Used for ACK/NACK - Payload 5 Bytes
+        self.sig1_datac13_freedv, \
+                self.sig1_datac13_bytes_per_frame, \
+                self.sig1_datac13_bytes_out, \
+                self.sig1_datac13_buffer, \
+                self.sig1_datac13_nin = \
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac13.value, None)
+
+        # DATAC1
+        self.dat0_datac1_freedv, \
+                self.dat0_datac1_bytes_per_frame, \
+                self.dat0_datac1_bytes_out, \
+                self.dat0_datac1_buffer, \
+                self.dat0_datac1_nin = \
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac1.value, None)
+
+        # DATAC3
+        self.dat0_datac3_freedv, \
+                self.dat0_datac3_bytes_per_frame, \
+                self.dat0_datac3_bytes_out, \
+                self.dat0_datac3_buffer, \
+                self.dat0_datac3_nin = \
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac3.value, None)
+
+        # DATAC4
+        self.dat0_datac4_freedv, \
+                self.dat0_datac4_bytes_per_frame, \
+                self.dat0_datac4_bytes_out, \
+                self.dat0_datac4_buffer, \
+                self.dat0_datac4_nin = \
+                self.init_codec2_mode(codec2.FREEDV_MODE.datac4.value, None)
+
+
+        # FSK LDPC - 0
+        self.fsk_ldpc_freedv_0, \
+                self.fsk_ldpc_bytes_per_frame_0, \
+                self.fsk_ldpc_bytes_out_0, \
+                self.fsk_ldpc_buffer_0, \
+                self.fsk_ldpc_nin_0 = \
+                self.init_codec2_mode(
+                codec2.FREEDV_MODE.fsk_ldpc.value,
+                codec2.api.FREEDV_MODE_FSK_LDPC_0_ADV
+            )
+
+        # FSK LDPC - 1
+        self.fsk_ldpc_freedv_1, \
+                self.fsk_ldpc_bytes_per_frame_1, \
+                self.fsk_ldpc_bytes_out_1, \
+                self.fsk_ldpc_buffer_1, \
+                self.fsk_ldpc_nin_1 = \
+                self.init_codec2_mode(
+                codec2.FREEDV_MODE.fsk_ldpc.value,
+                codec2.api.FREEDV_MODE_FSK_LDPC_1_ADV
+            )
+
+        # INIT TX MODES - here we need all modes. 
+        self.freedv_datac0_tx = open_codec2_instance(codec2.FREEDV_MODE.datac0.value)
+        self.freedv_datac1_tx = open_codec2_instance(codec2.FREEDV_MODE.datac1.value)
+        self.freedv_datac3_tx = open_codec2_instance(codec2.FREEDV_MODE.datac3.value)
+        self.freedv_datac4_tx = open_codec2_instance(codec2.FREEDV_MODE.datac4.value)
+        self.freedv_datac13_tx = open_codec2_instance(codec2.FREEDV_MODE.datac13.value)
+        self.freedv_ldpc0_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_0.value)
+        self.freedv_ldpc1_tx = open_codec2_instance(codec2.FREEDV_MODE.fsk_ldpc_1.value)
 
     def init_codec2_mode(self, mode, adv):
         """
@@ -1109,6 +1079,18 @@ class RF:
             "fsk_ldpc1",
         )
 
+    def init_data_threads(self):
+        # self.log.debug("[MDM] Starting worker_receive")
+        worker_received = threading.Thread(
+            target=self.worker_received, name="WORKER_THREAD", daemon=True
+        )
+        worker_received.start()
+
+        worker_transmit = threading.Thread(
+            target=self.worker_transmit, name="WORKER_THREAD", daemon=True
+        )
+        worker_transmit.start()
+
     def worker_transmit(self) -> None:
         """Worker for FIFO queue for processing frames to be transmitted"""
         while True:
@@ -1227,6 +1209,31 @@ class RF:
             self.log.error(f"[MDM] calculate_snr: Exception: {err}")
             ModemParam.snr = 0
             return ModemParam.snr
+
+    def init_rig_control(self):
+        # Check how we want to control the radio
+        if HamlibParam.hamlib_radiocontrol == "rigctld":
+            import rigctld as rig
+        elif HamlibParam.hamlib_radiocontrol == "tci":
+            self.radio = self.tci_module
+        else:
+            import rigdummy as rig
+
+        if not HamlibParam.hamlib_radiocontrol in ["tci"]:
+            self.radio = rig.radio()
+            self.radio.open_rig(
+                rigctld_ip=HamlibParam.hamlib_rigctld_ip,
+                rigctld_port=HamlibParam.hamlib_rigctld_port,
+            )
+            hamlib_thread = threading.Thread(
+                target=self.update_rig_data, name="HAMLIB_THREAD", daemon=True
+            )
+        hamlib_thread.start()
+
+        hamlib_set_thread = threading.Thread(
+            target=self.set_rig_data, name="HAMLIB_SET_THREAD", daemon=True
+        )
+        hamlib_set_thread.start()
 
     def set_rig_data(self) -> None:
         """
