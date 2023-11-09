@@ -127,17 +127,36 @@ def post_ping():
 # @app.route('/rig/frequency', methods=['POST'])
 # @app.route('/rig/test_hamlib', methods=['POST'])
 
+
+# our client set which contains all connected websocket clients
+client_list = set()
+# our transmit function which also handles client management
+def transmit_sock_data(data):
+    try:
+        for client in client_list:
+            try:
+                client.send(data)
+            except Exception:
+                # print("client not connected anymore")
+                client_list.remove(client)
+    except RuntimeError:
+        # print("set changed during iteration")
+        pass
+
 # Event websocket
 @sock.route('/events')
 def sock_events(sock):
     # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
+    client_list.add(sock)
     while True:
         ev = app.modem_events.get()
-        sock.send(ev)
+        transmit_sock_data(ev)
 
+# FFT Websocket
 @sock.route('/fft')
 def sock_fft(sock):
     # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
+    client_list.add(sock)
     while True:
         fft = app.modem_fft.get()
-        sock.send(fft)
+        transmit_sock_data(fft)
