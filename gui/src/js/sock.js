@@ -733,20 +733,7 @@ export function getRxBuffer() {
   writeTncCommand(command);
 }
 
-// START BEACON
-export function startBeacon(interval) {
-  var command =
-    '{"type" : "broadcast", "command" : "start_beacon", "parameter": "' +
-    interval +
-    '"}';
-  writeTncCommand(command);
-}
 
-// STOP BEACON
-export function stopBeacon() {
-  var command = '{"type" : "broadcast", "command" : "stop_beacon"}';
-  writeTncCommand(command);
-}
 
 // OPEN ARQ SESSION
 export function connectARQ(dxcallsign) {

@@ -11,7 +11,6 @@ const settings = useSettingsStore(pinia);
 import { useStateStore } from "../store/stateStore.js";
 const state = useStateStore(pinia);
 
-import { sendPing, startBeacon, stopBeacon } from "../js/sock.js";
 import { postToServer } from "../js/rest.js";
 
 
@@ -20,17 +19,20 @@ function transmitCQ() {
 }
 
 function transmitPing() {
-  sendPing((<HTMLInputElement>document.getElementById("dxCall")).value);
+  let command = {"dxcall": (<HTMLInputElement>document.getElementById("dxCall")).value}
+  postToServer("localhost", 5000, "modem/ping_ping", command);
 }
 
 function startStopBeacon() {
   switch (state.beacon_state) {
     case "False":
-      startBeacon(settings.beacon_interval);
+        postToServer("localhost", 5000, "modem/beacon", {"enabled": "True"});
+
 
       break;
     case "True":
-      stopBeacon();
+        postToServer("localhost", 5000, "modem/beacon", {"enabled": "False"});
+
 
       break;
     default:

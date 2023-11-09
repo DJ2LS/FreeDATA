@@ -14,7 +14,6 @@ app = Flask(__name__)
 CORS(app)
 CORS(app, resources={r"/*": {"origins": "*"}})
 sock = Sock(app)
-print(sock)
 
 # set config file to use
 def set_config():
@@ -76,29 +75,42 @@ def get_serial_devices():
     devices = serial_ports.get_ports()
     return api_response(devices)
 
-# @app.route('/modem/listen', methods=['POST'])
-# @app.route('/modem/record_audio', methods=['POST'])
-# @app.route('/modem/responde_to_call', methods=['POST'])
-# @app.route('/modem/responde_to_cq', methods=['POST'])
-# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx
-# @app.route('/modem/send_test_frame', methods=['POST'])
-# @app.route('/modem/fec_transmit', methods=['POST'])
-# @app.route('/modem/fec_is_writing', methods=['POST'])
 @app.route('/modem/cqcqcq', methods=['POST', 'GET'])
 def post_cqcqcq():
     if request.method in ['POST']:
         server_commands.cqcqcq()
         return api_response({"cmd": "cqcqcq"})
-
     else:
         return api_response({"info": "endpoint for triggering a CQ via POST"})
 
+@app.route('/modem/beacon', methods=['POST'])
+def post_beacon():
+    if request.method in ['POST']:
+        server_commands.beacon(request.json)
+        return api_response(request.json)
+    else:
+        return api_response({"info": "endpoint for controlling BEACON STATE via POST"})
 
-# @app.route('/modem/beacon', methods=['POST']) # on/off
+@app.route('/modem/ping_ping', methods=['POST'])
+def post_ping():
+    if request.method in ['POST']:
+        server_commands.ping_ping(request.json)
+        return api_response(request.json)
+    else:
+        return api_response({"info": "endpoint for controlling PING via POST"})
+
+# @app.route('/modem/listen', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/record_audio', methods=['POST'])
+# @app.route('/modem/responde_to_call', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/responde_to_cq', methods=['POST']) # not needed if we are restarting modem on changing settings
+# @app.route('/modem/audio_levels', methods=['POST']) # tx and rx # not needed if we are restarting modem on changing settings
+# @app.route('/modem/send_test_frame', methods=['POST'])
+# @app.route('/modem/fec_transmit', methods=['POST'])
+# @app.route('/modem/fec_is_writing', methods=['POST'])
+
 # @app.route('/modem/mesh_ping', methods=['POST'])
-# @app.route('/modem/ping_ping', methods=['POST'])
-# @app.route('/modem/arc_connect', methods=['POST'])
-# @app.route('/modem/arc_disconnect', methods=['POST'])
+# @app.route('/modem/arq_connect', methods=['POST'])
+# @app.route('/modem/arq_disconnect', methods=['POST'])
 # @app.route('/modem/send_raw', methods=['POST'])
 # @app.route('/modem/stop_transmission', methods=['POST'])
 
@@ -116,5 +128,7 @@ def post_cqcqcq():
 # Event websocket
 @sock.route('/events')
 def echo(sock):
-    ev = app.modem_events.get()
-    sock.send(ev)
+    # it seems we have to keep the logics inside a loop, otherwise connection will be terminated
+    while True:
+        ev = app.modem_events.get()
+        sock.send(ev)

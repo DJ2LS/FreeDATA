@@ -1,3 +1,8 @@
+import {
+  eventDispatcher
+} from "../js/eventHandler.js";
+
+
 let socket;
 let retries = 0;
 let maxRetries = 15;
@@ -14,7 +19,7 @@ function connect() {
   // handle data
   socket.addEventListener("message", function (event) {
     console.log("Message from server:", event.data);
-    console.log("Message from server:", event);
+    eventDispatcher(event.data)
   });
 
   // handle errors
@@ -27,12 +32,11 @@ function connect() {
     console.log("WebSocket connection closed:", event.code);
 
     // Reconnect handler
-    if (!event.wasClean && retries < maxRetries) {
+    if (!event.wasClean) {
       setTimeout(() => {
-        console.log("Reconnecting to websocket. Attempt: " + retries);
+        console.log("Reconnecting to websocket");
         connect();
       }, 1000);
-      retries++;
     }
   });
 }

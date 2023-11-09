@@ -2543,10 +2543,23 @@ class DATA:
           dxcallsign:bytes:
 
         """
+        # check if specific callsign is set with different SSID than the Modem is initialized
+        try:
+            mycallsign = helpers.callsign_to_bytes(mycallsign)
+            mycallsign = helpers.bytes_to_callsign(mycallsign)
+        except Exception:
+            mycallsign = self.mycallsign
+
         if not str(dxcallsign).strip():
-            # TODO We should display a message to this effect on the UI.
             self.log.warning("[Modem] Missing required callsign", dxcallsign=dxcallsign)
             return
+
+        # additional step for being sure our callsign is correctly
+        # in case we are not getting a station ssid
+        # then we are forcing a station ssid = 0
+        dxcallsign = helpers.callsign_to_bytes(dxcallsign)
+        dxcallsign = helpers.bytes_to_callsign(dxcallsign)
+
         Station.dxcallsign = dxcallsign
         Station.dxcallsign_crc = helpers.get_crc_24(Station.dxcallsign)
         self.send_data_to_socket_queue(
